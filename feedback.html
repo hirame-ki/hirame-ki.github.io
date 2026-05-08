@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>수업 공장 🏭 — 피드백</title>
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Gothic:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --bg:#f0fdf8;--bg2:#e6f6f1;--surface:#fff;--surface2:#f5fcf9;
+      --border:#b2e0d4;--border2:#cdeee5;
+      --mint:#2dd4bf;--mint-d:#0d9488;--mint-l:#ccfbef;--mint-ll:#f0fdf8;
+      --amber:#f59e0b;--rose:#e06b8b;--blue:#3b82f6;--purple:#8b5cf6;
+      --text:#1a3a30;--sub:#3d6b5c;--muted:#7aaa97;
+      --shadow:0 2px 12px rgba(43,191,154,.10);
+      --hh:58px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text)}
+
+    /* HEADER */
+    .hdr{height:var(--hh);background:var(--surface);border-bottom:1.5px solid var(--border);
+      display:flex;align-items:center;padding:0 16px;gap:10px;
+      box-shadow:var(--shadow);position:sticky;top:0;z-index:200}
+    .logo-box{width:36px;height:36px;border-radius:12px;
+      background:linear-gradient(135deg,var(--mint),#4dd9b8);
+      display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .logo-txt{font-size:14px;font-weight:900;flex-shrink:0;color:var(--text)}
+    .tagline{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+    .hdr-acts{display:flex;gap:6px;flex-shrink:0;align-items:center}
+    .icon-btn{width:32px;height:32px;border-radius:8px;background:var(--bg2);border:1.5px solid var(--border);
+      color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;
+      transition:all .15s;text-decoration:none}
+    .icon-btn:hover{border-color:var(--mint);color:var(--mint)}
+    .back-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;
+      background:var(--bg2);border:1.5px solid var(--border);color:var(--sub);
+      font-size:12px;font-weight:800;text-decoration:none;transition:all .18s;white-space:nowrap;flex-shrink:0}
+    .back-btn:hover{border-color:var(--mint);color:var(--mint-d);transform:translateY(-1px)}
+
+    /* CONTAINER */
+    .container{max-width:560px;margin:2.5rem auto;padding:0 1rem}
+
+    /* CARD */
+    .feedback-card{background:var(--surface);border:1.5px solid var(--border);
+      border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
+
+    .card-header{background:linear-gradient(135deg,var(--mint-d),var(--mint));
+      padding:1.8rem 2rem;text-align:center;position:relative}
+    .card-header h2{color:#fff;font-weight:900;font-size:1.4rem;
+      display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.4rem;
+      font-family:'Nanum Gothic',sans-serif}
+    .card-header p{color:rgba(255,255,255,.85);font-size:.88rem}
+    .card-header-deco{position:absolute;top:-20px;right:-20px;font-size:80px;opacity:.08;line-height:1}
+
+    .card-body{padding:1.8rem 2rem}
+
+    .input-group{margin-bottom:1.4rem}
+    label{display:block;font-size:.85rem;font-weight:800;color:var(--sub);margin-bottom:.45rem;
+      letter-spacing:.04em;text-transform:uppercase}
+    input[type="text"], textarea{
+      width:100%;padding:.85rem 1rem;border:1.5px solid var(--border2);
+      border-radius:10px;font-family:'Nanum Gothic',sans-serif;font-size:.95rem;
+      background:var(--surface2);color:var(--text);transition:.2s;outline:none}
+    textarea{height:150px;resize:none}
+    input[type="text"]:focus, textarea:focus{
+      border-color:var(--mint);background:var(--surface);
+      box-shadow:0 0 0 3px var(--mint-l)}
+
+    .submit-btn{width:100%;background:linear-gradient(135deg,var(--mint),var(--mint-d));
+      color:white;border:none;padding:1rem;border-radius:10px;
+      font-weight:800;font-size:1.05rem;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:.5rem;
+      transition:.2s;box-shadow:0 4px 14px rgba(45,212,191,.35);font-family:'Nanum Gothic',sans-serif}
+    .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(45,212,191,.45)}
+    .submit-btn:active{transform:translateY(0)}
+
+    .divider{height:1.5px;background:var(--border2);margin:1.4rem 0}
+
+    .tip-box{background:var(--mint-ll);border:1.5px solid var(--border2);border-radius:10px;
+      padding:.9rem 1rem;font-size:.82rem;color:var(--sub);line-height:1.7}
+    .tip-box strong{color:var(--mint-d)}
+
+    footer{text-align:center;padding:1.2rem;font-size:.78rem;color:var(--muted);
+      border-top:1.5px solid var(--border)}
+    footer a{color:var(--mint-d);text-decoration:none;font-weight:700}
+    footer a:hover{text-decoration:underline}
+
+    @media(max-width:480px){
+      .tagline{display:none}
+      .card-body{padding:1.4rem 1.2rem}
+      .card-header{padding:1.4rem 1.2rem}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="logo-box">🏭</div>
+    <div class="logo-txt">수업 공장</div>
+    <div class="tagline">2022 개정교육과정 · AI 프롬프트 자동 생성기</div>
+    <div class="hdr-acts">
+      <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> 돌아가기</a>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="feedback-card">
+
+      <div class="card-header">
+        <div class="card-header-deco">🏭</div>
+        <h2><i class="fas fa-comment-dots"></i> 선생님의 의견을 들려주세요</h2>
+        <p>기능 추가 건의, 불편한 점을 알려주시면 더 좋은 도구로 발전하겠습니다 🌱</p>
+      </div>
+
+      <div class="card-body">
+        <!-- 구글 설문지 연동 폼 -->
+        <form action="https://docs.google.com/forms/d/e/1FAIpQLSfv0cVXE3uxp4ICSd8Aucj2R6f9W_EXoIpUaSB9_N95sjOWuQ/formResponse" method="POST" target="_blank" onsubmit="setTimeout(function(){window.location.reload();}, 1000);">
+
+          <div class="input-group">
+            <label><i class="fas fa-user" style="color:var(--mint)"></i> 성함 또는 닉네임 <span style="font-weight:400;text-transform:none;color:var(--muted)">(선택)</span></label>
+            <input type="text" name="entry.179242884" placeholder="홍길동 선생님">
+          </div>
+
+          <div class="input-group">
+            <label><i class="fas fa-pen-to-square" style="color:var(--mint)"></i> 피드백 내용 <span style="color:var(--rose);font-size:.8rem">* 필수</span></label>
+            <textarea name="entry.2057787627" placeholder="여기에 내용을 편하게 적어주세요!&#10;&#10;예: 특정 기능이 불편해요 / 이런 기능을 추가해주세요 / 사용하면서 좋았던 점 등" required></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn">
+            <i class="fas fa-paper-plane"></i> 피드백 보내기
+          </button>
+        </form>
+
+        <div class="divider"></div>
+
+        <div class="tip-box">
+          💡 <strong>수업 공장</strong>은 선생님들의 피드백을 바탕으로 지속적으로 업데이트됩니다.<br>
+          소중한 의견 감사합니다! 🙏
+        </div>
+      </div>
+
+      <footer>
+        제작 <a href="https://www.instagram.com/hirame.ki/" target="_blank">@hirame.ki</a>
+        &nbsp;·&nbsp; 수업 공장 🏭
+      </footer>
+    </div>
+  </div>
+
+</body>
+</html>

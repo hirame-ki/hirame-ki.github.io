@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 성적 상담 공장</title>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Gothic:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f0fdf8;--bg2:#e6f6f1;--surface:#fff;--surface2:#f5fcf9;
+  --border:#b2e0d4;--border2:#cdeee5;
+  --mint:#2dd4bf;--mint-d:#0d9488;--mint-l:#ccfbef;
+  --rose:#e06b8b;--amber:#f59e0b;--purple:#8b5cf6;
+  --text:#1a3a30;--sub:#3d6b5c;--muted:#7aaa97;
+  --shadow:0 2px 12px rgba(43,191,154,.10);
+  --hh:58px;--clh:40px;
+}
+body.dark{
+  --bg:#0f1f1a;--bg2:#162820;--surface:#1a2e28;--surface2:#1e3530;
+  --border:#2d5045;--border2:#264038;
+  --text:#d4f0e8;--sub:#8ec9b4;--muted:#4d8a78;
+  --shadow:0 2px 12px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Nanum Gothic',sans-serif;background:var(--bg);color:var(--text)}
+body{display:flex;flex-direction:column;min-height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.hdr{height:var(--hh);min-height:var(--hh);flex-shrink:0;background:var(--surface);border-bottom:1.5px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:8px;box-shadow:var(--shadow);z-index:200;transition:background .3s}
+.logo-box{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--mint),#4dd9b8);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.logo-txt{font-size:14px;font-weight:900;flex-shrink:0}
+.logo-ver{font-size:10px;color:var(--muted);font-weight:700;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:2px 7px;white-space:nowrap;flex-shrink:0}
+.tagline{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.hdr-acts{display:flex;gap:6px;flex-shrink:0;align-items:center}
+.icon-btn{width:32px;height:32px;border-radius:8px;background:var(--bg2);border:1.5px solid var(--border);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
+.icon-btn:hover{border-color:var(--mint);color:var(--mint)}
+.action-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:linear-gradient(135deg,var(--mint),var(--mint-d));color:#fff;font-size:12px;font-weight:800;border:none;cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0}
+.action-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(45,212,191,.4)}
+.reset-btn{background:var(--bg2);border:1.5px solid var(--border);color:var(--sub);font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.reset-btn:hover{border-color:var(--rose);color:var(--rose)}
+.guide-bar{flex-shrink:0;background:linear-gradient(90deg,var(--mint-d),var(--mint));padding:0 16px;display:flex;align-items:center;overflow-x:auto;height:38px}
+.guide-bar::-webkit-scrollbar{height:0}
+.gb-item{display:flex;align-items:center;gap:5px;color:rgba(255,255,255,.9);font-size:11px;font-weight:700;white-space:nowrap;padding:0 10px;border-right:1px solid rgba(255,255,255,.2);flex-shrink:0}
+.gb-num{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0}
+.mob-tabs{display:none;background:var(--surface);border-bottom:1.5px solid var(--border)}
+.mob-tabs button{flex:1;padding:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:none;color:var(--muted);border-bottom:2.5px solid transparent;transition:all .18s}
+.mob-tabs button.active{color:var(--mint-d);border-bottom-color:var(--mint);background:var(--mint-l)}
+.main{display:flex;flex:1;min-height:0;overflow:hidden}
+.lp{width:50%;flex-shrink:0;border-right:1.5px solid var(--border);overflow-y:auto;overflow-x:hidden;padding:14px 12px 60px;background:var(--bg);transition:background .3s}
+.rp{width:50%;flex-shrink:0;overflow-y:auto;overflow-x:hidden;padding:14px 14px 60px;background:var(--surface);transition:background .3s}
+.sw{margin-bottom:8px}
+.sh{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:9px 12px 8px;border-radius:10px;background:var(--surface2);border:1.5px solid var(--border2);cursor:pointer;user-select:none;transition:all .15s}
+.sh:hover{background:var(--mint-l);border-color:var(--mint)}
+.sw:not(.collapsed) .sh{border-radius:10px 10px 0 0;border-bottom-color:transparent}
+.toggle-pill{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:var(--muted);background:var(--bg2);border:1.5px solid var(--border);padding:2px 8px;border-radius:20px;transition:all .15s;text-transform:none;letter-spacing:0;white-space:nowrap;flex-shrink:0}
+.sh:hover .toggle-pill{background:var(--mint-l);border-color:var(--mint);color:var(--mint-d)}
+.toggle-pill .chev{font-size:9px;transition:transform .25s}
+.sw.collapsed .toggle-pill .chev{transform:rotate(-90deg)}
+.toggle-pill .pt::before{content:"접기"}
+.sw.collapsed .toggle-pill .pt::before{content:"펼치기"}
+.sn{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.sb{overflow:hidden;transition:max-height .32s cubic-bezier(.4,0,.2,1);max-height:6000px}
+.sw.collapsed .sb{max-height:0}
+.sec-block{background:var(--surface);border:1.5px solid var(--border2);border-top:none;padding:10px 12px}
+.sec-block:last-child{border-radius:0 0 10px 10px}
+.sub-lbl{font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;margin-top:4px}
+.inp{width:100%;padding:9px 12px;border-radius:10px;background:var(--bg2);border:1.5px solid var(--border);font-size:13px;font-family:'Nanum Gothic',sans-serif;color:var(--text);outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--mint)}
+.inp::placeholder{color:var(--muted);font-size:12px}
+select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237aaa97' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;cursor:pointer}
+.field-lbl{font-size:11px;font-weight:800;color:var(--sub);margin-bottom:5px;letter-spacing:.03em}
+.gen-btn{width:100%;background:linear-gradient(135deg,var(--mint) 0%,var(--mint-d) 100%);color:#fff;font-size:15px;font-weight:800;padding:15px;border-radius:14px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 18px rgba(45,212,191,.35);transition:all .18s;font-family:'Gaegu',cursive}
+.gen-btn:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(45,212,191,.45)}
+/* Upload Zone */
+.upload-zone{border:2.5px dashed var(--border);border-radius:14px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--mint);background:var(--mint-l)}
+.upload-icon{font-size:32px;margin-bottom:8px}
+.upload-title{font-size:13px;font-weight:800;color:var(--sub);margin-bottom:4px}
+.upload-hint{font-size:11px;color:var(--muted)}
+.upload-done{background:var(--mint-l);border-color:var(--mint);border-style:solid}
+.upload-done .upload-title{color:var(--mint-d)}
+/* Student Select */
+.stu-select-wrap{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.stu-badge{display:inline-flex;align-items:center;gap:4px;background:var(--mint-l);border:1.5px solid var(--mint);color:var(--mint-d);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:800}
+/* Subject Checkboxes */
+.subj-grid{display:flex;flex-wrap:wrap;gap:5px}
+.subj-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--border);background:var(--surface2);color:var(--sub);cursor:pointer;user-select:none;transition:all .14s}
+.subj-chip:hover{border-color:var(--mint);color:var(--mint-d)}
+.subj-chip.checked{background:var(--mint-l);border-color:var(--mint);color:var(--mint-d)}
+.subj-chip.disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+.subj-all-btn{font-size:11px;font-weight:800;color:var(--mint-d);background:none;border:none;cursor:pointer;padding:3px 6px;text-decoration:underline}
+/* Result panels */
+.result-card{background:var(--surface2);border:1.5px solid var(--border2);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.result-title{font-size:12px;font-weight:800;color:var(--sub);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.grade-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.grade-table th{background:var(--bg2);color:var(--muted);font-weight:800;font-size:10px;padding:5px 8px;border-bottom:1.5px solid var(--border2);text-align:left}
+.grade-table td{padding:5px 8px;border-bottom:1px solid var(--border2);color:var(--text)}
+.grade-table tr:last-child td{border-bottom:none}
+.grade-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:800}
+.g1{background:#d1fae5;color:#065f46}.g2{background:#d1fae5;color:#065f46}
+.g3{background:#fef3c7;color:#92400e}.g4{background:#ffe4e6;color:#9f1239}.g5{background:#fce7f3;color:#831843}
+.g6{background:#fecaca;color:#7f1d1d}.g7{background:#fca5a5;color:#7f1d1d}.g8{background:#f87171;color:#fff}.g9{background:#ef4444;color:#fff}
+.chart-wrap{position:relative;height:220px;margin-top:8px}
+/* Prompt area */
+.prompt-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:12px}
+.prompt-hdr{background:var(--surface2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px solid var(--border2)}
+.copy-btn{display:flex;align-items:center;gap:6px;background:var(--mint);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Nanum Gothic',sans-serif;transition:all .18s}
+.copy-btn:hover{background:var(--mint-d)}
+#prompt-output{width:100%;min-height:260px;max-height:400px;padding:16px;font-size:11.5px;font-family:'DM Mono',monospace;line-height:1.8;border:none;outline:none;resize:vertical;color:var(--text);background:var(--surface)}
+/* Action row */
+.act-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.act-btn{flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:800;border:none;cursor:pointer;transition:all .18s}
+.act-btn-mint{background:linear-gradient(135deg,var(--mint),var(--mint-d));color:#fff;box-shadow:0 3px 12px rgba(45,212,191,.3)}
+.act-btn-mint:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(45,212,191,.4)}
+.act-btn-out{background:var(--bg2);border:1.5px solid var(--border);color:var(--sub)}
+.act-btn-out:hover{border-color:var(--mint);color:var(--mint-d)}
+/* Empty state */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;color:var(--muted);gap:10px;text-align:center}
+.empty-state .ei{font-size:40px;opacity:.5}
+.empty-state .et{font-size:13px;font-weight:700}
+.empty-state .es{font-size:11.5px;line-height:1.8}
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:20px;padding:24px;max-width:540px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+/* Toast */
+#toast{position:fixed;top:16px;right:20px;background:var(--mint-d);color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 4px 16px rgba(13,148,136,.4)}
+footer{background:var(--surface);border-top:1.5px solid var(--border);padding:12px 20px;text-align:center;font-size:11px;color:var(--muted);flex-shrink:0}
+footer a{color:var(--mint-d);text-decoration:none;font-weight:700}
+@media(max-width:768px){
+  html,body{height:auto;min-height:100vh;overflow:visible}
+  body{display:flex;flex-direction:column}
+  .tagline{display:none}
+  .hdr{position:sticky;top:0;z-index:200}
+  .guide-bar{display:none}
+  .mob-tabs{display:flex;position:sticky;top:var(--hh);z-index:190;box-shadow:var(--shadow)}
+  .main{flex-direction:column;overflow:visible;flex:1}
+  .lp,.rp{width:100%;height:auto;border-right:none;padding:16px 14px 40px;overflow:visible;flex:1}
+  .lp.mh,.rp.mh{display:none}
+}
+@media(max-height:650px){footer{display:none}.guide-bar{display:none}}
+/* ── COLUMN MAPPER MODAL ── */
+.mapper-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
+.mapper-bg.open{display:flex}
+.mapper-modal{background:var(--surface);border-radius:20px;padding:24px;max-width:90vw;width:900px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.mapper-title{font-size:15px;font-weight:900;color:var(--text);margin-bottom:4px}
+.mapper-desc{font-size:11.5px;color:var(--sub);margin-bottom:14px;line-height:1.7}
+.mapper-sheet-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.mapper-table-wrap{overflow-x:auto;margin-bottom:14px;border:1.5px solid var(--border);border-radius:10px}
+.mapper-table{width:100%;border-collapse:collapse;font-size:11px;white-space:nowrap}
+.mapper-table th{background:var(--bg2);padding:0;border-bottom:1.5px solid var(--border)}
+.mapper-table th select{width:100%;padding:6px 4px;font-size:10px;font-weight:800;border:none;background:transparent;color:var(--mint-d);cursor:pointer;font-family:inherit;outline:none}
+.mapper-table td{padding:4px 8px;border-bottom:1px solid var(--border2);color:var(--sub);font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.mapper-table tr:nth-child(even) td{background:var(--bg2)}
+.mapper-actions{display:flex;gap:8px;justify-content:flex-end}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="logo-box">📊</div>
+  <div class="logo-txt">성적 상담 공장</div>
+  <div class="logo-ver">5·9등급 자동감지 · NEIS 지원</div>
+  <div class="tagline">학급 성적 파일 업로드 → 과목별 분석 · 그래프 · 상담 프롬프트 자동 생성</div>
+  <div class="hdr-acts">
+    <button class="action-btn" onclick="openGuide()"><i class="fas fa-book-open"></i> 사용 가이드</button>
+    <button class="reset-btn" onclick="resetAll()"><i class="fas fa-rotate-left"></i> 초기화</button>
+    <button class="icon-btn" id="dark-btn" onclick="toggleDark()" title="다크모드">🌙</button>
+  </div>
+</header>
+
+<!-- GUIDE MODAL -->
+<div class="modal-bg" id="guide-modal" onclick="if(event.target.id==='guide-modal')closeGuide()">
+  <div class="modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="font-size:17px;font-weight:900;color:var(--text)">📖 사용 가이드</div>
+      <button onclick="closeGuide()" style="background:var(--bg2);border:1.5px solid var(--border);color:var(--muted);width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1.5px solid var(--border2)">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--mint-l);border:1.5px solid var(--mint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--mint-d);flex-shrink:0">1</div>
+        <div><div style="font-weight:800;font-size:13px;margin-bottom:3px">성적 파일 업로드 <span style="color:#e06b8b">필수</span></div><div style="font-size:12px;color:var(--sub);line-height:1.7">나이스(NEIS)에서 내려받은 <b>.xlsx</b> 파일을 업로드합니다. 학급 전체 파일 한 번에 지원됩니다. <b>5등급제·9등급제 자동 감지</b>로 학년에 관계없이 모든 파일을 지원합니다.<br><span style="font-weight:800;color:#e06b8b">나이스 → 학급담임 → 학교생활기록부 → 학생부 항목별 조회 → 교과학습발달상황(전체학생)</span></div></div>
+      </div>
+      <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1.5px solid var(--border2)">
+        <div style="width:26px;height:26px;border-radius:50%;background:#dff0fa;border:1.5px solid var(--mint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#245070;flex-shrink:0">2</div>
+        <div><div style="font-weight:800;font-size:13px;margin-bottom:3px">학생 선택 <span style="color:#e06b8b">필수</span></div><div style="font-size:12px;color:var(--sub);line-height:1.7">파일 업로드 후 드롭다운에서 상담할 학생을 선택합니다. 학급 전체 학생이 자동으로 목록에 표시됩니다.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1.5px solid var(--border2)">
+        <div style="width:26px;height:26px;border-radius:50%;background:#d4f5ec;border:1.5px solid var(--mint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#1a5e56;flex-shrink:0">3</div>
+        <div><div style="font-weight:800;font-size:13px;margin-bottom:3px">분석 과목 선택</div><div style="font-size:12px;color:var(--sub);line-height:1.7">해당 학생이 이수한 과목이 자동으로 표시됩니다. 체크박스로 그래프에 포함할 과목을 선택하세요. 과목은 국어·수학·영어·사회·과학·기타 계열로 자동 분류되어 그래프에 표시됩니다.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1.5px solid var(--border2)">
+        <div style="width:26px;height:26px;border-radius:50%;background:#f0eafc;border:1.5px solid #c0a0e8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#45226e;flex-shrink:0">4</div>
+        <div><div style="font-weight:800;font-size:13px;margin-bottom:3px">진로 희망 입력 (선택)</div><div style="font-size:12px;color:var(--sub);line-height:1.7">학생의 진로 희망을 입력하면 상담 프롬프트에 진로 연계 분석이 강화됩니다. 담임 메모도 함께 입력할 수 있습니다.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;padding:11px 0">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--mint-l);border:1.5px solid var(--mint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--mint-d);flex-shrink:0">5</div>
+        <div><div style="font-weight:800;font-size:13px;margin-bottom:3px">✨ 분석 & 프롬프트 생성 → AI 붙여넣기</div><div style="font-size:12px;color:var(--sub);line-height:1.7">생성 버튼을 누르면 성적표·그래프·상담 프롬프트가 한번에 생성됩니다. 프롬프트를 복사해 Claude·ChatGPT 등에 붙여넣으면 상담 자료가 완성됩니다.</div></div>
+      </div>
+    </div>
+    <div style="margin-top:16px;background:#fff8ec;border:1.5px solid #f5c980;border-radius:12px;padding:14px">
+      <div style="font-size:12px;font-weight:800;color:#8a4a00;margin-bottom:8px">📌 차트 보는 법</div>
+      <div style="font-size:11.5px;color:#6e3d0a;line-height:2">
+        ✅ Y축: 위로 올라갈수록 높은 등급(1등급)입니다<br>
+        ✅ 계열 탭을 클릭하면 해당 계열 과목끼리 묶어서 추이를 확인할 수 있습니다<br>
+        ✅ 고교학점제 특성상 한 학기만 수강한 과목은 점 하나로 표시됩니다<br>
+        ✅ 엑셀 다운로드로 성적 분석 자료를 저장할 수 있습니다
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:16px">
+      <button onclick="closeGuide()" style="background:linear-gradient(135deg,var(--mint),var(--mint-d));color:#fff;border:none;padding:10px 32px;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- GUIDE BAR -->
+<div class="guide-bar">
+  <div class="gb-item"><div class="gb-num">1</div> 파일 업로드(엑셀파일)</div>
+  <div class="gb-item"><div class="gb-num">2</div> 학생 선택</div>
+  <div class="gb-item"><div class="gb-num">3</div> 분석 과목 체크</div>
+  <div class="gb-item"><div class="gb-num">4</div> 그래프 확인</div>
+  <div class="gb-item" style="border-right:none"><div class="gb-num">5</div> 상담 프롬프트 생성 → AI 붙여넣기</div>
+</div>
+
+<!-- MOB TABS -->
+<div class="mob-tabs" id="mob-tabs">
+  <button class="active" id="mob-l" onclick="switchMob('left')">⚙️ 설정</button>
+  <button id="mob-r" onclick="switchMob('right')">📊 결과</button>
+</div>
+
+<div class="main">
+<!-- ════ LEFT PANEL ════ -->
+<div class="lp" id="lp">
+
+<!-- S0: 파일 업로드 -->
+<div class="sw" id="s0">
+  <div class="sh" style="color:var(--mint-d)" onclick="ts('s0')">
+    <div class="sn" style="background:var(--mint-l);color:var(--mint-d)">1</div> 성적 파일 업로드
+    <span style="font-size:10px;color:#e06b8b;font-weight:800;text-transform:none;letter-spacing:0;margin-left:4px">* 필수</span>
+    <div class="toggle-pill"><span class="pt"></span><i class="fas fa-chevron-down chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block" style="border-radius:0 0 10px 10px">
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+      <div class="upload-icon" id="upload-icon">📂</div>
+      <div class="upload-title" id="upload-title">NEIS 교과학습발달상황 파일을 업로드하세요</div>
+      <div class="upload-hint" id="upload-hint">클릭하거나 파일을 여기에 끌어다 놓으세요 · <b style="color:#e06b8b">.xlsx .xls .xlsm .xlsb .ods 등</b></div>
+      <div style="margin-top:8px;font-size:11px;font-weight:800;color:#e06b8b;line-height:1.7">나이스 → 학급담임 → 학교생활기록부<br>→ 학생부 항목별 조회 → 교과학습발달상황(전체학생)</div>
+      <input type="file" id="file-input" accept=".xlsx,.xls,.xlsm,.xlsb,.xlam,.xltx,.xltm,.xlt,.ods" style="display:none" onchange="onFileChange(event)">
+    </div>
+    <div id="file-info" style="display:none;margin-top:8px;padding:8px 12px;background:var(--mint-l);border:1.5px solid var(--mint);border-radius:10px;font-size:11px;color:var(--mint-d);font-weight:700"></div>
+    <div style="margin-top:8px;background:#fff8ec;border:1.5px solid #f5c980;border-radius:10px;padding:8px 12px;font-size:11px;color:#8a4a00;line-height:1.7">
+      💡 <strong>중학교</strong> 파일은 양식이 달라 업로드 후 수동 매핑 화면이 나타날 수 있습니다. 안내에 따라 열을 지정하면 정상 분석됩니다.
+    </div>
+  </div></div>
+</div>
+
+<!-- S1: 학생 선택 -->
+<div class="sw collapsed" id="s1">
+  <div class="sh" style="color:#245070" onclick="ts('s1')">
+    <div class="sn" style="background:#dff0fa;color:#245070">2</div> 학생 선택
+    <span style="font-size:10px;color:#e06b8b;font-weight:800;text-transform:none;letter-spacing:0;margin-left:4px">* 필수</span>
+    <div class="toggle-pill"><span class="pt"></span><i class="fas fa-chevron-down chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block" style="border-radius:0 0 10px 10px">
+    <div class="stu-select-wrap">
+      <select class="inp" id="stu-sel" onchange="onStudentChange()" style="flex:1">
+        <option value="">-- 파일을 먼저 업로드하세요 --</option>
+      </select>
+      <span class="stu-badge" id="stu-badge" style="display:none">
+        <i class="fas fa-user-graduate"></i> <span id="stu-badge-txt"></span>
+      </span>
+    </div>
+    <div id="stu-info" style="display:none;font-size:11px;color:var(--muted);padding:4px 0"></div>
+  </div></div>
+</div>
+
+<!-- S2: 과목 선택 -->
+<div class="sw collapsed" id="s2">
+  <div class="sh" style="color:#1a5e56" onclick="ts('s2')">
+    <div class="sn" style="background:#d4f5ec;color:#1a5e56">3</div> 분석 과목 선택
+    <div class="toggle-pill"><span class="pt"></span><i class="fas fa-chevron-down chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block" style="border-radius:0 0 10px 10px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div class="sub-lbl">▸ 해당 학생의 이수 과목 (그래프 비교에 포함할 과목 선택)</div>
+      <div style="display:flex;gap:4px">
+        <button class="subj-all-btn" onclick="checkAll(true)">전체선택</button>
+        <button class="subj-all-btn" style="color:var(--muted)" onclick="checkAll(false)">전체해제</button>
+      </div>
+    </div>
+    <div class="subj-grid" id="subj-grid">
+      <div style="font-size:11px;color:var(--muted);padding:8px">학생을 먼저 선택해주세요.</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- S3: 진로 입력 (선택) -->
+<div class="sw collapsed" id="s3">
+  <div class="sh" style="color:#45226e" onclick="ts('s3')">
+    <div class="sn" style="background:#f0eafc;color:#45226e">4</div> 진로 희망 입력 <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:4px;font-weight:600">(선택 — 입력 시 상담 프롬프트 강화)</span>
+    <div class="toggle-pill"><span class="pt"></span><i class="fas fa-chevron-down chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block" style="border-radius:0 0 10px 10px">
+    <div class="field-lbl">학생 진로 희망</div>
+    <input type="text" class="inp" id="career-inp" placeholder="예) 교사, 간호사, 소프트웨어 개발자, 환경공학자…">
+    <div style="margin-top:8px">
+      <div class="field-lbl">추가 메모 (담임 관찰 내용)</div>
+      <textarea class="inp" id="memo-inp" rows="3" style="resize:vertical" placeholder="수업 태도, 특이사항, 상담 시 참고할 내용 등을 자유롭게 입력하세요."></textarea>
+    </div>
+  </div></div>
+</div>
+
+<!-- Generate Button -->
+<div style="padding:4px 0 8px">
+  <button class="gen-btn" onclick="generateAll()">
+    <i class="fas fa-chart-line"></i> 분석 & 상담 프롬프트 생성
+  </button>
+</div>
+
+</div><!-- /lp -->
+
+<!-- ════ RIGHT PANEL ════ -->
+<div class="rp" id="rp">
+
+<!-- Empty State -->
+<div class="empty-state" id="empty-state">
+  <div class="ei">📊</div>
+  <div class="et">파일을 업로드하고 학생을 선택하세요</div>
+  <div class="es">
+    나이스(NEIS)에서 내려받은 학급 성적 파일을 업로드하면<br>
+    과목별 등급 변화 그래프와 상담 프롬프트를 자동으로 생성합니다.
+  </div>
+  <div style="margin-top:10px;font-size:12px;font-weight:800;color:#e06b8b;line-height:1.9;text-align:center">
+    나이스 → 학급담임 → 학교생활기록부<br>→ 학생부 항목별 조회 → 교과학습발달상황(전체학생)
+  </div>
+</div>
+
+<!-- Result Area (hidden until generated) -->
+<div id="result-area" style="display:none">
+
+  <!-- Student Summary Card -->
+  <div class="result-card" id="summary-card">
+    <div class="result-title"><i class="fas fa-id-card"></i> 학생 요약</div>
+    <div id="summary-content"></div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="act-row">
+    <button class="act-btn act-btn-out" onclick="downloadExcel()"><i class="fas fa-file-excel"></i> 엑셀 다운로드</button>
+    <button class="act-btn act-btn-out" onclick="scrollToPrompt()"><i class="fas fa-robot"></i> 상담 프롬프트 보기</button>
+  </div>
+
+  <!-- Grade Table -->
+  <div class="result-card">
+    <div class="result-title"><i class="fas fa-table"></i> 과목별 성적 현황</div>
+    <div id="grade-table-wrap"></div>
+  </div>
+
+  <!-- Chart: 계열별 탭 -->
+  <div class="result-card" id="chart-card">
+    <div class="result-title"><i class="fas fa-chart-line"></i> 계열별 등급 변화 추이</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">※ Y축 위 = 1등급(높은 등급) · 탭으로 계열 전환</div>
+    <div id="chart-tabs" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px"></div>
+    <div class="chart-wrap"><canvas id="trend-chart"></canvas></div>
+  </div>
+
+  <!-- Near Miss Card -->
+  <div class="result-card" id="near-miss-card">
+    <div class="result-title"><i class="fas fa-fire"></i> 🔥 등급 경계 아쉬운 과목 순위</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">한 등급만 올리면 되는 과목 우선순위 · 집중 학습 관리 추천</div>
+    <!-- 학년 필터 -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:800;color:var(--sub)">학년 필터:</span>
+      <div id="nm-grade-tabs" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+    </div>
+    <div id="near-miss-content"></div>
+  </div>
+
+  <!-- Prompt Card -->
+  <div class="prompt-card" id="prompt-card">
+    <div class="prompt-hdr">
+      <div style="font-size:13px;font-weight:800;color:var(--text)">🤖 상담용 분석 프롬프트</div>
+      <button class="copy-btn" id="copy-btn" onclick="copyPrompt()">📋 복사</button>
+    </div>
+    <textarea id="prompt-output" readonly></textarea>
+    <div style="padding:12px 16px;border-top:1.5px solid var(--border2)">
+      <div style="font-size:11px;font-weight:800;color:var(--sub);margin-bottom:8px">📌 아래 AI에 붙여넣으세요</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <a href="https://claude.ai" target="_blank" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;border:1.5px solid var(--border);color:var(--sub);background:var(--bg2)">Claude</a>
+        <a href="https://chatgpt.com" target="_blank" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;border:1.5px solid var(--border);color:var(--sub);background:var(--bg2)">ChatGPT</a>
+        <a href="https://gemini.google.com" target="_blank" style="padding:5px 13px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none;border:1.5px solid var(--border);color:var(--sub);background:var(--bg2)">Gemini</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /result-area -->
+</div><!-- /rp -->
+</div><!-- /main -->
+
+<footer>
+  <span>성적 상담 공장 · 제작 황성재 / <a href="https://instagram.com/hirame.ki" target="_blank">@hirame.ki</a> · 데이터는 브라우저에서만 처리됩니다</span>
+</footer>
+
+<div id="toast"></div>
+
+<!-- Column Mapper Modal -->
+<div class="mapper-bg" id="mapper-bg" onclick="if(event.target.id==='mapper-bg')closeMapper()">
+  <div class="mapper-modal">
+    <div class="mapper-title">⚙️ 수동 컬럼 매핑</div>
+    <div class="mapper-desc">
+      <div style="background:#fff8ec;border:1.5px solid #f5c980;border-radius:10px;padding:10px 14px;margin-bottom:10px">
+        <div style="font-weight:800;color:#8a4a00;font-size:11.5px;margin-bottom:4px">📌 중학교 성적 파일 안내</div>
+        <div style="font-size:11px;color:#6e3d0a;line-height:1.7">
+          중학교와 고등학교의 NEIS 엑셀 양식이 다르기 때문에, <strong>중학교 파일은 자동 감지가 되지 않을 수 있습니다.</strong><br>
+          이 경우 아래 안내에 따라 수동으로 열(컬럼)을 지정해주세요.
+        </div>
+      </div>
+      <div style="font-size:11.5px;line-height:1.9;color:var(--sub)">
+        <strong style="color:var(--text)">📋 사용 방법:</strong><br>
+        ① 아래 표에서 엑셀의 <strong>헤더 행</strong>(초록 배경)을 확인하세요.<br>
+        ② 각 열 위의 <strong>드롭다운</strong>을 클릭해 해당 열의 역할을 선택하세요.<br>
+        ③ 최소 <span style="color:#e06b8b;font-weight:800">성명 · 과목 · 석차등급(또는 성취도)</span> + <span style="font-weight:800">학년 · 학기</span>를 지정하세요.<br>
+        ④ 지정이 끝나면 「✅ 적용」 버튼을 누르면 됩니다.
+      </div>
+    </div>
+    <div class="mapper-sheet-row">
+      <span style="font-size:11px;font-weight:800;color:var(--sub)">시트 선택:</span>
+      <select class="inp" id="mapper-sheet-sel" onchange="onMapperSheetChange()" style="width:auto;min-width:140px"></select>
+    </div>
+    <div class="mapper-table-wrap" id="mapper-table-wrap"></div>
+    <div class="mapper-actions">
+      <button class="reset-btn" onclick="closeMapper()">취소</button>
+      <button class="action-btn" onclick="applyManualMapping()">✅ 적용</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA STORE
+// ═══════════════════════════════════════════════
+let allStudents = {};
+let currentStudent = null;
+let checkedSubjects = new Set();
+let trendChart = null;
+let gradeSystemMax = 9;
+
+// 컬럼 매핑 관련 상태
+let lastSheetRows = {};
+let lastFileName = '';
+
+// ═══════════════════════════════════════════════
+// HEADER ALIASES — 학교별 다양한 헤더명 지원
+// ═══════════════════════════════════════════════
+const HEADER_ALIASES = {
+  num:     ['번호','연번','순번','no','num'],
+  name:    ['성명','이름','학생명','성명(한글)','학생','학생이름'],
+  subj:    ['과목','교과','과목명','교과목','교과명','세부과목명','세부과목'],
+  rank:    ['석차등급','등급','석차/등급','성취등급','교과등급','석차(등급)','내신등급'],
+  gradeYr: ['학년'],
+  term:    ['학기'],
+  score:   ['원점수','점수','원점수/과목평균'],
+  dist:    ['분포비율','비율','성취도별분포비율'],
+  achieve: ['성취도']
+};
+const ROLE_LABELS = { '':'-- 역할 선택 --', num:'번호', name:'성명', gradeYr:'학년', term:'학기', subj:'과목', rank:'석차등급', achieve:'성취도(A~E)', score:'원점수', dist:'분포비율', skip:'(무시)' };
+
+function _norm(v) { return String(v||'').replace(/\s/g,'').toLowerCase(); }
+
+function _matchAlias(cellVal, key) {
+  const n = _norm(cellVal); if (!n) return false;
+  const a = HEADER_ALIASES[key]; if (!a) return false;
+  if (key==='score'||key==='dist') return a.some(x => n.includes(x.toLowerCase()));
+  return a.some(x => n === x.toLowerCase());
+}
+
+function autoDetectColumns(rows) {
+  for (let i = 0; i < Math.min(30, rows.length); i++) {
+    const row = rows[i]; if (!row) continue;
+    const f = {};
+    for (let c = 0; c < row.length; c++) {
+      if (row[c]===''||row[c]===null||row[c]===undefined) continue;
+      for (const k of Object.keys(HEADER_ALIASES)) { if (f[k]===undefined && _matchAlias(row[c],k)) f[k]=c; }
+    }
+    if (f.name!==undefined && f.subj!==undefined && (f.rank!==undefined||f.achieve!==undefined)) {
+      return { num:f.num??-1, name:f.name, grade:f.gradeYr??-1, term:f.term??-1, subj:f.subj, score:f.score??-1, rank:f.rank??-1, dist:f.dist??-1, achieve:f.achieve??-1, headerRow:i };
+    }
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════
+// SECTION TOGGLE
+// ═══════════════════════════════════════════════
+function ts(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+// ═══════════════════════════════════════════════
+// FILE UPLOAD & PARSE
+// ═══════════════════════════════════════════════
+function onDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag'); }
+function onDragLeave(e) { document.getElementById('upload-zone').classList.remove('drag'); }
+function onDrop(e) { e.preventDefault(); document.getElementById('upload-zone').classList.remove('drag'); const f = e.dataTransfer.files[0]; if (f) parseFile(f); }
+function onFileChange(e) { const f = e.target.files[0]; if (f) parseFile(f); }
+
+function parseFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      lastFileName = file.name;
+      lastSheetRows = {};
+      wb.SheetNames.forEach(n => { lastSheetRows[n] = XLSX.utils.sheet_to_json(wb.Sheets[n], { header:1, defval:'' }); });
+
+      // 모든 시트에서 자동 파싱 시도 → 최고 결과 채택
+      let best = {}, bestN = 0, bestS = 0;
+      for (const sn of wb.SheetNames) {
+        const res = parseNEIS(lastSheetRows[sn], null);
+        const n = Object.keys(res).length;
+        const s = Object.values(res).reduce((a,stu) => a + Object.keys(stu).length, 0);
+        if (n > bestN || (n === bestN && s > bestS)) { best = res; bestN = n; bestS = s; }
+      }
+
+      if (bestN > 0 && bestS > 0) { applyParseResult(best); return; }
+      // 자동 감지 실패 → 컬럼 매핑 UI 표시
+      console.warn('[성적파서] 자동 감지 실패 — 컬럼 매핑 UI 표시');
+      showColumnMapper();
+    } catch(err) { showToast('⚠️ 파일 파싱 실패: ' + err.message); console.error(err); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function applyParseResult(students) {
+  allStudents = students;
+  gradeSystemMax = 5;
+  outer: for (const stu of Object.values(allStudents))
+    for (const d of Object.values(stu)) if (d.grade > 5) { gradeSystemMax = 9; break outer; }
+
+  const names = Object.keys(allStudents);
+  const uz = document.getElementById('upload-zone');
+  uz.classList.add('upload-done');
+  document.getElementById('upload-icon').textContent = '✅';
+  document.getElementById('upload-title').textContent = lastFileName;
+  document.getElementById('upload-hint').textContent = `${names.length}명 파싱 완료`;
+  document.getElementById('file-info').style.display = 'block';
+  document.getElementById('file-info').textContent = `✅ ${names.length}명 학생 데이터 로드 완료`;
+
+  const sel = document.getElementById('stu-sel');
+  sel.innerHTML = '<option value="">-- 학생 선택 --</option>';
+  names.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
+  document.getElementById('s1').classList.remove('collapsed');
+  showToast(`📂 ${names.length}명 파싱 완료!`);
+}
+
+// ═══════════════════════════════════════════════
+// NEIS PARSER (유연한 헤더 감지 + 수동 매핑 지원)
+// ═══════════════════════════════════════════════
+function parseNEIS(rows, manualCOL) {
+  const students = {};
+  let curName = null, curGY = null, curTm = null;
+
+  let COL = manualCOL || autoDetectColumns(rows);
+  if (!COL) { console.warn('[성적파서] 헤더 감지 실패'); return students; }
+  console.log('[성적파서] 컬럼 매핑:', JSON.stringify(COL));
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]; if (!row) continue;
+
+    // 헤더행·합계행 스킵
+    const c0 = COL.num>=0 ? _norm(row[COL.num]) : '';
+    const c1 = COL.name>=0 ? _norm(row[COL.name]) : '';
+    const isHeader = Object.values(HEADER_ALIASES).some(arr => arr.some(a => c0===a.toLowerCase()||c1===a.toLowerCase()));
+    if (isHeader) continue;
+    if (c0.includes('이수학점')||c1.includes('이수학점')) continue;
+
+    const nameCell = COL.name>=0 ? String(row[COL.name]||'').trim() : '';
+    const numRaw   = COL.num>=0 ? row[COL.num] : null;
+
+    // 학생 감지
+    if (nameCell && nameCell.length>=2 && nameCell.length<=6 && /^[가-힣]+$/.test(nameCell)) {
+      if (COL.num>=0 && numRaw && !isNaN(parseFloat(numRaw))) {
+        curName = nameCell; if (!students[curName]) students[curName] = {};
+      } else if (COL.num<0 && nameCell!==curName) {
+        curName = nameCell; if (!students[curName]) students[curName] = {};
+      }
+    }
+    if (!curName) continue;
+
+    // 학년·학기
+    if (COL.grade>=0) { const v=row[COL.grade]; if (v!==''&&v!==null&&!isNaN(parseFloat(v))) curGY=parseInt(v); }
+    if (COL.term>=0)  { const v=row[COL.term];  if (v!==''&&v!==null&&!isNaN(parseFloat(v))) curTm=parseInt(v); }
+
+    const subj = COL.subj>=0 ? String(row[COL.subj]||'').trim() : '';
+    if (!subj) continue;
+
+    // 등급: 석차등급 우선 → 성취도(A~E) 대체
+    let gradeNum = null;
+    if (COL.rank>=0) { const v=row[COL.rank]; if (v!==''&&v!==null&&!isNaN(parseFloat(v))) gradeNum=parseFloat(v); }
+    if (gradeNum===null && COL.achieve>=0) {
+      const ch = String(row[COL.achieve]||'').trim().charAt(0).toUpperCase();
+      const map = {A:1,B:2,C:3,D:4,E:5};
+      if (map[ch]!==undefined) gradeNum = map[ch];
+    }
+    if (gradeNum===null||gradeNum<1||gradeNum>9) continue;
+    if (!curGY||!curTm) continue;
+
+    // 원점수
+    let score=null, avg=null, stddev=null;
+    if (COL.score>=0) {
+      const sr = String(row[COL.score]||'').trim();
+      if (sr.includes('/')) {
+        const p=sr.split('/'); score=parseFloat(p[0]);
+        const m=(p[1]||'').match(/^([\d.]+)\(([\d.]+)\)/);
+        if (m) { avg=parseFloat(m[1]); stddev=parseFloat(m[2]); } else { avg=parseFloat(p[1]); }
+      }
+    }
+    // 분포비율
+    let distArr=null;
+    if (COL.dist>=0) {
+      const dr=String(row[COL.dist]||'').trim();
+      const dm=[...dr.matchAll(/[A-E]\(([\d.]+)\)/g)];
+      if (dm.length>=2) distArr=dm.map(m=>parseFloat(m[1]));
+    }
+
+    const tl = `${curGY}학년 ${curTm}학기`;
+    const key = `${subj}__${tl}`;
+    if (!students[curName][key]) students[curName][key] = { subject:subj, term:tl, grade:gradeNum, score, avg, stddev, distArr };
+  }
+  return students;
+}
+
+// ═══════════════════════════════════════════════
+// COLUMN MAPPER UI (방안 B)
+// ═══════════════════════════════════════════════
+function showColumnMapper() {
+  const sheetNames = Object.keys(lastSheetRows);
+  if (!sheetNames.length) { showToast('⚠️ 시트 데이터 없음'); return; }
+  const sel = document.getElementById('mapper-sheet-sel');
+  sel.innerHTML = sheetNames.map(n => `<option value="${n}">${n}</option>`).join('');
+  renderMapperTable(sheetNames[0]);
+  document.getElementById('mapper-bg').classList.add('open');
+}
+function closeMapper() { document.getElementById('mapper-bg').classList.remove('open'); }
+function onMapperSheetChange() { renderMapperTable(document.getElementById('mapper-sheet-sel').value); }
+
+function renderMapperTable(sheetName) {
+  const rows = lastSheetRows[sheetName] || [];
+  let startR = 0;
+  for (let i=0; i<Math.min(20,rows.length); i++) { if ((rows[i]||[]).filter(v=>v!==''&&v!==null&&v!==undefined).length>=3) { startR=i; break; } }
+  const hdr = rows[startR] || [];
+  const preview = rows.slice(startR+1, startR+7);
+  const maxC = Math.min(hdr.length||1, 25);
+
+  const guesses = [];
+  for (let c=0; c<maxC; c++) {
+    let found = '';
+    for (const k of Object.keys(HEADER_ALIASES)) { if (_matchAlias(hdr[c],k)) { found=k; break; } }
+    guesses.push(found);
+  }
+
+  let html = '<table class="mapper-table"><thead><tr>';
+  for (let c=0; c<maxC; c++) {
+    html += '<th><select data-col="'+c+'">';
+    for (const [val,label] of Object.entries(ROLE_LABELS)) {
+      html += `<option value="${val}" ${val===guesses[c]?'selected':''}>${label}</option>`;
+    }
+    html += '</select></th>';
+  }
+  html += '</tr><tr>';
+  for (let c=0; c<maxC; c++) html += `<td style="font-weight:700;color:var(--text);background:var(--mint-l)">${hdr[c]??''}</td>`;
+  html += '</tr></thead><tbody>';
+  preview.forEach(row => { html += '<tr>'; for (let c=0; c<maxC; c++) html += `<td>${row[c]??''}</td>`; html += '</tr>'; });
+  html += '</tbody></table>';
+  document.getElementById('mapper-table-wrap').innerHTML = html;
+}
+
+function applyManualMapping() {
+  const sels = document.querySelectorAll('#mapper-table-wrap select[data-col]');
+  const mapping = {};
+  sels.forEach(s => { if (s.value && s.value!=='skip') mapping[s.value] = parseInt(s.dataset.col); });
+
+  if (mapping.name===undefined || mapping.subj===undefined || (mapping.rank===undefined && mapping.achieve===undefined)) {
+    showToast('⚠️ 최소 성명·과목·석차등급(또는 성취도)을 지정하세요'); return;
+  }
+
+  const COL = { num:mapping.num??-1, name:mapping.name, grade:mapping.gradeYr??-1, term:mapping.term??-1, subj:mapping.subj, score:mapping.score??-1, rank:mapping.rank??-1, dist:mapping.dist??-1, achieve:mapping.achieve??-1, headerRow:-1 };
+
+  const sheetName = document.getElementById('mapper-sheet-sel').value;
+  const rows = lastSheetRows[sheetName] || [];
+  const result = parseNEIS(rows, COL);
+  const names = Object.keys(result);
+  const subjCount = Object.values(result).reduce((a,s) => a+Object.keys(s).length, 0);
+
+  if (!names.length || !subjCount) { showToast('⚠️ 매핑으로도 데이터를 파싱하지 못했습니다. 열 지정을 다시 확인해주세요.'); return; }
+  closeMapper();
+  applyParseResult(result);
+}
+
+// ═══════════════════════════════════════════════
+// STUDENT SELECT
+// ═══════════════════════════════════════════════
+function onStudentChange() {
+  const name = document.getElementById('stu-sel').value;
+  if (!name) return;
+  currentStudent = name;
+  checkedSubjects.clear();
+  currentChartCategory = null;
+  currentNMGrade = '전체';
+
+  const badge = document.getElementById('stu-badge');
+  badge.style.display = 'inline-flex';
+  document.getElementById('stu-badge-txt').textContent = name;
+
+  // Build subject list
+  const data = allStudents[name];
+  const grid = document.getElementById('subj-grid');
+  grid.innerHTML = '';
+
+  // Collect unique subjects with term order
+  const subjMap = {}; // subject -> [terms]
+  Object.values(data).forEach(d => {
+    if (!subjMap[d.subject]) subjMap[d.subject] = [];
+    if (!subjMap[d.subject].includes(d.term)) subjMap[d.subject].push(d.term);
+  });
+
+  Object.keys(subjMap).forEach(subj => {
+    checkedSubjects.add(subj);
+    const chip = document.createElement('div');
+    chip.className = 'subj-chip checked';
+    chip.dataset.subj = subj;
+    chip.innerHTML = `<i class="fas fa-check" style="font-size:9px"></i> ${subj}`;
+    chip.onclick = () => toggleSubj(chip, subj);
+    grid.appendChild(chip);
+  });
+
+  document.getElementById('s2').classList.remove('collapsed');
+  document.getElementById('s3').classList.remove('collapsed');
+  document.getElementById('stu-info').style.display = 'block';
+  document.getElementById('stu-info').textContent = `이수 과목 ${Object.keys(subjMap).length}개`;
+}
+
+function toggleSubj(chip, subj) {
+  if (checkedSubjects.has(subj)) {
+    checkedSubjects.delete(subj);
+    chip.classList.remove('checked');
+    chip.innerHTML = `${subj}`;
+  } else {
+    checkedSubjects.add(subj);
+    chip.classList.add('checked');
+    chip.innerHTML = `<i class="fas fa-check" style="font-size:9px"></i> ${subj}`;
+  }
+}
+
+function checkAll(val) {
+  document.querySelectorAll('.subj-chip').forEach(chip => {
+    const subj = chip.dataset.subj;
+    if (val) { checkedSubjects.add(subj); chip.classList.add('checked'); chip.innerHTML = `<i class="fas fa-check" style="font-size:9px"></i> ${subj}`; }
+    else { checkedSubjects.delete(subj); chip.classList.remove('checked'); chip.innerHTML = subj; }
+  });
+}
+
+// ═══════════════════════════════════════════════
+// GENERATE ALL
+// ═══════════════════════════════════════════════
+function generateAll() {
+  if (!currentStudent) { showToast('⚠️ 학생을 먼저 선택해주세요.'); return; }
+  if (!checkedSubjects.size) { showToast('⚠️ 과목을 하나 이상 선택해주세요.'); return; }
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('result-area').style.display = 'block';
+
+  buildSummary();
+  buildTable();
+  buildChart();
+  buildNearMiss();
+  buildPrompt();
+
+  showToast('✅ 분석 완료! 오른쪽 결과를 확인하세요.');
+  if (window.innerWidth <= 768) switchMob('right');
+}
+
+// ── Summary ──
+function buildSummary() {
+  const data = allStudents[currentStudent];
+  const grades = Object.values(data).filter(d => checkedSubjects.has(d.subject)).map(d => d.grade);
+  const avg = grades.length ? (grades.reduce((a, b) => a + b, 0) / grades.length).toFixed(2) : '-';
+  const best = grades.length ? Math.min(...grades) : '-';
+  const worst = grades.length ? Math.max(...grades) : '-';
+
+  document.getElementById('summary-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;font-weight:800;color:var(--muted)">선택 과목 수</div>
+        <div style="font-size:22px;font-weight:900;color:var(--mint-d)">${checkedSubjects.size}<span style="font-size:12px">개</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;font-weight:800;color:var(--muted)">평균 등급</div>
+        <div style="font-size:22px;font-weight:900;color:var(--amber)">${avg}<span style="font-size:12px">등급</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;font-weight:800;color:var(--muted)">최고/최저</div>
+        <div style="font-size:18px;font-weight:900;color:var(--text)">${best}<span style="color:var(--muted);font-size:12px"> / </span>${worst}</div>
+      </div>
+    </div>`;
+}
+
+// ── Grade Table ──
+function buildTable() {
+  const data = allStudents[currentStudent];
+  // Collect all terms in order
+  const termOrder = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
+  const subjList = [...checkedSubjects];
+
+  let html = '<div style="overflow-x:auto"><table class="grade-table">';
+  html += '<thead><tr><th>과목</th>';
+  const usedTerms = termOrder.filter(t => Object.values(data).some(d => d.term === t && checkedSubjects.has(d.subject)));
+  usedTerms.forEach(t => html += `<th>${t}</th>`);
+  html += '</tr></thead><tbody>';
+
+  subjList.forEach(subj => {
+    html += `<tr><td style="font-weight:700">${subj}</td>`;
+    usedTerms.forEach(t => {
+      const key = `${subj}__${t}`;
+      const d = data[key];
+      if (d) {
+        const cls = `g${d.grade}`;
+        html += `<td><span class="grade-badge ${cls}">${d.grade}등급</span><br><span style="font-size:10px;color:var(--muted)">${d.score !== null ? d.score+'점' : ''}</span></td>`;
+      } else {
+        html += `<td style="color:var(--muted);font-size:11px">-</td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  document.getElementById('grade-table-wrap').innerHTML = html;
+}
+
+// ── 계열 분류 ──
+const CATEGORY_MAP = [
+  { name: '전체과목', color: '#374151', keywords: [] },
+  { name: '국어계열', color: '#2dd4bf', keywords: ['국어','문학','독서','화법','작문','언어','매체','고전'] },
+  { name: '수학계열', color: '#e06b8b', keywords: ['수학','미적분','확률','통계','기하','대수'] },
+  { name: '영어계열', color: '#f59e0b', keywords: ['영어','영문','영독','영작'] },
+  { name: '사회계열', color: '#8b5cf6', keywords: ['사회','한국사','역사','도덕','윤리','정치','경제','법','지리','세계사','동아시아','통합사회','생활과윤리','윤리와사상','한국지리','세계지리','정치와법','사회·문화'] },
+  { name: '과학계열', color: '#10b981', keywords: ['과학','물리','화학','생명','지구','통합과학','과학탐구'] },
+  { name: '기타', color: '#94a3b8', keywords: [] },
+];
+
+// 제2외국어·한문·예체능 등은 기타로 강제 분류
+const FORCE_KITA = ['중국어','일본어','러시아어','아랍어','베트남어','프랑스어','독일어','스페인어','한문','기술','가정','체육','음악','미술','연극','진로'];
+
+function classifySubject(subj) {
+  if (FORCE_KITA.some(kw => subj.includes(kw))) return '기타';
+  for (const cat of CATEGORY_MAP.slice(1, -1)) {
+    if (cat.keywords.some(kw => subj.includes(kw))) return cat.name;
+  }
+  return '기타';
+}
+
+// 과목 기반명: 끝 숫자·로마숫자 제거 (공통국어1→공통국어, 수학Ⅰ→수학)
+function getBaseName(subj) {
+  return subj.replace(/[\dⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅰⅱⅲⅳⅴ]+$/u, '').trim();
+}
+
+// ── Chart ──
+let currentChartCategory = null;
+
+function buildChart() {
+  const data = allStudents[currentStudent];
+  const termOrder = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
+
+
+  // X축은 항상 6개 학기 전체 고정 — 과목 유무와 무관하게 연속 표시 (선 연결 보장)
+  const allUsedTerms = termOrder;
+
+  // 계열별 그룹핑
+  const categoryGroups = {};
+  [...checkedSubjects].forEach(subj => {
+    const cat = classifySubject(subj);
+    if (!categoryGroups[cat]) categoryGroups[cat] = [];
+    categoryGroups[cat].push(subj);
+  });
+
+  // 탭: 전체과목 + 실제 계열들
+  const cats = ['전체과목', ...Object.keys(categoryGroups)];
+  if (!currentChartCategory || !cats.includes(currentChartCategory)) {
+    currentChartCategory = '전체과목';
+  }
+
+  // 탭 버튼 생성
+  const tabWrap = document.getElementById('chart-tabs');
+  tabWrap.innerHTML = '';
+  cats.forEach(cat => {
+    const catInfo = CATEGORY_MAP.find(c => c.name === cat) || CATEGORY_MAP[CATEGORY_MAP.length-1];
+    const isActive = cat === currentChartCategory;
+    const count = cat === '전체과목' ? [...checkedSubjects].length : (categoryGroups[cat]||[]).length;
+    const btn = document.createElement('button');
+    btn.textContent = `${cat} (${count})`;
+    btn.style.cssText = [
+      'padding:5px 12px','border-radius:20px','font-size:11px','font-weight:800',
+      `border:1.5px solid ${catInfo.color}`,'cursor:pointer','transition:all .15s',
+      `background:${isActive ? catInfo.color : '#f5fcf9'}`,
+      `color:${isActive ? '#fff' : catInfo.color}`
+    ].join(';');
+    btn.onclick = () => { currentChartCategory = cat; buildChart(); };
+    tabWrap.appendChild(btn);
+  });
+
+  // 현재 탭 과목 목록
+  const subjsInCat = currentChartCategory === '전체과목'
+    ? [...checkedSubjects]
+    : (categoryGroups[currentChartCategory] || []);
+
+  const catInfo = CATEGORY_MAP.find(c => c.name === currentChartCategory) || CATEGORY_MAP[CATEGORY_MAP.length-1];
+
+  const datasets = [];
+
+  if (currentChartCategory === '전체과목') {
+    // 전체과목 탭: base명으로 묶어 각각의 선으로 표시
+    const baseGroups = {};
+    subjsInCat.forEach(subj => {
+      const base = getBaseName(subj);
+      if (!baseGroups[base]) baseGroups[base] = [];
+      if (!baseGroups[base].includes(subj)) baseGroups[base].push(subj);
+    });
+    const paletteList = Object.keys(baseGroups).map(base => {
+      const cat = classifySubject(baseGroups[base][0]);
+      return (CATEGORY_MAP.find(c => c.name === cat) || CATEGORY_MAP[CATEGORY_MAP.length-1]).color;
+    });
+    Object.entries(baseGroups).forEach(([base, subjs], i) => {
+      const pts = allUsedTerms.map(t => {
+        for (const subj of subjs) { const d = data[`${subj}__${t}`]; if (d != null) return d.grade; }
+        return null;
+      });
+      const lbls = allUsedTerms.map(t => {
+        for (const subj of subjs) { if (data[`${subj}__${t}`] != null) return subj; }
+        return null;
+      });
+      if (pts.some(p => p !== null)) {
+        datasets.push({
+          label: base || subjs[0], data: pts, _labels: lbls,
+          borderColor: paletteList[i], backgroundColor: paletteList[i] + '22',
+          borderWidth: 2.5, pointRadius: 5, pointHoverRadius: 8,
+          pointBackgroundColor: paletteList[i], tension: 0.2, spanGaps: true
+        });
+      }
+    });
+
+  } else {
+    // 계열 탭: 해당 학기에 있는 계열 과목들의 평균 등급으로 연결 (소수점 위치에 정확히 표시)
+    const pts = allUsedTerms.map(t => {
+      const grades = subjsInCat.map(subj => { const d = data[`${subj}__${t}`]; return d ? d.grade : null; }).filter(v => v !== null);
+      if (!grades.length) return null;
+      return parseFloat((grades.reduce((a,b) => a+b, 0) / grades.length).toFixed(2));
+    });
+    const lbls = allUsedTerms.map(t => {
+      const found = subjsInCat.filter(subj => data[`${subj}__${t}`] != null);
+      return found.length ? found.join(', ') : null;
+    });
+    if (pts.some(p => p !== null)) {
+      datasets.push({
+        label: currentChartCategory, data: pts, _labels: lbls,
+        borderColor: catInfo.color, backgroundColor: catInfo.color + '22',
+        borderWidth: 2.5, pointRadius: 5, pointHoverRadius: 8,
+        pointBackgroundColor: catInfo.color, tension: 0.2, spanGaps: true
+      });
+    }
+  }
+
+  if (trendChart) trendChart.destroy();
+  const ctx = document.getElementById('trend-chart').getContext('2d');
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: allUsedTerms, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        y: {
+          reverse: true, min: 1, max: gradeSystemMax,
+          ticks: { stepSize: 1, min: 1, max: gradeSystemMax, callback: v => (v >= 1 && v <= gradeSystemMax && Number.isInteger(v)) ? v+'등급' : '', font: { size: 11 } },
+          grid: { color: 'rgba(0,0,0,.06)' }
+        },
+        x: { ticks: { font: { size: 10 } } }
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 10 } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const actual = ctx.dataset._labels?.[ctx.dataIndex] || ctx.dataset.label;
+              return `${actual}: ${ctx.parsed.y}등급`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// 기준 색상에서 n개 팔레트 생성
+function generatePalette(baseHex, n) {
+  if (n <= 1) return [baseHex];
+  const palettes = {
+    '#2dd4bf': ['#2dd4bf','#0d9488','#99f6e4','#5eead4','#14b8a6'],
+    '#e06b8b': ['#e06b8b','#be185d','#f9a8d4','#ec4899','#db2777'],
+    '#f59e0b': ['#f59e0b','#d97706','#fcd34d','#fbbf24','#b45309'],
+    '#8b5cf6': ['#8b5cf6','#7c3aed','#c4b5fd','#a78bfa','#6d28d9'],
+    '#10b981': ['#10b981','#059669','#6ee7b7','#34d399','#047857'],
+    '#94a3b8': ['#94a3b8','#64748b','#cbd5e1','#475569','#334155'],
+  };
+  const p = palettes[baseHex] || ['#2dd4bf','#0d9488','#99f6e4','#5eead4','#14b8a6'];
+  return Array.from({length: n}, (_, i) => p[i % p.length]);
+}
+
+// ═══════════════════════════════════════════════
+// NEAR-MISS: 등급 경계 아쉬운 과목 순위 (학년 필터 포함)
+// ═══════════════════════════════════════════════
+const ZSCORE_CUT9 = [null, 1.75, 1.23, 0.74, 0.25, -0.25, -0.74, -1.23, -1.75];
+let currentNMGrade = '전체'; // '전체' | '1학년' | '2학년' | '3학년'
+
+function calcGap(d) {
+  const g = d.grade;
+  if (g <= 1) return null;
+  // 9등급제: stddev 있을 때
+  if (d.stddev != null && d.stddev > 0 && d.score != null && d.avg != null) {
+    const z = (d.score - d.avg) / d.stddev;
+    const zTarget = ZSCORE_CUT9[g - 1];
+    const ptGap = (zTarget - z) * d.stddev;
+    return { system:'9등급', grade:g, gap:parseFloat(ptGap.toFixed(1)),
+             gapLabel:`${ptGap.toFixed(1)}점 필요`, sortKey:ptGap,
+             detail:`내 점수 ${d.score}점 / 평균 ${d.avg}점 / 표준편차 ${d.stddev}점` };
+  }
+  // 5등급제: distArr 있을 때
+  if (d.distArr && d.distArr.length >= 2) {
+    const g0 = g - 1;
+    const myBand = d.distArr[g0];
+    let posInBand = 0.5;
+    if (d.score != null && d.avg != null && myBand > 0) {
+      const diff = (d.score - d.avg) / 100;
+      posInBand = Math.min(0.95, Math.max(0.05, 0.5 + diff));
+    }
+    const gapPct = (1 - posInBand) * myBand;
+    return { system:'5등급', grade:g, gap:parseFloat(gapPct.toFixed(1)),
+             gapLabel:`약 ${gapPct.toFixed(1)}%p 차이`, sortKey:gapPct,
+             detail: d.score != null ? `내 점수 ${d.score}점 / 평균 ${d.avg != null ? d.avg+'점':'-'}` : '점수 데이터 없음' };
+  }
+  // 기본: 점수 차 추정 없음
+  return { system:'등급', grade:g, gap:null, gapLabel:'세부 데이터 없음', sortKey:9999, detail:'' };
+}
+
+function buildNearMiss() {
+  const data = allStudents[currentStudent];
+  const termOrder = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
+
+  // 학년 필터 탭 구성 — 학생이 실제 이수한 학년만 표시
+  const availableGrades = new Set();
+  Object.values(data).forEach(d => {
+    const m = d.term.match(/^(\d)학년/);
+    if (m) availableGrades.add(m[1]+'학년');
+  });
+  const gradeOptions = ['전체', ...[...availableGrades].sort()];
+
+  const tabWrap = document.getElementById('nm-grade-tabs');
+  tabWrap.innerHTML = '';
+  if (!gradeOptions.includes(currentNMGrade)) currentNMGrade = '전체';
+
+  gradeOptions.forEach(g => {
+    const isActive = g === currentNMGrade;
+    const btn = document.createElement('button');
+    btn.textContent = g;
+    btn.style.cssText = `padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;border:1.5px solid var(--mint);cursor:pointer;transition:all .15s;background:${isActive?'var(--mint)':'transparent'};color:${isActive?'#fff':'var(--mint-d)'};font-family:inherit`;
+    btn.onclick = () => { currentNMGrade = g; buildNearMiss(); };
+    tabWrap.appendChild(btn);
+  });
+
+  // 필터링된 항목 생성
+  const items = [];
+  [...checkedSubjects].forEach(subj => {
+    for (let i = termOrder.length-1; i >= 0; i--) {
+      const term = termOrder[i];
+      // 학년 필터 적용
+      if (currentNMGrade !== '전체' && !term.startsWith(currentNMGrade)) continue;
+      const d = data[`${subj}__${term}`];
+      if (!d) continue;
+      if (d.grade <= 1) break;
+      const nm = calcGap(d);
+      if (nm) items.push({ subj, term, ...nm });
+      break;
+    }
+  });
+  items.sort((a,b) => a.sortKey - b.sortKey);
+
+  const wrap = document.getElementById('near-miss-content');
+  if (!items.length) {
+    wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">해당 학년에 아쉬운 과목이 없거나 데이터가 없습니다.</div>';
+    return;
+  }
+
+  const GC = {1:'#34C759',2:'#34C759',3:'#f59e0b',4:'#e06b8b',5:'#e06b8b',6:'#c0392b',7:'#a93226',8:'#922b21',9:'#7b241c'};
+  let html = '<div style="display:flex;flex-direction:column;gap:8px">';
+  items.forEach((it, idx) => {
+    const rank = idx+1;
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':`<span style="font-size:11px;font-weight:700;color:var(--muted)">${rank}위</span>`;
+    const gc = GC[it.grade]||'#aeaeb2';
+    const maxGap = it.system==='9등급'?20:30;
+    const barPct = it.gap!=null ? Math.max(5, Math.min(98, 98-(it.gap/maxGap)*90)) : 40;
+    html += `<div style="background:var(--surface);border:1.5px solid var(--border2);border-radius:12px;padding:10px 14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:7px">
+          <span style="font-size:14px">${medal}</span>
+          <span style="font-size:12px;font-weight:800;color:var(--text)">${it.subj}</span>
+          <span style="font-size:10px;color:var(--muted)">${it.term}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span class="grade-badge g${it.grade}">${it.grade}등급</span>
+          <span style="font-size:10px;font-weight:800;color:var(--mint-d)">→ ${it.grade-1}등급 목표</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <div style="flex:1;background:var(--border);border-radius:99px;height:6px;overflow:hidden">
+          <div style="width:${barPct.toFixed(0)}%;height:100%;background:linear-gradient(90deg,var(--mint),#34C759);border-radius:99px"></div>
+        </div>
+        <span style="font-size:11px;font-weight:700;color:var(--mint-d);white-space:nowrap">📍 ${it.gapLabel}</span>
+      </div>
+      ${it.detail?`<div style="font-size:10px;color:var(--muted)">${it.detail} · ${it.system}</div>`:''}
+    </div>`;
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function getNearMissText(data, termOrder) {
+  const items = [];
+  [...checkedSubjects].forEach(subj => {
+    for (let i = termOrder.length-1; i >= 0; i--) {
+      const d = data[`${subj}__${termOrder[i]}`];
+      if (!d) continue;
+      if (d.grade <= 1) break;
+      const nm = calcGap(d);
+      if (nm) items.push({ subj, term:termOrder[i], ...nm });
+      break;
+    }
+  });
+  items.sort((a,b) => a.sortKey - b.sortKey);
+  return items.map((it,i) =>
+    `  ${i+1}위. ${it.subj} (${it.term}): 현재 ${it.grade}등급 → ${it.grade-1}등급 목표 / ${it.gapLabel}${it.detail?' / '+it.detail:''}`
+  ).join('\n');
+}
+
+// ── Prompt ──
+function buildPrompt() {
+  const data = allStudents[currentStudent];
+  const career = document.getElementById('career-inp').value.trim();
+  const memo = document.getElementById('memo-inp').value.trim();
+
+  // Build grade summary text
+  const termOrder = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
+  let gradeText = '';
+  [...checkedSubjects].forEach(subj => {
+    const termData = termOrder.map(t => {
+      const d = data[`${subj}__${t}`];
+      return d ? `${t}: ${d.grade}등급(${d.score !== null ? d.score+'점' : '-'})` : null;
+    }).filter(Boolean);
+    if (termData.length) gradeText += `- ${subj}: ${termData.join(' → ')}\n`;
+  });
+
+  const grades = Object.values(data).filter(d => checkedSubjects.has(d.subject)).map(d => d.grade);
+  const avgGrade = grades.length ? (grades.reduce((a, b) => a + b, 0) / grades.length).toFixed(2) : '-';
+
+  let p = '';
+  p += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  p += `■ [학생 성적 데이터]\n`;
+  p += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  p += `이름: ${currentStudent}\n`;
+  p += `평균 등급 (선택 과목): ${avgGrade}등급\n`;
+  if (career) p += `진로 희망: ${career}\n`;
+  p += `\n■ 과목별 성적 변화:\n${gradeText}`;
+  const nmText = getNearMissText(data, termOrder);
+  if (nmText) p += `\n\n■ 등급 경계 아쉬운 과목 순위:\n${nmText}\n`;
+  if (memo) p += `\n■ 담임 관찰 메모:\n${memo}\n`;
+  p += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  p += `■ [상담 분석 요청]\n`;
+  p += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+  p += `위 학생의 성적 데이터를 바탕으로 아래 항목을 종합적으로 분석하고, 담임교사가 학생 상담 시 실제로 활용할 수 있는 내용을 구체적으로 작성해주세요.\n\n`;
+  p += `1. 📈 성적 분석 및 강점·약점\n`;
+  p += `   - 성적이 우수하거나 향상된 과목과 그 의미\n`;
+  p += `   - 성적이 낮거나 하락한 과목의 원인 추정\n`;
+  p += `   - 전반적인 학업 패턴 분석\n\n`;
+  p += `2. 🎯 적합한 진로 계열 추천\n`;
+  p += `   - 성적 패턴을 고려한 적합 계열 (인문/사회/자연/공학/예체능 등)\n`;
+  p += `   - 강점 과목 기반 추천 직업군 또는 전공 2~3가지\n`;
+  if (career) p += `   - 희망 진로(${career})와의 연계성 및 실현 가능성 분석\n`;
+  p += `\n3. 🎯 등급 경계 집중 관리 전략\n`;
+  p += `   - "등급 경계 아쉬운 과목" 순위 1~3위 과목의 한 등급 상승을 위한 구체적 전략\n`;
+  p += `   - 각 과목별로 어떤 부분을 보완하면 점수를 확보할 수 있는지 실천 가능한 방법\n`;
+  p += `   - 투입 노력 대비 등급 상승 효과가 클 과목 우선순위와 그 이유\n\n`;
+  p += `4. 📚 앞으로의 학습 방향\n`;
+  p += `   - 강점 과목을 더 살리기 위한 전략\n`;
+  p += `   - 약점 과목을 보완하기 위한 구체적 방법\n`;
+  p += `   - 수능/내신 전략적 과목 선택 조언\n\n`;
+  p += `5. 💬 담임 상담 시 핵심 포인트 요약\n`;
+  p += `   - 학생에게 전달할 긍정적 피드백\n`;
+  p += `   - 개선이 필요한 부분을 부드럽게 전달하는 방법\n`;
+  p += `   - 학부모 상담 시 활용할 수 있는 내용\n\n`;
+  p += `※ 분석은 구체적이고 실용적으로 작성해주세요. 추상적인 조언보다 실제 학생의 성적 수치를 근거로 한 분석을 부탁드립니다.`;
+
+  document.getElementById('prompt-output').value = p;
+  document.getElementById('prompt-card').style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════
+// EXCEL DOWNLOAD (ExcelJS — 그래프 포함)
+// ═══════════════════════════════════════════════
+
+// 특정 과목 집합 + 제목으로 차트 PNG base64를 반환
+async function renderChartToBase64(subjectList, title) {
+  return new Promise(resolve => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 700; canvas.height = 320;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const termOrder = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
+    const data = allStudents[currentStudent];
+
+    // 전체 탭: base명으로 묶기
+    let datasets = [];
+    if (title === '전체과목') {
+      const baseGroups = {};
+      subjectList.forEach(subj => {
+        const base = getBaseName(subj);
+        if (!baseGroups[base]) baseGroups[base] = [];
+        if (!baseGroups[base].includes(subj)) baseGroups[base].push(subj);
+      });
+      const allColors = ['#2dd4bf','#e06b8b','#f59e0b','#8b5cf6','#10b981','#94a3b8','#f97316','#3b82f6','#ec4899','#84cc16'];
+      Object.entries(baseGroups).forEach(([base, subjs], i) => {
+        const cat = classifySubject(subjs[0]);
+        const catInfo = CATEGORY_MAP.find(c => c.name === cat) || CATEGORY_MAP[CATEGORY_MAP.length-1];
+        const color = catInfo.color || allColors[i % allColors.length];
+        const pts = termOrder.map(t => {
+          for (const subj of subjs) { const d = data[`${subj}__${t}`]; if (d != null) return d.grade; }
+          return null;
+        });
+        if (pts.some(p => p !== null)) datasets.push({ label: base || subjs[0], data: pts, borderColor: color, backgroundColor: color+'22', borderWidth: 2, pointRadius: 4, tension: 0.2, spanGaps: true });
+      });
+    } else {
+      const catInfo = CATEGORY_MAP.find(c => c.name === title) || CATEGORY_MAP[CATEGORY_MAP.length-1];
+      const pts = termOrder.map(t => {
+        for (const subj of subjectList) { const d = data[`${subj}__${t}`]; if (d != null) return d.grade; }
+        return null;
+      });
+      const lbls = termOrder.map(t => {
+        for (const subj of subjectList) { if (data[`${subj}__${t}`] != null) return subj; }
+        return null;
+      });
+      if (pts.some(p => p !== null)) datasets.push({ label: title, data: pts, _labels: lbls, borderColor: catInfo.color, backgroundColor: catInfo.color+'22', borderWidth: 2.5, pointRadius: 5, tension: 0.2, spanGaps: true });
+    }
+
+    if (!datasets.length) { resolve(null); return; }
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: { labels: termOrder, datasets },
+      options: {
+        animation: false,
+        responsive: false,
+        plugins: {
+          title: { display: true, text: `${currentStudent} — ${title} 등급 변화 추이`, font: { size: 14, weight: 'bold' } },
+          legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8 } }
+        },
+        scales: {
+          y: { reverse: true, min: 1, max: gradeSystemMax, ticks: { stepSize: 1, callback: v => (v >= 1 && v <= gradeSystemMax && Number.isInteger(v)) ? v+'등급' : '', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.08)' } },
+          x: { ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+
+    setTimeout(() => {
+      const base64 = canvas.toDataURL('image/png').split(',')[1];
+      chart.destroy();
+      canvas.remove();
+      resolve(base64);
+    }, 200);
+  });
+}
+
+async function downloadExcel() {
+  if (!currentStudent) { showToast('⚠️ 학생을 먼저 선택하세요.'); return; }
+  showToast('⏳ 엑셀 생성 중... 잠시만 기다려주세요.');
+
+  const data = allStudents[currentStudent];
+  const termOrder = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
+  const usedTerms = termOrder.filter(t => Object.values(data).some(d => d.term === t && checkedSubjects.has(d.subject)));
+
+  // ── 계열별 과목 그룹 ──
+  const categoryGroups = {};
+  [...checkedSubjects].forEach(subj => {
+    const cat = classifySubject(subj);
+    if (!categoryGroups[cat]) categoryGroups[cat] = [];
+    categoryGroups[cat].push(subj);
+  });
+
+  // ── 평균 등급 계산 ──
+  function calcAvg(subjList) {
+    const grades = [];
+    subjList.forEach(subj => {
+      Object.values(data).filter(d => d.subject === subj).forEach(d => grades.push(d.grade));
+    });
+    return grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(2) : '-';
+  }
+
+  // ── ExcelJS 워크북 생성 ──
+  const wb = new ExcelJS.Workbook();
+  wb.creator = '성적 상담 공장';
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 시트0: 전체 요약 — 표(상단) + 그래프(하단) 세로 배치, 겹침 없음
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const ws0 = wb.addWorksheet('📋 전체요약');
+  ws0.pageSetup = { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 1,
+    margins: { left: 0.4, right: 0.4, top: 0.4, bottom: 0.4, header: 0, footer: 0 } };
+
+  const H_TEAL = 'FF0D9488';
+  const H_DARK = 'FF1E3A5F';
+  const GC0 = { 1:'FFD1FAE5',2:'FFD1FAE5',3:'FFFEF3C7',4:'FFFFE4E6',5:'FFFCE7F3',6:'FFFECACA',7:'FFFCA5A5',8:'FFF87171',9:'FFEF4444' };
+
+  // 행1: 제목
+  const totalCols0 = 1 + usedTerms.length;
+  ws0.mergeCells(1, 1, 1, Math.max(totalCols0, 8));
+  const t0 = ws0.getCell(1,1);
+  t0.value = `📊 ${currentStudent} 성적 종합 요약`;
+  t0.font = { bold:true, size:15, color:{argb:H_TEAL} };
+  t0.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFE6F6F1'} };
+  t0.alignment = { horizontal:'center', vertical:'middle' };
+  ws0.getRow(1).height = 30;
+
+  // 행2: 전체 평균 요약
+  const allGrades0 = Object.values(data).filter(d=>checkedSubjects.has(d.subject)).map(d=>d.grade);
+  const avg0 = allGrades0.length ? (allGrades0.reduce((a,b)=>a+b,0)/allGrades0.length).toFixed(2) : '-';
+  ws0.mergeCells(2, 1, 2, Math.max(totalCols0, 8));
+  const avg0cell = ws0.getCell(2,1);
+  avg0cell.value = `전체 평균 등급: ${avg0}등급  |  선택 과목 수: ${checkedSubjects.size}개  |  이수 학기 수: ${usedTerms.length}학기`;
+  avg0cell.font = { bold:true, size:10, color:{argb:'FF374151'} };
+  avg0cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFFEF9C3'} };
+  avg0cell.alignment = { horizontal:'center', vertical:'middle' };
+  ws0.getRow(2).height = 18;
+
+  // 행4: 계열별 평균 등급 표
+  const cats0 = Object.keys(categoryGroups);
+  ws0.getRow(4).height = 18;
+  ws0.mergeCells(4, 1, 4, 1 + cats0.length);
+  const ch0 = ws0.getCell(4,1);
+  ch0.value = '계열별 평균 등급';
+  ch0.font = { bold:true, color:{argb:'FFFFFFFF'}, size:10 };
+  ch0.fill = { type:'pattern', pattern:'solid', fgColor:{argb:H_DARK} };
+  ch0.alignment = { horizontal:'center', vertical:'middle' };
+  ws0.getCell(5,1).value='계열'; ws0.getCell(5,1).font={bold:true,size:9}; ws0.getCell(5,1).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE6F6F1'}}; ws0.getCell(5,1).alignment={horizontal:'center'};
+  cats0.forEach((cat,i)=>{ const c=ws0.getCell(5,2+i); c.value=cat; c.font={bold:true,size:9}; c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE6F6F1'}}; c.alignment={horizontal:'center'}; });
+  ws0.getCell(6,1).value='평균 등급'; ws0.getCell(6,1).font={bold:true,size:9};
+  cats0.forEach((cat,i)=>{ const c=ws0.getCell(6,2+i); c.value=calcAvg(categoryGroups[cat]); c.font={bold:true,color:{argb:'FFF59E0B'},size:10}; c.alignment={horizontal:'center'}; });
+  ws0.getColumn(1).width = 16;
+  cats0.forEach((_,i)=>{ ws0.getColumn(2+i).width=13; });
+
+  // 행8: 과목별 성적 간략 표
+  ws0.getRow(8).height = 18;
+  ws0.getCell(8,1).value='과목'; ws0.getCell(8,1).font={bold:true,color:{argb:'FFFFFFFF'},size:9}; ws0.getCell(8,1).fill={type:'pattern',pattern:'solid',fgColor:{argb:H_TEAL}}; ws0.getCell(8,1).alignment={horizontal:'center',vertical:'middle'};
+  usedTerms.forEach((t,i)=>{ const c=ws0.getCell(8,2+i); c.value=t.replace('학년 ','-'); c.font={bold:true,color:{argb:'FFFFFFFF'},size:9}; c.fill={type:'pattern',pattern:'solid',fgColor:{argb:H_TEAL}}; c.alignment={horizontal:'center',vertical:'middle'}; ws0.getColumn(2+i).width=11; });
+
+  let subjRow0 = 9;
+  [...checkedSubjects].forEach(subj => {
+    ws0.getRow(subjRow0).height = 15;
+    ws0.getCell(subjRow0,1).value=subj; ws0.getCell(subjRow0,1).font={bold:true,size:9};
+    usedTerms.forEach((t,i)=>{
+      const d=data[`${subj}__${t}`]; const gc=ws0.getCell(subjRow0,2+i);
+      if(d){ gc.value=d.grade+'등급'; gc.fill={type:'pattern',pattern:'solid',fgColor:{argb:GC0[d.grade]||'FFFFFFFF'}}; gc.font={bold:true,size:9}; }
+      else { gc.value='-'; gc.font={size:9}; }
+      gc.alignment={horizontal:'center'};
+    });
+    subjRow0++;
+  });
+
+  // 그래프 시작 행 = 표 마지막 행 + 2 (0-based)
+  const graphStartRow0 = subjRow0 + 1;
+
+  // 전체과목 그래프 (표 아래 전체 너비)
+  const overallChart0 = await renderChartToBase64([...checkedSubjects], '전체과목');
+  if (overallChart0) {
+    const imgId0 = wb.addImage({ base64: overallChart0, extension: 'png' });
+    ws0.addImage(imgId0, { tl: { col:0, row: graphStartRow0 }, br: { col: Math.max(totalCols0+1, 9), row: graphStartRow0 + 14 } });
+  }
+
+  // 계열별 소형 그래프 — 전체과목 그래프 아래 2열 배열
+  const catEntries0 = Object.entries(categoryGroups);
+  const catGraphRow0 = graphStartRow0 + 15;
+  const colsPerChart0 = Math.max(5, Math.floor((Math.max(totalCols0+1,9)) / 2));
+  for (let ci = 0; ci < catEntries0.length; ci++) {
+    const [cat, subjs] = catEntries0[ci];
+    const imgB = await renderChartToBase64(subjs, cat);
+    if (!imgB) continue;
+    const imgId = wb.addImage({ base64: imgB, extension: 'png' });
+    const col0 = (ci % 2) * colsPerChart0;
+    const row0 = catGraphRow0 + Math.floor(ci / 2) * 13;
+    ws0.addImage(imgId, { tl: { col: col0, row: row0 }, br: { col: col0 + colsPerChart0, row: row0 + 12 } });
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 시트1: 성적 데이터 + 평균 등급 요약
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const ws1 = wb.addWorksheet('성적분석');
+
+  // 헤더 스타일
+  const hStyle = { font: { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: H_TEAL } }, alignment: { horizontal: 'center', vertical: 'middle' }, border: { bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } } } };
+  const subHStyle = { font: { bold: true, size: 10 }, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE6F6F1' } }, alignment: { horizontal: 'center' } };
+  const cellStyle = { alignment: { horizontal: 'center' }, border: { bottom: { style: 'hair', color: { argb: 'FFDDDDDD' } } } };
+
+  // 1행: 학생명 타이틀
+  ws1.mergeCells(1, 1, 1, 1 + usedTerms.length * 2);
+  const titleCell = ws1.getCell(1, 1);
+  titleCell.value = `📊 ${currentStudent} 성적 분석표`;
+  titleCell.font = { bold: true, size: 14, color: { argb: 'FF0D9488' } };
+  titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+  ws1.getRow(1).height = 28;
+
+  // 2행: 평균 등급 요약
+  const allGrades = Object.values(data).filter(d => checkedSubjects.has(d.subject)).map(d => d.grade);
+  const overallAvg = allGrades.length ? (allGrades.reduce((a,b)=>a+b,0)/allGrades.length).toFixed(2) : '-';
+  ws1.mergeCells(2, 1, 2, 1 + usedTerms.length * 2);
+  const avgCell = ws1.getCell(2, 1);
+  avgCell.value = `전체 평균 등급: ${overallAvg}등급  |  선택 과목 수: ${checkedSubjects.size}개`;
+  avgCell.font = { bold: true, size: 11, color: { argb: 'FF374151' } };
+  avgCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF9C3' } };
+  avgCell.alignment = { horizontal: 'center', vertical: 'middle' };
+  ws1.getRow(2).height = 22;
+
+  // 4행: 계열별 평균 등급 소계 헤더
+  const cats = Object.keys(categoryGroups);
+  ws1.mergeCells(4, 1, 4, 1 + cats.length);
+  const catHdr = ws1.getCell(4, 1);
+  catHdr.value = '계열별 평균 등급';
+  Object.assign(catHdr, { font: hStyle.font, fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A5F' } }, alignment: { horizontal: 'center', vertical: 'middle' } });
+  ws1.getRow(4).height = 20;
+
+  // 5행: 계열 이름
+  ws1.getCell(5, 1).value = '계열';
+  Object.assign(ws1.getCell(5, 1), subHStyle);
+  cats.forEach((cat, i) => {
+    const c = ws1.getCell(5, 2 + i);
+    c.value = cat;
+    Object.assign(c, subHStyle);
+  });
+
+  // 6행: 계열 평균 등급 값
+  ws1.getCell(6, 1).value = '평균 등급';
+  ws1.getCell(6, 1).font = { bold: true };
+  cats.forEach((cat, i) => {
+    const c = ws1.getCell(6, 2 + i);
+    c.value = calcAvg(categoryGroups[cat]);
+    c.alignment = { horizontal: 'center' };
+    c.font = { bold: true, color: { argb: 'FFF59E0B' } };
+  });
+
+  // 컬럼 너비 (계열별)
+  ws1.getColumn(1).width = 16;
+  cats.forEach((_, i) => { ws1.getColumn(2+i).width = 14; });
+
+  // 8행: 과목별 성적 헤더
+  const dataStartRow = 8;
+  ws1.getCell(dataStartRow, 1).value = '과목';
+  Object.assign(ws1.getCell(dataStartRow, 1), hStyle);
+  usedTerms.forEach((t, i) => {
+    const c = ws1.getCell(dataStartRow, 2 + i);
+    c.value = t + ' (등급)';
+    Object.assign(c, hStyle);
+  });
+  usedTerms.forEach((t, i) => {
+    const c = ws1.getCell(dataStartRow, 2 + usedTerms.length + i);
+    c.value = t + ' (원점수)';
+    Object.assign(c, hStyle);
+  });
+  ws1.getRow(dataStartRow).height = 22;
+
+  // 컬럼 너비 재설정 (데이터 영역)
+  ws1.getColumn(1).width = 18;
+  for (let i = 0; i < usedTerms.length * 2; i++) ws1.getColumn(2+i).width = 14;
+
+  // 과목 데이터 행
+  const GRADE_COLORS = { 1:'FFD1FAE5', 2:'FFD1FAE5', 3:'FFFEF3C7', 4:'FFFFE4E6', 5:'FFFCE7F3', 6:'FFFECACA', 7:'FFFCA5A5', 8:'FFF87171', 9:'FFEF4444' };
+  let rowIdx = dataStartRow + 1;
+  [...checkedSubjects].forEach(subj => {
+    const row = ws1.getRow(rowIdx);
+    const cat = classifySubject(subj);
+    row.getCell(1).value = subj;
+    row.getCell(1).font = { bold: true };
+    usedTerms.forEach((t, i) => {
+      const d = data[`${subj}__${t}`];
+      const gc = row.getCell(2 + i);
+      if (d) {
+        gc.value = d.grade;
+        gc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GRADE_COLORS[d.grade] || 'FFFFFFFF' } };
+        gc.font = { bold: true };
+      } else { gc.value = '-'; }
+      gc.alignment = { horizontal: 'center' };
+    });
+    usedTerms.forEach((t, i) => {
+      const d = data[`${subj}__${t}`];
+      const sc = row.getCell(2 + usedTerms.length + i);
+      sc.value = (d && d.score !== null) ? d.score : '-';
+      sc.alignment = { horizontal: 'center' };
+    });
+    rowIdx++;
+  });
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 시트2+: 계열별 그래프 시트
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const chartConfigs = [
+    { title: '전체과목', subjects: [...checkedSubjects] },
+    ...Object.entries(categoryGroups).map(([cat, subjs]) => ({ title: cat, subjects: subjs }))
+  ];
+
+  for (const cfg of chartConfigs) {
+    if (!cfg.subjects.length) continue;
+    const imgBase64 = await renderChartToBase64(cfg.subjects, cfg.title);
+    if (!imgBase64) continue;
+
+    const wsChart = wb.addWorksheet(`그래프_${cfg.title}`);
+    wsChart.getRow(1).height = 24;
+    const titleC = wsChart.getCell(1, 1);
+    titleC.value = `${currentStudent} — ${cfg.title} 등급 변화 추이`;
+    titleC.font = { bold: true, size: 13, color: { argb: 'FF0D9488' } };
+    wsChart.mergeCells(1, 1, 1, 10);
+
+    // 해당 계열 과목 목록 + 계열 평균 등급
+    const avg = calcAvg(cfg.subjects);
+    wsChart.getCell(2, 1).value = `과목: ${cfg.subjects.join(', ')}   |   계열 평균 등급: ${avg}등급`;
+    wsChart.getCell(2, 1).font = { size: 10, color: { argb: 'FF6B7280' } };
+    wsChart.mergeCells(2, 1, 2, 10);
+
+    const imageId = wb.addImage({ base64: imgBase64, extension: 'png' });
+    wsChart.addImage(imageId, { tl: { col: 0, row: 2 }, br: { col: 10, row: 22 } });
+    wsChart.getColumn(1).width = 14;
+  }
+
+  // ── 다운로드 ──
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${currentStudent}_성적분석.xlsx`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast('📥 엑셀 다운로드 완료! (그래프 포함)');
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function copyPrompt() {
+  const txt = document.getElementById('prompt-output').value;
+  if (!txt) return;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✅ 복사됨!'; btn.style.background = '#10b981';
+    showToast('📋 클립보드에 복사됐습니다!');
+    setTimeout(() => { btn.innerHTML = '📋 복사'; btn.style.background = ''; }, 2000);
+  }).catch(() => { document.getElementById('prompt-output').select(); document.execCommand('copy'); showToast('📋 복사됐습니다!'); });
+}
+
+function scrollToPrompt() {
+  document.getElementById('prompt-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetAll() {
+  if (!confirm('모든 데이터를 초기화할까요?')) return;
+  allStudents = {}; currentStudent = null; checkedSubjects.clear(); currentNMGrade = '전체';
+  document.getElementById('file-input').value = '';
+  const uz = document.getElementById('upload-zone');
+  uz.classList.remove('upload-done');
+  document.getElementById('upload-icon').textContent = '📂';
+  document.getElementById('upload-title').textContent = 'NEIS 교과학습발달상황 파일을 업로드하세요';
+  document.getElementById('upload-hint').textContent = '클릭하거나 파일을 여기에 끌어다 놓으세요 · .xlsx .xls .xlsm .xlsb .ods 등';
+  document.getElementById('file-info').style.display = 'none';
+  document.getElementById('stu-sel').innerHTML = '<option value="">-- 파일을 먼저 업로드하세요 --</option>';
+  document.getElementById('stu-badge').style.display = 'none';
+  document.getElementById('stu-info').style.display = 'none';
+  document.getElementById('subj-grid').innerHTML = '<div style="font-size:11px;color:var(--muted);padding:8px">학생을 먼저 선택해주세요.</div>';
+  document.getElementById('career-inp').value = '';
+  document.getElementById('memo-inp').value = '';
+  document.getElementById('empty-state').style.display = 'flex';
+  document.getElementById('result-area').style.display = 'none';
+  ['s1','s2','s3'].forEach(id => document.getElementById(id).classList.add('collapsed'));
+  if (trendChart) { trendChart.destroy(); trendChart = null; }
+  showToast('🔄 초기화 완료!');
+}
+
+function showToast(m) { const t = document.getElementById('toast'); t.textContent = m; t.style.opacity = '1'; setTimeout(() => t.style.opacity = '0', 2800); }
+function openGuide(){document.getElementById('guide-modal').classList.add('open');}
+function closeGuide(){document.getElementById('guide-modal').classList.remove('open');}
+function toggleDark() { document.body.classList.toggle('dark'); document.getElementById('dark-btn').textContent = document.body.classList.contains('dark') ? '☀️' : '🌙'; }
+
+let mobP = 'left';
+function switchMob(p) {
+  mobP = p;
+  document.getElementById('lp').classList.toggle('mh', p !== 'left');
+  document.getElementById('rp').classList.toggle('mh', p !== 'right');
+  document.getElementById('mob-l').classList.toggle('active', p === 'left');
+  document.getElementById('mob-r').classList.toggle('active', p === 'right');
+}
+</script>
+</body>
+</html>
