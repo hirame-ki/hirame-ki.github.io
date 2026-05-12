@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+<title>열공타이머</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--sf:#f7f7f7;--sf2:#efefef;
+  --bd:#e0e0e0;--bd2:#ccc;
+  --bk:#111;--g7:#444;--g5:#888;--g3:#bbb;
+  --mono:'DM Mono',monospace;
+  --sans:'Noto Sans KR',sans-serif;
+  --r:6px;
+}
+html,body{height:100%;background:var(--bg);color:var(--bk);font-family:var(--sans);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+.screen{display:none;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+.screen.active{display:flex}
+/* 상단바 */
+.topbar{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bd);background:var(--bg)}
+.tl{display:flex;flex-direction:column;min-width:0}
+.tlabel{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--g5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttitle{font-size:.92rem;font-weight:700;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.subj-pill{font-size:.68rem;background:var(--bk);color:#fff;padding:2px 8px;border-radius:3px;letter-spacing:.04em;font-weight:700;flex-shrink:0;white-space:nowrap}
+/* 공지/촬영 배너 */
+.notice-bar{background:var(--bk);color:#fff;font-size:.76rem;font-weight:600;padding:8px 16px;text-align:center;flex-shrink:0;display:none}
+.rec-bar{background:#c00;color:#fff;font-size:.74rem;font-weight:700;padding:6px 16px;text-align:center;flex-shrink:0;display:none;animation:recpulse 1.5s ease-in-out infinite}
+@keyframes recpulse{0%,100%{opacity:1}50%{opacity:.6}}
+/* 스크롤 */
+.scroll{flex:1;overflow-y:auto;padding:0 16px 88px;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{width:0}
+/* 버튼 */
+.btn{font-family:var(--sans);font-size:.84rem;font-weight:700;border-radius:var(--r);cursor:pointer;transition:all .15s;border:none;padding:11px 16px;letter-spacing:.02em;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.bk{background:var(--bk);color:#fff}.bk:hover{background:var(--g7)}
+.ol{background:transparent;border:1.5px solid var(--bd2);color:var(--bk)}.ol:hover{border-color:var(--bk)}
+.gh{background:transparent;border:none;color:var(--g5);font-size:.76rem;padding:6px 8px;cursor:pointer;font-family:var(--sans);flex-shrink:0}.gh:hover{color:var(--bk)}
+.rd{background:transparent;border:1px solid var(--bd2);color:var(--g5);font-size:.7rem;padding:4px 9px;cursor:pointer;font-family:var(--sans);border-radius:var(--r)}.rd:hover{border-color:#c00;color:#c00}
+.fw{width:100%}.sm{padding:7px 12px;font-size:.76rem}
+/* 인풋 */
+input[type=text],input[type=password],textarea{background:var(--bg);border:1.5px solid var(--bd2);border-radius:var(--r);color:var(--bk);font-family:var(--sans);font-size:.88rem;padding:10px 13px;width:100%;outline:none;transition:border-color .15s}
+input:focus,textarea:focus{border-color:var(--bk)}
+textarea{resize:vertical;min-height:88px;line-height:1.6}
+select{background:var(--bg);border:1.5px solid var(--bd2);border-radius:var(--r);color:var(--bk);font-family:var(--sans);font-size:.8rem;padding:8px 10px;outline:none}
+.ilabel{font-size:.66rem;font-weight:700;color:var(--g5);margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase}
+.ig{margin-bottom:12px}
+/* 탭바 */
+.tabbar{display:flex;border-bottom:1.5px solid var(--bd);margin-bottom:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-shrink:0}
+.tabbar::-webkit-scrollbar{display:none}
+.tb{background:none;border:none;color:var(--g5);cursor:pointer;font-family:var(--sans);font-size:.76rem;font-weight:600;padding:8px 12px;position:relative;transition:color .15s;white-space:nowrap;flex-shrink:0}
+.tb.active{color:var(--bk)}
+.tb.active::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--bk);border-radius:1px}
+/* 하단 네비 */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1.5px solid var(--bd);display:flex;z-index:50;padding:0 0 max(6px,env(safe-area-inset-bottom))}
+.nb{flex:1;background:none;border:none;color:var(--g3);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;font-size:.58rem;letter-spacing:.05em;text-transform:uppercase;font-family:var(--sans);font-weight:700;transition:color .15s}
+.nb.active{color:var(--bk)}.ni{font-size:1.15rem;line-height:1}
+/* 섹션타이틀 */
+.st{font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--g5);border-bottom:1px solid var(--bd);padding-bottom:7px;margin-bottom:11px}
+/* 타이머 */
+.tbig{font-family:var(--mono);font-size:min(14vw,4.8rem);font-weight:500;letter-spacing:.04em;line-height:1;color:var(--bk);margin:12px 0 16px}
+.tbig.run{animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+/* 목표 */
+.goal-wrap{margin-bottom:14px}
+.goal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.goal-pct{font-family:var(--mono);font-size:.8rem;font-weight:700}
+.goal-track{height:5px;background:var(--sf2);border-radius:3px;overflow:hidden}
+.goal-fill{height:5px;background:var(--bk);border-radius:3px;transition:width .5s}
+.goal-sub{font-size:.66rem;color:var(--g5);margin-top:3px}
+/* 통계 */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
+.scell{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:11px 13px}
+.sval{font-family:var(--mono);font-size:1rem;font-weight:500;margin:3px 0 2px}
+.srnk{font-size:.66rem;color:var(--g5)}
+/* 스트릭 */
+.strk{display:flex;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:9px 13px;margin-bottom:11px}
+.strk-v{font-family:var(--mono);font-size:1.2rem;font-weight:700}
+.strk-l{font-size:.7rem;color:var(--g5)}
+/* 배너 */
+.zero-banner{background:var(--sf2);border-radius:var(--r);padding:7px 13px;font-size:.74rem;color:var(--g7);margin-bottom:11px;text-align:center}
+/* 랭킹 */
+.rrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd);animation:fu .2s ease both}
+.rrow:last-child{border-bottom:none}
+@keyframes fu{from{opacity:0;transform:translateY(3px)}to{opacity:1}}
+.rnum{font-family:var(--mono);font-size:.7rem;width:18px;text-align:center;color:var(--g3);flex-shrink:0;font-weight:500}
+.rnum.n1{color:var(--bk);font-weight:700;font-size:.82rem}.rnum.n2,.rnum.n3{color:var(--g7)}
+.rinfo{flex:1;min-width:0}
+.rname{font-size:.84rem;font-weight:600}
+.rsub{font-size:.66rem;color:var(--g5);margin-top:1px}
+.me{font-size:.56rem;border:1px solid var(--bd2);padding:1px 4px;border-radius:2px;margin-left:5px;color:var(--g5);font-family:var(--mono)}
+.rtime{font-family:var(--mono);font-size:.8rem;color:var(--bk);flex-shrink:0;text-align:right}
+.rgap{font-size:.6rem;color:var(--g5);text-align:right;margin-top:1px}
+.rbt{height:1px;background:var(--bd);margin-top:3px}.rbf{height:1px;background:var(--bk);transition:width .4s}
+/* 과목 바 */
+.sbar{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.sbn{font-size:.73rem;font-weight:600;width:56px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sbt{flex:1;height:2px;background:var(--bd);border-radius:1px}
+.sbf{height:2px;background:var(--bk);border-radius:1px;transition:width .5s}
+.sbv{font-family:var(--mono);font-size:.68rem;color:var(--g5);width:52px;text-align:right;flex-shrink:0}
+/* 방 카드 */
+.rc{border:1.5px solid var(--bd);border-radius:var(--r);padding:13px 14px;margin-bottom:9px;cursor:pointer;transition:border-color .15s}
+.rc:hover,.rc:active{border-color:var(--bk)}
+.rcn{font-size:.92rem;font-weight:700;margin-bottom:3px}
+.rcm{font-size:.7rem;color:var(--g5);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.rcs{font-size:.68rem;background:var(--sf2);padding:2px 6px;border-radius:2px;color:var(--g7);font-weight:700}
+/* 명단 행 */
+.srow{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd);font-size:.8rem}
+.srow:last-child{border-bottom:none}
+/* 프롬프트 */
+.pbox{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:13px;font-family:var(--mono);font-size:.7rem;line-height:1.7;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto}
+.prompt-item{border:1px solid var(--bd);border-radius:var(--r);padding:11px;margin-bottom:9px}
+.prompt-nm{font-size:.82rem;font-weight:700;margin-bottom:5px}
+.prompt-box{font-family:var(--mono);font-size:.68rem;line-height:1.6;color:var(--g7);white-space:pre-wrap;word-break:break-all;max-height:110px;overflow-y:auto}
+/* 출석 테이블 */
+.att-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.att-table{width:100%;border-collapse:collapse;font-size:.7rem}
+.att-table th{background:var(--sf2);padding:5px 6px;text-align:center;font-weight:700;border:1px solid var(--bd);white-space:nowrap}
+.att-table td{padding:4px 6px;text-align:center;border:1px solid var(--bd)}
+.att-o{color:var(--bk);font-weight:700}.att-x{color:var(--g3)}
+/* 타임랩스 */
+.tl-prev{background:var(--sf);border:1.5px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:9px;display:none}
+.tl-vid{width:100%;max-height:150px;object-fit:cover;display:block}
+.tl-cnt{font-size:.7rem;color:var(--g5);margin-bottom:7px;font-family:var(--mono);line-height:1.5}
+.tl-ctrl{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:7px}
+.tl-note{font-size:.66rem;color:var(--g5);line-height:1.6;background:var(--sf);border-radius:var(--r);padding:9px 12px}
+.tl-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);font-size:.78rem}
+.tl-item:last-child{border-bottom:none}
+/* 모달 */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.mov.open{display:flex}
+.msh{background:var(--bg);border-top:1.5px solid var(--bd);border-radius:14px 14px 0 0;width:100%;max-width:540px;padding:18px 16px;max-height:88dvh;overflow-y:auto}
+.msh::-webkit-scrollbar{width:0}
+.mhnd{width:34px;height:3px;background:var(--bd2);border-radius:2px;margin:0 auto 16px}
+.mtitle{font-size:.88rem;font-weight:700;margin-bottom:14px}
+/* 토스트 */
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--bk);color:#fff;border-radius:var(--r);font-size:.78rem;font-weight:600;padding:8px 16px;z-index:300;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;max-width:88vw;text-align:center}
+.toast.show{opacity:1}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid var(--bd);border-top-color:var(--bk);border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;color:var(--g3);font-size:.8rem;padding:26px 0}
+hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
+/* 온보딩 */
+.obwrap{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;padding:32px 16px 80px;overflow-y:auto}
+.oblogo{font-size:1.5rem;font-weight:900;letter-spacing:.06em;color:var(--bk);margin-bottom:3px;cursor:default;user-select:none}
+.obdesc{font-size:.76rem;color:var(--g5);margin-bottom:24px;line-height:1.6}
+/* 링크 생성 화면 */
+.setup-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.setup-title{font-size:.8rem;font-weight:700;margin-bottom:10px}
+.my-link-box{font-family:var(--mono);font-size:.72rem;background:var(--bg);border:1.5px solid var(--bk);border-radius:var(--r);padding:10px 12px;word-break:break-all;margin-bottom:8px;line-height:1.5}
+/* 모바일 반응형 */
+@media screen and (max-width:480px){
+  .tbig{font-size:min(13vw,3.6rem)}
+  .topbar{padding:9px 13px}
+  .scroll{padding:0 13px 86px}
+  .obwrap{padding:24px 14px 80px}
+  .sgrid{gap:6px}.scell{padding:10px 11px}.sval{font-size:.94rem}
+  .bnav{padding:0 0 max(5px,env(safe-area-inset-bottom))}
+  .nb{padding:7px 3px;font-size:.56rem}.ni{font-size:1.1rem}
+  .btn{padding:10px 13px;font-size:.8rem}
+  .tb{padding:7px 10px;font-size:.72rem}
+  input[type=text],input[type=password]{font-size:.85rem;padding:9px 11px}
+  .rc{padding:11px 13px}.rcn{font-size:.86rem}
+  .rname{font-size:.8rem}.rtime{font-size:.76rem}
+  .att-table{font-size:.63rem}.att-table th,.att-table td{padding:3px 4px}
+  .msh{padding:15px 13px}
+  .notice-bar,.rec-bar{font-size:.7rem;padding:6px 13px}
+}
+@media screen and (max-width:360px){
+  .tbig{font-size:min(12vw,3rem)}
+  .nb{font-size:.52rem;padding:6px 2px}
+  .topbar-l .ttitle{font-size:.84rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 셋업 화면 (GAS URL 입력) ===== -->
+<div class="screen active" id="sSetup">
+  <div class="obwrap">
+    <div class="oblogo" id="obLogo" onclick="logoTap()">열공타이머</div>
+    <div class="obdesc">선생님이 우리 반의 자기주도학습역량을<br>꼼꼼하게 기록하고 있습니다. 오늘도 화이팅! 📚</div>
+
+    <!-- GAS URL 미입력 상태 -->
+    <div id="setupPanel">
+      <div class="setup-card">
+        <div class="setup-title">🔗 선생님 링크 입력</div>
+        <div class="ig"><div class="ilabel">선생님 GAS 링크</div>
+          <input type="text" id="gasInput" placeholder="https://script.google.com/..." style="font-size:.76rem;">
+        </div>
+        <button class="btn bk fw" onclick="saveGasUrl()">내 링크 생성</button>
+      </div>
+      <div style="font-size:.72rem;color:var(--g5);text-align:center;line-height:1.6;">
+        처음 접속하는 교사분이시면 GAS URL을 입력하세요.<br>
+        학생이라면 선생님께 받은 QR 또는 링크로 접속하세요.
+      </div>
+    </div>
+
+    <!-- GAS URL 입력 완료 상태 -->
+    <div id="myLinkPanel" style="display:none;">
+      <div class="setup-card">
+        <div class="setup-title">✅ 내 링크가 생성되었습니다</div>
+        <div class="my-link-box" id="myLinkBox"></div>
+        <div style="display:flex;gap:7px;margin-bottom:10px;">
+          <button class="btn ol sm" onclick="copyMyLink()" style="flex:1;">링크 복사</button>
+          <button class="btn bk sm" onclick="goToApp()" style="flex:1;">앱 시작</button>
+        </div>
+        <div style="font-size:.7rem;color:var(--g5);line-height:1.6;">
+          이 링크를 QR코드로 만들어 학생들에게 배포하세요.<br>
+          학생들은 이 링크로 접속하면 자동으로 연결됩니다.
+        </div>
+      </div>
+      <button class="btn ol sm fw" onclick="resetGasUrl()" style="margin-top:4px;">링크 초기화</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 학생 온보딩 ===== -->
+<div class="screen" id="sOnboard">
+  <div class="obwrap">
+    <div class="oblogo" id="obLogo2" onclick="logoTap()">열공타이머</div>
+    <div class="obdesc">선생님이 우리 반의 자기주도학습역량을<br>꼼꼼하게 기록하고 있습니다. 오늘도 화이팅! 📚</div>
+    <div class="st">방 선택</div>
+    <div id="obRoomList"><div class="empty"><span class="spin"></span></div></div>
+    <div style="margin-top:11px;font-size:.7rem;color:var(--g5);text-align:center;">방을 클릭하고 학번을 입력하면 입장됩니다.</div>
+  </div>
+</div>
+
+<!-- ===== 학번 입력 모달 ===== -->
+<div class="mov" id="modalEnter">
+  <div class="msh">
+    <div class="mhnd"></div>
+    <div class="mtitle" id="enterTitle">학번 입력</div>
+    <div style="font-size:.73rem;color:var(--g5);margin-bottom:13px;">등록된 학번을 입력하면 자동으로 이름이 매칭됩니다.</div>
+    <div class="ig"><div class="ilabel">학번</div>
+      <input type="text" id="enterSid" placeholder="예) 10101" maxlength="10" inputmode="numeric" onkeydown="if(event.key==='Enter')doEnter()">
+    </div>
+    <button class="btn bk fw" onclick="doEnter()" style="margin-bottom:9px;">입장하기</button>
+    <button class="btn ol sm fw" onclick="closeModal('modalEnter')">취소</button>
+  </div>
+</div>
+
+<!-- ===== 학생 메인 ===== -->
+<div class="screen" id="sMain">
+  <div class="notice-bar" id="noticeBanner"></div>
+  <div class="rec-bar" id="recBar">🔴 촬영 중</div>
+  <div class="topbar">
+    <div class="tl">
+      <div class="tlabel" id="topName">—</div>
+      <div class="ttitle" id="topRoom">—</div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <span class="subj-pill" id="topSubj" style="display:none;"></span>
+      <button class="gh" onclick="doLogout()">나가기</button>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button class="nb active" id="nbTimer" onclick="switchTab('Timer')"><span class="ni">⏱</span>타이머</button>
+    <button class="nb" id="nbRank" onclick="switchTab('Rank')"><span class="ni">↑↓</span>랭킹</button>
+    <button class="nb" id="nbMe" onclick="switchTab('Me')"><span class="ni">◎</span>내기록</button>
+  </div>
+
+  <!-- 타이머 탭 -->
+  <div class="scroll" id="tabTimer">
+    <div style="padding-top:16px;">
+      <!-- 목표 -->
+      <div class="goal-wrap" id="goalWrap" style="display:none;">
+        <div class="goal-hd">
+          <div class="ilabel">오늘 목표</div>
+          <div class="goal-pct" id="goalPct">0%</div>
+        </div>
+        <div class="goal-track"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
+        <div class="goal-sub" id="goalSub"></div>
+      </div>
+      <div class="ilabel">현재 세션</div>
+      <div class="tbig" id="timerDisp">00:00:00</div>
+      <div style="display:flex;gap:7px;margin-bottom:18px;">
+        <button class="btn bk" id="timerBtn" onclick="toggleTimer()" style="flex:1;padding:12px;">시작</button>
+        <button class="btn ol" onclick="saveAndReset()">저장</button>
+        <button class="btn ol sm" onclick="openGoalModal()" title="목표 설정">🎯</button>
+      </div>
+      <hr>
+      <div class="st">오늘 기록</div>
+      <div id="todaySess"><div class="empty" style="padding:10px 0;">아직 기록 없음</div></div>
+      <hr>
+      <!-- 타임랩스 -->
+      <div class="st">📷 타임랩스 <span style="font-size:.6rem;color:var(--g5);font-weight:400;">동기부여용 공부 촬영</span></div>
+      <div class="tl-prev" id="tlPrev"><video id="tlVid" class="tl-vid" autoplay muted playsinline></video></div>
+      <div class="tl-cnt" id="tlCnt"></div>
+      <div class="tl-ctrl">
+        <select id="tlSec"><option value="10">10초 간격</option><option value="30" selected>30초 간격</option><option value="60">60초 간격</option></select>
+        <button class="btn ol sm" id="tlBtn" onclick="toggleTL()">📷 촬영 시작</button>
+        <button class="btn ol sm" id="tlSendBtn" onclick="sendTL()" style="display:none;">📤 선생님께 전송</button>
+      </div>
+      <div class="tl-note">
+        📱 촬영본은 <b>이 기기 메모리</b>에만 임시 저장됩니다.<br>
+        ☁️ [선생님께 전송] 버튼을 누르면 <b>선생님 Google Drive</b>에 저장됩니다.<br>
+        🗑️ 브라우저를 닫거나 전송하지 않으면 촬영본은 자동으로 사라집니다.<br>
+        📄 전송 형식은 사진 모음(PDF)이며 영상 파일이 아닙니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- 랭킹 탭 -->
+  <div class="scroll" id="tabRank" style="display:none;">
+    <div style="padding-top:14px;">
+      <div class="tabbar">
+        <button class="tb active" onclick="swPeriod('today',this)">오늘</button>
+        <button class="tb" onclick="swPeriod('week',this)">이번 주</button>
+        <button class="tb" onclick="swPeriod('month',this)">이번 달</button>
+        <button class="tb" onclick="swPeriod('total',this)">전체</button>
+      </div>
+      <div id="rankList"><div class="empty"><span class="spin"></span></div></div>
+    </div>
+  </div>
+
+  <!-- 내기록 탭 -->
+  <div class="scroll" id="tabMe" style="display:none;">
+    <div style="padding-top:14px;">
+      <div id="strkBox" class="strk" style="display:none;">
+        <div style="font-size:1.5rem;">🔥</div>
+        <div>
+          <div style="display:flex;align-items:baseline;gap:4px;">
+            <div class="strk-v" id="strkVal">0</div>
+            <div class="strk-l">일 연속 공부 중</div>
+          </div>
+          <div class="strk-l" id="strkSub"></div>
+        </div>
+      </div>
+      <div id="zeroBanner" class="zero-banner" style="display:none;"></div>
+      <div class="sgrid">
+        <div class="scell"><div class="ilabel">오늘</div><div class="sval" id="sToday">--:--:--</div><div class="srnk" id="rToday">—</div></div>
+        <div class="scell"><div class="ilabel">이번 주</div><div class="sval" id="sWeek">--:--:--</div><div class="srnk" id="rWeek">—</div></div>
+        <div class="scell"><div class="ilabel">이번 달</div><div class="sval" id="sMonth">--:--:--</div><div class="srnk" id="rMonth">—</div></div>
+        <div class="scell"><div class="ilabel">전체 누적</div><div class="sval" id="sTotal">--:--:--</div><div class="srnk" id="rTotal">—</div></div>
+      </div>
+      <div class="st">과목별 누적</div>
+      <div id="mySubjBars"><div class="empty">데이터 없음</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 교사 화면 ===== -->
+<div class="screen" id="sTeacher">
+  <div class="topbar">
+    <span class="ttitle">교사 대시보드</span>
+    <button class="gh" onclick="doTeacherLogout()">로그아웃</button>
+  </div>
+  <div class="scroll" style="padding-top:14px;">
+
+    <!-- 방 목록 -->
+    <div id="tListPanel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;">
+        <div class="st" style="margin-bottom:0;border:none;">과목방 목록</div>
+        <button class="btn bk sm" onclick="openModal('modalCreate')">+ 방 만들기</button>
+      </div>
+      <div id="tRoomList"><div class="empty"><span class="spin"></span></div></div>
+    </div>
+
+    <!-- 방 상세 -->
+    <div id="tDetailPanel" style="display:none;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+        <div style="min-width:0;">
+          <div style="font-size:.96rem;font-weight:700;" id="tDName">—</div>
+          <div style="font-size:.7rem;color:var(--g5);margin-top:2px;" id="tDMeta"></div>
+        </div>
+        <button class="gh" onclick="closeDetail()">← 목록</button>
+      </div>
+      <div class="tabbar">
+        <button class="tb active" onclick="swTTab('Rank',this)">순위</button>
+        <button class="tb" onclick="swTTab('Subj',this)">과목별</button>
+        <button class="tb" onclick="swTTab('Search',this)">검색</button>
+        <button class="tb" onclick="swTTab('Att',this)">출석부</button>
+        <button class="tb" onclick="swTTab('Bulk',this)">일괄프롬프트</button>
+        <button class="tb" onclick="swTTab('TL',this)">타임랩스</button>
+        <button class="tb" onclick="swTTab('Roster',this)">학생명단</button>
+      </div>
+      <div id="tSubRank"><div id="tRankList"></div></div>
+      <div id="tSubSubj" style="display:none;"><div id="tSubjBars"></div></div>
+      <div id="tSubSearch" style="display:none;">
+        <div style="display:flex;gap:7px;margin-bottom:12px;">
+          <input type="text" id="searchSid" placeholder="학번 입력" style="flex:1;" inputmode="numeric">
+          <button class="btn ol sm" onclick="doSearchStudent()">조회</button>
+        </div>
+        <div id="tStuResult"></div>
+        <div id="tPromptWrap" style="display:none;margin-top:14px;">
+          <div class="st">생기부 프롬프트</div>
+          <div class="pbox" id="tPromptText"></div>
+          <button class="btn ol sm fw" onclick="copyPrompt()" style="margin-top:9px;">복사 → Claude.ai에 붙여넣기</button>
+        </div>
+      </div>
+      <div id="tSubAtt" style="display:none;">
+        <button class="btn bk sm fw" onclick="loadAttendance()" style="margin-bottom:12px;">📋 출석부 생성 / 새로고침</button>
+        <div id="tAttResult"></div>
+      </div>
+      <div id="tSubBulk" style="display:none;">
+        <div style="font-size:.73rem;color:var(--g5);margin-bottom:12px;line-height:1.6;">반 전체 학생의 생기부 프롬프트를 한 번에 생성합니다.<br>생성 후 스프레드시트에 자동 저장됩니다.</div>
+        <button class="btn bk sm fw" onclick="loadBulkPrompts()" style="margin-bottom:12px;">✨ 전체 프롬프트 생성</button>
+        <div id="tBulkResult"></div>
+      </div>
+      <div id="tSubTL" style="display:none;"><div id="tTLList"></div></div>
+      <div id="tSubRoster" style="display:none;">
+        <div class="ig">
+          <div class="ilabel" style="margin-bottom:5px;">일괄 입력 (한 줄에: 학번 이름)</div>
+          <textarea id="bulkInput" placeholder="10101 홍길동&#10;10102 김철수&#10;10103 이영희"></textarea>
+          <button class="btn bk sm fw" onclick="doBulkRoster()" style="margin-top:7px;">등록 (기존 명단 교체)</button>
+        </div>
+        <hr>
+        <div class="ilabel" style="margin-bottom:7px;">한 명씩 추가</div>
+        <div style="display:flex;gap:7px;margin-bottom:12px;">
+          <input type="text" id="addSid" placeholder="학번" style="width:88px;flex-shrink:0;">
+          <input type="text" id="addName" placeholder="이름" style="flex:1;">
+          <button class="btn ol sm" onclick="doAddStudent()">추가</button>
+        </div>
+        <div class="st">등록된 학생</div>
+        <div id="rosterList"><div class="empty"><span class="spin"></span></div></div>
+      </div>
+    </div>
+
+    <!-- 설정 -->
+    <div style="margin-top:24px;padding-top:14px;border-top:1px solid var(--bd);">
+      <div class="st">📢 학생 공지</div>
+      <div style="display:flex;gap:7px;margin-bottom:18px;">
+        <input type="text" id="noticeInput" placeholder="학생 화면 상단에 표시 (비우면 숨김)" style="flex:1;font-size:.82rem;">
+        <button class="btn ol sm" onclick="saveNotice()">저장</button>
+      </div>
+      <div class="st">비밀번호 변경</div>
+      <div style="display:flex;gap:7px;">
+        <input type="password" id="newPwInput" placeholder="새 비밀번호 (4자 이상)" style="flex:1;">
+        <button class="btn ol sm" onclick="changePw()">변경</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 교사 로그인 모달 -->
+<div class="mov" id="modalTeacher">
+  <div class="msh">
+    <div class="mhnd"></div>
+    <div class="mtitle">교사 로그인</div>
+    <div class="ig"><div class="ilabel">비밀번호</div>
+      <input type="password" id="teacherPwInput" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')doTeacherLogin()">
+    </div>
+    <button class="btn bk fw" onclick="doTeacherLogin()" style="margin-bottom:9px;">로그인</button>
+    <button class="btn ol sm fw" onclick="closeModal('modalTeacher')">취소</button>
+  </div>
+</div>
+
+<!-- 방 만들기 모달 -->
+<div class="mov" id="modalCreate">
+  <div class="msh">
+    <div class="mhnd"></div>
+    <div class="mtitle">과목방 만들기</div>
+    <div class="ig"><div class="ilabel">방 이름</div><input type="text" id="newRoomName" placeholder="예) 3학년 1반"></div>
+    <div class="ig"><div class="ilabel">과목</div><input type="text" id="newRoomSubj" placeholder="예) 한국사"></div>
+    <button class="btn bk fw" onclick="doCreateRoom()" style="margin-bottom:9px;">만들기</button>
+    <button class="btn ol sm fw" onclick="closeModal('modalCreate')">취소</button>
+  </div>
+</div>
+
+<!-- 방 생성 완료 모달 -->
+<div class="mov" id="modalCreated">
+  <div class="msh">
+    <div class="mhnd"></div>
+    <div class="mtitle">방이 만들어졌어요! 🎉</div>
+    <div style="font-size:.78rem;color:var(--g5);margin-bottom:14px;">이제 [학생명단] 탭에서 학생을 등록하세요.</div>
+    <div id="createdInfo" style="font-weight:700;font-size:.92rem;margin-bottom:18px;"></div>
+    <button class="btn bk fw" onclick="closeModal('modalCreated')">확인</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="loadOv" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,.75);z-index:400;align-items:center;justify-content:center;">
+  <span class="spin" style="width:24px;height:24px;border-width:2.5px;"></span>
+</div>
+
+<script>
+// ============================================================
+// 상태
+// ============================================================
+var GAS_URL = '';
+var user = null;
+var teacherPw = '';
+var timerSec = 0, timerOn = false, timerIv = null;
+var curPeriod = 'today';
+var userGoalSec = 0;
+var lastPrompt = '';
+var curTRoom = '';
+var pendingRoom = null;
+// 타임랩스
+var tlOn = false, tlIv = null, tlStream = null, tlFrames = [], tlCapSec = 30;
+// 로고 탭 카운터
+var logoTaps = 0, logoTimer = null;
+
+// ============================================================
+// GAS API
+// ============================================================
+async function API(params) {
+  if (!GAS_URL) { toast('GAS URL이 설정되지 않았습니다'); throw new Error('no url'); }
+  var url = GAS_URL + '?' + new URLSearchParams(params).toString();
+  var r = await fetch(url, { method: 'GET', redirect: 'follow' });
+  return r.json();
+}
+
+// ============================================================
+// 셋업 화면 (GAS URL)
+// ============================================================
+function saveGasUrl() {
+  var url = document.getElementById('gasInput').value.trim();
+  if (!url.startsWith('https://')) { toast('올바른 URL을 입력하세요'); return; }
+  GAS_URL = url;
+  localStorage.setItem('yg_gas_url', url);
+  showMyLink();
+}
+function showMyLink() {
+  var myLink = location.origin + location.pathname + '#' + encodeURIComponent(GAS_URL);
+  document.getElementById('myLinkBox').textContent = myLink;
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('myLinkPanel').style.display = 'block';
+}
+function copyMyLink() {
+  var link = document.getElementById('myLinkBox').textContent;
+  navigator.clipboard.writeText(link).then(function() { toast('링크 복사 완료! QR코드를 만들어 학생들에게 배포하세요.'); });
+}
+function goToApp() {
+  showScreen('sOnboard');
+  loadObRooms();
+}
+function resetGasUrl() {
+  localStorage.removeItem('yg_gas_url');
+  GAS_URL = '';
+  document.getElementById('gasInput').value = '';
+  document.getElementById('setupPanel').style.display = 'block';
+  document.getElementById('myLinkPanel').style.display = 'none';
+}
+
+// ============================================================
+// 로고 5번 탭 → 교사 로그인
+// ============================================================
+function logoTap() {
+  logoTaps++;
+  clearTimeout(logoTimer);
+  if (logoTaps >= 5) {
+    logoTaps = 0;
+    document.getElementById('teacherPwInput').value = '';
+    openModal('modalTeacher');
+    setTimeout(function() { document.getElementById('teacherPwInput').focus(); }, 300);
+  } else {
+    logoTimer = setTimeout(function() { logoTaps = 0; }, 2000);
+  }
+}
+
+// ============================================================
+// 온보딩
+// ============================================================
+async function loadObRooms() {
+  var el = document.getElementById('obRoomList');
+  el.innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  try {
+    var r = await API({ action: 'getRoomList' });
+    if (!r.success || !r.rooms.length) { el.innerHTML = '<div class="empty">방이 없습니다.<br>선생님께 문의하세요.</div>'; return; }
+    el.innerHTML = r.rooms.map(function(room) {
+      return '<div class="rc" onclick="clickRoom(\'' + esc(room.roomCode) + '\',\'' + esc(room.roomName) + '\',\'' + esc(room.subject||'') + '\')">'
+        + '<div class="rcn">' + room.roomName + (room.subject ? ' <span class="rcs">' + room.subject + '</span>' : '') + '</div>'
+        + '<div class="rcm"><span>오늘 ' + room.todayCount + '명 공부</span><span>' + room.rosterCount + '명 등록</span></div>'
+        + '</div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="empty">불러오기 실패<br>잠시 후 다시 시도하세요.</div>'; }
+}
+
+function clickRoom(code, name, subj) {
+  pendingRoom = { roomCode: code, roomName: unescape(name), subject: unescape(subj) };
+  document.getElementById('enterTitle').textContent = unescape(name) + (subj ? ' — ' + unescape(subj) : '');
+  document.getElementById('enterSid').value = '';
+  openModal('modalEnter');
+  setTimeout(function() { document.getElementById('enterSid').focus(); }, 300);
+}
+
+async function doEnter() {
+  if (!pendingRoom) { closeModal('modalEnter'); return; }
+  var sid = v('enterSid');
+  if (!sid) { toast('학번을 입력하세요'); return; }
+  showLoad();
+  try {
+    var r = await API({ action: 'studentEnter', roomCode: pendingRoom.roomCode, studentId: sid });
+    if (!r.success) { toast(r.message); return; }
+    closeModal('modalEnter');
+    enterStudent(r.studentId, r.name, r.roomCode, r.roomName, r.subject);
+  } catch(e) { toast('서버 연결 실패'); }
+  finally { hideLoad(); }
+}
+
+async function doTeacherLogin() {
+  var pw = v('teacherPwInput');
+  if (!pw) { toast('비밀번호를 입력하세요'); return; }
+  showLoad();
+  try {
+    var r = await API({ action: 'teacherLogin', password: pw });
+    if (!r.success) { toast(r.message); return; }
+    teacherPw = pw;
+    closeModal('modalTeacher');
+    showScreen('sTeacher');
+    loadTeacherRooms();
+  } catch(e) { toast('서버 연결 실패'); }
+  finally { hideLoad(); }
+}
+
+function enterStudent(sid, name, code, roomName, subj) {
+  user = { studentId: sid, name: name, roomCode: code, roomName: roomName, subject: subj || '' };
+  localStorage.setItem('yg_user', JSON.stringify(user));
+  document.getElementById('topName').textContent = name + ' (' + sid + ')';
+  document.getElementById('topRoom').textContent = roomName;
+  var sp = document.getElementById('topSubj');
+  if (subj) { sp.textContent = subj; sp.style.display = 'inline'; } else sp.style.display = 'none';
+  showScreen('sMain');
+  loadNotice();
+  loadMyStats();
+  loadGoal();
+  renderTodaySess();
+  switchTab('Timer');
+}
+
+function doLogout() {
+  if (timerOn) stopTimer();
+  if (tlOn) stopTL();
+  user = null;
+  localStorage.removeItem('yg_user');
+  showScreen('sOnboard');
+  loadObRooms();
+}
+function doTeacherLogout() { teacherPw = ''; showScreen('sOnboard'); loadObRooms(); }
+
+// ============================================================
+// 탭 전환
+// ============================================================
+function switchTab(t) {
+  ['Timer','Rank','Me'].forEach(function(x) {
+    document.getElementById('tab'+x).style.display = x===t ? 'block' : 'none';
+    document.getElementById('nb'+x).classList.toggle('active', x===t);
+  });
+  if (t==='Rank') loadRanking();
+  if (t==='Me') loadMyStats();
+}
+
+// ============================================================
+// 타이머
+// ============================================================
+function toggleTimer() { timerOn ? stopTimer() : startTimer(); }
+function startTimer() {
+  timerOn = true;
+  document.getElementById('timerBtn').textContent = '일시정지';
+  document.getElementById('timerDisp').classList.add('run');
+  timerIv = setInterval(function() { timerSec++; document.getElementById('timerDisp').textContent = fmt(timerSec); }, 1000);
+}
+function stopTimer() {
+  timerOn = false; clearInterval(timerIv);
+  document.getElementById('timerBtn').textContent = '계속';
+  document.getElementById('timerDisp').classList.remove('run');
+}
+async function saveAndReset() {
+  if (timerSec < 10) { toast('최소 10초 이상 공부해야 저장됩니다'); return; }
+  if (timerOn) stopTimer();
+  var sec = timerSec;
+  showLoad();
+  try {
+    var r = await API({ action: 'saveSession', roomCode: user.roomCode, studentId: user.studentId, seconds: parseInt(sec) });
+    if (r.success) {
+      toast(fmt(sec) + ' 저장 완료 (' + (r.subject||'') + ')');
+      timerSec = 0;
+      document.getElementById('timerDisp').textContent = '00:00:00';
+      document.getElementById('timerBtn').textContent = '시작';
+      document.getElementById('timerDisp').classList.remove('run');
+      var sess = JSON.parse(localStorage.getItem('yg_sess') || '[]');
+      sess.push({ subject: r.subject||'공부', seconds: sec, time: new Date().toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' }) });
+      localStorage.setItem('yg_sess', JSON.stringify(sess));
+      renderTodaySess();
+      renderGoal();
+    } else toast('저장 실패: ' + r.message);
+  } catch(e) { toast('서버 오류: ' + e.message); }
+  finally { hideLoad(); }
+}
+function renderTodaySess() {
+  var el = document.getElementById('todaySess');
+  var sess = JSON.parse(localStorage.getItem('yg_sess') || '[]');
+  if (!sess.length) { el.innerHTML = '<div class="empty" style="padding:9px 0;">아직 기록 없음</div>'; return; }
+  el.innerHTML = sess.slice().reverse().map(function(s) {
+    return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:.78rem;">'
+      + '<span style="font-weight:600;">' + s.subject + '</span>'
+      + '<span style="font-family:var(--mono);color:var(--g5);">' + s.time + '&nbsp;&nbsp;' + fmt(s.seconds) + '</span></div>';
+  }).join('');
+}
+
+// ============================================================
+// 목표 시간
+// ============================================================
+async function loadGoal() {
+  if (!user) return;
+  try {
+    var r = await API({ action: 'getGoal', roomCode: user.roomCode, studentId: user.studentId });
+    userGoalSec = r.goal || 0;
+    renderGoal();
+  } catch(e) {}
+}
+function renderGoal() {
+  var wrap = document.getElementById('goalWrap');
+  if (!userGoalSec) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  var sess = JSON.parse(localStorage.getItem('yg_sess') || '[]');
+  var todaySec = sess.reduce(function(s, x) { return s + x.seconds; }, 0);
+  var pct = Math.min(100, Math.round(todaySec / userGoalSec * 100));
+  var done = pct >= 100;
+  document.getElementById('goalPct').textContent = pct + '%';
+  document.getElementById('goalFill').style.width = pct + '%';
+  document.getElementById('goalFill').style.background = done ? '#111' : '#111';
+  var remain = Math.max(0, userGoalSec - todaySec);
+  document.getElementById('goalSub').textContent = done
+    ? '🎉 목표 달성! 오늘 정말 잘했어요!'
+    : '목표 ' + fmtMin(userGoalSec) + ' · 남은 시간 ' + fmtMin(remain);
+}
+function fmtMin(s) {
+  s = Math.floor(s||0);
+  var h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+  return h > 0 ? h + '시간 ' + m + '분' : m + '분';
+}
+function openGoalModal() {
+  var cur = userGoalSec > 0 ? fmtMin(userGoalSec) : '없음';
+  var input = prompt('오늘 목표 공부시간 설정\n현재: ' + cur + '\n\n분 단위로 입력하세요:\n(예: 120 = 2시간, 0 = 목표 해제)');
+  if (input === null) return;
+  var min = parseInt(input);
+  if (isNaN(min) || min < 0) { toast('올바른 숫자를 입력하세요'); return; }
+  API({ action: 'setGoal', roomCode: user.roomCode, studentId: user.studentId, seconds: min * 60 }).then(function(r) {
+    if (r.success) { userGoalSec = min * 60; renderGoal(); toast(min > 0 ? '목표 ' + min + '분 설정 완료' : '목표 해제'); }
+    else toast(r.message);
+  });
+}
+
+// ============================================================
+// 공지
+// ============================================================
+async function loadNotice() {
+  try {
+    var r = await API({ action: 'getNotice' });
+    var nb = document.getElementById('noticeBanner');
+    if (r.success && r.notice) { nb.textContent = '📢 ' + r.notice; nb.style.display = 'block'; }
+    else nb.style.display = 'none';
+  } catch(e) {}
+}
+async function saveNotice() {
+  var text = v('noticeInput');
+  try {
+    var r = await API({ action: 'setNotice', password: teacherPw, notice: text });
+    if (r.success) toast(text ? '공지 저장 완료' : '공지 삭제 완료');
+    else toast(r.message);
+  } catch(e) { toast('오류'); }
+}
+
+// ============================================================
+// 랭킹
+// ============================================================
+function swPeriod(p, el) {
+  curPeriod = p;
+  document.querySelectorAll('#tabRank .tabbar .tb').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  loadRanking();
+}
+async function loadRanking() {
+  var el = document.getElementById('rankList');
+  el.innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  try {
+    var r = await API({ action: 'getRanking', roomCode: user.roomCode, period: curPeriod, subject: 'all' });
+    if (!r.success || !r.ranking.length) { el.innerHTML = '<div class="empty">기록이 없습니다</div>'; return; }
+    var myId = user.studentId;
+    el.innerHTML = r.ranking.map(function(row, i) {
+      var sec = row[r.sortKey] || 0;
+      var pct = r.topSec > 0 ? Math.round(sec / r.topSec * 100) : 0;
+      var isMe = row.studentId === myId;
+      var nc = i===0?'n1':i===1?'n2':i===2?'n3':'';
+      return '<div class="rrow" style="animation-delay:' + (i*.03) + 's">'
+        + '<div class="rnum ' + nc + '">' + (i+1) + '</div>'
+        + '<div class="rinfo"><div><span class="rname">' + row.name + '</span>'
+        + (isMe ? '<span class="me">나</span>' : '')
+        + (row.streak > 1 ? ' <span style="font-size:.66rem;">🔥' + row.streak + '</span>' : '')
+        + '</div><div class="rsub">' + row.studentId + '</div>'
+        + '<div class="rbt"><div class="rbf" style="width:' + pct + '%"></div></div></div>'
+        + '<div><div class="rtime">' + fmt(sec) + '</div>'
+        + '<div class="rgap">' + (row.gapFromTop > 0 ? '-' + fmt(row.gapFromTop) : '1위 🏆') + '</div></div>'
+        + '</div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="empty">불러오기 실패</div>'; }
+}
+
+// ============================================================
+// 내 기록
+// ============================================================
+async function loadMyStats() {
+  try {
+    var r = await API({ action: 'getMyStats', roomCode: user.roomCode, studentId: user.studentId });
+    if (!r.success) return;
+    var s = r.stats, rk = r.ranks;
+    document.getElementById('sToday').textContent = fmt(s.today||0);
+    document.getElementById('sWeek').textContent  = fmt(s.week||0);
+    document.getElementById('sMonth').textContent = fmt(s.month||0);
+    document.getElementById('sTotal').textContent = fmt(s.total||0);
+    document.getElementById('rToday').textContent = rk.today ? rk.today + '위' : '—';
+    document.getElementById('rWeek').textContent  = rk.week  ? rk.week  + '위' : '—';
+    document.getElementById('rMonth').textContent = rk.month ? rk.month + '위' : '—';
+    document.getElementById('rTotal').textContent = rk.total ? rk.total + '위' : '—';
+    var streak = r.streak || 0;
+    var sb = document.getElementById('strkBox');
+    if (streak > 0) {
+      sb.style.display = 'flex';
+      document.getElementById('strkVal').textContent = streak;
+      document.getElementById('strkSub').textContent = streak >= 7 ? '한 주 내내! 🎉' : streak >= 3 ? '계속 이어가요!' : '좋은 시작!';
+    } else sb.style.display = 'none';
+    var zb = document.getElementById('zeroBanner');
+    if ((s.today||0) === 0 && r.zeroToday > 0) {
+      zb.style.display = 'block';
+      zb.textContent = '오늘 아직 공부를 시작하지 않았어요. 지금 시작하면 ' + r.zeroToday + '명보다 앞설 수 있어요!';
+    } else if ((s.today||0) > 0 && r.zeroToday > 0) {
+      zb.style.display = 'block';
+      zb.textContent = '오늘 공부 안 한 친구 ' + r.zeroToday + '명. 잘하고 있어요! 💪';
+    } else zb.style.display = 'none';
+    renderSubjBars('mySubjBars', r.subjects || {});
+  } catch(e) {}
+}
+function renderSubjBars(id, map) {
+  var el = document.getElementById(id);
+  var ent = Object.entries(map).sort(function(a,b) { return b[1]-a[1]; });
+  if (!ent.length) { el.innerHTML = '<div class="empty">데이터 없음</div>'; return; }
+  var max = ent[0][1] || 1;
+  el.innerHTML = ent.map(function(e) {
+    return '<div class="sbar"><div class="sbn">' + e[0] + '</div>'
+      + '<div class="sbt"><div class="sbf" style="width:' + Math.round(e[1]/max*100) + '%"></div></div>'
+      + '<div class="sbv">' + fmt(e[1]) + '</div></div>';
+  }).join('');
+}
+
+// ============================================================
+// 타임랩스
+// ============================================================
+async function toggleTL() { tlOn ? stopTL() : await startTL(); }
+async function startTL() {
+  try {
+    tlStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    document.getElementById('tlVid').srcObject = tlStream;
+    document.getElementById('tlPrev').style.display = 'block';
+    tlFrames = [];
+    tlCapSec = parseInt(document.getElementById('tlSec').value);
+    tlOn = true;
+    document.getElementById('tlBtn').textContent = '⏹ 촬영 중지';
+    document.getElementById('tlSendBtn').style.display = 'none';
+    document.getElementById('recBar').style.display = 'block';
+    document.getElementById('tlCnt').textContent = '';
+    capFrame();
+    tlIv = setInterval(capFrame, tlCapSec * 1000);
+  } catch(e) { toast('카메라 접근 권한이 필요합니다'); }
+}
+function capFrame() {
+  var vid = document.getElementById('tlVid');
+  if (!vid.videoWidth) return;
+  var c = document.createElement('canvas');
+  c.width = vid.videoWidth; c.height = vid.videoHeight;
+  c.getContext('2d').drawImage(vid, 0, 0);
+  tlFrames.push(c.toDataURL('image/jpeg', 0.65));
+  document.getElementById('recBar').textContent = '🔴 촬영 중 · ' + tlFrames.length + '장 · 이 기기에만 저장 중';
+  document.getElementById('tlCnt').textContent = tlFrames.length + '장 촬영됨 (' + tlCapSec + '초 간격)';
+}
+function stopTL() {
+  tlOn = false; clearInterval(tlIv);
+  if (tlStream) { tlStream.getTracks().forEach(function(t) { t.stop(); }); tlStream = null; }
+  document.getElementById('tlPrev').style.display = 'none';
+  document.getElementById('tlBtn').textContent = '📷 촬영 시작';
+  document.getElementById('recBar').style.display = 'none';
+  if (tlFrames.length > 0) {
+    document.getElementById('tlSendBtn').style.display = 'inline-block';
+    document.getElementById('tlCnt').textContent = '✅ 촬영 완료 · ' + tlFrames.length + '장 · 아직 이 기기에만 있어요. [선생님께 전송]을 눌러주세요.';
+  } else document.getElementById('tlCnt').textContent = '';
+}
+async function sendTL() {
+  if (!tlFrames.length) { toast('촬영된 프레임이 없습니다'); return; }
+  toast('PDF 생성 중... 잠시 기다려주세요');
+  showLoad();
+  try {
+    var b64 = await framesToPdf(tlFrames);
+    var r = await API({
+      action: 'saveTimelapse',
+      roomCode: user.roomCode,
+      studentId: user.studentId,
+      name: user.name,
+      pdfBase64: b64,
+      duration: timerSec,
+      frames: tlFrames.length
+    });
+    if (r.success) {
+      toast('✅ 선생님 Google Drive에 저장 완료!');
+      tlFrames = [];
+      document.getElementById('tlSendBtn').style.display = 'none';
+      document.getElementById('tlCnt').textContent = '☁️ 전송 완료 · 선생님 Google Drive에 저장되었습니다.';
+    } else toast('전송 실패: ' + r.message);
+  } catch(e) { toast('전송 실패: ' + e.message); }
+  finally { hideLoad(); }
+}
+async function framesToPdf(frames) {
+  var images = [];
+  for (var i = 0; i < frames.length; i++) {
+    var img = new Image(); img.src = frames[i];
+    await new Promise(function(res) { img.onload = res; });
+    var c = document.createElement('canvas');
+    var ratio = Math.min(595 / img.width, 842 / img.height);
+    c.width = Math.round(img.width * ratio);
+    c.height = Math.round(img.height * ratio);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    images.push({ data: c.toDataURL('image/jpeg', 0.6).split(',')[1], w: c.width, h: c.height });
+  }
+  var parts = [], objs = {};
+  function add(s) { parts.push(s); }
+  function pos() { return parts.join('').length; }
+  add('%PDF-1.4\n');
+  objs[1] = pos(); add('1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n');
+  objs[2] = pos(); add('2 0 obj\n<</Type/Pages/Kids [');
+  var base = 10;
+  for (var pi = 0; pi < images.length; pi++) add((base + pi*3) + ' 0 R ');
+  add(']/Count ' + images.length + '>>\nendobj\n');
+  for (var pi2 = 0; pi2 < images.length; pi2++) {
+    var bn = base + pi2*3;
+    var imgB = atob(images[pi2].data), bArr = new Uint8Array(imgB.length);
+    for (var bi = 0; bi < imgB.length; bi++) bArr[bi] = imgB.charCodeAt(bi);
+    var bs = ''; for (var ki = 0; ki < bArr.length; ki++) bs += String.fromCharCode(bArr[ki]);
+    objs[bn] = pos();
+    add(bn + ' 0 obj\n<</Type/XObject/Subtype/Image/Width ' + images[pi2].w + '/Height ' + images[pi2].h
+      + '/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ' + bArr.length + '>>\nstream\n');
+    add(bs); add('\nendstream\nendobj\n');
+    var cs = 'q\n595 0 0 842 0 0 cm\n/Im Do\nQ\n';
+    objs[bn+1] = pos(); add((bn+1) + ' 0 obj\n<</Length ' + cs.length + '>>\nstream\n' + cs + '\nendstream\nendobj\n');
+    objs[bn+2] = pos(); add((bn+2) + ' 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]/Contents '
+      + (bn+1) + ' 0 R/Resources<</XObject<</Im ' + bn + ' 0 R>>>>>>\nendobj\n');
+  }
+  var xpos = pos();
+  var maxObj = Math.max.apply(null, Object.keys(objs).map(Number));
+  add('xref\n0 ' + (maxObj+1) + '\n0000000000 65535 f \n');
+  for (var xi = 1; xi <= maxObj; xi++) {
+    add(objs[xi] !== undefined ? String(objs[xi]).padStart(10,'0') + ' 00000 n \n' : '0000000000 65535 f \n');
+  }
+  add('trailer\n<</Size ' + (maxObj+1) + '/Root 1 0 R>>\nstartxref\n' + xpos + '\n%%EOF');
+  var full = parts.join('');
+  try { return btoa(full); }
+  catch(e) { var enc = new TextEncoder(), bytes = enc.encode(full), s = ''; for (var bi2 = 0; bi2 < bytes.length; bi2++) s += String.fromCharCode(bytes[bi2]); return btoa(s); }
+}
+
+// ============================================================
+// 교사 대시보드
+// ============================================================
+async function loadTeacherRooms() {
+  var el = document.getElementById('tRoomList');
+  el.innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  try {
+    var r = await API({ action: 'teacherListRooms', password: teacherPw });
+    if (!r.success) { el.innerHTML = '<div class="empty">' + r.message + '</div>'; return; }
+    if (!r.rooms.length) { el.innerHTML = '<div class="empty">방이 없습니다.<br>[+ 방 만들기]로 첫 번째 방을 만드세요.</div>'; return; }
+    el.innerHTML = r.rooms.map(function(room) {
+      return '<div class="rc" onclick="openDetail(\'' + esc(room.roomCode) + '\',\'' + esc(room.roomName) + '\',\'' + esc(room.subject||'') + '\')">'
+        + '<div class="rcn">' + room.roomName + (room.subject ? ' <span class="rcs">' + room.subject + '</span>' : '') + '</div>'
+        + '<div class="rcm"><span>오늘 ' + room.todayCount + '명</span><span>명단 ' + room.rosterCount + '명</span>'
+        + '<span>누적 ' + fmt(room.totalSec) + '</span></div></div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="empty">불러오기 실패</div>'; }
+}
+
+async function doCreateRoom() {
+  var name = v('newRoomName'), subj = v('newRoomSubj');
+  if (!name) { toast('방 이름을 입력하세요'); return; }
+  showLoad();
+  try {
+    var r = await API({ action: 'teacherCreateRoom', password: teacherPw, roomName: name, subject: subj });
+    if (!r.success) { toast(r.message); return; }
+    closeModal('modalCreate');
+    document.getElementById('createdInfo').textContent = r.roomName + (subj ? ' — ' + subj : '');
+    openModal('modalCreated');
+    document.getElementById('newRoomName').value = '';
+    document.getElementById('newRoomSubj').value = '';
+    loadTeacherRooms();
+  } catch(e) { toast('오류'); }
+  finally { hideLoad(); }
+}
+
+function openDetail(code, name, subj) {
+  curTRoom = code;
+  document.getElementById('tDName').textContent = unescape(name) + (subj ? ' — ' + unescape(subj) : '');
+  document.getElementById('tListPanel').style.display = 'none';
+  document.getElementById('tDetailPanel').style.display = 'block';
+  swTTab('Rank', document.querySelector('#tDetailPanel .tabbar .tb'));
+}
+function closeDetail() {
+  document.getElementById('tDetailPanel').style.display = 'none';
+  document.getElementById('tListPanel').style.display = 'block';
+  loadTeacherRooms();
+}
+function swTTab(tab, el) {
+  ['Rank','Subj','Search','Att','Bulk','TL','Roster'].forEach(function(t) {
+    document.getElementById('tSub'+t).style.display = t===tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('#tDetailPanel .tabbar .tb').forEach(function(b) { b.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  if (tab==='Rank') loadTRank();
+  if (tab==='Subj') loadTSubj();
+  if (tab==='Roster') loadTRoster();
+  if (tab==='TL') loadTTL();
+}
+
+async function loadTRank() {
+  var el = document.getElementById('tRankList');
+  el.innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  try {
+    var r = await API({ action: 'teacherGetRoom', password: teacherPw, roomCode: curTRoom });
+    if (!r.success) { el.innerHTML = '<div class="empty">' + r.message + '</div>'; return; }
+    document.getElementById('tDMeta').textContent = r.ranking.length + '명 기록';
+    if (!r.ranking.length) { el.innerHTML = '<div class="empty">아직 공부 기록이 없습니다</div>'; return; }
+    var max = r.ranking[0].total || 1;
+    el.innerHTML = r.ranking.map(function(row, i) {
+      return '<div class="rrow" style="animation-delay:' + (i*.03) + 's">'
+        + '<div class="rnum ' + (i===0?'n1':i===1?'n2':i===2?'n3':'') + '">' + (i+1) + '</div>'
+        + '<div class="rinfo"><div class="rname">' + row.name
+        + ' <span style="font-size:.66rem;color:var(--g5);">(' + row.studentId + ')</span>'
+        + (row.streak > 1 ? ' <span style="font-size:.66rem;">🔥' + row.streak + '일</span>' : '') + '</div>'
+        + '<div class="rbt"><div class="rbf" style="width:' + Math.round(row.total/max*100) + '%"></div></div></div>'
+        + '<div class="rtime">' + fmt(row.total) + '</div></div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="empty">불러오기 실패</div>'; }
+}
+
+async function loadTSubj() {
+  var el = document.getElementById('tSubjBars');
+  el.innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  try {
+    var r = await API({ action: 'teacherGetRoom', password: teacherPw, roomCode: curTRoom });
+    if (!r.success) { el.innerHTML = '<div class="empty">오류</div>'; return; }
+    renderSubjBars('tSubjBars', r.subjTotals || {});
+  } catch(e) { el.innerHTML = '<div class="empty">실패</div>'; }
+}
+
+async function doSearchStudent() {
+  var sid = v('searchSid');
+  if (!sid) { toast('학번을 입력하세요'); return; }
+  var el = document.getElementById('tStuResult');
+  el.innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  document.getElementById('tPromptWrap').style.display = 'none';
+  try {
+    var r = await API({ action: 'teacherGetStudent', password: teacherPw, roomCode: curTRoom, studentId: sid });
+    if (!r.success) { el.innerHTML = '<div class="empty">' + r.message + '</div>'; return; }
+    if (!r.records.length) { el.innerHTML = '<div class="empty">공부 기록 없음</div>'; return; }
+    var ent = Object.entries(r.subjMap).sort(function(a,b) { return b[1]-a[1]; });
+    el.innerHTML = '<div class="sgrid" style="margin-bottom:11px;">'
+      + '<div class="scell"><div class="ilabel">학생</div><div class="sval" style="font-size:.96rem;font-family:var(--sans);">' + r.name + '</div><div class="srnk">' + sid + '</div></div>'
+      + '<div class="scell"><div class="ilabel">총 누적</div><div class="sval">' + fmt(r.totalSec) + '</div><div class="srnk">' + (r.streak > 0 ? '🔥' + r.streak + '일 연속' : '스트릭 없음') + '</div></div>'
+      + '</div>'
+      + ent.map(function(e) {
+        return '<div class="sbar"><div class="sbn">' + e[0] + '</div>'
+          + '<div class="sbt"><div class="sbf" style="width:' + Math.round(e[1]/r.totalSec*100) + '%"></div></div>'
+          + '<div class="sbv">' + fmt(e[1]) + '</div></div>';
+      }).join('');
+    // 프롬프트는 buildAllPrompts 방식으로 서버에서 생성
+    var totalH = Math.floor(r.totalSec / 3600);
+    var top = ent.length > 0 ? ent[0][0] : '공부';
+    var prompt =
+      '아래 학생의 자기주도학습 데이터를 바탕으로 고등학교 생활기록부 교과세부특기사항 문구를 작성하세요.\n\n'
+      + '[학생 정보]\n이름: ' + r.name + ' / 학번: ' + sid + '\n\n'
+      + '[자기주도학습 실적]\n'
+      + '총 학습시간: 약 ' + totalH + '시간 (' + fmt(r.totalSec) + ')\n'
+      + '연속 학습: ' + r.streak + '일 연속\n'
+      + '과목별: ' + ent.map(function(e) { return e[0] + ' ' + fmt(e[1]); }).join(' / ') + '\n\n'
+      + '[작성 지침]\n'
+      + '1. 분량: 한 문단 140~160자\n'
+      + '2. 문체: 모든 문장을 ~함, ~임, ~됨 으로 마무리\n'
+      + '3. 금지: 특수기호, 괄호, 따옴표 사용 금지\n'
+      + '4. 필수 포함:\n'
+      + '   - 학급 자기주도학습 프로그램 자발적 참가 사실\n'
+      + '   - 총 ' + totalH + '시간 학습 및 ' + r.streak + '일 연속 참여 사실\n'
+      + '   - ' + top + ' 과목 중심 학습 내용\n'
+      + '   - 학급 내 우수한 성취와 자기주도 역량 성장\n'
+      + '5. 맥락 예시: "학급 자기주도학습 프로그램에 참가하여 ' + top + ' 과목을 중심으로 총 ' + totalH + '시간 이상 자기주도적으로 학습함. 꾸준한 참여를 통해 학급 내 우수한 순위를 달성하였으며 자기관리 역량과 ' + top + ' 관련 진로 역량을 기름"\n\n'
+      + '위 지침과 데이터를 반영하여 실제 생기부에 바로 사용할 수 있는 완성된 문장을 작성하세요.';
+    lastPrompt = prompt;
+    document.getElementById('tPromptText').textContent = prompt;
+    document.getElementById('tPromptWrap').style.display = 'block';
+  } catch(e) { el.innerHTML = '<div class="empty">불러오기 실패</div>'; }
+}
+function copyPrompt() {
+  navigator.clipboard.writeText(lastPrompt).then(function() { toast('복사 완료! Claude.ai에 붙여넣으세요 🎉'); });
+}
+
+async function loadAttendance() {
+  var el = document.getElementById('tAttResult');
+  el.innerHTML = '<div class="empty"><span class="spin"></span> 생성 중...</div>';
+  try {
+    var r = await API({ action: 'getAttendance', password: teacherPw, roomCode: curTRoom });
+    if (!r.success) { el.innerHTML = '<div class="empty">' + r.message + '</div>'; return; }
+    if (!r.rows.length) { el.innerHTML = '<div class="empty">학생 명단이 없습니다</div>'; return; }
+    var recent = r.dates.slice(-14);
+    var html = '<div style="font-size:.7rem;color:var(--g5);margin-bottom:7px;">총 ' + r.dates.length + '일 기록 · 최근 14일 표시 · 스프레드시트에 자동 저장됩니다</div>';
+    html += '<div class="att-wrap"><table class="att-table"><thead><tr><th>이름</th><th>출석률</th>';
+    recent.forEach(function(d) { html += '<th>' + d.slice(5) + '</th>'; });
+    html += '</tr></thead><tbody>';
+    r.rows.forEach(function(row) {
+      html += '<tr><td style="font-weight:600;text-align:left;">' + row.name + '</td><td><b>' + row.rate + '%</b></td>';
+      recent.forEach(function(d) {
+        var day = row.days.find(function(x) { return x.date === d; });
+        var sec = day ? day.seconds : 0;
+        html += '<td class="' + (sec > 0 ? 'att-o' : 'att-x') + '">' + (sec > 0 ? 'O' : 'X') + '</td>';
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<div class="empty">불러오기 실패</div>'; }
+}
+
+async function loadBulkPrompts() {
+  var el = document.getElementById('tBulkResult');
+  el.innerHTML = '<div class="empty"><span class="spin"></span> 생성 중...</div>';
+  try {
+    var r = await API({ action: 'buildAllPrompts', password: teacherPw, roomCode: curTRoom });
+    if (!r.success) { el.innerHTML = '<div class="empty">' + r.message + '</div>'; return; }
+    toast('✅ 스프레드시트에 저장 완료!');
+    var html = '<div style="font-size:.7rem;color:var(--g5);margin-bottom:11px;">총 ' + r.prompts.length + '명 · 스프레드시트 「프롬프트_' + curTRoom + '」 시트에 저장되었습니다.</div>';
+    html += r.prompts.map(function(p) {
+      return '<div class="prompt-item"><div class="prompt-nm">' + p.name
+        + ' <span style="font-size:.66rem;color:var(--g5);">(' + p.studentId + ')</span>'
+        + (p.totalSec > 0 ? ' <span style="font-family:var(--mono);font-size:.68rem;">' + fmt(p.totalSec) + '</span>' : '')
+        + '</div><div class="prompt-box">' + p.prompt + '</div>'
+        + '<button class="btn ol sm" onclick="copySingle(this)" data-t="' + encodeURIComponent(p.prompt) + '" style="margin-top:7px;">복사</button></div>';
+    }).join('');
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<div class="empty">생성 실패</div>'; }
+}
+function copySingle(btn) {
+  navigator.clipboard.writeText(decodeURIComponent(btn.getAttribute('data-t'))).then(function() { toast('복사 완료!'); });
+}
+
+async function loadTRoster() {
+  var el = document.getElementById('rosterList');
+  el.innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  try {
+    var r = await API({ action: 'teacherGetRoster', password: teacherPw, roomCode: curTRoom });
+    if (!r.success) { el.innerHTML = '<div class="empty">' + r.message + '</div>'; return; }
+    if (!r.students.length) { el.innerHTML = '<div class="empty">등록된 학생이 없습니다</div>'; return; }
+    el.innerHTML = r.students.map(function(s) {
+      return '<div class="srow"><div><span style="font-weight:600;">' + s.name + '</span> <span style="color:var(--g5);font-size:.73rem;">' + s.studentId + '</span></div>'
+        + '<button class="rd" onclick="removeStudent(\'' + esc(s.studentId) + '\')">삭제</button></div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="empty">불러오기 실패</div>'; }
+}
+
+async function doBulkRoster() {
+  var raw = document.getElementById('bulkInput').value.trim();
+  if (!raw) { toast('학생 목록을 입력하세요'); return; }
+  var lines = raw.replace(/\r/g, '').split('\n').filter(function(l) { return l.trim(); });
+  var students = [];
+  for (var i = 0; i < lines.length; i++) {
+    var parts = lines[i].trim().split(/\s+/);
+    if (parts.length >= 2) students.push({ studentId: parts[0], name: parts.slice(1).join(' ') });
+  }
+  if (!students.length) { toast('형식 오류: 학번 이름 형식으로 입력하세요'); return; }
+  showLoad();
+  try {
+    var r = await API({ action: 'teacherBulkRoster', password: teacherPw, roomCode: curTRoom, studentsJson: JSON.stringify(students) });
+    if (r.success) { toast(r.count + '명 등록 완료'); document.getElementById('bulkInput').value = ''; loadTRoster(); }
+    else toast(r.message);
+  } catch(e) { toast('오류: ' + e.message); }
+  finally { hideLoad(); }
+}
+
+async function doAddStudent() {
+  var sid = v('addSid'), name = v('addName');
+  if (!sid || !name) { toast('학번과 이름을 입력하세요'); return; }
+  showLoad();
+  try {
+    var r = await API({ action: 'teacherAddStudent', password: teacherPw, roomCode: curTRoom, studentId: sid, name: name });
+    if (r.success) { toast('등록 완료'); document.getElementById('addSid').value = ''; document.getElementById('addName').value = ''; loadTRoster(); }
+    else toast(r.message);
+  } catch(e) { toast('오류'); }
+  finally { hideLoad(); }
+}
+
+async function removeStudent(sid) {
+  if (!confirm(sid + ' 학생을 명단에서 삭제할까요?')) return;
+  showLoad();
+  try {
+    var r = await API({ action: 'teacherRemoveStudent', password: teacherPw, roomCode: curTRoom, studentId: sid });
+    if (r.success) { toast('삭제됨'); loadTRoster(); } else toast(r.message);
+  } catch(e) { toast('오류'); }
+  finally { hideLoad(); }
+}
+
+async function loadTTL() {
+  var el = document.getElementById('tTLList');
+  el.innerHTML = '<div class="empty"><span class="spin"></span></div>';
+  try {
+    var r = await API({ action: 'teacherGetRoom', password: teacherPw, roomCode: curTRoom });
+    if (!r.success) { el.innerHTML = '<div class="empty">오류</div>'; return; }
+    if (!r.timelapse || !r.timelapse.length) { el.innerHTML = '<div class="empty">제출된 타임랩스가 없습니다</div>'; return; }
+    el.innerHTML = r.timelapse.map(function(t) {
+      return '<div class="tl-item"><div><div style="font-weight:600;">' + t.name + ' (' + t.studentId + ')</div>'
+        + '<div style="font-size:.68rem;color:var(--g5);">' + t.date + ' · ' + t.frames + '장 · ' + fmt(t.seconds) + '</div></div>'
+        + '<a href="' + t.url + '" target="_blank" style="font-size:.74rem;color:var(--bk);text-decoration:underline;">열기</a></div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<div class="empty">불러오기 실패</div>'; }
+}
+
+async function changePw() {
+  var np = v('newPwInput');
+  if (!np || np.length < 4) { toast('4자 이상 입력하세요'); return; }
+  try {
+    var r = await API({ action: 'adminChangePw', password: teacherPw, newPassword: np });
+    if (r.success) { teacherPw = np; toast('변경 완료'); document.getElementById('newPwInput').value = ''; }
+    else toast(r.message);
+  } catch(e) { toast('오류'); }
+}
+
+// ============================================================
+// 유틸
+// ============================================================
+function fmt(s) { s=Math.floor(s||0); return pad(Math.floor(s/3600))+':'+pad(Math.floor((s%3600)/60))+':'+pad(s%60); }
+function pad(n) { return String(n).padStart(2,'0'); }
+function v(id) { return document.getElementById(id).value.trim(); }
+function esc(s) { return String(s).replace(/'/g,"\\'"); }
+function showScreen(id) { document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');}); document.getElementById(id).classList.add('active'); }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+var _tt;
+function toast(m) { var el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(function(){el.classList.remove('show');},2800); }
+var _lov;
+function showLoad() { if(!_lov)_lov=document.getElementById('loadOv');_lov.style.display='flex'; }
+function hideLoad() { if(_lov)_lov.style.display='none'; }
+
+// ============================================================
+// 초기화
+// ============================================================
+window.addEventListener('DOMContentLoaded', function() {
+  // 날짜 바뀌면 오늘 세션 초기화
+  var ld = localStorage.getItem('yg_date'), td = new Date().toDateString();
+  if (ld !== td) { localStorage.setItem('yg_sess','[]'); localStorage.setItem('yg_date',td); }
+
+  // URL 해시에서 GAS URL 추출 (학생용 링크)
+  var hash = decodeURIComponent(location.hash.replace('#',''));
+  if (hash.startsWith('https://')) {
+    GAS_URL = hash;
+    localStorage.setItem('yg_gas_url', hash);
+  } else {
+    var stored = localStorage.getItem('yg_gas_url');
+    if (stored) GAS_URL = stored;
+  }
+
+  if (GAS_URL) {
+    // GAS URL 있으면 바로 앱 화면으로
+    var savedUser = localStorage.getItem('yg_user');
+    if (savedUser) {
+      try {
+        var u = JSON.parse(savedUser);
+        if (u && u.studentId && u.roomCode) { user = u; enterStudent(u.studentId, u.name, u.roomCode, u.roomName, u.subject); return; }
+      } catch(e) { localStorage.removeItem('yg_user'); }
+    }
+    showScreen('sOnboard');
+    loadObRooms();
+  } else {
+    // GAS URL 없으면 셋업 화면
+    showScreen('sSetup');
+  }
+});
+</script>
+</body>
+</html>
