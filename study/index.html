@@ -219,14 +219,14 @@ hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
 <!-- ===== 학생 온보딩 ===== -->
 <div class="screen" id="sOnboard">
   <div class="obwrap">
-    <div class="oblogo" id="obLogo2" onclick="logoTap()">열공타이머</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div class="oblogo" id="obLogo2" onclick="logoTap()">열공타이머</div>
+      <button class="gh" onclick="goToSetup()" style="font-size:.68rem;color:var(--g3);border:1px solid var(--bd);border-radius:var(--r);padding:4px 9px;">⚙ 링크 변경</button>
+    </div>
     <div class="obdesc">선생님이 우리 반의 자기주도학습역량을<br>꼼꼼하게 기록하고 있습니다. 오늘도 화이팅! 📚</div>
     <div class="st">방 선택</div>
     <div id="obRoomList"><div class="empty"><span class="spin"></span></div></div>
     <div style="margin-top:11px;font-size:.7rem;color:var(--g5);text-align:center;">방을 클릭하고 학번을 입력하면 입장됩니다.</div>
-    <div style="margin-top:28px;padding-top:16px;border-top:1px solid var(--bd);text-align:center;">
-      <button class="gh" onclick="goToSetup()" style="font-size:.7rem;color:var(--g3);">⚙ 링크 변경 (선생님용)</button>
-    </div>
   </div>
 </div>
 
