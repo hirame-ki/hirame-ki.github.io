@@ -224,6 +224,9 @@ hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
     <div class="st">방 선택</div>
     <div id="obRoomList"><div class="empty"><span class="spin"></span></div></div>
     <div style="margin-top:11px;font-size:.7rem;color:var(--g5);text-align:center;">방을 클릭하고 학번을 입력하면 입장됩니다.</div>
+    <div style="margin-top:28px;padding-top:16px;border-top:1px solid var(--bd);text-align:center;">
+      <button class="gh" onclick="goToSetup()" style="font-size:.7rem;color:var(--g3);">⚙ 링크 변경 (선생님용)</button>
+    </div>
   </div>
 </div>
 
@@ -620,6 +623,19 @@ function enterStudent(sid, name, code, roomName, subj) {
   loadGoal();
   renderTodaySess();
   switchTab('Timer');
+}
+
+function goToSetup() {
+  // 셋업 화면으로 돌아가기 (GAS URL 초기화)
+  GAS_URL = '';
+  localStorage.removeItem('yg_gas_url');
+  localStorage.removeItem('yg_user');
+  // URL 해시도 제거
+  history.replaceState(null, '', location.pathname);
+  document.getElementById('gasInput').value = '';
+  document.getElementById('setupPanel').style.display = 'block';
+  document.getElementById('myLinkPanel').style.display = 'none';
+  showScreen('sSetup');
 }
 
 function doLogout() {
