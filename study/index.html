@@ -504,47 +504,38 @@ var logoTaps = 0, logoTimer = null;
 // ============================================================
 async function API(params) {
   if (!GAS_URL) { toast('GAS URL이 설정되지 않았습니다'); throw new Error('no url'); }
-  var hasPdf = params.pdfBase64 && params.pdfBase64.length > 0;
   var queryStr = new URLSearchParams(params).toString();
-  var isLarge = queryStr.length > 6000;
-
-  if (hasPdf || isLarge) {
-    // GAS POST 전송: redirect:'manual'로 리다이렉트 URL 받아서 그 URL로 다시 POST
-    try {
-      toast('[디버그] 1단계: POST 시도 중...');
-      var r1 = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
-        redirect: 'manual'
-      });
-      toast('[디버그] 2단계: status=' + r1.status + ' type=' + r1.type);
-      var targetUrl = r1.headers.get('location') || GAS_URL;
-      toast('[디버그] 3단계: location=' + (r1.headers.get('location') ? '있음' : '없음'));
-      var r2 = await fetch(targetUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
-        redirect: 'follow'
-      });
-      toast('[디버그] 4단계: 최종 status=' + r2.status);
-      return r2.json();
-    } catch(e) {
-      toast('[디버그] 오류: ' + e.message);
-      // POST 실패 시 pdfBase64 제외하고 GET으로 메타데이터만 전송
-      var fallback = Object.assign({}, params);
-      delete fallback.pdfBase64;
-      fallback.pdfBase64 = '';
-      var url2 = GAS_URL + '?' + new URLSearchParams(fallback).toString();
-      var r3 = await fetch(url2, { method: 'GET', redirect: 'follow' });
-      return r3.json();
-    }
-  }
-
-  // 일반 GET 방식
   var url = GAS_URL + '?' + queryStr;
   var r = await fetch(url, { method: 'GET', redirect: 'follow' });
   return r.json();
+}
+
+async function sendTimelapse(roomCode, studentId, name, b64, duration, frames) {
+  // pdfBase64를 3500자씩 청크로 나눠 GET으로 전송
+  var CHUNK = 3500;
+  var sessionKey = Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+  var total = Math.ceil(b64.length / CHUNK);
+
+  document.getElementById('tlCnt').textContent = '☁️ 전송 중... (0/' + total + ')';
+
+  for (var i = 0; i < total; i++) {
+    var chunk = b64.slice(i * CHUNK, (i + 1) * CHUNK);
+    var r = await API({ action: 'saveChunk', sessionKey: sessionKey, index: i, data: chunk });
+    if (!r.success) throw new Error('청크 ' + i + ' 실패: ' + r.message);
+    document.getElementById('tlCnt').textContent = '☁️ 전송 중... (' + (i+1) + '/' + total + ')';
+  }
+
+  // 모든 청크 전송 완료 → commit
+  var cr = await API({
+    action: 'commitTimelapse',
+    roomCode: roomCode,
+    studentId: studentId,
+    name: name,
+    sessionKey: sessionKey,
+    duration: duration,
+    frames: frames
+  });
+  return cr;
 }
 
 // ============================================================
@@ -745,17 +736,9 @@ async function saveAndReset() {
         // 크기 체크 - 너무 크면 압축해서 재시도
         if (b64.length > 800000) {
           toast('이미지 압축 중...');
-          b64 = await framesToPdf(tlFrames, 0.3); // 더 낮은 품질로 재압축
+          b64 = await framesToPdf(tlFrames, 0.3);
         }
-        var tr = await API({
-          action: 'saveTimelapse',
-          roomCode: user.roomCode,
-          studentId: user.studentId,
-          name: user.name,
-          pdfBase64: b64,
-          duration: sec,
-          frames: tlFrames.length
-        });
+        var tr = await sendTimelapse(user.roomCode, user.studentId, user.name, b64, sec, tlFrames.length);
         if (tr.success) {
           toast(fmt(sec) + ' 저장 · 타임랩스 전송 완료! ✅');
           document.getElementById('tlCnt').textContent = '☁️ 전송 완료 · 선생님 Drive에 저장되었습니다.';
