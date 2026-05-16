@@ -511,11 +511,10 @@ async function API(params) {
 }
 
 async function sendTimelapse(roomCode, studentId, name, b64, duration, frames) {
-  // pdfBase64를 3500자씩 청크로 나눠 GET으로 전송
-  var CHUNK = 3500;
   var sessionKey = Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+  var baseLen = (GAS_URL + '?action=saveChunk&sessionKey=' + sessionKey + '&index=999&data=').length;
+  var CHUNK = Math.max(100, Math.floor((1800 - baseLen) / 3));
   var total = Math.ceil(b64.length / CHUNK);
-
   document.getElementById('tlCnt').textContent = '☁️ 전송 중... (0/' + total + ')';
 
   for (var i = 0; i < total; i++) {
@@ -525,7 +524,6 @@ async function sendTimelapse(roomCode, studentId, name, b64, duration, frames) {
     document.getElementById('tlCnt').textContent = '☁️ 전송 중... (' + (i+1) + '/' + total + ')';
   }
 
-  // 모든 청크 전송 완료 → commit
   var cr = await API({
     action: 'commitTimelapse',
     roomCode: roomCode,
