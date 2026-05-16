@@ -973,12 +973,8 @@ function stopTL() {
 }
 // sendTL 제거 - saveAndReset에서 자동 전송
 async function framesToPdf(frames, quality) {
-  // 모든 사진을 하나의 캔버스에 세로로 이어붙여 PDF 1장으로 만들기
   quality = quality || 0.4;
-  var THUMB_W = 280, THUMB_H = 210, COLS = 2;
-  var PAD = 8;
-
-  // 이미지 로드
+  var THUMB_W = 280, THUMB_H = 210, COLS = 2, PAD = 8;
   var imgs = [];
   for (var i = 0; i < frames.length; i++) {
     var loaded = await new Promise(function(resolve) {
@@ -989,132 +985,61 @@ async function framesToPdf(frames, quality) {
     });
     if (loaded) imgs.push(loaded);
   }
-  if (!imgs.length) throw new Error('이미지 없음');
-
-  // 전체 캔버스 크기 계산
+  if (!imgs.length) throw new Error('\uc774\ubbf8\uc9c0 \uc5c6\uc74c');
   var rows = Math.ceil(imgs.length / COLS);
   var totalW = COLS * THUMB_W + (COLS + 1) * PAD;
   var totalH = rows * THUMB_H + (rows + 1) * PAD;
-
   var canvas = document.createElement('canvas');
-  canvas.width  = totalW;
-  canvas.height = totalH;
+  canvas.width = totalW; canvas.height = totalH;
   var ctx = canvas.getContext('2d');
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, totalW, totalH);
-
   for (var j = 0; j < imgs.length; j++) {
-    var col = j % COLS;
-    var row = Math.floor(j / COLS);
-    var x = PAD + col * (THUMB_W + PAD);
-    var y = PAD + row * (THUMB_H + PAD);
-    // 비율 유지하며 썸네일 크기에 맞추기
+    var col = j % COLS, row = Math.floor(j / COLS);
+    var x = PAD + col * (THUMB_W + PAD), y = PAD + row * (THUMB_H + PAD);
     var r = Math.min(THUMB_W / imgs[j].naturalWidth, THUMB_H / imgs[j].naturalHeight);
-    var dw = Math.round(imgs[j].naturalWidth  * r);
-    var dh = Math.round(imgs[j].naturalHeight * r);
-    var dx = x + Math.floor((THUMB_W - dw) / 2);
-    var dy = y + Math.floor((THUMB_H - dh) / 2);
-    ctx.drawImage(imgs[j], dx, dy, dw, dh);
-    // 번호 표시
+    var dw = Math.round(imgs[j].naturalWidth * r), dh = Math.round(imgs[j].naturalHeight * r);
+    ctx.drawImage(imgs[j], x + Math.floor((THUMB_W-dw)/2), y + Math.floor((THUMB_H-dh)/2), dw, dh);
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(x, y, 22, 18);
     ctx.fillStyle = '#fff';
     ctx.font = '12px sans-serif';
-    ctx.fillText(String(j + 1), x + 4, y + 13);
+    ctx.fillText(String(j+1), x+4, y+13);
   }
-
-  // canvas → JPEG base64
   var jpegB64 = canvas.toDataURL('image/jpeg', quality).split(',')[1];
-
-  // JPEG → PDF (단일 페이지)
   var imgBytes = atob(jpegB64);
   var bArr = new Uint8Array(imgBytes.length);
   for (var k = 0; k < imgBytes.length; k++) bArr[k] = imgBytes.charCodeAt(k);
   var bs = ''; for (var m = 0; m < bArr.length; m++) bs += String.fromCharCode(bArr[m]);
-
-  // PDF A4 기준으로 스케일
   var PAGE_W = 595, PAGE_H = Math.round(PAGE_W * totalH / totalW);
-
-  var parts = [], objs = {};
-  function add(s) { parts.push(s); }
-  function pos() { return parts.join('').length; }
-
-  add('%PDF-1.4
-');
-  objs[1] = pos(); add('1 0 obj
-<</Type/Catalog/Pages 2 0 R>>
-endobj
-');
-  objs[2] = pos(); add('2 0 obj
-<</Type/Pages/Kids [4 0 R]/Count 1>>
-endobj
-');
-  objs[3] = pos();
-  add('3 0 obj
-<</Type/XObject/Subtype/Image/Width ' + totalW + '/Height ' + totalH
-    + '/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ' + bArr.length + '>>
-stream
-');
-  add(bs); add('
-endstream
-endobj
-');
-  var cs = 'q ' + PAGE_W + ' 0 0 ' + PAGE_H + ' 0 0 cm /Im0 Do Q
-';
-  objs[4] = pos(); add('4 0 obj
-<</Length ' + cs.length + '>>
-stream
-' + cs + '
-endstream
-endobj
-');
-  objs[5] = pos(); add('5 0 obj
-<</Type/Page/Parent 2 0 R/MediaBox[0 0 ' + PAGE_W + ' ' + PAGE_H
-    + ']/Contents 4 0 R/Resources<</XObject<</Im0 3 0 R>>>>>>
-endobj
-');
-
-  // pages Kids 수정
-  var part2 = parts.join('').replace('2 0 obj
-<</Type/Pages/Kids [4 0 R]/Count 1>>
-endobj
-',
-    '2 0 obj
-<</Type/Pages/Kids [5 0 R]/Count 1>>
-endobj
-');
-  parts = [part2];
-
-  var xpos = part2.length;
-  var maxObj = 5;
-  var trailer = 'xref
-0 6
-0000000000 65535 f 
-';
-  // xref 오프셋은 part2 기준 재계산
-  var tmp = '%PDF-1.4
-';
-  var offsets = {};
-  var re = /(\d+) 0 obj
-/g, match;
-  while ((match = re.exec(part2)) !== null) { offsets[parseInt(match[1])] = match.index; }
-  trailer += String(offsets[1]||0).padStart(10,'0') + ' 00000 n 
-';
-  trailer += String(offsets[2]||0).padStart(10,'0') + ' 00000 n 
-';
-  trailer += String(offsets[3]||0).padStart(10,'0') + ' 00000 n 
-';
-  trailer += String(offsets[4]||0).padStart(10,'0') + ' 00000 n 
-';
-  trailer += String(offsets[5]||0).padStart(10,'0') + ' 00000 n 
-';
-  trailer += 'trailer
-<</Size 6/Root 1 0 R>>
-startxref
-' + xpos + '
-%%EOF';
-
-  var full = part2 + trailer;
+  var NL = '\n';
+  var parts = [];
+  parts.push('%PDF-1.4' + NL);
+  var o1s = parts.join('').length;
+  parts.push('1 0 obj' + NL + '<</Type/Catalog/Pages 2 0 R>>' + NL + 'endobj' + NL);
+  var o2s = parts.join('').length;
+  parts.push('2 0 obj' + NL + '<</Type/Pages/Kids [5 0 R]/Count 1>>' + NL + 'endobj' + NL);
+  var o3s = parts.join('').length;
+  parts.push('3 0 obj' + NL + '<</Type/XObject/Subtype/Image/Width ' + totalW + '/Height ' + totalH
+    + '/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ' + bArr.length + '>>' + NL + 'stream' + NL);
+  parts.push(bs);
+  parts.push(NL + 'endstream' + NL + 'endobj' + NL);
+  var cs = 'q ' + PAGE_W + ' 0 0 ' + PAGE_H + ' 0 0 cm /Im0 Do Q' + NL;
+  var o4s = parts.join('').length;
+  parts.push('4 0 obj' + NL + '<</Length ' + cs.length + '>>' + NL + 'stream' + NL + cs + 'endstream' + NL + 'endobj' + NL);
+  var o5s = parts.join('').length;
+  parts.push('5 0 obj' + NL + '<</Type/Page/Parent 2 0 R/MediaBox[0 0 ' + PAGE_W + ' ' + PAGE_H
+    + ']/Contents 4 0 R/Resources<</XObject<</Im0 3 0 R>>>>>>' + NL + 'endobj' + NL);
+  var xpos = parts.join('').length;
+  parts.push('xref' + NL + '0 6' + NL);
+  parts.push('0000000000 65535 f ' + NL);
+  parts.push(String(o1s).padStart(10,'0') + ' 00000 n ' + NL);
+  parts.push(String(o2s).padStart(10,'0') + ' 00000 n ' + NL);
+  parts.push(String(o3s).padStart(10,'0') + ' 00000 n ' + NL);
+  parts.push(String(o4s).padStart(10,'0') + ' 00000 n ' + NL);
+  parts.push(String(o5s).padStart(10,'0') + ' 00000 n ' + NL);
+  parts.push('trailer' + NL + '<</Size 6/Root 1 0 R>>' + NL + 'startxref' + NL + xpos + NL + '%%EOF');
+  var full = parts.join('');
   try { return btoa(full); }
   catch(e) {
     var enc = new TextEncoder(), bytes = enc.encode(full), s = '';
