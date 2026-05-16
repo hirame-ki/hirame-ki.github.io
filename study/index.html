@@ -504,29 +504,36 @@ var logoTaps = 0, logoTimer = null;
 // ============================================================
 async function API(params) {
   if (!GAS_URL) { toast('GAS URL이 설정되지 않았습니다'); throw new Error('no url'); }
-  // pdfBase64가 있거나 데이터가 크면 POST 사용
   var hasPdf = params.pdfBase64 && params.pdfBase64.length > 0;
   var queryStr = new URLSearchParams(params).toString();
   var isLarge = queryStr.length > 6000;
 
   if (hasPdf || isLarge) {
-    // POST 방식 (타임랩스 전송용)
+    // GAS POST 전송: redirect:'manual'로 리다이렉트 URL 받아서 그 URL로 다시 POST
     try {
-      var r = await fetch(GAS_URL, {
+      var r1 = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+        redirect: 'manual'
+      });
+      // GAS는 302 리다이렉트를 반환하므로, 리다이렉트된 URL로 다시 POST
+      var targetUrl = r1.headers.get('location') || GAS_URL;
+      var r2 = await fetch(targetUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
         redirect: 'follow'
       });
-      return r.json();
+      return r2.json();
     } catch(e) {
       // POST 실패 시 pdfBase64 제외하고 GET으로 메타데이터만 전송
       var fallback = Object.assign({}, params);
       delete fallback.pdfBase64;
       fallback.pdfBase64 = '';
       var url2 = GAS_URL + '?' + new URLSearchParams(fallback).toString();
-      var r2 = await fetch(url2, { method: 'GET', redirect: 'follow' });
-      return r2.json();
+      var r3 = await fetch(url2, { method: 'GET', redirect: 'follow' });
+      return r3.json();
     }
   }
 
