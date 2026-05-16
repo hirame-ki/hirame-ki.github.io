@@ -502,12 +502,21 @@ var logoTaps = 0, logoTimer = null;
 // ============================================================
 // GAS API
 // ============================================================
-async function API(params) {
+async function API(params, timeoutMs) {
   if (!GAS_URL) { toast('GAS URL이 설정되지 않았습니다'); throw new Error('no url'); }
   var queryStr = new URLSearchParams(params).toString();
   var url = GAS_URL + '?' + queryStr;
-  var r = await fetch(url, { method: 'GET', redirect: 'follow' });
-  return r.json();
+  var ms = timeoutMs || 15000;
+  var controller = new AbortController();
+  var timer = setTimeout(function() { controller.abort(); }, ms);
+  try {
+    var r = await fetch(url, { method: 'GET', redirect: 'follow', signal: controller.signal });
+    clearTimeout(timer);
+    return r.json();
+  } catch(e) {
+    clearTimeout(timer);
+    throw e;
+  }
 }
 
 async function sendTimelapse(roomCode, studentId, name, b64, duration, frames) {
@@ -964,53 +973,155 @@ function stopTL() {
 }
 // sendTL 제거 - saveAndReset에서 자동 전송
 async function framesToPdf(frames, quality) {
-  quality = quality || 0.6;
-  var images = [];
+  // 모든 사진을 하나의 캔버스에 세로로 이어붙여 PDF 1장으로 만들기
+  quality = quality || 0.4;
+  var THUMB_W = 280, THUMB_H = 210, COLS = 2;
+  var PAD = 8;
+
+  // 이미지 로드
+  var imgs = [];
   for (var i = 0; i < frames.length; i++) {
-    var img = new Image(); img.src = frames[i];
-    await new Promise(function(res) { img.onload = res; });
-    var c = document.createElement('canvas');
-    var ratio = Math.min(595 / img.width, 842 / img.height);
-    c.width = Math.round(img.width * ratio);
-    c.height = Math.round(img.height * ratio);
-    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-    images.push({ data: c.toDataURL('image/jpeg', quality).split(',')[1], w: c.width, h: c.height });
+    var loaded = await new Promise(function(resolve) {
+      var img = new Image();
+      img.onload  = function() { resolve(img); };
+      img.onerror = function() { resolve(null); };
+      img.src = frames[i];
+    });
+    if (loaded) imgs.push(loaded);
   }
+  if (!imgs.length) throw new Error('이미지 없음');
+
+  // 전체 캔버스 크기 계산
+  var rows = Math.ceil(imgs.length / COLS);
+  var totalW = COLS * THUMB_W + (COLS + 1) * PAD;
+  var totalH = rows * THUMB_H + (rows + 1) * PAD;
+
+  var canvas = document.createElement('canvas');
+  canvas.width  = totalW;
+  canvas.height = totalH;
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, totalW, totalH);
+
+  for (var j = 0; j < imgs.length; j++) {
+    var col = j % COLS;
+    var row = Math.floor(j / COLS);
+    var x = PAD + col * (THUMB_W + PAD);
+    var y = PAD + row * (THUMB_H + PAD);
+    // 비율 유지하며 썸네일 크기에 맞추기
+    var r = Math.min(THUMB_W / imgs[j].naturalWidth, THUMB_H / imgs[j].naturalHeight);
+    var dw = Math.round(imgs[j].naturalWidth  * r);
+    var dh = Math.round(imgs[j].naturalHeight * r);
+    var dx = x + Math.floor((THUMB_W - dw) / 2);
+    var dy = y + Math.floor((THUMB_H - dh) / 2);
+    ctx.drawImage(imgs[j], dx, dy, dw, dh);
+    // 번호 표시
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(x, y, 22, 18);
+    ctx.fillStyle = '#fff';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(String(j + 1), x + 4, y + 13);
+  }
+
+  // canvas → JPEG base64
+  var jpegB64 = canvas.toDataURL('image/jpeg', quality).split(',')[1];
+
+  // JPEG → PDF (단일 페이지)
+  var imgBytes = atob(jpegB64);
+  var bArr = new Uint8Array(imgBytes.length);
+  for (var k = 0; k < imgBytes.length; k++) bArr[k] = imgBytes.charCodeAt(k);
+  var bs = ''; for (var m = 0; m < bArr.length; m++) bs += String.fromCharCode(bArr[m]);
+
+  // PDF A4 기준으로 스케일
+  var PAGE_W = 595, PAGE_H = Math.round(PAGE_W * totalH / totalW);
+
   var parts = [], objs = {};
   function add(s) { parts.push(s); }
   function pos() { return parts.join('').length; }
-  add('%PDF-1.4\n');
-  objs[1] = pos(); add('1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n');
-  objs[2] = pos(); add('2 0 obj\n<</Type/Pages/Kids [');
-  var base = 10;
-  for (var pi = 0; pi < images.length; pi++) add((base + pi*3) + ' 0 R ');
-  add(']/Count ' + images.length + '>>\nendobj\n');
-  for (var pi2 = 0; pi2 < images.length; pi2++) {
-    var bn = base + pi2*3;
-    var imgB = atob(images[pi2].data), bArr = new Uint8Array(imgB.length);
-    for (var bi = 0; bi < imgB.length; bi++) bArr[bi] = imgB.charCodeAt(bi);
-    var bs = ''; for (var ki = 0; ki < bArr.length; ki++) bs += String.fromCharCode(bArr[ki]);
-    objs[bn] = pos();
-    add(bn + ' 0 obj\n<</Type/XObject/Subtype/Image/Width ' + images[pi2].w + '/Height ' + images[pi2].h
-      + '/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ' + bArr.length + '>>\nstream\n');
-    add(bs); add('\nendstream\nendobj\n');
-    var cs = 'q\n595 0 0 842 0 0 cm\n/Im Do\nQ\n';
-    objs[bn+1] = pos(); add((bn+1) + ' 0 obj\n<</Length ' + cs.length + '>>\nstream\n' + cs + '\nendstream\nendobj\n');
-    objs[bn+2] = pos(); add((bn+2) + ' 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]/Contents '
-      + (bn+1) + ' 0 R/Resources<</XObject<</Im ' + bn + ' 0 R>>>>>>\nendobj\n');
-  }
-  var xpos = pos();
-  var maxObj = Math.max.apply(null, Object.keys(objs).map(Number));
-  add('xref\n0 ' + (maxObj+1) + '\n0000000000 65535 f \n');
-  for (var xi = 1; xi <= maxObj; xi++) {
-    add(objs[xi] !== undefined ? String(objs[xi]).padStart(10,'0') + ' 00000 n \n' : '0000000000 65535 f \n');
-  }
-  add('trailer\n<</Size ' + (maxObj+1) + '/Root 1 0 R>>\nstartxref\n' + xpos + '\n%%EOF');
-  var full = parts.join('');
-  try { return btoa(full); }
-  catch(e) { var enc = new TextEncoder(), bytes = enc.encode(full), s = ''; for (var bi2 = 0; bi2 < bytes.length; bi2++) s += String.fromCharCode(bytes[bi2]); return btoa(s); }
-}
 
+  add('%PDF-1.4
+');
+  objs[1] = pos(); add('1 0 obj
+<</Type/Catalog/Pages 2 0 R>>
+endobj
+');
+  objs[2] = pos(); add('2 0 obj
+<</Type/Pages/Kids [4 0 R]/Count 1>>
+endobj
+');
+  objs[3] = pos();
+  add('3 0 obj
+<</Type/XObject/Subtype/Image/Width ' + totalW + '/Height ' + totalH
+    + '/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ' + bArr.length + '>>
+stream
+');
+  add(bs); add('
+endstream
+endobj
+');
+  var cs = 'q ' + PAGE_W + ' 0 0 ' + PAGE_H + ' 0 0 cm /Im0 Do Q
+';
+  objs[4] = pos(); add('4 0 obj
+<</Length ' + cs.length + '>>
+stream
+' + cs + '
+endstream
+endobj
+');
+  objs[5] = pos(); add('5 0 obj
+<</Type/Page/Parent 2 0 R/MediaBox[0 0 ' + PAGE_W + ' ' + PAGE_H
+    + ']/Contents 4 0 R/Resources<</XObject<</Im0 3 0 R>>>>>>
+endobj
+');
+
+  // pages Kids 수정
+  var part2 = parts.join('').replace('2 0 obj
+<</Type/Pages/Kids [4 0 R]/Count 1>>
+endobj
+',
+    '2 0 obj
+<</Type/Pages/Kids [5 0 R]/Count 1>>
+endobj
+');
+  parts = [part2];
+
+  var xpos = part2.length;
+  var maxObj = 5;
+  var trailer = 'xref
+0 6
+0000000000 65535 f 
+';
+  // xref 오프셋은 part2 기준 재계산
+  var tmp = '%PDF-1.4
+';
+  var offsets = {};
+  var re = /(\d+) 0 obj
+/g, match;
+  while ((match = re.exec(part2)) !== null) { offsets[parseInt(match[1])] = match.index; }
+  trailer += String(offsets[1]||0).padStart(10,'0') + ' 00000 n 
+';
+  trailer += String(offsets[2]||0).padStart(10,'0') + ' 00000 n 
+';
+  trailer += String(offsets[3]||0).padStart(10,'0') + ' 00000 n 
+';
+  trailer += String(offsets[4]||0).padStart(10,'0') + ' 00000 n 
+';
+  trailer += String(offsets[5]||0).padStart(10,'0') + ' 00000 n 
+';
+  trailer += 'trailer
+<</Size 6/Root 1 0 R>>
+startxref
+' + xpos + '
+%%EOF';
+
+  var full = part2 + trailer;
+  try { return btoa(full); }
+  catch(e) {
+    var enc = new TextEncoder(), bytes = enc.encode(full), s = '';
+    for (var n = 0; n < bytes.length; n++) s += String.fromCharCode(bytes[n]);
+    return btoa(s);
+  }
+}
 // ============================================================
 // 교사 대시보드
 // ============================================================
