@@ -1214,31 +1214,31 @@ function refCouture(){getLayout();const opts='<option value="">-- 선택 --</opt
 
 // Fixed
 function addFixed(){const name=document.getElementById('fs-stu').value,pos=document.getElementById('fs-seat').value;if(!name||!pos){toast('학생과 자리를 모두 선택하세요');return;}const[r,c]=pos.split(':').map(Number);S.fixed=S.fixed.filter(f=>f.name!==name&&!(f.r===r&&f.c===c));S.fixed.push({name,r,c});document.getElementById('fs-seat').value='';document.getElementById('sp-open-btn').textContent='자리 선택…';rendFixed();checkConflicts();sv();}
-function rmFixed(i){S.fixed.splice(i,1);rendFixed();checkConflicts();}
+function rmFixed(i){S.fixed.splice(i,1);rendFixed();checkConflicts();sv();}
 function rendFixed(){const el=document.getElementById('fixed-list');if(!S.fixed.length){el.innerHTML='<div class="empty">아직 고정석이 없습니다</div>';return;}el.innerHTML=S.fixed.map((f,i)=>`<div class="pitem"><div class="piname">${f.name}</div><div class="pipos">${f.r}행 ${f.c}열</div><span class="pirm" onclick="rmFixed(${i})">×</span></div>`).join('');}
 
 // Rivals
-function addRival(){const a=document.getElementById('rv-a').value,b=document.getElementById('rv-b').value,d=parseInt(document.getElementById('rv-dist').value);if(!a||!b){toast('두 학생을 모두 선택하세요');return;}if(a===b){toast('같은 학생끼리는 안 돼요');return;}const ex=S.rivals.find(r=>(r.a===a&&r.b===b)||(r.a===b&&r.b===a));if(ex)ex.dist=d;else S.rivals.push({a,b,dist:d});rendRivals();checkConflicts();}
-function rmRival(i){S.rivals.splice(i,1);rendRivals();checkConflicts();}
-function upRDist(i,v){S.rivals[i].dist=parseInt(v);}
+function addRival(){const a=document.getElementById('rv-a').value,b=document.getElementById('rv-b').value,d=parseInt(document.getElementById('rv-dist').value);if(!a||!b){toast('두 학생을 모두 선택하세요');return;}if(a===b){toast('같은 학생끼리는 안 돼요');return;}const ex=S.rivals.find(r=>(r.a===a&&r.b===b)||(r.a===b&&r.b===a));if(ex)ex.dist=d;else S.rivals.push({a,b,dist:d});rendRivals();checkConflicts();sv();}
+function rmRival(i){S.rivals.splice(i,1);rendRivals();checkConflicts();sv();}
+function upRDist(i,v){S.rivals[i].dist=parseInt(v);sv();}
 function rendRivals(){const el=document.getElementById('rival-list');if(!S.rivals.length){el.innerHTML='<div class="empty">아직 앙숙이 없습니다</div>';return;}const mx=S.cols+S.rows;el.innerHTML=S.rivals.map((r,i)=>`<div class="pitem"><div class="piname">${r.a}</div><div class="pisep">vs</div><div class="piname">${r.b}</div><div class="pidist"><input type="range" min="1" max="${mx}" value="${r.dist}" oninput="upRDist(${i},this.value);this.nextElementSibling.textContent=this.value"><span class="sval" style="font-size:14px">${r.dist}</span><span class="sunit">칸</span></div><span class="pirm" onclick="rmRival(${i})">×</span></div>`).join('');}
 
 // Besties
-function addBestie(){const a=document.getElementById('bs-a').value,b=document.getElementById('bs-b').value;if(!a||!b){toast('두 학생을 선택하세요');return;}if(a===b){toast('같은 학생끼리는 안 돼요');return;}if(!S.besties.find(r=>(r.a===a&&r.b===b)||(r.a===b&&r.b===a)))S.besties.push({a,b});rendBesties();checkConflicts();}
-function rmBestie(i){S.besties.splice(i,1);rendBesties();checkConflicts();}
+function addBestie(){const a=document.getElementById('bs-a').value,b=document.getElementById('bs-b').value;if(!a||!b){toast('두 학생을 선택하세요');return;}if(a===b){toast('같은 학생끼리는 안 돼요');return;}if(!S.besties.find(r=>(r.a===a&&r.b===b)||(r.a===b&&r.b===a)))S.besties.push({a,b});rendBesties();checkConflicts();sv();}
+function rmBestie(i){S.besties.splice(i,1);rendBesties();checkConflicts();sv();}
 function rendBesties(){const el=document.getElementById('bestie-list');if(!S.besties.length){el.innerHTML='<div class="empty">아직 짝꿍 지정이 없습니다</div>';return;}el.innerHTML=S.besties.map((r,i)=>`<div class="pitem"><div class="piname">${r.a}</div><div class="pisep">♥</div><div class="piname">${r.b}</div><span class="pirm" onclick="rmBestie(${i})">×</span></div>`).join('');}
 
 // Gender
-function setGender(){const stu=document.getElementById('gd-stu').value,val=document.getElementById('gd-val').value;if(!stu){toast('학생을 선택하세요');return;}if(val)S.genders[stu]=val;else delete S.genders[stu];rendGenders();parseNames();}
+function setGender(){const stu=document.getElementById('gd-stu').value,val=document.getElementById('gd-val').value;if(!stu){toast('학생을 선택하세요');return;}if(val)S.genders[stu]=val;else delete S.genders[stu];rendGenders();parseNames();sv();}
 function rendGenders(){S.genderMode=document.getElementById('gd-mode').value;const el=document.getElementById('gender-list');const entries=Object.entries(S.genders).filter(([n])=>S.names.includes(n));if(!entries.length){el.innerHTML='<div class="empty">성별 지정된 학생이 없습니다</div>';return;}el.innerHTML=entries.map(([n,g])=>`<div class="pitem"><div class="piname">${n}</div><span class="pi-badge" style="background:${g==='M'?'var(--blue)':'var(--pink)'}">${g==='M'?'남':'여'}</span></div>`).join('');}
 
 // ══ COUTURE (MODOU) ══
 function refCoutureM(){const groups=Math.ceil(S.namesM.length/S.gpsize)||4;const opts='<option value="">-- 선택 --</option>'+S.namesM.map(n=>`<option value="${e(n)}">${n}</option>`).join('');['mfs-stu','mrv-a','mrv-b'].forEach(id=>document.getElementById(id).innerHTML=opts);let gopts='<option value="">-- 모둠 --</option>';for(let i=1;i<=groups;i++)gopts+=`<option value="${i}">${i}모둠</option>`;document.getElementById('mfs-group').innerHTML=gopts;rendFixedM();rendRivalsM();checkConflicts();}
-function addFixedM(){const name=document.getElementById('mfs-stu').value,grp=parseInt(document.getElementById('mfs-group').value);if(!name||!grp){toast('학생과 모둠을 선택하세요');return;}S.fixedM=S.fixedM.filter(f=>f.name!==name);S.fixedM.push({name,grp});rendFixedM();checkConflicts();}
-function rmFixedM(i){S.fixedM.splice(i,1);rendFixedM();checkConflicts();}
+function addFixedM(){const name=document.getElementById('mfs-stu').value,grp=parseInt(document.getElementById('mfs-group').value);if(!name||!grp){toast('학생과 모둠을 선택하세요');return;}S.fixedM=S.fixedM.filter(f=>f.name!==name);S.fixedM.push({name,grp});rendFixedM();checkConflicts();sv();}
+function rmFixedM(i){S.fixedM.splice(i,1);rendFixedM();checkConflicts();sv();}
 function rendFixedM(){const el=document.getElementById('fixed-list-m');if(!S.fixedM.length){el.innerHTML='<div class="empty">아직 고정 모둠원이 없습니다</div>';return;}el.innerHTML=S.fixedM.map((f,i)=>`<div class="pitem"><div class="piname">${f.name}</div><div class="pipos">${f.grp}모둠</div><span class="pirm" onclick="rmFixedM(${i})">×</span></div>`).join('');}
-function addRivalM(){const a=document.getElementById('mrv-a').value,b=document.getElementById('mrv-b').value;if(!a||!b){toast('두 학생을 선택하세요');return;}if(a===b){toast('같은 학생끼리는 안 돼요');return;}if(!S.rivalsM.find(r=>(r.a===a&&r.b===b)||(r.a===b&&r.b===a)))S.rivalsM.push({a,b});rendRivalsM();checkConflicts();}
-function rmRivalM(i){S.rivalsM.splice(i,1);rendRivalsM();checkConflicts();}
+function addRivalM(){const a=document.getElementById('mrv-a').value,b=document.getElementById('mrv-b').value;if(!a||!b){toast('두 학생을 선택하세요');return;}if(a===b){toast('같은 학생끼리는 안 돼요');return;}if(!S.rivalsM.find(r=>(r.a===a&&r.b===b)||(r.a===b&&r.b===a)))S.rivalsM.push({a,b});rendRivalsM();checkConflicts();sv();}
+function rmRivalM(i){S.rivalsM.splice(i,1);rendRivalsM();checkConflicts();sv();}
 function rendRivalsM(){const el=document.getElementById('rival-list-m');if(!S.rivalsM.length){el.innerHTML='<div class="empty">아직 앙숙이 없습니다</div>';return;}el.innerHTML=S.rivalsM.map((r,i)=>`<div class="pitem"><div class="piname">${r.a}</div><div class="pisep">vs</div><div class="piname">${r.b}</div><span class="pirm" onclick="rmRivalM(${i})">×</span></div>`).join('');}
 
 // ══ SHOW ══
@@ -1344,7 +1344,8 @@ function assignSeat(){
   for(let t=0;t<8000;t++){
     const map={};const used=new Set();
     for(const f of S.fixed){if(!S.names.includes(f.name)||S.disabledSeats.includes(K(f.r,f.c)))continue;map[K(f.r,f.c)]=f.name;used.add(K(f.r,f.c));}
-    let freeN=S.names.filter(n=>!S.fixed.find(f=>f.name===n));
+    const placedNames=new Set(Object.values(map));
+    let freeN=S.names.filter(n=>!placedNames.has(n));
     const freeS=shuf(allSeats.filter(s=>!used.has(K(s.r,s.c))));
     // 성별 모드
     const gm=S.genderMode;
@@ -1367,7 +1368,7 @@ function assignSeat(){
       }
       for(const{seat,name}of sorted)map[K(seat.r,seat.c)]=name;
     }else if(gm==='separate'){
-      // 남녀 분리: 왼쪽 남, 오른쪽 여
+      // 남녀 분리: 왼쪽 남, 오른쪽 여 (넘치는 학생은 남은 자리에 배치)
       const ms=shuf(freeN.filter(n=>S.genders[n]==='M'));
       const fs=shuf(freeN.filter(n=>S.genders[n]==='F'));
       const us=shuf(freeN.filter(n=>!S.genders[n]));
@@ -1375,15 +1376,17 @@ function assignSeat(){
       const half=Math.ceil(seatsByCol.length/2);
       const leftSeats=seatsByCol.slice(0,half);
       const rightSeats=seatsByCol.slice(half);
+      const overflow=[];
       let idx=0;
-      for(const n of ms){if(idx<leftSeats.length)map[K(leftSeats[idx].r,leftSeats[idx].c)]=n;idx++;}
+      for(const n of ms){if(idx<leftSeats.length)map[K(leftSeats[idx].r,leftSeats[idx].c)]=n;else overflow.push(n);idx++;}
       idx=0;
-      for(const n of fs){if(idx<rightSeats.length)map[K(rightSeats[idx].r,rightSeats[idx].c)]=n;idx++;}
-      // 미지정 학생: 남은 자리에
+      for(const n of fs){if(idx<rightSeats.length)map[K(rightSeats[idx].r,rightSeats[idx].c)]=n;else overflow.push(n);idx++;}
+      // 미지정 + 넘친 학생: 남은 자리에
       const usedAfter=new Set(Object.keys(map));
       const remaining=allSeats.filter(s=>!usedAfter.has(K(s.r,s.c))&&!used.has(K(s.r,s.c)));
       shuf(remaining);let ri=0;
-      for(const n of us){if(ri<remaining.length)map[K(remaining[ri].r,remaining[ri].c)]=n;ri++;}
+      const unplaced=[...overflow,...us];
+      for(const n of unplaced){if(ri<remaining.length)map[K(remaining[ri].r,remaining[ri].c)]=n;ri++;}
     }else{
       if(S.desk===2&&rpbBanned.size>0){
         // desk=2 + 짝꿍 금지: 쌍 슬롯 단위로 배정하되 이전 짝꿍이 같은 슬롯에 오지 않도록 유도
@@ -1432,8 +1435,9 @@ function assignSeat(){
     // 앙숙
     for(const rv of S.rivals){const pa=posOf(map,rv.a),pb=posOf(map,rv.b);if(pa&&pb&&D(pa.r,pa.c,pb.r,pb.c)<rv.dist){ok=false;break;}}
     if(!ok)continue;
-    // 짝꿍: 인접해야 함 (거리 1) — 둘 다 배치된 경우에만 검사
-    for(const bs of S.besties){const pa=posOf(map,bs.a),pb=posOf(map,bs.b);if(pa&&pb&&D(pa.r,pa.c,pb.r,pb.c)>1){ok=false;break;}}
+    // 짝꿍: 인접해야 함 — 둘 다 배치된 경우에만 검사 (_bestieRelax로 허용 거리 조정 가능)
+    const bestieMaxDist=S._bestieRelax||1;
+    for(const bs of S.besties){const pa=posOf(map,bs.a),pb=posOf(map,bs.b);if(pa&&pb&&D(pa.r,pa.c,pb.r,pb.c)>bestieMaxDist){ok=false;break;}}
     if(ok){lastMap=map;return true;}
   }
   return false;
@@ -1449,9 +1453,8 @@ function assignModou(){const names=[...S.namesM];const gpsize=S.gpsize;const num
 
 // ══ RUN ══
 function runZari(){if(window.ZSound)ZSound.impact();const names=mode==='seat'?S.names:S.namesM;if(!names.length){toast('학생 명단을 먼저 입력하세요');go('roster');return;}
-  if(mode==='seat'){
-    checkConflicts();
-    const _ca=document.getElementById('couture-conflict-area');
+  checkConflicts();
+  {const _ca=document.getElementById('couture-conflict-area');
     if(_ca&&_ca.querySelector('.conflict-box')){
       const _sw=document.getElementById('show-warn');
       if(_sw)_sw.innerHTML='<div class="warn" style="background:#fff8e1;border-color:#f9c74f;color:#7a5c00;">⚠ 조건 충돌이 있습니다. Couture에서 확인하세요.<br>'+(_ca.querySelector('.conflict-box').innerHTML)+'</div>';
@@ -1472,24 +1475,115 @@ function runZari(){if(window.ZSound)ZSound.impact();const names=mode==='seat'?S.
   document.getElementById('fs-grid').innerHTML='';document.getElementById('fs-modou-grid').innerHTML='';
   setTimeout(()=>{
     let ok=false;
+    const relaxMsgs=[];
     if(mode==='seat'){
-      // rpb를 점진적으로 완화하며 재시도 (graceful degradation)
+      // ── STEP 1: rpb 점진적 완화 ──
       const origRpb=S.recentPairBan||0;
       for(let tryRpb=origRpb;tryRpb>=0;tryRpb--){
         S.recentPairBan=tryRpb;
         ok=assignSeatWithBenefit();
         if(ok){
-          if(tryRpb<origRpb&&tryRpb>0)toast(`ℹ 짝꿍 금지 ${origRpb}회 조건이 까다로워 ${tryRpb}회로 완화하여 배치했습니다.`);
-          else if(tryRpb===0&&origRpb>0)toast('ℹ 짝꿍 재배치 금지 조건을 완화하여 배치했습니다.');
+          if(tryRpb<origRpb&&tryRpb>0)relaxMsgs.push(`짝꿍 금지 ${origRpb}회→${tryRpb}회 완화`);
+          else if(tryRpb===0&&origRpb>0)relaxMsgs.push('짝꿍 재배치 금지 조건 해제');
           break;
         }
       }
-      S.recentPairBan=origRpb; // 원복
+      S.recentPairBan=origRpb;
+
+      // ── STEP 2: 앙숙 거리 단계적 축소 ──
+      if(!ok&&S.rivals.length>0){
+        const origRivals=S.rivals.map(r=>({...r}));
+        // 최대 거리부터 1씩 줄여가며 시도
+        let maxDist=Math.max(...S.rivals.map(r=>r.dist));
+        while(!ok&&maxDist>=1){
+          maxDist--;
+          S.rivals=origRivals.map(r=>({...r,dist:Math.min(r.dist,Math.max(1,maxDist))}));
+          for(let tryRpb=origRpb;tryRpb>=0;tryRpb--){
+            S.recentPairBan=tryRpb;
+            ok=assignSeatWithBenefit();
+            if(ok){
+              if(tryRpb<origRpb)relaxMsgs.push(`짝꿍 재배치 금지 완화`);
+              break;
+            }
+          }
+          S.recentPairBan=origRpb;
+        }
+        if(ok){
+          const reduced=origRivals.filter(r=>r.dist>maxDist+1);
+          relaxMsgs.push(`앙숙 거리 조건 완화 (일부 ${maxDist+1}칸→${Math.max(1,maxDist)}칸)`);
+        }
+        S.rivals=origRivals;
+      }
+
+      // ── STEP 3: 앙숙 조건 전체 무시 ──
+      if(!ok&&S.rivals.length>0){
+        const origRivals=S.rivals.map(r=>({...r}));
+        S.rivals=[];
+        for(let tryRpb=origRpb;tryRpb>=0;tryRpb--){
+          S.recentPairBan=tryRpb;
+          ok=assignSeatWithBenefit();
+          if(ok){if(tryRpb<origRpb)relaxMsgs.push('짝꿍 재배치 금지 완화');break;}
+        }
+        S.recentPairBan=origRpb;
+        if(ok)relaxMsgs.push('앙숙 거리 조건 전체 무시');
+        S.rivals=origRivals;
+      }
+
+      // ── STEP 4: 짝꿍 조건 완화 (인접→거리2 허용) ──
+      if(!ok&&S.besties.length>0){
+        const origBesties=S.besties.map(b=>({...b}));
+        // besties 검사를 거리 2까지 허용하도록 임시 패치
+        S._bestieRelax=2;
+        const origRivals=S.rivals.map(r=>({...r}));
+        S.rivals=[];
+        for(let tryRpb=origRpb;tryRpb>=0;tryRpb--){
+          S.recentPairBan=tryRpb;
+          ok=assignSeatWithBenefit();
+          if(ok){if(tryRpb<origRpb)relaxMsgs.push('짝꿍 재배치 금지 완화');break;}
+        }
+        S.recentPairBan=origRpb;
+        if(ok)relaxMsgs.push('짝꿍 거리 조건 완화(2칸 이내), 앙숙 조건 무시');
+        S.rivals=origRivals;
+        delete S._bestieRelax;
+      }
+
+      // ── STEP 5: 모든 조건 무시하고 무조건 배치 ──
+      if(!ok){
+        const origRivals=S.rivals.map(r=>({...r}));
+        const origBesties=S.besties.map(b=>({...b}));
+        const origGenderMode=S.genderMode;
+        S.rivals=[];S.besties=[];S.recentPairBan=0;S.genderMode='none';
+        ok=assignSeatWithBenefit();
+        S.rivals=origRivals;S.besties=origBesties;S.recentPairBan=origRpb;S.genderMode=origGenderMode;
+        if(ok)relaxMsgs.push('앙숙·짝꿍·재배치 금지·성별 배치 조건 모두 무시');
+      }
+
+      if(ok&&relaxMsgs.length>0){
+        setTimeout(()=>toast('⚠ 조건 완화: '+relaxMsgs.join(' / ')),300);
+      }
     }else{
+      // ── 모둠 배치 ──
       ok=assignModou();
+
+      // ── 모둠 앙숙 거리 단계적 완화 ──
+      if(!ok&&S.rivalsM.length>0){
+        const origRivalsM=S.rivalsM.map(r=>({...r}));
+        // 앙숙 수를 1개씩 줄여가며 시도
+        for(let dropCount=1;dropCount<=origRivalsM.length&&!ok;dropCount++){
+          S.rivalsM=origRivalsM.slice(dropCount);
+          ok=assignModou();
+          if(ok)relaxMsgs.push(`모둠 앙숙 조건 ${dropCount}개 완화`);
+        }
+        if(!ok){S.rivalsM=[];ok=assignModou();if(ok)relaxMsgs.push('모둠 앙숙 조건 전체 무시');}
+        S.rivalsM=origRivalsM;
+      }
+
+      if(ok&&relaxMsgs.length>0){
+        setTimeout(()=>toast('⚠ 조건 완화: '+relaxMsgs.join(' / ')),300);
+      }
     }
     if(ok){saveHistory();mode==='seat'?showSeatResult():showModouResult();}
-    else{document.getElementById('fs-result').classList.remove('on');if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else if(document.webkitFullscreenElement)document.webkitExitFullscreen();toast('⚠ 조건이 너무 까다롭습니다. Couture에서 앙숙·짝꿍 조건을 확인하세요.');}
+    else{document.getElementById('fs-result').classList.remove('on');if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else if(document.webkitFullscreenElement)document.webkitExitFullscreen();toast('⚠ 배치 실패: 학생 수나 자리 수를 확인하세요.');}
   },600);}
 
 // ══ SEAT RESULT ══
@@ -1593,7 +1687,7 @@ function syncAnimSpeed(v){
 function getAnimInterval(){return (ANIM_SPEED_MAP[S.animSpeed||3]||ANIM_SPEED_MAP[3]).interval;}
 
 // ══ UTILS ══
-function e(s){return s.replace(/"/g,'&quot;');}
+function e(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2800);}
 
 // ══ SHADER BACKGROUND ══
