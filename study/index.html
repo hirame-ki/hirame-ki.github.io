@@ -511,22 +511,26 @@ async function API(params) {
   if (hasPdf || isLarge) {
     // GAS POST 전송: redirect:'manual'로 리다이렉트 URL 받아서 그 URL로 다시 POST
     try {
+      toast('[디버그] 1단계: POST 시도 중...');
       var r1 = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
         redirect: 'manual'
       });
-      // GAS는 302 리다이렉트를 반환하므로, 리다이렉트된 URL로 다시 POST
+      toast('[디버그] 2단계: status=' + r1.status + ' type=' + r1.type);
       var targetUrl = r1.headers.get('location') || GAS_URL;
+      toast('[디버그] 3단계: location=' + (r1.headers.get('location') ? '있음' : '없음'));
       var r2 = await fetch(targetUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
         redirect: 'follow'
       });
+      toast('[디버그] 4단계: 최종 status=' + r2.status);
       return r2.json();
     } catch(e) {
+      toast('[디버그] 오류: ' + e.message);
       // POST 실패 시 pdfBase64 제외하고 GET으로 메타데이터만 전송
       var fallback = Object.assign({}, params);
       delete fallback.pdfBase64;
