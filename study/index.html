@@ -300,10 +300,26 @@ hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
         <button class="btn ol sm" id="tlBtn" onclick="toggleTL()">📷 촬영 시작</button>
       </div>
       <div class="tl-note">
+        <span style="color:#e53935;font-weight:bold;">⚠️ 이 화면을 벗어나면 타임랩스 촬영이 중단되고 전송되지 않습니다!</span><br><br>
         📱 촬영본은 이 기기 메모리에만 임시 저장됩니다.<br>
         ☁️ 타이머 <b>[저장]</b> 버튼을 누르면 공부시간과 함께 선생님 Drive에 자동 전송됩니다.<br>
         🗑️ 브라우저를 닫거나 저장하지 않으면 촬영본은 자동으로 사라집니다.<br>
-        📄 전송 형식은 사진 모음(PDF)이며 영상 파일이 아닙니다.
+        📄 전송 형식은 사진 모음(PDF)이며 영상 파일이 아닙니다.<br>
+        ⏱️ 전송 예상 시간: 1분 간격 2시간(120장) → 약 60~90초 / 3분 간격 2시간(40장) → 약 15~30초 / 5분 간격 2시간(24장) → 약 10~20초
+      </div>
+      <!-- 파일 전송 -->
+      <hr>
+      <div class="st">📎 파일 전송 <span style="font-size:.6rem;color:var(--g5);font-weight:400;">공부 자료를 선생님 Drive로 전송</span></div>
+      <div id="fileUploadArea">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <label class="btn ol sm" style="cursor:pointer;">
+            📂 파일 선택
+            <input type="file" id="fileInput" style="display:none;" accept="image/*,application/pdf,.pdf,.jpg,.jpeg,.png" onchange="onFileSelected(this)">
+          </label>
+          <span id="fileNameDisplay" style="font-size:.78rem;color:var(--g5);">선택된 파일 없음</span>
+        </div>
+        <div id="fileProgress" style="margin-top:8px;font-size:.78rem;color:var(--g5);"></div>
+        <button class="btn sm" id="fileSendBtn" onclick="sendFile()" style="margin-top:8px;display:none;">☁️ 전송하기</button>
       </div>
     </div>
   </div>
@@ -553,6 +569,81 @@ async function sendTimelapse(roomCode, studentId, name, b64, duration, frames) {
     frames: frames
   });
   return cr;
+}
+
+// ============================================================
+// 파일 전송
+// ============================================================
+var selectedFile = null;
+
+function onFileSelected(input) {
+  selectedFile = input.files[0];
+  if (!selectedFile) return;
+  document.getElementById('fileNameDisplay').textContent = selectedFile.name + ' (' + (selectedFile.size / 1024).toFixed(1) + 'KB)';
+  document.getElementById('fileSendBtn').style.display = 'inline-block';
+}
+
+async function sendFile() {
+  if (!selectedFile || !user) return;
+  var CHUNK = 3000;
+  var PARALLEL = 5;
+  var sessionKey = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
+  var btn = document.getElementById('fileSendBtn');
+  var prog = document.getElementById('fileProgress');
+  btn.disabled = true;
+
+  try {
+    var b64 = await new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(selectedFile);
+    });
+
+    var total = Math.ceil(b64.length / CHUNK);
+    prog.textContent = '전송 중... (0/' + total + ')';
+
+    for (var start = 0; start < total; start += PARALLEL) {
+      var batch = [];
+      for (var i = start; i < Math.min(start + PARALLEL, total); i++) {
+        batch.push((function(idx) {
+          return API({ action: 'saveFileChunk', sessionKey: sessionKey, index: idx, data: b64.slice(idx * CHUNK, (idx + 1) * CHUNK) });
+        })(i));
+      }
+      var results = await Promise.all(batch);
+      for (var ri = 0; ri < results.length; ri++) {
+        if (!results[ri].success) throw new Error('청크 실패: ' + results[ri].message);
+      }
+      prog.textContent = '전송 중... (' + Math.min(start + PARALLEL, total) + '/' + total + ')';
+    }
+
+    var cr = await API({
+      action: 'commitFile',
+      roomCode: user.roomCode,
+      studentId: user.studentId,
+      name: user.name,
+      sessionKey: sessionKey,
+      fileName: selectedFile.name,
+      mimeType: selectedFile.type || 'application/octet-stream'
+    });
+
+    if (cr.success) {
+      prog.textContent = '✅ 전송 완료! 선생님 Drive에 저장되었습니다.';
+      prog.style.color = 'var(--primary)';
+      document.getElementById('fileNameDisplay').textContent = '선택된 파일 없음';
+      document.getElementById('fileSendBtn').style.display = 'none';
+      selectedFile = null;
+      document.getElementById('fileInput').value = '';
+    } else {
+      prog.textContent = '⚠️ 전송 실패: ' + cr.message;
+      prog.style.color = '#e53935';
+    }
+  } catch(e) {
+    prog.textContent = '⚠️ 오류: ' + e.message;
+    prog.style.color = '#e53935';
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // ============================================================
@@ -983,7 +1074,7 @@ function stopTL() {
 }
 // sendTL 제거 - saveAndReset에서 자동 전송
 async function framesToPdf(frames, quality) {
-  quality = quality || 0.15;
+  quality = quality || 0.5;
   var THUMB_W = 120, THUMB_H = 90, COLS = 3, PAD = 5;
   var imgs = [];
   for (var i = 0; i < frames.length; i++) {
