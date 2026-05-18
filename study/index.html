@@ -305,7 +305,7 @@ hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
         ☁️ 타이머 <b>[저장]</b> 버튼을 누르면 공부시간과 함께 선생님 Drive에 자동 전송됩니다.<br>
         🗑️ 브라우저를 닫거나 저장하지 않으면 촬영본은 자동으로 사라집니다.<br>
         📄 전송 형식은 사진 모음(PDF)이며 영상 파일이 아닙니다.<br>
-        ⏱️ 전송 예상 시간: 1분 간격 2시간(120장) → 약 60~90초 / 3분 간격 2시간(40장) → 약 15~30초 / 5분 간격 2시간(24장) → 약 10~20초
+        ⏱️ 전송 예상 시간 (1시간 공부 기준): 1분 간격(60장) → 약 30~50초 / 3분 간격(20장) → 약 10~20초 / 5분 간격(12장) → 약 5~10초
       </div>
       <!-- 파일 전송 -->
       <hr>
@@ -398,7 +398,13 @@ hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
         <button class="tb" onclick="swTTab('TL',this)">타임랩스</button>
         <button class="tb" onclick="swTTab('Roster',this)">학생명단</button>
       </div>
-      <div id="tSubRank"><div id="tRankList"></div></div>
+      <div id="tSubRank">
+        <div class="tabbar" style="margin-bottom:8px;">
+          <button class="tb active" id="tRankPeriodAll" onclick="setTRankPeriod('total',this)">전체</button>
+          <button class="tb" id="tRankPeriodMonth" onclick="setTRankPeriod('month',this)">이번 달</button>
+        </div>
+        <div id="tRankList"></div>
+      </div>
       <div id="tSubSubj" style="display:none;"><div id="tSubjBars"></div></div>
       <div id="tSubSearch" style="display:none;">
         <div style="display:flex;gap:7px;margin-bottom:12px;">
@@ -1208,23 +1214,36 @@ function swTTab(tab, el) {
   if (tab==='TL') loadTTL();
 }
 
+var tRankPeriod = 'total';
+
+function setTRankPeriod(period, el) {
+  tRankPeriod = period;
+  document.querySelectorAll('#tSubRank .tabbar .tb').forEach(function(b) { b.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  loadTRank();
+}
+
 async function loadTRank() {
   var el = document.getElementById('tRankList');
   el.innerHTML = '<div class="empty"><span class="spin"></span></div>';
   try {
-    var r = await API({ action: 'teacherGetRoom', password: teacherPw, roomCode: curTRoom });
+    var r = await API({ action: 'getRanking', roomCode: curTRoom, period: tRankPeriod, subject: 'all' });
     if (!r.success) { el.innerHTML = '<div class="empty">' + r.message + '</div>'; return; }
-    document.getElementById('tDMeta').textContent = r.ranking.length + '명 기록';
-    if (!r.ranking.length) { el.innerHTML = '<div class="empty">아직 공부 기록이 없습니다</div>'; return; }
-    var max = r.ranking[0].total || 1;
-    el.innerHTML = r.ranking.map(function(row, i) {
+    var ranking = r.ranking || [];
+    document.getElementById('tDMeta').textContent = ranking.length + '명 기록';
+    if (!ranking.length) { el.innerHTML = '<div class="empty">아직 공부 기록이 없습니다</div>'; return; }
+    var sortKey = tRankPeriod === 'month' ? 'month' : 'total';
+    ranking = ranking.sort(function(a,b) { return b[sortKey] - a[sortKey]; });
+    var max = ranking[0][sortKey] || 1;
+    el.innerHTML = ranking.map(function(row, i) {
+      var sec = row[sortKey] || 0;
       return '<div class="rrow" style="animation-delay:' + (i*.03) + 's">'
         + '<div class="rnum ' + (i===0?'n1':i===1?'n2':i===2?'n3':'') + '">' + (i+1) + '</div>'
         + '<div class="rinfo"><div class="rname">' + row.name
         + ' <span style="font-size:.66rem;color:var(--g5);">(' + row.studentId + ')</span>'
         + (row.streak > 1 ? ' <span style="font-size:.66rem;">🔥' + row.streak + '일</span>' : '') + '</div>'
-        + '<div class="rbt"><div class="rbf" style="width:' + Math.round(row.total/max*100) + '%"></div></div></div>'
-        + '<div class="rtime">' + fmt(row.total) + '</div></div>';
+        + '<div class="rbt"><div class="rbf" style="width:' + Math.round(sec/max*100) + '%"></div></div></div>'
+        + '<div class="rtime">' + fmt(sec) + '</div></div>';
     }).join('');
   } catch(e) { el.innerHTML = '<div class="empty">불러오기 실패</div>'; }
 }
