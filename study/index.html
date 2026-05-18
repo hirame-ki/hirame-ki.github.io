@@ -296,7 +296,7 @@ hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
       </div>
       <div class="tl-cnt" id="tlCnt"></div>
       <div class="tl-ctrl">
-        <select id="tlSec"><option value="10">10초 간격</option><option value="30" selected>30초 간격</option><option value="60">60초 간격</option></select>
+        <select id="tlSec"><option value="60">1분 간격</option><option value="180" selected>3분 간격</option><option value="300">5분 간격</option></select>
         <button class="btn ol sm" id="tlBtn" onclick="toggleTL()">📷 촬영 시작</button>
       </div>
       <div class="tl-note">
@@ -521,16 +521,26 @@ async function API(params, timeoutMs) {
 
 async function sendTimelapse(roomCode, studentId, name, b64, duration, frames) {
   var sessionKey = Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-  var baseLen = (GAS_URL + '?action=saveChunk&sessionKey=' + sessionKey + '&index=999&data=').length;
-  var CHUNK = Math.max(100, Math.floor((1800 - baseLen) / 3));
+  // GAS GET URL 한계 약 7000자, base64는 URL인코딩 없으므로 넉넉하게 3000자
+  var CHUNK = 3000;
   var total = Math.ceil(b64.length / CHUNK);
   document.getElementById('tlCnt').textContent = '☁️ 전송 중... (0/' + total + ')';
 
-  for (var i = 0; i < total; i++) {
-    var chunk = b64.slice(i * CHUNK, (i + 1) * CHUNK);
-    var r = await API({ action: 'saveChunk', sessionKey: sessionKey, index: i, data: chunk });
-    if (!r.success) throw new Error('청크 ' + i + ' 실패: ' + r.message);
-    document.getElementById('tlCnt').textContent = '☁️ 전송 중... (' + (i+1) + '/' + total + ')';
+  // 5개씩 병렬 전송
+  var PARALLEL = 5;
+  for (var start = 0; start < total; start += PARALLEL) {
+    var batch = [];
+    for (var i = start; i < Math.min(start + PARALLEL, total); i++) {
+      batch.push((function(idx) {
+        var chunk = b64.slice(idx * CHUNK, (idx + 1) * CHUNK);
+        return API({ action: 'saveChunk', sessionKey: sessionKey, index: idx, data: chunk });
+      })(i));
+    }
+    var results = await Promise.all(batch);
+    for (var ri = 0; ri < results.length; ri++) {
+      if (!results[ri].success) throw new Error('청크 실패: ' + results[ri].message);
+    }
+    document.getElementById('tlCnt').textContent = '☁️ 전송 중... (' + Math.min(start + PARALLEL, total) + '/' + total + ')';
   }
 
   var cr = await API({
@@ -743,7 +753,7 @@ async function saveAndReset() {
         // 크기 체크 - 너무 크면 압축해서 재시도
         if (b64.length > 800000) {
           toast('이미지 압축 중...');
-          b64 = await framesToPdf(tlFrames, 0.3);
+          b64 = await framesToPdf(tlFrames, 0.1);
         }
         var tr = await sendTimelapse(user.roomCode, user.studentId, user.name, b64, sec, tlFrames.length);
         if (tr.success) {
@@ -973,8 +983,8 @@ function stopTL() {
 }
 // sendTL 제거 - saveAndReset에서 자동 전송
 async function framesToPdf(frames, quality) {
-  quality = quality || 0.4;
-  var THUMB_W = 280, THUMB_H = 210, COLS = 2, PAD = 8;
+  quality = quality || 0.15;
+  var THUMB_W = 120, THUMB_H = 90, COLS = 3, PAD = 5;
   var imgs = [];
   for (var i = 0; i < frames.length; i++) {
     var loaded = await new Promise(function(resolve) {
