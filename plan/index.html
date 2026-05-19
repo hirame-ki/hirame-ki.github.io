@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>고교학점제 과목 설계</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0d0f14;--surface:#161920;--surface2:#1e2230;--border:#2a2f3d;
+  --accent:#4f8ef7;--accent2:#f7c94f;--core:#f75f5f;--rec:#4fd6a0;--ref:#c4a9ff;
+  --warn:#f7a44f;--text:#e8ecf4;--text2:#8890a8;--text3:#555d78;--radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;font-size:14px;}
+header{padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.logo-wrap{cursor:pointer;user-select:none;}
+.logo{font-family:'Space Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:2px;}
+h1{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:600;}
+h1 em{color:var(--accent);font-style:normal;}
+.header-right{text-align:right;font-size:11px;color:var(--text3);line-height:1.6;}
+.tabs{display:flex;padding:0 24px;border-bottom:1px solid var(--border);overflow-x:auto;}
+.tab{padding:9px 16px;font-size:13px;font-weight:500;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab.done{color:var(--rec);}
+.tab.t-tab{color:var(--accent2);}
+.tab.t-tab.active{border-bottom-color:var(--accent2);}
+main{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 148px);}
+.left{border-right:1px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:calc(100vh - 148px);}
+.right{padding:18px 22px;overflow-y:auto;max-height:calc(100vh - 148px);}
+.sec{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:7px;}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;}
+.field label{font-size:11px;color:var(--text2);font-weight:500;}
+select,input[type=text],input[type=number],input[type=password]{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;transition:border .2s;width:100%;}
+select:focus,input:focus{border-color:var(--accent);}
+select option{background:var(--surface2);}
+.btn{padding:8px 14px;border-radius:8px;border:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#3d7de8;}
+.btn-teacher{background:var(--accent2);color:#1a1600;}
+.btn-teacher:hover{filter:brightness(1.1);}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-warn{background:transparent;color:var(--core);border:1px solid var(--core);}
+.btn-warn:hover{background:rgba(247,95,95,.1);}
+.btn-full{width:100%;}
+.btn-sm{padding:4px 9px;font-size:11px;}
+.btn-row{display:flex;gap:8px;}
+.badge{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;}
+.badge-core{background:#3d1a1a;color:var(--core);}
+.badge-rec{background:#0f2f22;color:var(--rec);}
+.badge-ref{background:#16103d;color:var(--ref);}
+
+/* ── 로그인 화면 ── */
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 60px);padding:20px;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:400px;}
+.login-card h2{font-family:'Noto Serif KR',serif;font-size:18px;margin-bottom:6px;}
+.login-card p{font-size:12px;color:var(--text2);margin-bottom:20px;line-height:1.6;}
+.login-input-big{font-size:22px!important;font-family:'Space Mono',monospace!important;text-align:center;letter-spacing:6px;padding:14px!important;}
+.login-hint{font-size:11px;color:var(--text3);margin-top:8px;}
+.student-confirm{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin:10px 0;text-align:center;}
+.student-confirm .name{font-size:18px;font-weight:700;color:var(--accent);}
+.student-confirm .id{font-size:12px;color:var(--text3);margin-top:3px;}
+.locked-notice{background:rgba(247,95,95,.1);border:1px solid rgba(247,95,95,.3);border-radius:8px;padding:12px;font-size:12px;color:var(--core);margin:10px 0;line-height:1.6;}
+
+/* ── 설정(교사 온보딩) ── */
+.setup-screen{padding:24px;max-width:580px;}
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;}
+.setup-card h3{font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text);}
+.url-row{display:flex;gap:8px;}
+.url-row input{flex:1;font-size:12px;}
+.url-ok{font-size:11px;color:var(--rec);margin-top:4px;display:none;}
+.share-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:8px;}
+.share-url{font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);word-break:break-all;padding:6px 8px;background:var(--bg);border-radius:4px;margin:6px 0;}
+
+/* ── 대학학과 ── */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+.chip{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;border:1px solid;}
+.chip-core{background:#2a0f0f;border-color:#7a2020;color:#ff9090;}
+.chip-rec{background:#0a1f16;border-color:#1a5c3d;color:#6ddbb0;}
+.chip-ref{background:#16103d;border-color:#3d2a7a;color:#c4a9ff;}
+.desc-box{padding:10px 13px;background:var(--surface);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:14px;}
+.group-title{font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.uni-note{margin-top:8px;padding:10px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.65;}
+.uni-note strong{color:var(--accent2);}
+
+/* ── 경고 배너 ── */
+.warn-banner{display:none;align-items:center;gap:8px;background:rgba(247,95,95,.12);border:1px solid rgba(247,95,95,.4);border-radius:8px;padding:8px 13px;margin-bottom:8px;font-size:12px;color:var(--core);}
+.warn-banner.show{display:flex;}
+
+/* ── 학점 바 ── */
+.credit-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;margin-bottom:8px;}
+.credit-num{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+.credit-now{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;color:var(--accent);}
+.credit-of{font-size:11px;color:var(--text3);}
+.prog-track{height:6px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-bottom:3px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),#7ab3f7);border-radius:4px;transition:width .4s;}
+.prog-fill.warn{background:linear-gradient(90deg,var(--accent2),#f7a44f);}
+.prog-fill.done{background:linear-gradient(90deg,var(--rec),#4fd6d6);}
+.credit-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--text3);}
+
+/* ── 영역별 이수 ── */
+.area-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;margin-bottom:8px;}
+.area-row{margin-bottom:7px;}
+.area-row-head{display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px;}
+.area-name{color:var(--text2);}
+.area-num{font-family:'Space Mono',monospace;font-size:10px;}
+.area-num.ok{color:var(--rec);}
+.area-num.over{color:var(--warn);}
+.area-num.short{color:var(--core);}
+.area-prog{height:4px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.area-fill{height:100%;border-radius:3px;transition:width .3s;}
+.area-fill.ok{background:var(--rec);}
+.area-fill.over{background:var(--warn);}
+.area-fill.short{background:var(--core);}
+
+/* ── 체크패널 ── */
+.check-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px;margin-bottom:8px;}
+.check-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.check-row:last-child{border-bottom:none;}
+.check-ok{color:var(--rec);}
+.check-no{color:var(--core);}
+
+/* ── 과목설계 ── */
+.year-title{font-size:13px;font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:7px;}
+.year-badge{background:var(--accent);color:#fff;padding:2px 9px;border-radius:20px;font-size:11px;}
+.year-badge.done-yr{background:var(--text3);}
+.sem-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.sem-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;}
+.sem-box.completed{opacity:.5;pointer-events:none;}
+.sem-title{font-size:10px;color:var(--text3);font-weight:700;letter-spacing:1px;margin-bottom:7px;display:flex;align-items:center;gap:5px;}
+.done-tag{font-size:9px;background:var(--surface2);color:var(--text3);padding:1px 6px;border-radius:10px;border:1px solid var(--border);}
+.subj-item{display:flex;align-items:center;justify-content:space-between;padding:5px 7px;border-radius:6px;font-size:12px;margin-bottom:2px;cursor:pointer;transition:background .15s;border:1px solid transparent;}
+.subj-item:hover{background:var(--surface2);}
+.subj-item.sel{background:#0e1d35;border-color:#2a4a7a;}
+.subj-item.sel.is-core{background:#2a0a0a;border-color:#7a2020;}
+.subj-item.sel.is-rec{background:#0a1a12;border-color:#1a5c3d;}
+.subj-item.sel.is-ref{background:#100e28;border-color:#3d2a7a;}
+.subj-item.done-sub{background:var(--surface2);opacity:.6;cursor:default;}
+.subj-name{font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.subj-cr{font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;flex-shrink:0;margin-left:4px;}
+.sel .subj-cr{color:var(--accent);}
+
+/* ── 교사 학생 카드 ── */
+.student-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 14px;margin-bottom:7px;cursor:pointer;transition:border .15s;}
+.student-card:hover{border-color:var(--accent2);}
+.student-card.confirmed{border-color:rgba(79,214,160,.3);}
+.student-card.locked{border-color:rgba(247,95,95,.2);}
+.credit-pill{background:var(--surface2);border-radius:20px;padding:2px 9px;font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);}
+.t-banner{background:rgba(247,201,79,.08);border:1px solid rgba(247,201,79,.25);border-radius:8px;padding:8px 13px;font-size:12px;color:var(--accent2);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+
+/* ── 모달 ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:340px;max-width:90vw;}
+.modal h3{font-size:14px;font-weight:700;margin-bottom:12px;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
+
+/* ── 토스트 ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 15px;font-size:13px;font-weight:500;z-index:999;transform:translateY(12px);opacity:0;transition:all .3s;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-color:var(--rec);color:var(--rec);}
+.toast.error{border-color:var(--core);color:var(--core);}
+.toast.warn{border-color:var(--warn);color:var(--warn);}
+
+/* ── 빈 상태 ── */
+.empty{text-align:center;padding:40px 20px;color:var(--text3);}
+.empty .icon{font-size:30px;margin-bottom:9px;}
+
+/* ── 로딩 ── */
+.loading{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3);padding:12px;}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── footer ── */
+footer{border-top:1px solid var(--border);padding:12px 24px;text-align:center;font-size:11px;color:var(--text3);}
+footer a{color:var(--accent);text-decoration:none;}
+footer a:hover{text-decoration:underline;}
+
+@media(max-width:860px){main{grid-template-columns:1fr;}.left{border-right:none;border-bottom:1px solid var(--border);max-height:none;}.right{max-height:none;}.sem-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- ══ 로그인 화면 ══ -->
+<div id="loginScreen">
+  <header>
+    <div class="logo-wrap" id="logoWrap" onclick="logoClick()">
+      <div class="logo">고교학점제 과목 설계</div>
+      <h1>나의 <em>3년</em> 로드맵</h1>
+    </div>
+    <div class="header-right">2022 개정 교육과정 · 고교학점제<br><span id="schoolLabel">학교 미설정</span></div>
+  </header>
+  <div class="login-screen">
+    <div class="login-card" id="loginCard">
+      <!-- 상태에 따라 동적 변경 -->
+    </div>
+  </div>
+</div>
+
+<!-- ══ 메인 앱 (로그인 후) ══ -->
+<div id="appScreen" style="display:none;">
+  <header>
+    <div class="logo-wrap" id="logoWrap2" onclick="logoClick()">
+      <div class="logo">고교학점제 과목 설계</div>
+      <h1>나의 <em>3년</em> 로드맵</h1>
+    </div>
+    <div class="header-right">
+      <span id="userLabel" style="color:var(--accent);font-weight:700;"></span><br>
+      <span id="schoolLabel2" style="font-size:11px;color:var(--text3);"></span>
+      <button class="btn btn-ghost btn-sm" style="margin-left:8px;font-size:10px;" onclick="logout()">로그아웃</button>
+    </div>
+  </header>
+  <div class="tabs" id="tabBar"></div>
+  <main>
+    <div class="left" id="leftPanel"></div>
+    <div class="right" id="rightPanel"></div>
+  </main>
+</div>
+
+<!-- ══ 교사 설정 화면 ══ -->
+<div id="setupScreen" style="display:none;">
+  <header>
+    <div class="logo-wrap">
+      <div class="logo">고교학점제 과목 설계</div>
+      <h1>교사 <em>설정</em></h1>
+    </div>
+    <div class="header-right" style="color:var(--accent2);">👨‍🏫 교사 모드</div>
+  </header>
+  <div class="setup-screen">
+    <div class="setup-card">
+      <h3>⚙️ GAS URL 설정</h3>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">Google Apps Script 배포 URL을 입력하세요. <a href="#" style="color:var(--accent);font-size:11px;" onclick="showGuide()">설정 방법 보기</a></p>
+      <div class="url-row">
+        <input type="text" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+        <button class="btn btn-primary btn-sm" onclick="saveGasUrl()">저장</button>
+      </div>
+      <div class="url-ok" id="urlOk">✅ URL이 저장되었습니다</div>
+    </div>
+    <div class="setup-card">
+      <h3>🔗 학생 공유 링크</h3>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">아래 링크를 학생들에게 공유하세요.</p>
+      <div class="share-box">
+        <div class="share-url" id="shareUrl">GAS URL을 먼저 입력하세요</div>
+        <button class="btn btn-ghost btn-sm" onclick="copyShareUrl()">📋 링크 복사</button>
+      </div>
+    </div>
+    <div class="setup-card">
+      <h3>📋 학생 명단 관리</h3>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">구글 시트 <b>학생명단</b> 탭에 학번과 이름을 직접 입력하거나, 아래에서 일괄 등록하세요.</p>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input type="text" id="newStudentId" placeholder="학번 (예: 10101)" style="flex:1;">
+        <input type="text" id="newStudentName" placeholder="이름" style="flex:1;">
+        <button class="btn btn-primary btn-sm" onclick="addStudent()">추가</button>
+      </div>
+      <div id="studentRegList" style="font-size:12px;color:var(--text3);">GAS URL 연결 후 학생 목록이 표시됩니다.</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-teacher btn-full" onclick="enterTeacherMode()">👨‍🏫 교사 대시보드 입장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 모달 ══ -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h3>과목 직접 추가</h3>
+    <div class="field"><label>과목명</label><input type="text" id="modalName" placeholder="과목명 입력"></div>
+    <div class="field"><label>학점</label><input type="number" id="modalCredit" value="4" min="1" max="8"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" onclick="confirmAdd()">추가</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="guideModal">
+  <div class="modal" style="width:480px;max-width:95vw;">
+    <h3>📖 GAS 설정 방법</h3>
+    <div style="font-size:12px;color:var(--text2);line-height:1.9;">
+      <b style="color:var(--accent2);">⚠️ 개인 Gmail 계정 사용 권장</b> (학교 계정은 관리자 설정에 따라 제한될 수 있습니다)<br><br>
+      <b>1.</b> Google Sheets 새 파일 생성<br>
+      <b>2.</b> 상단 메뉴 → <b>확장프로그램 → Apps Script</b><br>
+      <b>3.</b> code.gs 내용 전체 붙여넣기<br>
+      <b>4.</b> 저장 후 <b>배포 → 새 배포</b> 클릭<br>
+      <b>5.</b> 유형: <b>웹 앱</b> 선택<br>
+      <b>6.</b> 실행 계정: <b>나(본인)</b><br>
+      <b>7.</b> 액세스 권한: <b>모든 사용자(익명 포함)</b><br>
+      <b>8.</b> 배포 → 생성된 URL 복사 → 여기에 붙여넣기
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="document.getElementById('guideModal').classList.remove('open')">확인</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<footer>
+  Made with ❤️ by <a href="https://www.instagram.com/hirame.ki" target="_blank">성포고 황성재 @hirame.ki</a>
+</footer>
+
+<script>
+if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const TRACKS = {
+  '인문/어문': {
+    '국어국문/문예창작': {
+      desc: '문학 작품과 한국어에 대한 깊이 있는 탐구가 필요합니다. 글쓰기·독서 관련 과목과 인문학적 사고를 키우는 철학·역사 과목을 함께 이수하세요.',
+      core: ['문학', '화법과 언어', '독서와 작문', '문학과 영상', '주제탐구독서', '독서토론과 글쓰기'],
+      recommend: ['인간과 철학', '인문학과 윤리', '현대사회와 윤리', '윤리와 사상', '한국사 심화 탐구'],
+      reference: ['세계사', '사회와 문화', '역사로탐구하는 현대세계']
+    },
+    '영어영문/영미문화': {
+      desc: '영어 4기능을 균형있게 발전시키고, 영미권 문학·문화를 이해하기 위한 인문학적 소양을 갖추세요.',
+      core: ['영어Ⅰ', '영어Ⅱ', '심화영어Ⅰ', '심화영어Ⅱ', '심화영어 독해Ⅰ', '영어독해와 작문'],
+      recommend: ['문학', '주제탐구독서', '독서토론과 글쓰기', '세계사', '인문학과 윤리'],
+      reference: ['현대사회와 윤리', '역사로탐구하는 현대세계', '사회와 문화']
+    },
+    '제2외국어/지역학(중·일 등)': {
+      desc: '해당 언어 과목을 적극 선택하고, 해당 지역의 역사·문화 이해를 위한 과목을 함께 이수하세요.',
+      core: ['중국어', '일본어', '중국문화', '일본문화'],
+      recommend: ['세계사', '동아시아 역사기행', '세계시민과 지리', '심화영어 독해Ⅰ'],
+      reference: ['여행지리', '역사로탐구하는 현대세계', '사회와 문화']
+    },
+    '사학/역사문화': {
+      desc: '한국사·세계사의 깊이 있는 이해와 사료 해석 능력이 중요합니다. 인문학적 글쓰기 능력도 함께 길러야 합니다.',
+      core: ['세계사', '동아시아 역사기행', '한국사 심화 탐구', '역사로탐구하는 현대세계'],
+      recommend: ['문학', '주제탐구독서', '독서토론과 글쓰기', '인문학과 윤리', '여행지리'],
+      reference: ['현대사회와 윤리', '윤리와 사상', '세계시민과 지리']
+    },
+    '철학/윤리': {
+      desc: '논리적 사고와 비판적 독해, 가치 판단의 능력을 키울 수 있는 과목을 중심으로 선택하세요.',
+      core: ['인간과 철학', '현대사회와 윤리', '윤리와 사상', '인문학과 윤리', '윤리문제탐구'],
+      recommend: ['문학', '독서토론과 글쓰기', '주제탐구독서', '한국사 심화 탐구', '사회문제탐구'],
+      reference: ['세계사', '역사로탐구하는 현대세계', '과학의 역사와 문화']
+    },
+  },
+  '사회/상경': {
+    '경영/경제': {
+      desc: '수학(특히 통계·미적분)과 사회과학적 사고가 모두 중요합니다. 2028 입시에서 경상계열은 수학·경제 과목이 핵심입니다.',
+      core: ['확률과 통계', '미적분Ⅰ', '미적분Ⅱ', '경제', '금융과경제생활'],
+      recommend: ['대수', '사회와 문화', '데이터과학', '정치', '법과 사회'],
+      reference: ['인공지능 수학', '인공지능기초', '심화영어 독해Ⅰ', '영어독해와 작문', '윤리문제탐구']
+    },
+    '정치외교/국제학': {
+      desc: '국내외 정치·사회 현상을 분석하는 능력이 필요합니다. 영어·제2외국어 역량도 중요합니다.',
+      core: ['정치', '법과 사회', '사회와 문화', '세계시민과 지리'],
+      recommend: ['세계사', '동아시아 역사기행', '역사로탐구하는 현대세계', '경제', '사회문제탐구', '국제법'],
+      reference: ['심화영어 독해Ⅰ', '영어독해와 작문', '인문학과 윤리', '현대사회와 윤리', '윤리문제탐구']
+    },
+    '법학/법무': {
+      desc: '논리적 추론, 비판적 사고, 사회 현상 분석이 핵심입니다. 글쓰기와 독해 능력도 중요합니다.',
+      core: ['법과 사회', '정치', '사회와 문화', '윤리와 사상', '인문학과 윤리'],
+      recommend: ['사회문제탐구', '윤리문제탐구', '경제', '독서토론과 글쓰기', '주제탐구독서', '국제법'],
+      reference: ['현대사회와 윤리', '한국사 심화 탐구', '역사로탐구하는 현대세계']
+    },
+    '사회학/사회복지': {
+      desc: '사회 구조와 인간 행동을 분석하는 통계적 사고와 인문학적 통찰을 함께 키우세요.',
+      core: ['사회와 문화', '사회문제탐구', '현대사회와 윤리', '윤리문제탐구'],
+      recommend: ['확률과 통계', '정치', '법과 사회', '경제', '인문학과 윤리'],
+      reference: ['데이터과학', '주제탐구독서', '독서토론과 글쓰기', '역사로탐구하는 현대세계']
+    },
+    '심리/아동/가족': {
+      desc: '심리학은 자연과학적 접근(통계·생물학)과 사회과학적 접근이 모두 필요한 융합 학문입니다.',
+      core: ['사회와 문화', '확률과 통계', '현대사회와 윤리', '윤리문제탐구'],
+      recommend: ['생명과학', '세포와 물질대사', '사회문제탐구', '데이터과학', '인문학과 윤리'],
+      reference: ['생물의 유전', '주제탐구독서', '독서토론과 글쓰기']
+    },
+    '미디어/언론/광고': {
+      desc: '글쓰기·영상 콘텐츠 이해·사회현상 분석 능력이 필요합니다. 디지털 미디어 환경에 대한 이해도 중요합니다.',
+      core: ['화법과 언어', '독서와 작문', '문학과 영상', '사회와 문화', '독서토론과 글쓰기'],
+      recommend: ['주제탐구독서', '사회문제탐구', '정치', '소프트웨어와 생활', '심화영어 독해Ⅰ'],
+      reference: ['데이터과학', '경제', '인공지능기초', '미술 감상과 비평']
+    },
+    '지리/관광': {
+      desc: '인문지리·자연지리 모두를 다루며, 자연과학(지구과학)과 사회과학을 잇는 융합 분야입니다.',
+      core: ['세계시민과 지리', '한국지리탐구', '여행지리', '기후변화와 지속가능한 세계'],
+      recommend: ['지구과학', '지구시스템과학', '동아시아 역사기행', '사회와 문화', '경제'],
+      reference: ['세계사', '기후변화와 환경생태', '데이터과학']
+    },
+  },
+  '자연과학': {
+    '수학/통계': {
+      desc: '수학 과목을 가능한 한 모두 깊이 있게 이수해야 합니다. 통계학과는 확률과 통계가 특히 중요합니다.',
+      core: ['대수', '확률과 통계', '미적분Ⅰ', '미적분Ⅱ', '기하', '고급미적분', '고급대수', '전문수학', '수학과제탐구'],
+      recommend: ['인공지능 수학', '데이터과학', '물리학', '인공지능기초', '프로그래밍'],
+      reference: ['역학과 에너지', '전자기와 양자', '인공지능을 위한 선형대수학']
+    },
+    '물리/천문': {
+      desc: '물리학 전 영역과 고급 수학 과목을 폭넓게 이수하세요. 천문학은 지구과학(행성우주) 분야도 함께 보면 좋습니다.',
+      core: ['물리학', '역학과 에너지', '전자기와 양자', '물리학실험', '고급물리학', '미적분Ⅰ', '미적분Ⅱ', '기하'],
+      recommend: ['대수', '인공지능 수학', '확률과 통계', '지구과학', '지구시스템과학', '고급미적분'],
+      reference: ['화학', '물질과 에너지', '프로그래밍', '융합과학탐구']
+    },
+    '화학': {
+      desc: '화학 과목 전체를 깊이 있게 이수하고, 물리·수학 기초도 탄탄히 해두세요.',
+      core: ['화학', '물질과 에너지', '화학 반응의 세계', '화학실험', '고급화학'],
+      recommend: ['미적분Ⅰ', '미적분Ⅱ', '물리학', '역학과 에너지', '생명과학', '세포와 물질대사'],
+      reference: ['확률과 통계', '인공지능 수학', '융합과학탐구', '과학의 역사와 문화']
+    },
+    '생명과학/생물': {
+      desc: '생명과학 전 영역을 이수하고, 분자생물학·생화학을 위해 화학도 함께 들어야 합니다.',
+      core: ['생명과학', '세포와 물질대사', '생물의 유전', '생명과학실험', '고급생명과학'],
+      recommend: ['화학', '화학 반응의 세계', '확률과 통계', '미적분Ⅰ', '기후변화와 환경생태'],
+      reference: ['물질과 에너지', '데이터과학', '인공지능 생물정보학 기초와 활용', '융합과학탐구', '윤리문제탐구']
+    },
+    '지구/대기/해양': {
+      desc: '지구과학 전반을 다루고, 물리·화학 기초와 환경 관련 과목도 중요합니다.',
+      core: ['지구과학', '지구시스템과학', '행성우주과학', '지구과학실험', '고급지구과학'],
+      recommend: ['물리학', '화학', '기후변화와 지속가능한 세계', '기후변화와 환경생태', '미적분Ⅰ'],
+      reference: ['역학과 에너지', '데이터과학', '한국지리탐구', '융합과학탐구']
+    },
+  },
+  '공학': {
+    '전기/전자/반도체': {
+      desc: '물리(전자기·역학)와 고급 수학이 필수입니다. 반도체·전자공학에서는 양자역학 기초가 매우 중요합니다.',
+      core: ['물리학', '역학과 에너지', '전자기와 양자', '미적분Ⅰ', '미적분Ⅱ', '기하', '고급미적분'],
+      recommend: ['대수', '인공지능 수학', '물리학실험', '고급물리학', '화학', '정보'],
+      reference: ['프로그래밍', '인공지능기초', '확률과 통계', '인공지능을 위한 선형대수학']
+    },
+    '컴퓨터/소프트웨어': {
+      desc: '정보·프로그래밍 과목을 우선 이수하고, 알고리즘 이해를 위한 수학(이산수학·확률) 역량도 키우세요.',
+      core: ['정보', '프로그래밍', '인공지능기초', '소프트웨어와 생활', '인공지능 수학'],
+      recommend: ['미적분Ⅰ', '미적분Ⅱ', '확률과 통계', '데이터과학', '대수'],
+      reference: ['기하', '인공지능을 위한 선형대수학', '물리학', '전자기와 양자']
+    },
+    'AI/데이터사이언스': {
+      desc: '수학(선형대수·미적분·확률통계)과 프로그래밍이 모두 핵심입니다. 응용 분야의 도메인 지식도 중요합니다.',
+      core: ['인공지능 수학', '인공지능기초', '데이터과학', '프로그래밍', '확률과 통계', '미적분Ⅰ', '미적분Ⅱ'],
+      recommend: ['대수', '정보', '소프트웨어와 생활', '인공지능을 위한 선형대수학', '고급미적분'],
+      reference: ['기하', '물리학', '인공지능 생물정보학 기초와 활용', '윤리문제탐구']
+    },
+    '기계/항공우주': {
+      desc: '물리학(역학·열역학)과 수학을 가장 깊이 있게 이수해야 합니다. 항공우주는 전자기 영역도 중요합니다.',
+      core: ['물리학', '역학과 에너지', '미적분Ⅰ', '미적분Ⅱ', '기하', '물리학실험'],
+      recommend: ['전자기와 양자', '대수', '고급미적분', '고급물리학', '화학', '인공지능 수학'],
+      reference: ['프로그래밍', '정보', '물질과 에너지', '인공지능기초']
+    },
+    '화학/신소재/에너지': {
+      desc: '화학과 물리, 그리고 미적분이 모두 필요합니다. 신소재 분야에서는 양자·전자기 영역도 점차 중요해지고 있습니다.',
+      core: ['화학', '물질과 에너지', '화학 반응의 세계', '화학실험', '미적분Ⅰ', '미적분Ⅱ'],
+      recommend: ['물리학', '역학과 에너지', '전자기와 양자', '고급화학', '대수'],
+      reference: ['생명과학', '인공지능 수학', '융합과학탐구', '기후변화와 환경생태']
+    },
+    '생명/바이오/의공학': {
+      desc: '생명과학과 화학을 함께 깊이 있게 이수하고, 데이터 분석 역량도 갖추세요.',
+      core: ['생명과학', '화학', '세포와 물질대사', '생물의 유전', '화학 반응의 세계', '생명과학실험'],
+      recommend: ['물질과 에너지', '미적분Ⅰ', '확률과 통계', '인공지능 생물정보학 기초와 활용', '데이터과학'],
+      reference: ['물리학', '인공지능 수학', '고급생명과학', '고급화학', '융합과학탐구']
+    },
+    '건축/토목/환경': {
+      desc: '구조·역학을 다루는 물리와 수학, 그리고 공간 감각이 모두 중요합니다. 환경 분야는 지구과학·생태가 필수입니다.',
+      core: ['물리학', '역학과 에너지', '미적분Ⅰ', '미적분Ⅱ', '기하'],
+      recommend: ['지구과학', '기후변화와 지속가능한 세계', '기후변화와 환경생태', '화학', '미술 창작'],
+      reference: ['지구시스템과학', '대수', '한국지리탐구', '여행지리', '소프트웨어와 생활']
+    },
+    '산업/경영공학': {
+      desc: '수학·통계와 경제, 그리고 데이터·정보 과목을 균형있게 이수하세요.',
+      core: ['확률과 통계', '미적분Ⅰ', '미적분Ⅱ', '대수', '데이터과학'],
+      recommend: ['경제', '정보', '프로그래밍', '인공지능 수학', '인공지능기초'],
+      reference: ['물리학', '사회와 문화', '금융과경제생활', '소프트웨어와 생활']
+    },
+  },
+  '의약학/보건': {
+    '의예/치의예/한의예': {
+      desc: '생명과학과 화학은 반드시, 깊이 있게 이수해야 합니다. 물리학 기초와 윤리적 사고도 중요합니다.',
+      core: ['생명과학', '화학', '세포와 물질대사', '생물의 유전', '화학 반응의 세계', '생명과학실험', '화학실험', '고급생명과학', '고급화학'],
+      recommend: ['물리학', '역학과 에너지', '미적분Ⅰ', '미적분Ⅱ', '확률과 통계', '인문학과 윤리', '윤리문제탐구'],
+      reference: ['물질과 에너지', '인공지능 생물정보학 기초와 활용', '현대사회와 윤리', '주제탐구독서']
+    },
+    '약학/제약': {
+      desc: '화학과 생명과학이 가장 핵심이며, 두 과목 모두 고급 수준까지 이수하면 좋습니다.',
+      core: ['화학', '생명과학', '화학 반응의 세계', '세포와 물질대사', '화학실험', '고급화학', '고급생명과학'],
+      recommend: ['물질과 에너지', '생물의 유전', '생명과학실험', '미적분Ⅰ', '확률과 통계'],
+      reference: ['물리학', '윤리문제탐구', '인공지능 생물정보학 기초와 활용', '융합과학탐구']
+    },
+    '수의예': {
+      desc: '의예와 유사하게 생명과학·화학이 핵심입니다. 동물 윤리에 대한 사고도 함께 길러보세요.',
+      core: ['생명과학', '화학', '세포와 물질대사', '생물의 유전', '화학 반응의 세계', '생명과학실험'],
+      recommend: ['고급생명과학', '고급화학', '화학실험', '미적분Ⅰ', '확률과 통계', '윤리문제탐구'],
+      reference: ['물리학', '인공지능 생물정보학 기초와 활용', '기후변화와 환경생태']
+    },
+    '간호/보건': {
+      desc: '생명과학·화학 기초와 함께 사회·심리적 이해, 윤리적 사고가 두루 필요합니다.',
+      core: ['생명과학', '화학', '세포와 물질대사', '화학 반응의 세계'],
+      recommend: ['생물의 유전', '확률과 통계', '인문학과 윤리', '윤리문제탐구', '사회와 문화'],
+      reference: ['생명과학실험', '현대사회와 윤리', '사회문제탐구']
+    },
+  },
+  '교육': {
+    '국어교육': {
+      desc: '국어국문학과의 권장 과목에 더해, 교육 대상(학생)에 대한 이해를 위한 사회·윤리 과목을 함께 이수하세요.',
+      core: ['문학', '화법과 언어', '독서와 작문', '문학과 영상', '주제탐구독서', '독서토론과 글쓰기'],
+      recommend: ['인문학과 윤리', '현대사회와 윤리', '인간과 철학', '사회와 문화'],
+      reference: ['한국사 심화 탐구', '윤리와 사상', '사회문제탐구']
+    },
+    '수학교육': {
+      desc: '수학 과목 전체를 깊이 있게 이수하고, 교육학적 사고를 위한 인문·사회 과목도 함께 챙기세요.',
+      core: ['대수', '확률과 통계', '미적분Ⅰ', '미적분Ⅱ', '기하', '고급미적분', '수학과제탐구'],
+      recommend: ['인공지능 수학', '데이터과학', '사회와 문화', '인문학과 윤리'],
+      reference: ['프로그래밍', '인공지능기초', '주제탐구독서']
+    },
+    '영어교육': {
+      desc: '영어 4기능을 발전시키고, 교육 대상에 대한 이해와 인문학적 소양도 함께 키우세요.',
+      core: ['영어Ⅰ', '영어Ⅱ', '심화영어Ⅰ', '심화영어Ⅱ', '심화영어 독해Ⅰ', '영어독해와 작문'],
+      recommend: ['문학', '주제탐구독서', '독서토론과 글쓰기', '인문학과 윤리'],
+      reference: ['세계사', '현대사회와 윤리', '사회와 문화']
+    },
+    '과학교육(물·화·생·지)': {
+      desc: '담당하고자 하는 과학 영역을 핵심으로, 다른 과학 영역도 함께 폭넓게 이수하세요.',
+      core: ['물리학', '화학', '생명과학', '지구과학', '미적분Ⅰ', '확률과 통계'],
+      recommend: ['역학과 에너지', '물질과 에너지', '화학 반응의 세계', '세포와 물질대사', '지구시스템과학', '인문학과 윤리'],
+      reference: ['고급물리학', '고급화학', '고급생명과학', '고급지구과학', '과학의 역사와 문화', '융합과학탐구']
+    },
+    '사회교육(역사·지리·일반사회)': {
+      desc: '담당 영역을 깊이 있게 이수하고, 인접 사회과 영역도 함께 챙기세요.',
+      core: ['세계사', '한국사 심화 탐구', '사회와 문화', '세계시민과 지리', '정치', '경제'],
+      recommend: ['법과 사회', '한국지리탐구', '동아시아 역사기행', '사회문제탐구', '현대사회와 윤리'],
+      reference: ['역사로탐구하는 현대세계', '여행지리', '윤리와 사상', '인문학과 윤리']
+    },
+    '초등교육': {
+      desc: '모든 교과를 다뤄야 하므로 균형 있는 이수가 중요합니다. 한 영역에 치우치지 않도록 하세요.',
+      core: ['문학', '독서와 작문', '대수', '확률과 통계', '인문학과 윤리'],
+      recommend: ['미적분Ⅰ', '물리학', '화학', '생명과학', '지구과학', '사회와 문화', '음악', '미술', '체육1'],
+      reference: ['주제탐구독서', '세계사', '현대사회와 윤리', '인공지능기초']
+    },
+    '유아/특수교육': {
+      desc: '아동 발달에 대한 이해와 인문학적 소양, 그리고 따뜻한 인성 함양이 중요합니다.',
+      core: ['사회와 문화', '인문학과 윤리', '현대사회와 윤리', '윤리문제탐구'],
+      recommend: ['생명과학', '문학', '독서와 작문', '음악', '미술'],
+      reference: ['주제탐구독서', '사회문제탐구', '독서토론과 글쓰기', '체육1']
+    },
+  },
+  '예체능': {
+    '미술/디자인/시각예술': {
+      desc: '미술 과목과 함께, 작품의 인문학적 배경을 이해하기 위한 문학·역사·철학 과목을 함께 이수하세요.',
+      core: ['미술', '미술 창작', '미술 감상과 비평'],
+      recommend: ['문학', '문학과 영상', '세계사', '주제탐구독서', '인문학과 윤리'],
+      reference: ['소프트웨어와 생활', '음악', '여행지리', '한국사 심화 탐구']
+    },
+    '음악': {
+      desc: '음악 과목을 적극 선택하고, 음악사 이해를 위한 인문학·역사 과목을 함께 이수하세요.',
+      core: ['음악', '음악 연주와 창작', '음악 감상과 비평'],
+      recommend: ['문학', '세계사', '인문학과 윤리', '주제탐구독서'],
+      reference: ['미술', '동아시아 역사기행', '현대사회와 윤리']
+    },
+    '체육/스포츠과학': {
+      desc: '체육 과목과 함께 운동과학을 위한 생명과학·물리, 그리고 사회과학적 이해를 키우세요.',
+      core: ['체육1', '체육2', '운동과 건강', '스포츠생활1', '스포츠문화', '스포츠과학'],
+      recommend: ['생명과학', '세포와 물질대사', '물리학', '역학과 에너지', '사회와 문화'],
+      reference: ['확률과 통계', '인문학과 윤리', '현대사회와 윤리', '데이터과학']
+    },
+    '연극영화/공연/미디어아트': {
+      desc: '문학과 영상 콘텐츠 이해, 그리고 인문학적 깊이를 위한 다양한 과목을 이수하세요.',
+      core: ['문학', '문학과 영상', '화법과 언어', '미술 감상과 비평', '음악 감상과 비평'],
+      recommend: ['독서와 작문', '독서토론과 글쓰기', '주제탐구독서', '세계사', '인문학과 윤리'],
+      reference: ['소프트웨어와 생활', '사회와 문화', '현대사회와 윤리', '미술 창작']
+    },
+  },
+  '융복합/자유전공': {
+    '자유전공/광역(인문·사회)': {
+      desc: '인문·사회 전반을 폭넓게 다루는 트랙. 문해력·논리력의 기반 위에 다양한 사회과학 과목을 균형 있게 이수하세요.',
+      core: ['문학', '독서와 작문', '사회와 문화', '경제', '확률과 통계'],
+      recommend: ['주제탐구독서', '독서토론과 글쓰기', '정치', '법과 사회', '인문학과 윤리', '미적분Ⅰ'],
+      reference: ['세계사', '현대사회와 윤리', '심화영어 독해Ⅰ', '데이터과학']
+    },
+    '자유전공/광역(자연·공학)': {
+      desc: '이공계 전반에 진입할 수 있도록 수학과 과학 전 영역을 폭넓게 이수하세요.',
+      core: ['대수', '확률과 통계', '미적분Ⅰ', '미적분Ⅱ', '물리학', '화학'],
+      recommend: ['생명과학', '지구과학', '기하', '인공지능 수학', '정보', '데이터과학'],
+      reference: ['프로그래밍', '인공지능기초', '소프트웨어와 생활', '융합과학탐구']
+    },
+    '의과학/의생명융합': {
+      desc: '생명·화학을 기반으로 데이터·AI 역량까지 갖춰야 하는 융합 분야입니다.',
+      core: ['생명과학', '화학', '세포와 물질대사', '생물의 유전', '확률과 통계', '미적분Ⅰ'],
+      recommend: ['화학 반응의 세계', '생명과학실험', '데이터과학', '인공지능 수학', '인공지능 생물정보학 기초와 활용'],
+      reference: ['물리학', '인공지능기초', '고급생명과학', '윤리문제탐구', '융합과학탐구']
+    },
+  },
+};
+
+// ============================================================
+// SNU OVERRIDES — 2028학년도 서울대 전공 연계 과목 선택 안내 (공식 PDF) 기반
+// type: '①' = 제2외국어/한문 1과목 이상
+//       '②' = 수학(기하·미적분Ⅱ) + 과학 진로선택 3과목 이상
+//       '①+②' = 두 유형 모두 권장 (간호·식품영양·의류)
+//       '③' = 권장과목 별도 제시 없음 (미술·음악·체육교육·학부대학)
+//       null = 서울대 학부 모집단위에 해당 없음
+// snuCore: 서울대가 공식적으로 권장한 과목 (편제표에서 빨강 h-core로 강조)
+// snuExtra: 과학 진로선택 풀(유형②) — 이 중 3과목 이상 선택 권장 (주황 h-recommend로 표시)
+// ============================================================
+const UNIVERSITIES = [
+  '서울대', '연세대', '고려대', '성균관대', '서강대', '한양대',
+  '중앙대', '경희대', '한국외대', '시립대', '이화여대', '건국대',
+  '동국대', '홍익대', 'KAIST', 'POSTECH', 'GIST/DGIST/UNIST',
+  '인천대', '아주대', '인하대', '경기대', '단국대',
+  '교대(전국)', '교원대', '거점국립대(경북·부산·전남·충남 등)'
+];
+const UNI_NOTES = {
+  '서울대': '진로·적성에 맞춘 깊이 있는 과목 이수를 중시. 학교 단위 학습경험을 충실히 보여줄 것. 권장 교과 외에도 자신만의 탐구 주제를 가지고 있는지가 핵심.',
+  '연세대': '교과 선택의 위계성과 일관성을 중요하게 봅니다. 일반선택 → 진로선택 → 융합선택으로 이어지는 연결성을 보여주세요.',
+  '고려대': '진로 관련 교과의 적극적 이수와 함께 학업 성취도의 일관성을 평가. 도전적 과목 선택을 긍정적으로 봅니다.',
+  '성균관대': '계열 적합성을 중시. 인문계는 글로벌·언어, 자연계는 수학·과학 기본기 강조.',
+  '서강대': '논리적·정량적 사고력을 위해 수학·정보 과목 이수를 권장. 인문계도 수학 활용 능력을 중요시.',
+  '한양대': '공학·자연계에서 실험·탐구 관련 진로선택 과목 이수를 강조. 실제적 문제해결 역량 중시.',
+  '중앙대': '계열 적합성과 함께 융합적 사고를 위한 폭넓은 교과 이수를 권장.',
+  '경희대': '인성·창의·융합을 강조. 진로 관련 핵심 과목에 더해 인문학적 소양 과목 이수 권장.',
+  '한국외대': '외국어 역량과 글로벌 마인드를 중요시. 제2외국어 이수와 세계사·세계지리 등 권장.',
+  '시립대': '도시·사회 관련 학과가 강점. 진로별 핵심 과목 충실 이수가 핵심.',
+  '이화여대': '계열별 핵심 과목 이수와 함께 인문학적 사고를 위한 윤리·철학 과목 이수 권장.',
+  '건국대': '진로 관련 과목 이수의 충실성과 학업 일관성을 평가.',
+  '동국대': '계열 적합성을 기본으로, 인문학적 소양을 함께 갖추기를 권장.',
+  '홍익대': '예술 계열은 미술·디자인 관련 과목과 함께 인문·사회적 사고력 과목 이수 권장.',
+  'KAIST': '수학·과학 과목을 가장 도전적인 수준까지 이수할 것을 권장. 고급 과목(고급물리학·고급화학 등)과 융합과학탐구 적극 권장.',
+  'POSTECH': '수학·과학의 깊이 있는 이수가 핵심. 진로 분야 외 다른 과학 영역의 기본기도 중시.',
+  'GIST/DGIST/UNIST': '과학기술원 4교 공통적으로 수학·과학 핵심 + 1개 분야 심화 + 융합적 사고 평가.',
+  '인천대': '진로 관련 과목 충실 이수와 균형 있는 교과 학습을 평가.',
+  '아주대': '공학·의학이 강점. 수학·과학 위계성과 함께 진로 관련 진로선택 과목 이수 권장.',
+  '인하대': '공학 계열은 수학·과학 깊이 있는 이수, 인문 계열은 언어·사회 균형 잡힌 이수 권장.',
+  '경기대': '계열별 진로 관련 과목 충실 이수를 권장. 학업 일관성 평가.',
+  '단국대': '계열 적합성을 기본으로, 진로 관련 교과의 적극적 이수 권장.',
+  '교대(전국)': '전 교과 균형 이수가 중요. 어느 한 영역에 치우치지 않고 국·영·수·사·과·예체능 모두 충실히 이수하세요.',
+  '교원대': '담당하고자 하는 교과를 핵심으로, 교육학적 사고를 위한 인문·사회 과목 이수 권장.',
+  '거점국립대(경북·부산·전남·충남 등)': '계열 적합성과 진로 관련 과목 이수가 기본. 지역인재 전형이 활성화되어 있어 학교 충실도가 중요.'
+};
+
+const UNI_OVERRIDES = {
+  '서울대': {
+    '국어국문/문예창작':       ['일본어','중국어'],
+    '영어영문/영미문화':       ['일본어','중국어'],
+    '사학/역사문화':           ['일본어','중국어'],
+    '경영/경제':               ['일본어','중국어','미적분Ⅰ'],
+    '법학/법무':               ['일본어','중국어'],
+    '수학/통계':               ['미적분Ⅱ','기하'],
+    '물리/천문':               ['역학과 에너지','전자기와 양자','미적분Ⅱ'],
+    '화학':                    ['화학 반응의 세계','물질과 에너지','미적분Ⅱ'],
+    '생명과학/생물':           ['세포와 물질대사','생물의 유전','화학'],
+    '컴퓨터/소프트웨어':       ['미적분Ⅰ','미적분Ⅱ','기하'],
+    'AI/데이터사이언스':       ['미적분Ⅱ','전자기와 양자'],
+    '전기/전자/반도체':        ['역학과 에너지','전자기와 양자','미적분Ⅱ'],
+    '기계/항공우주':           ['역학과 에너지','전자기와 양자','미적분Ⅱ'],
+    '의예/치의예/한의예':      ['화학 반응의 세계','세포와 물질대사','생물의 유전','물질과 에너지'],
+    '약학/제약':               ['화학 반응의 세계','세포와 물질대사','생물의 유전'],
+    '화학/신소재/에너지':      ['화학 반응의 세계','역학과 에너지','전자기와 양자','미적분Ⅱ'],
+    '건축/토목/환경':          ['역학과 에너지','미적분Ⅱ'],
+  },
+  '연세대': {
+    '의예/치의예/한의예':      ['화학','생명과학','역학과 에너지','전자기와 양자','미적분Ⅱ'],
+    '약학/제약':               ['화학','생명과학'],
+    '컴퓨터/소프트웨어':       ['미적분Ⅰ','미적분Ⅱ','기하'],
+    'AI/데이터사이언스':       ['미적분Ⅰ','미적분Ⅱ'],
+    '전기/전자/반도체':        ['역학과 에너지','전자기와 양자','미적분Ⅱ'],
+    '기계/항공우주':           ['역학과 에너지','미적분Ⅱ'],
+    '경영/경제':               ['미적분Ⅰ','미적분Ⅱ'],
+    '수학/통계':               ['미적분Ⅱ','기하'],
+    '생명과학/생물':           ['세포와 물질대사','생물의 유전','화학'],
+  },
+  '고려대': {
+    '의예/치의예/한의예':      ['화학','생명과학','역학과 에너지','미적분Ⅱ'],
+    '약학/제약':               ['화학','생명과학'],
+    '컴퓨터/소프트웨어':       ['미적분Ⅰ','미적분Ⅱ'],
+    '전기/전자/반도체':        ['역학과 에너지','전자기와 양자','미적분Ⅱ'],
+    '기계/항공우주':           ['역학과 에너지','미적분Ⅱ'],
+    '경영/경제':               ['미적분Ⅰ','미적분Ⅱ'],
+  },
+  '이화여대': {
+    '의예/치의예/한의예':      ['화학','생명과학','역학과 에너지','전자기와 양자'],
+    '약학/제약':               ['화학','생명과학'],
+    '컴퓨터/소프트웨어':       ['미적분Ⅰ','미적분Ⅱ'],
+    '생명/바이오/의공학':      ['생명과학','화학','세포와 물질대사','생물의 유전'],
+  },
+};
+
+
+const DEFAULT_SUBS = {
+  '2학년 1학기': [
+    {name:'공통국어1',cr:4,type:'공통'},{name:'공통수학1',cr:4,type:'공통'},
+    {name:'공통영어1',cr:4,type:'공통'},{name:'한국사1',cr:3,type:'공통'},
+    {name:'통합사회1',cr:4,type:'공통'},{name:'통합과학1',cr:4,type:'공통'},
+    {name:'과학탐구실험1',cr:1,type:'공통'},{name:'체육1',cr:3,type:'일반선택'},
+    {name:'음악',cr:3,type:'일반선택'},{name:'정보',cr:4,type:'일반선택'},
+  ],
+  '2학년 2학기': [
+    {name:'공통국어2',cr:4,type:'공통'},{name:'공통수학2',cr:4,type:'공통'},
+    {name:'공통영어2',cr:4,type:'공통'},{name:'한국사2',cr:3,type:'공통'},
+    {name:'통합사회2',cr:4,type:'공통'},{name:'통합과학2',cr:4,type:'공통'},
+    {name:'과학탐구실험2',cr:1,type:'공통'},{name:'체육2',cr:3,type:'일반선택'},
+    {name:'미술',cr:3,type:'일반선택'},{name:'기술가정',cr:4,type:'일반선택'},
+  ],
+  '3학년 1학기': [
+    {name:'화법과 언어',cr:4,type:'일반선택'},{name:'대수',cr:4,type:'일반선택'},
+    {name:'영어Ⅰ',cr:4,type:'일반선택'},{name:'물리학',cr:4,type:'일반선택'},
+    {name:'화학',cr:4,type:'일반선택'},{name:'사회와 문화',cr:4,type:'일반선택'},
+    {name:'정치',cr:4,type:'일반선택'},{name:'체육3',cr:3,type:'일반선택'},
+    {name:'일본문화',cr:4,type:'진로선택'},{name:'경제',cr:4,type:'일반선택'},
+  ],
+  '3학년 2학기': [
+    {name:'독서와 작문',cr:4,type:'일반선택'},{name:'미적분Ⅰ',cr:4,type:'일반선택'},
+    {name:'확률과 통계',cr:4,type:'일반선택'},{name:'영어Ⅱ',cr:4,type:'일반선택'},
+    {name:'생명과학',cr:4,type:'일반선택'},{name:'지구과학',cr:4,type:'일반선택'},
+    {name:'세계사',cr:4,type:'일반선택'},{name:'정보',cr:4,type:'일반선택'},
+    {name:'기하',cr:4,type:'일반선택'},{name:'한국사 심화 탐구',cr:4,type:'진로선택'},
+  ],
+  '4학년 1학기': [
+    {name:'주제탐구독서',cr:4,type:'융합선택'},{name:'수학과제탐구',cr:4,type:'진로선택'},
+    {name:'미적분Ⅱ',cr:4,type:'진로선택'},{name:'심화영어Ⅰ',cr:4,type:'진로선택'},
+    {name:'세포와 물질대사',cr:4,type:'진로선택'},{name:'역학과 에너지',cr:4,type:'진로선택'},
+    {name:'화학 반응의 세계',cr:4,type:'진로선택'},{name:'데이터과학',cr:4,type:'진로선택'},
+    {name:'인공지능기초',cr:4,type:'진로선택'},{name:'스포츠 생활1',cr:3,type:'융합선택'},
+  ],
+  '4학년 2학기': [
+    {name:'독서토론과 글쓰기',cr:4,type:'융합선택'},{name:'고급수학Ⅱ',cr:4,type:'진로선택'},
+    {name:'심화영어 독해Ⅰ',cr:4,type:'진로선택'},{name:'생물의 유전',cr:4,type:'진로선택'},
+    {name:'전자기와 양자',cr:4,type:'진로선택'},{name:'프로그래밍',cr:4,type:'진로선택'},
+    {name:'사회문제탐구',cr:4,type:'융합선택'},{name:'융합과학탐구',cr:4,type:'융합선택'},
+    {name:'미술 창작',cr:4,type:'진로선택'},{name:'스포츠 생활2',cr:3,type:'융합선택'},
+  ],
+};
+
+
+/* ══ 교과영역 필수이수 기준 ══ */
+const REQUIRED_AREAS = [
+  {name:'국어',   min:8,  keys:['국어','문학','화법','독서','언어','작문','매체']},
+  {name:'수학',   min:8,  keys:['수학','대수','미적분','확률','통계','기하','수학과제']},
+  {name:'영어',   min:8,  keys:['영어','심화영어']},
+  {name:'사회',   min:10, keys:['사회','역사','도덕','윤리','정치','법','경제','지리','세계사','한국사','동아시아']},
+  {name:'과학',   min:10, keys:['과학','물리','화학','생명','지구','생물','역학','전자기','세포','융합과학']},
+  {name:'체육',   min:10, keys:['체육','스포츠','운동']},
+  {name:'예술',   min:10, keys:['음악','미술','연극']},
+  {name:'기타',   min:16, keys:['기술','가정','정보','일본어','중국어','한문','교양','소프트웨어','인공지능','프로그래밍','데이터']},
+  {name:'한국사', min:6,  keys:['한국사']},
+];
+const KEA_KEYS = ['국어','문학','화법','독서','언어','작문','매체','수학','대수','미적분','확률','통계','기하','수학과제','영어','심화영어'];
+
+/* ══ 전역 상태 ══ */
+let S = {
+  // 공통
+  gasUrl: '',
+  mode: null,       // 'student' | 'teacher'
+  // 학생
+  studentId: '',
+  studentName: '',
+  locked: false,
+  // 과목선택
+  grade: 1,
+  univ:'', track:'', major:'',
+  coreList:[], recList:[], refList:[],
+  availSubs:{}, selSubs:{},
+  modalTarget: null,
+  // 교사
+  teacherMode: false,
+  currentTab: 1,
+  // 로고 클릭 카운트
+  logoClicks: 0,
+  logoTimer: null,
+};
+
+/* ══ 초기화 ══ */
+function init(){
+  // URL 파라미터에서 gasUrl 확인
+  const params = new URLSearchParams(location.search);
+  const urlGas = params.get('gas');
+  if(urlGas) S.gasUrl = decodeURIComponent(urlGas);
+
+  // localStorage에서 gasUrl 복원
+  const saved = localStorage.getItem('hsc_gas_url');
+  if(saved && !S.gasUrl) S.gasUrl = saved;
+
+  // 학교명 표시
+  const schoolName = params.get('school') || localStorage.getItem('hsc_school') || '학교 미설정';
+  document.getElementById('schoolLabel').textContent = schoolName;
+  document.getElementById('schoolLabel2').textContent = schoolName;
+
+  // 편제표 복원
+  const savedSubs = localStorage.getItem('hsc_subs');
+  S.availSubs = savedSubs ? JSON.parse(savedSubs) : {...DEFAULT_SUBS};
+
+  // 로그인 화면 렌더
+  renderLogin('start');
+}
+
+/* ══ 로고 5번 클릭 → 교사모드 ══ */
+function logoClick(){
+  S.logoClicks++;
+  clearTimeout(S.logoTimer);
+  if(S.logoClicks >= 5){
+    S.logoClicks = 0;
+    enterSetup();
+    return;
+  }
+  S.logoTimer = setTimeout(()=>{ S.logoClicks=0; }, 1500);
+}
+
+/* ══ 로그인 화면 렌더 ══ */
+function renderLogin(state, data={}){
+  const card = document.getElementById('loginCard');
+  if(state === 'start'){
+    card.innerHTML = `
+      <h2>🎓 학점 설계 시작</h2>
+      <p>학번을 입력하면 과목 선택을 시작할 수 있어요.<br>교사는 로고를 5번 클릭하세요.</p>
+      ${!S.gasUrl ? `<div style="background:rgba(247,95,95,.1);border:1px solid rgba(247,95,95,.3);border-radius:8px;padding:10px;font-size:12px;color:var(--core);margin-bottom:14px;">⚠️ GAS URL이 설정되지 않았습니다.<br>교사가 먼저 설정해야 합니다.</div>` : ''}
+      <div class="field"><label>학번 입력</label>
+        <input type="number" class="login-input-big" id="loginIdInput" placeholder="10101" maxlength="6">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="tryLogin()">입장하기</button>
+      <div class="login-hint">학번을 모르면 담임 선생님께 문의하세요</div>`;
+    setTimeout(()=>{ const el=document.getElementById('loginIdInput'); if(el) el.focus(); },100);
+  }
+  else if(state === 'confirm'){
+    card.innerHTML = `
+      <h2>👋 반갑습니다!</h2>
+      <div class="student-confirm">
+        <div class="name">${data.name}</div>
+        <div class="id">학번 ${data.id}</div>
+      </div>
+      ${data.locked ? `<div class="locked-notice">🔒 이미 제출한 선택입니다.<br>수정이 필요하면 담임 선생님께 문의하세요.</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="renderLogin('start')">← 돌아가기</button>
+        <button class="btn btn-primary" style="flex:2" onclick="enterStudent(${JSON.stringify(data).replace(/"/g,'&quot;')})">
+          ${data.locked ? '🔒 내 선택 보기' : '과목 선택 시작 →'}
+        </button>
+      </div>`;
+  }
+  else if(state === 'notfound'){
+    card.innerHTML = `
+      <h2>❌ 학번을 찾을 수 없어요</h2>
+      <p style="color:var(--text2);">입력한 학번 <b style="color:var(--core);">${data.id}</b>이(가) 명단에 없습니다.<br>담임 선생님께 학번 등록을 요청하세요.</p>
+      <button class="btn btn-ghost btn-full" onclick="renderLogin('start')">← 돌아가기</button>`;
+  }
+  else if(state === 'error'){
+    card.innerHTML = `
+      <h2>⚠️ 연결 오류</h2>
+      <p style="color:var(--text2);">${data.msg||'서버에 연결할 수 없습니다.'}</p>
+      <button class="btn btn-ghost btn-full" onclick="renderLogin('start')">← 돌아가기</button>`;
+  }
+  else if(state === 'loading'){
+    card.innerHTML = `<div class="loading"><div class="spinner"></div> 학번 확인 중...</div>`;
+  }
+}
+
+/* ══ 학번 로그인 ══ */
+async function tryLogin(){
+  const id = (document.getElementById('loginIdInput').value||'').trim();
+  if(!id){ showToast('학번을 입력하세요','error'); return; }
+  if(!S.gasUrl){ showToast('GAS URL이 설정되지 않았습니다','error'); return; }
+  renderLogin('loading');
+  try{
+    const res = await fetch(`${S.gasUrl}?action=getStudent&id=${id}`);
+    const json = await res.json();
+    if(!json.ok){ renderLogin('error',{msg:json.error}); return; }
+    if(!json.data){ renderLogin('notfound',{id}); return; }
+    renderLogin('confirm', json.data);
+  }catch(e){
+    renderLogin('error',{msg:'서버 연결 실패. GAS URL을 확인하세요.'});
+  }
+}
+
+/* ══ 학생 모드 진입 ══ */
+function enterStudent(data){
+  S.mode = 'student';
+  S.studentId = data.id;
+  S.studentName = data.name;
+  S.locked = data.locked;
+  S.grade = data.grade || 1;
+  // 기존 선택 복원
+  if(data.selSubs) S.selSubs = data.selSubs;
+  if(data.univ) S.univ = data.univ;
+  if(data.track) S.track = data.track;
+  if(data.major) S.major = data.major;
+  if(data.coreList) S.coreList = data.coreList;
+  if(data.recList) S.recList = data.recList;
+  if(data.refList) S.refList = data.refList || [];
+
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = '';
+  document.getElementById('userLabel').textContent = `${data.name} (${data.id})`;
+
+  buildStudentTabs();
+  goTab(1);
+}
+
+/* ══ 교사 설정 화면 ══ */
+function enterSetup(){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('setupScreen').style.display = '';
+  // 저장된 URL 복원
+  if(S.gasUrl) document.getElementById('gasUrlInput').value = S.gasUrl;
+  updateShareUrl();
+}
+
+function saveGasUrl(){
+  const url = document.getElementById('gasUrlInput').value.trim();
+  if(!url){ showToast('URL을 입력하세요','error'); return; }
+  S.gasUrl = url;
+  localStorage.setItem('hsc_gas_url', url);
+  document.getElementById('urlOk').style.display = 'block';
+  updateShareUrl();
+  showToast('URL 저장됨!','success');
+  loadStudentRegList();
+}
+
+function updateShareUrl(){
+  const el = document.getElementById('shareUrl');
+  if(!S.gasUrl){ el.textContent='GAS URL을 먼저 입력하세요'; return; }
+  const base = location.href.split('?')[0];
+  const school = localStorage.getItem('hsc_school')||'';
+  const shareUrl = `${base}?gas=${encodeURIComponent(S.gasUrl)}${school?'&school='+encodeURIComponent(school):''}`;
+  el.textContent = shareUrl;
+}
+
+function copyShareUrl(){
+  const url = document.getElementById('shareUrl').textContent;
+  if(url.includes('먼저')) return;
+  navigator.clipboard.writeText(url).then(()=>showToast('링크 복사됨!','success'));
+}
+
+async function loadStudentRegList(){
+  if(!S.gasUrl) return;
+  const el = document.getElementById('studentRegList');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> 불러오는 중...</div>';
+  try{
+    const res = await fetch(`${S.gasUrl}?action=getStudentList&teacherKey=TEACHER`);
+    const json = await res.json();
+    if(!json.ok){ el.innerHTML=`<span style="color:var(--core);">${json.error}</span>`; return; }
+    const list = json.data||[];
+    if(!list.length){ el.innerHTML='<span style="color:var(--text3);">등록된 학생 없음</span>'; return; }
+    el.innerHTML = list.map(s=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;">
+        <span><b style="color:var(--accent);font-family:'Space Mono',monospace;">${s.id}</b> · ${s.name}</span>
+        <button class="btn btn-warn btn-sm" onclick="removeStudent('${s.id}')">삭제</button>
+      </div>`).join('');
+  }catch(e){ el.innerHTML=`<span style="color:var(--core);">연결 실패</span>`; }
+}
+
+async function addStudent(){
+  const id = document.getElementById('newStudentId').value.trim();
+  const name = document.getElementById('newStudentName').value.trim();
+  if(!id||!name){ showToast('학번과 이름을 모두 입력하세요','error'); return; }
+  if(!S.gasUrl){ showToast('GAS URL을 먼저 저장하세요','error'); return; }
+  try{
+    const res = await fetch(S.gasUrl,{method:'POST',body:JSON.stringify({action:'addStudent',id,name,teacherKey:'TEACHER'}),headers:{'Content-Type':'text/plain'}});
+    const json = await res.json();
+    if(json.ok){ showToast(`${name} 등록됨!`,'success'); document.getElementById('newStudentId').value=''; document.getElementById('newStudentName').value=''; loadStudentRegList(); }
+    else showToast(json.error,'error');
+  }catch(e){ showToast('연결 실패','error'); }
+}
+
+async function removeStudent(id){
+  if(!confirm(`학번 ${id} 학생을 삭제하시겠습니까?`)) return;
+  try{
+    const res = await fetch(S.gasUrl,{method:'POST',body:JSON.stringify({action:'removeStudent',id,teacherKey:'TEACHER'}),headers:{'Content-Type':'text/plain'}});
+    const json = await res.json();
+    if(json.ok){ showToast('삭제됨',''); loadStudentRegList(); }
+    else showToast(json.error,'error');
+  }catch(e){ showToast('연결 실패','error'); }
+}
+
+function enterTeacherMode(){
+  S.mode = 'teacher';
+  S.teacherMode = true;
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = '';
+  document.getElementById('userLabel').textContent = '👨‍🏫 교사 모드';
+  buildTeacherTabs();
+  goTab(0);
+}
+
+/* ══ 탭 빌드 (학생) ══ */
+function buildStudentTabs(){
+  const bar = document.getElementById('tabBar');
+  bar.innerHTML = `
+    <div class="tab" data-tab="1">① 대학·학과</div>
+    <div class="tab" data-tab="2">${S.locked?'🔒':''} ② 과목 설계</div>`;
+  bar.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>goTab(+t.dataset.tab)));
+}
+
+/* ══ 탭 빌드 (교사) ══ */
+function buildTeacherTabs(){
+  const bar = document.getElementById('tabBar');
+  bar.innerHTML = `
+    <div class="tab t-tab" data-tab="0">👨‍🏫 전체 학생</div>
+    <div class="tab t-tab" data-tab="1">학생 상세</div>
+    <div class="tab t-tab" data-tab="4">⚙️ 설정</div>`;
+  bar.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>goTab(+t.dataset.tab)));
+}
+
+/* ══ 탭 전환 ══ */
+function goTab(n){
+  S.currentTab = n;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',+t.dataset.tab===n));
+  if(S.mode==='student') renderStudentTab(n);
+  else renderTeacherTab(n);
+}
+
+/* ══════════════════════════════
+   학생 탭 렌더
+═══════════════════════════════ */
+function renderStudentTab(n){
+  const left = document.getElementById('leftPanel');
+  const right = document.getElementById('rightPanel');
+  if(n===1){
+    // 대학학과 탭
+    left.innerHTML = buildStudentLeftInfo();
+    right.innerHTML = `<div id="recEmpty" class="empty"><div class="icon">🎓</div><p>계열과 학과를 선택하면<br>권장과목 정보가 표시됩니다</p></div><div id="recContent" style="display:none;"></div>`;
+    initSelects();
+    if(S.track && S.major) loadRec();
+  }
+  else if(n===2){
+    // 과목설계 탭
+    left.innerHTML = buildDesignerLeft();
+    right.innerHTML = `<div id="designer"></div>`;
+    renderDesigner();
+  }
+}
+
+function buildStudentLeftInfo(){
+  return `
+    <div class="sec">내 정보</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px;">
+      <div style="font-weight:700;color:var(--accent);">${S.studentName}</div>
+      <div style="color:var(--text3);margin-top:2px;">학번 ${S.studentId}</div>
+    </div>
+    <div class="field"><label>현재 학년</label>
+      <select id="gradeSelect" onchange="S.grade=+this.value;if(S.currentTab===2)renderDesigner();">
+        <option value="1" ${S.grade==1?'selected':''}>1학년 (2·3학년 설계)</option>
+        <option value="2" ${S.grade==2?'selected':''}>2학년 (3학년 설계)</option>
+        <option value="3" ${S.grade==3?'selected':''}>3학년 (최종 확인)</option>
+      </select>
+    </div>
+    <div class="sec" style="margin-top:4px;">목표 대학·학과</div>
+    <div class="field"><label>대학교</label><select id="uniSel"></select></div>
+    <div class="field"><label>계열</label><select id="trackSel"></select></div>
+    <div class="field"><label>학과/전공</label><select id="majorSel" disabled></select></div>
+    <button class="btn btn-primary btn-full" onclick="goTab(2)" style="margin-top:4px;">② 과목 설계 →</button>`;
+}
+
+function buildDesignerLeft(){
+  return `
+    <div class="warn-banner" id="warnKea">⚠️ 국·영·수 합계 81학점 초과!</div>
+    <div class="credit-bar">
+      <div class="credit-num"><span class="credit-now" id="creditNow">0</span><span class="credit-of">/ 192학점</span></div>
+      <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      <div class="credit-labels"><span>0</span><span>96</span><span>192</span></div>
+    </div>
+    <div class="area-panel"><div class="sec" style="margin-bottom:8px;">영역별 필수이수</div><div id="areaBars"></div></div>
+    <div class="check-panel"><div class="sec" style="margin-bottom:6px;">권장과목 확인</div><div id="checkList"><div style="font-size:12px;color:var(--text3);">대학·학과를 먼저 선택하세요</div></div></div>
+    ${S.locked ? `<div style="background:rgba(247,95,95,.1);border:1px solid rgba(247,95,95,.3);border-radius:8px;padding:10px;font-size:12px;color:var(--core);margin-bottom:8px;">🔒 제출 완료. 수정은 담임 선생님께 문의하세요.</div>` : `<button class="btn btn-primary btn-full" onclick="submitSelection()">📤 제출하기</button>`}
+    <button class="btn btn-ghost btn-full" onclick="goTab(1)" style="margin-top:6px;">← 대학·학과로</button>`;
+}
+
+/* ══ SELECT 초기화 ══ */
+function initSelects(){
+  const uSel = document.getElementById('uniSel');
+  if(!uSel) return;
+  uSel.innerHTML = '<option value="">선택하세요</option>';
+  UNIVERSITIES.forEach(u=>{ const o=document.createElement('option'); o.value=u; o.textContent=u; if(u===S.univ) o.selected=true; uSel.appendChild(o); });
+  uSel.addEventListener('change',()=>{ S.univ=uSel.value; loadRec(); });
+
+  const tSel = document.getElementById('trackSel');
+  tSel.innerHTML = '<option value="">선택하세요</option>';
+  Object.keys(TRACKS).forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; if(t===S.track) o.selected=true; tSel.appendChild(o); });
+  tSel.addEventListener('change',()=>{ S.track=tSel.value; S.major=''; loadMajors(); loadRec(); });
+
+  if(S.track){ loadMajors(); setTimeout(()=>{ const ms=document.getElementById('majorSel'); if(ms) ms.value=S.major; },50); }
+}
+
+function loadMajors(){
+  const mSel = document.getElementById('majorSel');
+  if(!mSel) return;
+  mSel.innerHTML = '<option value="">선택하세요</option>';
+  const track = TRACKS[S.track];
+  if(!track){ mSel.disabled=true; return; }
+  Object.keys(track).forEach(m=>{ const o=document.createElement('option'); o.value=m; o.textContent=m; if(m===S.major) o.selected=true; mSel.appendChild(o); });
+  mSel.disabled = false;
+  mSel.onchange = ()=>{ S.major=mSel.value; loadRec(); };
+}
+
+function loadRec(){
+  const content = document.getElementById('recContent');
+  const empty = document.getElementById('recEmpty');
+  if(!content) return;
+  const track = TRACKS[S.track];
+  if(!S.track||!track||!S.major||!track[S.major]){ if(content) content.style.display='none'; if(empty) empty.style.display='block'; S.coreList=[]; S.recList=[]; S.refList=[]; updateCheckList(); return; }
+  const major = track[S.major];
+  S.coreList=major.core||[]; S.recList=major.recommend||[]; S.refList=major.reference||[];
+  content.style.display='block'; if(empty) empty.style.display='none';
+  content.innerHTML = `
+    <div style="margin-bottom:14px;">
+      <div style="font-size:18px;font-weight:700;">${S.major}</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:2px;">${S.univ?'목표: '+S.univ:''}</div>
+    </div>
+    <div class="desc-box">${major.desc||''}</div>
+    <div class="group-title"><span class="badge badge-core">🔴 핵심권장</span></div>
+    <div class="chips">${S.coreList.map(s=>`<span class="chip chip-core">${s}</span>`).join('')}</div>
+    <div class="group-title"><span class="badge badge-rec">🟢 일반권장</span></div>
+    <div class="chips">${S.recList.map(s=>`<span class="chip chip-rec">${s}</span>`).join('')}</div>
+    <div class="group-title"><span class="badge badge-ref">🔵 참고과목</span></div>
+    <div class="chips">${S.refList.map(s=>`<span class="chip chip-ref">${s}</span>`).join('')}</div>
+    ${UNI_NOTES[S.univ]?`<div class="uni-note"><strong>📌 ${S.univ} 입시 참고</strong><br>${UNI_NOTES[S.univ]}</div>`:''}`;
+  updateCheckList();
+}
+
+/* ══ 과목 설계 렌더 ══ */
+function renderDesigner(){
+  const area = document.getElementById('designer');
+  if(!area) return;
+  const grade = S.grade;
+  const completedSems = grade>=2 ? ['2학년 1학기','2학년 2학기'] : [];
+  const activeSems = grade===1 ? ['2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'] : ['3학년 1학기','3학년 2학기'];
+  const allSems = [...new Set([...completedSems,...activeSems])];
+  const years = [...new Set(allSems.map(s=>s.split(' ')[0]))];
+  let html='';
+  years.forEach(yr=>{
+    const semList = allSems.filter(s=>s.startsWith(yr));
+    const allDone = semList.every(s=>completedSems.includes(s));
+    html+=`<div style="margin-bottom:20px;">
+      <div class="year-title">
+        <span class="year-badge${allDone?' done-yr':''}">${yr}</span>
+        ${allDone?'<span style="font-size:11px;color:var(--text3);">이수 완료</span>':''}
+      </div>
+      <div class="sem-grid">`;
+    semList.forEach(sem=>{
+      const done = completedSems.includes(sem);
+      const subs = S.availSubs[sem]||[];
+      const sel = S.selSubs[sem]||[];
+      html+=`<div class="sem-box${done?' completed':''}">
+        <div class="sem-title">${sem.includes('1학기')?'1학기':'2학기'}${done?'<span class="done-tag">✓ 이수완료</span>':''}</div>`;
+      if(done){
+        (DEFAULT_SUBS[sem]||[]).forEach(s=>{ html+=`<div class="subj-item done-sub"><span class="subj-name">${s.name}</span><span class="subj-cr">${s.cr}</span></div>`; });
+      } else {
+        subs.forEach((sub,idx)=>{
+          const isSel=sel.some(s=>s.name===sub.name);
+          const isCore=S.coreList.includes(sub.name), isRec=S.recList.includes(sub.name), isRef=S.refList.includes(sub.name);
+          const cls=isSel?`sel${isCore?' is-core':isRec?' is-rec':isRef?' is-ref':''}`:'' ;
+          const px=isCore?'🔴 ':isRec?'🟢 ':isRef?'🔵 ':'';
+          const clickable = S.locked ? '' : `onclick="toggleSub('${sem}',${idx})"`;
+          html+=`<div class="subj-item ${cls}" ${clickable}><span class="subj-name">${px}${sub.name}</span><span class="subj-cr">${sub.cr}</span></div>`;
+        });
+        if(!S.locked) html+=`<div style="margin-top:5px;"><button class="btn btn-ghost btn-sm" style="width:100%;" onclick="openModal('${sem}')">+ 추가</button></div>`;
+      }
+      html+=`</div>`;
+    });
+    html+=`</div></div>`;
+  });
+  area.innerHTML = html;
+  updateCreditBar();
+  updateCheckList();
+}
+
+function toggleSub(sem,idx){
+  if(S.locked) return;
+  const sub=S.availSubs[sem][idx];
+  if(!S.selSubs[sem]) S.selSubs[sem]=[];
+  const arr=S.selSubs[sem];
+  const pos=arr.findIndex(s=>s.name===sub.name);
+  if(pos>=0) arr.splice(pos,1); else arr.push({...sub});
+  renderDesigner();
+}
+
+/* ══ 학점 계산 ══ */
+function calcCredits(){
+  let selCr=0; Object.values(S.selSubs).forEach(a=>a.forEach(s=>selCr+=s.cr));
+  let doneCr=0;
+  if(S.grade>=2) ['2학년 1학기','2학년 2학기'].forEach(sem=>(DEFAULT_SUBS[sem]||[]).forEach(s=>doneCr+=s.cr));
+  return {total:doneCr+selCr, selCr, doneCr};
+}
+function calcKEA(){
+  const all=[];
+  if(S.grade>=2) ['2학년 1학기','2학년 2학기'].forEach(sem=>(DEFAULT_SUBS[sem]||[]).forEach(s=>all.push(s)));
+  Object.values(S.selSubs).forEach(a=>a.forEach(s=>all.push(s)));
+  return all.filter(s=>KEA_KEYS.some(k=>s.name.includes(k))).reduce((a,s)=>a+s.cr,0);
+}
+function calcAreaCredits(){
+  const all=[];
+  if(S.grade>=2) ['2학년 1학기','2학년 2학기'].forEach(sem=>(DEFAULT_SUBS[sem]||[]).forEach(s=>all.push(s)));
+  Object.values(S.selSubs).forEach(a=>a.forEach(s=>all.push(s)));
+  return REQUIRED_AREAS.map(area=>({...area, earned:all.filter(s=>area.keys.some(k=>s.name.includes(k))).reduce((a,s)=>a+s.cr,0)}));
+}
+
+function updateCreditBar(){
+  const {total}=calcCredits();
+  const el=document.getElementById('creditNow'), fill=document.getElementById('progFill');
+  if(!el) return;
+  el.textContent=total;
+  const pct=Math.min(100,(total/192)*100);
+  fill.style.width=pct+'%';
+  fill.className='prog-fill'+(pct>=100?' done':pct>=80?' warn':'');
+  const kea=calcKEA();
+  const wb=document.getElementById('warnKea');
+  if(wb){ if(kea>81){wb.classList.add('show');wb.textContent=`⚠️ 국·영·수 합계 ${kea}학점 — 81학점 초과!`;}else wb.classList.remove('show'); }
+  // 영역별 바
+  const areas=calcAreaCredits();
+  const ab=document.getElementById('areaBars');
+  if(ab) ab.innerHTML=areas.map(a=>{ const pct=Math.min(100,(a.earned/a.min)*100); const cls=a.earned>a.min?'over':a.earned<a.min?'short':'ok'; return `<div class="area-row"><div class="area-row-head"><span class="area-name">${a.name} <span style="font-size:9px;color:var(--text3);">(최소${a.min})</span></span><span class="area-num ${cls}">${a.earned}/${a.min}</span></div><div class="area-prog"><div class="area-fill ${cls}" style="width:${pct}%"></div></div></div>`; }).join('');
+}
+
+function updateCheckList(){
+  if(!S.coreList.length&&!S.recList.length) return;
+  const names=Object.values(S.selSubs).flat().map(s=>s.name);
+  let html='';
+  S.coreList.forEach(s=>{ const d=names.includes(s); html+=`<div class="check-row"><span>${s} <span class="badge badge-core" style="font-size:9px;">핵심</span></span><span class="${d?'check-ok':'check-no'}">${d?'✓':'✗'}</span></div>`; });
+  S.recList.slice(0,5).forEach(s=>{ const d=names.includes(s); html+=`<div class="check-row"><span>${s} <span class="badge badge-rec" style="font-size:9px;">권장</span></span><span class="${d?'check-ok':'check-no'}">${d?'✓':'✗'}</span></div>`; });
+  const el=document.getElementById('checkList');
+  if(el) el.innerHTML=html||'<div style="font-size:12px;color:var(--text3);">대학·학과를 먼저 선택하세요</div>';
+}
+
+/* ══ 제출 ══ */
+async function submitSelection(){
+  if(S.locked){ showToast('이미 제출된 선택입니다','warn'); return; }
+  if(!S.gasUrl){ showToast('GAS URL이 설정되지 않았습니다','error'); return; }
+  const {total}=calcCredits(); const kea=calcKEA();
+  if(!confirm('과목 선택을 제출하시겠습니까?\n제출 후에는 담임 선생님 확인 없이 수정할 수 없습니다.')) return;
+  showToast('제출 중...','');
+  try{
+    const res=await fetch(S.gasUrl,{method:'POST',body:JSON.stringify({
+      action:'submitSelection',
+      id:S.studentId, name:S.studentName, grade:S.grade,
+      univ:S.univ, track:S.track, major:S.major,
+      selSubs:S.selSubs, coreList:S.coreList, recList:S.recList,
+      total, kea
+    }),headers:{'Content-Type':'text/plain'}});
+    const json=await res.json();
+    if(json.ok){ S.locked=true; showToast('제출 완료!','success'); goTab(2); }
+    else showToast('제출 실패: '+json.error,'error');
+  }catch(e){ showToast('서버 연결 실패','error'); }
+}
+
+/* ══ 모달 ══ */
+function openModal(sem){ S.modalTarget=sem; document.getElementById('modalName').value=''; document.getElementById('addModal').classList.add('open'); setTimeout(()=>document.getElementById('modalName').focus(),80); }
+function closeModal(){ document.getElementById('addModal').classList.remove('open'); }
+function confirmAdd(){
+  const name=document.getElementById('modalName').value.trim();
+  const cr=+document.getElementById('modalCredit').value;
+  if(!name) return;
+  if(!S.availSubs[S.modalTarget]) S.availSubs[S.modalTarget]=[];
+  S.availSubs[S.modalTarget].push({name,cr,type:'직접입력'});
+  closeModal(); renderDesigner(); showToast(`"${name}" 추가!`,'success');
+}
+
+/* ══════════════════════════════
+   교사 탭 렌더
+═══════════════════════════════ */
+function renderTeacherTab(n){
+  const left=document.getElementById('leftPanel');
+  const right=document.getElementById('rightPanel');
+  if(n===0){
+    // 전체 학생 목록
+    left.innerHTML=`
+      <div class="t-banner">👨‍🏫 교사 모드</div>
+      <div class="sec">검색·필터</div>
+      <input type="text" id="searchInput" placeholder="이름·학번 검색..." oninput="renderStudentList()" style="margin-bottom:8px;">
+      <select id="filterSel" onchange="renderStudentList()">
+        <option value="">전체</option>
+        <option value="confirmed">확정 완료</option>
+        <option value="pending">미확정</option>
+        <option value="locked">제출 완료</option>
+      </select>
+      <button class="btn btn-ghost btn-full" style="margin-top:8px;" onclick="refreshStudentList()">🔄 새로고침</button>`;
+    right.innerHTML=`<h2 style="font-family:'Noto Serif KR',serif;font-size:16px;margin-bottom:14px;">👨‍🏫 학생 현황</h2><div id="studentList"><div class="loading"><div class="spinner"></div> 불러오는 중...</div></div>`;
+    loadAllStudents();
+  }
+  else if(n===1){
+    left.innerHTML=`<div class="t-banner">선택한 학생 상세</div><div id="studentDetailLeft" style="font-size:12px;color:var(--text3);">전체 학생 탭에서 학생을 선택하세요</div>`;
+    right.innerHTML=`<div id="studentDetailRight" class="empty"><div class="icon">👆</div><p>전체 학생 탭에서<br>학생을 클릭하세요</p></div>`;
+  }
+  else if(n===4){
+    left.innerHTML=`<div class="t-banner">⚙️ 설정</div>`;
+    right.innerHTML=`<div class="setup-screen" style="padding:0;">
+      <div class="setup-card">
+        <h3>현재 GAS URL</h3>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);word-break:break-all;background:var(--surface2);padding:8px;border-radius:6px;">${S.gasUrl||'미설정'}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="enterSetup()">URL 변경</button>
+      </div>
+      <div class="setup-card">
+        <h3>학생 명단 관리</h3>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <input type="text" id="tNewId" placeholder="학번" style="flex:1;">
+          <input type="text" id="tNewName" placeholder="이름" style="flex:1;">
+          <button class="btn btn-primary btn-sm" onclick="teacherAddStudent()">추가</button>
+        </div>
+        <div id="tStudentList" style="font-size:12px;color:var(--text3);">불러오는 중...</div>
+      </div>
+    </div>`;
+    loadTeacherStudentList();
+  }
+}
+
+let allStudentsCache = [];
+
+async function loadAllStudents(){
+  if(!S.gasUrl){ document.getElementById('studentList').innerHTML=`<div style="color:var(--core);font-size:13px;">GAS URL이 설정되지 않았습니다</div>`; return; }
+  try{
+    const res=await fetch(`${S.gasUrl}?action=getAllStudents&teacherKey=TEACHER`);
+    const json=await res.json();
+    if(!json.ok){ document.getElementById('studentList').innerHTML=`<div style="color:var(--core);">${json.error}</div>`; return; }
+    allStudentsCache=json.data||[];
+    renderStudentList();
+  }catch(e){ document.getElementById('studentList').innerHTML=`<div style="color:var(--core);">연결 실패</div>`; }
+}
+
+function refreshStudentList(){ loadAllStudents(); showToast('새로고침',''); }
+
+function renderStudentList(){
+  const search=(document.getElementById('searchInput')||{value:''}).value.toLowerCase();
+  const filter=(document.getElementById('filterSel')||{value:''}).value;
+  let list=allStudentsCache;
+  if(search) list=list.filter(s=>(s.name||'').toLowerCase().includes(search)||(s.id||'').includes(search));
+  if(filter==='confirmed') list=list.filter(s=>s.confirmed);
+  if(filter==='pending') list=list.filter(s=>!s.confirmed&&s.submitted);
+  if(filter==='locked') list=list.filter(s=>s.locked);
+  const el=document.getElementById('studentList');
+  if(!el) return;
+  if(!list.length){ el.innerHTML=`<div class="empty"><div class="icon">👨‍🎓</div><p>학생이 없습니다</p></div>`; return; }
+  el.innerHTML=list.map(s=>{
+    const keaWarn=s.kea>81?`<span style="color:var(--core);font-size:10px;margin-left:5px;">⚠️ 국영수${s.kea}</span>`:'';
+    const status=s.confirmed?`<span style="color:var(--rec);font-size:10px;">✅확정</span>`:s.locked?`<span style="color:var(--warn);font-size:10px;">📤제출</span>`:`<span style="color:var(--text3);font-size:10px;">미제출</span>`;
+    return `<div class="student-card${s.confirmed?' confirmed':s.locked?' locked':''}" onclick="openStudentDetail('${s.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-weight:700;">${s.name} <span style="font-weight:400;font-size:12px;color:var(--text3);">${s.id}</span>${keaWarn}</span>
+        <div style="display:flex;gap:6px;align-items:center;">${status}<span class="credit-pill">${s.total||0}/192</span></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:3px;">${s.major||'학과미선택'} · 핵심${s.coreOk||0}/${s.coreTotal||0} · ${s.submittedAt||'-'}</div>
+    </div>`;
+  }).join('');
+}
+
+async function openStudentDetail(id){
+  goTab(1);
+  const s=allStudentsCache.find(s=>s.id===id);
+  if(!s) return;
+  const left=document.getElementById('studentDetailLeft');
+  const right=document.getElementById('studentDetailRight');
+  // 왼쪽: 기본 정보 + 버튼
+  left.innerHTML=`
+    <div class="t-banner">📋 ${s.name} (${s.id})</div>
+    <div style="font-size:12px;line-height:2;color:var(--text2);">
+      학년: <b style="color:var(--text)">${s.grade||'-'}</b><br>
+      목표: <b style="color:var(--accent)">${s.major||'미선택'}</b><br>
+      학점: <b style="color:var(--accent);font-family:'Space Mono',monospace;">${s.total||0}/192</b><br>
+      국영수: <b style="${s.kea>81?'color:var(--core)':'color:var(--text)'}">${s.kea||0}학점</b><br>
+      상태: <b>${s.confirmed?'✅확정':s.locked?'📤제출':'미제출'}</b>
+    </div>
+    <hr style="border-color:var(--border);margin:10px 0;">
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      ${s.locked&&!s.confirmed?`<button class="btn btn-teacher btn-full" onclick="confirmStudent('${s.id}')">✅ 최종 확정</button>`:''}
+      ${s.confirmed?`<button class="btn btn-warn btn-full" onclick="unconfirmStudent('${s.id}')">확정 취소</button>`:''}
+      ${s.locked?`<button class="btn btn-ghost btn-full" onclick="unlockStudent('${s.id}')">🔓 잠금 해제 (수정허용)</button>`:''}
+    </div>
+    <hr style="border-color:var(--border);margin:10px 0;">
+    <div class="sec">상담 메모</div>
+    <textarea id="memoInput" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:vertical;min-height:80px;" placeholder="상담 내용 메모...">${s.memo||''}</textarea>
+    <button class="btn btn-ghost btn-full btn-sm" style="margin-top:5px;" onclick="saveMemo('${s.id}')">메모 저장</button>`;
+
+  // 오른쪽: 선택 과목 상세
+  const selSubs=s.selSubs||{};
+  const allSel=Object.values(selSubs).flat();
+  const core=s.coreList||[]; const rec=s.recList||[];
+  const selNames=allSel.map(x=>x.name);
+  right.innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+      <div><div style="font-size:18px;font-weight:700;">${s.name}</div><div style="font-size:12px;color:var(--text3);">${s.id} · ${s.univ||''} ${s.major||''}</div></div>
+    </div>
+    ${s.kea>81?`<div class="warn-banner show">⚠️ 국·영·수 합계 ${s.kea}학점 — 81학점 초과!</div>`:''}
+    <div style="margin-bottom:16px;">
+      <div class="sec" style="margin-bottom:8px;">핵심권장 이수현황</div>
+      ${core.map(c=>{ const d=selNames.includes(c); return `<div class="check-row"><span>${c} <span class="badge badge-core" style="font-size:9px;">핵심</span></span><span class="${d?'check-ok':'check-no'}">${d?'✓':'✗'}</span></div>`; }).join('')||'<div style="font-size:12px;color:var(--text3);">학과 미선택</div>'}
+    </div>
+    <div class="sec" style="margin-bottom:8px;">선택 과목 (${allSel.length}과목 · ${s.total||0}학점)</div>
+    ${Object.keys(selSubs).map(sem=>`
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:var(--accent2);margin-bottom:5px;">${sem}</div>
+        ${(selSubs[sem]||[]).map(sub=>{
+          const isCore=core.includes(sub.name), isRec=rec.includes(sub.name);
+          return `<div style="display:flex;justify-content:space-between;padding:4px 8px;border-radius:5px;font-size:12px;background:${isCore?'rgba(247,95,95,.1)':isRec?'rgba(79,214,160,.08)':'var(--surface2)'};margin-bottom:2px;">
+            <span>${isCore?'🔴 ':isRec?'🟢 ':''}${sub.name}</span>
+            <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);">${sub.cr}</span>
+          </div>`;
+        }).join('')}
+      </div>`).join('')||'<div class="empty" style="padding:20px;"><div class="icon">📭</div><p>선택한 과목 없음</p></div>'}`;
+}
+
+async function confirmStudent(id){
+  if(!confirm('최종 확정하시겠습니까?')) return;
+  await teacherAction('confirmStudent',{id});
+}
+async function unconfirmStudent(id){
+  if(!confirm('확정을 취소하시겠습니까?')) return;
+  await teacherAction('unconfirmStudent',{id});
+}
+async function unlockStudent(id){
+  if(!confirm(`학번 ${id} 학생의 잠금을 해제하시겠습니까?\n학생이 과목을 다시 수정할 수 있게 됩니다.`)) return;
+  await teacherAction('unlockStudent',{id});
+}
+async function saveMemo(id){
+  const memo=document.getElementById('memoInput').value;
+  await teacherAction('saveMemo',{id,memo});
+}
+
+async function teacherAction(action, extra={}){
+  if(!S.gasUrl){ showToast('GAS URL 미설정','error'); return; }
+  try{
+    const res=await fetch(S.gasUrl,{method:'POST',body:JSON.stringify({action,teacherKey:'TEACHER',...extra}),headers:{'Content-Type':'text/plain'}});
+    const json=await res.json();
+    if(json.ok){ showToast('완료!','success'); await loadAllStudents(); if(extra.id) openStudentDetail(extra.id); }
+    else showToast(json.error,'error');
+  }catch(e){ showToast('연결 실패','error'); }
+}
+
+async function loadTeacherStudentList(){
+  if(!S.gasUrl) return;
+  try{
+    const res=await fetch(`${S.gasUrl}?action=getStudentList&teacherKey=TEACHER`);
+    const json=await res.json();
+    const el=document.getElementById('tStudentList');
+    if(!el) return;
+    if(!json.ok){ el.innerHTML=`<span style="color:var(--core);">${json.error}</span>`; return; }
+    const list=json.data||[];
+    el.innerHTML=list.map(s=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;"><span><b style="color:var(--accent);font-family:'Space Mono',monospace;">${s.id}</b> · ${s.name}</span><button class="btn btn-warn btn-sm" onclick="removeStudent('${s.id}')">삭제</button></div>`).join('')||'<span style="color:var(--text3);">등록된 학생 없음</span>';
+  }catch(e){}
+}
+
+async function teacherAddStudent(){
+  const id=document.getElementById('tNewId').value.trim();
+  const name=document.getElementById('tNewName').value.trim();
+  if(!id||!name){ showToast('학번과 이름 입력','error'); return; }
+  await teacherAction('addStudent',{id,name});
+  document.getElementById('tNewId').value='';
+  document.getElementById('tNewName').value='';
+  loadTeacherStudentList();
+}
+
+/* ══ 로그아웃 ══ */
+function logout(){
+  S.mode=null; S.studentId=''; S.studentName=''; S.locked=false;
+  S.teacherMode=false; S.selSubs={}; S.univ=''; S.track=''; S.major='';
+  S.coreList=[]; S.recList=[]; S.refList=[];
+  document.getElementById('appScreen').style.display='none';
+  document.getElementById('setupScreen').style.display='none';
+  document.getElementById('loginScreen').style.display='';
+  renderLogin('start');
+}
+
+/* ══ 설정 도우미 ══ */
+function showGuide(){ document.getElementById('guideModal').classList.add('open'); }
+
+/* ══ 토스트 ══ */
+let _tt;
+function showToast(msg,type){ const el=document.getElementById('toast'); el.textContent=msg; el.className='toast show'+(type?' '+type:''); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2500); }
+
+/* ══ 시작 ══ */
+init();
+</script>
+</body>
+</html>
