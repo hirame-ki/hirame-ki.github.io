@@ -142,6 +142,13 @@ footer a{color:var(--mint-d);text-decoration:none;font-weight:700}
   .lp.mh,.rp.mh{display:none}
 }
 @media(max-height:650px){footer{display:none}.guide-bar{display:none}}
+/* ── SCHOOL LEVEL SELECTOR ── */
+.school-level-bar{flex-shrink:0;background:var(--surface);border-bottom:1.5px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:10px}
+.school-level-label{font-size:11px;font-weight:800;color:var(--muted);white-space:nowrap}
+.slchip{display:inline-flex;align-items:center;gap:6px;padding:7px 18px;border-radius:20px;font-size:12px;font-weight:800;border:2px solid var(--border);background:var(--surface2);color:var(--sub);cursor:pointer;user-select:none;transition:all .18s}
+.slchip:hover{border-color:var(--mint);color:var(--mint-d);background:var(--mint-l)}
+.slchip.active.middle{background:#e0f2fe;border-color:#0284c7;color:#0369a1;box-shadow:0 2px 8px rgba(2,132,199,.2)}
+.slchip.active.high{background:var(--mint-l);border-color:var(--mint);color:var(--mint-d);box-shadow:0 2px 8px rgba(45,212,191,.2)}
 /* ── FILE TYPE CHIPS ── */
 .file-type-chips{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .fchip{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:800;border:2px solid var(--border);background:var(--surface2);color:var(--sub);cursor:pointer;user-select:none;transition:all .18s}
@@ -203,39 +210,68 @@ footer a{color:var(--mint-d);text-decoration:none;font-weight:700}
       <button onclick="closeGuide()" style="background:var(--bg2);border:1.5px solid var(--border);color:var(--muted);width:32px;height:32px;border-radius:8px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
     </div>
     <div style="display:flex;flex-direction:column;gap:0">
+
+      <!-- Step 1 -->
       <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1.5px solid var(--border2)">
         <div style="width:26px;height:26px;border-radius:50%;background:var(--mint-l);border:1.5px solid var(--mint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--mint-d);flex-shrink:0">1</div>
-        <div><div style="font-weight:800;font-size:13px;margin-bottom:3px">성적 파일 업로드 <span style="color:#e06b8b">필수</span></div><div style="font-size:12px;color:var(--sub);line-height:1.7">파일 종류를 먼저 선택한 후 나이스(NEIS)에서 내려받은 <b>.xlsx</b> 파일을 업로드합니다.<br>
-        ① <b style="color:#0d9488">교과학습발달상황</b>: 나이스 → 학급담임 → 학교생활기록부 → 학생부 항목별 조회 → 교과학습발달상황(전체학생)<br>
-        ② <b style="color:#8b5cf6">전과목 성적 일람표</b>: 나이스 → 학급담임 → 성적조회/통계 → 학기말성적조회 → 성적일람표 전과목 (산출기준: 1차 정기시험 / 받은점수기준) → 엑셀 다운로드<br>
-        <span style="color:#8b5cf6;font-weight:800">※ 성적 일람표는 1차 정기고사 원점수 + 석차 기반 가상 5등급 자동 산출, 등급 상승에 필요한 인원도 표시됩니다.</span></div></div>
+        <div>
+          <div style="font-weight:800;font-size:13px;margin-bottom:6px">성적 파일 업로드 <span style="color:#e06b8b">필수</span></div>
+          <div style="font-size:12px;color:var(--sub);line-height:1.8">
+            <b>① 학교급 선택</b> — 고등학교 / 중학교를 먼저 선택하세요.<br>
+            <b>② 파일 종류 선택</b> 후 나이스(NEIS)에서 내려받은 <b>.xlsx</b> 파일을 업로드합니다.<br><br>
+
+            <b style="color:#0d9488">🏫 교과학습발달상황</b><br>
+            나이스 → 학급담임 → 학교생활기록부 → 학생부 항목별 조회 → <b>교과학습발달상황(전체학생)</b><br>
+            <span style="color:#0d9488">· 고등학교: 석차등급(1~2학년 5등급 / 3학년 9등급) 그대로 분석</span><br>
+            <span style="color:#0284c7">· 중학교: NEIS 기재 성취도(A~E) 그대로 분석 · 1학기 P(이수)는 자동 제외</span><br><br>
+
+            <b style="color:#8b5cf6">📋 전과목 성적 일람표</b><br>
+            나이스 → 학급담임 → 성적조회/통계 → 학기말성적조회 → <b>성적일람표 전과목</b><br>
+            (산출기준: <b>1차 정기시험</b> · 받은점수기준 선택 후 엑셀 다운로드)<br>
+            <span style="color:#8b5cf6">· 고등학교: 원점수 + 석차 기반 가상등급 자동 산출, 등급 상승 필요 인원 표시</span><br>
+            <span style="color:#b45309">· 중학교: 성취도·석차 컬럼 없음 → 원점수 기준 성취도 <b>추정값</b> 표시 (실제와 다를 수 있음)<br>
+            &nbsp;&nbsp;정확한 분석은 교과학습발달상황 파일을 권장합니다.</span>
+          </div>
+        </div>
       </div>
+
+      <!-- Step 2 -->
       <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1.5px solid var(--border2)">
         <div style="width:26px;height:26px;border-radius:50%;background:#dff0fa;border:1.5px solid var(--mint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#245070;flex-shrink:0">2</div>
         <div><div style="font-weight:800;font-size:13px;margin-bottom:3px">학생 선택 <span style="color:#e06b8b">필수</span></div><div style="font-size:12px;color:var(--sub);line-height:1.7">파일 업로드 후 드롭다운에서 상담할 학생을 선택합니다. 학급 전체 학생이 자동으로 목록에 표시됩니다.</div></div>
       </div>
+
+      <!-- Step 3 -->
       <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1.5px solid var(--border2)">
         <div style="width:26px;height:26px;border-radius:50%;background:#d4f5ec;border:1.5px solid var(--mint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#1a5e56;flex-shrink:0">3</div>
         <div><div style="font-weight:800;font-size:13px;margin-bottom:3px">분석 과목 선택</div><div style="font-size:12px;color:var(--sub);line-height:1.7">해당 학생이 이수한 과목이 자동으로 표시됩니다. 체크박스로 그래프에 포함할 과목을 선택하세요. 과목은 국어·수학·영어·사회·과학·기타 계열로 자동 분류되어 그래프에 표시됩니다.</div></div>
       </div>
+
+      <!-- Step 4 -->
       <div style="display:flex;gap:12px;padding:11px 0;border-bottom:1.5px solid var(--border2)">
         <div style="width:26px;height:26px;border-radius:50%;background:#f0eafc;border:1.5px solid #c0a0e8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#45226e;flex-shrink:0">4</div>
         <div><div style="font-weight:800;font-size:13px;margin-bottom:3px">진로 희망 입력 (선택)</div><div style="font-size:12px;color:var(--sub);line-height:1.7">학생의 진로 희망을 입력하면 상담 프롬프트에 진로 연계 분석이 강화됩니다. 담임 메모도 함께 입력할 수 있습니다.</div></div>
       </div>
+
+      <!-- Step 5 -->
       <div style="display:flex;gap:12px;padding:11px 0">
         <div style="width:26px;height:26px;border-radius:50%;background:var(--mint-l);border:1.5px solid var(--mint);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--mint-d);flex-shrink:0">5</div>
         <div><div style="font-weight:800;font-size:13px;margin-bottom:3px">✨ 분석 & 프롬프트 생성 → AI 붙여넣기</div><div style="font-size:12px;color:var(--sub);line-height:1.7">생성 버튼을 누르면 성적표·그래프·상담 프롬프트가 한번에 생성됩니다. 프롬프트를 복사해 Claude·ChatGPT 등에 붙여넣으면 상담 자료가 완성됩니다.</div></div>
       </div>
+
     </div>
+
+    <!-- 차트 보는 법 -->
     <div style="margin-top:16px;background:#fff8ec;border:1.5px solid #f5c980;border-radius:12px;padding:14px">
       <div style="font-size:12px;font-weight:800;color:#8a4a00;margin-bottom:8px">📌 차트 보는 법</div>
       <div style="font-size:11.5px;color:#6e3d0a;line-height:2">
-        ✅ Y축: 위로 올라갈수록 높은 등급(1등급)입니다<br>
+        ✅ Y축: 위로 올라갈수록 높은 등급 / 좋은 성취도입니다<br>
         ✅ 계열 탭을 클릭하면 해당 계열 과목끼리 묶어서 추이를 확인할 수 있습니다<br>
-        ✅ 고교학점제 특성상 한 학기만 수강한 과목은 점 하나로 표시됩니다<br>
+        ✅ 한 학기만 수강한 과목은 점 하나로 표시됩니다<br>
         ✅ 엑셀 다운로드로 성적 분석 자료를 저장할 수 있습니다
       </div>
     </div>
+
     <div style="text-align:center;margin-top:16px">
       <button onclick="closeGuide()" style="background:linear-gradient(135deg,var(--mint),var(--mint-d));color:#fff;border:none;padding:10px 32px;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer">확인</button>
     </div>
@@ -270,21 +306,33 @@ footer a{color:var(--mint-d);text-decoration:none;font-weight:700}
   </div>
   <div class="sb"><div class="sec-block" style="border-radius:0 0 10px 10px">
 
-    <!-- 파일 종류 선택 칩 -->
+    <!-- ① 학교급 선택 (최상단) -->
+    <div class="sub-lbl" style="margin-bottom:6px">▸ 학교급을 선택하세요</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap">
+      <div class="slchip active high" id="slchip-high" onclick="selectSchoolLevel('high')">
+        <span>🎓</span> 고등학교
+      </div>
+      <div class="slchip middle" id="slchip-middle" onclick="selectSchoolLevel('middle')">
+        <span>📚</span> 중학교
+      </div>
+      <span id="school-level-hint" style="font-size:11px;color:var(--muted)">고등학교: 1~2학년 5등급 · 3학년 9등급 기반 분석</span>
+    </div>
+
+    <!-- ② 파일 종류 선택 칩 -->
     <div class="sub-lbl">▸ 파일 종류를 선택하세요</div>
-    <div class="file-type-chips">
+    <div class="file-type-chips" id="file-type-chips">
       <div class="fchip active" id="chip-neis" onclick="selectFileType('neis')">
         <span class="fchip-icon">🏫</span>
         <div>
-          <div style="font-size:11px;font-weight:900">교과학습발달상황</div>
+          <div style="font-size:11px;font-weight:900">교과학습발달상황 <span id="neis-school-badge" style="font-size:9px;background:var(--mint-d);color:#fff;padding:1px 5px;border-radius:10px;font-weight:800;vertical-align:middle">고등학교</span></div>
           <div style="font-size:9px;font-weight:600;opacity:.75">NEIS 나이스 다운로드</div>
         </div>
       </div>
       <div class="fchip" id="chip-ilam" onclick="selectFileType('ilam')">
         <span class="fchip-icon">📋</span>
         <div>
-          <div style="font-size:11px;font-weight:900">전과목 성적 일람표 <span style="font-size:9px;background:#8b5cf6;color:#fff;padding:1px 5px;border-radius:10px;font-weight:800;vertical-align:middle">고등학교 전용</span></div>
-          <div style="font-size:9px;font-weight:600;opacity:.75">1차 정기고사 원점수 기반</div>
+          <div style="font-size:11px;font-weight:900">전과목 성적 일람표 <span id="ilam-school-badge" style="font-size:9px;background:#8b5cf6;color:#fff;padding:1px 5px;border-radius:10px;font-weight:800;vertical-align:middle">고등학교</span></div>
+          <div style="font-size:9px;font-weight:600;opacity:.75">원점수 기반</div>
         </div>
       </div>
     </div>
@@ -293,9 +341,18 @@ footer a{color:var(--mint-d);text-decoration:none;font-weight:700}
     <div id="upload-guide-neis" style="margin-bottom:8px;font-size:11px;font-weight:800;color:#e06b8b;line-height:1.7;padding:6px 10px;background:#fff0f3;border:1.5px dashed #e06b8b;border-radius:8px">
       나이스 → 학급담임 → 학교생활기록부 → 학생부 항목별 조회 → <b>교과학습발달상황(전체학생)</b>
     </div>
+    <div id="upload-guide-neis-mid" style="display:none;margin-bottom:8px;font-size:11px;font-weight:800;color:#0369a1;line-height:1.7;padding:6px 10px;background:#e0f2fe;border:1.5px dashed #0284c7;border-radius:8px">
+      나이스 → 학급담임 → 학교생활기록부 → 학생부 항목별 조회 → <b>교과학습발달상황(전체학생)</b><br>
+      <span style="color:#0369a1;font-weight:700">※ 중학교: 성취도(A~E) 기반 분석 · 1학기 P(이수)는 자동 제외</span>
+    </div>
     <div id="upload-guide-ilam" style="display:none;margin-bottom:8px;font-size:11px;font-weight:800;color:#8b5cf6;line-height:1.7;padding:6px 10px;background:#f5f3ff;border:1.5px dashed #8b5cf6;border-radius:8px">
       나이스 → 학급담임 → 성적조회/통계 → 학기말성적조회 → <b>성적일람표 전과목</b><br>
       (산출기준: <b>1차 정기시험</b> · 받은점수기준 선택 후 엑셀 다운로드)
+    </div>
+    <div id="upload-guide-ilam-mid" style="display:none;margin-bottom:8px;font-size:11px;font-weight:800;color:#0369a1;line-height:1.7;padding:6px 10px;background:#e0f2fe;border:1.5px dashed #0284c7;border-radius:8px">
+      나이스 → 학급담임 → 성적조회/통계 → 학기말성적조회 → <b>성적일람표 전과목</b><br>
+      (산출기준: <b>1차 정기시험</b> · 받은점수기준 선택 후 엑셀 다운로드)<br>
+      <span style="color:#0369a1;font-weight:700">※ 중학교: 원점수/과목평균 기반 · 성취도 없이 점수로 분석</span>
     </div>
 
     <!-- 업로드 존 -->
@@ -308,14 +365,29 @@ footer a{color:var(--mint-d);text-decoration:none;font-weight:700}
     <div id="file-info" style="display:none;margin-top:8px;padding:8px 12px;background:var(--mint-l);border:1.5px solid var(--mint);border-radius:10px;font-size:11px;color:var(--mint-d);font-weight:700"></div>
 
     <div id="hint-neis" style="margin-top:8px;background:#fff8ec;border:1.5px solid #f5c980;border-radius:10px;padding:8px 12px;font-size:11px;color:#8a4a00;line-height:1.7">
-      💡 <strong>중학교</strong> 파일은 양식이 달라 업로드 후 수동 매핑 화면이 나타날 수 있습니다. 안내에 따라 열을 지정하면 정상 분석됩니다.
+      💡 <strong>고등학교</strong> 교과학습발달상황: 석차등급 기반 분석<br>
+      ▸ <b>1~2학년 (공통과목)</b>: 5등급제 · 1등급 10% · 2등급 24% · 3등급 32% · 4등급 24% · 5등급 10%<br>
+      ▸ <b>3학년 (선택과목)</b>: 9등급제 · 1등급 4% · 2등급 7% · 3등급 12% … 자동 감지하여 적용
+    </div>
+    <div id="hint-neis-mid" style="display:none;margin-top:8px;background:#e0f2fe;border:1.5px solid #7dd3fc;border-radius:10px;padding:8px 12px;font-size:11px;color:#0369a1;line-height:1.8">
+      💡 <strong>중학교</strong> 교과학습발달상황 분석 안내<br>
+      ▸ <b>성취도 A~E</b>로 표시 (A=1, B=2, C=3, D=4, E=5 로 환산)<br>
+      ▸ <b>1학기(P/이수)</b>는 자동으로 제외되고 점수가 있는 학기만 분석합니다.<br>
+      ▸ 원점수/과목평균도 함께 표시됩니다.
     </div>
     <div id="hint-ilam" style="display:none;margin-top:8px;background:#f5f3ff;border:1.5px solid #c4b5fd;border-radius:10px;padding:8px 12px;font-size:11px;color:#4c1d95;line-height:1.8">
-      💡 <strong>전과목 성적 일람표</strong> 파일은 원점수와 석차를 기반으로 <b>가상등급을 자동 산출</b>합니다.<br>
+      💡 <strong>전과목 성적 일람표 (고등학교)</strong> 파일은 원점수와 석차를 기반으로 <b>가상등급을 자동 산출</b>합니다.<br>
       수강자수는 파일에서 자동으로 읽고, <b>학년에 따라 5등급·9등급 자동 감지</b>하여 적용합니다.<br>
       ▸ <b>5등급 (고1~2 공통과목)</b>: 1등급 10% · 2등급 24% · 3등급 32% · 4등급 24% · 5등급 10%<br>
       ▸ <b>9등급 (고3 선택과목)</b>: 1등급 4% · 2등급 7% · 3등급 12% · 4등급 17% · 5등급 20% · …<br>
       <span style="color:#e06b8b;font-weight:800">⚠️ 석차등급(1~9등급)이 이미 기재된 교과학습발달상황 파일은 위의 「교과학습발달상황」 칩을 사용하세요.</span>
+    </div>
+    <div id="hint-ilam-mid" style="display:none;margin-top:8px;background:#fff8ec;border:1.5px solid #f5c980;border-radius:10px;padding:8px 12px;font-size:11px;color:#7c4a00;line-height:1.9">
+      💡 <strong>전과목 성적 일람표 (중학교)</strong> 분석 안내<br>
+      ▸ 이 파일에는 <b>성취도·석차 컬럼이 없어</b> 원점수를 기준으로 성취도를 <b>추정</b>합니다.<br>
+      &nbsp;&nbsp;&nbsp;90점 이상 → A&nbsp;/&nbsp;80점 이상 → B&nbsp;/&nbsp;70점 이상 → C&nbsp;/&nbsp;60점 이상 → D&nbsp;/&nbsp;미만 → E<br>
+      ▸ 실제 성취도는 <b>과목 평균 대비 비율</b>로 결정되므로 이 추정값과 다를 수 있습니다.<br>
+      ▸ <span style="color:#b45309;font-weight:800">정확한 성취도 분석은 「교과학습발달상황」 파일을 사용하세요.</span>
     </div>
   </div></div>
 </div>
@@ -518,6 +590,7 @@ let checkedSubjects = new Set();
 let trendChart = null;
 let gradeSystemMax = 9;
 let currentFileType = 'neis'; // 'neis' | 'ilam'
+let currentSchoolLevel = 'high'; // 'high' | 'middle'
 let ilamData = null; // 전과목 성적 일람표 원본 데이터 (학생별 과목별 석차/수강자수)
 
 // 컬럼 매핑 관련 상태
@@ -565,6 +638,44 @@ function autoDetectColumns(rows) {
 }
 
 // ═══════════════════════════════════════════════
+// SCHOOL LEVEL SELECTOR
+// ═══════════════════════════════════════════════
+function selectSchoolLevel(level) {
+  currentSchoolLevel = level;
+  document.getElementById('slchip-high').className = 'slchip' + (level==='high'?' active high':'');
+  document.getElementById('slchip-middle').className = 'slchip middle' + (level==='middle'?' active':'');
+
+  const hint = document.getElementById('school-level-hint');
+  const neisBadge = document.getElementById('neis-school-badge');
+  const ilamBadge = document.getElementById('ilam-school-badge');
+
+  if (level === 'high') {
+    hint.textContent = '고등학교: 1~2학년 5등급 · 3학년 9등급 기반 분석';
+    hint.style.color = 'var(--muted)';
+    neisBadge.textContent = '고등학교';
+    neisBadge.style.background = 'var(--mint-d)';
+    ilamBadge.textContent = '고등학교';
+    ilamBadge.style.background = '#8b5cf6';
+  } else {
+    hint.textContent = '중학교: 성취도(A~E) 기반 분석 · 일람표는 원점수 기반';
+    hint.style.color = '#0369a1';
+    neisBadge.textContent = '중학교';
+    neisBadge.style.background = '#0284c7';
+    ilamBadge.textContent = '중학교';
+    ilamBadge.style.background = '#0284c7';
+  }
+
+  // 파일 종류 힌트 업데이트
+  updateFileTypeUI(currentFileType);
+
+  // 파일이 올라가 있으면 초기화
+  if (allStudents && Object.keys(allStudents).length > 0) {
+    showToast('🔄 학교급이 변경되었습니다. 파일을 다시 업로드해주세요.');
+    resetAll(true);
+  }
+}
+
+// ═══════════════════════════════════════════════
 // SECTION TOGGLE
 // ═══════════════════════════════════════════════
 function ts(id) {
@@ -574,14 +685,23 @@ function ts(id) {
 // ═══════════════════════════════════════════════
 // FILE TYPE CHIP SELECTION
 // ═══════════════════════════════════════════════
+function updateFileTypeUI(type) {
+  const isMid = currentSchoolLevel === 'middle';
+  document.getElementById('upload-guide-neis').style.display     = (!isMid && type==='neis')  ? 'block':'none';
+  document.getElementById('upload-guide-neis-mid').style.display = (isMid  && type==='neis')  ? 'block':'none';
+  document.getElementById('upload-guide-ilam').style.display     = (!isMid && type==='ilam')  ? 'block':'none';
+  document.getElementById('upload-guide-ilam-mid').style.display = (isMid  && type==='ilam')  ? 'block':'none';
+  document.getElementById('hint-neis').style.display     = (!isMid && type==='neis')  ? 'block':'none';
+  document.getElementById('hint-neis-mid').style.display = (isMid  && type==='neis')  ? 'block':'none';
+  document.getElementById('hint-ilam').style.display     = (!isMid && type==='ilam')  ? 'block':'none';
+  document.getElementById('hint-ilam-mid').style.display = (isMid  && type==='ilam')  ? 'block':'none';
+}
+
 function selectFileType(type) {
   currentFileType = type;
   document.getElementById('chip-neis').classList.toggle('active', type === 'neis');
   document.getElementById('chip-ilam').classList.toggle('active', type === 'ilam');
-  document.getElementById('upload-guide-neis').style.display = type === 'neis' ? 'block' : 'none';
-  document.getElementById('upload-guide-ilam').style.display = type === 'ilam' ? 'block' : 'none';
-  document.getElementById('hint-neis').style.display = type === 'neis' ? 'block' : 'none';
-  document.getElementById('hint-ilam').style.display = type === 'ilam' ? 'block' : 'none';
+  updateFileTypeUI(type);
   // 업로드 존 안내 텍스트 변경
   const uz = document.getElementById('upload-zone');
   if (!uz.classList.contains('upload-done')) {
@@ -859,7 +979,251 @@ function calcPeopleAhead(subjectKey, studentName) {
 }
 
 // ═══════════════════════════════════════════════
-// FILE UPLOAD & PARSE
+// 중학교 교과학습발달상황 파서
+// ═══════════════════════════════════════════════
+// 구조: 번호 | 성명 | 학년 | (병합) | 학기 | (병합) | 교과 | ... | 과목 | ... | 원점수/과목평균 | ... | 성취도 | ... | 수강자수
+// 1학기 성취도 P → 제외, 2학기부터 A/B/C/D/E 실제 성취도
+function parseMidNEIS(rows) {
+  const students = {};
+  let curName = null, curNum = null, curGY = null, curTm = null;
+  let COL = null;
+
+  // 헤더 자동 감지
+  for (let i = 0; i < Math.min(30, rows.length); i++) {
+    const row = rows[i]; if (!row) continue;
+    const joined = row.map(v => String(v||'').replace(/\s/g,'')).join('|');
+    if (joined.includes('번호') && joined.includes('성명') && joined.includes('과목') && joined.includes('성취도')) {
+      // 헤더행 발견
+      const normRow = row.map(v => String(v||'').replace(/\s/g,'').toLowerCase());
+      COL = {
+        headerRow: i,
+        num:     normRow.findIndex(v => v==='번호'||v==='연번'),
+        name:    normRow.findIndex(v => v==='성명'||v==='이름'||v==='학생명'),
+        gradeYr: normRow.findIndex(v => v==='학년'),
+        term:    normRow.findIndex(v => v==='학기'),
+        subj:    normRow.findIndex((v,ci) => (v==='과목'||v==='과목명') && ci > 5),
+        score:   normRow.findIndex(v => v.includes('원점수')),
+        achieve: normRow.findIndex((v,ci) => v==='성취도' && ci > 5),
+      };
+      // 교과(대분류) 컬럼
+      COL.dept = normRow.findIndex(v => v==='교과'||v==='교과명');
+      break;
+    }
+  }
+  if (!COL || COL.name < 0 || COL.subj < 0 || COL.achieve < 0) {
+    // 폴백: 기존 autoDetect 재사용
+    return null;
+  }
+
+  const ACHIEVE_MAP = {A:1, B:2, C:3, D:4, E:5};
+
+  for (let i = COL.headerRow + 1; i < rows.length; i++) {
+    const row = rows[i]; if (!row) continue;
+
+    // 헤더 반복 행 스킵 (페이지 넘김)
+    const v0 = String(row[COL.num]||'').replace(/\s/g,'').toLowerCase();
+    const v1 = String(row[COL.name]||'').replace(/\s/g,'').toLowerCase();
+    if (v0==='번호'||v1==='성명'||v0==='연번') continue;
+
+    // 학생 감지
+    const nameCell = COL.name >= 0 ? String(row[COL.name]||'').trim() : '';
+    const numRaw = COL.num >= 0 ? row[COL.num] : null;
+    if (nameCell && nameCell.length>=2 && nameCell.length<=6 && /^[가-힣]+$/.test(nameCell)) {
+      if (numRaw !== '' && numRaw !== null && numRaw !== undefined && !isNaN(parseFloat(numRaw))) {
+        curName = nameCell;
+        curNum = parseFloat(numRaw);
+        if (!students[curName]) students[curName] = {};
+      } else if (!numRaw && nameCell !== curName) {
+        curName = nameCell;
+        if (!students[curName]) students[curName] = {};
+      }
+    }
+    if (!curName) continue;
+
+    // 학년/학기
+    if (COL.gradeYr >= 0) { const v = row[COL.gradeYr]; if (v!==''&&v!=null&&!isNaN(parseFloat(v))) curGY = parseInt(v); }
+    if (COL.term >= 0)    { const v = row[COL.term];    if (v!==''&&v!=null&&!isNaN(parseFloat(v))) curTm = parseInt(v); }
+
+    const subj = COL.subj >= 0 ? String(row[COL.subj]||'').trim() : '';
+    if (!subj) continue;
+
+    // 성취도 파싱
+    const achRaw = COL.achieve >= 0 ? String(row[COL.achieve]||'').trim().charAt(0).toUpperCase() : '';
+    if (achRaw === 'P' || achRaw === '') continue; // P(이수) 또는 공란 → 스킵
+    const gradeNum = ACHIEVE_MAP[achRaw];
+    if (!gradeNum) continue;
+    if (!curGY || !curTm) continue;
+
+    // 원점수/과목평균 파싱 (예: "58/76.6")
+    let score = null, avg = null;
+    if (COL.score >= 0) {
+      const sr = String(row[COL.score]||'').trim();
+      if (sr.includes('/')) {
+        const p = sr.split('/');
+        score = parseFloat(p[0]);
+        avg = parseFloat(p[1]);
+      }
+    }
+
+    const tl = `${curGY}학년 ${curTm}학기`;
+    const key = `${subj}__${tl}`;
+    if (!students[curName][key]) {
+      students[curName][key] = { subject: subj, term: tl, grade: gradeNum, score, avg, stddev: null, distArr: null, isMid: true };
+    }
+  }
+  return students;
+}
+
+// ═══════════════════════════════════════════════
+// 중학교 전과목 성적 일람표 파서
+// ═══════════════════════════════════════════════
+// 구조: 행4=과목명, 행5=지필평가, 행6=정기시험1회/합계/원점수/과목평균
+//       행7~=학생 데이터 (번호, 이름, 원점수, 합계, ..., 원점수/과목평균)
+// 석차/수강자수 없음 → 원점수 기반 점수 표시만
+function parseMidIlam(rows) {
+  // ══════════════════════════════════════════════════════════════
+  // 중학교 전과목 성적 일람표 파서 (v2 — 실제 NEIS 구조 기반)
+  //
+  // 실제 엑셀 구조:
+  //   Row ~1: "2026학년도 제1학기"
+  //   Row ~3: "N학년 N반"
+  //   Row A : 과목명 행 — col[3]="국어", col[8]="수학" ...
+  //   Row B : "지필평가(%)" 행
+  //   Row C : 컬럼헤더 — "정기시험1회", "합계", "원점수/과목평균" 반복
+  //   Row D~: 데이터 — col[1]=번호(숫자), col[2]=이름(한글)
+  // ══════════════════════════════════════════════════════════════
+  const students = {};
+  const _s  = v => String(v == null ? '' : v).trim();
+  const _ns = v => _s(v).replace(/\s/g, '');
+
+  // ── 1. 학년/학기 파싱 ─────────────────────────────────────────
+  let fileGrade = 1, fileTerm = 1;
+  for (let i = 0; i < Math.min(6, rows.length); i++) {
+    const rowStr = (rows[i] || []).map(v => _s(v)).join(' ');
+    const gm = rowStr.match(/(\d)\s*학년/);
+    const tm = rowStr.match(/제\s*(\d)\s*학기/);
+    if (gm) fileGrade = parseInt(gm[1]);
+    if (tm) fileTerm  = parseInt(tm[1]);
+  }
+  const defaultTerm = `${fileGrade}학년 ${fileTerm}학기`;
+  console.log(`[중학교 일람표] ${fileGrade}학년 ${fileTerm}학기`);
+
+  // ── 2. 과목명 행 찾기 ─────────────────────────────────────────
+  // 국어/수학/영어/과학/사회 등 한글 과목명 2개 이상 포함하는 행
+  const KOR_SUBJ = ['국어','수학','영어','과학','사회','역사','도덕','기술','가정','정보','체육','음악','미술'];
+  let subjRowIdx = -1;
+  for (let i = 0; i < Math.min(15, rows.length); i++) {
+    const cnt = (rows[i] || []).filter(v => KOR_SUBJ.includes(_s(v))).length;
+    if (cnt >= 2) { subjRowIdx = i; break; }
+  }
+  if (subjRowIdx < 0) { console.warn('[중학교 일람표] 과목명 행 없음'); return {}; }
+
+  // ── 3. 과목명 & 시작 컬럼 수집 ────────────────────────────────
+  const subjects = [];
+  (rows[subjRowIdx] || []).forEach((v, c) => {
+    if (KOR_SUBJ.includes(_s(v))) subjects.push({ name: _s(v), startCol: c });
+  });
+  if (!subjects.length) { console.warn('[중학교 일람표] 과목 없음'); return {}; }
+  console.log('[중학교 일람표] 과목:', subjects.map(s=>`${s.name}(col${s.startCol})`).join(', '));
+
+  // ── 4. 컬럼헤더 행 찾기 ("원점수" 텍스트) ─────────────────────
+  let colHdrIdx = -1;
+  for (let i = subjRowIdx + 1; i < Math.min(subjRowIdx + 6, rows.length); i++) {
+    if ((rows[i] || []).some(v => _ns(v).includes('원점수'))) { colHdrIdx = i; break; }
+  }
+
+  // ── 5. 과목별 "원점수/과목평균" 컬럼 위치 매핑 ─────────────────
+  const scoreAvgCols = {};
+  if (colHdrIdx >= 0) {
+    const hdrRow = rows[colHdrIdx] || [];
+    subjects.forEach(({ name, startCol }, si) => {
+      const endCol = si + 1 < subjects.length ? subjects[si + 1].startCol : hdrRow.length;
+      for (let c = startCol; c < endCol; c++) {
+        if (_ns(hdrRow[c]).includes('원점수')) { scoreAvgCols[name] = c; break; }
+      }
+    });
+  }
+  console.log('[중학교 일람표] 원점수 컬럼:', JSON.stringify(scoreAvgCols));
+
+  // ── 6. 데이터 행 수집 & 이름/번호 컬럼 결정 ──────────────────────
+  const dataStartIdx = colHdrIdx >= 0 ? colHdrIdx + 1 : subjRowIdx + 3;
+  const dataRowIndices = [];
+  let nameCol = 2, numCol = 1; // 기본: col[1]=번호, col[2]=이름
+
+  for (let i = dataStartIdx; i < rows.length; i++) {
+    const r = rows[i] || [];
+    const n1 = parseFloat(_s(r[1])), nm1 = _s(r[2]);
+    if (!isNaN(n1) && n1 >= 1 && n1 <= 300 && /^[가-힣]{2,6}$/.test(nm1)) {
+      dataRowIndices.push(i); continue;
+    }
+    const n0 = parseFloat(_s(r[0])), nm0 = _s(r[1]);
+    if (!isNaN(n0) && n0 >= 1 && n0 <= 300 && /^[가-힣]{2,6}$/.test(nm0)) {
+      dataRowIndices.push(i);
+    }
+  }
+  if (!dataRowIndices.length) { console.warn('[중학교 일람표] 데이터 행 없음'); return {}; }
+
+  // 실제 구조 확인하여 컬럼 결정
+  const fr = rows[dataRowIndices[0]] || [];
+  if (!isNaN(parseFloat(_s(fr[0]))) && /^[가-힣]{2,6}$/.test(_s(fr[1]))) {
+    numCol = 0; nameCol = 1;
+  }
+  console.log(`[중학교 일람표] numCol=${numCol}, nameCol=${nameCol}, 학생수=${dataRowIndices.length}`);
+
+  // ── 7. 과목별 학생 데이터 파싱 ────────────────────────────────
+  subjects.forEach(({ name: subjName, startCol }, si) => {
+    let saCol = scoreAvgCols[subjName] ?? -1;
+
+    // 헤더에서 못 찾으면 데이터 패턴으로 탐색 ("숫자/숫자.숫자" 형식)
+    if (saCol < 0) {
+      const endCol = si + 1 < subjects.length ? subjects[si + 1].startCol : (rows[dataRowIndices[0]] || []).length;
+      for (let c = startCol; c < endCol; c++) {
+        const matches = dataRowIndices.slice(0, 8).filter(ri => /^\d+\/[\d.]+$/.test(_s((rows[ri] || [])[c]))).length;
+        if (matches >= 2) { saCol = c; break; }
+      }
+    }
+
+    if (saCol < 0) { console.warn(`[중학교 일람표] ${subjName}: 원점수 컬럼 없음`); return; }
+
+    dataRowIndices.forEach(ri => {
+      const row = rows[ri] || [];
+      const name = _s(row[nameCol]);
+      if (!name || !/^[가-힣]{2,6}$/.test(name)) return;
+
+      const rawVal = _s(row[saCol]);
+      if (!rawVal) return;
+
+      let score = null, avg = null;
+      if (rawVal.includes('/')) {
+        const p = rawVal.split('/');
+        score = parseFloat(p[0]);
+        avg   = parseFloat(p[1]);
+      } else {
+        score = parseFloat(rawVal);
+      }
+      if (isNaN(score) || score < 0 || score > 100) return;
+
+      // 원점수 → 성취도 근사 환산
+      let gradeNum = score >= 90 ? 1 : score >= 80 ? 2 : score >= 70 ? 3 : score >= 60 ? 4 : 5;
+
+      if (!students[name]) students[name] = {};
+      const key = `${subjName}__${defaultTerm}`;
+      if (!students[name][key]) {
+        students[name][key] = {
+          subject: subjName, term: defaultTerm,
+          grade: gradeNum, score,
+          avg: isNaN(avg) ? null : avg,
+          stddev: null, distArr: null,
+          isMid: true, isMidIlam: true,
+        };
+      }
+    });
+  });
+
+  console.log(`[중학교 일람표] 완료: ${Object.keys(students).length}명`);
+  return students;
+}
+
 // ═══════════════════════════════════════════════
 function onDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag'); }
 function onDragLeave(e) { document.getElementById('upload-zone').classList.remove('drag'); }
@@ -875,6 +1239,52 @@ function parseFile(file) {
       lastSheetRows = {};
       wb.SheetNames.forEach(n => { lastSheetRows[n] = XLSX.utils.sheet_to_json(wb.Sheets[n], { header:1, defval:'' }); });
 
+      // ── 중학교 모드 ─────────────────────────────────────────────
+      if (currentSchoolLevel === 'middle') {
+        if (currentFileType === 'ilam') {
+          // 중학교 전과목 성적 일람표
+          let best = {}, bestN = 0;
+          for (const sn of wb.SheetNames) {
+            const res = parseMidIlam(lastSheetRows[sn]);
+            const n = Object.keys(res).length;
+            if (n > bestN) { best = res; bestN = n; }
+          }
+          if (bestN > 0) {
+            gradeSystemMax = 5;
+            applyParseResult(best, false, true);
+            return;
+          }
+          showToast('⚠️ 중학교 성적 일람표 파싱 실패 — 파일 형식을 확인해주세요.');
+          return;
+        } else {
+          // 중학교 교과학습발달상황
+          let best = {}, bestN = 0;
+          for (const sn of wb.SheetNames) {
+            const res = parseMidNEIS(lastSheetRows[sn]);
+            if (!res) continue;
+            const n = Object.keys(res).length;
+            if (n > bestN) { best = res; bestN = n; }
+          }
+          if (bestN > 0) {
+            gradeSystemMax = 5;
+            applyParseResult(best, false, true);
+            return;
+          }
+          // 폴백: 기존 NEIS 파서 시도
+          let best2 = {}, bestN2 = 0;
+          for (const sn of wb.SheetNames) {
+            const res = parseNEIS(lastSheetRows[sn], null);
+            const n = Object.keys(res).length;
+            if (n > bestN2) { best2 = res; bestN2 = n; }
+          }
+          if (bestN2 > 0) { applyParseResult(best2, false, true); return; }
+          showToast('⚠️ 중학교 교과학습발달상황 파싱 실패 — 파일을 확인해주세요.');
+          showColumnMapper();
+          return;
+        }
+      }
+
+      // ── 고등학교 모드 (기존 로직 유지) ─────────────────────────
       // 전과목 성적 일람표 모드
       if (currentFileType === 'ilam') {
         let best = {}, bestN = 0;
@@ -910,14 +1320,15 @@ function parseFile(file) {
   reader.readAsArrayBuffer(file);
 }
 
-function applyParseResult(students, isIlam) {
+function applyParseResult(students, isIlam, isMid) {
   allStudents = students;
   if (isIlam) {
-    // 일람표 데이터에서 gradeSystem 읽어 자동 설정 (5 또는 9)
     let maxGs = 5;
     outer2: for (const stu of Object.values(allStudents))
       for (const d of Object.values(stu)) if ((d.gradeSystem || 5) > maxGs) { maxGs = d.gradeSystem; break outer2; }
     gradeSystemMax = maxGs;
+  } else if (isMid) {
+    gradeSystemMax = 5; // 중학교: 성취도 5단계
   } else {
     gradeSystemMax = 5;
     outer: for (const stu of Object.values(allStudents))
@@ -1218,7 +1629,7 @@ function buildIlamAnalysis() {
     const targetGrade = it.grade > 1 ? it.grade - 1 : null;
     const gc = gradeColor(it.grade);
     const rankDisplay = it.rank ? `${it.rank}위` : '-';
-    const totalDisplay = it.total ? `${it.total}명` : '300명';
+    const totalDisplay = it.total ? `${it.total}명` : '-';
 
     let aheadCell = '';
     if (it.grade === 1) {
@@ -1286,10 +1697,17 @@ function buildIlamAnalysis() {
 // ── Summary ──
 function buildSummary() {
   const data = allStudents[currentStudent];
+  const isMidMode = currentSchoolLevel === 'middle';
   const grades = Object.values(data).filter(d => checkedSubjects.has(d.subject)).map(d => d.grade);
   const avg = grades.length ? (grades.reduce((a, b) => a + b, 0) / grades.length).toFixed(2) : '-';
   const best = grades.length ? Math.min(...grades) : '-';
   const worst = grades.length ? Math.max(...grades) : '-';
+  const achMap = {1:'A',2:'B',3:'C',4:'D',5:'E'};
+  const isEstimated = isMidMode && Object.values(data).some(d => d.isMidIlam);
+  const estMark = isEstimated ? '<span style="font-size:9px;color:#b45309;font-weight:700"> (추정)</span>' : '';
+  const avgLabel = isMidMode ? `${avg} (${achMap[Math.round(parseFloat(avg))]||''})` : avg;
+  const bestLabel = isMidMode ? (achMap[best]||best) : best+'등급';
+  const worstLabel = isMidMode ? (achMap[worst]||worst) : worst+'등급';
 
   document.getElementById('summary-content').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
@@ -1298,12 +1716,12 @@ function buildSummary() {
         <div style="font-size:22px;font-weight:900;color:var(--mint-d)">${checkedSubjects.size}<span style="font-size:12px">개</span></div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px;text-align:center">
-        <div style="font-size:10px;font-weight:800;color:var(--muted)">평균 등급</div>
-        <div style="font-size:22px;font-weight:900;color:var(--amber)">${avg}<span style="font-size:12px">등급</span></div>
+        <div style="font-size:10px;font-weight:800;color:var(--muted)">평균 ${isMidMode?'성취도':'등급'}${estMark}</div>
+        <div style="font-size:${isMidMode?'16':'22'}px;font-weight:900;color:var(--amber)">${avgLabel}</div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:10px;text-align:center">
         <div style="font-size:10px;font-weight:800;color:var(--muted)">최고/최저</div>
-        <div style="font-size:18px;font-weight:900;color:var(--text)">${best}<span style="color:var(--muted);font-size:12px"> / </span>${worst}</div>
+        <div style="font-size:18px;font-weight:900;color:var(--text)">${bestLabel}<span style="color:var(--muted);font-size:12px"> / </span>${worstLabel}</div>
       </div>
     </div>`;
 }
@@ -1311,7 +1729,7 @@ function buildSummary() {
 // ── Grade Table ──
 function buildTable() {
   const data = allStudents[currentStudent];
-  // Collect all terms in order
+  // 중학교: 1~3학년, 고등학교: 1~3학년 (동일)
   const termOrder = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
   const subjList = [...checkedSubjects];
 
@@ -1328,8 +1746,15 @@ function buildTable() {
       const d = data[key];
       if (d) {
         const cls = `g${d.grade}`;
-        const extraInfo = d.isIlam && d.rank ? `<br><span style="font-size:9px;color:var(--muted)">${d.rank}위/${d.total||300}명</span>` : '';
-        html += `<td><span class="grade-badge ${cls}">${d.grade}등급</span>${extraInfo}<br><span style="font-size:10px;color:var(--muted)">${d.score !== null ? d.score+'점' : ''}</span></td>`;
+        let gradeLabel = d.grade + '등급';
+        // 중학교 성취도 표시
+        if (d.isMid) {
+          const achMap = {1:'A',2:'B',3:'C',4:'D',5:'E'};
+          gradeLabel = achMap[d.grade] || d.grade;
+          if (d.isMidIlam) gradeLabel += '(추정)'; // 일람표는 원점수 기반 추정값
+        }
+        const extraInfo = d.isIlam && d.rank ? `<br><span style="font-size:9px;color:var(--muted)">${d.rank}위/${d.total ? d.total+'명' : '-'}</span>` : '';
+        html += `<td><span class="grade-badge ${cls}">${gradeLabel}</span>${extraInfo}<br><span style="font-size:10px;color:var(--muted)">${d.score !== null ? d.score+'점' : ''}</span></td>`;
       } else {
         html += `<td style="color:var(--muted);font-size:11px">-</td>`;
       }
@@ -1543,6 +1968,8 @@ function buildChart() {
 
   if (trendChart) trendChart.destroy();
   const ctx = document.getElementById('trend-chart').getContext('2d');
+  const isMidMode = currentSchoolLevel === 'middle';
+  const achMap = {1:'A',2:'B',3:'C',4:'D',5:'E'};
   trendChart = new Chart(ctx, {
     type: 'line',
     data: { labels: allUsedTerms, datasets },
@@ -1551,7 +1978,12 @@ function buildChart() {
       scales: {
         y: {
           reverse: true, min: 1, max: gradeSystemMax,
-          ticks: { stepSize: 1, min: 1, max: gradeSystemMax, callback: v => (v >= 1 && v <= gradeSystemMax && Number.isInteger(v)) ? v+'등급' : '', font: { size: 11 } },
+          ticks: { stepSize: 1, min: 1, max: gradeSystemMax,
+            callback: v => {
+              if (v < 1 || v > gradeSystemMax || !Number.isInteger(v)) return '';
+              return isMidMode ? achMap[v] : v+'등급';
+            },
+            font: { size: 11 } },
           grid: { color: 'rgba(0,0,0,.06)' }
         },
         x: { ticks: { font: { size: 10 } } }
@@ -1562,7 +1994,9 @@ function buildChart() {
           callbacks: {
             label: function(ctx) {
               const actual = ctx.dataset._labels?.[ctx.dataIndex] || ctx.dataset.label;
-              return `${actual}: ${ctx.parsed.y}등급`;
+              const isMidIlamMode = isMidMode && Object.values(allStudents[currentStudent]||{}).some(d => d.isMidIlam);
+              const valLabel = isMidMode ? (achMap[ctx.parsed.y] || ctx.parsed.y) + (isMidIlamMode ? '(추정)' : '') : ctx.parsed.y+'등급';
+              return `${actual}: ${valLabel}`;
             }
           }
         }
@@ -1741,6 +2175,10 @@ function buildPrompt() {
   const data = allStudents[currentStudent];
   const career = document.getElementById('career-inp').value.trim();
   const memo = document.getElementById('memo-inp').value.trim();
+  const isMidMode = currentSchoolLevel === 'middle';
+  const achMap = {1:'A',2:'B',3:'C',4:'D',5:'E'};
+  const isEstimatedMode = isMidMode && Object.values(data).some(d => d.isMidIlam);
+  const estSuffix = isEstimatedMode ? '(추정)' : '';
 
   // Build grade summary text
   const termOrder = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
@@ -1748,20 +2186,25 @@ function buildPrompt() {
   [...checkedSubjects].forEach(subj => {
     const termData = termOrder.map(t => {
       const d = data[`${subj}__${t}`];
-      return d ? `${t}: ${d.grade}등급(${d.score !== null ? d.score+'점' : '-'})` : null;
+      if (!d) return null;
+      const gradeLabel = isMidMode ? (achMap[d.grade]||d.grade) + (d.isMidIlam ? '(추정)' : '') : d.grade+'등급';
+      return `${t}: ${gradeLabel}(${d.score !== null ? d.score+'점' : '-'})`;
     }).filter(Boolean);
     if (termData.length) gradeText += `- ${subj}: ${termData.join(' → ')}\n`;
   });
 
   const grades = Object.values(data).filter(d => checkedSubjects.has(d.subject)).map(d => d.grade);
   const avgGrade = grades.length ? (grades.reduce((a, b) => a + b, 0) / grades.length).toFixed(2) : '-';
+  const avgLabel = isMidMode ? `${avgGrade} (${achMap[Math.round(parseFloat(avgGrade))]||''}${estSuffix})` : avgGrade+'등급';
 
   let p = '';
   p += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
   p += `■ [학생 성적 데이터]\n`;
   p += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
   p += `이름: ${currentStudent}\n`;
-  p += `평균 등급 (선택 과목): ${avgGrade}등급\n`;
+  p += `학교급: ${isMidMode ? '중학교' : '고등학교'}\n`;
+  if (isEstimatedMode) p += `※ 성취도 주의: 전과목 성적 일람표 기반으로, 성취도(A~E)는 원점수 기준 추정값입니다 (90↑=A/80↑=B/70↑=C/60↑=D/미만=E). 실제 성취도와 다를 수 있습니다.\n`;
+  p += `평균 ${isMidMode?'성취도':'등급'} (선택 과목): ${avgLabel}\n`;
   if (career) p += `진로 희망: ${career}\n`;
   p += `\n■ 과목별 성적 변화:\n${gradeText}`;
   const nmText = getNearMissText(data, termOrder);
@@ -1779,14 +2222,22 @@ function buildPrompt() {
   p += `   - 성적 패턴을 고려한 적합 계열 (인문/사회/자연/공학/예체능 등)\n`;
   p += `   - 강점 과목 기반 추천 직업군 또는 전공 2~3가지\n`;
   if (career) p += `   - 희망 진로(${career})와의 연계성 및 실현 가능성 분석\n`;
-  p += `\n3. 🎯 등급 경계 집중 관리 전략\n`;
-  p += `   - "등급 경계 아쉬운 과목" 순위 1~3위 과목의 한 등급 상승을 위한 구체적 전략\n`;
-  p += `   - 각 과목별로 어떤 부분을 보완하면 점수를 확보할 수 있는지 실천 가능한 방법\n`;
-  p += `   - 투입 노력 대비 등급 상승 효과가 클 과목 우선순위와 그 이유\n\n`;
+  if (isMidMode) {
+    p += `\n3. 🎯 성취도 향상 전략\n`;
+    p += `   - 중학교 성취도 기준(A~E)에서 한 단계 향상이 필요한 과목 우선순위\n`;
+    p += `   - 각 과목별 구체적인 학습 방법 및 보완 전략\n`;
+    p += `   - 고등학교 진학을 위한 기초 학력 다지기 전략\n\n`;
+  } else {
+    p += `\n3. 🎯 등급 경계 집중 관리 전략\n`;
+    p += `   - "등급 경계 아쉬운 과목" 순위 1~3위 과목의 한 등급 상승을 위한 구체적 전략\n`;
+    p += `   - 각 과목별로 어떤 부분을 보완하면 점수를 확보할 수 있는지 실천 가능한 방법\n`;
+    p += `   - 투입 노력 대비 등급 상승 효과가 클 과목 우선순위와 그 이유\n\n`;
+  }
   p += `4. 📚 앞으로의 학습 방향\n`;
   p += `   - 강점 과목을 더 살리기 위한 전략\n`;
   p += `   - 약점 과목을 보완하기 위한 구체적 방법\n`;
-  p += `   - 수능/내신 전략적 과목 선택 조언\n\n`;
+  if (isMidMode) p += `   - ${isMidMode?'고등학교 진학 대비':'수능/내신'} 전략적 과목 학습 조언\n\n`;
+  else p += `   - 수능/내신 전략적 과목 선택 조언\n\n`;
   p += `5. 💬 담임 상담 시 핵심 포인트 요약\n`;
   p += `   - 학생에게 전달할 긍정적 피드백\n`;
   p += `   - 개선이 필요한 부분을 부드럽게 전달하는 방법\n`;
@@ -1796,6 +2247,7 @@ function buildPrompt() {
   document.getElementById('prompt-output').value = p;
   document.getElementById('prompt-card').style.display = 'block';
 }
+
 
 // ═══════════════════════════════════════════════
 // EXCEL DOWNLOAD (ExcelJS — 그래프 포함)
@@ -2261,8 +2713,8 @@ function scrollToPrompt() {
   document.getElementById('prompt-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function resetAll() {
-  if (!confirm('모든 데이터를 초기화할까요?')) return;
+function resetAll(silent) {
+  if (!silent && !confirm('모든 데이터를 초기화할까요?')) return;
   allStudents = {}; currentStudent = null; checkedSubjects.clear(); currentNMGrade = '전체';
   ilamData = null;
   document.getElementById('file-input').value = '';
