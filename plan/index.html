@@ -2384,6 +2384,7 @@ function goTab(n){
 // ===============================================   학생 탭 렌더===
 function renderStudentTab(n){
   const left=document.getElementById('leftPanel'), right=document.getElementById('rightPanel');
+  left.scrollTop=0; right.scrollTop=0;
   if(n===1){
     left.innerHTML = buildStudentLeftInfo();
     right.innerHTML = `<div id="recEmpty" class="empty"><div class="icon"></div><p>계열과 학과를 선택하면<br>권장과목 정보가 표시됩니다</p></div><div id="recContent" style="display:none;"></div>`;
