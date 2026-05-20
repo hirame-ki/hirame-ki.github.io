@@ -2927,10 +2927,10 @@ async function openStudentDetail(id){
   const selNames=allSel.map(x=>x.name);
   // 영역별 학점 계산
   const allSubsFlat = allSel;
-  const keaScore = s.kea||0;
-  const totalScore = s.total||0;
-  const totalPct = Math.min(100,(totalScore/192)*100).toFixed(0);
-  const keaPct   = Math.min(100,(keaScore/81)*100).toFixed(0);
+  const keaScore = Number(s.kea)||0;
+  const totalScore = Number(s.total)||0;
+  const totalPct = isFinite(totalScore) ? Math.min(100,(totalScore/192)*100).toFixed(0) : 0;
+  const keaPct   = isFinite(keaScore)   ? Math.min(100,(keaScore/81)*100).toFixed(0)   : 0;
   const areaScores = REQUIRED_AREAS.map(area=>({
     name:area.name, min:area.min,
     earned:allSubsFlat.filter(sub=>area.keys.some(k=>sub.name&&sub.name.includes(k))).reduce((a,sub)=>a+(sub.cr||0),0)
@@ -2970,7 +2970,7 @@ async function openStudentDetail(id){
       <div style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:12px;padding:11px 13px;">
         <div style="font-size:10px;font-weight:800;color:var(--sub);margin-bottom:6px;">영역별 이수</div>
         ${areaScores.map(a=>{
-          const p=Math.min(100,(a.earned/a.min)*100).toFixed(0);
+          const p=a.min>0 ? Math.min(100,(a.earned/a.min)*100).toFixed(0) : 0;
           const ok=a.earned>=a.min;
           return `<div style="margin-bottom:4px;">
             <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:1px;">
