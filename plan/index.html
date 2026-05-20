@@ -2645,10 +2645,20 @@ function renderDesigner(){
   const allSems       = [...new Set([...completedSems,...autoSems,...activeSems])];
   const years         = [...new Set(allSems.map(s=>s.split(' ')[0]))];
 
-  // 2학년의 경우: 2학년 과목은 선택/저장 가능, 3학년 과목은 미리 선택
   // 자동이수 학기의 과목은 selSubs에 자동 추가
   autoSems.forEach(sem=>{
     if(!S.selSubs[sem]) S.selSubs[sem] = deepCopy(S.availSubs[sem]||DEFAULT_SUBS[sem]||[]);
+  });
+
+  // ★ 모든 활성 학기의 공통과목 → selSubs에 강제 삽입 (그래프 반영용)
+  activeSems.forEach(sem=>{
+    const subs = S.availSubs[sem]||DEFAULT_SUBS[sem]||[];
+    if(!S.selSubs[sem]) S.selSubs[sem]=[];
+    subs.forEach(sub=>{
+      if(sub.type==='공통' && !S.selSubs[sem].some(s=>s.name===sub.name)){
+        S.selSubs[sem].push({...sub});
+      }
+    });
   });
 
   let html='';
@@ -2737,13 +2747,22 @@ function getAllSelectedSubs(){
   const all=[];
   const completedSems=getCompletedSems();
   const autoSems=getAutoCompletedSems();
-  // 이수완료 학기 과목
-  completedSems.forEach(sem=>(DEFAULT_SUBS[sem]||S.availSubs[sem]||[]).forEach(s=>all.push(s)));
+  // 이수완료 학기 과목 (편제표 우선, 없으면 DEFAULT)
+  completedSems.forEach(sem=>(S.availSubs[sem]||DEFAULT_SUBS[sem]||[]).forEach(s=>all.push(s)));
   // 자동이수 학기
   autoSems.forEach(sem=>(S.availSubs[sem]||DEFAULT_SUBS[sem]||[]).forEach(s=>all.push(s)));
-  // 선택 학기
-  Object.entries(S.selSubs).forEach(([sem, subs])=>{
-    if(!completedSems.includes(sem) && !autoSems.includes(sem)) subs.forEach(s=>all.push(s));
+  // 선택 학기: selSubs에 있는 과목 포함
+  // + 공통과목은 selSubs 여부와 관계없이 항상 포함 (편제표 기준)
+  const activeSems = getActiveSems();
+  activeSems.forEach(sem=>{
+    const subs = S.availSubs[sem]||DEFAULT_SUBS[sem]||[];
+    const sel  = S.selSubs[sem]||[];
+    // 공통과목: 무조건 포함
+    subs.filter(s=>s.type==='공통').forEach(s=>{
+      if(!all.some(a=>a.name===s.name)) all.push(s);
+    });
+    // 선택과목: selSubs에 있는 것만
+    sel.filter(s=>s.type!=='공통').forEach(s=>all.push(s));
   });
   return all;
 }
