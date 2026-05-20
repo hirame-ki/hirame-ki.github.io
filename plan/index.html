@@ -133,7 +133,7 @@ body::after{
   width:40px;height:40px;border-radius:8px;
   background:linear-gradient(135deg,#1c2330,#0a0e15);
   display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;cursor:pointer;
+  flex-shrink:0;cursor:default;
   color:var(--gold-l);
   font-family:'Cormorant Garamond','Noto Serif KR',serif;
   font-size:22px;font-weight:600;font-style:italic;
@@ -141,7 +141,7 @@ body::after{
   box-shadow:inset 0 0 0 1px rgba(184,149,106,.32), 0 2px 8px rgba(15,20,25,.18);
   transition:transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s;
 }
-.logo-box:hover{ transform:translateY(-1px); box-shadow:inset 0 0 0 1px rgba(184,149,106,.55), 0 4px 14px rgba(15,20,25,.22); }
+.logo-box:hover{ box-shadow:inset 0 0 0 1px rgba(184,149,106,.32), 0 2px 8px rgba(15,20,25,.18); }
 .logo-box svg{ width:22px;height:22px; }
 .logo-txt{
   font-size:15.5px;font-weight:700;color:var(--text);
