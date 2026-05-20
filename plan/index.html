@@ -4,378 +4,1148 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>고교학점제 과목 설계 — 히라메키</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="audio.js" defer></script>
+
+
 <style>
-/* ═══════════════════════════════════════
-   디자인 토큰 (파스텔 민트 테마)
-═══════════════════════════════════════ */
-:root {
-  --bg:#f0fdf8; --bg2:#e4f7f1; --surface:#fff; --surface2:#f5fcf9;
-  --border:#b2e0d4; --border2:#cdeee5;
-  --mint:#2dd4bf; --mint-d:#0d9488; --mint-l:#ccfbef;
-  --mint-btn:linear-gradient(135deg,#2dd4bf 0%,#0d9488 100%);
-  --teal:#0f766e;
-  --text:#1a3a30; --sub:#3d6b5c; --muted:#7aaa97;
-  --shadow:0 2px 14px rgba(43,191,154,.10);
-  --shadow-md:0 4px 20px rgba(43,191,154,.15);
-  --r:14px; --rs:10px;
-  /* 상태 색상 */
-  --core:#e11d48; --core-bg:#fff1f2; --core-border:#fecdd3;
-  --rec:#059669; --rec-bg:#ecfdf5; --rec-border:#a7f3d0;
-  --ref:#7c3aed; --ref-bg:#f5f3ff; --ref-border:#ddd6fe;
-  --warn:#d97706; --warn-bg:#fffbeb; --warn-border:#fde68a;
-  --done:#6b7280; --done-bg:#f9fafb;
+/* ═══════════════════════════════════════════════════════════
+   히라메키 · LUXE 디자인 토큰
+   — 고급 출판 / 호텔 안내 책자 / 사립학교 안내장의 색채 언어 —
+   ─────────────────────────────────────────────────────────
+   기조: 따뜻한 아이보리 + 잉크 그라파이트 + 앤틱 골드 액센트
+   민트색을 완전히 배제하고, 변수명은 보존하여
+   기존 인라인 var(--*)이 그대로 작동하도록 매핑함.
+═══════════════════════════════════════════════════════════ */
+:root{
+  /* 배경 톤 — 따뜻한 아이보리 */
+  --bg:        #f6f1e7;
+  --bg2:       #ede5d4;
+  --surface:   #ffffff;
+  --surface2:  #fbf8f1;
+  --paper:     #f9f4e8;
+
+  /* 경계선 — 종이의 가장자리 */
+  --border:    #d8cdb5;
+  --border2:   #e6dec8;
+  --hairline:  rgba(15,20,25,.08);
+
+  /* 잉크 그라파이트 (예전 --mint / --mint-d 대응) */
+  --ink:       #0f1419;
+  --ink-soft:  #1c2330;
+  --mint:      #1f2937;     /* 예전 호환용 — 짙은 잉크 */
+  --mint-d:    #6b5532;     /* "강조 텍스트" 위치 — 짙은 브론즈 */
+  --mint-l:    #efe7d2;
+  --mint-btn:  linear-gradient(135deg,#1c2330 0%,#0f1419 100%);
+
+  /* 골드 액센트 — 앤틱 브론즈 ~ 샴페인 */
+  --gold:      #b8956a;
+  --gold-d:    #8a6a3e;
+  --gold-l:    #e6d6b5;
+  --gold-grad: linear-gradient(135deg,#c9a36b 0%,#9a7847 100%);
+
+  --teal:      #6b5532;     /* 예전 교사 모드 색상 → 브론즈로 통일 */
+
+  /* 텍스트 */
+  --text:      #14181f;
+  --sub:       #3a4150;
+  --muted:     #8a8275;
+  --whisper:   #b7ad99;
+
+  /* 그림자 — 종이 위 잉크의 부드러운 그늘 */
+  --shadow:    0 1px 2px rgba(20,15,5,.04), 0 4px 18px rgba(20,15,5,.06);
+  --shadow-md: 0 2px 4px rgba(20,15,5,.05), 0 10px 30px rgba(20,15,5,.10);
+  --shadow-gold:0 0 0 1px rgba(184,149,106,.35), 0 8px 24px rgba(184,149,106,.18);
+
+  --r:  10px;
+  --rs: 8px;
+  --rxs:6px;
+
+  /* 상태 색상 — 살짝 채도 낮춰 출판물 톤으로 */
+  --core:        #9b2c3a;  --core-bg:   #fcf2f3;  --core-border:#e9c8cc;
+  --rec:         #2f6a4a;  --rec-bg:    #f1f6f1;  --rec-border:#c9dcc9;
+  --ref:         #5e4a8a;  --ref-bg:    #f4f1f8;  --ref-border:#d6cee5;
+  --warn:        #8a5a18;  --warn-bg:   #faf3e3;  --warn-border:#e8d6a8;
+  --done:        #6b6b6b;  --done-bg:   #f4f1ea;
 }
+
+/* ── Reset ───────────────────────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+body{
+  font-family:'Noto Sans KR','Pretendard','-apple-system',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  font-size:14px;
+  letter-spacing:-.005em;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  font-feature-settings:"kern" 1, "liga" 1, "calt" 1, "ss01" 1;
+  position:relative;
+}
+/* 종이 질감: 미세 그레인 + 따뜻한 비네팅 */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% 0%,  rgba(184,149,106,.05), transparent 60%),
+    radial-gradient(ellipse 100% 70% at 50% 100%,rgba(15,20,25,.04), transparent 60%);
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .06  0 0 0 0 .05  0 0 0 0 .03  0 0 0 .35 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  opacity:.35; mix-blend-mode:multiply;
+}
+#loginScreen, #appScreen, #setupScreen { position:relative; z-index:2; }
 
-/* ── HEADER ── */
-.hdr{height:56px;background:var(--surface);border-bottom:1.5px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;box-shadow:var(--shadow);z-index:100;position:sticky;top:0;}
-.logo-box{width:34px;height:34px;border-radius:10px;background:var(--mint-btn);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;cursor:pointer;}
-.logo-txt{font-size:15px;font-weight:700;color:var(--text);}
-.logo-sub{font-size:10px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:2px 8px;white-space:nowrap;flex-shrink:0;}
-.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);}
-.hdr-right strong{color:var(--mint-d);font-weight:700;}
-.hdr-right .school-badge{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--sub);}
+/* 스크롤바 */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(15,20,25,.18);border-radius:6px}
+::-webkit-scrollbar-thumb:hover{background:rgba(15,20,25,.30)}
 
-/* ── TABS ── */
-.tabs{background:var(--surface);border-bottom:1.5px solid var(--border);display:flex;padding:0 16px;overflow-x:auto;flex-shrink:0;}
+/* 선택 색상 */
+::selection{background:rgba(184,149,106,.32);color:var(--ink);}
+
+/* 포커스 링 — 골드 헤어라인 */
+*:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px;}
+
+/* ── 헤더 ─────────────────────────────────────────────────── */
+.hdr{
+  height:64px;
+  background:linear-gradient(180deg,#ffffff 0%, #fbf8f1 100%);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 28px;gap:14px;
+  box-shadow:0 1px 0 rgba(15,20,25,.04), 0 2px 12px rgba(20,15,5,.04);
+  position:sticky;top:0;z-index:100;
+  position:relative;
+}
+.hdr::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent 0,var(--gold) 30%,var(--gold) 70%,transparent 100%);
+  opacity:.45;
+}
+.logo-box{
+  width:40px;height:40px;border-radius:8px;
+  background:linear-gradient(135deg,#1c2330,#0a0e15);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;cursor:pointer;
+  color:var(--gold-l);
+  font-family:'Cormorant Garamond','Noto Serif KR',serif;
+  font-size:22px;font-weight:600;font-style:italic;
+  letter-spacing:.01em;
+  box-shadow:inset 0 0 0 1px rgba(184,149,106,.32), 0 2px 8px rgba(15,20,25,.18);
+  transition:transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s;
+}
+.logo-box:hover{ transform:translateY(-1px); box-shadow:inset 0 0 0 1px rgba(184,149,106,.55), 0 4px 14px rgba(15,20,25,.22); }
+.logo-box svg{ width:22px;height:22px; }
+.logo-txt{
+  font-size:15.5px;font-weight:700;color:var(--text);
+  letter-spacing:-.01em;
+  font-feature-settings:"ss01" 1;
+}
+.logo-sub{
+  font-size:10px;color:var(--muted);
+  background:transparent;border:1px solid var(--border);
+  border-radius:2px;padding:3px 10px;white-space:nowrap;flex-shrink:0;
+  letter-spacing:.08em;text-transform:uppercase;font-weight:600;
+}
+.hdr-right{
+  margin-left:auto;display:flex;align-items:center;gap:10px;
+  font-size:12px;color:var(--muted);
+}
+.hdr-right strong{color:var(--ink);font-weight:700;}
+.hdr-right .school-badge{
+  background:transparent;border:1px solid var(--border);
+  border-radius:2px;padding:4px 11px;font-size:10.5px;color:var(--sub);
+  letter-spacing:.06em;font-weight:600;
+  white-space:nowrap;
+}
+/* 오디오 토글 */
+.audio-ctl{
+  width:34px;height:34px;border-radius:50%;
+  border:1px solid var(--border);background:transparent;
+  display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--sub);
+  transition:all .2s ease;
+  position:relative;
+}
+.audio-ctl:hover{ border-color:var(--gold); color:var(--ink); transform:translateY(-1px); }
+.audio-ctl[data-on="1"]{ border-color:var(--gold); color:var(--gold-d); background:rgba(184,149,106,.06); }
+.audio-ctl svg{ width:15px;height:15px; }
+.audio-ctl::after{
+  content:"";position:absolute;left:50%;top:50%;
+  width:6px;height:6px;border-radius:50%;
+  background:var(--gold);transform:translate(-50%,-50%) scale(0);
+  transition:transform .25s;opacity:.6;
+}
+.audio-ctl[data-on="1"]:hover::after{ transform:translate(-50%,-50%) scale(2.5);opacity:0;transition:transform .8s,opacity .8s; }
+
+/* ── 탭 ───────────────────────────────────────────────────── */
+.tabs{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;padding:0 24px;overflow-x:auto;flex-shrink:0;
+  box-shadow:0 1px 0 rgba(15,20,25,.02);
+}
 .tabs::-webkit-scrollbar{height:0}
-.tab{padding:10px 16px;font-size:12.5px;font-weight:700;color:var(--muted);border-bottom:2.5px solid transparent;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;}
-.tab.active{color:var(--mint-d);border-bottom-color:var(--mint-d);}
-.tab.t-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.tab{
+  padding:13px 18px;
+  font-size:12px;font-weight:700;color:var(--muted);
+  border-bottom:2px solid transparent;
+  cursor:pointer;transition:all .2s;
+  white-space:nowrap;flex-shrink:0;
+  letter-spacing:.04em;
+  position:relative;
+}
+.tab:hover{ color:var(--ink); }
+.tab.active{
+  color:var(--ink);
+  border-bottom-color:var(--gold);
+}
+.tab.active::after{
+  content:"";position:absolute;left:50%;bottom:-2px;
+  width:5px;height:5px;border-radius:50%;background:var(--gold);
+  transform:translate(-50%,50%);box-shadow:0 0 8px var(--gold);
+}
+.tab.t-tab.active{color:var(--ink);border-bottom-color:var(--gold);}
 .tab.done-tab{color:var(--rec);}
 
-/* ── LAYOUT ── */
-main{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 106px);}
-.left{border-right:1.5px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:calc(100vh - 106px);background:var(--bg);}
-.right{padding:18px 20px;overflow-y:auto;max-height:calc(100vh - 106px);background:var(--surface);}
+/* ── 메인 레이아웃 ────────────────────────────────────────── */
+main{
+  display:grid;grid-template-columns:320px 1fr;
+  min-height:calc(100vh - 114px);
+}
+.left{
+  border-right:1px solid var(--border);
+  padding:22px 20px;display:flex;flex-direction:column;gap:12px;
+  overflow-y:auto;max-height:calc(100vh - 114px);
+  background:linear-gradient(180deg,var(--paper) 0%, var(--bg) 100%);
+}
+.right{
+  padding:24px 28px;overflow-y:auto;max-height:calc(100vh - 114px);
+  background:var(--surface);
+}
 
-/* ── SEC LABEL ── */
-.sec{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+/* ── 섹션 라벨 ───────────────────────────────────────────── */
+.sec{
+  font-size:10px;font-weight:800;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:9px;
+  display:flex;align-items:center;gap:8px;
+}
+.sec::before{
+  content:"";width:14px;height:1px;background:var(--gold);
+}
 
-/* ── CARD ── */
-.card{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:14px;margin-bottom:12px;}
-.card-head{display:flex;align-items:center;gap:8px;padding-bottom:10px;margin-bottom:10px;border-bottom:1.5px solid var(--border2);}
-.card-icon{width:26px;height:26px;border-radius:8px;background:var(--mint-btn);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;color:#fff;}
-.card-title{font-size:12.5px;font-weight:800;color:var(--sub);}
+/* ── 카드 ─────────────────────────────────────────────────── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:16px;margin-bottom:12px;
+  box-shadow:var(--shadow);
+  transition:box-shadow .25s, transform .25s;
+}
+.card:hover{ box-shadow:var(--shadow-md); }
+.card-head{
+  display:flex;align-items:center;gap:10px;
+  padding-bottom:12px;margin-bottom:12px;
+  border-bottom:1px solid var(--border2);
+}
+.card-icon{
+  width:28px;height:28px;border-radius:6px;
+  background:linear-gradient(135deg,#1c2330,#0a0e15);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gold-l);font-size:13px;flex-shrink:0;
+  box-shadow:inset 0 0 0 1px rgba(184,149,106,.25);
+}
+.card-title{font-size:12.5px;font-weight:800;color:var(--ink);letter-spacing:.01em;}
 
-/* ── FORM ── */
-.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+/* ── 폼 ─────────────────────────────────────────────────── */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:11px;}
 .field:last-child{margin-bottom:0}
-.field label{font-size:11px;font-weight:700;color:var(--sub);}
-.inp{width:100%;padding:8px 11px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--bg2);font-size:13px;font-family:'Noto Sans KR',sans-serif;color:var(--text);outline:none;transition:border-color .15s;}
-.inp:focus{border-color:var(--mint);background:var(--surface);}
-.inp::placeholder{color:var(--muted);font-size:12px;}
-select.inp option{background:var(--surface);}
+.field label{
+  font-size:10.5px;font-weight:700;color:var(--sub);
+  letter-spacing:.08em;text-transform:uppercase;
+}
+.inp{
+  width:100%;padding:10px 13px;
+  border-radius:var(--rxs);
+  border:1px solid var(--border);
+  background:var(--surface);
+  font-size:13px;color:var(--text);
+  font-family:inherit;outline:none;
+  transition:border-color .2s, box-shadow .2s, background .2s;
+}
+.inp:hover{ border-color:#bda88a; }
+.inp:focus{
+  border-color:var(--gold);
+  background:var(--surface);
+  box-shadow:0 0 0 3px rgba(184,149,106,.16);
+}
+.inp::placeholder{color:var(--whisper);font-size:12px;}
+select.inp{
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%236b5532' stroke-width='1.4' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 12px center;
+  padding-right:32px;
+}
+select.inp option{background:var(--surface);color:var(--text);}
 
-/* ── BUTTONS ── */
-.btn{padding:8px 14px;border-radius:var(--rs);border:none;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
-.btn-primary{background:var(--mint-btn);color:#fff;box-shadow:0 2px 8px rgba(45,212,191,.25);}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(45,212,191,.35);}
-.btn-primary:disabled{background:linear-gradient(135deg,#a0d5c9,#7ab5ac);cursor:not-allowed;transform:none;box-shadow:none;}
-.btn-ghost{background:transparent;color:var(--sub);border:1.5px solid var(--border);}
-.btn-ghost:hover{border-color:var(--mint);color:var(--mint-d);}
-.btn-warn{background:transparent;color:var(--core);border:1.5px solid var(--core-border);}
-.btn-warn:hover{background:var(--core-bg);}
-.btn-teacher{background:linear-gradient(135deg,#0d9488,#0f766e);color:#fff;}
-.btn-teacher:hover{opacity:.9;}
+/* ── 버튼 (LUXE) ──────────────────────────────────────────── */
+.btn{
+  position:relative;
+  padding:10px 18px;border-radius:var(--rxs);
+  border:1px solid transparent;
+  font-family:inherit;
+  font-size:12.5px;font-weight:700;cursor:pointer;
+  letter-spacing:.04em;
+  white-space:nowrap;
+  transition:transform .15s cubic-bezier(.2,.7,.2,1), box-shadow .25s, background .2s, color .2s, border-color .2s;
+  overflow:hidden;isolation:isolate;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;z-index:-1;
+  background:radial-gradient(120px 80px at var(--mx,50%) var(--my,50%), rgba(184,149,106,.35), transparent 70%);
+  opacity:0;transition:opacity .25s;
+  pointer-events:none;
+}
+.btn:hover::before{ opacity:1; }
+.btn:active{ transform:translateY(0) scale(.985); }
+
+/* 프라이머리 — 잉크에 골드 헤어라인 */
+.btn-primary{
+  background:linear-gradient(180deg,#1f2937 0%,#0f1419 100%);
+  color:#f3e9d3;
+  box-shadow:inset 0 0 0 1px rgba(184,149,106,.35), 0 6px 18px rgba(15,20,25,.20);
+}
+.btn-primary:hover{
+  transform:translateY(-1px);
+  box-shadow:inset 0 0 0 1px var(--gold), 0 10px 24px rgba(15,20,25,.28), 0 0 0 4px rgba(184,149,106,.14);
+  color:#fff8e6;
+}
+.btn-primary:disabled{
+  background:linear-gradient(180deg,#4a5160 0%,#363c48 100%);
+  color:#aaa599;
+  cursor:not-allowed;transform:none;
+  box-shadow:inset 0 0 0 1px rgba(184,149,106,.12);
+}
+
+/* 고스트 — 종이 위 헤어라인 */
+.btn-ghost{
+  background:transparent;color:var(--sub);
+  border:1px solid var(--border);
+}
+.btn-ghost:hover{
+  border-color:var(--ink);color:var(--ink);
+  background:rgba(15,20,25,.03);
+  transform:translateY(-1px);
+}
+
+/* 위험 */
+.btn-warn{
+  background:transparent;color:var(--core);
+  border:1px solid var(--core-border);
+}
+.btn-warn:hover{
+  background:var(--core-bg);
+  border-color:var(--core);
+  transform:translateY(-1px);
+}
+
+/* 교사 모드 — 골드 그라데이션 */
+.btn-teacher{
+  background:var(--gold-grad);
+  color:#fffaf0;
+  box-shadow:inset 0 0 0 1px rgba(255,250,240,.20), 0 6px 18px rgba(184,149,106,.30);
+}
+.btn-teacher:hover{
+  transform:translateY(-1px);
+  box-shadow:inset 0 0 0 1px rgba(255,250,240,.35), 0 10px 26px rgba(184,149,106,.42);
+}
+
 .btn-full{width:100%;}
-.btn-sm{padding:4px 10px;font-size:11px;}
-.btn-row{display:flex;gap:7px;}
+.btn-sm{padding:6px 12px;font-size:11px;letter-spacing:.04em;}
+.btn-row{display:flex;gap:8px;}
 
-/* ── BADGES ── */
-.badge{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;}
+/* ── 배지 ────────────────────────────────────────────────── */
+.badge{
+  padding:2px 9px;border-radius:2px;
+  font-size:10px;font-weight:700;
+  letter-spacing:.04em;
+  display:inline-flex;align-items:center;gap:4px;
+}
 .badge-core{background:var(--core-bg);color:var(--core);border:1px solid var(--core-border);}
 .badge-rec{background:var(--rec-bg);color:var(--rec);border:1px solid var(--rec-border);}
 .badge-ref{background:var(--ref-bg);color:var(--ref);border:1px solid var(--ref-border);}
-.badge-done{background:var(--done-bg);color:var(--done);border:1px solid #e5e7eb;}
+.badge-done{background:var(--done-bg);color:var(--done);border:1px solid #d8d3c8;}
 .badge-warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-border);}
 
-/* ── LOGIN ── */
-.login-wrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 56px);padding:20px;background:var(--bg);}
-.login-card{background:var(--surface);border:1.5px solid var(--border);border-radius:18px;padding:32px;width:100%;max-width:400px;box-shadow:var(--shadow-md);}
-.login-card h2{font-size:18px;font-weight:800;color:var(--text);margin-bottom:5px;}
-.login-card .hint{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.6;}
-.login-big{font-size:22px!important;text-align:center;letter-spacing:6px;padding:13px!important;}
-.confirm-box{background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:14px;margin:10px 0;text-align:center;}
-.confirm-name{font-size:20px;font-weight:800;color:var(--mint-d);}
-.confirm-id{font-size:12px;color:var(--muted);margin-top:3px;}
-.notice-warn{background:var(--core-bg);border:1.5px solid var(--core-border);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--core);margin:10px 0;line-height:1.6;}
+/* ── 색상 도트 (이모지 대체) ────────────────────────────── */
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle;box-shadow:0 0 0 1px rgba(255,255,255,.6) inset;}
+.dot-core{background:var(--core);}
+.dot-rec{background:var(--rec);}
+.dot-ref{background:var(--ref);}
 
-/* ── SETUP SCREEN ── */
-.setup-wrap{padding:24px;max-width:600px;margin:0 auto;}
-.setup-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:18px;margin-bottom:14px;}
-.setup-card h3{font-size:13px;font-weight:800;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+/* ── 로그인 ─────────────────────────────────────────────── */
+.login-wrap{
+  display:flex;align-items:center;justify-content:center;
+  min-height:calc(100vh - 64px);
+  padding:40px 20px;
+}
+.login-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:42px 38px;
+  width:100%;max-width:420px;
+  box-shadow:var(--shadow-md);
+  position:relative;
+}
+.login-card::before{
+  content:"";position:absolute;top:-1px;left:24px;right:24px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:.65;
+}
+.login-card h2{
+  font-size:22px;font-weight:800;color:var(--text);
+  margin-bottom:6px;letter-spacing:-.015em;
+  font-family:'Cormorant Garamond','Noto Serif KR',serif;
+  font-variant-numeric:lining-nums;
+}
+.login-card .hint{
+  font-size:12.5px;color:var(--muted);
+  margin-bottom:22px;line-height:1.7;
+}
+.login-big{
+  font-size:24px!important;text-align:center;letter-spacing:8px;
+  padding:16px!important;
+  font-family:'Cormorant Garamond','Noto Serif KR',serif;
+  font-weight:600;
+}
+.confirm-box{
+  background:var(--paper);
+  border:1px solid var(--border);
+  border-radius:8px;padding:18px;margin:12px 0;
+  text-align:center;
+  position:relative;
+}
+.confirm-box::before, .confirm-box::after{
+  content:"";position:absolute;width:20px;height:1px;background:var(--gold);top:50%;
+}
+.confirm-box::before{left:18px;}
+.confirm-box::after{right:18px;}
+.confirm-name{
+  font-size:22px;font-weight:700;color:var(--ink);
+  letter-spacing:.02em;
+  font-family:'Cormorant Garamond','Noto Serif KR',serif;
+}
+.confirm-id{
+  font-size:11px;color:var(--muted);margin-top:4px;
+  letter-spacing:.12em;text-transform:uppercase;
+}
+.notice-warn{
+  background:var(--core-bg);
+  border:1px solid var(--core-border);
+  border-left:3px solid var(--core);
+  border-radius:4px;padding:11px 14px;
+  font-size:12px;color:var(--core);
+  margin:12px 0;line-height:1.7;
+}
+
+/* ── 설정 화면 ─────────────────────────────────────────── */
+.setup-wrap{padding:32px 24px;max-width:640px;margin:0 auto;}
+.setup-card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:22px;margin-bottom:16px;
+  box-shadow:var(--shadow);
+}
+.setup-card h3{
+  font-size:13.5px;font-weight:800;color:var(--ink);
+  margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+  letter-spacing:.01em;
+}
+.setup-card h3::before{
+  content:"";width:3px;height:14px;background:var(--gold);border-radius:1px;
+}
 .url-row{display:flex;gap:8px;}
-.url-row .inp{flex:1;font-size:12px;}
-.url-ok{font-size:11px;color:var(--rec);margin-top:4px;display:none;font-weight:700;}
-.share-box{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs);padding:12px;margin-top:8px;}
-.share-url{font-size:11px;color:var(--mint-d);word-break:break-all;background:var(--bg);border-radius:6px;padding:7px 9px;margin:7px 0;border:1px solid var(--border);}
+.url-row .inp{flex:1;font-size:12px;font-family:'JetBrains Mono','SF Mono',monospace;}
+.url-ok{font-size:11px;color:var(--rec);margin-top:6px;display:none;font-weight:700;}
+.share-box{
+  background:var(--paper);
+  border:1px solid var(--border);
+  border-radius:var(--rxs);
+  padding:14px;margin-top:10px;
+}
+.share-url{
+  font-size:11px;color:var(--ink);word-break:break-all;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:4px;padding:9px 11px;margin:8px 0;
+  font-family:'JetBrains Mono','SF Mono',monospace;
+}
 
-/* ── 학교정보 그리드 ── */
-.school-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.school-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 
-/* ── 학점 바 ── */
-.credit-bar{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;}
-.credit-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
-.credit-num{font-size:24px;font-weight:800;color:var(--mint-d);}
-.credit-of{font-size:11px;color:var(--muted);}
-.prog-track{height:7px;background:var(--bg2);border-radius:4px;overflow:hidden;margin-bottom:4px;}
-.prog-fill{height:100%;background:var(--mint-btn);border-radius:4px;transition:width .4s;}
-.prog-fill.over{background:linear-gradient(90deg,var(--warn),#f59e0b);}
-.prog-fill.done{background:linear-gradient(90deg,var(--rec),#10b981);}
-.credit-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);}
+/* ── 학점 바 (큰 카운트) ──────────────────────────────── */
+.credit-bar{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:16px 18px;margin-bottom:12px;
+  box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+}
+.credit-bar::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold) 50%,transparent);
+}
+.credit-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.credit-num{
+  font-size:34px;font-weight:600;color:var(--ink);
+  font-family:'Cormorant Garamond','Noto Serif KR',serif;
+  letter-spacing:-.02em;
+  font-variant-numeric:lining-nums tabular-nums;
+}
+.credit-of{
+  font-size:10.5px;color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+}
+.prog-track{
+  height:6px;background:var(--bg2);border-radius:3px;
+  overflow:hidden;margin-bottom:5px;
+  box-shadow:inset 0 1px 1px rgba(15,20,25,.08);
+}
+.prog-fill{
+  height:100%;
+  background:linear-gradient(90deg, var(--gold-d), var(--gold));
+  border-radius:3px;transition:width .5s cubic-bezier(.2,.7,.2,1);
+  box-shadow:0 0 8px rgba(184,149,106,.4);
+}
+.prog-fill.over{background:linear-gradient(90deg,var(--warn),#c08a2e);}
+.prog-fill.done{background:linear-gradient(90deg,var(--rec),#4a8a64);}
+.credit-labels{
+  display:flex;justify-content:space-between;
+  font-size:9px;color:var(--whisper);
+  letter-spacing:.1em;
+  font-variant-numeric:tabular-nums;
+}
 
-/* ── 국영수 81 바 ── */
-.kea-bar{background:var(--surface);border:1.5px solid var(--warn-border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;}
+/* ── 국영수 바 ─────────────────────────────────────────── */
+.kea-bar{
+  background:var(--surface);
+  border:1px solid var(--warn-border);
+  border-radius:var(--r);
+  padding:14px 16px;margin-bottom:12px;
+  box-shadow:var(--shadow);
+}
 .kea-bar.safe{border-color:var(--border2);}
-.kea-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
-.kea-label{font-size:11px;font-weight:700;color:var(--sub);}
-.kea-num{font-size:13px;font-weight:800;font-family:monospace;}
+.kea-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+.kea-label{font-size:11px;font-weight:700;color:var(--sub);letter-spacing:.06em;}
+.kea-num{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;}
 .kea-num.over{color:var(--core);}
 .kea-num.safe{color:var(--rec);}
-.kea-prog{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;margin-bottom:3px;}
-.kea-fill{height:100%;background:var(--rec);border-radius:3px;transition:width .4s;}
+.kea-prog{height:4px;background:var(--bg2);border-radius:2px;overflow:hidden;margin-bottom:4px;}
+.kea-fill{height:100%;background:var(--rec);border-radius:2px;transition:width .4s;}
 .kea-fill.over{background:var(--core);}
-.kea-limit-label{font-size:9px;color:var(--muted);}
+.kea-limit-label{font-size:9.5px;color:var(--muted);letter-spacing:.06em;}
 
-/* ── 영역별 ── */
-.area-panel{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;}
-.area-row{margin-bottom:8px;}
+/* ── 영역 패널 ─────────────────────────────────────────── */
+.area-panel{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:14px 16px;margin-bottom:12px;
+  box-shadow:var(--shadow);
+}
+.area-row{margin-bottom:9px;}
 .area-row:last-child{margin-bottom:0;}
-.area-row-head{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;}
+.area-row-head{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;}
 .area-name{color:var(--sub);font-weight:600;}
-.area-num{font-size:10px;font-weight:800;}
+.area-num{font-size:10.5px;font-weight:800;font-variant-numeric:tabular-nums;}
 .area-num.ok{color:var(--rec);}
 .area-num.over{color:var(--warn);}
 .area-num.short{color:var(--core);}
-.area-prog{height:4px;background:var(--bg2);border-radius:3px;overflow:hidden;}
-.area-fill{height:100%;border-radius:3px;transition:width .3s;}
+.area-prog{height:3px;background:var(--bg2);border-radius:2px;overflow:hidden;}
+.area-fill{height:100%;border-radius:2px;transition:width .35s;}
 .area-fill.ok{background:var(--rec);}
 .area-fill.over{background:var(--warn);}
 .area-fill.short{background:var(--core);}
 
-/* ── 권장과목 체크 ── */
-.check-panel{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;}
-.check-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border2);font-size:12px;}
+/* ── 권장과목 체크 ──────────────────────────────────────── */
+.check-panel{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:14px 16px;margin-bottom:12px;
+  box-shadow:var(--shadow);
+}
+.check-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:6px 0;border-bottom:1px dashed var(--border2);
+  font-size:12px;
+}
 .check-row:last-child{border-bottom:none;}
 .check-ok{color:var(--rec);font-weight:700;}
 .check-no{color:var(--core);}
 
-/* ── 과목 설계 ── */
-.year-block{margin-bottom:22px;}
-.year-head{font-size:13px;font-weight:800;margin-bottom:9px;display:flex;align-items:center;gap:8px;}
-.year-pill{background:var(--mint-btn);color:#fff;padding:2px 10px;border-radius:20px;font-size:11px;}
-.year-pill.done{background:var(--done-bg);color:var(--done);border:1px solid #e5e7eb;}
-.year-done-txt{font-size:11px;color:var(--muted);}
-.sem-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;}
-.sem-box{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:12px;}
+/* ── 과목 설계 (학기 그리드) ────────────────────────────── */
+.year-block{margin-bottom:26px;}
+.year-head{
+  font-size:13.5px;font-weight:800;
+  margin-bottom:12px;
+  display:flex;align-items:center;gap:10px;
+  letter-spacing:.01em;
+  color:var(--ink);
+}
+.year-pill{
+  background:linear-gradient(180deg,#1f2937,#0f1419);
+  color:var(--gold-l);
+  padding:3px 12px;border-radius:2px;font-size:10.5px;
+  letter-spacing:.08em;font-weight:700;
+  box-shadow:inset 0 0 0 1px rgba(184,149,106,.30);
+}
+.year-pill.done{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.year-done-txt{font-size:11px;color:var(--muted);letter-spacing:.06em;}
+.sem-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px;}
+.sem-box{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:14px;
+  box-shadow:var(--shadow);
+  transition:box-shadow .25s, border-color .2s;
+}
+.sem-box:hover{box-shadow:var(--shadow-md);border-color:var(--border);}
 .sem-box.completed{opacity:.55;pointer-events:none;}
-.sem-title{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-.done-tag{font-size:9px;background:var(--rec-bg);color:var(--rec);padding:1px 7px;border-radius:10px;border:1px solid var(--rec-border);}
-.subj-item{display:flex;align-items:center;justify-content:space-between;padding:5px 7px;border-radius:7px;font-size:12px;margin-bottom:2px;cursor:pointer;transition:background .12s;border:1.5px solid transparent;}
-.subj-item:hover{background:var(--bg2);}
-.subj-item.sel{background:var(--mint-l);border-color:var(--mint);}
+.sem-title{
+  font-size:10px;color:var(--muted);font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;
+  margin-bottom:10px;padding-bottom:8px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--border2);
+}
+.done-tag{
+  font-size:9px;background:var(--rec-bg);color:var(--rec);
+  padding:2px 8px;border-radius:2px;
+  border:1px solid var(--rec-border);
+  letter-spacing:.06em;font-weight:700;
+}
+.subj-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 9px;border-radius:5px;font-size:12.5px;
+  margin-bottom:3px;cursor:pointer;
+  transition:background .15s, border-color .15s, transform .15s;
+  border:1px solid transparent;
+  position:relative;
+}
+.subj-item:hover{
+  background:var(--paper);
+  border-color:var(--border2);
+  transform:translateX(2px);
+}
+.subj-item:hover::before{
+  content:"";position:absolute;left:-3px;top:25%;bottom:25%;width:2px;
+  background:var(--gold);border-radius:2px;
+}
+.subj-item.sel{
+  background:rgba(184,149,106,.10);
+  border-color:var(--gold-l);
+}
 .subj-item.sel.is-core{background:var(--core-bg);border-color:var(--core-border);}
 .subj-item.sel.is-rec{background:var(--rec-bg);border-color:var(--rec-border);}
 .subj-item.sel.is-ref{background:var(--ref-bg);border-color:var(--ref-border);}
-.subj-item.done-sub{background:var(--done-bg);border-color:transparent;opacity:.7;cursor:default;}
-.subj-name{font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);}
-.subj-cr{font-size:10px;color:var(--muted);flex-shrink:0;margin-left:4px;}
-.sel .subj-cr{color:var(--mint-d);font-weight:700;}
+.subj-item.done-sub{
+  background:var(--done-bg);
+  border-color:transparent;
+  opacity:.7;cursor:default;
+}
+.subj-item.done-sub:hover{transform:none;background:var(--done-bg);}
+.subj-item.done-sub:hover::before{display:none;}
+.subj-name{
+  font-weight:500;flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--text);
+}
+.subj-cr{
+  font-size:10px;color:var(--muted);flex-shrink:0;margin-left:6px;
+  font-variant-numeric:tabular-nums;
+  font-family:'Cormorant Garamond',serif;
+  font-size:13px;font-weight:600;
+}
+.sel .subj-cr{color:var(--gold-d);font-weight:700;}
 
-/* ── 학과 추천 ── */
-.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
-.chip{padding:4px 11px;border-radius:6px;font-size:12px;font-weight:600;border:1.5px solid;}
+/* ── 학과 추천 칩 ──────────────────────────────────────── */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.chip{
+  padding:5px 12px;border-radius:2px;
+  font-size:12px;font-weight:600;
+  border:1px solid;
+  transition:transform .15s, box-shadow .15s;
+}
+.chip:hover{ transform:translateY(-1px); box-shadow:0 4px 12px rgba(15,20,25,.08); }
 .chip-core{background:var(--core-bg);border-color:var(--core-border);color:var(--core);}
 .chip-rec{background:var(--rec-bg);border-color:var(--rec-border);color:var(--rec);}
 .chip-ref{background:var(--ref-bg);border-color:var(--ref-border);color:var(--ref);}
-.desc-box{padding:10px 13px;background:var(--bg2);border-left:3px solid var(--mint-d);border-radius:0 8px 8px 0;font-size:12px;color:var(--sub);line-height:1.75;margin-bottom:14px;}
-.group-title{font-size:11px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
-.uni-note{margin-top:10px;padding:11px 13px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs);font-size:12px;color:var(--sub);line-height:1.7;}
-.uni-note strong{color:var(--mint-d);}
 
-/* ── 경고 배너 ── */
-.warn-banner{display:none;align-items:center;gap:8px;background:var(--core-bg);border:1.5px solid var(--core-border);border-radius:var(--rs);padding:8px 12px;margin-bottom:10px;font-size:12px;color:var(--core);font-weight:700;}
+.desc-box{
+  padding:14px 16px;
+  background:var(--paper);
+  border-left:2px solid var(--gold);
+  border-radius:0 4px 4px 0;
+  font-size:12.5px;color:var(--sub);line-height:1.85;
+  margin-bottom:16px;
+  font-style:italic;
+  font-family:'Cormorant Garamond','Noto Serif KR',serif;
+}
+.group-title{
+  font-size:11px;font-weight:800;margin-bottom:7px;
+  display:flex;align-items:center;gap:8px;
+  letter-spacing:.04em;
+}
+.uni-note{
+  margin-top:12px;
+  padding:14px 16px;
+  background:var(--paper);
+  border:1px solid var(--border);
+  border-radius:var(--rxs);
+  font-size:12px;color:var(--sub);line-height:1.75;
+}
+.uni-note strong{color:var(--ink);}
+
+/* ── 경고 배너 ─────────────────────────────────────────── */
+.warn-banner{
+  display:none;align-items:center;gap:10px;
+  background:var(--core-bg);
+  border:1px solid var(--core-border);
+  border-left:3px solid var(--core);
+  border-radius:4px;padding:10px 14px;margin-bottom:12px;
+  font-size:12px;color:var(--core);font-weight:700;
+}
 .warn-banner.show{display:flex;}
 
-/* ── 교사 학생 카드 ── */
-.student-card{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border .15s,box-shadow .15s;}
-.student-card:hover{border-color:var(--mint);box-shadow:var(--shadow);}
+/* ── 교사: 학생 카드 ─────────────────────────────────── */
+.student-card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:14px 16px;margin-bottom:10px;
+  cursor:pointer;
+  transition:border-color .2s, box-shadow .2s, transform .15s;
+  box-shadow:var(--shadow);
+  position:relative;
+}
+.student-card::before{
+  content:"";position:absolute;left:0;top:14px;bottom:14px;width:2px;
+  background:transparent;border-radius:2px;transition:background .2s;
+}
+.student-card:hover{
+  border-color:var(--border);
+  box-shadow:var(--shadow-md);
+  transform:translateX(2px);
+}
+.student-card:hover::before{background:var(--gold);}
 .student-card.confirmed{border-color:var(--rec-border);background:var(--rec-bg);}
+.student-card.confirmed::before{background:var(--rec);}
 .student-card.locked{border-color:var(--warn-border);}
-.credit-pill{background:var(--bg2);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--mint-d);font-weight:700;border:1px solid var(--border);}
-.t-banner{background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:9px 13px;font-size:12px;color:var(--sub);margin-bottom:12px;display:flex;align-items:center;gap:7px;font-weight:700;}
+.student-card.locked::before{background:var(--warn);}
+.credit-pill{
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:2px;padding:3px 10px;
+  font-size:11px;color:var(--ink);font-weight:700;
+  font-variant-numeric:tabular-nums;
+  font-family:'Cormorant Garamond',serif;
+}
+.t-banner{
+  background:var(--paper);
+  border:1px solid var(--border);
+  border-left:3px solid var(--gold);
+  border-radius:4px;
+  padding:11px 14px;font-size:12.5px;color:var(--sub);
+  margin-bottom:14px;
+  display:flex;align-items:center;gap:9px;font-weight:700;
+}
 
-/* ── 모달 ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(10,30,25,.45);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+/* ── 모달 ─────────────────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(15,20,25,.55);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  z-index:200;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
 .modal-overlay.open{opacity:1;pointer-events:all;}
-.modal{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:22px;width:340px;max-width:92vw;box-shadow:var(--shadow-md);}
-.modal h3{font-size:14px;font-weight:800;color:var(--text);margin-bottom:13px;}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
+.modal{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:26px 28px;width:380px;max-width:92vw;
+  box-shadow:0 20px 60px rgba(15,20,25,.35);
+  position:relative;
+}
+.modal::before{
+  content:"";position:absolute;top:0;left:24px;right:24px;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.modal h3{
+  font-size:16px;font-weight:800;color:var(--ink);
+  margin-bottom:16px;letter-spacing:-.005em;
+}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
 
-/* ── 토스트 ── */
-/* ── 제출 오버레이 ── */
-.submit-overlay{position:fixed;inset:0;background:rgba(10,40,30,.65);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+/* ── 제출 오버레이 ─────────────────────────────────────── */
+.submit-overlay{
+  position:fixed;inset:0;
+  background:rgba(15,20,25,.70);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  z-index:500;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
 .submit-overlay.show{opacity:1;pointer-events:all;}
-.submit-card{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:36px 40px;text-align:center;box-shadow:0 8px 40px rgba(13,148,136,.25);min-width:260px;}
-.submit-card .s-icon{font-size:40px;margin-bottom:12px;}
-.submit-card .s-title{font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px;}
-.submit-card .s-sub{font-size:12px;color:var(--muted);}
-.submit-card .s-spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;margin:14px auto 0;}
-.toast{position:fixed;bottom:22px;right:22px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:9px 15px;font-size:13px;font-weight:700;z-index:999;transform:translateY(12px);opacity:0;transition:all .3s;pointer-events:none;}
+.submit-card{
+  background:var(--surface);
+  border:1px solid var(--gold);
+  border-radius:16px;
+  padding:44px 50px;text-align:center;
+  box-shadow:0 30px 80px rgba(15,20,25,.50);
+  min-width:300px;
+  position:relative;
+}
+.submit-card::before{
+  content:"";position:absolute;inset:6px;border:1px solid var(--gold-l);
+  border-radius:11px;pointer-events:none;
+}
+.submit-card .s-icon{
+  width:48px;height:48px;margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gold-d);
+}
+.submit-card .s-icon svg{width:100%;height:100%;}
+.submit-card .s-title{
+  font-size:18px;font-weight:800;color:var(--ink);
+  margin-bottom:6px;letter-spacing:-.01em;
+}
+.submit-card .s-sub{font-size:12px;color:var(--muted);letter-spacing:.04em;}
+.submit-card .s-spinner{
+  width:30px;height:30px;
+  border:2px solid var(--border);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin .9s linear infinite;
+  margin:16px auto 0;
+}
+
+/* ── 토스트 ────────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:28px;right:28px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-left:3px solid var(--gold);
+  border-radius:6px;
+  padding:11px 18px;font-size:13px;font-weight:700;
+  color:var(--ink);
+  box-shadow:0 12px 40px rgba(15,20,25,.18);
+  z-index:999;
+  transform:translateY(16px);opacity:0;
+  transition:all .35s cubic-bezier(.2,.7,.2,1);
+  pointer-events:none;letter-spacing:.01em;
+}
 .toast.show{transform:translateY(0);opacity:1;}
-.toast.success{border-color:var(--rec-border);color:var(--rec);}
-.toast.error{border-color:var(--core-border);color:var(--core);}
-.toast.warn{border-color:var(--warn-border);color:var(--warn);}
+.toast.success{border-left-color:var(--rec);color:var(--rec);}
+.toast.error{border-left-color:var(--core);color:var(--core);}
+.toast.warn{border-left-color:var(--warn);color:var(--warn);}
 
-/* ── 빈 상태 ── */
-.empty{text-align:center;padding:40px 20px;color:var(--muted);}
-.empty .icon{font-size:32px;margin-bottom:10px;}
+/* ── 빈 상태 ──────────────────────────────────────────── */
+.empty{
+  text-align:center;padding:52px 20px;color:var(--muted);
+}
+.empty .icon{
+  font-size:36px;margin-bottom:12px;
+  color:var(--whisper);
+}
+.empty p{font-size:13px;line-height:1.7;}
 
-/* ── 로딩 ── */
-.loading{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:14px 0;}
-.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+/* ── 로딩 ─────────────────────────────────────────────── */
+.loading{
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--muted);padding:16px 0;
+}
+.spinner{
+  width:16px;height:16px;
+  border:2px solid var(--border);
+  border-top-color:var(--gold);
+  border-radius:50%;animation:spin .9s linear infinite;
+  flex-shrink:0;
+}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* ── footer ── */
-footer{background:var(--surface);border-top:1.5px solid var(--border);padding:10px 20px;text-align:center;font-size:11.5px;color:var(--muted);}
-footer a{color:var(--mint-d);text-decoration:none;font-weight:700;}
-footer a:hover{text-decoration:underline;}
+/* ── 푸터 ─────────────────────────────────────────────── */
+footer{
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  padding:14px 24px;text-align:center;
+  font-size:11px;color:var(--muted);
+  letter-spacing:.05em;
+  position:relative;z-index:2;
+}
+footer::before{
+  content:"";position:absolute;top:0;left:25%;right:25%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:.4;
+}
+footer a{color:var(--ink);text-decoration:none;font-weight:700;border-bottom:1px solid var(--gold-l);transition:border-color .2s;}
+footer a:hover{border-bottom-color:var(--gold);}
 
-/* ── 드롭존 ── */
-.drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:18px 16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2);position:relative;}
-.drop-zone:hover,.drop-zone.dragover{border-color:var(--mint);background:var(--mint-l);}
-.drop-zone.has-file{border-color:var(--rec);border-style:solid;background:var(--rec-bg);}
-.drop-zone .dz-icon{font-size:22px;margin-bottom:5px;}
+/* ── 드롭존 ──────────────────────────────────────────── */
+.drop-zone{
+  border:1.5px dashed var(--border);
+  border-radius:var(--r);
+  padding:24px 18px;text-align:center;
+  cursor:pointer;
+  transition:all .25s;
+  background:var(--paper);
+  position:relative;
+}
+.drop-zone:hover, .drop-zone.dragover{
+  border-color:var(--gold);
+  background:rgba(184,149,106,.06);
+}
+.drop-zone.has-file{
+  border-color:var(--rec);
+  border-style:solid;
+  background:var(--rec-bg);
+}
+.drop-zone .dz-icon{
+  font-size:22px;margin-bottom:7px;color:var(--gold-d);
+  display:inline-flex;
+}
+.drop-zone .dz-icon svg{width:28px;height:28px;}
 .drop-zone .dz-label{font-size:13px;font-weight:700;color:var(--sub);}
-.drop-zone .dz-sub{font-size:11px;color:var(--muted);margin-top:3px;}
-.drop-zone .dz-status{font-size:11px;margin-top:6px;font-weight:600;color:var(--muted);min-height:16px;}
+.drop-zone .dz-sub{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.04em;}
+.drop-zone .dz-status{font-size:11px;margin-top:7px;font-weight:600;color:var(--muted);min-height:16px;}
 .drop-zone .dz-status.ok{color:var(--rec);}
 .drop-zone .dz-status.err{color:var(--core);}
-.drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.drop-zone input[type="file"]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
+}
 
-/* ── 편제표 리뷰 패널 ── */
-.review-overlay{position:fixed;inset:0;background:rgba(10,30,25,.5);z-index:300;display:flex;align-items:center;justify-content:center;}
-.review-modal{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;width:760px;max-width:96vw;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(13,148,136,.2);}
-.review-header{padding:16px 20px;border-bottom:1.5px solid var(--border2);flex-shrink:0;}
-.review-body{overflow-y:auto;padding:16px 20px;flex:1;}
-.review-footer{padding:12px 20px;border-top:1.5px solid var(--border2);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;background:var(--bg2);border-radius:0 0 16px 16px;}
-.review-sem-block{margin-bottom:16px;background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--r);padding:12px 14px;}
-.review-sem-title{font-size:12px;font-weight:800;color:var(--mint-d);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-.review-subj-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border2);}
+/* ── 편제표 리뷰 ───────────────────────────────────────── */
+.review-overlay{
+  position:fixed;inset:0;
+  background:rgba(15,20,25,.55);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  z-index:300;display:flex;align-items:center;justify-content:center;
+}
+.review-modal{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;width:820px;max-width:96vw;max-height:92vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 30px 80px rgba(15,20,25,.40);
+  position:relative;overflow:hidden;
+}
+.review-modal::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.review-header{
+  padding:20px 24px;
+  border-bottom:1px solid var(--border2);
+  flex-shrink:0;background:var(--paper);
+}
+.review-body{
+  overflow-y:auto;padding:20px 24px;flex:1;
+  background:var(--surface);
+}
+.review-footer{
+  padding:14px 24px;
+  border-top:1px solid var(--border2);
+  display:flex;gap:10px;justify-content:flex-end;
+  flex-shrink:0;background:var(--paper);
+}
+.review-sem-block{
+  margin-bottom:18px;background:var(--paper);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:14px 16px;
+}
+.review-sem-title{
+  font-size:12.5px;font-weight:800;color:var(--ink);
+  margin-bottom:10px;display:flex;align-items:center;gap:8px;
+  letter-spacing:.04em;
+}
+.review-subj-row{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 0;border-bottom:1px dashed var(--border2);
+}
 .review-subj-row:last-child{border-bottom:none;}
-.review-subj-name{flex:1;font-size:12px;font-weight:500;color:var(--text);}
-.review-subj-cr{font-size:11px;color:var(--mint-d);font-weight:700;min-width:28px;}
-.review-subj-type{font-size:10px;color:var(--muted);min-width:50px;}
-.review-add-row{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1.5px dashed var(--border);}
+.review-subj-name{
+  flex:1;font-size:12px;font-weight:500;color:var(--text);
+  padding:3px 6px;border-radius:3px;
+  transition:background .15s;
+}
+.review-subj-name:focus{background:var(--bg2);outline:none;}
+.review-subj-cr{font-size:11px;color:var(--ink);font-weight:700;min-width:28px;font-variant-numeric:tabular-nums;}
+.review-subj-type{font-size:10px;color:var(--muted);min-width:50px;letter-spacing:.04em;}
+.review-add-row{
+  display:flex;gap:7px;margin-top:10px;padding-top:10px;
+  border-top:1px dashed var(--border);
+}
 .review-add-row .inp{font-size:12px;}
-.miss-badge{background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;}
-.ok-badge{background:var(--rec-bg);border:1px solid var(--rec-border);color:var(--rec);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;}
+.miss-badge{
+  background:var(--warn-bg);border:1px solid var(--warn-border);
+  color:var(--warn);font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:2px;letter-spacing:.04em;
+}
+.ok-badge{
+  background:var(--rec-bg);border:1px solid var(--rec-border);
+  color:var(--rec);font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:2px;letter-spacing:.04em;
+}
 
+/* ── 아이콘 (SVG) ──────────────────────────────────────── */
+.ico{display:inline-flex;vertical-align:middle;line-height:0;color:currentColor;}
+.ico svg{width:1em;height:1em;}
+.ico-sm svg{width:13px;height:13px;}
+.ico-md svg{width:16px;height:16px;}
+.ico-lg svg{width:22px;height:22px;}
+
+/* 텍스트 라벨 (이모지 자리에 사용) */
+.label-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:1px 7px;font-size:10px;font-weight:700;
+  border-radius:2px;letter-spacing:.06em;text-transform:uppercase;
+  border:1px solid var(--border);background:var(--paper);color:var(--ink);
+  white-space:nowrap;
+}
+
+/* ── 반응형 ──────────────────────────────────────────── */
 @media(max-width:800px){
   main{grid-template-columns:1fr;}
-  .left{border-right:none;border-bottom:1.5px solid var(--border);max-height:none;}
+  .left{border-right:none;border-bottom:1px solid var(--border);max-height:none;}
   .right{max-height:none;}
   .sem-grid{grid-template-columns:1fr;}
   .school-grid{grid-template-columns:1fr;}
 }
 
-/* ── 모바일 전용 최적화 ── */
 @media(max-width:600px){
-  /* 헤더 */
-  .hdr{padding:0 12px;gap:7px;}
+  .hdr{padding:0 14px;gap:9px;height:58px;}
   .logo-txt{font-size:13px;}
-  .hdr-right{gap:5px;font-size:11px;}
-  .hdr-right .school-badge{display:none;} /* 모바일에서 학교 배지 숨김 */
-  .btn-ghost.btn-sm{padding:4px 8px;font-size:10px;}
+  .hdr-right{gap:6px;font-size:11px;}
+  .hdr-right .school-badge{display:none;}
+  .btn-ghost.btn-sm{padding:5px 10px;font-size:10.5px;}
+  .audio-ctl{width:30px;height:30px;}
 
-  /* 로그인 카드 */
-  .login-wrap{padding:12px;align-items:flex-start;padding-top:20px;}
-  .login-card{padding:22px 18px;border-radius:14px;}
-  .login-card h2{font-size:16px;}
-  .login-big{font-size:18px!important;letter-spacing:4px;}
+  .login-wrap{padding:14px;align-items:flex-start;padding-top:24px;}
+  .login-card{padding:26px 22px;border-radius:10px;}
+  .login-card h2{font-size:18px;}
+  .login-big{font-size:20px!important;letter-spacing:5px;}
 
-  /* 설정 화면 */
-  .setup-wrap{padding:12px;max-width:100%;}
-  .setup-card{padding:14px;}
+  .setup-wrap{padding:14px;max-width:100%;}
+  .setup-card{padding:16px;}
   .url-row{flex-direction:column;}
   .url-row .inp{width:100%;}
 
-  /* 탭 */
-  .tabs{padding:0 8px;}
-  .tab{padding:9px 10px;font-size:11.5px;}
+  .tabs{padding:0 10px;}
+  .tab{padding:11px 12px;font-size:11.5px;}
 
-  /* 메인 레이아웃 */
   main{grid-template-columns:1fr;min-height:auto;}
-  .left{max-height:none;padding:12px;}
-  .right{padding:12px 14px;}
+  .left{max-height:none;padding:14px;}
+  .right{padding:14px 16px;}
 
-  /* 학기 그리드 */
   .sem-grid{grid-template-columns:1fr;}
-  .sem-box{padding:10px;}
+  .sem-box{padding:12px;}
 
-  /* 카드 */
-  .card{padding:11px;}
-  .card-head{padding-bottom:8px;margin-bottom:8px;}
+  .card{padding:13px;}
+  .card-head{padding-bottom:10px;margin-bottom:10px;}
 
-  /* 편제표 리뷰 모달 */
   .review-modal{max-height:100vh;border-radius:0;width:100%;max-width:100%;}
-  .review-body{padding:12px;}
-  .review-header{padding:12px 14px;}
-  .review-footer{padding:10px 14px;}
-  .review-subj-row{flex-wrap:wrap;gap:4px;}
+  .review-body{padding:14px;}
+  .review-header{padding:14px 16px;}
+  .review-footer{padding:12px 16px;}
+  .review-subj-row{flex-wrap:wrap;gap:5px;}
   .review-subj-name{min-width:100%;order:1;}
   .review-subj-cr{order:2;}
   .review-subj-type{order:3;}
   .review-add-row{flex-wrap:wrap;}
   .review-add-row .inp:first-child{width:100%;}
 
-  /* 학생 상세 */
-  .student-card{padding:10px 12px;}
-
-  /* 드롭존 */
-  .drop-zone{padding:14px 12px;}
+  .student-card{padding:12px 14px;}
+  .drop-zone{padding:16px 14px;}
   .drop-zone .dz-label{font-size:12px;}
-
-  /* 영역별 바 */
-  .area-panel{padding:10px 12px;}
-
-  /* 신용 바 */
-  .credit-num{font-size:20px;}
-
-  /* 대시보드 t-banner */
-  .t-banner{font-size:11px;padding:7px 10px;}
-
-  /* 모달 */
-  .modal{padding:16px;width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important;border-radius:12px;}
-
-  /* 버튼 행 */
+  .area-panel{padding:12px 14px;}
+  .credit-num{font-size:26px;}
+  .t-banner{font-size:11px;padding:8px 12px;}
+  .modal{padding:18px;width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important;border-radius:10px;}
   .btn-row{flex-direction:column;}
-
-  /* footer */
-  footer{font-size:10.5px;padding:8px 14px;}
+  footer{font-size:10.5px;padding:10px 16px;}
 }
 </style>
 </head>
 <body>
+
+<!-- ── 인라인 SVG 아이콘 라이브러리 (모든 이모지 대체) ── -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;" aria-hidden="true">
+  <defs>
+    <symbol id="i-monogram" viewBox="0 0 24 24"><path d="M6 4v16M18 4v16M6 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12l5 5 11-12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="none"/><path d="M12 10v5M12 17.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6" fill="none"/></symbol>
+    <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M8 11V8a4 4 0 0 1 7.5-2" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M16 16l4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M20 4v4h-4" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><path d="M15 3v5h4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M4 20h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="i-cog" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7L11 7" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7L13 17" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><path d="M8 4v5h7V4M8 14h8v6H8z" stroke="currentColor" stroke-width="1.6" fill="none"/></symbol>
+    <symbol id="i-school" viewBox="0 0 24 24"><path d="M3 10l9-5 9 5-9 5z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><path d="M7 12v5c0 1 2 2 5 2s5-1 5-2v-5" stroke="currentColor" stroke-width="1.6" fill="none"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M12 11v6M12 7v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-7 7-12a7 7 0 1 0-14 0c0 5 7 12 7 12z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6" fill="none"/></symbol>
+    <symbol id="i-arrow-r" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-arrow-l" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="6.5" cy="18" rx="2.5" ry="2" stroke="currentColor" stroke-width="1.7" fill="none"/><ellipse cx="17.5" cy="16" rx="2.5" ry="2" stroke="currentColor" stroke-width="1.7" fill="none"/></symbol>
+    <symbol id="i-music-off" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/><ellipse cx="6.5" cy="18" rx="2.5" ry="2" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".55"/><ellipse cx="17.5" cy="16" rx="2.5" ry="2" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".55"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><path d="M16 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-volume-off" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-mortarboard" viewBox="0 0 24 24"><path d="M2 9l10-4 10 4-10 4z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M22 9v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4h7a3 3 0 0 1 3 3v13a3 3 0 0 0-3-3H4z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/><path d="M20 4h-7a3 3 0 0 0-3 3v13a3 3 0 0 1 3-3h7z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V8M10 20V4M16 20v-8M22 20H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.6 6.4L20 11l-6.4 1.6L12 19l-1.6-6.4L4 11l6.4-1.6L12 3z" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linejoin="round"/></symbol>
+    <symbol id="i-point" viewBox="0 0 24 24"><path d="M12 22V8M6 14l6-6 6 6" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-empty" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M8 6V4h8v2M4 12h6l2 2h0l2-2h6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
 
 <!-- ══════════════════════════════════════
    로그인 화면
 ══════════════════════════════════════ -->
 <div id="loginScreen">
   <header class="hdr" id="loginHeader">
-    <div class="logo-box" id="logoWrap" onclick="logoClick()">🎓</div>
+    <div class="logo-box" id="logoWrap" onclick="logoClick()" title="하라메키">H</div>
     <div>
       <div class="logo-txt">고교학점제 과목 설계</div>
+      <div style="font-size:9.5px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;margin-top:2px;font-weight:600;">Curriculum Designer</div>
     </div>
     <div class="hdr-right">
       <span id="schoolLabel" class="school-badge">학교 미설정</span>
+      <button class="audio-ctl" data-audio-music="1" onclick="LuxAudio&&LuxAudio.toggleMusic()" aria-label="배경음악" type="button"><svg><use href="#i-music"/></svg></button>
+      <button class="audio-ctl" data-audio-sfx="1"   onclick="LuxAudio&&LuxAudio.toggleSfx()"   aria-label="효과음" type="button"><svg><use href="#i-volume"/></svg></button>
     </div>
   </header>
   <div class="login-wrap">
@@ -388,13 +1158,16 @@ footer a:hover{text-decoration:underline;}
 ══════════════════════════════════════ -->
 <div id="appScreen" style="display:none;">
   <header class="hdr">
-    <div class="logo-box" id="logoWrap2" onclick="logoClick()">🎓</div>
+    <div class="logo-box" id="logoWrap2" onclick="logoClick()" title="하라메키">H</div>
     <div>
       <div class="logo-txt">고교학점제 과목 설계</div>
+      <div style="font-size:9.5px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;margin-top:2px;font-weight:600;">Curriculum Designer</div>
     </div>
     <div class="hdr-right">
-      <span id="userLabel" style="font-weight:800;color:var(--mint-d);"></span>
+      <span id="userLabel" style="font-weight:800;color:var(--ink);"></span>
       <span id="schoolLabel2" class="school-badge"></span>
+      <button class="audio-ctl" data-audio-music="1" onclick="LuxAudio&&LuxAudio.toggleMusic()" aria-label="배경음악" type="button"><svg><use href="#i-music"/></svg></button>
+      <button class="audio-ctl" data-audio-sfx="1"   onclick="LuxAudio&&LuxAudio.toggleSfx()"   aria-label="효과음" type="button"><svg><use href="#i-volume"/></svg></button>
       <button class="btn btn-ghost btn-sm" onclick="logout()" style="font-size:10px;">로그아웃</button>
     </div>
   </header>
@@ -410,26 +1183,33 @@ footer a:hover{text-decoration:underline;}
 ══════════════════════════════════════ -->
 <div id="setupScreen" style="display:none;">
   <header class="hdr">
-    <div class="logo-box">🎓</div>
-    <div><div class="logo-txt">교사 설정</div></div>
-    <div class="hdr-right"><span style="color:var(--mint-d);font-weight:800;">👩‍🏫 교사 모드</span></div>
+    <div class="logo-box">H</div>
+    <div>
+      <div class="logo-txt">교사 설정</div>
+      <div style="font-size:9.5px;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;margin-top:2px;font-weight:600;">Administrator Setup</div>
+    </div>
+    <div class="hdr-right">
+      <span class="label-tag" style="color:var(--ink);"><span class="dot" style="background:var(--gold);"></span>교사 모드</span>
+      <button class="audio-ctl" data-audio-music="1" onclick="LuxAudio&&LuxAudio.toggleMusic()" aria-label="배경음악" type="button"><svg><use href="#i-music"/></svg></button>
+      <button class="audio-ctl" data-audio-sfx="1"   onclick="LuxAudio&&LuxAudio.toggleSfx()"   aria-label="효과음" type="button"><svg><use href="#i-volume"/></svg></button>
+    </div>
   </header>
   <div class="setup-wrap">
 
     <!-- GAS URL -->
     <div class="setup-card">
-      <h3>⚙️ GAS URL 설정</h3>
+      <h3>GAS URL 설정</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Google Apps Script 배포 URL을 입력하세요. <a href="#" style="color:var(--mint-d);font-size:11px;" onclick="showGuide()">설정 방법 보기</a></p>
       <div class="url-row">
         <input type="text" class="inp" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
         <button class="btn btn-primary btn-sm" onclick="saveGasUrl()">저장</button>
       </div>
-      <div class="url-ok" id="urlOk">✅ URL이 저장되었습니다</div>
+      <div class="url-ok" id="urlOk">URL이 저장되었습니다</div>
     </div>
 
     <!-- 학교 정보 -->
     <div class="setup-card">
-      <h3>🏫 학교 정보 설정</h3>
+      <h3>학교 정보 설정</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">학교 정보를 입력하면 학생 화면에 표시됩니다.</p>
       <div class="school-grid">
         <div class="field">
@@ -452,40 +1232,40 @@ footer a:hover{text-decoration:underline;}
       </div>
       <!-- 1회 저장 안내 -->
       <div style="background:var(--warn-bg);border:1.5px solid var(--warn-border);border-radius:8px;padding:9px 12px;font-size:11.5px;color:var(--warn);margin-bottom:10px;line-height:1.6;">
-        ⚠️ <b>최초 1회 저장이 필요합니다.</b> 편제표와 학교 정보를 입력하고 저장하면, 이후 로그인 시 바로 교사 대시보드로 진입합니다.
+        <b>최초 1회 저장이 필요합니다.</b> 편제표와 학교 정보를 입력하고 저장하면, 이후 로그인 시 바로 교사 대시보드로 진입합니다.
       </div>
       <!-- 드롭존 -->
       <div class="drop-zone" id="schedDropZone">
-        <div class="dz-icon">📄</div>
+        <div class="dz-icon"><svg><use href="#i-doc"/></svg></div>
         <div class="dz-label">편제표 PDF 또는 엑셀 파일을 여기에 드래그하거나 클릭하세요</div>
         <div class="dz-sub">.xlsx · .xls · .pdf 지원</div>
         <div class="dz-status" id="schedDropStatus"></div>
         <input type="file" id="schedFileInput" accept=".xlsx,.xls,.pdf">
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;">
-        <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="openScheduleReview()">🔍 인식 결과 검토 / 직접 편집</button>
+        <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="openScheduleReview()">인식 결과 검토 / 직접 편집</button>
       </div>
       <div id="schedulePreview" style="margin-top:6px;font-size:11px;color:var(--muted);"></div>
-      <button class="btn btn-primary btn-full" style="margin-top:10px;" onclick="saveSchoolInfo()">💾 학교 정보 저장</button>
-      <div id="schoolInfoOk" style="font-size:11px;color:var(--rec);margin-top:4px;display:none;font-weight:700;">✅ 학교 정보가 저장되었습니다</div>
+      <button class="btn btn-primary btn-full" style="margin-top:10px;" onclick="saveSchoolInfo()">학교 정보 저장</button>
+      <div id="schoolInfoOk" style="font-size:11px;color:var(--rec);margin-top:4px;display:none;font-weight:700;">학교 정보가 저장되었습니다</div>
     </div>
 
     <!-- 공유 링크 -->
     <div class="setup-card">
-      <h3>🔗 학생 공유 링크</h3>
+      <h3>학생 공유 링크</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">아래 링크를 학생들에게 공유하세요. 학생은 이 링크만 북마크하면 됩니다.</p>
       <div class="share-box">
         <div class="share-url" id="shareUrl">GAS URL을 먼저 입력하세요</div>
-        <button class="btn btn-ghost btn-sm" onclick="copyShareUrl()">📋 링크 복사</button>
+        <button class="btn btn-ghost btn-sm" onclick="copyShareUrl()">링크 복사</button>
       </div>
       <div style="margin-top:8px;font-size:11px;color:var(--muted);line-height:1.6;">
-        💡 <b>교사는</b> 한 번 설정 후 <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">hirame-ki.github.io/plan</code>으로만 접속해도 됩니다.
+        <b>교사는</b> 한 번 설정 후 <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">hirame-ki.github.io/plan</code>으로만 접속해도 됩니다.
       </div>
     </div>
 
     <!-- 학생 명단 -->
     <div class="setup-card">
-      <h3>📋 학생 명단 관리</h3>
+      <h3>학생 명단 관리</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">구글 시트 <b>학생명단</b> 탭에 직접 입력하거나, 아래에서 등록하세요.</p>
       <div style="display:flex;gap:8px;margin-bottom:8px;">
         <input type="text" class="inp" id="newStudentId" placeholder="학번" style="flex:1;">
@@ -496,7 +1276,7 @@ footer a:hover{text-decoration:underline;}
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-teacher btn-full" onclick="enterTeacherMode()">👩‍🏫 교사 대시보드 입장</button>
+      <button class="btn btn-teacher btn-full" onclick="enterTeacherMode()">교사 대시보드 입장</button>
     </div>
   </div>
 </div>
@@ -505,17 +1285,17 @@ footer a:hover{text-decoration:underline;}
 <div id="reviewOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,30,25,.5);z-index:300;align-items:center;justify-content:center;">
   <div class="review-modal">
     <div class="review-header">
-      <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px;">📋 편제표 인식 결과 검토</div>
+      <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px;">편제표 인식 결과 검토</div>
       <div style="font-size:12px;color:var(--muted);line-height:1.6;">
-        PDF에서 인식한 과목 목록입니다. ✏️로 수정, 🗑️로 삭제, 하단 입력란으로 직접 추가할 수 있습니다.<br>
-        <span style="color:var(--warn);font-weight:700;">⚠️ 인식되지 않은 학기는 직접 추가해 주세요.</span>
+        PDF에서 인식한 과목 목록입니다. 로 수정, ×로 삭제, 하단 입력란으로 직접 추가할 수 있습니다.<br>
+        <span style="color:var(--warn);font-weight:700;">인식되지 않은 학기는 직접 추가해 주세요.</span>
         <span class="miss-badge" id="reviewMissBadge" style="display:none;">미인식 학기 있음</span>
       </div>
     </div>
     <div class="review-body" id="reviewBody"></div>
     <div class="review-footer">
       <button class="btn btn-ghost" onclick="closeReview()">취소</button>
-      <button class="btn btn-primary" onclick="saveFromReview()">💾 저장하고 닫기</button>
+      <button class="btn btn-primary" onclick="saveFromReview()">저장하고 닫기</button>
     </div>
   </div>
 </div>
@@ -523,11 +1303,11 @@ footer a:hover{text-decoration:underline;}
 <!-- ══ 편제표 편집 모달 (레거시, 직접편집용) ══ -->
 <div class="modal-overlay" id="scheduleModal">
   <div class="modal" style="width:680px;max-width:96vw;max-height:92vh;overflow-y:auto;">
-    <h3>📋 교육 편제표 편집</h3>
+    <h3>교육 편제표 편집</h3>
     <!-- 업로드 인식 결과 패널 (파일 업로드 시 표시) -->
     <div id="importResultPanel" style="display:none;margin-bottom:14px;">
       <div style="background:var(--bg2);border:1.5px solid var(--mint);border-radius:var(--r);padding:12px 14px;">
-        <div style="font-size:12px;font-weight:800;color:var(--mint-d);margin-bottom:8px;">📥 파일에서 인식한 과목 목록</div>
+        <div style="font-size:12px;font-weight:800;color:var(--mint-d);margin-bottom:8px;">파일에서 인식한 과목 목록</div>
         <div id="importResultBody" style="font-size:12px;color:var(--sub);line-height:1.8;max-height:180px;overflow-y:auto;"></div>
         <div style="margin-top:8px;font-size:11px;color:var(--muted);">인식 결과를 아래 편집 칸에 적용했습니다. 오타·누락이 있으면 직접 수정 후 저장하세요.</div>
       </div>
@@ -557,7 +1337,7 @@ footer a:hover{text-decoration:underline;}
 <!-- ══ GAS 설정 가이드 모달 ══ -->
 <div class="modal-overlay" id="guideModal">
   <div class="modal" style="width:480px;max-width:95vw;">
-    <h3>📖 GAS 설정 방법</h3>
+    <h3>GAS 설정 방법</h3>
     <div style="font-size:12px;color:var(--sub);line-height:2;">
       <b>1.</b> 배포 → <b>새 배포</b> 클릭<br>
       <b>2.</b> 유형: <b>웹 앱</b> 선택<br>
@@ -573,14 +1353,14 @@ footer a:hover{text-decoration:underline;}
 
 <div class="submit-overlay" id="submitOverlay">
   <div class="submit-card">
-    <div class="s-icon">📤</div>
-    <div class="s-title">제출 중입니다...</div>
+    <div class="s-icon"><svg><use href="#i-upload"/></svg></div>
+    <div class="s-title">제출 중입니다</div>
     <div class="s-sub">잠시만 기다려 주세요</div>
     <div class="s-spinner"></div>
   </div>
 </div>
 <div id="toast" class="toast"></div>
-<footer>Made with ❤️ by <a href="https://www.instagram.com/hirame.ki" target="_blank">성포고 황성재 @hirame.ki</a></footer>
+<footer>Made with ♥ by <a href="https://www.instagram.com/hirame.ki" target="_blank">성포고 황성재 @hirame.ki</a></footer>
 
 <script>
 // ===============================================   데이터: 계열/학과
@@ -695,14 +1475,14 @@ const UNI_INFO = {
 
 /* 대학 그룹 (select optgroup용) */
 const UNI_GROUPS = {
-  '🤔 대학 미정':       ['대학 고민 중','해당 대학 없음'],
-  '🏆 서울 최상위':    ['서울대','연세대','고려대','성균관대','서강대','한양대','중앙대','경희대','한국외대','서울시립대','이화여대'],
-  '🎓 서울 상위':      ['건국대','동국대','홍익대','세종대','서울과기대','국민대','숭실대','성신여대','숙명여대'],
-  '🏫 서울 기타':      ['광운대','명지대','한성대','삼육대','경기대(서울)','상명대','서울여대','덕성여대','동덕여대','가톨릭대','서경대','성공회대'],
-  '🏛️ 서울 특수':     ['한국체대','서울교대'],
-  '🌆 경기·인천 주요': ['인하대','아주대','인천대','경기대','단국대','가천대','한양대ERICA','차의과학대','수원대','한국항공대','한국공학대'],
-  '🏘️ 경기·인천 기타': ['경희대(국제)','한국외대(글로벌)','안양대','강남대','용인대','대진대','성결대','한신대','협성대','평택대','한세대'],
-  '⚗️ 특수·이공계':    ['KAIST','POSTECH','교대(전국)'],
+  '대학 미정':       ['대학 고민 중','해당 대학 없음'],
+  '서울 최상위':    ['서울대','연세대','고려대','성균관대','서강대','한양대','중앙대','경희대','한국외대','서울시립대','이화여대'],
+  '서울 상위':      ['건국대','동국대','홍익대','세종대','서울과기대','국민대','숭실대','성신여대','숙명여대'],
+  '서울 기타':      ['광운대','명지대','한성대','삼육대','경기대(서울)','상명대','서울여대','덕성여대','동덕여대','가톨릭대','서경대','성공회대'],
+  '서울 특수':     ['한국체대','서울교대'],
+  '경기·인천 주요': ['인하대','아주대','인천대','경기대','단국대','가천대','한양대ERICA','차의과학대','수원대','한국항공대','한국공학대'],
+  '경기·인천 기타': ['경희대(국제)','한국외대(글로벌)','안양대','강남대','용인대','대진대','성결대','한신대','협성대','평택대','한세대'],
+  '특수·이공계':    ['KAIST','POSTECH','교대(전국)'],
 };
 
 const UNIVERSITIES = Object.values(UNI_GROUPS).flat();
@@ -833,6 +1613,9 @@ function init(){
   S._pendingParsed = null;
   S._reviewData = null;
 
+  // 초기 히스토리 상태 (로그인 화면)
+  history.replaceState({screen:'login'}, '');
+
   renderLogin('start');
   setTimeout(initDropZone, 0);
 }
@@ -852,10 +1635,10 @@ function renderLogin(state, data={}){
   const card = document.getElementById('loginCard');
   if(state==='start'){
     card.innerHTML = `
-      <h2>🎓 학점 설계 시작</h2>
+      <h2>학점 설계 시작</h2>
       <p class="hint">학번을 입력하면 과목 선택을 시작할 수 있어요.</p>
-      ${!S.gasUrl?`<div class="notice-warn">⚠️ GAS URL이 설정되지 않았습니다.<br>교사가 먼저 설정해야 합니다.</div>`:''}
-      ${S.schoolName?`<div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--sub);margin-bottom:12px;">🏫 ${S.schoolName}${S.classInfo?' · '+S.classInfo:''}</div>`:''}
+      ${!S.gasUrl?`<div class="notice-warn">GAS URL이 설정되지 않았습니다.<br>교사가 먼저 설정해야 합니다.</div>`:''}
+      ${S.schoolName?`<div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--sub);margin-bottom:12px;">${S.schoolName}${S.classInfo?' · '+S.classInfo:''}</div>`:''}
       <div class="field"><label>학번 입력</label>
         <input type="number" class="inp login-big" id="loginIdInput" placeholder="10101" maxlength="6" onkeydown="if(event.key==='Enter')tryLogin()">
       </div>
@@ -864,28 +1647,28 @@ function renderLogin(state, data={}){
   }
   else if(state==='confirm'){
     card.innerHTML = `
-      <h2>👋 반갑습니다!</h2>
+      <h2>반갑습니다!</h2>
       <div class="confirm-box">
         <div class="confirm-name">${data.name}</div>
         <div class="confirm-id">학번 ${data.id}</div>
       </div>
-      ${data.locked?`<div class="notice-warn">🔒 이미 제출한 선택입니다.<br>수정이 필요하면 담임 선생님께 문의하세요.</div>`:''}
+      ${data.locked?`<div class="notice-warn">이미 제출한 선택입니다.<br>수정이 필요하면 담임 선생님께 문의하세요.</div>`:''}
       <div class="btn-row" style="margin-top:10px;">
         <button class="btn btn-ghost" style="flex:1" onclick="renderLogin('start')">← 돌아가기</button>
         <button class="btn btn-primary" style="flex:2" onclick="enterStudent(${JSON.stringify(data).replace(/"/g,'&quot;')})">
-          ${data.locked?'🔒 내 선택 보기':'과목 선택 시작 →'}
+          ${data.locked?'내 선택 보기':'과목 선택 시작 →'}
         </button>
       </div>`;
   }
   else if(state==='notfound'){
     card.innerHTML = `
-      <h2>❌ 학번을 찾을 수 없어요</h2>
+      <h2>학번을 찾을 수 없어요</h2>
       <p style="font-size:12px;color:var(--muted);">입력한 학번 <b style="color:var(--core);">${data.id}</b>이(가) 명단에 없습니다.<br>담임 선생님께 학번 등록을 요청하세요.</p>
       <button class="btn btn-ghost btn-full" style="margin-top:12px;" onclick="renderLogin('start')">← 돌아가기</button>`;
   }
   else if(state==='error'){
     card.innerHTML = `
-      <h2>⚠️ 연결 오류</h2>
+      <h2>연결 오류</h2>
       <p style="font-size:12px;color:var(--muted);">${data.msg||'서버에 연결할 수 없습니다.'}</p>
       <button class="btn btn-ghost btn-full" style="margin-top:12px;" onclick="renderLogin('start')">← 돌아가기</button>`;
   }
@@ -927,6 +1710,9 @@ function enterStudent(data){
   document.getElementById('appScreen').style.display='';
   document.getElementById('userLabel').textContent = `${data.name} (${data.id})`;
 
+  // 뒤로가기 히스토리: 로그인→앱 전환 시 push
+  history.pushState({screen:'app', mode:'student'}, '');
+
   buildStudentTabs(); goTab(1);
 }
 
@@ -945,8 +1731,9 @@ function enterSetup(forceShow=false){
     S.availSubs   = JSON.parse(localStorage.getItem('hsc_subs'));
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('appScreen').style.display='';
-    document.getElementById('userLabel').textContent = `👩‍🏫 ${S.teacherName||'교사'} 선생님`;
+    document.getElementById('userLabel').textContent = `${S.teacherName||'교사'} 선생님`;
     S.mode='teacher'; S.teacherMode=true;
+    history.pushState({screen:'app', mode:'teacher'}, '');
     buildTeacherTabs(); goTab(0);
     return;
   }
@@ -1092,14 +1879,14 @@ async function processScheduleFile(file){
       throw new Error('xlsx, xls, pdf 파일만 지원합니다');
     }
     const totalSubj = parsedData.reduce((a,sem)=>a+sem.subjects.length,0);
-    statusEl.textContent = `✓ ${file.name} — ${parsedData.length}개 학기 · ${totalSubj}개 과목 인식`;
+    statusEl.textContent = `${file.name} — ${parsedData.length}개 학기 · ${totalSubj}개 과목 인식`;
     statusEl.className = 'dz-status ok';
     zone.classList.add('has-file');
     // 임시 저장 후 리뷰 열기
     S._pendingParsed = parsedData;
     showToast(`${parsedData.length}개 학기 인식. 검토 버튼을 눌러 확인하세요.`,'success');
   }catch(e){
-    statusEl.textContent = `⚠ ${e.message||'파일 분석 실패'}`;
+    statusEl.textContent = `${e.message||'파일 분석 실패'}`;
     statusEl.className = 'dz-status err';
     zone.classList.remove('has-file');
     S._pendingParsed = null;
@@ -1412,13 +2199,13 @@ function renderReview(){
         <select class="inp review-subj-type" onchange="updateReviewSubj(${si},${idx},'type',this.value)" style="width:80px;padding:3px 5px;font-size:11px;">
           ${['공통','일반선택','진로선택','융합선택'].map(t=>`<option${sub.type===t?' selected':''}>${t}</option>`).join('')}
         </select>
-        <button onclick="removeReviewSubj(${si},${idx})" style="background:none;border:none;cursor:pointer;color:var(--core);font-size:14px;flex-shrink:0;padding:0 2px;" title="삭제">🗑️</button>
+        <button onclick="removeReviewSubj(${si},${idx})" style="background:none;border:none;cursor:pointer;color:var(--core);font-size:14px;flex-shrink:0;padding:0 2px;" title="삭제">×</button>
       </div>`).join('')||`<div style="font-size:11px;color:var(--muted);padding:4px 0;">과목 없음 — 아래에서 직접 추가하세요</div>`;
     return `
       <div class="review-sem-block">
         <div class="review-sem-title">
           ${sem.label}
-          <span class="${isMiss?'miss-badge':'ok-badge'}">${isMiss?'⚠️ 미인식':'✓ '+sem.subjects.length+'과목'}</span>
+          <span class="${isMiss?'miss-badge':'ok-badge'}">${isMiss?'미인식':''+sem.subjects.length+'과목'}</span>
         </div>
         <div id="rsubjs_${si}">${subsHtml}</div>
         <div class="review-add-row">
@@ -1475,7 +2262,7 @@ function saveFromReview(){
   const statusEl=document.getElementById('schedDropStatus');
   if(zone&&statusEl){
     const total=Object.values(newSubs).reduce((a,subs)=>a+subs.length,0);
-    statusEl.textContent=`✓ ${total}개 과목 저장됨`;
+    statusEl.textContent=`${total}개 과목 저장됨`;
     statusEl.className='dz-status ok';
     zone.classList.add('has-file');
   }
@@ -1519,7 +2306,7 @@ function updateSchedulePreview(){
     const subs = S.availSubs[sem] || [];
     return `<span style="color:var(--rec);font-weight:700;">${sem.replace('학기','').trim()}</span>: ${subs.length}과목`;
   });
-  el.innerHTML = '<span style="color:var(--rec);font-size:10px;font-weight:800;">✅ 저장됨</span> ' + counts.join(' · ');
+  el.innerHTML = '<span style="color:var(--rec);font-size:10px;font-weight:800;">저장됨</span> ' + counts.join(' · ');
 }
 
 /* ── 학생 명단 ── */
@@ -1568,7 +2355,8 @@ function enterTeacherMode(){
   S.mode='teacher'; S.teacherMode=true;
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('appScreen').style.display='';
-  document.getElementById('userLabel').textContent = `👩‍🏫 ${S.teacherName||'교사'} 선생님`;
+  document.getElementById('userLabel').textContent = `${S.teacherName||'교사'} 선생님`;
+  history.pushState({screen:'app', mode:'teacher'}, '');
   buildTeacherTabs(); goTab(0);
 }
 
@@ -1576,14 +2364,14 @@ function enterTeacherMode(){
 function buildStudentTabs(){
   document.getElementById('tabBar').innerHTML = `
     <div class="tab" data-tab="1">① 대학·학과</div>
-    <div class="tab" data-tab="2">${S.locked?'🔒 ':''} ② 과목 설계</div>`;
+    <div class="tab" data-tab="2">${S.locked?'':''} ② 과목 설계</div>`;
   document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>goTab(+t.dataset.tab)));
 }
 function buildTeacherTabs(){
   document.getElementById('tabBar').innerHTML = `
-    <div class="tab t-tab" data-tab="0">👩‍🏫 전체 학생</div>
+    <div class="tab t-tab" data-tab="0">전체 학생</div>
     <div class="tab t-tab" data-tab="1">학생 상세</div>
-    <div class="tab t-tab" data-tab="4">⚙️ 설정</div>`;
+    <div class="tab t-tab" data-tab="4">설정</div>`;
   document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>goTab(+t.dataset.tab)));
 }
 function goTab(n){
@@ -1598,7 +2386,7 @@ function renderStudentTab(n){
   const left=document.getElementById('leftPanel'), right=document.getElementById('rightPanel');
   if(n===1){
     left.innerHTML = buildStudentLeftInfo();
-    right.innerHTML = `<div id="recEmpty" class="empty"><div class="icon">🎓</div><p>계열과 학과를 선택하면<br>권장과목 정보가 표시됩니다</p></div><div id="recContent" style="display:none;"></div>`;
+    right.innerHTML = `<div id="recEmpty" class="empty"><div class="icon"></div><p>계열과 학과를 선택하면<br>권장과목 정보가 표시됩니다</p></div><div id="recContent" style="display:none;"></div>`;
     initSelects();
     if(S.track && S.major) loadRec();
   }
@@ -1615,10 +2403,10 @@ function buildStudentLeftInfo(){
     <div class="card" style="padding:10px 12px;margin-bottom:10px;">
       <div style="font-weight:800;color:var(--mint-d);font-size:14px;">${S.studentName}</div>
       <div style="color:var(--muted);margin-top:2px;font-size:12px;">학번 ${S.studentId}</div>
-      ${S.schoolName?`<div style="font-size:11px;color:var(--sub);margin-top:3px;">🏫 ${S.schoolName}${S.classInfo?' · '+S.classInfo:''}</div>`:''}
+      ${S.schoolName?`<div style="font-size:11px;color:var(--sub);margin-top:3px;">${S.schoolName}${S.classInfo?' · '+S.classInfo:''}</div>`:''}
     </div>
     <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--sub);margin-bottom:10px;">
-      📚 <b style="color:var(--mint-d);">${S.grade}학년</b>
+      <b style="color:var(--mint-d);">${S.grade}학년</b>
       <span style="color:var(--muted);margin-left:6px;">${S.grade===1?'2·3학년 과목 미리 설계':S.grade===2?'3학년 과목 미리 설계':'최종 확인 단계'}</span>
     </div>
     <div class="sec" style="margin-top:4px;">목표 대학·학과</div>
@@ -1630,7 +2418,7 @@ function buildStudentLeftInfo(){
 
 function buildDesignerLeft(){
   return `
-    <div class="warn-banner" id="warnKea">⚠️ 국·영·수 합계 81학점 초과!</div>
+    <div class="warn-banner" id="warnKea"><span class="ico ico-md"><svg><use href="#i-warn"/></svg></span>국·영·수 합계 81학점 초과</div>
     <div class="credit-bar">
       <div class="credit-top">
         <span class="credit-num" id="creditNow">0</span>
@@ -1642,7 +2430,7 @@ function buildDesignerLeft(){
     </div>
     <div class="kea-bar safe" id="keaBar">
       <div class="kea-top">
-        <span class="kea-label">📊 국·영·수 이수 학점</span>
+        <span class="kea-label">국·영·수 이수 학점</span>
         <span class="kea-num safe" id="keaNum">0 / 81학점</span>
       </div>
       <div class="kea-prog"><div class="kea-fill" id="keaFill" style="width:0%"></div></div>
@@ -1655,8 +2443,8 @@ function buildDesignerLeft(){
     </div>
     <div class="check-panel"><div class="sec" style="margin-bottom:6px;">권장과목 확인</div><div id="checkList"><div style="font-size:12px;color:var(--muted);">대학·학과를 먼저 선택하세요</div></div></div>
     ${S.locked
-      ? `<div class="notice-warn" style="margin-bottom:8px;">🔒 제출 완료. 수정은 담임 선생님께 문의하세요.</div>`
-      : `<button class="btn btn-primary btn-full" onclick="submitSelection()">📤 제출하기</button>`}
+      ? `<div class="notice-warn" style="margin-bottom:8px;">제출 완료. 수정은 담임 선생님께 문의하세요.</div>`
+      : `<button class="btn btn-primary btn-full" onclick="submitSelection()">제출하기</button>`}
     <button class="btn btn-ghost btn-full" onclick="goTab(1)" style="margin-top:7px;">← 대학·학과로</button>`;
 }
 
@@ -1696,29 +2484,30 @@ function buildUniInfoCard(uniName){
   if(!info) return '';
   const confirmed = info.confirmed;
   const badgeHtml = confirmed
-    ? `<span style="display:inline-flex;align-items:center;gap:3px;background:var(--rec-bg);border:1px solid var(--rec-border);color:var(--rec);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:800;">&#x2705; 공식발표 기준</span>`
-    : `<span style="display:inline-flex;align-items:center;gap:3px;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:800;">&#x26A0;&#xFE0F; 확인필요 (작년·일반 기준)</span>`;
+    ? `<span style="display:inline-flex;align-items:center;gap:6px;background:var(--rec-bg);border:1px solid var(--rec-border);color:var(--rec);border-radius:2px;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;"><span class="ico ico-sm"><svg><use href="#i-check"/></svg></span>공식발표 기준</span>`
+    : `<span style="display:inline-flex;align-items:center;gap:6px;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);border-radius:2px;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;"><span class="ico ico-sm"><svg><use href="#i-warn"/></svg></span>확인필요</span>`;
   return `
-    <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-        <div style="font-size:16px;font-weight:800;color:var(--text);">${uniName}</div>
+    <div style="background:var(--paper);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:16px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.55;"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px dashed var(--border2);">
+        <div style="font-family:'Cormorant Garamond','Noto Serif KR',serif;font-size:22px;font-weight:600;color:var(--ink);letter-spacing:-.01em;">${uniName}</div>
         ${badgeHtml}
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;">
-        <div style="display:flex;align-items:center;gap:5px;color:var(--sub);">
-          <span style="font-size:14px;">&#x1F4CD;</span>
-          <div><div style="font-size:10px;color:var(--muted);font-weight:700;">소재지</div><div style="font-weight:600;">${info.location}</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;">
+        <div style="display:flex;align-items:center;gap:8px;color:var(--sub);">
+          <span class="ico ico-md" style="color:var(--gold-d);flex-shrink:0;"><svg><use href="#i-pin"/></svg></span>
+          <div><div style="font-size:9.5px;color:var(--muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;">소재지</div><div style="font-weight:600;color:var(--ink);">${info.location}</div></div>
         </div>
-        <div style="display:flex;align-items:center;gap:5px;color:var(--sub);">
-          <span style="font-size:14px;">&#x1F3DB;&#xFE0F;</span>
-          <div><div style="font-size:10px;color:var(--muted);font-weight:700;">설립유형</div><div style="font-weight:600;">4년제 ${info.type}</div></div>
+        <div style="display:flex;align-items:center;gap:8px;color:var(--sub);">
+          <span class="ico ico-md" style="color:var(--gold-d);flex-shrink:0;"><svg><use href="#i-school"/></svg></span>
+          <div><div style="font-size:9.5px;color:var(--muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;">설립유형</div><div style="font-weight:600;color:var(--ink);">4년제 ${info.type}</div></div>
         </div>
-        <div style="display:flex;align-items:center;gap:5px;color:var(--sub);grid-column:1/-1;">
-          <span style="font-size:14px;">&#x1F3EB;</span>
-          <div><div style="font-size:10px;color:var(--muted);font-weight:700;">캠퍼스</div><div style="font-weight:600;">${info.campus}</div></div>
+        <div style="display:flex;align-items:center;gap:8px;color:var(--sub);grid-column:1/-1;">
+          <span class="ico ico-md" style="color:var(--gold-d);flex-shrink:0;"><svg><use href="#i-mortarboard"/></svg></span>
+          <div><div style="font-size:9.5px;color:var(--muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase;">캠퍼스</div><div style="font-weight:600;color:var(--ink);">${info.campus}</div></div>
         </div>
       </div>
-      ${!confirmed?`<div style="margin-top:8px;padding:7px 10px;background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:7px;font-size:11px;color:var(--warn);line-height:1.6;">&#x26A0;&#xFE0F; 이 대학의 <b>2026학년도 필수 이수과목 공식 발표가 확인되지 않았습니다.</b> 작년 기준 또는 일반적인 계열 권장과목을 제시합니다. 최신 정보는 대학 입학처 공지를 반드시 확인하세요.</div>`:''}
+      ${!confirmed?`<div style="margin-top:12px;padding:9px 12px;background:var(--warn-bg);border:1px solid var(--warn-border);border-left:2px solid var(--warn);border-radius:3px;font-size:11px;color:var(--warn);line-height:1.7;">이 대학의 <b>2026학년도 필수 이수과목 공식 발표가 확인되지 않았습니다.</b> 작년 기준 또는 일반적인 계열 권장과목을 제시합니다. 최신 정보는 대학 입학처 공지를 반드시 확인하세요.</div>`:''}
     </div>`;
 }
 
@@ -1737,23 +2526,23 @@ function loadRec(){
   const uniInfo = S.univ ? UNI_INFO[S.univ] : null;
   const isConfirmed = uniInfo ? uniInfo.confirmed : false;
   const sourceBadge = isConfirmed
-    ? `<span style="background:var(--rec-bg);border:1px solid var(--rec-border);color:var(--rec);border-radius:10px;padding:2px 8px;font-size:10px;font-weight:800;">&#x2705; 공식발표 기준</span>`
-    : `<span style="background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);border-radius:10px;padding:2px 8px;font-size:10px;font-weight:800;">&#x26A0;&#xFE0F; 확인필요</span>`;
+    ? `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--rec-bg);border:1px solid var(--rec-border);color:var(--rec);border-radius:2px;padding:3px 9px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;"><span class="ico ico-sm"><svg><use href="#i-check"/></svg></span>공식발표 기준</span>`
+    : `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);border-radius:2px;padding:3px 9px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;"><span class="ico ico-sm"><svg><use href="#i-warn"/></svg></span>확인필요</span>`;
 
   content.innerHTML=`
     ${buildUniInfoCard(S.univ)}
-    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
-      <div style="font-size:17px;font-weight:800;color:var(--text);">${S.major}</div>
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+      <div style="font-family:'Cormorant Garamond','Noto Serif KR',serif;font-size:24px;font-weight:600;color:var(--ink);letter-spacing:-.01em;">${S.major}</div>
       ${S.univ ? sourceBadge : ''}
     </div>
     <div class="desc-box">${major.desc||''}</div>
-    <div class="group-title"><span class="badge badge-core">&#x1F534; 핵심권장</span></div>
+    <div class="group-title"><span class="badge badge-core"><span class="dot dot-core"></span>핵심권장</span></div>
     <div class="chips">${S.coreList.map(s=>`<span class="chip chip-core">${s}</span>`).join('')}</div>
-    <div class="group-title"><span class="badge badge-rec">&#x1F7E2; 일반권장</span></div>
+    <div class="group-title"><span class="badge badge-rec"><span class="dot dot-rec"></span>일반권장</span></div>
     <div class="chips">${S.recList.map(s=>`<span class="chip chip-rec">${s}</span>`).join('')}</div>
-    <div class="group-title"><span class="badge badge-ref">&#x1F535; 참고과목</span></div>
+    <div class="group-title"><span class="badge badge-ref"><span class="dot dot-ref"></span>참고과목</span></div>
     <div class="chips">${S.refList.map(s=>`<span class="chip chip-ref">${s}</span>`).join('')}</div>
-    ${UNI_NOTES[S.univ]?`<div class="uni-note"><strong>&#x1F4CC; ${S.univ} 입시 참고</strong><br>${UNI_NOTES[S.univ]}</div>`:''}`;
+    ${UNI_NOTES[S.univ]?`<div class="uni-note"><strong>${S.univ} 입시 참고</strong><br>${UNI_NOTES[S.univ]}</div>`:''}`;
   updateCheckList();
 }
 
@@ -1822,18 +2611,18 @@ function renderDesigner(){
       html+=`<div class="sem-box${isDone?' completed':''}">
         <div class="sem-title">
           ${sem.includes('1학기')?'1학기':'2학기'}
-          ${isDone?`<span class="done-tag">✓ 이수완료</span>`:''}
+          ${isDone?`<span class="done-tag">이수완료</span>`:''}
         </div>`;
 
       if(isCompleted){
         // 이미 이수완료 (2·3학년 이상 학생의 1학년 과목 등)
         (DEFAULT_SUBS[sem]||S.availSubs[sem]||[]).forEach(s=>{
-          html+=`<div class="subj-item done-sub"><span class="subj-name">✓ ${s.name}</span><span class="subj-cr">${s.cr}</span></div>`;
+          html+=`<div class="subj-item done-sub"><span class="subj-name">${s.name}</span><span class="subj-cr">${s.cr}</span></div>`;
         });
       } else if(isAuto){
         // 자동 이수완료 (1학년이 바라보는 1학년 과목)
         subs.forEach(s=>{
-          html+=`<div class="subj-item done-sub sel"><span class="subj-name">✓ ${s.name}</span><span class="subj-cr">${s.cr}</span></div>`;
+          html+=`<div class="subj-item done-sub sel"><span class="subj-name">${s.name}</span><span class="subj-cr">${s.cr}</span></div>`;
         });
       } else {
         // 선택 가능한 학기
@@ -1843,7 +2632,7 @@ function renderDesigner(){
           const isRec  = S.recList.includes(sub.name);
           const isRef  = S.refList.includes(sub.name);
           const cls    = isSel?`sel${isCore?' is-core':isRec?' is-rec':isRef?' is-ref':''}`:'' ;
-          const px     = isCore?'🔴 ':isRec?'🟢 ':isRef?'🔵 ':'';
+          const px     = isCore?'<span class="dot dot-core"></span>':isRec?'<span class="dot dot-rec"></span>':isRef?'<span class="dot dot-ref"></span>':'';
           const clickable = S.locked?'':`onclick="toggleSub('${sem}',${idx})"`;
           html+=`<div class="subj-item ${cls}" ${clickable}><span class="subj-name">${px}${sub.name}</span><span class="subj-cr">${sub.cr}</span></div>`;
         });
@@ -1928,7 +2717,7 @@ function updateCreditBar(){
     keaNum.textContent=`${kea} / 81학점`;
     keaFill.style.width=keaPct+'%';
     keaFill.className='kea-fill'+(isOver?' over':'');
-    if(wb){ if(isOver){wb.classList.add('show');wb.textContent=`⚠️ 국·영·수 합계 ${kea}학점 — 81학점 초과!`;}else wb.classList.remove('show'); }
+    if(wb){ if(isOver){wb.classList.add('show');wb.innerHTML=`<span class="ico ico-md"><svg><use href="#i-warn"/></svg></span>국·영·수 합계 ${kea}학점 — 81학점 초과`;}else wb.classList.remove('show'); }
   }
 
   // 영역별 바
@@ -1980,12 +2769,12 @@ async function submitSelection(){
       S.locked=true;
       // 제출 완료 카드로 교체
       if(overlay){
-        overlay.querySelector('.s-icon').textContent='✅';
-        overlay.querySelector('.s-title').textContent='제출 완료!';
+        overlay.querySelector('.s-icon').innerHTML='<svg><use href="#i-check"/></svg>';
+        overlay.querySelector('.s-title').textContent='제출 완료';
         overlay.querySelector('.s-sub').textContent='담임 선생님이 확인할 예정입니다.';
         overlay.querySelector('.s-spinner').style.display='none';
         overlay.classList.add('show');
-        setTimeout(()=>{ overlay.classList.remove('show'); overlay.querySelector('.s-spinner').style.display=''; goTab(2); },1800);
+        setTimeout(()=>{ overlay.classList.remove('show'); overlay.querySelector('.s-spinner').style.display=''; overlay.querySelector('.s-icon').innerHTML='<svg><use href="#i-upload"/></svg>'; goTab(2); },1800);
       } else { goTab(2); }
       showToast('제출 완료!','success');
     }
@@ -2010,25 +2799,25 @@ function renderTeacherTab(n){
   const left=document.getElementById('leftPanel'), right=document.getElementById('rightPanel');
   if(n===0){
     left.innerHTML=`
-      <div class="t-banner">👩‍🏫 ${S.teacherName||'교사'} 선생님${S.schoolName?' · '+S.schoolName:''}</div>
+      <div class="t-banner">${S.teacherName||'교사'} 선생님${S.schoolName?' · '+S.schoolName:''}</div>
       <div class="sec">검색·필터</div>
       <input type="text" class="inp" id="searchInput" placeholder="이름·학번 검색..." oninput="renderStudentList()" style="margin-bottom:8px;">
       <select class="inp" id="filterSel" onchange="renderStudentList()">
         <option value="">전체</option>
-        <option value="confirmed">확정 완료</option>
-        <option value="pending">미확정</option>
+        <option value="unsubmitted">미제출</option>
         <option value="locked">제출 완료</option>
+        <option value="confirmed">선택과목 확정</option>
       </select>
-      <button class="btn btn-ghost btn-full" style="margin-top:8px;" onclick="refreshStudentList()">🔄 새로고침</button>`;
-    right.innerHTML=`<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:14px;">👩‍🏫 학생 현황</div><div id="studentList"><div class="loading"><div class="spinner"></div> 불러오는 중...</div></div>`;
+      <button class="btn btn-ghost btn-full" style="margin-top:8px;" onclick="refreshStudentList()">새로고침</button>`;
+    right.innerHTML=`<div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:14px;">학생 현황</div><div id="studentList"><div class="loading"><div class="spinner"></div> 불러오는 중...</div></div>`;
     loadAllStudents();
   }
   else if(n===1){
     left.innerHTML=`<div class="t-banner">선택한 학생 상세</div><div id="studentDetailLeft" style="font-size:12px;color:var(--muted);">전체 학생 탭에서 학생을 선택하세요</div>`;
-    right.innerHTML=`<div id="studentDetailRight" class="empty"><div class="icon">👆</div><p>전체 학생 탭에서<br>학생을 클릭하세요</p></div>`;
+    right.innerHTML=`<div id="studentDetailRight" class="empty"><div class="icon"></div><p>전체 학생 탭에서<br>학생을 클릭하세요</p></div>`;
   }
   else if(n===4){
-    left.innerHTML=`<div class="t-banner">⚙️ 설정</div>`;
+    left.innerHTML=`<div class="t-banner">설정</div>`;
     right.innerHTML=`<div style="max-width:520px;">
       <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:12px;">
         <h3 style="font-size:13px;font-weight:800;margin-bottom:10px;">현재 GAS URL</h3>
@@ -2045,10 +2834,10 @@ function renderTeacherTab(n){
         <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="enterSetup(true)">수정</button>
       </div>
       <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:12px;">
-        <h3 style="font-size:13px;font-weight:800;margin-bottom:6px;">📋 편제표 수정</h3>
+        <h3 style="font-size:13px;font-weight:800;margin-bottom:6px;">편제표 수정</h3>
         <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">현재 저장된 편제표를 확인하고 과목을 추가·삭제·수정할 수 있습니다.</p>
         ${(()=>{const counts=SEM_KEYS.map(sem=>{const n=(S.availSubs[sem]||[]).length;return `<span style="font-size:11px;color:var(--sub);">${sem.replace('학년 ','').replace('학기','').trim()}: <b style="color:var(--mint-d);">${n}</b>과목</span>`;}).join(' · ');return `<div style="font-size:11px;margin-bottom:10px;line-height:1.8;">${counts}</div>`;})()}
-        <button class="btn btn-primary btn-sm" onclick="openScheduleReview()">✏️ 편제표 수정하기</button>
+        <button class="btn btn-primary btn-sm" onclick="openScheduleReview()">편제표 수정하기</button>
       </div>
       <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;">
         <h3 style="font-size:13px;font-weight:800;margin-bottom:10px;">학생 명단 관리</h3>
@@ -2084,18 +2873,18 @@ function renderStudentList(){
   const filter=(document.getElementById('filterSel')||{value:''}).value;
   let list=allStudentsCache;
   if(search) list=list.filter(s=>(s.name||'').toLowerCase().includes(search)||(s.id||'').includes(search));
+  if(filter==='unsubmitted') list=list.filter(s=>!s.locked&&!s.confirmed);
+  if(filter==='locked') list=list.filter(s=>s.locked&&!s.confirmed);
   if(filter==='confirmed') list=list.filter(s=>s.confirmed);
-  if(filter==='pending') list=list.filter(s=>!s.confirmed&&s.submitted);
-  if(filter==='locked') list=list.filter(s=>s.locked);
   const el=document.getElementById('studentList');
   if(!el) return;
-  if(!list.length){ el.innerHTML=`<div class="empty"><div class="icon">👨‍🎓</div><p>학생이 없습니다</p></div>`; return; }
+  if(!list.length){ el.innerHTML=`<div class="empty"><div class="icon">‍</div><p>학생이 없습니다</p></div>`; return; }
   el.innerHTML=list.map(s=>{
-    const keaWarn=s.kea>81?`<span style="color:var(--core);font-size:10px;margin-left:5px;">⚠️ 국영수${s.kea}</span>`:'';
+    const keaWarn=s.kea>81?`<span style="color:var(--core);font-size:10px;margin-left:6px;font-weight:700;">· 국·영·수 ${s.kea}학점</span>`:'';
     const status=s.confirmed
-      ?`<span class="badge badge-rec" style="font-size:10px;">✅확정</span>`
+      ?`<span class="badge badge-rec" style="font-size:10px;">선택과목 확정</span>`
       :s.locked
-        ?`<span class="badge badge-warn" style="font-size:10px;">📤제출</span>`
+        ?`<span class="badge badge-warn" style="font-size:10px;">제출완료</span>`
         :`<span class="badge badge-done" style="font-size:10px;">미제출</span>`;
     return `<div class="student-card${s.confirmed?' confirmed':s.locked?' locked':''}" onclick="openStudentDetail('${s.id}')">
       <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -2113,19 +2902,19 @@ async function openStudentDetail(id){
   if(!s) return;
   const left=document.getElementById('studentDetailLeft'), right=document.getElementById('studentDetailRight');
   left.innerHTML=`
-    <div class="t-banner">📋 ${s.name} (${s.id})</div>
+    <div class="t-banner">${s.name} (${s.id})</div>
     <div style="font-size:12px;line-height:2.1;color:var(--sub);">
       학년: <b style="color:var(--text)">${s.grade||'-'}</b><br>
       목표: <b style="color:var(--mint-d)">${s.major||'미선택'}</b><br>
       학점: <b style="color:var(--mint-d);font-weight:800;">${s.total||0}/192</b><br>
-      국영수: <b style="${s.kea>81?'color:var(--core)':'color:var(--rec)'}">${s.kea||0}학점 ${s.kea>81?'⚠️초과':''}</b><br>
-      상태: <b>${s.confirmed?'✅확정':s.locked?'📤제출':'미제출'}</b>
+      국영수: <b style="${s.kea>81?'color:var(--core)':'color:var(--rec)'}">${s.kea||0}학점 ${s.kea>81?'초과':''}</b><br>
+      상태: <b>${s.confirmed?'선택과목 확정':s.locked?'제출완료':'미제출'}</b>
     </div>
     <hr style="border:none;border-top:1.5px solid var(--border2);margin:10px 0;">
     <div style="display:flex;flex-direction:column;gap:7px;">
-      ${s.locked&&!s.confirmed?`<button class="btn btn-primary btn-full" onclick="confirmStudent('${s.id}')">✅ 최종 확정</button>`:''}
+      ${s.locked&&!s.confirmed?`<button class="btn btn-primary btn-full" onclick="confirmStudent('${s.id}')">선택과목 확정</button>`:''}
       ${s.confirmed?`<button class="btn btn-warn btn-full" onclick="unconfirmStudent('${s.id}')">확정 취소</button>`:''}
-      ${s.locked?`<button class="btn btn-ghost btn-full" onclick="unlockStudent('${s.id}')">🔓 잠금 해제</button>`:''}
+      ${s.locked?`<button class="btn btn-ghost btn-full" onclick="unlockStudent('${s.id}')">잠금 해제</button>`:''}
     </div>
     <hr style="border:none;border-top:1.5px solid var(--border2);margin:10px 0;">
     <div class="sec">상담 메모</div>
@@ -2151,14 +2940,14 @@ async function openStudentDetail(id){
       <div><div style="font-size:18px;font-weight:800;color:var(--text);">${s.name}</div>
       <div style="font-size:12px;color:var(--muted);">${s.id} · ${s.univ||''} ${s.major||''}</div></div>
     </div>
-    ${s.kea>81?`<div class="warn-banner show">⚠️ 국·영·수 합계 ${s.kea}학점 — 81학점 초과!</div>`:''}
+    ${s.kea>81?`<div class="warn-banner show"><span class="ico ico-md"><svg><use href="#i-warn"/></svg></span>국·영·수 합계 ${s.kea}학점 — 81학점 초과</div>`:''}
 
     <!-- ── 학점 현황 3종 그래프 ── -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
       <!-- 총 학점 -->
       <div style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:12px;padding:11px 13px;grid-column:1/-1;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
-          <span style="font-size:11px;font-weight:800;color:var(--sub);">📊 총 이수학점</span>
+          <span style="font-size:11px;font-weight:800;color:var(--sub);">총 이수학점</span>
           <span style="font-size:15px;font-weight:800;color:${totalScore>=192?'var(--rec)':'var(--mint-d)'};">${totalScore}<span style="font-size:11px;font-weight:400;color:var(--muted);"> / 192</span></span>
         </div>
         <div style="height:7px;background:var(--surface);border-radius:4px;overflow:hidden;">
@@ -2169,17 +2958,17 @@ async function openStudentDetail(id){
       <!-- 국영수 -->
       <div style="background:${keaScore>81?'var(--core-bg)':'var(--bg2)'};border:1.5px solid ${keaScore>81?'var(--core-border)':'var(--border2)'};border-radius:12px;padding:11px 13px;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
-          <span style="font-size:10px;font-weight:800;color:var(--sub);">📝 국·영·수</span>
+          <span style="font-size:10px;font-weight:800;color:var(--sub);">국·영·수</span>
           <span style="font-size:13px;font-weight:800;color:${keaScore>81?'var(--core)':'var(--rec)'};">${keaScore}<span style="font-size:10px;color:var(--muted);"> /81</span></span>
         </div>
         <div style="height:5px;background:var(--surface);border-radius:3px;overflow:hidden;">
           <div style="height:100%;width:${keaPct}%;background:${keaScore>81?'var(--core)':'var(--rec)'};border-radius:3px;"></div>
         </div>
-        <div style="font-size:10px;color:${keaScore>81?'var(--core)':'var(--muted)'};margin-top:3px;">${keaScore>81?'⚠️ 81학점 초과':'81학점 이하 유지'}</div>
+        <div style="font-size:10px;color:${keaScore>81?'var(--core)':'var(--muted)'};margin-top:3px;">${keaScore>81?'81학점 초과':'81학점 이하 유지'}</div>
       </div>
       <!-- 영역별 -->
       <div style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:12px;padding:11px 13px;">
-        <div style="font-size:10px;font-weight:800;color:var(--sub);margin-bottom:6px;">📚 영역별 이수</div>
+        <div style="font-size:10px;font-weight:800;color:var(--sub);margin-bottom:6px;">영역별 이수</div>
         ${areaScores.map(a=>{
           const p=Math.min(100,(a.earned/a.min)*100).toFixed(0);
           const ok=a.earned>=a.min;
@@ -2207,11 +2996,11 @@ async function openStudentDetail(id){
         ${(selSubs[sem]||[]).map(sub=>{
           const isCore=core.includes(sub.name), isRec=rec.includes(sub.name);
           return `<div style="display:flex;justify-content:space-between;padding:4px 8px;border-radius:6px;font-size:12px;background:${isCore?'var(--core-bg)':isRec?'var(--rec-bg)':'var(--bg2)'};margin-bottom:2px;border:1px solid ${isCore?'var(--core-border)':isRec?'var(--rec-border)':'var(--border2)'};">
-            <span>${isCore?'🔴 ':isRec?'🟢 ':''}${sub.name}</span>
+            <span>${isCore?'<span class="dot dot-core"></span>':isRec?'<span class="dot dot-rec"></span>':''}${sub.name}</span>
             <span style="font-size:10px;color:var(--muted);">${sub.cr}</span>
           </div>`;
         }).join('')}
-      </div>`).join('')||'<div class="empty" style="padding:20px;"><div class="icon">📭</div><p>선택한 과목 없음</p></div>'}`;
+      </div>`).join('')||'<div class="empty" style="padding:20px;"><div class="icon"></div><p>선택한 과목 없음</p></div>'}`;
 }
 
 async function confirmStudent(id){
@@ -2272,8 +3061,24 @@ function logout(){
   document.getElementById('appScreen').style.display='none';
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('loginScreen').style.display='';
+  // 뒤로가기로 앱으로 돌아오지 못하도록 로그인 상태로 히스토리 교체
+  history.replaceState({screen:'login'}, '');
   renderLogin('start');
 }
+
+// ===============================================   뒤로가기 처리==
+// SPA 특성상 브라우저 뒤로가기가 페이지 이탈 or 로그아웃으로 이어지는 문제 방지.
+// 앱 화면에서 뒤로가기 → 로그인 화면으로 복귀 (로그아웃 동일 처리)
+// 로그인 화면에서 뒤로가기 → 브라우저 기본 동작 허용 (페이지 이탈)
+window.addEventListener('popstate', (e) => {
+  const state = e.state;
+  // 앱/설정 화면에서 뒤로가기 눌렀을 때 → 로그인 화면으로
+  const appVisible = document.getElementById('appScreen').style.display !== 'none';
+  const setupVisible = document.getElementById('setupScreen').style.display !== 'none';
+  if(appVisible || setupVisible){
+    logout();
+  }
+});
 
 // ===============================================   유틸========
 function showGuide(){ document.getElementById('guideModal').classList.add('open'); }
@@ -2281,6 +3086,7 @@ let _tt;
 function showToast(msg,type){ const el=document.getElementById('toast'); el.textContent=msg; el.className='toast show'+(type?' '+type:''); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2500); }
 
 init();
+window.addEventListener('DOMContentLoaded', ()=>{ if(window.LuxAudio) LuxAudio.init(); });
 </script>
 </body>
 </html>
