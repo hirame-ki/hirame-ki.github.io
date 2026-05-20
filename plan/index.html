@@ -2800,7 +2800,7 @@ function renderDesigner(){
           const clickable = S.locked?'':`onclick="toggleSub('${sem}',${idx})"`;
           html+=`<div class="subj-item ${cls}" ${clickable}><span class="subj-name">${px}${sub.name}</span><span class="subj-cr">${sub.cr}</span></div>`;
         });
-        if(!S.locked) html+=`<div style="margin-top:5px;"><button class="btn btn-ghost btn-sm" style="width:100%;" onclick="openModal('${sem}')">+ 추가</button></div>`;
+        // 학생은 편제표 과목만 선택 가능 — 직접 추가 없음
       }
       html+=`</div>`;
     });
@@ -3004,10 +3004,19 @@ function renderTeacherTab(n){
   else if(n===4){
     left.innerHTML=`<div class="t-banner">설정</div>`;
     right.innerHTML=`<div style="max-width:520px;">
+      <!-- GAS URL 카드 -->
       <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:12px;">
-        <h3 style="font-size:13px;font-weight:800;margin-bottom:10px;">현재 GAS URL</h3>
-        <div style="font-size:11px;color:var(--mint-d);word-break:break-all;background:var(--bg2);padding:8px;border-radius:6px;border:1px solid var(--border);">${S.gasUrl||'미설정'}</div>
-        <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="enterSetup()">URL 변경</button>
+        <h3 style="font-size:13px;font-weight:800;margin-bottom:10px;">GAS URL</h3>
+        <div style="font-size:11px;color:var(--mint-d);word-break:break-all;background:var(--bg2);padding:8px;border-radius:6px;border:1px solid var(--border);margin-bottom:8px;">${S.gasUrl||'미설정'}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="enterSetup()">URL 변경</button>
+          <button class="btn btn-warn btn-sm" onclick="resetToInitialSetup()">↩ 초기 설정으로</button>
+        </div>
+      </div>
+      <!-- 공유 링크 카드 -->
+      <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:12px;">
+        <h3 style="font-size:13px;font-weight:800;margin-bottom:8px;">학생 공유 링크</h3>
+        <div id="teacherShareUrlBox"></div>
       </div>
       <!-- 마감일 카드 -->
       <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:12px;">
@@ -3078,6 +3087,28 @@ function renderTeacherTab(n){
       </div>
     </div>`;
     loadTeacherStudentList();
+    // 공유 링크 박스 채우기
+    (function(){
+      const box = document.getElementById('teacherShareUrlBox');
+      if(!box) return;
+      const base   = location.href.split('?')[0];
+      const school = S.schoolName || localStorage.getItem('hsc_school') || '';
+      const url    = S.gasUrl
+        ? base + '?gas=' + encodeURIComponent(S.gasUrl) + (school ? '&school=' + encodeURIComponent(school) : '')
+        : null;
+      if(url){
+        box.innerHTML =
+          '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;' +
+          'padding:8px 10px;font-size:10.5px;color:var(--sub);word-break:break-all;line-height:1.6;margin-bottom:8px;">' +
+          url + '</div>' +
+          '<button class="btn btn-primary btn-sm" id="teacherShareCopyBtn">링크 복사</button>';
+        document.getElementById('teacherShareCopyBtn').onclick = function(){
+          navigator.clipboard.writeText(url).then(()=>showToast('링크 복사됨!','success'));
+        };
+      } else {
+        box.innerHTML = '<div style="font-size:12px;color:var(--muted);">GAS URL을 먼저 설정하면 공유 링크가 생성됩니다.</div>';
+      }
+    })();
   }
 }
 
@@ -3279,6 +3310,22 @@ async function teacherAddStudent(){
   document.getElementById('tNewId').value='';
   document.getElementById('tNewName').value='';
   loadTeacherStudentList();
+}
+
+// ===============================================   초기 설정 초기화
+function resetToInitialSetup(){
+  if(!confirm('초기 설정 화면으로 돌아갑니다.\nGAS URL과 학교 정보가 초기화됩니다.\n\n학생 데이터는 Google Sheets에 보존됩니다.\n\n계속하시겠습니까?')) return;
+  localStorage.removeItem('hsc_gas_url');
+  localStorage.removeItem('hsc_school');
+  localStorage.removeItem('hsc_class');
+  localStorage.removeItem('hsc_teacher');
+  S.gasUrl=''; S.schoolName=''; S.classInfo=''; S.teacherName='';
+  S.mode=null; S.teacherMode=false;
+  document.getElementById('appScreen').style.display='none';
+  document.getElementById('setupScreen').style.display='none';
+  document.getElementById('loginScreen').style.display='';
+  history.replaceState({screen:'login'}, '');
+  setTimeout(()=>{ enterSetup(true); }, 50);
 }
 
 // ===============================================   로그아웃======
