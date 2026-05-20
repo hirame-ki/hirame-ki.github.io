@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>고교학점제 과목 설계 — 히라메키</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -248,12 +248,118 @@ footer{background:var(--surface);border-top:1.5px solid var(--border);padding:10
 footer a{color:var(--mint-d);text-decoration:none;font-weight:700;}
 footer a:hover{text-decoration:underline;}
 
+/* ── 드롭존 ── */
+.drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:18px 16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2);position:relative;}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--mint);background:var(--mint-l);}
+.drop-zone.has-file{border-color:var(--rec);border-style:solid;background:var(--rec-bg);}
+.drop-zone .dz-icon{font-size:22px;margin-bottom:5px;}
+.drop-zone .dz-label{font-size:13px;font-weight:700;color:var(--sub);}
+.drop-zone .dz-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.drop-zone .dz-status{font-size:11px;margin-top:6px;font-weight:600;color:var(--muted);min-height:16px;}
+.drop-zone .dz-status.ok{color:var(--rec);}
+.drop-zone .dz-status.err{color:var(--core);}
+.drop-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+
+/* ── 편제표 리뷰 패널 ── */
+.review-overlay{position:fixed;inset:0;background:rgba(10,30,25,.5);z-index:300;display:flex;align-items:center;justify-content:center;}
+.review-modal{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;width:760px;max-width:96vw;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(13,148,136,.2);}
+.review-header{padding:16px 20px;border-bottom:1.5px solid var(--border2);flex-shrink:0;}
+.review-body{overflow-y:auto;padding:16px 20px;flex:1;}
+.review-footer{padding:12px 20px;border-top:1.5px solid var(--border2);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0;background:var(--bg2);border-radius:0 0 16px 16px;}
+.review-sem-block{margin-bottom:16px;background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--r);padding:12px 14px;}
+.review-sem-title{font-size:12px;font-weight:800;color:var(--mint-d);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.review-subj-row{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border2);}
+.review-subj-row:last-child{border-bottom:none;}
+.review-subj-name{flex:1;font-size:12px;font-weight:500;color:var(--text);}
+.review-subj-cr{font-size:11px;color:var(--mint-d);font-weight:700;min-width:28px;}
+.review-subj-type{font-size:10px;color:var(--muted);min-width:50px;}
+.review-add-row{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1.5px dashed var(--border);}
+.review-add-row .inp{font-size:12px;}
+.miss-badge{background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;}
+.ok-badge{background:var(--rec-bg);border:1px solid var(--rec-border);color:var(--rec);font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;}
+
 @media(max-width:800px){
   main{grid-template-columns:1fr;}
   .left{border-right:none;border-bottom:1.5px solid var(--border);max-height:none;}
   .right{max-height:none;}
   .sem-grid{grid-template-columns:1fr;}
   .school-grid{grid-template-columns:1fr;}
+}
+
+/* ── 모바일 전용 최적화 ── */
+@media(max-width:600px){
+  /* 헤더 */
+  .hdr{padding:0 12px;gap:7px;}
+  .logo-txt{font-size:13px;}
+  .hdr-right{gap:5px;font-size:11px;}
+  .hdr-right .school-badge{display:none;} /* 모바일에서 학교 배지 숨김 */
+  .btn-ghost.btn-sm{padding:4px 8px;font-size:10px;}
+
+  /* 로그인 카드 */
+  .login-wrap{padding:12px;align-items:flex-start;padding-top:20px;}
+  .login-card{padding:22px 18px;border-radius:14px;}
+  .login-card h2{font-size:16px;}
+  .login-big{font-size:18px!important;letter-spacing:4px;}
+
+  /* 설정 화면 */
+  .setup-wrap{padding:12px;max-width:100%;}
+  .setup-card{padding:14px;}
+  .url-row{flex-direction:column;}
+  .url-row .inp{width:100%;}
+
+  /* 탭 */
+  .tabs{padding:0 8px;}
+  .tab{padding:9px 10px;font-size:11.5px;}
+
+  /* 메인 레이아웃 */
+  main{grid-template-columns:1fr;min-height:auto;}
+  .left{max-height:none;padding:12px;}
+  .right{padding:12px 14px;}
+
+  /* 학기 그리드 */
+  .sem-grid{grid-template-columns:1fr;}
+  .sem-box{padding:10px;}
+
+  /* 카드 */
+  .card{padding:11px;}
+  .card-head{padding-bottom:8px;margin-bottom:8px;}
+
+  /* 편제표 리뷰 모달 */
+  .review-modal{max-height:100vh;border-radius:0;width:100%;max-width:100%;}
+  .review-body{padding:12px;}
+  .review-header{padding:12px 14px;}
+  .review-footer{padding:10px 14px;}
+  .review-subj-row{flex-wrap:wrap;gap:4px;}
+  .review-subj-name{min-width:100%;order:1;}
+  .review-subj-cr{order:2;}
+  .review-subj-type{order:3;}
+  .review-add-row{flex-wrap:wrap;}
+  .review-add-row .inp:first-child{width:100%;}
+
+  /* 학생 상세 */
+  .student-card{padding:10px 12px;}
+
+  /* 드롭존 */
+  .drop-zone{padding:14px 12px;}
+  .drop-zone .dz-label{font-size:12px;}
+
+  /* 영역별 바 */
+  .area-panel{padding:10px 12px;}
+
+  /* 신용 바 */
+  .credit-num{font-size:20px;}
+
+  /* 대시보드 t-banner */
+  .t-banner{font-size:11px;padding:7px 10px;}
+
+  /* 모달 */
+  .modal{padding:16px;width:calc(100vw - 24px)!important;max-width:calc(100vw - 24px)!important;border-radius:12px;}
+
+  /* 버튼 행 */
+  .btn-row{flex-direction:column;}
+
+  /* footer */
+  footer{font-size:10.5px;padding:8px 14px;}
 }
 </style>
 </head>
@@ -268,7 +374,6 @@ footer a:hover{text-decoration:underline;}
     <div>
       <div class="logo-txt">고교학점제 과목 설계</div>
     </div>
-    <div class="logo-sub">히라메키</div>
     <div class="hdr-right">
       <span id="schoolLabel" class="school-badge">학교 미설정</span>
     </div>
@@ -287,7 +392,6 @@ footer a:hover{text-decoration:underline;}
     <div>
       <div class="logo-txt">고교학점제 과목 설계</div>
     </div>
-    <div class="logo-sub">히라메키</div>
     <div class="hdr-right">
       <span id="userLabel" style="font-weight:800;color:var(--mint-d);"></span>
       <span id="schoolLabel2" class="school-badge"></span>
@@ -308,7 +412,6 @@ footer a:hover{text-decoration:underline;}
   <header class="hdr">
     <div class="logo-box">🎓</div>
     <div><div class="logo-txt">교사 설정</div></div>
-    <div class="logo-sub">히라메키</div>
     <div class="hdr-right"><span style="color:var(--mint-d);font-weight:800;">👩‍🏫 교사 모드</span></div>
   </header>
   <div class="setup-wrap">
@@ -347,12 +450,22 @@ footer a:hover{text-decoration:underline;}
           <label>교육 편제표 입력 <span style="font-size:10px;color:var(--muted);font-weight:400;">(학기별 과목 목록을 직접 설정합니다)</span></label>
         </div>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <button class="btn btn-ghost" style="flex:1;" onclick="openScheduleEditor()">✏️ 직접 편집</button>
-        <label class="btn btn-ghost" style="flex:1;cursor:pointer;text-align:center;" for="schedFileInput">📁 파일 업로드</label>
-        <input type="file" id="schedFileInput" accept=".xlsx,.xls,.pdf" style="display:none;" onchange="importScheduleFile(this)">
+      <!-- 1회 저장 안내 -->
+      <div style="background:var(--warn-bg);border:1.5px solid var(--warn-border);border-radius:8px;padding:9px 12px;font-size:11.5px;color:var(--warn);margin-bottom:10px;line-height:1.6;">
+        ⚠️ <b>최초 1회 저장이 필요합니다.</b> 편제표와 학교 정보를 입력하고 저장하면, 이후 로그인 시 바로 교사 대시보드로 진입합니다.
       </div>
-      <div id="schedulePreview" style="margin-top:0;font-size:11px;color:var(--muted);"></div>
+      <!-- 드롭존 -->
+      <div class="drop-zone" id="schedDropZone">
+        <div class="dz-icon">📄</div>
+        <div class="dz-label">편제표 PDF 또는 엑셀 파일을 여기에 드래그하거나 클릭하세요</div>
+        <div class="dz-sub">.xlsx · .xls · .pdf 지원</div>
+        <div class="dz-status" id="schedDropStatus"></div>
+        <input type="file" id="schedFileInput" accept=".xlsx,.xls,.pdf">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="openScheduleReview()">🔍 인식 결과 검토 / 직접 편집</button>
+      </div>
+      <div id="schedulePreview" style="margin-top:6px;font-size:11px;color:var(--muted);"></div>
       <button class="btn btn-primary btn-full" style="margin-top:10px;" onclick="saveSchoolInfo()">💾 학교 정보 저장</button>
       <div id="schoolInfoOk" style="font-size:11px;color:var(--rec);margin-top:4px;display:none;font-weight:700;">✅ 학교 정보가 저장되었습니다</div>
     </div>
@@ -379,7 +492,7 @@ footer a:hover{text-decoration:underline;}
         <input type="text" class="inp" id="newStudentName" placeholder="이름" style="flex:1;">
         <button class="btn btn-primary btn-sm" onclick="addStudent()">추가</button>
       </div>
-      <div id="studentRegList" style="font-size:12px;color:var(--muted);">GAS URL 연결 후 목록이 표시됩니다.</div>
+      <div id="studentRegList" style="font-size:12px;color:var(--muted);"></div>
     </div>
 
     <div class="btn-row">
@@ -388,7 +501,26 @@ footer a:hover{text-decoration:underline;}
   </div>
 </div>
 
-<!-- ══ 편제표 편집 모달 ══ -->
+<!-- ══ 편제표 인식 결과 리뷰 오버레이 ══ -->
+<div id="reviewOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,30,25,.5);z-index:300;align-items:center;justify-content:center;">
+  <div class="review-modal">
+    <div class="review-header">
+      <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px;">📋 편제표 인식 결과 검토</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+        PDF에서 인식한 과목 목록입니다. ✏️로 수정, 🗑️로 삭제, 하단 입력란으로 직접 추가할 수 있습니다.<br>
+        <span style="color:var(--warn);font-weight:700;">⚠️ 인식되지 않은 학기는 직접 추가해 주세요.</span>
+        <span class="miss-badge" id="reviewMissBadge" style="display:none;">미인식 학기 있음</span>
+      </div>
+    </div>
+    <div class="review-body" id="reviewBody"></div>
+    <div class="review-footer">
+      <button class="btn btn-ghost" onclick="closeReview()">취소</button>
+      <button class="btn btn-primary" onclick="saveFromReview()">💾 저장하고 닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 편제표 편집 모달 (레거시, 직접편집용) ══ -->
 <div class="modal-overlay" id="scheduleModal">
   <div class="modal" style="width:680px;max-width:96vw;max-height:92vh;overflow-y:auto;">
     <h3>📋 교육 편제표 편집</h3>
@@ -400,7 +532,7 @@ footer a:hover{text-decoration:underline;}
         <div style="margin-top:8px;font-size:11px;color:var(--muted);">인식 결과를 아래 편집 칸에 적용했습니다. 오타·누락이 있으면 직접 수정 후 저장하세요.</div>
       </div>
     </div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6;">한 줄에 하나씩 <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명,학점,유형</code> 형식으로 입력하세요.&nbsp; 유형: 공통 / 일반선택 / 진로선택 / 융합선택</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6;">한 줄에 하나씩 입력하세요. <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명</code> 만 입력해도 되고, <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명,학점</code> 또는 <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명,학점,유형</code> 형식도 가능합니다. 학점 기본값 4학점 / 유형 기본값 일반선택</p>
     <div id="scheduleEditorArea"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeScheduleEditor()">취소</button>
@@ -427,15 +559,11 @@ footer a:hover{text-decoration:underline;}
   <div class="modal" style="width:480px;max-width:95vw;">
     <h3>📖 GAS 설정 방법</h3>
     <div style="font-size:12px;color:var(--sub);line-height:2;">
-      <span style="color:var(--warn);font-weight:800;">⚠️ 개인 Gmail 계정 사용 권장</span> (학교 계정은 제한될 수 있습니다)<br><br>
-      <b>1.</b> Google Sheets 새 파일 생성<br>
-      <b>2.</b> 상단 메뉴 → <b>확장프로그램 → Apps Script</b><br>
-      <b>3.</b> code.gs 내용 전체 붙여넣기<br>
-      <b>4.</b> 저장 후 <b>배포 → 새 배포</b> 클릭<br>
-      <b>5.</b> 유형: <b>웹 앱</b> 선택<br>
-      <b>6.</b> 실행 계정: <b>나(본인)</b><br>
-      <b>7.</b> 액세스 권한: <b>모든 사용자(익명 포함)</b><br>
-      <b>8.</b> 배포 → 생성된 URL 복사 → 여기에 붙여넣기
+      <b>1.</b> 배포 → <b>새 배포</b> 클릭<br>
+      <b>2.</b> 유형: <b>웹 앱</b> 선택<br>
+      <b>3.</b> 실행 계정: <b>나(본인)</b><br>
+      <b>4.</b> 액세스 권한: <b>모든 사용자(익명 포함)</b><br>
+      <b>5.</b> 배포 → 생성된 URL 복사 → 여기에 붙여넣기
     </div>
     <div class="modal-actions">
       <button class="btn btn-primary" onclick="document.getElementById('guideModal').classList.remove('open')">확인</button>
@@ -701,7 +829,12 @@ function init(){
   const savedSubs = localStorage.getItem('hsc_subs');
   S.availSubs = savedSubs ? JSON.parse(savedSubs) : deepCopy(DEFAULT_SUBS);
 
+  // 임시 파싱 데이터 초기화
+  S._pendingParsed = null;
+  S._reviewData = null;
+
   renderLogin('start');
+  setTimeout(initDropZone, 0);
 }
 
 function deepCopy(obj){ return JSON.parse(JSON.stringify(obj)); }
@@ -720,14 +853,13 @@ function renderLogin(state, data={}){
   if(state==='start'){
     card.innerHTML = `
       <h2>🎓 학점 설계 시작</h2>
-      <p class="hint">학번을 입력하면 과목 선택을 시작할 수 있어요.<br>교사는 로고를 <b>5번</b> 클릭하세요.</p>
+      <p class="hint">학번을 입력하면 과목 선택을 시작할 수 있어요.</p>
       ${!S.gasUrl?`<div class="notice-warn">⚠️ GAS URL이 설정되지 않았습니다.<br>교사가 먼저 설정해야 합니다.</div>`:''}
       ${S.schoolName?`<div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--sub);margin-bottom:12px;">🏫 ${S.schoolName}${S.classInfo?' · '+S.classInfo:''}</div>`:''}
       <div class="field"><label>학번 입력</label>
         <input type="number" class="inp login-big" id="loginIdInput" placeholder="10101" maxlength="6" onkeydown="if(event.key==='Enter')tryLogin()">
       </div>
-      <button class="btn btn-primary btn-full" onclick="tryLogin()">입장하기 →</button>
-      <div style="font-size:11px;color:var(--muted);margin-top:8px;">학번을 모르면 담임 선생님께 문의하세요</div>`;
+      <button class="btn btn-primary btn-full" onclick="tryLogin()">입장하기 →</button>`;
     setTimeout(()=>{ const el=document.getElementById('loginIdInput'); if(el) el.focus(); },100);
   }
   else if(state==='confirm'){
@@ -827,6 +959,10 @@ function enterSetup(forceShow=false){
   document.getElementById('teacherNameInput').value = S.teacherName || localStorage.getItem('hsc_teacher')|| '';
   updateShareUrl();
   updateSchedulePreview();
+  // 드롭존 재초기화 (setupScreen이 이제 보이므로)
+  setTimeout(initDropZone, 50);
+  // GAS 연결된 경우 학생 명단 자동 로드
+  if(S.gasUrl) setTimeout(loadStudentRegList, 100);
 }
 
 function saveGasUrl(){
@@ -917,152 +1053,436 @@ function detectSem(str){
   return SEM_PATTERNS.find(p=>str.includes(p)) || null;
 }
 
-async function importScheduleFile(input){
-  const file = input.files[0];
-  if(!file) return;
-  const ext = file.name.split('.').pop().toLowerCase();
-  showToast('파일 분석 중...','');
-  try{
-    if(ext==='pdf'){
-      await parsePDF(file);
-    } else if(['xlsx','xls'].includes(ext)){
-      await parseXLSX(file);
-    } else {
-      showToast('xlsx, xls, pdf 파일만 지원합니다','error');
-    }
-  }catch(e){
-    showToast('파일 읽기 실패: '+e.message,'error');
-  }
-  input.value='';
+// ── 드롭존 초기화 (DOM 준비 후 호출) ──
+function initDropZone(){
+  const zone = document.getElementById('schedDropZone');
+  const input = document.getElementById('schedFileInput');
+  if(!zone||!input) return;
+  zone.addEventListener('dragover', e=>{ e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', ()=>zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e=>{
+    e.preventDefault(); zone.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if(f) processScheduleFile(f);
+  });
+  input.addEventListener('change', e=>{
+    const f = e.target.files[0];
+    if(f) processScheduleFile(f);
+    input.value='';
+  });
 }
 
-async function parseXLSX(file){
-  const buf = await file.arrayBuffer();
-  const wb  = XLSX.read(buf, {type:'array'});
-  const parsed = {};
-
-  // 시트별로 순회
-  wb.SheetNames.forEach(sheetName=>{
-    const sem = SEM_PATTERNS.find(p=>sheetName.includes(p));
-    const ws  = wb.Sheets[sheetName];
-    const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-
-    if(sem){
-      // 시트 이름이 학기명과 일치
-      extractSubsFromRows(rows, sem, parsed);
+async function processScheduleFile(file){
+  const statusEl = document.getElementById('schedDropStatus');
+  const zone = document.getElementById('schedDropZone');
+  statusEl.textContent = '⏳ 분석 중...';
+  statusEl.className = 'dz-status';
+  zone.classList.remove('has-file');
+  try{
+    const buf = await file.arrayBuffer();
+    const ext = file.name.split('.').pop().toLowerCase();
+    let parsedData;
+    if(ext==='pdf'){
+      if(typeof pdfjsLib==='undefined') throw new Error('PDF.js 라이브러리 로드 실패. 인터넷 연결을 확인하세요.');
+      pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      parsedData = await parseCurriculumPDF(buf);
+    } else if(['xlsx','xls'].includes(ext)){
+      parsedData = parseXLSXToReview(buf);
     } else {
-      // 단일 시트에 전체 편제표가 있는 경우: 학기 헤더 탐색
-      let curSem = null;
+      throw new Error('xlsx, xls, pdf 파일만 지원합니다');
+    }
+    const totalSubj = parsedData.reduce((a,sem)=>a+sem.subjects.length,0);
+    statusEl.textContent = `✓ ${file.name} — ${parsedData.length}개 학기 · ${totalSubj}개 과목 인식`;
+    statusEl.className = 'dz-status ok';
+    zone.classList.add('has-file');
+    // 임시 저장 후 리뷰 열기
+    S._pendingParsed = parsedData;
+    showToast(`${parsedData.length}개 학기 인식. 검토 버튼을 눌러 확인하세요.`,'success');
+  }catch(e){
+    statusEl.textContent = `⚠ ${e.message||'파일 분석 실패'}`;
+    statusEl.className = 'dz-status err';
+    zone.classList.remove('has-file');
+    S._pendingParsed = null;
+    showToast(e.message||'파일 분석 실패','error');
+  }
+}
+
+// ── 이재규 선생님 방식 PDF 파서 (좌표 기반) ──
+async function parseCurriculumPDF(arrayBuffer){
+  const pdf = await pdfjsLib.getDocument({data:arrayBuffer}).promise;
+  const allItems=[], allHLines=[];
+  let pageYOffset=0;
+  const OPS=pdfjsLib.OPS;
+
+  for(let p=1;p<=pdf.numPages;p++){
+    const page=await pdf.getPage(p);
+    const viewport=page.getViewport({scale:1});
+    const pageH=viewport.height;
+    const tc=await page.getTextContent();
+    for(const it of tc.items){
+      const txt=(it.str||'').trim();
+      if(!txt) continue;
+      const x=it.transform[4], yPdf=it.transform[5];
+      const h=it.height||10, w=it.width||0;
+      const yTopDown=pageH-yPdf-h/2;
+      allItems.push({text:txt,x_center:x+w/2,x0:x,x1:x+w,y:yTopDown+pageYOffset,page:p-1});
+    }
+    // 가로선 추출
+    const opList=await page.getOperatorList();
+    let curX=0,curY=0,pathStartX=0,pathStartY=0;
+    const pendingSegs=[];
+    for(let i=0;i<opList.fnArray.length;i++){
+      const fn=opList.fnArray[i], args=opList.argsArray[i];
+      if(fn===OPS.constructPath){
+        const ops=args[0],coords=args[1];let ci=0;
+        for(let oi=0;oi<ops.length;oi++){
+          const op=ops[oi];
+          if(op===OPS.moveTo){curX=coords[ci++];curY=coords[ci++];pathStartX=curX;pathStartY=curY;}
+          else if(op===OPS.lineTo){const nx=coords[ci++],ny=coords[ci++];pendingSegs.push({x0:curX,y0:curY,x1:nx,y1:ny});curX=nx;curY=ny;}
+          else if(op===OPS.curveTo){ci+=6;curX=coords[ci-2];curY=coords[ci-1];}
+          else if(op===OPS.curveTo2){ci+=4;curX=coords[ci-2];curY=coords[ci-1];}
+          else if(op===OPS.curveTo3){ci+=4;curX=coords[ci-2];curY=coords[ci-1];}
+          else if(op===OPS.closePath){pendingSegs.push({x0:curX,y0:curY,x1:pathStartX,y1:pathStartY});curX=pathStartX;curY=pathStartY;}
+          else if(op===OPS.rectangle){const rx=coords[ci++],ry=coords[ci++],rw=coords[ci++],rh=coords[ci++];pendingSegs.push({x0:rx,y0:ry,x1:rx+rw,y1:ry});pendingSegs.push({x0:rx,y0:ry+rh,x1:rx+rw,y1:ry+rh});}
+        }
+      } else if([OPS.stroke,OPS.fillStroke,OPS.eoFillStroke,OPS.closeStroke,OPS.closeFillStroke,OPS.closeEOFillStroke].includes(fn)){
+        for(const seg of pendingSegs){
+          if(Math.abs(seg.y0-seg.y1)<0.6&&Math.abs(seg.x1-seg.x0)>30){
+            const ySeg=(seg.y0+seg.y1)/2;
+            allHLines.push({x0:Math.min(seg.x0,seg.x1),x1:Math.max(seg.x0,seg.x1),y:(pageH-ySeg)+pageYOffset});
+          }
+        }
+        pendingSegs.length=0;
+      } else if([OPS.endPath,OPS.fill,OPS.eoFill].includes(fn)){
+        pendingSegs.length=0;
+      }
+    }
+    pageYOffset+=pageH;
+  }
+
+  // 파싱
+  const SEM_IDS_ORDER=['1-1','1-2','2-1','2-2','3-1','3-2'];
+  const SEM_LABEL={'1-1':'1학년 1학기','1-2':'1학년 2학기','2-1':'2학년 1학기','2-2':'2학년 2학기','3-1':'3학년 1학기','3-2':'3학년 2학기'};
+  const HEADER_SUBS=new Set(['운영','학점','과목명','이','수','학','점','구분','교과','교과군','과목','비고','계','게','합계','이수','이수학점']);
+  const SKIP_NAME_RE=/^[()[\]\s\d↔↑↓~\-–]+$/;
+  const SEM_RE=/^[123]-[12]$/;
+  const NUM_RE=/^\d+(?:\.\d+)?$/;
+
+  function classifyItem(text){
+    const t=(text||'').trim();
+    if(!t) return null;
+    if(NUM_RE.test(t)) return 'credit';
+    if(HEADER_SUBS.has(t)) return 'header_sub';
+    return 'subject';
+  }
+
+  // y 버킷 그룹핑
+  const rowsByY=new Map();
+  for(const it of allItems){
+    const key=Math.round(it.y/4)*4;
+    if(!rowsByY.has(key)) rowsByY.set(key,[]);
+    rowsByY.get(key).push(it);
+  }
+  // 인접 항목 병합(한글 음절 분리 보정)
+  for(const [y,items] of rowsByY.entries()){
+    items.sort((a,b)=>a.x0-b.x0);
+    const merged=[];
+    for(const it of items){
+      if(merged.length===0){merged.push({...it});continue;}
+      const prev=merged[merged.length-1];
+      if(it.x0-prev.x1<0.5){prev.text+=it.text;prev.x1=it.x1;prev.x_center=(prev.x0+prev.x1)/2;}
+      else merged.push({...it});
+    }
+    rowsByY.set(y,merged);
+  }
+  const sortedY=Array.from(rowsByY.keys()).sort((a,b)=>a-b);
+
+  // 헤더 탐색 (1-1, 1-2 …)
+  let headerY=null,headerItems=null;
+  for(const y of sortedY){
+    const items=rowsByY.get(y);
+    const hits=items.filter(it=>SEM_RE.test(it.text.trim()));
+    if(hits.length>=3){headerY=y;headerItems=hits;break;}
+  }
+  if(headerY===null) throw new Error('편제표 헤더(1-1, 1-2 …)를 찾을 수 없습니다. 표준 편제표 양식인지 확인하세요.');
+
+  // 학기 컬럼 경계
+  headerItems.sort((a,b)=>a.x_center-b.x_center);
+  const semXs={};
+  for(const it of headerItems) semXs[it.text.trim()]=it.x_center;
+  const sidsPresent=SEM_IDS_ORDER.filter(s=>s in semXs);
+  const centers=sidsPresent.map(s=>semXs[s]);
+  const innerB=[];
+  for(let i=0;i<centers.length-1;i++) innerB.push((centers[i]+centers[i+1])/2);
+  const leftW=centers.length>=2?centers[1]-centers[0]:80;
+  const rightW=centers.length>=2?centers[centers.length-1]-centers[centers.length-2]:80;
+  const boundaries=[centers[0]-leftW/2,...innerB,centers[centers.length-1]+rightW/2];
+  function classifyX(x){
+    for(let i=0;i<sidsPresent.length;i++) if(boundaries[i]<=x&&x<boundaries[i+1]) return sidsPresent[i];
+    return null;
+  }
+
+  // 섹션 경계 탐색
+  const gyeRowsY=[];
+  let indivY=null;
+  for(const y of sortedY){
+    if(y<=headerY) continue;
+    const items=rowsByY.get(y);
+    const gyeCount=items.filter(it=>{const t=it.text.trim();return t==='계'||t==='게';}).length;
+    if(gyeCount>=3) gyeRowsY.push(y);
+    const joined=items.map(it=>it.text).join('');
+    if(indivY===null&&joined.indexOf('개별')>=0&&(joined.indexOf('학생')>=0||joined.indexOf('선택')>=0)) indivY=y;
+  }
+  const commonEndY=gyeRowsY[0]??null;
+  const selectiveEndY=gyeRowsY[1]??null;
+  const selectiveStartY=indivY??(commonEndY!=null?commonEndY+5:null);
+
+  // 결과 객체 초기화
+  const semesters={};
+  for(const sid of sidsPresent) semesters[sid]={id:sid,label:SEM_LABEL[sid],subjects:[]};
+
+  // 공통 영역 파싱
+  const commonRows=sortedY.filter(y=>y>headerY&&(commonEndY==null||y<commonEndY));
+  for(const y of commonRows){
+    const items=rowsByY.get(y);
+    const kinds=new Set(items.map(it=>classifyItem(it.text)));
+    if(kinds.has('header_sub')&&!kinds.has('subject')) continue;
+    const bySem={};
+    for(const sid of sidsPresent) bySem[sid]=[];
+    for(const it of items){const sid=classifyX(it.x_center);if(sid)bySem[sid].push(it);}
+    for(const sid of sidsPresent){
+      const colItems=bySem[sid].slice().sort((a,b)=>a.x_center-b.x_center);
+      if(colItems.length===0) continue;
+      const subjParts=[];let credit=null;
+      for(const it of colItems){
+        const kind=classifyItem(it.text);
+        if(kind==='subject') subjParts.push(it.text);
+        else if(kind==='credit'){const c=parseFloat(it.text);credit=Number.isInteger(c)?c:c;}
+      }
+      if(subjParts.length===0) continue;
+      const name=subjParts.join(' ').trim();
+      if(!name||SKIP_NAME_RE.test(name)||HEADER_SUBS.has(name)) continue;
+      semesters[sid].subjects.push({name,cr:credit||4,type:'공통'});
+    }
+  }
+
+  // 선택 영역 파싱
+  if(selectiveStartY!=null&&selectiveEndY!=null){
+    const TAEK_RE=/\[\s*택\s*(\d+)\s*\]/;
+    const selRows=sortedY.filter(y=>y>selectiveStartY&&y<selectiveEndY);
+    const selHLines=allHLines.filter(ln=>ln.y>selectiveStartY&&ln.y<selectiveEndY).sort((a,b)=>a.y-b.y);
+    for(let i=0;i<sidsPresent.length;i++){
+      const sid=sidsPresent[i];
+      const x0=boundaries[i],x1=boundaries[i+1],colW=x1-x0;
+      const colLinesY=[];
+      for(const ln of selHLines){
+        const overlap=Math.max(0,Math.min(ln.x1,x1)-Math.max(ln.x0,x0));
+        if(overlap>colW*0.5) colLinesY.push(ln.y);
+      }
+      const boundSet=new Set([selectiveStartY,selectiveEndY,...colLinesY]);
+      const cellB=Array.from(boundSet).sort((a,b)=>a-b);
+      for(let ci=0;ci<cellB.length-1;ci++){
+        const top=cellB[ci],bot=cellB[ci+1];
+        if(bot-top<10) continue;
+        const subjRows=new Map();
+        let credit=null,taekN=null;
+        for(const y of selRows){
+          if(!(y>top&&y<bot)) continue;
+          for(const it of rowsByY.get(y)){
+            if(classifyX(it.x_center)!==sid) continue;
+            const kind=classifyItem(it.text);
+            if(kind==='credit'){const c=parseFloat(it.text);credit=Number.isInteger(c)?c:c;}
+            else if(TAEK_RE.test(it.text)){const m=it.text.match(TAEK_RE);if(m)taekN=parseInt(m[1],10);}
+            else if(kind==='subject'){if(!subjRows.has(y))subjRows.set(y,[]);subjRows.get(y).push(it);}
+          }
+        }
+        const subjects=[];
+        for(const y of Array.from(subjRows.keys()).sort((a,b)=>a-b)){
+          const parts=subjRows.get(y).slice().sort((a,b)=>a.x_center-b.x_center);
+          const name=parts.map(p=>p.text).join(' ').trim();
+          if(name&&!SKIP_NAME_RE.test(name)&&!HEADER_SUBS.has(name)) subjects.push(name);
+        }
+        if(subjects.length===0||taekN===null) continue;
+        const cr=credit||4;
+        const typeStr=taekN===1?'일반선택':'진로선택';
+        subjects.forEach(name=>semesters[sid].subjects.push({name,cr,type:typeStr}));
+      }
+    }
+  }
+
+  // 결과 배열 반환 (빈 학기 제외)
+  return sidsPresent.map(sid=>semesters[sid]).filter(s=>s.subjects.length>0);
+}
+
+// ── XLSX → 리뷰 형식으로 변환 ──
+function parseXLSXToReview(buf){
+  const wb=XLSX.read(buf,{type:'array'});
+  const rawParsed={};
+  wb.SheetNames.forEach(sheetName=>{
+    const sem=SEM_PATTERNS.find(p=>sheetName.includes(p));
+    const ws=wb.Sheets[sheetName];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+    if(sem){extractSubsFromRows(rows,sem,rawParsed);}
+    else{
+      let curSem=null;
       rows.forEach(row=>{
-        const rowStr = row.join(' ');
-        const foundSem = SEM_PATTERNS.find(p=>rowStr.includes(p));
-        if(foundSem){ curSem=foundSem; return; }
+        const rowStr=row.join(' ');
+        const foundSem=SEM_PATTERNS.find(p=>rowStr.includes(p));
+        if(foundSem){curSem=foundSem;return;}
         if(!curSem) return;
-        extractSubFromRow(row, curSem, parsed);
+        extractSubFromRow(row,curSem,rawParsed);
       });
     }
   });
-  applyImportResult(parsed);
+  // reviewData 형식으로 변환
+  return SEM_KEYS.filter(k=>rawParsed[k]&&rawParsed[k].length>0)
+    .map(k=>({id:k.replace(/학년 /,'').replace('학기','').replace(' ','-').replace(/([123])-([12])/,'$1-$2'),label:k,subjects:rawParsed[k]||[]}));
 }
 
-function extractSubsFromRows(rows, sem, parsed){
+// 구형 XLSX 파서 유지(내부 활용)
+function extractSubsFromRows(rows,sem,parsed){
   if(!parsed[sem]) parsed[sem]=[];
-  rows.forEach(row=>extractSubFromRow(row, sem, parsed));
+  rows.forEach(row=>extractSubFromRow(row,sem,parsed));
 }
-
-function extractSubFromRow(row, sem, parsed){
+function extractSubFromRow(row,sem,parsed){
   if(!parsed[sem]) parsed[sem]=[];
-  // 각 셀을 문자열로
-  const cells = row.map(c=>String(c||'').trim()).filter(Boolean);
+  const cells=row.map(c=>String(c||'').trim()).filter(Boolean);
   if(cells.length<2) return;
-
-  let name='', cr=0, type='일반선택';
+  let name='',cr=0,type='일반선택';
   cells.forEach(cell=>{
     if(SKIP_RE.test(cell)) return;
-    if(CR_RE.test(cell) && !name){ return; } // 앞에 과목명 없으면 학점 아님
-    if(CR_RE.test(cell) && name && !cr){ cr=parseInt(cell); return; }
-    if(detectType(cell)!=='일반선택' && cell.length<=6){ type=detectType(cell); return; }
-    if(!name && cell.length>=2 && cell.length<=20 && !/^\d+$/.test(cell)){
-      name=cell;
-    }
+    if(CR_RE.test(cell)&&!name) return;
+    if(CR_RE.test(cell)&&name&&!cr){cr=parseInt(cell);return;}
+    if(detectType(cell)!=='일반선택'&&cell.length<=6){type=detectType(cell);return;}
+    if(!name&&cell.length>=2&&cell.length<=20&&!/^\d+$/.test(cell)) name=cell;
   });
-  if(name && cr>=1 && cr<=8){
-    parsed[sem].push({name, cr, type});
-  }
+  if(name&&cr>=1&&cr<=8) parsed[sem].push({name,cr,type});
 }
 
-async function parsePDF(file){
-  const buf = await file.arrayBuffer();
-  if(typeof pdfjsLib==='undefined'){ showToast('PDF.js 로드 중 오류','error'); return; }
-  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  const pdf = await pdfjsLib.getDocument({data:buf}).promise;
-  let fullText='';
-  for(let i=1;i<=pdf.numPages;i++){
-    const page=await pdf.getPage(i);
-    const tc=await page.getTextContent();
-    fullText+=tc.items.map(item=>item.str).join(' ')+'\n';
-  }
-  // 텍스트에서 학기 구분 + 과목 파싱
-  const parsed={};
-  const lines=fullText.split('\n');
-  let curSem=null;
-  lines.forEach(line=>{
-    line=line.trim();
-    const foundSem=SEM_PATTERNS.find(p=>line.includes(p));
-    if(foundSem){ curSem=foundSem; return; }
-    if(!curSem) return;
-    // 과목명 후보: 한글 포함, 2~20자, 학점 숫자 옆에 있음
-    const matches=line.matchAll(/([가-힣a-zA-ZⅠⅡ·\s]{2,20})\s+([1-8])\s*(공통|일반선택|진로선택|융합선택)?/g);
-    for(const m of matches){
-      const name=m[1].trim();
-      const cr=parseInt(m[2]);
-      const type=m[3]||'일반선택';
-      if(!SKIP_RE.test(name) && name.length>=2 && cr>=1 && cr<=8){
-        if(!parsed[curSem]) parsed[curSem]=[];
-        parsed[curSem].push({name, cr, type});
-      }
-    }
-  });
-  applyImportResult(parsed);
+async function importScheduleFile(input){
+  const file=input.files[0];
+  if(!file) return;
+  await processScheduleFile(file);
+  input.value='';
 }
 
-function applyImportResult(parsed){
-  const semCount = Object.keys(parsed).filter(k=>parsed[k]&&parsed[k].length>0).length;
-  if(semCount===0){
-    showToast('과목을 인식하지 못했습니다. 직접 입력해 주세요.','error'); return;
-  }
-  // 편집 모달 열기
-  openScheduleEditor();
+// ── 편제표 리뷰 오버레이 ──
+// S._reviewData = [{id,label,subjects:[{name,cr,type}]}]
+// SEM_KEYS 전체 기준으로 누락 학기는 빈 배열로 채운다
 
-  // 인식 결과 패널 표시
-  const panel=document.getElementById('importResultPanel');
-  const body=document.getElementById('importResultBody');
-  if(panel&&body){
-    panel.style.display='block';
-    let html='';
-    SEM_KEYS.forEach(sem=>{
-      const subs=parsed[sem]||[];
-      if(!subs.length) return;
-      html+=`<div style="font-weight:800;color:var(--mint-d);margin-top:4px;">${sem} (${subs.length}과목)</div>`;
-      subs.forEach(s=>{ html+=`<span style="display:inline-block;background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:1px 7px;margin:2px;font-size:11px;">${s.name} <b>${s.cr}</b></span>`; });
+function openScheduleReview(){
+  // 파일 인식 결과가 없으면 현재 저장된 데이터로 편집 모드 열기
+  let data = S._pendingParsed;
+  if(!data){
+    // 기존 저장 데이터를 리뷰 형식으로 변환
+    data = SEM_KEYS.map(label=>{
+      const id = label; // label = "1학년 1학기" 등
+      const subs = S.availSubs[label] || DEFAULT_SUBS[label] || [];
+      return {id, label, subjects: deepCopy(subs)};
     });
-    body.innerHTML=html;
   }
-
-  // 편집 textarea에 데이터 채우기 (덮어쓰기)
-  SEM_KEYS.forEach(sem=>{
-    const subs=parsed[sem]||[];
-    if(!subs.length) return;
-    const el=document.getElementById('sched_'+sem.replace(/ /g,'_'));
-    if(el) el.value=subs.map(s=>`${s.name},${s.cr},${s.type}`).join('\n');
+  // 전체 6학기 보장 (누락 학기 빈 배열로)
+  const byLabel={};
+  data.forEach(s=>byLabel[s.label]=s);
+  S._reviewData = SEM_KEYS.map(label=>{
+    if(byLabel[label]) return deepCopy(byLabel[label]);
+    return {id:label, label, subjects:[], _missing:true};
   });
+  renderReview();
+  document.getElementById('reviewOverlay').style.display='flex';
+}
 
-  showToast(`${semCount}개 학기 인식 완료! 내용 확인 후 저장하세요.`,'success');
+function closeReview(){
+  document.getElementById('reviewOverlay').style.display='none';
+}
+
+function renderReview(){
+  const body=document.getElementById('reviewBody');
+  const missCount=S._reviewData.filter(s=>s.subjects.length===0).length;
+  const badge=document.getElementById('reviewMissBadge');
+  badge.style.display=missCount>0?'':'none';
+  badge.textContent=`미인식 학기 ${missCount}개`;
+
+  body.innerHTML=S._reviewData.map((sem,si)=>{
+    const isMiss=sem.subjects.length===0;
+    const subsHtml=sem.subjects.map((sub,idx)=>`
+      <div class="review-subj-row" id="rrow_${si}_${idx}">
+        <span class="review-subj-name" contenteditable="true" onblur="updateReviewSubj(${si},${idx},'name',this.textContent.trim())">${sub.name}</span>
+        <input type="number" class="inp review-subj-cr" value="${sub.cr}" min="1" max="8" onchange="updateReviewSubj(${si},${idx},'cr',this.value)" style="width:46px;padding:3px 6px;font-size:11px;">
+        <select class="inp review-subj-type" onchange="updateReviewSubj(${si},${idx},'type',this.value)" style="width:80px;padding:3px 5px;font-size:11px;">
+          ${['공통','일반선택','진로선택','융합선택'].map(t=>`<option${sub.type===t?' selected':''}>${t}</option>`).join('')}
+        </select>
+        <button onclick="removeReviewSubj(${si},${idx})" style="background:none;border:none;cursor:pointer;color:var(--core);font-size:14px;flex-shrink:0;padding:0 2px;" title="삭제">🗑️</button>
+      </div>`).join('')||`<div style="font-size:11px;color:var(--muted);padding:4px 0;">과목 없음 — 아래에서 직접 추가하세요</div>`;
+    return `
+      <div class="review-sem-block">
+        <div class="review-sem-title">
+          ${sem.label}
+          <span class="${isMiss?'miss-badge':'ok-badge'}">${isMiss?'⚠️ 미인식':'✓ '+sem.subjects.length+'과목'}</span>
+        </div>
+        <div id="rsubjs_${si}">${subsHtml}</div>
+        <div class="review-add-row">
+          <input type="text" class="inp" id="radd_name_${si}" placeholder="과목명" style="flex:2;font-size:12px;padding:5px 8px;">
+          <input type="number" class="inp" id="radd_cr_${si}" placeholder="학점" value="4" min="1" max="8" style="width:52px;padding:5px 8px;font-size:12px;">
+          <select class="inp" id="radd_type_${si}" style="width:88px;padding:5px 6px;font-size:12px;">
+            ${['공통','일반선택','진로선택','융합선택'].map(t=>`<option>${t}</option>`).join('')}
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="addReviewSubj(${si})" style="flex-shrink:0;">+ 추가</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateReviewSubj(si,idx,field,val){
+  if(!S._reviewData[si]||!S._reviewData[si].subjects[idx]) return;
+  if(field==='cr') S._reviewData[si].subjects[idx].cr=parseInt(val)||4;
+  else S._reviewData[si].subjects[idx][field]=val;
+}
+
+function removeReviewSubj(si,idx){
+  if(!S._reviewData[si]) return;
+  S._reviewData[si].subjects.splice(idx,1);
+  renderReview();
+}
+
+function addReviewSubj(si){
+  const name=(document.getElementById(`radd_name_${si}`)?.value||'').trim();
+  const cr=parseInt(document.getElementById(`radd_cr_${si}`)?.value)||4;
+  const type=document.getElementById(`radd_type_${si}`)?.value||'일반선택';
+  if(!name){showToast('과목명을 입력하세요','error');return;}
+  if(!S._reviewData[si]) return;
+  S._reviewData[si].subjects.push({name,cr,type});
+  S._reviewData[si]._missing=false;
+  renderReview();
+  document.getElementById(`radd_name_${si}`).value='';
+}
+
+function saveFromReview(){
+  const newSubs={};
+  let hasData=false;
+  S._reviewData.forEach(sem=>{
+    newSubs[sem.label]=sem.subjects||[];
+    if(sem.subjects.length>0) hasData=true;
+  });
+  if(!hasData){showToast('저장할 과목이 없습니다','error');return;}
+  S.availSubs=newSubs;
+  localStorage.setItem('hsc_subs',JSON.stringify(newSubs));
+  closeReview();
+  updateSchedulePreview();
+  showToast('편제표 저장됨!','success');
+  // 드롭존 상태 업데이트
+  const zone=document.getElementById('schedDropZone');
+  const statusEl=document.getElementById('schedDropStatus');
+  if(zone&&statusEl){
+    const total=Object.values(newSubs).reduce((a,subs)=>a+subs.length,0);
+    statusEl.textContent=`✓ ${total}개 과목 저장됨`;
+    statusEl.className='dz-status ok';
+    zone.classList.add('has-file');
+  }
 }
 
 function saveScheduleEditor(){
   const newSubs = {};
-  let hasError = false;
   SEM_KEYS.forEach(sem=>{
     const id = 'sched_'+sem.replace(/ /g,'_');
     const el = document.getElementById(id);
@@ -1070,15 +1490,19 @@ function saveScheduleEditor(){
     const lines = el.value.split('\n').map(l=>l.trim()).filter(Boolean);
     newSubs[sem] = [];
     lines.forEach(line=>{
+      // 쉼표 구분: 과목명,학점,유형 — 학점·유형 모두 선택사항
       const parts = line.split(',');
       const name = parts[0]?.trim();
-      const cr   = parseInt(parts[1]?.trim());
-      const type = parts[2]?.trim() || '일반선택';
-      if(!name || isNaN(cr)){ hasError=true; return; }
+      if(!name) return; // 과목명 없으면 스킵
+      // 학점: 두 번째 항목이 숫자면 사용, 아니면 기본 4
+      const rawCr = parts[1]?.trim();
+      const cr = (rawCr && !isNaN(parseInt(rawCr))) ? Math.max(1, Math.min(8, parseInt(rawCr))) : 4;
+      // 유형: 세 번째 항목이 있으면 사용, 없으면 자동 판별 후 기본 '일반선택'
+      const rawType = parts[2]?.trim();
+      const type = rawType ? rawType : detectType(name) !== '일반선택' ? detectType(name) : '일반선택';
       newSubs[sem].push({name, cr, type});
     });
   });
-  if(hasError){ showToast('형식 오류가 있습니다. 과목명,학점,유형 형식을 확인하세요','error'); return; }
   S.availSubs = newSubs;
   localStorage.setItem('hsc_subs', JSON.stringify(newSubs));
   closeScheduleEditor();
@@ -1620,6 +2044,12 @@ function renderTeacherTab(n){
         </div>
         <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="enterSetup(true)">수정</button>
       </div>
+      <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:12px;">
+        <h3 style="font-size:13px;font-weight:800;margin-bottom:6px;">📋 편제표 수정</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">현재 저장된 편제표를 확인하고 과목을 추가·삭제·수정할 수 있습니다.</p>
+        ${(()=>{const counts=SEM_KEYS.map(sem=>{const n=(S.availSubs[sem]||[]).length;return `<span style="font-size:11px;color:var(--sub);">${sem.replace('학년 ','').replace('학기','').trim()}: <b style="color:var(--mint-d);">${n}</b>과목</span>`;}).join(' · ');return `<div style="font-size:11px;margin-bottom:10px;line-height:1.8;">${counts}</div>`;})()}
+        <button class="btn btn-primary btn-sm" onclick="openScheduleReview()">✏️ 편제표 수정하기</button>
+      </div>
       <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;">
         <h3 style="font-size:13px;font-weight:800;margin-bottom:10px;">학생 명단 관리</h3>
         <div style="display:flex;gap:8px;margin-bottom:8px;">
@@ -1627,7 +2057,7 @@ function renderTeacherTab(n){
           <input type="text" class="inp" id="tNewName" placeholder="이름" style="flex:1;">
           <button class="btn btn-primary btn-sm" onclick="teacherAddStudent()">추가</button>
         </div>
-        <div id="tStudentList" style="font-size:12px;color:var(--muted);">불러오는 중...</div>
+        <div id="tStudentList" style="font-size:12px;color:var(--muted);"></div>
       </div>
     </div>`;
     loadTeacherStudentList();
