@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>고교학점제 과목 설계 — 히라메키</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 /* ═══════════════════════════════════════
    디자인 토큰 (파스텔 민트 테마)
@@ -218,6 +220,14 @@ select.inp option{background:var(--surface);}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
 
 /* ── 토스트 ── */
+/* ── 제출 오버레이 ── */
+.submit-overlay{position:fixed;inset:0;background:rgba(10,40,30,.65);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+.submit-overlay.show{opacity:1;pointer-events:all;}
+.submit-card{background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:36px 40px;text-align:center;box-shadow:0 8px 40px rgba(13,148,136,.25);min-width:260px;}
+.submit-card .s-icon{font-size:40px;margin-bottom:12px;}
+.submit-card .s-title{font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px;}
+.submit-card .s-sub{font-size:12px;color:var(--muted);}
+.submit-card .s-spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;margin:14px auto 0;}
 .toast{position:fixed;bottom:22px;right:22px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:9px 15px;font-size:13px;font-weight:700;z-index:999;transform:translateY(12px);opacity:0;transition:all .3s;pointer-events:none;}
 .toast.show{transform:translateY(0);opacity:1;}
 .toast.success{border-color:var(--rec-border);color:var(--rec);}
@@ -337,8 +347,12 @@ footer a:hover{text-decoration:underline;}
           <label>교육 편제표 입력 <span style="font-size:10px;color:var(--muted);font-weight:400;">(학기별 과목 목록을 직접 설정합니다)</span></label>
         </div>
       </div>
-      <button class="btn btn-ghost btn-full" onclick="openScheduleEditor()">📋 편제표 편집하기</button>
-      <div id="schedulePreview" style="margin-top:8px;font-size:11px;color:var(--muted);"></div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button class="btn btn-ghost" style="flex:1;" onclick="openScheduleEditor()">✏️ 직접 편집</button>
+        <label class="btn btn-ghost" style="flex:1;cursor:pointer;text-align:center;" for="schedFileInput">📁 파일 업로드</label>
+        <input type="file" id="schedFileInput" accept=".xlsx,.xls,.pdf" style="display:none;" onchange="importScheduleFile(this)">
+      </div>
+      <div id="schedulePreview" style="margin-top:0;font-size:11px;color:var(--muted);"></div>
       <button class="btn btn-primary btn-full" style="margin-top:10px;" onclick="saveSchoolInfo()">💾 학교 정보 저장</button>
       <div id="schoolInfoOk" style="font-size:11px;color:var(--rec);margin-top:4px;display:none;font-weight:700;">✅ 학교 정보가 저장되었습니다</div>
     </div>
@@ -376,9 +390,17 @@ footer a:hover{text-decoration:underline;}
 
 <!-- ══ 편제표 편집 모달 ══ -->
 <div class="modal-overlay" id="scheduleModal">
-  <div class="modal" style="width:640px;max-width:96vw;max-height:90vh;overflow-y:auto;">
+  <div class="modal" style="width:680px;max-width:96vw;max-height:92vh;overflow-y:auto;">
     <h3>📋 교육 편제표 편집</h3>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6;">각 학기별 과목과 학점을 입력하세요. 한 줄에 하나씩, <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명,학점,유형</code> 형식으로 입력하세요.<br>유형: 공통 / 일반선택 / 진로선택 / 융합선택</p>
+    <!-- 업로드 인식 결과 패널 (파일 업로드 시 표시) -->
+    <div id="importResultPanel" style="display:none;margin-bottom:14px;">
+      <div style="background:var(--bg2);border:1.5px solid var(--mint);border-radius:var(--r);padding:12px 14px;">
+        <div style="font-size:12px;font-weight:800;color:var(--mint-d);margin-bottom:8px;">📥 파일에서 인식한 과목 목록</div>
+        <div id="importResultBody" style="font-size:12px;color:var(--sub);line-height:1.8;max-height:180px;overflow-y:auto;"></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);">인식 결과를 아래 편집 칸에 적용했습니다. 오타·누락이 있으면 직접 수정 후 저장하세요.</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6;">한 줄에 하나씩 <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명,학점,유형</code> 형식으로 입력하세요.&nbsp; 유형: 공통 / 일반선택 / 진로선택 / 융합선택</p>
     <div id="scheduleEditorArea"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeScheduleEditor()">취소</button>
@@ -421,6 +443,14 @@ footer a:hover{text-decoration:underline;}
   </div>
 </div>
 
+<div class="submit-overlay" id="submitOverlay">
+  <div class="submit-card">
+    <div class="s-icon">📤</div>
+    <div class="s-title">제출 중입니다...</div>
+    <div class="s-sub">잠시만 기다려 주세요</div>
+    <div class="s-spinner"></div>
+  </div>
+</div>
 <div id="toast" class="toast"></div>
 <footer>Made with ❤️ by <a href="https://www.instagram.com/hirame.ki" target="_blank">성포고 황성재 @hirame.ki</a></footer>
 
@@ -543,6 +573,7 @@ const UNI_INFO = {
 
 /* 대학 그룹 (select optgroup용) */
 const UNI_GROUPS = {
+  '🤔 대학 미정':       ['대학 고민 중','해당 대학 없음'],
   '🏆 서울 최상위':    ['서울대','연세대','고려대','성균관대','서강대','한양대','중앙대','경희대','한국외대','서울시립대','이화여대'],
   '🎓 서울 상위':      ['건국대','동국대','홍익대','세종대','서울과기대','국민대','숭실대','성신여대','숙명여대'],
   '🏫 서울 기타':      ['광운대','명지대','한성대','삼육대','경기대(서울)','상명대','서울여대','덕성여대','동덕여대','가톨릭대','서경대','성공회대'],
@@ -784,7 +815,25 @@ function enterStudent(data){
 /* ═══════════════════════════════════════════════
    교사 설정 화면
 ═══════════════════════════════════════════════ */
-function enterSetup(){
+function enterSetup(forceShow=false){
+  // 이미 설정이 완료된 경우 바로 대시보드로
+  const hasGas    = !!(S.gasUrl || localStorage.getItem('hsc_gas_url'));
+  const hasSchool = !!(S.schoolName || localStorage.getItem('hsc_school'));
+  const hasSubs   = !!localStorage.getItem('hsc_subs');
+  if(!forceShow && hasGas && hasSchool && hasSubs){
+    // 설정 복원 후 대시보드 진입
+    S.gasUrl      = S.gasUrl || localStorage.getItem('hsc_gas_url') || '';
+    S.schoolName  = S.schoolName  || localStorage.getItem('hsc_school')  || '';
+    S.classInfo   = S.classInfo   || localStorage.getItem('hsc_class')   || '';
+    S.teacherName = S.teacherName || localStorage.getItem('hsc_teacher') || '';
+    S.availSubs   = JSON.parse(localStorage.getItem('hsc_subs'));
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('appScreen').style.display='';
+    document.getElementById('userLabel').textContent = `👩‍🏫 ${S.teacherName||'교사'} 선생님`;
+    S.mode='teacher'; S.teacherMode=true;
+    buildTeacherTabs(); goTab(0);
+    return;
+  }
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='none';
   document.getElementById('setupScreen').style.display='';
@@ -859,6 +908,179 @@ function closeScheduleEditor(){
   document.getElementById('scheduleModal').classList.remove('open');
 }
 
+
+/* ═══════════════════════════════════════════════
+   편제표 파일 업로드 파싱 (SheetJS + PDF.js, 무료)
+═══════════════════════════════════════════════ */
+const SEM_PATTERNS = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
+const TYPE_KEYWORDS = {
+  '공통':['공통'],
+  '일반선택':['일반선택','일반 선택'],
+  '진로선택':['진로선택','진로 선택'],
+  '융합선택':['융합선택','융합 선택'],
+};
+// 학점처럼 보이는 숫자 패턴 (1~8)
+const CR_RE = /^[1-8]$/;
+// 과목명이 아닐 가능성이 높은 패턴 (헤더, 숫자만, 빈칸 등)
+const SKIP_RE = /^(과목명?|과목|교과|학점|단위|학년|학기|구분|번호|합계|총계|계|NO|순번|\d+)$/i;
+
+function detectType(str){
+  for(const [t, keys] of Object.entries(TYPE_KEYWORDS)){
+    if(keys.some(k=>str.includes(k))) return t;
+  }
+  return '일반선택';
+}
+
+function detectSem(str){
+  return SEM_PATTERNS.find(p=>str.includes(p)) || null;
+}
+
+async function importScheduleFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  showToast('파일 분석 중...','');
+  try{
+    if(ext==='pdf'){
+      await parsePDF(file);
+    } else if(['xlsx','xls'].includes(ext)){
+      await parseXLSX(file);
+    } else {
+      showToast('xlsx, xls, pdf 파일만 지원합니다','error');
+    }
+  }catch(e){
+    showToast('파일 읽기 실패: '+e.message,'error');
+  }
+  input.value='';
+}
+
+async function parseXLSX(file){
+  const buf = await file.arrayBuffer();
+  const wb  = XLSX.read(buf, {type:'array'});
+  const parsed = {};
+
+  // 시트별로 순회
+  wb.SheetNames.forEach(sheetName=>{
+    const sem = SEM_PATTERNS.find(p=>sheetName.includes(p));
+    const ws  = wb.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+
+    if(sem){
+      // 시트 이름이 학기명과 일치
+      extractSubsFromRows(rows, sem, parsed);
+    } else {
+      // 단일 시트에 전체 편제표가 있는 경우: 학기 헤더 탐색
+      let curSem = null;
+      rows.forEach(row=>{
+        const rowStr = row.join(' ');
+        const foundSem = SEM_PATTERNS.find(p=>rowStr.includes(p));
+        if(foundSem){ curSem=foundSem; return; }
+        if(!curSem) return;
+        extractSubFromRow(row, curSem, parsed);
+      });
+    }
+  });
+  applyImportResult(parsed);
+}
+
+function extractSubsFromRows(rows, sem, parsed){
+  if(!parsed[sem]) parsed[sem]=[];
+  rows.forEach(row=>extractSubFromRow(row, sem, parsed));
+}
+
+function extractSubFromRow(row, sem, parsed){
+  if(!parsed[sem]) parsed[sem]=[];
+  // 각 셀을 문자열로
+  const cells = row.map(c=>String(c||'').trim()).filter(Boolean);
+  if(cells.length<2) return;
+
+  let name='', cr=0, type='일반선택';
+  cells.forEach(cell=>{
+    if(SKIP_RE.test(cell)) return;
+    if(CR_RE.test(cell) && !name){ return; } // 앞에 과목명 없으면 학점 아님
+    if(CR_RE.test(cell) && name && !cr){ cr=parseInt(cell); return; }
+    if(detectType(cell)!=='일반선택' && cell.length<=6){ type=detectType(cell); return; }
+    if(!name && cell.length>=2 && cell.length<=20 && !/^\d+$/.test(cell)){
+      name=cell;
+    }
+  });
+  if(name && cr>=1 && cr<=8){
+    parsed[sem].push({name, cr, type});
+  }
+}
+
+async function parsePDF(file){
+  const buf = await file.arrayBuffer();
+  if(typeof pdfjsLib==='undefined'){ showToast('PDF.js 로드 중 오류','error'); return; }
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+  let fullText='';
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i);
+    const tc=await page.getTextContent();
+    fullText+=tc.items.map(item=>item.str).join(' ')+'
+';
+  }
+  // 텍스트에서 학기 구분 + 과목 파싱
+  const parsed={};
+  const lines=fullText.split('
+');
+  let curSem=null;
+  lines.forEach(line=>{
+    line=line.trim();
+    const foundSem=SEM_PATTERNS.find(p=>line.includes(p));
+    if(foundSem){ curSem=foundSem; return; }
+    if(!curSem) return;
+    // 과목명 후보: 한글 포함, 2~20자, 학점 숫자 옆에 있음
+    const matches=line.matchAll(/([가-힣a-zA-ZⅠⅡ·\s]{2,20})\s+([1-8])\s*(공통|일반선택|진로선택|융합선택)?/g);
+    for(const m of matches){
+      const name=m[1].trim();
+      const cr=parseInt(m[2]);
+      const type=m[3]||'일반선택';
+      if(!SKIP_RE.test(name) && name.length>=2 && cr>=1 && cr<=8){
+        if(!parsed[curSem]) parsed[curSem]=[];
+        parsed[curSem].push({name, cr, type});
+      }
+    }
+  });
+  applyImportResult(parsed);
+}
+
+function applyImportResult(parsed){
+  const semCount = Object.keys(parsed).filter(k=>parsed[k]&&parsed[k].length>0).length;
+  if(semCount===0){
+    showToast('과목을 인식하지 못했습니다. 직접 입력해 주세요.','error'); return;
+  }
+  // 편집 모달 열기
+  openScheduleEditor();
+
+  // 인식 결과 패널 표시
+  const panel=document.getElementById('importResultPanel');
+  const body=document.getElementById('importResultBody');
+  if(panel&&body){
+    panel.style.display='block';
+    let html='';
+    SEM_KEYS.forEach(sem=>{
+      const subs=parsed[sem]||[];
+      if(!subs.length) return;
+      html+=`<div style="font-weight:800;color:var(--mint-d);margin-top:4px;">${sem} (${subs.length}과목)</div>`;
+      subs.forEach(s=>{ html+=`<span style="display:inline-block;background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:1px 7px;margin:2px;font-size:11px;">${s.name} <b>${s.cr}</b></span>`; });
+    });
+    body.innerHTML=html;
+  }
+
+  // 편집 textarea에 데이터 채우기 (덮어쓰기)
+  SEM_KEYS.forEach(sem=>{
+    const subs=parsed[sem]||[];
+    if(!subs.length) return;
+    const el=document.getElementById('sched_'+sem.replace(/ /g,'_'));
+    if(el) el.value=subs.map(s=>`${s.name},${s.cr},${s.type}`).join('
+');
+  });
+
+  showToast(`${semCount}개 학기 인식 완료! 내용 확인 후 저장하세요.`,'success');
+}
+
 function saveScheduleEditor(){
   const newSubs = {};
   let hasError = false;
@@ -888,11 +1110,13 @@ function saveScheduleEditor(){
 function updateSchedulePreview(){
   const el = document.getElementById('schedulePreview');
   if(!el) return;
+  const isSaved = !!localStorage.getItem('hsc_subs');
+  if(!isSaved){ el.innerHTML=''; return; }
   const counts = SEM_KEYS.map(sem=>{
     const subs = S.availSubs[sem] || [];
-    return `${sem}: ${subs.length}과목`;
+    return `<span style="color:var(--rec);font-weight:700;">${sem.replace('학기','').trim()}</span>: ${subs.length}과목`;
   });
-  el.innerHTML = counts.join(' / ');
+  el.innerHTML = '<span style="color:var(--rec);font-size:10px;font-weight:800;">✅ 저장됨</span> ' + counts.join(' · ');
 }
 
 /* ── 학생 명단 ── */
@@ -994,12 +1218,9 @@ function buildStudentLeftInfo(){
       <div style="color:var(--muted);margin-top:2px;font-size:12px;">학번 ${S.studentId}</div>
       ${S.schoolName?`<div style="font-size:11px;color:var(--sub);margin-top:3px;">🏫 ${S.schoolName}${S.classInfo?' · '+S.classInfo:''}</div>`:''}
     </div>
-    <div class="field"><label>현재 학년</label>
-      <select class="inp" id="gradeSelect" onchange="S.grade=+this.value;if(S.currentTab===2)renderDesigner();">
-        <option value="1" ${S.grade==1?'selected':''}>1학년 (2·3학년 설계)</option>
-        <option value="2" ${S.grade==2?'selected':''}>2학년 (3학년 설계)</option>
-        <option value="3" ${S.grade==3?'selected':''}>3학년 (최종 확인)</option>
-      </select>
+    <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--sub);margin-bottom:10px;">
+      📚 <b style="color:var(--mint-d);">${S.grade}학년</b>
+      <span style="color:var(--muted);margin-left:6px;">${S.grade===1?'2·3학년 과목 미리 설계':S.grade===2?'3학년 과목 미리 설계':'최종 확인 단계'}</span>
     </div>
     <div class="sec" style="margin-top:4px;">목표 대학·학과</div>
     <div class="field"><label>대학교</label><select class="inp" id="uniSel"></select></div>
@@ -1018,6 +1239,7 @@ function buildDesignerLeft(){
       </div>
       <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
       <div class="credit-labels"><span>0</span><span>96</span><span>192</span></div>
+      <div style="margin-top:5px;font-size:10px;color:var(--muted);line-height:1.6;">고교 3년간 총 이수해야 할 학점입니다.<br>192학점을 모두 채워야 졸업이 가능합니다.</div>
     </div>
     <div class="kea-bar safe" id="keaBar">
       <div class="kea-top">
@@ -1027,7 +1249,11 @@ function buildDesignerLeft(){
       <div class="kea-prog"><div class="kea-fill" id="keaFill" style="width:0%"></div></div>
       <div class="kea-limit-label">81학점 이하로 유지해야 합니다</div>
     </div>
-    <div class="area-panel"><div class="sec" style="margin-bottom:8px;">영역별 필수이수</div><div id="areaBars"></div></div>
+    <div class="area-panel">
+      <div class="sec" style="margin-bottom:4px;">영역별 필수이수</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.5;">교과별 최소 이수학점 기준입니다.<br>빨간색=부족 / 초록색=충족</div>
+      <div id="areaBars"></div>
+    </div>
     <div class="check-panel"><div class="sec" style="margin-bottom:6px;">권장과목 확인</div><div id="checkList"><div style="font-size:12px;color:var(--muted);">대학·학과를 먼저 선택하세요</div></div></div>
     ${S.locked
       ? `<div class="notice-warn" style="margin-bottom:8px;">🔒 제출 완료. 수정은 담임 선생님께 문의하세요.</div>`
@@ -1345,7 +1571,8 @@ async function submitSelection(){
   if(!S.gasUrl){ showToast('GAS URL이 설정되지 않았습니다','error'); return; }
   const {total}=calcCredits(); const kea=calcKEA();
   if(!confirm('과목 선택을 제출하시겠습니까?\n제출 후에는 담임 선생님 확인 없이 수정할 수 없습니다.')) return;
-  showToast('제출 중...','');
+  const overlay=document.getElementById('submitOverlay');
+  if(overlay) overlay.classList.add('show');
   try{
     const res=await fetch(S.gasUrl,{method:'POST',body:JSON.stringify({
       action:'submitSelection',
@@ -1355,9 +1582,22 @@ async function submitSelection(){
       total, kea
     }),headers:{'Content-Type':'text/plain'}});
     const json=await res.json();
-    if(json.ok){ S.locked=true; showToast('제출 완료!','success'); goTab(2); }
-    else showToast('제출 실패: '+json.error,'error');
-  }catch(e){ showToast('서버 연결 실패','error'); }
+    if(overlay) overlay.classList.remove('show');
+    if(json.ok){
+      S.locked=true;
+      // 제출 완료 카드로 교체
+      if(overlay){
+        overlay.querySelector('.s-icon').textContent='✅';
+        overlay.querySelector('.s-title').textContent='제출 완료!';
+        overlay.querySelector('.s-sub').textContent='담임 선생님이 확인할 예정입니다.';
+        overlay.querySelector('.s-spinner').style.display='none';
+        overlay.classList.add('show');
+        setTimeout(()=>{ overlay.classList.remove('show'); overlay.querySelector('.s-spinner').style.display=''; goTab(2); },1800);
+      } else { goTab(2); }
+      showToast('제출 완료!','success');
+    }
+    else{ showToast('제출 실패: '+json.error,'error'); }
+  }catch(e){ if(overlay) overlay.classList.remove('show'); showToast('서버 연결 실패','error'); }
 }
 
 /* ── 모달 ── */
@@ -1411,7 +1651,7 @@ function renderTeacherTab(n){
           학년·반: <b>${S.classInfo||'미설정'}</b><br>
           교사: <b>${S.teacherName||'미설정'}</b>
         </div>
-        <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="enterSetup()">수정</button>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="enterSetup(true)">수정</button>
       </div>
       <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;">
         <h3 style="font-size:13px;font-weight:800;margin-bottom:10px;">학생 명단 관리</h3>
@@ -1499,17 +1739,71 @@ async function openStudentDetail(id){
   const allSel=Object.values(selSubs).flat();
   const core=s.coreList||[]; const rec=s.recList||[];
   const selNames=allSel.map(x=>x.name);
+  // 영역별 학점 계산
+  const allSubsFlat = allSel;
+  const keaScore = s.kea||0;
+  const totalScore = s.total||0;
+  const totalPct = Math.min(100,(totalScore/192)*100).toFixed(0);
+  const keaPct   = Math.min(100,(keaScore/81)*100).toFixed(0);
+  const areaScores = REQUIRED_AREAS.map(area=>({
+    name:area.name, min:area.min,
+    earned:allSubsFlat.filter(sub=>area.keys.some(k=>sub.name&&sub.name.includes(k))).reduce((a,sub)=>a+(sub.cr||0),0)
+  }));
   right.innerHTML=`
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
       <div><div style="font-size:18px;font-weight:800;color:var(--text);">${s.name}</div>
       <div style="font-size:12px;color:var(--muted);">${s.id} · ${s.univ||''} ${s.major||''}</div></div>
     </div>
     ${s.kea>81?`<div class="warn-banner show">⚠️ 국·영·수 합계 ${s.kea}학점 — 81학점 초과!</div>`:''}
+
+    <!-- ── 학점 현황 3종 그래프 ── -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <!-- 총 학점 -->
+      <div style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:12px;padding:11px 13px;grid-column:1/-1;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
+          <span style="font-size:11px;font-weight:800;color:var(--sub);">📊 총 이수학점</span>
+          <span style="font-size:15px;font-weight:800;color:${totalScore>=192?'var(--rec)':'var(--mint-d)'};">${totalScore}<span style="font-size:11px;font-weight:400;color:var(--muted);"> / 192</span></span>
+        </div>
+        <div style="height:7px;background:var(--surface);border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${totalPct}%;background:var(--mint-btn);border-radius:4px;transition:width .4s;"></div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px;">${totalPct}% 달성 · 선택과목 ${allSel.length}과목</div>
+      </div>
+      <!-- 국영수 -->
+      <div style="background:${keaScore>81?'var(--core-bg)':'var(--bg2)'};border:1.5px solid ${keaScore>81?'var(--core-border)':'var(--border2)'};border-radius:12px;padding:11px 13px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
+          <span style="font-size:10px;font-weight:800;color:var(--sub);">📝 국·영·수</span>
+          <span style="font-size:13px;font-weight:800;color:${keaScore>81?'var(--core)':'var(--rec)'};">${keaScore}<span style="font-size:10px;color:var(--muted);"> /81</span></span>
+        </div>
+        <div style="height:5px;background:var(--surface);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${keaPct}%;background:${keaScore>81?'var(--core)':'var(--rec)'};border-radius:3px;"></div>
+        </div>
+        <div style="font-size:10px;color:${keaScore>81?'var(--core)':'var(--muted)'};margin-top:3px;">${keaScore>81?'⚠️ 81학점 초과':'81학점 이하 유지'}</div>
+      </div>
+      <!-- 영역별 -->
+      <div style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:12px;padding:11px 13px;">
+        <div style="font-size:10px;font-weight:800;color:var(--sub);margin-bottom:6px;">📚 영역별 이수</div>
+        ${areaScores.map(a=>{
+          const p=Math.min(100,(a.earned/a.min)*100).toFixed(0);
+          const ok=a.earned>=a.min;
+          return `<div style="margin-bottom:4px;">
+            <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:1px;">
+              <span style="color:var(--sub);">${a.name}</span>
+              <span style="font-weight:700;color:${ok?'var(--rec)':'var(--core)'};">${a.earned}/${a.min}</span>
+            </div>
+            <div style="height:3px;background:var(--surface);border-radius:2px;overflow:hidden;">
+              <div style="height:100%;width:${p}%;background:${ok?'var(--rec)':'var(--core)'};border-radius:2px;"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
     <div style="margin-bottom:16px;">
       <div class="sec" style="margin-bottom:8px;">핵심권장 이수현황</div>
       ${core.map(c=>{ const d=selNames.includes(c); return `<div class="check-row"><span>${c} <span class="badge badge-core" style="font-size:9px;">핵심</span></span><span class="${d?'check-ok':'check-no'}">${d?'✓':'✗'}</span></div>`; }).join('')||'<div style="font-size:12px;color:var(--muted);">학과 미선택</div>'}
     </div>
-    <div class="sec" style="margin-bottom:8px;">선택 과목 (${allSel.length}과목 · ${s.total||0}학점)</div>
+    <div class="sec" style="margin-bottom:8px;">선택 과목 (${allSel.length}과목 · ${totalScore}학점)</div>
     ${Object.keys(selSubs).map(sem=>`
       <div style="margin-bottom:12px;">
         <div style="font-size:11px;font-weight:800;color:var(--mint-d);margin-bottom:5px;">${sem}</div>
