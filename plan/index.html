@@ -1776,14 +1776,15 @@ function enterSetup(forceShow=false){
   // 이미 설정이 완료된 경우 바로 대시보드로
   const hasGas    = !!(S.gasUrl || localStorage.getItem('hsc_gas_url'));
   const hasSchool = !!(S.schoolName || localStorage.getItem('hsc_school'));
-  const hasSubs   = !!localStorage.getItem('hsc_subs');
-  if(!forceShow && hasGas && hasSchool && hasSubs){
+  // hasSubs: localStorage 또는 GAS URL이 있으면 편제표는 나중에 로드되므로 조건에서 제외
+  if(!forceShow && hasGas && hasSchool){
     // 설정 복원 후 대시보드 진입
     S.gasUrl      = S.gasUrl || localStorage.getItem('hsc_gas_url') || '';
     S.schoolName  = S.schoolName  || localStorage.getItem('hsc_school')  || '';
     S.classInfo   = S.classInfo   || localStorage.getItem('hsc_class')   || '';
     S.teacherName = S.teacherName || localStorage.getItem('hsc_teacher') || '';
-    S.availSubs   = JSON.parse(localStorage.getItem('hsc_subs'));
+    const savedSubs = localStorage.getItem('hsc_subs');
+    if(savedSubs) S.availSubs = JSON.parse(savedSubs);
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('appScreen').style.display='';
     document.getElementById('userLabel').textContent = `${S.teacherName||'교사'} 선생님`;
