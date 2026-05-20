@@ -1247,6 +1247,7 @@ footer a:hover{border-bottom-color:var(--gold);}
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;">
         <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="openScheduleReview()">인식 결과 검토 / 직접 편집</button>
+        <button class="btn btn-ghost" style="flex:1;font-size:12px;" onclick="loadScheduleFromGAS().then(()=>showToast('서버에서 편제표 로드됨','success'))">↻ 서버에서 불러오기</button>
       </div>
       <div id="schedulePreview" style="margin-top:6px;font-size:11px;color:var(--muted);"></div>
       <button class="btn btn-primary btn-full" style="margin-top:10px;" onclick="saveSchoolInfo()">학교 정보 저장</button>
@@ -1608,9 +1609,15 @@ function init(){
   document.getElementById('schoolLabel').textContent  = displaySchool;
   document.getElementById('schoolLabel2').textContent = displaySchool;
 
-  // 편제표 복원
+  // 편제표: localStorage를 임시 fallback으로 먼저 적용
   const savedSubs = localStorage.getItem('hsc_subs');
   S.availSubs = savedSubs ? JSON.parse(savedSubs) : deepCopy(DEFAULT_SUBS);
+  // 타입 정규화
+  Object.keys(S.availSubs).forEach(sem=>{
+    S.availSubs[sem] = S.availSubs[sem].map(sub=>({
+      ...sub, type: sub.type==='공통' ? '공통' : '선택'
+    }));
+  });
 
   // 임시 파싱 데이터 초기화
   S._pendingParsed = null;
@@ -1621,6 +1628,51 @@ function init(){
 
   renderLogin('start');
   setTimeout(initDropZone, 0);
+
+  // GAS에서 편제표 로드 (GAS URL이 있을 때만)
+  if(S.gasUrl) loadScheduleFromGAS();
+}
+
+// ===============================================   GAS 편제표 로드
+async function loadScheduleFromGAS(){
+  if(!S.gasUrl) return;
+  try{
+    const res  = await fetch(`${S.gasUrl}?action=getSchedule`);
+    const json = await res.json();
+    if(!json.ok || !json.data) return;
+    const data = json.data;
+    // 타입 정규화
+    Object.keys(data).forEach(sem=>{
+      data[sem] = (data[sem]||[]).map(sub=>({
+        ...sub, type: sub.type==='공통' ? '공통' : '선택'
+      }));
+    });
+    // GAS에 과목이 1개라도 있으면 적용
+    const hasData = Object.values(data).some(arr=>arr.length>0);
+    if(!hasData) return;
+    S.availSubs = data;
+    localStorage.setItem('hsc_subs', JSON.stringify(data));
+    // 설정 화면이 열려 있으면 편제표 미리보기 갱신
+    const statusEl = document.getElementById('schedDropStatus');
+    if(statusEl){
+      const total = Object.values(data).reduce((a,s)=>a+s.length,0);
+      statusEl.textContent = `서버에서 ${total}개 과목 로드됨`;
+      statusEl.className = 'dz-status ok';
+    }
+    updateSchedulePreview();
+  }catch(e){ /* 네트워크 오류 시 localStorage 데이터 유지 */ }
+}
+
+// ===============================================   GAS 편제표 저장
+async function saveScheduleToGAS(subsData){
+  if(!S.gasUrl) return;
+  try{
+    await fetch(S.gasUrl,{
+      method:'POST',
+      body: JSON.stringify({action:'saveSchedule', teacherKey:'TEACHER', data: subsData}),
+      headers:{'Content-Type':'text/plain'}
+    });
+  }catch(e){ showToast('GAS 저장 실패 (로컬만 저장됨)','warn'); }
 }
 
 function deepCopy(obj){ return JSON.parse(JSON.stringify(obj)); }
@@ -2251,15 +2303,22 @@ function saveFromReview(){
   const newSubs={};
   let hasData=false;
   S._reviewData.forEach(sem=>{
-    newSubs[sem.label]=sem.subjects||[];
-    if(sem.subjects.length>0) hasData=true;
+    // 타입 정규화: 일반선택/진로선택/융합선택 → 선택
+    newSubs[sem.label]=(sem.subjects||[]).map(sub=>({
+      ...sub, type: sub.type==='공통' ? '공통' : '선택'
+    }));
+    if(newSubs[sem.label].length>0) hasData=true;
   });
   if(!hasData){showToast('저장할 과목이 없습니다','error');return;}
   S.availSubs=newSubs;
   localStorage.setItem('hsc_subs',JSON.stringify(newSubs));
+  // 리뷰 팝업 최신화
+  S._pendingParsed = null;
+  S._reviewData = SEM_KEYS.map(label=>({id:label, label, subjects: deepCopy(newSubs[label]||[])}));
+  // ★ GAS에도 동시 저장 → 학생 전기기 동기화
+  saveScheduleToGAS(newSubs).then(()=>showToast('편제표 저장됨! (서버 반영)','success'));
   closeReview();
   updateSchedulePreview();
-  showToast('편제표 저장됨!','success');
   // 드롭존 상태 업데이트
   const zone=document.getElementById('schedDropZone');
   const statusEl=document.getElementById('schedDropStatus');
@@ -2295,9 +2354,13 @@ function saveScheduleEditor(){
   });
   S.availSubs = newSubs;
   localStorage.setItem('hsc_subs', JSON.stringify(newSubs));
+  // 리뷰 팝업 최신화
+  S._pendingParsed = null;
+  S._reviewData = SEM_KEYS.map(label=>({id:label, label, subjects: deepCopy(newSubs[label]||[])}));
+  // ★ GAS에도 동시 저장
+  saveScheduleToGAS(newSubs).then(()=>showToast('편제표 저장됨! (서버 반영)','success'));
   closeScheduleEditor();
   updateSchedulePreview();
-  showToast('편제표 저장됨!','success');
 }
 
 function updateSchedulePreview(){
@@ -2841,7 +2904,10 @@ function renderTeacherTab(n){
         <h3 style="font-size:13px;font-weight:800;margin-bottom:6px;">편제표 수정</h3>
         <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">현재 저장된 편제표를 확인하고 과목을 추가·삭제·수정할 수 있습니다.</p>
         ${(()=>{const counts=SEM_KEYS.map(sem=>{const n=(S.availSubs[sem]||[]).length;return `<span style="font-size:11px;color:var(--sub);">${sem.replace('학년 ','').replace('학기','').trim()}: <b style="color:var(--mint-d);">${n}</b>과목</span>`;}).join(' · ');return `<div style="font-size:11px;margin-bottom:10px;line-height:1.8;">${counts}</div>`;})()}
-        <button class="btn btn-primary btn-sm" onclick="openScheduleReview()">편제표 수정하기</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="openScheduleReview()">편제표 수정하기</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadScheduleFromGAS().then(()=>showToast('서버에서 편제표 로드됨','success'))">↻ 서버에서 불러오기</button>
+        </div>
       </div>
       <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;">
         <h3 style="font-size:13px;font-weight:800;margin-bottom:10px;">학생 명단 관리</h3>
