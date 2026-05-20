@@ -455,9 +455,7 @@ footer a:hover{text-decoration:underline;}
 <footer>Made with ❤️ by <a href="https://www.instagram.com/hirame.ki" target="_blank">성포고 황성재 @hirame.ki</a></footer>
 
 <script>
-/* ═══════════════════════════════════════════════
-   데이터: 계열/학과 (기존 유지)
-═══════════════════════════════════════════════ */
+// ===============================================   데이터: 계열/학과
 const TRACKS = {
   '인문·사회':{
     '국어국문/문예창작':{desc:'문학과 언어 능력이 핵심입니다.',core:['문학','화법과 언어','독서와 작문','주제탐구독서'],recommend:['인문학과 윤리','세계사','독서토론과 글쓰기','한국사 심화 탐구'],reference:['사회와 문화','현대사회와 윤리','동아시아 역사기행','음악 감상과 비평']},
@@ -501,11 +499,7 @@ const TRACKS = {
   },
 };
 
-/* ═══════════════════════════════════════════════
-   대학 데이터
-   confirmed: true = 공식 발표 기준 / false = 작년·일반 기준(확인필요 배지)
-   location: 소재지  type: 국립/사립  campus: 캠퍼스 메모
-═══════════════════════════════════════════════ */
+// ===============================================   대학 데이터   c
 const UNI_INFO = {
   /* ── 서울 최상위 ── */
   '서울대':      {location:'서울 관악구',    type:'국립',  campus:'단일캠퍼스',          confirmed:true},
@@ -671,9 +665,7 @@ const REQUIRED_AREAS = [
 ];
 const KEA_KEYS = ['국어','문학','화법','독서','언어','작문','매체','수학','대수','미적분','확률','통계','기하','수학과제','영어','심화영어'];
 
-/* ═══════════════════════════════════════════════
-   전역 상태
-═══════════════════════════════════════════════ */
+// ===============================================   전역 상태=====
 let S = {
   gasUrl:'', mode:null,
   studentId:'', studentName:'', locked:false,
@@ -687,9 +679,7 @@ let S = {
   logoClicks:0, logoTimer:null,
 };
 
-/* ═══════════════════════════════════════════════
-   초기화
-═══════════════════════════════════════════════ */
+// ===============================================   초기화=======
 function init(){
   const params = new URLSearchParams(location.search);
   const urlGas = params.get('gas');
@@ -716,9 +706,7 @@ function init(){
 
 function deepCopy(obj){ return JSON.parse(JSON.stringify(obj)); }
 
-/* ═══════════════════════════════════════════════
-   로고 5번 클릭 → 교사 설정
-═══════════════════════════════════════════════ */
+// ===============================================   로고 5번 클릭 →
 function logoClick(){
   S.logoClicks++;
   clearTimeout(S.logoTimer);
@@ -726,9 +714,7 @@ function logoClick(){
   S.logoTimer = setTimeout(()=>{ S.logoClicks=0; }, 1500);
 }
 
-/* ═══════════════════════════════════════════════
-   로그인 화면
-═══════════════════════════════════════════════ */
+// ===============================================   로그인 화면====
 function renderLogin(state, data={}){
   const card = document.getElementById('loginCard');
   if(state==='start'){
@@ -812,9 +798,7 @@ function enterStudent(data){
   buildStudentTabs(); goTab(1);
 }
 
-/* ═══════════════════════════════════════════════
-   교사 설정 화면
-═══════════════════════════════════════════════ */
+// ===============================================   교사 설정 화면==
 function enterSetup(forceShow=false){
   // 이미 설정이 완료된 경우 바로 대시보드로
   const hasGas    = !!(S.gasUrl || localStorage.getItem('hsc_gas_url'));
@@ -909,9 +893,7 @@ function closeScheduleEditor(){
 }
 
 
-/* ═══════════════════════════════════════════════
-   편제표 파일 업로드 파싱 (SheetJS + PDF.js, 무료)
-═══════════════════════════════════════════════ */
+// ===============================================   편제표 파일 업로드
 const SEM_PATTERNS = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
 const TYPE_KEYWORDS = {
   '공통':['공통'],
@@ -1018,13 +1000,11 @@ async function parsePDF(file){
   for(let i=1;i<=pdf.numPages;i++){
     const page=await pdf.getPage(i);
     const tc=await page.getTextContent();
-    fullText+=tc.items.map(item=>item.str).join(' ')+'
-';
+    fullText+=tc.items.map(item=>item.str).join(' ')+'\n';
   }
   // 텍스트에서 학기 구분 + 과목 파싱
   const parsed={};
-  const lines=fullText.split('
-');
+  const lines=fullText.split('\n');
   let curSem=null;
   lines.forEach(line=>{
     line=line.trim();
@@ -1074,8 +1054,7 @@ function applyImportResult(parsed){
     const subs=parsed[sem]||[];
     if(!subs.length) return;
     const el=document.getElementById('sched_'+sem.replace(/ /g,'_'));
-    if(el) el.value=subs.map(s=>`${s.name},${s.cr},${s.type}`).join('
-');
+    if(el) el.value=subs.map(s=>`${s.name},${s.cr},${s.type}`).join('\n');
   });
 
   showToast(`${semCount}개 학기 인식 완료! 내용 확인 후 저장하세요.`,'success');
@@ -1169,9 +1148,7 @@ function enterTeacherMode(){
   buildTeacherTabs(); goTab(0);
 }
 
-/* ═══════════════════════════════════════════════
-   탭 관리
-═══════════════════════════════════════════════ */
+// ===============================================   탭 관리======
 function buildStudentTabs(){
   document.getElementById('tabBar').innerHTML = `
     <div class="tab" data-tab="1">① 대학·학과</div>
@@ -1192,9 +1169,7 @@ function goTab(n){
   else renderTeacherTab(n);
 }
 
-/* ═══════════════════════════════════════════════
-   학생 탭 렌더
-═══════════════════════════════════════════════ */
+// ===============================================   학생 탭 렌더===
 function renderStudentTab(n){
   const left=document.getElementById('leftPanel'), right=document.getElementById('rightPanel');
   if(n===1){
@@ -1358,13 +1333,7 @@ function loadRec(){
   updateCheckList();
 }
 
-/* ═══════════════════════════════════════════════
-   과목 설계 렌더 (학년별 로직)
-   
-   1학년: 1학년 = 이수완료 표시, 2·3학년 = 선택 가능
-   2학년: 1학년 = 이수완료, 2학년 = 선택/저장, 3학년 = 선택 가능
-   3학년: 1·2학년 = 이수완료, 3학년 = 선택(제출 후 잠금)
-═══════════════════════════════════════════════ */
+// ===============================================   과목 설계 렌더 (
 function getCompletedSems(){
   if(S.grade === 1) return [];                              // 1학년: 이수완료 없음, 1학년 과목 자동이수
   if(S.grade === 2) return ['1학년 1학기','1학년 2학기'];  // 2학년: 1학년 이수완료
@@ -1612,9 +1581,7 @@ function confirmAdd(){
   closeModal(); renderDesigner(); showToast(`"${name}" 추가!`,'success');
 }
 
-/* ═══════════════════════════════════════════════
-   교사 탭 렌더
-═══════════════════════════════════════════════ */
+// ===============================================   교사 탭 렌더===
 function renderTeacherTab(n){
   const left=document.getElementById('leftPanel'), right=document.getElementById('rightPanel');
   if(n===0){
@@ -1867,9 +1834,7 @@ async function teacherAddStudent(){
   loadTeacherStudentList();
 }
 
-/* ═══════════════════════════════════════════════
-   로그아웃
-═══════════════════════════════════════════════ */
+// ===============================================   로그아웃======
 function logout(){
   S.mode=null; S.studentId=''; S.studentName=''; S.locked=false;
   S.teacherMode=false; S.selSubs={}; S.univ=''; S.track=''; S.major='';
@@ -1880,9 +1845,7 @@ function logout(){
   renderLogin('start');
 }
 
-/* ═══════════════════════════════════════════════
-   유틸
-═══════════════════════════════════════════════ */
+// ===============================================   유틸========
 function showGuide(){ document.getElementById('guideModal').classList.add('open'); }
 let _tt;
 function showToast(msg,type){ const el=document.getElementById('toast'); el.textContent=msg; el.className='toast show'+(type?' '+type:''); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2500); }
