@@ -1355,6 +1355,31 @@ footer a:hover{border-bottom-color:var(--gold);}
   </div>
 </div>
 
+<!-- ══ 국영수 81학점 초과 경고 모달 ══ -->
+<div class="modal-overlay" id="keaWarnModal">
+  <div class="modal" style="width:400px;max-width:92vw;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--core-bg);border:2px solid var(--core);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--core)" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h3 style="margin:0;color:var(--core);">국·영·수 81학점 초과</h3>
+    </div>
+    <div style="background:var(--core-bg);border:1px solid var(--core-border);border-left:3px solid var(--core);border-radius:6px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:14px;font-weight:800;color:var(--core);margin-bottom:4px;" id="keaWarnCount"></div>
+      <div style="font-size:12px;color:var(--sub);line-height:1.7;">
+        2022 개정 교육과정에 따라 국어·영어·수학 교과의<br>
+        총 이수학점은 <b>81학점을 초과할 수 없습니다.</b>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--sub);line-height:1.8;margin-bottom:16px;">
+      국·영·수 과목 중 일부를 <b>선택 해제</b>하여 81학점 이하로 조정한 후 다시 제출해 주세요.
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary btn-full" onclick="document.getElementById('keaWarnModal').classList.remove('open')">확인 후 수정하기</button>
+    </div>
+  </div>
+</div>
+
 <div class="submit-overlay" id="submitOverlay">
   <div class="submit-card">
     <div class="s-icon"><svg><use href="#i-upload"/></svg></div>
@@ -1576,6 +1601,23 @@ const REQUIRED_AREAS = [
   {name:'한국사', min:6,  keys:['한국사']},
 ];
 const KEA_KEYS = ['국어','문학','화법','독서','언어','작문','매체','수학','대수','미적분','확률','통계','기하','수학과제','영어','심화영어'];
+
+// ── 과목명 정규화: 로마자 ↔ 숫자 혼용 통일 ──────────────────────
+// 로마자 Ⅰ→1, Ⅱ→2, Ⅲ→3 / 알파벳 I→Ⅰ 등 양방향을 숫자로 통일
+function normalizeName(name){
+  if(!name) return '';
+  return String(name)
+    .replace(/Ⅰ/g,'1').replace(/Ⅱ/g,'2').replace(/Ⅲ/g,'3')
+    .replace(/ⅰ/g,'1').replace(/ⅱ/g,'2').replace(/ⅲ/g,'3')
+    // 단독 알파벳 I (앞뒤가 한글이거나 공백/끝인 경우만) → 1
+    .replace(/(?<=[가-힣\s])I(?=[가-힣\s]|$)/g,'1')
+    .replace(/(?<=^|\s)I(?=[가-힣])/g,'1')
+    .trim();
+}
+// 키워드 포함 여부도 정규화 후 비교
+function nameIncludes(subName, keyword){
+  return normalizeName(subName).includes(normalizeName(keyword));
+}
 
 // ===============================================   전역 상태=====
 let S = {
@@ -2655,7 +2697,7 @@ function renderDesigner(){
     const subs = S.availSubs[sem]||DEFAULT_SUBS[sem]||[];
     if(!S.selSubs[sem]) S.selSubs[sem]=[];
     subs.forEach(sub=>{
-      if(sub.type==='공통' && !S.selSubs[sem].some(s=>s.name===sub.name)){
+      if(sub.type==='공통' && !S.selSubs[sem].some(s=>normalizeName(s.name)===normalizeName(sub.name))){
         S.selSubs[sem].push({...sub});
       }
     });
@@ -2759,7 +2801,7 @@ function getAllSelectedSubs(){
     const sel  = S.selSubs[sem]||[];
     // 공통과목: 무조건 포함
     subs.filter(s=>s.type==='공통').forEach(s=>{
-      if(!all.some(a=>a.name===s.name)) all.push(s);
+      if(!all.some(a=>normalizeName(a.name)===normalizeName(s.name))) all.push(s);
     });
     // 선택과목: selSubs에 있는 것만
     sel.filter(s=>s.type!=='공통').forEach(s=>all.push(s));
@@ -2773,12 +2815,12 @@ function calcCredits(){
 }
 
 function calcKEA(){
-  return getAllSelectedSubs().filter(s=>KEA_KEYS.some(k=>s.name.includes(k))).reduce((a,s)=>a+s.cr,0);
+  return getAllSelectedSubs().filter(s=>KEA_KEYS.some(k=>nameIncludes(s.name,k))).reduce((a,s)=>a+s.cr,0);
 }
 
 function calcAreaCredits(){
   const all=getAllSelectedSubs();
-  return REQUIRED_AREAS.map(area=>({...area, earned:all.filter(s=>area.keys.some(k=>s.name.includes(k))).reduce((a,s)=>a+s.cr,0)}));
+  return REQUIRED_AREAS.map(area=>({...area, earned:all.filter(s=>area.keys.some(k=>nameIncludes(s.name,k))).reduce((a,s)=>a+s.cr,0)}));
 }
 
 function updateCreditBar(){
@@ -2826,10 +2868,10 @@ function updateCreditBar(){
 
 function updateCheckList(){
   if(!S.coreList.length&&!S.recList.length) return;
-  const names=getAllSelectedSubs().map(s=>s.name);
+  const names=getAllSelectedSubs().map(s=>normalizeName(s.name));
   let html='';
-  S.coreList.forEach(s=>{ const d=names.includes(s); html+=`<div class="check-row"><span>${s} <span class="badge badge-core" style="font-size:9px;">핵심</span></span><span class="${d?'check-ok':'check-no'}">${d?'✓':'✗'}</span></div>`; });
-  S.recList.slice(0,5).forEach(s=>{ const d=names.includes(s); html+=`<div class="check-row"><span>${s} <span class="badge badge-rec" style="font-size:9px;">권장</span></span><span class="${d?'check-ok':'check-no'}">${d?'✓':'✗'}</span></div>`; });
+  S.coreList.forEach(s=>{ const d=names.includes(normalizeName(s)); html+=`<div class="check-row"><span>${s} <span class="badge badge-core" style="font-size:9px;">핵심</span></span><span class="${d?'check-ok':'check-no'}">${d?'✓':'✗'}</span></div>`; });
+  S.recList.slice(0,5).forEach(s=>{ const d=names.includes(normalizeName(s)); html+=`<div class="check-row"><span>${s} <span class="badge badge-rec" style="font-size:9px;">권장</span></span><span class="${d?'check-ok':'check-no'}">${d?'✓':'✗'}</span></div>`; });
   const el=document.getElementById('checkList');
   if(el) el.innerHTML=html||'<div style="font-size:12px;color:var(--muted);">대학·학과를 먼저 선택하세요</div>';
 }
@@ -2839,6 +2881,14 @@ async function submitSelection(){
   if(S.locked){ showToast('이미 제출된 선택입니다','warn'); return; }
   if(!S.gasUrl){ showToast('GAS URL이 설정되지 않았습니다','error'); return; }
   const {total}=calcCredits(); const kea=calcKEA();
+  // ★ 국영수 81학점 초과 시 모달 경고 후 제출 차단
+  if(kea>81){
+    const modal=document.getElementById('keaWarnModal');
+    const cnt=document.getElementById('keaWarnCount');
+    if(cnt) cnt.textContent=`현재 국·영·수 합계: ${kea}학점 (초과 ${kea-81}학점)`;
+    if(modal) modal.classList.add('open');
+    return;
+  }
   if(!confirm('과목 선택을 제출하시겠습니까?\n제출 후에는 담임 선생님 확인 없이 수정할 수 없습니다.')) return;
   const overlay=document.getElementById('submitOverlay');
   if(overlay) overlay.classList.add('show');
@@ -3023,7 +3073,7 @@ async function openStudentDetail(id){
   const keaPct   = isFinite(keaScore)   ? Math.min(100,(keaScore/81)*100).toFixed(0)   : 0;
   const areaScores = REQUIRED_AREAS.map(area=>({
     name:area.name, min:area.min,
-    earned:allSubsFlat.filter(sub=>area.keys.some(k=>sub.name&&sub.name.includes(k))).reduce((a,sub)=>a+(sub.cr||0),0)
+    earned:allSubsFlat.filter(sub=>area.keys.some(k=>nameIncludes(sub.name,k))).reduce((a,sub)=>a+(sub.cr||0),0)
   }));
   right.innerHTML=`
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
@@ -3077,7 +3127,7 @@ async function openStudentDetail(id){
 
     <div style="margin-bottom:16px;">
       <div class="sec" style="margin-bottom:8px;">핵심권장 이수현황</div>
-      ${core.map(c=>{ const d=selNames.includes(c); return `<div class="check-row"><span>${c} <span class="badge badge-core" style="font-size:9px;">핵심</span></span><span class="${d?'check-ok':'check-no'}">${d?'✓':'✗'}</span></div>`; }).join('')||'<div style="font-size:12px;color:var(--muted);">학과 미선택</div>'}
+      ${core.map(c=>{ const d=selNames.map(n=>normalizeName(n)).includes(normalizeName(c)); return `<div class="check-row"><span>${c} <span class="badge badge-core" style="font-size:9px;">핵심</span></span><span class="${d?'check-ok':'check-no'}">${d?'✓':'✗'}</span></div>`; }).join('')||'<div style="font-size:12px;color:var(--muted);">학과 미선택</div>'}
     </div>
     <div class="sec" style="margin-bottom:8px;">선택 과목 (${allSel.length}과목 · ${totalScore}학점)</div>
     ${Object.keys(selSubs).map(sem=>`
