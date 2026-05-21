@@ -1961,32 +1961,18 @@ function copyShareUrl(){
   navigator.clipboard.writeText(url).then(()=>showToast('링크 복사됨!','success'));
 }
 
-// URL 단축 (is.gd 무료 API) — 실패 시 원본 반환
-async function shortenUrl(url){
-  try{
-    const res = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(url)}`);
-    if(!res.ok) throw new Error('status '+res.status);
-    const short = (await res.text()).trim();
-    if(short.startsWith('https://is.gd/') || short.startsWith('http://is.gd/')) return short;
-    throw new Error('unexpected response');
-  } catch(e){
-    console.warn('[QR] URL 단축 실패, 원본 사용:', e.message);
-    return url;
-  }
-}
-
-// QR 생성 공통 함수
+// QR 생성 공통 함수 (correctLevel.L → 도트 최소화, 가장 단순한 QR)
 function _buildQr(boxEl, qrUrl){
   boxEl.innerHTML = '';
   new QRCode(boxEl, {
     text: qrUrl,
     width: 200, height: 200,
     colorDark: '#1a237e', colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.L   // L = 도트 최소화 → 단순한 QR
+    correctLevel: QRCode.CorrectLevel.L
   });
 }
 
-async function showQrModal(urlElId){
+function showQrModal(urlElId){
   const url = document.getElementById(urlElId)?.textContent || '';
   if(!url || url.includes('먼저')){ showToast('공유 링크를 먼저 설정하세요','error'); return; }
 
@@ -1999,10 +1985,8 @@ async function showQrModal(urlElId){
   overlay.innerHTML = `
     <div style="background:var(--surface);border-radius:16px;padding:24px;max-width:320px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,.35);text-align:center;">
       <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px;">학생 공유 QR 코드</div>
-      <div id="_qrUrlLabel" style="font-size:10px;color:var(--muted);margin-bottom:14px;word-break:break-all;line-height:1.5;">링크 단축 중...</div>
-      <div id="_qrBox" style="display:inline-block;padding:10px;background:#fff;border-radius:8px;border:1.5px solid var(--border);min-width:200px;min-height:200px;display:flex;align-items:center;justify-content:center;">
-        <div style="font-size:11px;color:var(--muted);">생성 중...</div>
-      </div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:14px;word-break:break-all;line-height:1.5;">${url}</div>
+      <div id="_qrBox" style="display:inline-block;padding:10px;background:#fff;border-radius:8px;border:1.5px solid var(--border);"></div>
       <div style="display:flex;gap:8px;margin-top:14px;justify-content:center;">
         <button class="btn btn-primary btn-sm" id="_qrDownBtn">📥 이미지 저장</button>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('_qrModal').remove()">닫기</button>
@@ -2011,31 +1995,22 @@ async function showQrModal(urlElId){
   document.body.appendChild(overlay);
   overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.remove(); });
 
-  // URL 단축 후 QR 생성
-  const shortUrl = await shortenUrl(url);
-  const labelEl = document.getElementById('_qrUrlLabel');
-  const boxEl   = document.getElementById('_qrBox');
-  if(!labelEl || !boxEl) return; // 모달이 닫혔으면 중단
-
-  const isShortened = shortUrl !== url;
-  labelEl.innerHTML = isShortened
-    ? `<span style="color:var(--rec);font-weight:700;">${shortUrl}</span><br><span style="font-size:9px;color:var(--muted);">(원본 링크를 자동으로 단축했습니다)</span>`
-    : `<span style="word-break:break-all;">${url}</span>`;
-
-  try{
-    _buildQr(boxEl, shortUrl);
-    document.getElementById('_qrDownBtn').onclick = function(){
-      const img = document.querySelector('#_qrBox img');
-      if(!img){ showToast('QR 이미지 로딩 중...',''); return; }
-      const a = document.createElement('a');
-      a.download = '학생공유QR.png';
-      a.href = img.src;
-      a.click();
-      showToast('QR 이미지 저장됨!','success');
-    };
-  } catch(e){
-    boxEl.innerHTML = '<div style="color:red;font-size:11px;padding:10px;">QR 생성 실패: '+e.message+'</div>';
-  }
+  requestAnimationFrame(()=>{
+    try{
+      _buildQr(document.getElementById('_qrBox'), url);
+      document.getElementById('_qrDownBtn').onclick = function(){
+        const img = document.querySelector('#_qrBox img');
+        if(!img){ showToast('QR 이미지 로딩 중...',''); return; }
+        const a = document.createElement('a');
+        a.download = '학생공유QR.png';
+        a.href = img.src;
+        a.click();
+        showToast('QR 이미지 저장됨!','success');
+      };
+    } catch(e){
+      document.getElementById('_qrBox').innerHTML = '<div style="color:red;font-size:11px;padding:10px;">QR 생성 실패: '+e.message+'</div>';
+    }
+  });
 }
 
 /* ── 편제표 편집 ── */
@@ -3312,8 +3287,8 @@ function renderTeacherTab(n){
       </div>
     </div>`;
     loadTeacherStudentList();
-    // semMax 카드 채우기
-    (function(){
+    // semMax 카드 채우기 — rAF로 DOM 삽입 완료 후 실행 보장
+    requestAnimationFrame(function(){
       var card = document.getElementById('semMaxCard');
       if(!card) return;
       var sems = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
@@ -3331,7 +3306,7 @@ function renderTeacherTab(n){
       });
       html += '</div><div style="font-size:10px;color:var(--muted);margin-top:8px;">변경 즉시 저장됩니다. 학생 화면 학기 제목 옆에 표시됩니다.</div>';
       card.innerHTML = html;
-    })();
+    });
     // 공유 링크 박스 채우기
     (function(){
       const box = document.getElementById('teacherShareUrlBox');
@@ -3357,7 +3332,7 @@ function renderTeacherTab(n){
         document.getElementById('teacherShareCopyBtn').onclick = function(){
           navigator.clipboard.writeText(url).then(()=>showToast('링크 복사됨!','success'));
         };
-        document.getElementById('teacherShareQrBtn').onclick = async function(){
+        document.getElementById('teacherShareQrBtn').onclick = function(){
           const wrap = document.getElementById('teacherShareQrWrap');
           if(wrap.style.display==='block'){
             wrap.style.display='none';
@@ -3365,25 +3340,10 @@ function renderTeacherTab(n){
           } else {
             wrap.style.display='block';
             const box = document.getElementById('teacherShareQrBox');
-            box.innerHTML='<div style="font-size:11px;color:var(--muted);padding:20px;">링크 단축 중...</div>';
-            this.textContent='QR 닫기';
-            const shortUrl = await shortenUrl(url);
-            const isShortened = shortUrl !== url;
-            // 단축 URL 표시 (기존 URL 박스 위에 추가)
-            const urlBox = box.closest('[id]')?.previousElementSibling;
-            if(isShortened){
-              let shortLabel = document.getElementById('teacherShareShortLabel');
-              if(!shortLabel){
-                shortLabel = document.createElement('div');
-                shortLabel.id = 'teacherShareShortLabel';
-                shortLabel.style.cssText = 'font-size:10px;color:var(--rec);font-weight:700;margin-bottom:6px;word-break:break-all;';
-                wrap.parentNode.insertBefore(shortLabel, wrap);
-              }
-              shortLabel.innerHTML = `🔗 단축 링크: <a href="${shortUrl}" target="_blank" style="color:var(--rec);">${shortUrl}</a>`;
-            }
             box.innerHTML='';
+            this.textContent='QR 닫기';
             try{
-              _buildQr(box, shortUrl);
+              _buildQr(box, url);
             } catch(e){ box.innerHTML='<div style="color:red;font-size:11px;">QR 생성 실패</div>'; }
             document.getElementById('qrDownBtn').onclick=function(){
               const img=box.querySelector('img');
