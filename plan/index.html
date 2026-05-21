@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="audio.js" defer></script>
@@ -1439,6 +1440,19 @@ const TRACKS = {
   },
 };
 
+// ── localStorage 안전 래퍼 (Edge Tracking Prevention / file:// 환경 대응) ──
+const _LS = (function(){
+  var _mem = {};
+  try{ _LS.set('__test__','1'); _LS.remove('__test__'); }
+  catch(e){ console.warn('[localStorage 차단됨] 메모리 스토리지로 대체합니다.'); }
+  function _avail(){ try{ return !!localStorage; }catch(e){ return false; } }
+  return {
+    get: function(k){ try{ return _avail()?_LS.get(k):(_mem[k]||null); }catch(e){ return _mem[k]||null; } },
+    set: function(k,v){ try{ if(_avail()) _LS.set(k,v); else _mem[k]=v; }catch(e){ _mem[k]=v; } },
+    remove: function(k){ try{ if(_avail()) _LS.remove(k); else delete _mem[k]; }catch(e){ delete _mem[k]; } }
+  };
+})();
+
 // ===============================================   대학 데이터   c
 const UNI_INFO = {
   /* ── 서울 최상위 ── */
@@ -1632,7 +1646,12 @@ let S = {
   coreList:[], recList:[], refList:[],
   availSubs:{}, selSubs:{},
   _scheduleIsDefault: true,
-  deadline: null,   // 제출 마감일 (ISO string)
+  deadline: null,
+  semMax: {
+    '1학년 1학기':10,'1학년 2학기':10,
+    '2학년 1학기':10,'2학년 2학기':10,
+    '3학년 1학기':10,'3학년 2학기':10
+  },
   modalTarget:null,
   teacherMode:false, currentTab:1,
   logoClicks:0, logoTimer:null,
@@ -1644,20 +1663,22 @@ function init(){
   const urlGas = params.get('gas');
   if(urlGas) S.gasUrl = decodeURIComponent(urlGas);
 
-  const saved = localStorage.getItem('hsc_gas_url');
+  const saved = _LS.get('hsc_gas_url');
   if(saved && !S.gasUrl) S.gasUrl = saved;
 
   // 학교 정보 복원
-  S.schoolName  = params.get('school') || localStorage.getItem('hsc_school') || '';
-  S.classInfo   = localStorage.getItem('hsc_class')   || '';
-  S.teacherName = localStorage.getItem('hsc_teacher') || '';
+  S.schoolName  = params.get('school') || _LS.get('hsc_school') || '';
+  S.classInfo   = _LS.get('hsc_class')   || '';
+  S.teacherName = _LS.get('hsc_teacher') || '';
+  const _sm = _LS.get('hsc_semmax');
+  if(_sm){ try{ Object.assign(S.semMax, JSON.parse(_sm)); }catch(e){} }
 
   const displaySchool = S.schoolName || '학교 미설정';
   document.getElementById('schoolLabel').textContent  = displaySchool;
   document.getElementById('schoolLabel2').textContent = displaySchool;
 
   // 편제표: localStorage를 임시 fallback으로 먼저 적용
-  const savedSubs = localStorage.getItem('hsc_subs');
+  const savedSubs = _LS.get('hsc_subs');
   S.availSubs = savedSubs ? JSON.parse(savedSubs) : deepCopy(DEFAULT_SUBS);
   // 타입 정규화
   Object.keys(S.availSubs).forEach(sem=>{
@@ -1676,7 +1697,7 @@ function init(){
   renderLogin('start');
   setTimeout(initDropZone, 0);
 
-  S._scheduleIsDefault = !localStorage.getItem('hsc_subs'); // GAS 로드 전 임시
+  S._scheduleIsDefault = !_LS.get('hsc_subs'); // GAS 로드 전 임시
   // GAS에서 편제표 로드 (GAS URL이 있을 때만)
   if(S.gasUrl) loadScheduleFromGAS();
 }
@@ -1702,7 +1723,7 @@ async function loadScheduleFromGAS(){
     S.availSubs = data;
     // 마감일 로드
     if(json.deadline) S.deadline = json.deadline;
-    localStorage.setItem('hsc_subs', JSON.stringify(data));
+    _LS.set('hsc_subs', JSON.stringify(data));
     // 설정 화면이 열려 있으면 편제표 미리보기 갱신
     const statusEl = document.getElementById('schedDropStatus');
     if(statusEl){
@@ -1822,21 +1843,24 @@ function enterStudent(data){
   history.pushState({screen:'app', mode:'student'}, '');
 
   buildStudentTabs(); goTab(1);
+
+  // 편제표 최신 상태로 재로드 (로그인 후 GAS에서 명시적으로 다시 가져옴)
+  if(S.gasUrl) loadScheduleFromGAS().then(()=>{ renderDesigner(); });
 }
 
 // ===============================================   교사 설정 화면==
 function enterSetup(forceShow=false){
   // 이미 설정이 완료된 경우 바로 대시보드로
-  const hasGas    = !!(S.gasUrl || localStorage.getItem('hsc_gas_url'));
-  const hasSchool = !!(S.schoolName || localStorage.getItem('hsc_school'));
+  const hasGas    = !!(S.gasUrl || _LS.get('hsc_gas_url'));
+  const hasSchool = !!(S.schoolName || _LS.get('hsc_school'));
   // hasSubs: localStorage 또는 GAS URL이 있으면 편제표는 나중에 로드되므로 조건에서 제외
   if(!forceShow && hasGas && hasSchool){
     // 설정 복원 후 대시보드 진입
-    S.gasUrl      = S.gasUrl || localStorage.getItem('hsc_gas_url') || '';
-    S.schoolName  = S.schoolName  || localStorage.getItem('hsc_school')  || '';
-    S.classInfo   = S.classInfo   || localStorage.getItem('hsc_class')   || '';
-    S.teacherName = S.teacherName || localStorage.getItem('hsc_teacher') || '';
-    const savedSubs = localStorage.getItem('hsc_subs');
+    S.gasUrl      = S.gasUrl || _LS.get('hsc_gas_url') || '';
+    S.schoolName  = S.schoolName  || _LS.get('hsc_school')  || '';
+    S.classInfo   = S.classInfo   || _LS.get('hsc_class')   || '';
+    S.teacherName = S.teacherName || _LS.get('hsc_teacher') || '';
+    const savedSubs = _LS.get('hsc_subs');
     if(savedSubs) S.availSubs = JSON.parse(savedSubs);
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('appScreen').style.display='';
@@ -1850,9 +1874,9 @@ function enterSetup(forceShow=false){
   document.getElementById('appScreen').style.display='none';
   document.getElementById('setupScreen').style.display='';
   if(S.gasUrl) document.getElementById('gasUrlInput').value = S.gasUrl;
-  document.getElementById('schoolNameInput').value  = S.schoolName  || localStorage.getItem('hsc_school') || '';
-  document.getElementById('classInfoInput').value   = S.classInfo   || localStorage.getItem('hsc_class')  || '';
-  document.getElementById('teacherNameInput').value = S.teacherName || localStorage.getItem('hsc_teacher')|| '';
+  document.getElementById('schoolNameInput').value  = S.schoolName  || _LS.get('hsc_school') || '';
+  document.getElementById('classInfoInput').value   = S.classInfo   || _LS.get('hsc_class')  || '';
+  document.getElementById('teacherNameInput').value = S.teacherName || _LS.get('hsc_teacher')|| '';
   updateShareUrl();
   updateSchedulePreview();
   // 드롭존 재초기화 (setupScreen이 이제 보이므로)
@@ -1865,7 +1889,7 @@ function saveGasUrl(){
   const url = document.getElementById('gasUrlInput').value.trim();
   if(!url){ showToast('URL을 입력하세요','error'); return; }
   S.gasUrl = url;
-  localStorage.setItem('hsc_gas_url', url);
+  _LS.set('hsc_gas_url', url);
   document.getElementById('urlOk').style.display = 'block';
   updateShareUrl();
   showToast('URL 저장됨!','success');
@@ -1876,9 +1900,9 @@ function saveSchoolInfo(){
   S.schoolName  = document.getElementById('schoolNameInput').value.trim();
   S.classInfo   = document.getElementById('classInfoInput').value.trim();
   S.teacherName = document.getElementById('teacherNameInput').value.trim();
-  localStorage.setItem('hsc_school',   S.schoolName);
-  localStorage.setItem('hsc_class',    S.classInfo);
-  localStorage.setItem('hsc_teacher',  S.teacherName);
+  _LS.set('hsc_school',   S.schoolName);
+  _LS.set('hsc_class',    S.classInfo);
+  _LS.set('hsc_teacher',  S.teacherName);
 
   // 학교명 라벨 갱신
   const label = S.schoolName || '학교 미설정';
@@ -1894,7 +1918,7 @@ function updateShareUrl(){
   const el = document.getElementById('shareUrl');
   if(!S.gasUrl){ el.textContent='GAS URL을 먼저 입력하세요'; return; }
   const base = location.href.split('?')[0];
-  const school = S.schoolName || localStorage.getItem('hsc_school') || '';
+  const school = S.schoolName || _LS.get('hsc_school') || '';
   el.textContent = `${base}?gas=${encodeURIComponent(S.gasUrl)}${school?'&school='+encodeURIComponent(school):''}`;
 }
 
@@ -2413,7 +2437,7 @@ function saveFromReview(){
   });
   if(!hasData){showToast('저장할 과목이 없습니다','error');return;}
   S.availSubs=newSubs;
-  localStorage.setItem('hsc_subs',JSON.stringify(newSubs));
+  _LS.set('hsc_subs',JSON.stringify(newSubs));
   // 리뷰 팝업 최신화
   S._pendingParsed = null;
   S._reviewData = SEM_KEYS.map(label=>({id:label, label, subjects: deepCopy(newSubs[label]||[])}));
@@ -2455,7 +2479,7 @@ function saveScheduleEditor(){
     });
   });
   S.availSubs = newSubs;
-  localStorage.setItem('hsc_subs', JSON.stringify(newSubs));
+  _LS.set('hsc_subs', JSON.stringify(newSubs));
   // 리뷰 팝업 최신화
   S._pendingParsed = null;
   S._reviewData = SEM_KEYS.map(label=>({id:label, label, subjects: deepCopy(newSubs[label]||[])}));
@@ -2468,7 +2492,7 @@ function saveScheduleEditor(){
 function updateSchedulePreview(){
   const el = document.getElementById('schedulePreview');
   if(!el) return;
-  const isSaved = !!localStorage.getItem('hsc_subs');
+  const isSaved = !!_LS.get('hsc_subs');
   if(!isSaved){ el.innerHTML=''; return; }
   const counts = SEM_KEYS.map(sem=>{
     const subs = S.availSubs[sem] || [];
@@ -2737,8 +2761,7 @@ function loadRec(){
     <div class="chips">${S.recList.map(s=>`<span class="chip chip-rec">${s}</span>`).join('')}</div>
     <div class="group-title"><span class="badge badge-ref"><span class="dot dot-ref"></span>참고과목</span></div>
     <div class="chips">${S.refList.map(s=>`<span class="chip chip-ref">${s}</span>`).join('')}</div>
-    ${UNI_NOTES[S.univ]?`<div class="uni-note"><strong>${S.univ} 입시 참고</strong><br>${UNI_NOTES[S.univ]}</div>`:''}`;
-  updateCheckList();
+    ${UNI_NOTES[S.univ]?'<div class="uni-note"><strong>'+S.univ+' 입시 참고</strong><br>'+UNI_NOTES[S.univ]+'</div>':''}`;  updateCheckList();
 }
 
 // ===============================================   과목 설계 렌더 (
@@ -2825,7 +2848,10 @@ function renderDesigner(){
       html+=`<div class="sem-box${isDone?' completed':''}">
         <div class="sem-title">
           ${sem.includes('1학기')?'1학기':'2학기'}
-          ${isDone?`<span class="done-tag">이수완료</span>`:''}
+          ${isDone
+            ? '<span class="done-tag">이수완료</span>'
+            : '<span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:4px;">(최대 '+((S.semMax&&S.semMax[sem])||10)+'과목)</span>'
+          }
         </div>`;
 
       if(isCompleted){
@@ -2871,14 +2897,20 @@ function toggleSub(sem, idx){
   if(!S.selSubs[sem]) S.selSubs[sem]=[];
   const arr=S.selSubs[sem];
   const pos=arr.findIndex(s=>s.name===sub.name);
-  if(pos>=0) arr.splice(pos,1); else arr.push({...sub});
+  if(pos>=0){
+    if(sub.type==='공통') return; // 공통과목 해제 불가
+    arr.splice(pos,1);
+  } else {
+    const maxN = (S.semMax&&S.semMax[sem]) || 10;
+    if(arr.length >= maxN){ showToast(`이 학기 최대 ${maxN}과목까지 선택 가능합니다`,'error'); return; }
+    arr.push({...sub});
+  }
   renderDesigner();
   renderConflictWarnings();
   scheduleAutoSave();
-  // 2학년은 과목 선택 즉시 localStorage에 임시 저장
   if(S.mode==='student' && S.grade===2 && !S.locked){
     const key=`hsc_sel_${S.studentId}`;
-    localStorage.setItem(key, JSON.stringify(S.selSubs));
+    _LS.set(key, JSON.stringify(S.selSubs));
   }
 }
 
@@ -3130,6 +3162,9 @@ function renderTeacherTab(n){
         <div id="tStudentList" style="font-size:12px;color:var(--muted);"></div>
       </div>
 
+      <!-- 학기별 최대 과목 수 카드 (JS로 채움) -->
+      <div id="semMaxCard" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:12px;"></div>
+
       <!-- 엑셀 내보내기 -->
       <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;">
         <h3 style="font-size:13px;font-weight:800;margin-bottom:8px;">결과 내보내기</h3>
@@ -3141,12 +3176,32 @@ function renderTeacherTab(n){
       </div>
     </div>`;
     loadTeacherStudentList();
+    // semMax 카드 채우기
+    (function(){
+      var card = document.getElementById('semMaxCard');
+      if(!card) return;
+      var sems = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
+      var html = '<h3 style="font-size:13px;font-weight:800;margin-bottom:6px;">학기별 최대 선택 과목 수</h3>';
+      html += '<p style="font-size:12px;color:var(--muted);margin-bottom:12px;">학생이 한 학기에 선택할 수 있는 최대 과목 수입니다. (기본값: 10과목)</p>';
+      html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+      sems.forEach(function(sem){
+        var val = (S.semMax && S.semMax[sem]) || 10;
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;">';
+        html += '<span style="font-size:11px;font-weight:700;color:var(--sub);">' + sem + '</span>';
+        html += '<input type="number" min="1" max="50" value="' + val + '" '
+              + 'style="width:48px;text-align:center;font-size:13px;font-weight:800;border:1.5px solid var(--border);border-radius:6px;padding:3px 4px;background:var(--surface);" '
+              + 'onchange="saveSemMax(\'' + sem + '\',this.value)">';
+        html += '</div>';
+      });
+      html += '</div><div style="font-size:10px;color:var(--muted);margin-top:8px;">변경 즉시 저장됩니다. 학생 화면 학기 제목 옆에 표시됩니다.</div>';
+      card.innerHTML = html;
+    })();
     // 공유 링크 박스 채우기
     (function(){
       const box = document.getElementById('teacherShareUrlBox');
       if(!box) return;
       const base   = location.href.split('?')[0];
-      const school = S.schoolName || localStorage.getItem('hsc_school') || '';
+      const school = S.schoolName || _LS.get('hsc_school') || '';
       const url    = S.gasUrl
         ? base + '?gas=' + encodeURIComponent(S.gasUrl) + (school ? '&school=' + encodeURIComponent(school) : '')
         : null;
@@ -3403,10 +3458,10 @@ async function teacherAddStudent(){
 // ===============================================   초기 설정 초기화
 function resetToInitialSetup(){
   if(!confirm('초기 설정 화면으로 돌아갑니다.\nGAS URL과 학교 정보가 초기화됩니다.\n\n학생 데이터는 Google Sheets에 보존됩니다.\n\n계속하시겠습니까?')) return;
-  localStorage.removeItem('hsc_gas_url');
-  localStorage.removeItem('hsc_school');
-  localStorage.removeItem('hsc_class');
-  localStorage.removeItem('hsc_teacher');
+  _LS.remove('hsc_gas_url');
+  _LS.remove('hsc_school');
+  _LS.remove('hsc_class');
+  _LS.remove('hsc_teacher');
   S.gasUrl=''; S.schoolName=''; S.classInfo=''; S.teacherName='';
   S.mode=null; S.teacherMode=false;
   document.getElementById('appScreen').style.display='none';
@@ -3452,11 +3507,18 @@ function showToast(msg,type){ const el=document.getElementById('toast'); el.text
 // ═══════════════════════════════════════════════════════════════
 //  ③ 마감일 저장/해제
 // ═══════════════════════════════════════════════════════════════
+function saveSemMax(sem, val){
+  var n = Math.max(1, Math.min(50, parseInt(val)||10));
+  if(!S.semMax) S.semMax = {};
+  S.semMax[sem] = n;
+  _LS.set('hsc_semmax', JSON.stringify(S.semMax));
+}
+
 async function saveDeadline(){
   const val = document.getElementById('deadlineInput')?.value;
   if(!val){ showToast('날짜를 선택하세요','error'); return; }
   S.deadline = val;
-  localStorage.setItem('hsc_deadline', val);
+  _LS.set('hsc_deadline', val);
   // GAS에도 저장
   if(S.gasUrl){
     try{
@@ -3471,7 +3533,7 @@ async function saveDeadline(){
 }
 async function clearDeadline(){
   S.deadline = null;
-  localStorage.removeItem('hsc_deadline');
+  _LS.remove('hsc_deadline');
   if(S.gasUrl){
     try{
       await fetch(S.gasUrl,{method:'POST',
@@ -3580,7 +3642,7 @@ async function confirmBulkUpload(students){
     }catch(e){ fail++; }
   }
   document.getElementById('bulkPreview').innerHTML='';
-  showToast(`${ok}명 등록 완료${fail?` (중복/오류 ${fail}명)`:''}`, ok>0?'success':'error');
+  showToast(ok+'명 등록 완료'+(fail?' (중복/오류 '+fail+'명)':''), ok>0?'success':'error');
   loadTeacherStudentList();
 }
 
@@ -3609,276 +3671,266 @@ async function autoSaveSelection(){
 window.addEventListener('beforeunload', ()=>{ if(S.mode==='student'&&!S.locked) autoSaveSelection(); });
 
 // ═══════════════════════════════════════════════════════════════
-//  ⑥ 교사 엑셀 내보내기
+//  ⑥ 교사 엑셀 내보내기 (ExcelJS — 한셀/엑셀 완전 호환)
 // ═══════════════════════════════════════════════════════════════
 
-// ── 공통: 스타일 적용 헬퍼 ──
-function _xlsxStyle(ws, r, c, v, t, s){
-  const addr = XLSX.utils.encode_cell({r,c});
-  ws[addr] = {v, t: t||'s', s};
+// ── 공통 스타일 헬퍼 ──
+var _BORDER_T = {style:'thin',color:{argb:'FFCCCCCC'}};
+var _BORDER_M = {style:'medium',color:{argb:'FF888888'}};
+var _B  = {top:_BORDER_T,bottom:_BORDER_T,left:_BORDER_T,right:_BORDER_T};
+var _BM = {top:_BORDER_M,bottom:_BORDER_M,left:_BORDER_M,right:_BORDER_M};
+
+function _xlHdr(cell, bgHex){
+  cell.font      = {bold:true,color:{argb:'FFFFFFFF'},size:11};
+  cell.fill      = {type:'pattern',pattern:'solid',fgColor:{argb:'FF'+bgHex.replace('#','').toUpperCase()}};
+  cell.alignment = {horizontal:'center',vertical:'middle',wrapText:true};
+  cell.border    = _BM;
 }
-function _applyStyle(ws, addr, s){
-  if(!ws[addr]) ws[addr]={v:'',t:'s'};
-  ws[addr].s = s;
+function _xlDat(cell, bgHex, opts){
+  opts = opts||{};
+  var bg = bgHex ? 'FF'+bgHex.replace('#','').toUpperCase() : 'FFFAFAFA';
+  cell.fill      = {type:'pattern',pattern:'solid',fgColor:{argb:bg}};
+  cell.alignment = {horizontal:opts.center?'center':'left',vertical:'middle',wrapText:true};
+  cell.border    = _B;
+  if(opts.bold||opts.color||opts.size)
+    cell.font = {bold:!!opts.bold,color:{argb:opts.color||'FF212121'},size:opts.size||10};
+}
+function _xlBar(cell, pct, ok){
+  var f = Math.round(pct/10);
+  cell.value     = '\u25A0'.repeat(f)+'\u25A1'.repeat(10-f)+'  '+pct+'%';
+  cell.font      = {size:9,color:{argb:ok?'FF1B5E20':'FFC62828'},name:'Courier New'};
+  cell.fill      = {type:'pattern',pattern:'solid',fgColor:{argb:ok?'FFE8F5E9':'FFFFEBEE'}};
+  cell.alignment = {horizontal:'left',vertical:'middle'};
+  cell.border    = _B;
+}
+async function _xlDown(wb, fname){
+  var buf  = await wb.xlsx.writeBuffer();
+  var blob = new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a'); a.href=url; a.download=fname; a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ── 전체 현황 엑셀 내보내기 ──
-function exportStudentsExcel(){
-  const students = allStudentsCache;
-  if(!students||!students.length){ showToast('학생 데이터가 없습니다','error'); return; }
+async function exportStudentsExcel(){
+  var students = allStudentsCache;
+  if(!students||!students.length){showToast('학생 데이터가 없습니다','error');return;}
+  showToast('엑셀 생성 중...','');
+  try{
+    var wb = new ExcelJS.Workbook();
+    wb.creator='수업공장 @hirame.ki'; wb.created=new Date();
 
-  const wb = XLSX.utils.book_new();
-  wb.Workbook = {Views:[{RTL:false}]};
-
-  // ── 시트1: 전체 현황 요약 ──
-  const summaryHeaders = ['학번','이름','학년','반','번호','목표대학','계열','학과','총학점','국·영·수','핵심이수','제출여부','확정여부','제출일시'];
-  const summaryRows = students.map(s=>{
-    const idStr = String(s.id||'');
-    const grade  = parseInt(idStr[0])||'';
-    const cls    = parseInt(idStr[1])||'';
-    const num    = parseInt(idStr.slice(2))||'';
-    return [
-      s.id, s.name, grade, cls, num,
-      s.univ||'', s.track||'', s.major||'',
-      s.total||0, s.kea||0,
-      s.coreOk!==undefined?`${s.coreOk}/${s.coreTotal}`:'',
-      s.locked?'제출완료':'미제출',
-      s.confirmed?'확정':'',
-      s.submittedAt||''
+    // 시트1: 전체현황
+    var ws1 = wb.addWorksheet('전체현황');
+    ws1.columns=[
+      {width:13},{width:10},{width:6},{width:5},{width:5},
+      {width:18},{width:14},{width:20},
+      {width:9},{width:9},{width:10},{width:10},{width:8},{width:18}
     ];
-  });
-  const summaryWs = XLSX.utils.aoa_to_sheet([summaryHeaders, ...summaryRows]);
-  summaryWs['!cols'] = [
-    {wch:10},{wch:10},{wch:6},{wch:6},{wch:6},
-    {wch:16},{wch:14},{wch:18},{wch:8},{wch:8},{wch:10},{wch:10},{wch:8},{wch:18}
-  ];
-  // 헤더 스타일
-  summaryHeaders.forEach((_,ci)=>{
-    const addr = XLSX.utils.encode_cell({r:0,c:ci});
-    if(!summaryWs[addr]) summaryWs[addr]={v:summaryHeaders[ci],t:'s'};
-    summaryWs[addr].s = {
-      font:{bold:true,color:{rgb:'FFFFFF'},sz:11},
-      fill:{fgColor:{rgb:'1A237E'}},
-      alignment:{horizontal:'center',vertical:'center'},
-      border:{bottom:{style:'medium',color:{rgb:'FFFFFF'}}}
-    };
-  });
-  // 데이터 행 스타일 (확정:초록, 제출:노랑, 미제출:흰색)
-  summaryRows.forEach((row,ri)=>{
-    const s = students[ri];
-    const fillRgb = s.confirmed?'E6F4EA': s.locked?'FFF8E1':'FFFFFF';
-    row.forEach((_,ci)=>{
-      const addr = XLSX.utils.encode_cell({r:ri+1,c:ci});
-      if(!summaryWs[addr]) summaryWs[addr]={v:row[ci],t:'s'};
-      summaryWs[addr].s = {
-        fill:{fgColor:{rgb:fillRgb}},
-        border:{
-          top:{style:'thin',color:{rgb:'DDDDDD'}},
-          bottom:{style:'thin',color:{rgb:'DDDDDD'}},
-          left:{style:'thin',color:{rgb:'DDDDDD'}},
-          right:{style:'thin',color:{rgb:'DDDDDD'}}
-        },
-        alignment:{vertical:'center', horizontal: ci>=7&&ci<=9?'center':'left'}
-      };
-    });
-  });
-  summaryWs['!rows'] = [{hpt:22},...summaryRows.map(()=>({hpt:18}))];
-  XLSX.utils.book_append_sheet(wb, summaryWs, '전체현황');
+    var h1=['학번','이름','학년','반','번호','목표대학','계열','학과','총학점','국·영·수','핵심이수','제출여부','확정여부','제출일시'];
+    var hr1=ws1.addRow(h1); hr1.height=24;
+    hr1.eachCell(function(c){_xlHdr(c,'1A237E');});
 
-  // ── 시트2: 학년별 과목 선택 상세 ──
-  const SEM_KEYS_EX = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
-  const detailHeaders = ['학번','이름',...SEM_KEYS_EX.map(s=>s.replace('학년 ','Y').replace('학기','S')),'총학점'];
-  const detailRows = students.filter(s=>s.locked||s.confirmed).map(s=>{
-    const semCells = SEM_KEYS_EX.map(sem=>{
-      const subs = (s.selSubs&&s.selSubs[sem])||[];
-      return subs.map(sub=>sub.name).join(', ');
-    });
-    return [s.id, s.name, ...semCells, s.total||0];
-  });
-  if(detailRows.length){
-    const detailWs = XLSX.utils.aoa_to_sheet([detailHeaders,...detailRows]);
-    detailWs['!cols'] = [{wch:10},{wch:10},...SEM_KEYS_EX.map(()=>({wch:36})),{wch:8}];
-    const YEAR_FILLS = ['BBD EF B','C8E6C9','E1BEE7','F8BBD9','FFCCBC','FFE0B2'];
-    const SEM_FILLS  = ['BBDEFB','C8E6C9','E1BEE7','F8BBD9','FFCCBC','FFE0B2'];
-    detailHeaders.forEach((_,ci)=>{
-      const addr = XLSX.utils.encode_cell({r:0,c:ci});
-      if(!detailWs[addr]) detailWs[addr]={v:detailHeaders[ci],t:'s'};
-      const fillRgb = ci>=2&&ci<=7 ? SEM_FILLS[ci-2].replace(/ /g,'') : '1A237E';
-      const fgRgb   = ci>=2&&ci<=7 ? '000000':'FFFFFF';
-      detailWs[addr].s = {
-        font:{bold:true,color:{rgb:fgRgb},sz:10},
-        fill:{fgColor:{rgb:fillRgb}},
-        alignment:{horizontal:'center',vertical:'center'},
-        border:{bottom:{style:'medium',color:{rgb:'999999'}}}
-      };
-    });
-    detailRows.forEach((row,ri)=>{
-      row.forEach((_,ci)=>{
-        const addr = XLSX.utils.encode_cell({r:ri+1,c:ci});
-        if(!detailWs[addr]) detailWs[addr]={v:row[ci],t:typeof row[ci]==='number'?'n':'s'};
-        detailWs[addr].s = {
-          fill:{fgColor:{rgb:ri%2===0?'FAFAFA':'FFFFFF'}},
-          border:{
-            top:{style:'thin',color:{rgb:'DDDDDD'}},
-            bottom:{style:'thin',color:{rgb:'DDDDDD'}},
-            left:{style:'thin',color:{rgb:'DDDDDD'}},
-            right:{style:'thin',color:{rgb:'DDDDDD'}}
-          },
-          alignment:{vertical:'center',wrapText:true}
-        };
+    students.forEach(function(s){
+      var id=String(s.id||'');
+      var row=ws1.addRow([
+        s.id,s.name,parseInt(id[0])||'',parseInt(id.slice(1,3))||'',parseInt(id.slice(3))||'',
+        s.univ||'',s.track||'',s.major||'',
+        s.total||0,s.kea||0,
+        s.coreOk!==undefined?s.coreOk+'/'+s.coreTotal:'',
+        s.locked?'제출완료':'미제출',s.confirmed?'확정':'',s.submittedAt||''
+      ]);
+      row.height=18;
+      var bg=s.confirmed?'E6F4EA':s.locked?'FFF8E1':'FFFFFF';
+      row.eachCell(function(c,ci){
+        _xlDat(c,bg,{center:ci>=9&&ci<=13});
+        if(ci===10&&s.kea>81) c.font={bold:true,color:{argb:'FFC62828'},size:10};
+        if(ci===13&&s.confirmed) c.font={bold:true,color:{argb:'FF1B5E20'},size:10};
       });
     });
-    detailWs['!rows'] = [{hpt:22},...detailRows.map(()=>({hpt:36}))];
-    XLSX.utils.book_append_sheet(wb, detailWs, '과목선택상세');
-  }
+    ws1.autoFilter={from:'A1',to:'N1'};
+    ws1.views=[{state:'frozen',ySplit:1}];
 
-  const now = new Date();
-  const ts  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
-  XLSX.writeFile(wb, `과목선택현황_${ts}.xlsx`, {bookType:'xlsx', cellStyles:true});
-  showToast('엑셀 내보내기 완료!','success');
+    // 시트2: 과목선택상세
+    var SEMS=['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
+    var SHB=['1565C0','2E7D32','6A1B9A','AD1457','BF360C','E65100'];
+    var SBG=['BBDEFB','C8E6C9','E1BEE7','F8BBD9','FFCCBC','FFE0B2'];
+    var ws2=wb.addWorksheet('과목선택상세');
+    ws2.columns=[{width:13},{width:10}].concat(SEMS.map(function(){return {width:36};})).concat([{width:8}]);
+    var h2=['학번','이름'].concat(SEMS).concat(['총학점']);
+    var hr2=ws2.addRow(h2); hr2.height=24;
+    hr2.eachCell(function(c,ci){_xlHdr(c,ci>=3&&ci<=8?SHB[ci-3]:'1A237E');});
+
+    students.filter(function(s){return s.locked||s.confirmed;}).forEach(function(s,ri){
+      var cells=SEMS.map(function(sem){return ((s.selSubs&&s.selSubs[sem])||[]).map(function(x){return x.name;}).join(', ');});
+      var row=ws2.addRow([s.id,s.name].concat(cells).concat([s.total||0]));
+      row.height=30;
+      row.eachCell(function(c,ci){
+        var si=ci-3;
+        var bg=si>=0&&si<6?(ri%2===0?SBG[si]:'F8F8F8'):(ri%2===0?'FAFAFA':'FFFFFF');
+        _xlDat(c,bg,{center:ci===1||ci===h2.length});
+      });
+    });
+    ws2.views=[{state:'frozen',ySplit:1}];
+
+    var now=new Date();
+    var ts=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
+    await _xlDown(wb,'과목선택현황_'+ts+'.xlsx');
+    showToast('전체 현황 엑셀 내보내기 완료!','success');
+  }catch(err){showToast('엑셀 생성 오류: '+err.message,'error');}
 }
 
-// ── 학생 상세 엑셀 내보내기 (개인) ──
-function exportStudentDetailExcel(id){
-  const s = allStudentsCache.find(s=>s.id===String(id));
-  if(!s){ showToast('학생 데이터를 찾을 수 없습니다','error'); return; }
+// ── 학생 상세 엑셀 내보내기 (개인 — 그래프 포함) ──
+async function exportStudentDetailExcel(id){
+  var s=allStudentsCache.find(function(x){return x.id===String(id);});
+  if(!s){showToast('학생 데이터를 찾을 수 없습니다','error');return;}
+  showToast('엑셀 생성 중...','');
+  try{
+    var wb=new ExcelJS.Workbook(); wb.creator='수업공장 @hirame.ki';
 
-  const wb = XLSX.utils.book_new();
-  wb.Workbook = {Views:[{RTL:false}]};
+    var selSubs=s.selSubs||{};
+    var allSel=Object.values(selSubs).flat();
+    var core=s.coreList||[];
+    var rec=s.recList||[];
+    var selNames=allSel.map(function(x){return normalizeName(x.name);});
+    var kea=Number(s.kea)||0;
+    var total=Number(s.total)||0;
+    var areas=REQUIRED_AREAS.map(function(a){
+      return {
+        name:a.name,min:a.min,
+        earned:allSel.filter(function(sub){return a.keys.some(function(k){return nameIncludes(sub.name,k);});}).reduce(function(t,sub){return t+(sub.cr||0);},0)
+      };
+    });
 
-  const selSubs  = s.selSubs||{};
-  const allSel   = Object.values(selSubs).flat();
-  const core     = s.coreList||[];
-  const rec      = s.recList||[];
-  const selNames = allSel.map(x=>normalizeName(x.name));
-  const keaScore = Number(s.kea)||0;
-  const totalScore = Number(s.total)||0;
-  const areaScores = REQUIRED_AREAS.map(area=>({
-    name:area.name, min:area.min,
-    earned:allSel.filter(sub=>area.keys.some(k=>nameIncludes(sub.name,k))).reduce((a,sub)=>a+(sub.cr||0),0)
-  }));
+    // 시트1: 학점요약 + 그래프
+    var ws1=wb.addWorksheet('학점요약');
+    ws1.columns=[{width:22},{width:14},{width:10},{width:12},{width:32}];
 
-  // ── 시트1: 학점 요약 ──
-  const HDR_S = {font:{bold:true,color:{rgb:'FFFFFF'},sz:11},fill:{fgColor:{rgb:'1A237E'}},alignment:{horizontal:'center',vertical:'center'},border:{top:{style:'thin',color:{rgb:'AAAAAA'}},bottom:{style:'thin',color:{rgb:'AAAAAA'}},left:{style:'thin',color:{rgb:'AAAAAA'}},right:{style:'thin',color:{rgb:'AAAAAA'}}}};
-  const CEL_S = {font:{sz:11},fill:{fgColor:{rgb:'FAFAFA'}},alignment:{vertical:'center'},border:{top:{style:'thin',color:{rgb:'DDDDDD'}},bottom:{style:'thin',color:{rgb:'DDDDDD'}},left:{style:'thin',color:{rgb:'DDDDDD'}},right:{style:'thin',color:{rgb:'DDDDDD'}}}};
-  const VAL_S = (over)=>({font:{bold:true,sz:12,color:{rgb:over?'C62828':'1B5E20'}},fill:{fgColor:{rgb:over?'FFEBEE':'E8F5E9'}},alignment:{horizontal:'center',vertical:'center'},border:{top:{style:'thin',color:{rgb:'DDDDDD'}},bottom:{style:'thin',color:{rgb:'DDDDDD'}},left:{style:'thin',color:{rgb:'DDDDDD'}},right:{style:'thin',color:{rgb:'DDDDDD'}}}}); 
-  const OK_S  = {font:{bold:true,color:{rgb:'1B5E20'},sz:11},fill:{fgColor:{rgb:'E8F5E9'}},alignment:{horizontal:'center'},border:{top:{style:'thin',color:{rgb:'DDDDDD'}},bottom:{style:'thin',color:{rgb:'DDDDDD'}},left:{style:'thin',color:{rgb:'DDDDDD'}},right:{style:'thin',color:{rgb:'DDDDDD'}}}};
-  const NG_S  = {font:{bold:true,color:{rgb:'C62828'},sz:11},fill:{fgColor:{rgb:'FFEBEE'}},alignment:{horizontal:'center'},border:{top:{style:'thin',color:{rgb:'DDDDDD'}},bottom:{style:'thin',color:{rgb:'DDDDDD'}},left:{style:'thin',color:{rgb:'DDDDDD'}},right:{style:'thin',color:{rgb:'DDDDDD'}}}};
+    ws1.mergeCells('A1:E1');
+    var tc=ws1.getCell('A1');
+    tc.value=s.name+' ('+s.id+') \u2014 과목 설계 현황';
+    tc.font={bold:true,size:14,color:{argb:'FF1A237E'}};
+    tc.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFE8EAF6'}};
+    tc.alignment={horizontal:'left',vertical:'middle'};
+    ws1.getRow(1).height=30;
 
-  const summData = [
-    ['항목','값','기준','달성여부'],
-    ['이름',s.name,'',''],
-    ['학번',s.id,'',''],
-    ['목표 대학',(s.univ||'-'),'',''],
-    ['목표 학과',(s.major||'-'),'',''],
-    ['총 이수학점',totalScore,192,totalScore>=192?'✓ 충족':'✗ 미달'],
-    ['국·영·수 합계',keaScore,81,keaScore<=81?'✓ 충족':'✗ 초과'],
-    ['핵심권장 이수',`${core.filter(c=>selNames.includes(normalizeName(c))).length}/${core.length}`,core.length,''],
-    ['제출 상태',s.confirmed?'확정':s.locked?'제출완료':'미제출','',''],
-  ];
-  areaScores.forEach(a=>{
-    summData.push([`영역 — ${a.name}`,a.earned,a.min,a.earned>=a.min?'✓ 충족':'✗ 미달']);
-  });
+    ws1.mergeCells('A2:E2');
+    var ic=ws1.getCell('A2');
+    ic.value=(s.univ||'대학 미선택')+' \u00B7 '+(s.major||'학과 미선택')+'  |  '+(s.confirmed?'\u2705 확정완료':s.locked?'\uD83D\uDCE4 제출완료':'\uD83D\uDCDD 미제출');
+    ic.font={size:10,color:{argb:'FF5D4037'}};
+    ic.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFBF8F1'}};
+    ic.alignment={horizontal:'left',vertical:'middle'};
+    ws1.getRow(2).height=20;
+    ws1.addRow([]).height=8;
 
-  const summWs = XLSX.utils.aoa_to_sheet(summData);
-  summWs['!cols'] = [{wch:20},{wch:18},{wch:10},{wch:10}];
-  summWs['!rows'] = summData.map(()=>({hpt:20}));
-  summData[0].forEach((_,ci)=>{
-    const addr=XLSX.utils.encode_cell({r:0,c:ci});
-    if(!summWs[addr]) summWs[addr]={v:summData[0][ci],t:'s'};
-    summWs[addr].s=HDR_S;
-  });
-  summData.forEach((row,ri)=>{
-    if(ri===0) return;
-    row.forEach((v,ci)=>{
-      const addr=XLSX.utils.encode_cell({r:ri,c:ci});
-      if(!summWs[addr]) summWs[addr]={v,t:typeof v==='number'?'n':'s'};
-      if(ci===3 && typeof v==='string'){
-        summWs[addr].s = v.startsWith('✓')?OK_S:v===''?CEL_S:NG_S;
-      } else if(ci===1 && ri>=5){
-        summWs[addr].s = VAL_S(ri===6&&keaScore>81);
-      } else {
-        summWs[addr].s = CEL_S;
+    var hr=ws1.addRow(['항목','현재값','기준','달성여부','그래프']); hr.height=22;
+    hr.eachCell(function(c){_xlHdr(c,'1A237E');});
+
+    // 총 이수학점
+    var tp=Math.min(100,Math.round((total/192)*100));
+    var r1=ws1.addRow(['총 이수학점',total,192,total>=192?'\u2705 충족':'\u26A0\uFE0F 미달','']); r1.height=22;
+    _xlDat(r1.getCell(1),'F3F4FF',{bold:true});
+    _xlDat(r1.getCell(2),'F3F4FF',{center:true,bold:true,color:total>=192?'FF1B5E20':'FFC62828'});
+    _xlDat(r1.getCell(3),'F3F4FF',{center:true});
+    _xlDat(r1.getCell(4),total>=192?'E8F5E9':'FFEBEE',{center:true,bold:true,color:total>=192?'FF1B5E20':'FFC62828'});
+    _xlBar(r1.getCell(5),tp,total>=192);
+
+    // 국영수
+    var kp=Math.min(100,Math.round((kea/81)*100));
+    var keaOk=kea<=81;
+    var r2=ws1.addRow(['국·영·수 합계',kea,81,keaOk?'\u2705 충족':'\u274C 초과','']); r2.height=22;
+    _xlDat(r2.getCell(1),'FFF8E1',{bold:true});
+    _xlDat(r2.getCell(2),'FFF8E1',{center:true,bold:true,color:keaOk?'FF1B5E20':'FFC62828'});
+    _xlDat(r2.getCell(3),'FFF8E1',{center:true});
+    _xlDat(r2.getCell(4),keaOk?'E8F5E9':'FFEBEE',{center:true,bold:true,color:keaOk?'FF1B5E20':'FFC62828'});
+    _xlBar(r2.getCell(5),kp,keaOk);
+
+    // 핵심권장
+    var cOk=core.filter(function(c){return selNames.includes(normalizeName(c));}).length;
+    var cp=core.length>0?Math.round((cOk/core.length)*100):100;
+    var r3=ws1.addRow(['핵심권장 이수',cOk+'/'+core.length+'과목',core.length,cp===100?'\u2705 충족':'\u26A0\uFE0F 미달','']); r3.height=22;
+    _xlDat(r3.getCell(1),'F1F8E9',{bold:true});
+    _xlDat(r3.getCell(2),'F1F8E9',{center:true,bold:true,color:cp===100?'FF1B5E20':'FFC62828'});
+    _xlDat(r3.getCell(3),'F1F8E9',{center:true});
+    _xlDat(r3.getCell(4),cp===100?'E8F5E9':'FFEBEE',{center:true,bold:true,color:cp===100?'FF1B5E20':'FFC62828'});
+    _xlBar(r3.getCell(5),cp,cp===100);
+
+    ws1.addRow([]).height=8;
+    var arHr=ws1.addRow(['영역','이수학점','필수','달성여부','그래프']); arHr.height=22;
+    arHr.eachCell(function(c){_xlHdr(c,'4A148C');});
+
+    var ABG=['E3F2FD','E8F5E9','F3E5F5','FCE4EC','FBE9E7','FFF3E0','E0F2F1','F9FBE7','EDE7F6'];
+    areas.forEach(function(a,i){
+      var ap=a.min>0?Math.min(100,Math.round((a.earned/a.min)*100)):100;
+      var ok=a.earned>=a.min;
+      var row=ws1.addRow([a.name,a.earned,a.min,ok?'\u2705 충족':'\u26A0\uFE0F 미달','']); row.height=22;
+      var bg=ABG[i%ABG.length];
+      _xlDat(row.getCell(1),bg,{bold:true});
+      _xlDat(row.getCell(2),bg,{center:true,bold:true,color:ok?'FF1B5E20':'FFC62828'});
+      _xlDat(row.getCell(3),bg,{center:true});
+      _xlDat(row.getCell(4),ok?'E8F5E9':'FFEBEE',{center:true,bold:true,color:ok?'FF1B5E20':'FFC62828'});
+      _xlBar(row.getCell(5),ap,ok);
+    });
+
+    // 시트2: 과목선택
+    var SEMS2=['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
+    var SBG2=['BBDEFB','C8E6C9','E1BEE7','F8BBD9','FFCCBC','FFE0B2'];
+    var ws2=wb.addWorksheet('과목선택');
+    ws2.columns=[{width:14},{width:24},{width:8},{width:10},{width:10},{width:8}];
+    var hr2=ws2.addRow(['학기','과목명','학점','구분','핵심권장','일반권장']); hr2.height=22;
+    hr2.eachCell(function(c){_xlHdr(c,'1A237E');});
+    ws2.views=[{state:'frozen',ySplit:1}];
+
+    SEMS2.forEach(function(sem,si){
+      var subs=selSubs[sem]||[];
+      if(!subs.length){
+        var r=ws2.addRow([sem,'(선택 없음)','','','','']); r.height=18;
+        r.eachCell(function(c){_xlDat(c,'F5F5F5',{color:'FF9E9E9E'});});
+        return;
       }
-    });
-  });
-  XLSX.utils.book_append_sheet(wb, summWs, '학점요약');
-
-  // ── 시트2: 학기별 선택과목 ──
-  const SEM_KEYS_EX = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
-  const SEM_COLORS  = ['BBDEFB','C8E6C9','E1BEE7','F8BBD9','FFCCBC','FFE0B2'];
-  const subHeaders  = ['학기','과목명','학점','구분','핵심권장','권장'];
-  const subRows     = [];
-  SEM_KEYS_EX.forEach((sem,si)=>{
-    const subs=(selSubs[sem]||[]);
-    subs.forEach(sub=>{
-      const isCore=core.map(c=>normalizeName(c)).includes(normalizeName(sub.name));
-      const isRec =rec.map(c=>normalizeName(c)).includes(normalizeName(sub.name));
-      subRows.push([sem, sub.name, sub.cr||0, sub.type||'', isCore?'★':'', isRec?'◎':'', si]);
-    });
-    if(subs.length===0) subRows.push([sem,'(선택 없음)',0,'','','',si]);
-  });
-
-  const subWs = XLSX.utils.aoa_to_sheet([subHeaders,...subRows.map(r=>r.slice(0,6))]);
-  subWs['!cols']=[{wch:14},{wch:22},{wch:8},{wch:10},{wch:10},{wch:8}];
-  subWs['!rows']=[{hpt:22},...subRows.map(()=>({hpt:18}))];
-  subHeaders.forEach((_,ci)=>{
-    const addr=XLSX.utils.encode_cell({r:0,c:ci});
-    if(!subWs[addr]) subWs[addr]={v:subHeaders[ci],t:'s'};
-    subWs[addr].s=HDR_S;
-  });
-  subRows.forEach((row,ri)=>{
-    const si=row[6];
-    const fillRgb=SEM_COLORS[si]||'FAFAFA';
-    const isCore=row[4]==='★', isRec=row[5]==='◎';
-    const rowFill=isCore?'FFF9C4':isRec?'E8F5E9':fillRgb;
-    row.slice(0,6).forEach((v,ci)=>{
-      const addr=XLSX.utils.encode_cell({r:ri+1,c:ci});
-      if(!subWs[addr]) subWs[addr]={v,t:typeof v==='number'?'n':'s'};
-      subWs[addr].s={
-        font:{sz:10,bold:ci===1&&isCore,color:{rgb:isCore?'B71C1C':'212121'}},
-        fill:{fgColor:{rgb:rowFill}},
-        alignment:{horizontal:ci>=2?'center':'left',vertical:'center'},
-        border:{top:{style:'thin',color:{rgb:'DDDDDD'}},bottom:{style:'thin',color:{rgb:'DDDDDD'}},left:{style:'thin',color:{rgb:'DDDDDD'}},right:{style:'thin',color:{rgb:'DDDDDD'}}}
-      };
-    });
-  });
-  XLSX.utils.book_append_sheet(wb, subWs, '과목선택');
-
-  // ── 시트3: 핵심권장 이수현황 ──
-  const coreHeaders=['과목명','이수여부','구분'];
-  const coreRows=core.map(c=>[c, selNames.includes(normalizeName(c))?'✓ 이수':'✗ 미이수','핵심권장']);
-  rec.forEach(c=>{ if(!core.includes(c)) coreRows.push([c, selNames.includes(normalizeName(c))?'✓ 이수':'미이수','일반권장']); });
-  if(coreRows.length){
-    const coreWs=XLSX.utils.aoa_to_sheet([coreHeaders,...coreRows]);
-    coreWs['!cols']=[{wch:24},{wch:12},{wch:12}];
-    coreWs['!rows']=[{hpt:22},...coreRows.map(()=>({hpt:18}))];
-    coreHeaders.forEach((_,ci)=>{
-      const addr=XLSX.utils.encode_cell({r:0,c:ci});
-      if(!coreWs[addr]) coreWs[addr]={v:coreHeaders[ci],t:'s'};
-      coreWs[addr].s=HDR_S;
-    });
-    coreRows.forEach((row,ri)=>{
-      const done=row[1].startsWith('✓');
-      row.forEach((v,ci)=>{
-        const addr=XLSX.utils.encode_cell({r:ri+1,c:ci});
-        if(!coreWs[addr]) coreWs[addr]={v,t:'s'};
-        coreWs[addr].s={
-          font:{sz:11,bold:ci===1,color:{rgb:ci===1?(done?'1B5E20':'C62828'):'212121'}},
-          fill:{fgColor:{rgb:done?'E8F5E9':'FFEBEE'}},
-          alignment:{horizontal:ci>=1?'center':'left',vertical:'center'},
-          border:{top:{style:'thin',color:{rgb:'DDDDDD'}},bottom:{style:'thin',color:{rgb:'DDDDDD'}},left:{style:'thin',color:{rgb:'DDDDDD'}},right:{style:'thin',color:{rgb:'DDDDDD'}}}
-        };
+      subs.forEach(function(sub){
+        var isCore=core.map(function(c){return normalizeName(c);}).includes(normalizeName(sub.name));
+        var isRec=rec.map(function(c){return normalizeName(c);}).includes(normalizeName(sub.name));
+        var rowBg=isCore?'FFF9C4':isRec?'F1F8E9':SBG2[si];
+        var row=ws2.addRow([sem,sub.name,sub.cr||0,sub.type||'',isCore?'\u2605':'',isRec?'\u25CE':'']); row.height=18;
+        _xlDat(row.getCell(1),SBG2[si],{});
+        _xlDat(row.getCell(2),rowBg,{bold:isCore,color:isCore?'FFB71C1C':'FF212121'});
+        _xlDat(row.getCell(3),rowBg,{center:true});
+        _xlDat(row.getCell(4),rowBg,{center:true,color:sub.type==='공통'?'FF1565C0':'FF424242'});
+        _xlDat(row.getCell(5),isCore?'FFF9C4':'FFFFFF',{center:true,bold:isCore,color:'FFB71C1C'});
+        _xlDat(row.getCell(6),isRec?'F1F8E9':'FFFFFF',{center:true,bold:isRec,color:'FF2E7D32'});
       });
     });
-    XLSX.utils.book_append_sheet(wb, coreWs, '핵심권장');
-  }
 
-  const now2=new Date();
-  const ts2=`${now2.getFullYear()}${String(now2.getMonth()+1).padStart(2,'0')}${String(now2.getDate()).padStart(2,'0')}`;
-  XLSX.writeFile(wb, `${s.name}_${s.id}_과목설계_${ts2}.xlsx`, {bookType:'xlsx', cellStyles:true});
-  showToast(`${s.name} 학생 엑셀 내보내기 완료!`,'success');
+    // 시트3: 핵심권장
+    var ws3=wb.addWorksheet('핵심권장');
+    ws3.columns=[{width:26},{width:14},{width:12}];
+    var hr3=ws3.addRow(['과목명','이수여부','구분']); hr3.height=22;
+    hr3.eachCell(function(c){_xlHdr(c,'C62828');});
+    ws3.views=[{state:'frozen',ySplit:1}];
+
+    core.forEach(function(c){
+      var done=selNames.includes(normalizeName(c));
+      var row=ws3.addRow([c,done?'\u2705 이수':'\u274C 미이수','핵심권장']); row.height=18;
+      _xlDat(row.getCell(1),done?'E8F5E9':'FFEBEE',{bold:true});
+      _xlDat(row.getCell(2),done?'E8F5E9':'FFEBEE',{center:true,bold:true,color:done?'FF1B5E20':'FFC62828'});
+      _xlDat(row.getCell(3),done?'E8F5E9':'FFEBEE',{center:true,color:'FF5D4037'});
+    });
+    rec.filter(function(c){return !core.includes(c);}).forEach(function(c){
+      var done=selNames.includes(normalizeName(c));
+      var row=ws3.addRow([c,done?'\u2705 이수':'미이수','일반권장']); row.height=18;
+      _xlDat(row.getCell(1),done?'F1F8E9':'F5F5F5',{});
+      _xlDat(row.getCell(2),done?'F1F8E9':'F5F5F5',{center:true,color:done?'FF2E7D32':'FF757575'});
+      _xlDat(row.getCell(3),done?'F1F8E9':'F5F5F5',{center:true,color:'FF5D4037'});
+    });
+
+    var now=new Date();
+    var ts=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');
+    await _xlDown(wb,s.name+'_'+s.id+'_과목설계_'+ts+'.xlsx');
+    showToast(s.name+' 학생 엑셀 내보내기 완료!','success');
+  }catch(err){showToast('엑셀 생성 오류: '+err.message,'error');}
 }
+
 
 // ═══════════════════════════════════════════════════════════════
 //  ⑦ 과목 선택 충돌 감지 (위계 과목 목록 내장)
