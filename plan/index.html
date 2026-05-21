@@ -525,14 +525,29 @@ select.inp option{background:var(--surface);color:var(--text);}
   letter-spacing:.1em;text-transform:uppercase;font-weight:700;
 }
 .prog-track{
-  height:6px;background:var(--bg2);border-radius:3px;
+  height:8px;background:var(--bg2);border-radius:4px;
   overflow:hidden;margin-bottom:5px;
   box-shadow:inset 0 1px 1px rgba(15,20,25,.08);
+  display:flex;
 }
+/* 창체 고정 칸 (18/192 = 9.375%) */
+.prog-act{
+  width:9.375%;flex-shrink:0;
+  background:linear-gradient(90deg,#7b5ea7,#9c6fbe);
+  border-radius:4px 0 0 4px;
+  box-shadow:0 0 6px rgba(123,94,167,.5);
+  position:relative;
+}
+.prog-act::after{
+  content:"창체";position:absolute;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:6px;font-weight:800;color:#fff;letter-spacing:-.02em;white-space:nowrap;
+}
+/* 학생 선택과목 학점 칸 */
 .prog-fill{
   height:100%;
   background:linear-gradient(90deg, var(--gold-d), var(--gold));
-  border-radius:3px;transition:width .5s cubic-bezier(.2,.7,.2,1);
+  transition:width .5s cubic-bezier(.2,.7,.2,1);
   box-shadow:0 0 8px rgba(184,149,106,.4);
 }
 .prog-fill.over{background:linear-gradient(90deg,var(--warn),#c08a2e);}
@@ -542,6 +557,11 @@ select.inp option{background:var(--surface);color:var(--text);}
   font-size:9px;color:var(--whisper);
   letter-spacing:.1em;
   font-variant-numeric:tabular-nums;
+}
+/* 창체 범례 */
+.credit-act-legend{
+  display:flex;align-items:center;gap:5px;
+  font-size:9.5px;color:var(--muted);margin-top:6px;
 }
 
 /* ── 국영수 바 ─────────────────────────────────────────── */
@@ -1473,22 +1493,22 @@ const UNI_INFO = {
   '건국대':      {location:'서울 광진구',    type:'사립',  campus:'서울캠퍼스(본교)·GLOCAL(충주)', confirmed:true},
   '동국대':      {location:'서울 중구',      type:'사립',  campus:'서울캠퍼스(본교)·WISE(경주)', confirmed:true},
   '홍익대':      {location:'서울 마포구',    type:'사립',  campus:'서울캠퍼스(본교)·세종캠퍼스', confirmed:false},
-  '세종대':      {location:'서울 광진구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
-  '서울과기대':  {location:'서울 노원구',    type:'국립',  campus:'단일캠퍼스',          confirmed:false},
-  '국민대':      {location:'서울 성북구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
-  '숭실대':      {location:'서울 동작구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
+  '세종대':      {location:'서울 광진구',    type:'사립',  campus:'단일캠퍼스',          confirmed:true},
+  '서울과기대':  {location:'서울 노원구',    type:'국립',  campus:'단일캠퍼스',          confirmed:true},
+  '국민대':      {location:'서울 성북구',    type:'사립',  campus:'단일캠퍼스',          confirmed:true},
+  '숭실대':      {location:'서울 동작구',    type:'사립',  campus:'단일캠퍼스',          confirmed:true},
   '성신여대':    {location:'서울 성북구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
-  '숙명여대':    {location:'서울 용산구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
-  '광운대':      {location:'서울 노원구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
+  '숙명여대':    {location:'서울 용산구',    type:'사립',  campus:'단일캠퍼스',          confirmed:true},
+  '광운대':      {location:'서울 노원구',    type:'사립',  campus:'단일캠퍼스',          confirmed:true},
   '명지대':      {location:'서울 서대문구',  type:'사립',  campus:'인문캠퍼스(서울)·자연캠퍼스(용인)', confirmed:false},
   '한성대':      {location:'서울 성북구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
   '삼육대':      {location:'서울 노원구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
   '경기대(서울)': {location:'서울 서대문구', type:'사립',  campus:'서울캠퍼스·수원캠퍼스(본교)', confirmed:false},
   '상명대':      {location:'서울 종로구',    type:'사립',  campus:'서울캠퍼스(본교)·천안캠퍼스', confirmed:false},
   '서울여대':    {location:'서울 노원구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
-  '덕성여대':    {location:'서울 도봉구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
+  '덕성여대':    {location:'서울 도봉구',    type:'사립',  campus:'단일캠퍼스',          confirmed:true},
   '동덕여대':    {location:'서울 성북구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
-  '가톨릭대':    {location:'서울 마포구',    type:'사립',  campus:'성신교정(서울)·성의교정(서울)·sonsin교정(부천)', confirmed:false},
+  '가톨릭대':    {location:'서울 마포구',    type:'사립',  campus:'성신교정(서울)·성의교정(서울)·sonsin교정(부천)', confirmed:true},
   '서경대':      {location:'서울 성북구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
   '성공회대':    {location:'서울 구로구',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
   '한국체대':    {location:'서울 송파구',    type:'국립',  campus:'단일캠퍼스',          confirmed:false},
@@ -1498,9 +1518,9 @@ const UNI_INFO = {
   '아주대':      {location:'경기 수원시',    type:'사립',  campus:'단일캠퍼스',          confirmed:true},
   '인천대':      {location:'인천 연수구',    type:'국립',  campus:'단일캠퍼스',          confirmed:false},
   '경기대':      {location:'경기 수원시',    type:'사립',  campus:'수원캠퍼스(본교)·서울캠퍼스', confirmed:false},
-  '단국대':      {location:'경기 용인시',    type:'사립',  campus:'죽전캠퍼스(본교)·천안캠퍼스', confirmed:false},
+  '단국대':      {location:'경기 용인시',    type:'사립',  campus:'죽전캠퍼스(본교)·천안캠퍼스', confirmed:true},
   '가천대':      {location:'경기 성남시',    type:'사립',  campus:'글로벌캠퍼스(성남)·메디컬캠퍼스(인천)', confirmed:false},
-  '한양대ERICA': {location:'경기 안산시',    type:'사립',  campus:'ERICA캠퍼스(한양대 제2캠퍼스)', confirmed:false},
+  '한양대ERICA': {location:'경기 안산시',    type:'사립',  campus:'ERICA캠퍼스(한양대 제2캠퍼스)', confirmed:true},
   '차의과학대':  {location:'경기 포천시',    type:'사립',  campus:'포천캠퍼스·강남차병원캠퍼스', confirmed:false},
   '수원대':      {location:'경기 화성시',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
   '한국항공대':  {location:'경기 고양시',    type:'사립',  campus:'단일캠퍼스',          confirmed:false},
@@ -1941,7 +1961,32 @@ function copyShareUrl(){
   navigator.clipboard.writeText(url).then(()=>showToast('링크 복사됨!','success'));
 }
 
-function showQrModal(urlElId){
+// URL 단축 (is.gd 무료 API) — 실패 시 원본 반환
+async function shortenUrl(url){
+  try{
+    const res = await fetch(`https://is.gd/create.php?format=simple&url=${encodeURIComponent(url)}`);
+    if(!res.ok) throw new Error('status '+res.status);
+    const short = (await res.text()).trim();
+    if(short.startsWith('https://is.gd/') || short.startsWith('http://is.gd/')) return short;
+    throw new Error('unexpected response');
+  } catch(e){
+    console.warn('[QR] URL 단축 실패, 원본 사용:', e.message);
+    return url;
+  }
+}
+
+// QR 생성 공통 함수
+function _buildQr(boxEl, qrUrl){
+  boxEl.innerHTML = '';
+  new QRCode(boxEl, {
+    text: qrUrl,
+    width: 200, height: 200,
+    colorDark: '#1a237e', colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.L   // L = 도트 최소화 → 단순한 QR
+  });
+}
+
+async function showQrModal(urlElId){
   const url = document.getElementById(urlElId)?.textContent || '';
   if(!url || url.includes('먼저')){ showToast('공유 링크를 먼저 설정하세요','error'); return; }
 
@@ -1954,8 +1999,10 @@ function showQrModal(urlElId){
   overlay.innerHTML = `
     <div style="background:var(--surface);border-radius:16px;padding:24px;max-width:320px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,.35);text-align:center;">
       <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px;">학생 공유 QR 코드</div>
-      <div style="font-size:10px;color:var(--muted);margin-bottom:14px;word-break:break-all;line-height:1.5;">${url}</div>
-      <div id="_qrBox" style="display:inline-block;padding:10px;background:#fff;border-radius:8px;border:1.5px solid var(--border);"></div>
+      <div id="_qrUrlLabel" style="font-size:10px;color:var(--muted);margin-bottom:14px;word-break:break-all;line-height:1.5;">링크 단축 중...</div>
+      <div id="_qrBox" style="display:inline-block;padding:10px;background:#fff;border-radius:8px;border:1.5px solid var(--border);min-width:200px;min-height:200px;display:flex;align-items:center;justify-content:center;">
+        <div style="font-size:11px;color:var(--muted);">생성 중...</div>
+      </div>
       <div style="display:flex;gap:8px;margin-top:14px;justify-content:center;">
         <button class="btn btn-primary btn-sm" id="_qrDownBtn">📥 이미지 저장</button>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('_qrModal').remove()">닫기</button>
@@ -1964,29 +2011,31 @@ function showQrModal(urlElId){
   document.body.appendChild(overlay);
   overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.remove(); });
 
-  // DOM 삽입 후 QR 생성
-  requestAnimationFrame(()=>{
-    try{
-      new QRCode(document.getElementById('_qrBox'), {
-        text: url,
-        width: 200, height: 200,
-        colorDark: '#1a237e', colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-      // 이미지 저장 — qrcodejs는 img 태그를 생성함
-      document.getElementById('_qrDownBtn').onclick = function(){
-        const img = document.querySelector('#_qrBox img');
-        if(!img){ showToast('QR 이미지 로딩 중...',''); return; }
-        const a = document.createElement('a');
-        a.download = '학생공유QR.png';
-        a.href = img.src;
-        a.click();
-        showToast('QR 이미지 저장됨!','success');
-      };
-    } catch(e){
-      document.getElementById('_qrBox').innerHTML = '<div style="color:red;font-size:11px;padding:10px;">QR 생성 실패: '+e.message+'</div>';
-    }
-  });
+  // URL 단축 후 QR 생성
+  const shortUrl = await shortenUrl(url);
+  const labelEl = document.getElementById('_qrUrlLabel');
+  const boxEl   = document.getElementById('_qrBox');
+  if(!labelEl || !boxEl) return; // 모달이 닫혔으면 중단
+
+  const isShortened = shortUrl !== url;
+  labelEl.innerHTML = isShortened
+    ? `<span style="color:var(--rec);font-weight:700;">${shortUrl}</span><br><span style="font-size:9px;color:var(--muted);">(원본 링크를 자동으로 단축했습니다)</span>`
+    : `<span style="word-break:break-all;">${url}</span>`;
+
+  try{
+    _buildQr(boxEl, shortUrl);
+    document.getElementById('_qrDownBtn').onclick = function(){
+      const img = document.querySelector('#_qrBox img');
+      if(!img){ showToast('QR 이미지 로딩 중...',''); return; }
+      const a = document.createElement('a');
+      a.download = '학생공유QR.png';
+      a.href = img.src;
+      a.click();
+      showToast('QR 이미지 저장됨!','success');
+    };
+  } catch(e){
+    boxEl.innerHTML = '<div style="color:red;font-size:11px;padding:10px;">QR 생성 실패: '+e.message+'</div>';
+  }
 }
 
 /* ── 편제표 편집 ── */
@@ -2651,12 +2700,23 @@ function buildDesignerLeft(){
     <div class="warn-banner" id="warnKea"><span class="ico ico-md"><svg><use href="#i-warn"/></svg></span>국·영·수 합계 81학점 초과</div>
     <div class="credit-bar">
       <div class="credit-top">
-        <span class="credit-num" id="creditNow">0</span>
-        <span class="credit-of">/ 192학점</span>
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span class="credit-num" id="creditNow">0</span>
+          <span style="font-size:11px;color:var(--muted);font-weight:600;">+ 18</span>
+          <span class="credit-of">/ 192학점</span>
+        </div>
+        <span id="creditTotalBadge" style="font-size:11px;font-weight:800;color:var(--muted);">합계 18</span>
       </div>
-      <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      <div class="prog-track">
+        <div class="prog-act" title="창의적 체험활동 18학점 (고정)"></div>
+        <div class="prog-fill" id="progFill" style="width:0%"></div>
+      </div>
       <div class="credit-labels"><span>0</span><span>96</span><span>192</span></div>
-      <div style="margin-top:5px;font-size:10px;color:var(--muted);line-height:1.6;">고교 3년간 총 이수해야 할 학점입니다.<br>192학점을 모두 채워야 졸업이 가능합니다.</div>
+      <div class="credit-act-legend">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:linear-gradient(90deg,#7b5ea7,#9c6fbe);flex-shrink:0;"></span>
+        <span>창의적 체험활동 18학점 (고정 포함)</span>
+      </div>
+      <div style="margin-top:4px;font-size:10px;color:var(--muted);line-height:1.6;">과목 선택학점 + 창체 18학점 = 총 이수학점<br>192학점을 모두 채워야 졸업이 가능합니다.</div>
     </div>
     <div class="kea-bar safe" id="keaBar">
       <div class="kea-top">
@@ -2715,7 +2775,7 @@ function buildUniInfoCard(uniName){
   const confirmed = info.confirmed;
   const badgeHtml = confirmed
     ? `<span style="display:inline-flex;align-items:center;gap:6px;background:var(--rec-bg);border:1px solid var(--rec-border);color:var(--rec);border-radius:2px;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;"><span class="ico ico-sm"><svg><use href="#i-check"/></svg></span>공식발표 기준</span>`
-    : `<span style="display:inline-flex;align-items:center;gap:6px;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);border-radius:2px;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;"><span class="ico ico-sm"><svg><use href="#i-warn"/></svg></span>확인필요</span>`;
+    : `<span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;"><span style="display:inline-flex;align-items:center;gap:6px;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);border-radius:2px;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;"><span class="ico ico-sm"><svg><use href="#i-warn"/></svg></span>확인필요</span><span style="font-size:10px;font-weight:700;color:#c62828;">공식 발표 결과가 조회되지 않습니다. 반드시 대학 입학처에서 직접 확인하세요.</span></span>`;
   return `
     <div style="background:var(--paper);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:16px;position:relative;overflow:hidden;">
       <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.55;"></div>
@@ -2757,7 +2817,7 @@ function loadRec(){
   const isConfirmed = uniInfo ? uniInfo.confirmed : false;
   const sourceBadge = isConfirmed
     ? `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--rec-bg);border:1px solid var(--rec-border);color:var(--rec);border-radius:2px;padding:3px 9px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;"><span class="ico ico-sm"><svg><use href="#i-check"/></svg></span>공식발표 기준</span>`
-    : `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);border-radius:2px;padding:3px 9px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;"><span class="ico ico-sm"><svg><use href="#i-warn"/></svg></span>확인필요</span>`;
+    : `<span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;"><span style="display:inline-flex;align-items:center;gap:5px;background:var(--warn-bg);border:1px solid var(--warn-border);color:var(--warn);border-radius:2px;padding:3px 9px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;"><span class="ico ico-sm"><svg><use href="#i-warn"/></svg></span>확인필요</span><span style="font-size:10px;font-weight:700;color:#c62828;">공식 발표 결과가 조회되지 않습니다. 반드시 대학 입학처에서 직접 확인하세요.</span></span>`;
 
   content.innerHTML=`
     ${buildUniInfoCard(S.univ)}
@@ -3015,13 +3075,28 @@ function calcAreaCredits(){
 }
 
 function updateCreditBar(){
+  const ACT_CR = 18; // 창의적 체험활동 고정 학점
   const {total}=calcCredits();
-  const el=document.getElementById('creditNow'), fill=document.getElementById('progFill');
+  const grandTotal = total + ACT_CR;   // 실제 합산: 선택학점 + 창체 18
+
+  const el   = document.getElementById('creditNow');
+  const fill = document.getElementById('progFill');
+  const badge= document.getElementById('creditTotalBadge');
   if(!el) return;
-  el.textContent=total;
-  const pct=Math.min(100,(total/192)*100);
-  fill.style.width=pct+'%';
-  fill.className='prog-fill'+(pct>=100?' done':pct>=80?' over':'');
+
+  // 왼쪽 숫자: 선택학점만 표시, 오른쪽 배지: 합계
+  el.textContent = total;
+  if(badge){
+    badge.textContent = `합계 ${grandTotal}`;
+    badge.style.color = grandTotal >= 192 ? 'var(--rec)' : 'var(--muted)';
+  }
+
+  // 창체(9.375%)는 CSS .prog-act로 고정
+  // 학생선택 칸: 전체 바에서 창체 비율을 제외한 나머지를 채움
+  // 창체 9.375% + 선택학점 % = 총 진행률
+  const selectPct = Math.min(100 - 9.375, (total / 192) * 100);
+  fill.style.width = selectPct + '%';
+  fill.className = 'prog-fill' + (grandTotal >= 192 ? ' done' : grandTotal >= 192 * 0.8 ? ' over' : '');
 
   // 국영수 바
   const kea=calcKEA();
@@ -3282,7 +3357,7 @@ function renderTeacherTab(n){
         document.getElementById('teacherShareCopyBtn').onclick = function(){
           navigator.clipboard.writeText(url).then(()=>showToast('링크 복사됨!','success'));
         };
-        document.getElementById('teacherShareQrBtn').onclick = function(){
+        document.getElementById('teacherShareQrBtn').onclick = async function(){
           const wrap = document.getElementById('teacherShareQrWrap');
           if(wrap.style.display==='block'){
             wrap.style.display='none';
@@ -3290,13 +3365,25 @@ function renderTeacherTab(n){
           } else {
             wrap.style.display='block';
             const box = document.getElementById('teacherShareQrBox');
+            box.innerHTML='<div style="font-size:11px;color:var(--muted);padding:20px;">링크 단축 중...</div>';
+            this.textContent='QR 닫기';
+            const shortUrl = await shortenUrl(url);
+            const isShortened = shortUrl !== url;
+            // 단축 URL 표시 (기존 URL 박스 위에 추가)
+            const urlBox = box.closest('[id]')?.previousElementSibling;
+            if(isShortened){
+              let shortLabel = document.getElementById('teacherShareShortLabel');
+              if(!shortLabel){
+                shortLabel = document.createElement('div');
+                shortLabel.id = 'teacherShareShortLabel';
+                shortLabel.style.cssText = 'font-size:10px;color:var(--rec);font-weight:700;margin-bottom:6px;word-break:break-all;';
+                wrap.parentNode.insertBefore(shortLabel, wrap);
+              }
+              shortLabel.innerHTML = `🔗 단축 링크: <a href="${shortUrl}" target="_blank" style="color:var(--rec);">${shortUrl}</a>`;
+            }
             box.innerHTML='';
             try{
-              new QRCode(box, {
-                text: url, width:180, height:180,
-                colorDark:'#1a237e', colorLight:'#ffffff',
-                correctLevel: QRCode.CorrectLevel.M
-              });
+              _buildQr(box, shortUrl);
             } catch(e){ box.innerHTML='<div style="color:red;font-size:11px;">QR 생성 실패</div>'; }
             document.getElementById('qrDownBtn').onclick=function(){
               const img=box.querySelector('img');
@@ -3305,7 +3392,6 @@ function renderTeacherTab(n){
               a.download='학생공유QR.png'; a.href=img.src; a.click();
               showToast('QR 저장됨!','success');
             };
-            this.textContent='QR 닫기';
           }
         };
       } else {
