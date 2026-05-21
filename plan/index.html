@@ -1171,6 +1171,7 @@ footer a:hover{border-bottom-color:var(--gold);}
     <div class="hdr-right">
       <span id="userLabel" style="font-weight:800;color:var(--ink);"></span>
       <span id="schoolLabel2" class="school-badge"></span>
+      <button id="diagBtn" class="btn btn-ghost btn-sm" onclick="showDiagModal()" style="font-size:10px;display:none;background:#fff3e0;border-color:#ffcc80;color:#e65100;">🔧 진단</button>
       <button class="audio-ctl" data-audio-music="1" onclick="LuxAudio&&LuxAudio.toggleMusic()" aria-label="배경음악" type="button"><svg><use href="#i-music"/></svg></button>
       <button class="audio-ctl" data-audio-sfx="1"   onclick="LuxAudio&&LuxAudio.toggleSfx()"   aria-label="효과음" type="button"><svg><use href="#i-volume"/></svg></button>
       <button class="btn btn-ghost btn-sm" onclick="logout()" style="font-size:10px;">로그아웃</button>
@@ -1842,6 +1843,9 @@ function enterStudent(data){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='';
   document.getElementById('userLabel').textContent = `${data.name} (${data.id})`;
+  // 학생 모드에서 진단 버튼 노출
+  const diagBtn = document.getElementById('diagBtn');
+  if(diagBtn) diagBtn.style.display='';
 
   // 뒤로가기 히스토리: 로그인→앱 전환 시 push
   history.pushState({screen:'app', mode:'student'}, '');
@@ -2788,6 +2792,43 @@ function renderDesigner(){
   const area=document.getElementById('designer');
   if(!area) return;
 
+  // ★ 편제표 학기 내 중복 과목 자동 정리 (예: '미적분Ⅰ'과 '미적분I'가 같은 학기에 둘 다 있는 경우)
+  //   normalizeName 기준으로 같은 과목이면 첫 번째만 남기고 나머지 제거
+  Object.keys(S.availSubs||{}).forEach(sem=>{
+    const subs = S.availSubs[sem]||[];
+    const seen = new Set();
+    const cleaned = [];
+    subs.forEach(s=>{
+      const key = normalizeName(s.name);
+      if(!seen.has(key)){
+        seen.add(key);
+        cleaned.push(s);
+      }
+    });
+    if(cleaned.length !== subs.length){
+      console.warn(`[편제표 정리] ${sem}: ${subs.length-cleaned.length}개 중복 과목 제거됨`);
+      S.availSubs[sem] = cleaned;
+    }
+  });
+
+  // ★ 학생 selSubs 학기 내 중복 정리 (위와 같은 원인으로 이미 두 번 들어간 경우)
+  Object.keys(S.selSubs||{}).forEach(sem=>{
+    const subs = S.selSubs[sem]||[];
+    const seen = new Set();
+    const cleaned = [];
+    subs.forEach(s=>{
+      const key = normalizeName(s.name);
+      if(!seen.has(key)){
+        seen.add(key);
+        cleaned.push(s);
+      }
+    });
+    if(cleaned.length !== subs.length){
+      console.warn(`[선택과목 정리] ${sem}: ${subs.length-cleaned.length}개 중복 제거됨`);
+      S.selSubs[sem] = cleaned;
+    }
+  });
+
   // 편제표 미설정 경고
   const warnEl = document.getElementById('scheduleWarnBanner');
   if(warnEl){
@@ -2867,7 +2908,7 @@ function renderDesigner(){
       } else {
         // 선택 가능한 학기
         subs.forEach((sub,idx)=>{
-          const isSel  = sel.some(s=>s.name===sub.name);
+          const isSel  = sel.some(s=>normalizeName(s.name)===normalizeName(sub.name));
           const isCore = S.coreList.includes(sub.name);
           const isRec  = S.recList.includes(sub.name);
           const isRef  = S.refList.includes(sub.name);
@@ -4081,6 +4122,87 @@ window.__resetCurrentStudentSelections = function(){
   renderConflictWarnings();
   scheduleAutoSave();
   console.log('✅ 선택과목이 초기화되었습니다. 페이지를 새로고침해도 유지됩니다.');
+  alert('선택과목이 초기화되었습니다.');
+};
+
+// 🔧 진단 모달: 헤더의 [🔧 진단] 버튼 클릭 시 실행
+window.showDiagModal = function(){
+  const report = window.__diagStudent();
+  let html = `<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)this.remove()">
+    <div style="background:#fff;border-radius:12px;width:760px;max-width:96vw;max-height:92vh;overflow-y:auto;padding:24px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:2px solid #ffcc80;padding-bottom:10px;">
+        <h2 style="margin:0;font-size:16px;color:#e65100;">🔧 학생 진단 리포트 — ${report.학번} ${report.이름} (${report.학년}학년)</h2>
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="background:#eee;border:none;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:12px;">닫기</button>
+      </div>`;
+
+  // 학기별 비교 테이블
+  html += `<h3 style="font-size:13px;margin:14px 0 8px;color:#333;">📊 학기별 선택 과목 수 vs 최대치</h3>`;
+  html += `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px;">
+    <thead><tr style="background:#fff3e0;">
+      <th style="padding:6px;border:1px solid #ddd;text-align:left;">학기</th>
+      <th style="padding:6px;border:1px solid #ddd;">선택 수</th>
+      <th style="padding:6px;border:1px solid #ddd;">최대치</th>
+      <th style="padding:6px;border:1px solid #ddd;">상태</th>
+    </tr></thead><tbody>`;
+  const activeSems = report.활성_학기;
+  activeSems.forEach(sem=>{
+    const selN = report.선택_학기별_과목수[sem]||0;
+    const maxN = report.학기별_최대과목수[sem]||10;
+    const over = selN > maxN;
+    html += `<tr style="${over?'background:#ffebee;':''}">
+      <td style="padding:6px;border:1px solid #ddd;">${sem}</td>
+      <td style="padding:6px;border:1px solid #ddd;text-align:center;font-weight:700;color:${over?'#c62828':'#333'};">${selN}</td>
+      <td style="padding:6px;border:1px solid #ddd;text-align:center;">${maxN}</td>
+      <td style="padding:6px;border:1px solid #ddd;text-align:center;">${over?'⚠ 초과!':'✓ 정상'}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+
+  // 학기별 선택 과목 상세
+  html += `<h3 style="font-size:13px;margin:14px 0 8px;color:#333;">📋 학기별 선택 과목 상세 (type 표시)</h3>`;
+  html += `<div style="background:#f9f9f9;border-radius:6px;padding:10px;font-size:11px;line-height:1.8;max-height:240px;overflow-y:auto;">`;
+  Object.keys(report.선택_학기별_과목명).forEach(sem=>{
+    const subs = report.선택_학기별_과목명[sem];
+    const types = report.선택_학기별_type_분포[sem];
+    const typesStr = Object.entries(types).map(([k,v])=>`${k}:${v}`).join(', ');
+    const allCommon = Object.keys(types).length===1 && types['공통'];
+    html += `<div style="margin-bottom:8px;${allCommon?'background:#ffebee;padding:6px;border-radius:4px;':''}">
+      <b>${sem}</b> (${subs.length}개, ${typesStr})${allCommon?' ⚠ <span style="color:#c62828;">모두 공통! type 손상 의심</span>':''}<br>
+      <span style="color:#666;">${subs.join(', ')||'(없음)'}</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // 액션 버튼
+  html += `<div style="margin-top:18px;padding-top:14px;border-top:1px solid #eee;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+    <button onclick="copyDiagToClipboard()" style="background:#1976d2;color:#fff;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;font-size:12px;">📋 리포트 복사 (선생님께 전달)</button>
+    <button onclick="if(confirm('정말 이 학생의 모든 선택과목을 초기화할까요?\\n(되돌릴 수 없습니다)')){__resetCurrentStudentSelections();this.closest('div[style*=fixed]').remove();}" style="background:#d32f2f;color:#fff;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;font-size:12px;">🗑 선택과목 초기화</button>
+  </div>`;
+
+  html += `</div></div>`;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = html;
+  document.body.appendChild(wrap.firstElementChild);
+  // 클립보드 복사용 데이터 저장
+  window.__lastDiagReport = report;
+};
+
+window.copyDiagToClipboard = function(){
+  const r = window.__lastDiagReport;
+  if(!r){ alert('진단 리포트가 없습니다'); return; }
+  const text = JSON.stringify(r, null, 2);
+  navigator.clipboard.writeText(text).then(()=>{
+    alert('✅ 진단 리포트가 클립보드에 복사되었습니다.\n선생님께 그대로 붙여넣어 전달하세요.');
+  }).catch(()=>{
+    // 폴백: textarea로 복사
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('✅ 진단 리포트가 클립보드에 복사되었습니다.');
+  });
 };
 
 init();
