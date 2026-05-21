@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="audio.js" defer></script>
 
@@ -1908,7 +1908,6 @@ function showQrModal(urlElId){
   const url = document.getElementById(urlElId)?.textContent || '';
   if(!url || url.includes('먼저')){ showToast('공유 링크를 먼저 설정하세요','error'); return; }
 
-  // 기존 QR 모달 제거
   const old = document.getElementById('_qrModal');
   if(old) old.remove();
 
@@ -1916,10 +1915,10 @@ function showQrModal(urlElId){
   overlay.id = '_qrModal';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(10,15,25,.6);z-index:9000;display:flex;align-items:center;justify-content:center;';
   overlay.innerHTML = `
-    <div style="background:var(--surface);border-radius:16px;padding:24px;max-width:300px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,.35);text-align:center;">
+    <div style="background:var(--surface);border-radius:16px;padding:24px;max-width:320px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,.35);text-align:center;">
       <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px;">학생 공유 QR 코드</div>
       <div style="font-size:10px;color:var(--muted);margin-bottom:14px;word-break:break-all;line-height:1.5;">${url}</div>
-      <canvas id="_qrCanvas" style="border-radius:8px;border:1.5px solid var(--border);"></canvas>
+      <div id="_qrBox" style="display:inline-block;padding:10px;background:#fff;border-radius:8px;border:1.5px solid var(--border);"></div>
       <div style="display:flex;gap:8px;margin-top:14px;justify-content:center;">
         <button class="btn btn-primary btn-sm" id="_qrDownBtn">📥 이미지 저장</button>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('_qrModal').remove()">닫기</button>
@@ -1928,19 +1927,29 @@ function showQrModal(urlElId){
   document.body.appendChild(overlay);
   overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.remove(); });
 
-  QRCode.toCanvas(document.getElementById('_qrCanvas'), url,
-    {width:220, margin:2, color:{dark:'#1a237e', light:'#ffffff'}},
-    function(err){
-      if(err){ showToast('QR 생성 오류','error'); return; }
+  // DOM 삽입 후 QR 생성
+  requestAnimationFrame(()=>{
+    try{
+      new QRCode(document.getElementById('_qrBox'), {
+        text: url,
+        width: 200, height: 200,
+        colorDark: '#1a237e', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      // 이미지 저장 — qrcodejs는 img 태그를 생성함
       document.getElementById('_qrDownBtn').onclick = function(){
+        const img = document.querySelector('#_qrBox img');
+        if(!img){ showToast('QR 이미지 로딩 중...',''); return; }
         const a = document.createElement('a');
         a.download = '학생공유QR.png';
-        a.href = document.getElementById('_qrCanvas').toDataURL('image/png');
+        a.href = img.src;
         a.click();
         showToast('QR 이미지 저장됨!','success');
       };
+    } catch(e){
+      document.getElementById('_qrBox').innerHTML = '<div style="color:red;font-size:11px;padding:10px;">QR 생성 실패: '+e.message+'</div>';
     }
-  );
+  });
 }
 
 /* ── 편제표 편집 ── */
@@ -2593,7 +2602,7 @@ function buildStudentLeftInfo(){
     </div>
     <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--sub);margin-bottom:10px;">
       <b style="color:var(--mint-d);">${S.grade}학년</b>
-      <span style="color:var(--muted);margin-left:6px;">${S.grade===1?'2·3학년 과목 미리 설계':S.grade===2?'3학년 과목 미리 설계':'최종 확인 단계'}</span>
+      <span style="color:var(--muted);margin-left:6px;">${S.grade===1?'2·3학년 과목 미리 설계':S.grade===2?'3학년 과목 미리 설계 (1·2학년 이수완료)':'최종 확인 단계'}</span>
     </div>
     <div class="sec" style="margin-top:4px;">목표 대학·학과</div>
     <div class="field"><label>대학교</label><select class="inp" id="uniSel"></select></div>
@@ -2734,21 +2743,20 @@ function loadRec(){
 
 // ===============================================   과목 설계 렌더 (
 function getCompletedSems(){
-  if(S.grade === 1) return [];                              // 1학년: 이수완료 없음, 1학년 과목 자동이수
-  if(S.grade === 2) return ['1학년 1학기','1학년 2학기'];  // 2학년: 1학년 이수완료
+  if(S.grade === 1) return [];                              // 1학년: 이수완료 없음
+  if(S.grade === 2) return ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기'];  // 2학년: 1·2학년 이수완료
   if(S.grade === 3) return ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기']; // 3학년: 1·2학년 이수완료
   return [];
 }
 
 function getAutoCompletedSems(){
-  // 편제표 기준으로 자동 완료 처리되는 학기 (화면에 "이수완료" 표시는 하지만 선택 불필요)
   if(S.grade === 1) return ['1학년 1학기','1학년 2학기']; // 1학년이면 1학년 과목 자동이수
   return [];
 }
 
 function getActiveSems(){
   if(S.grade === 1) return ['2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
-  if(S.grade === 2) return ['2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
+  if(S.grade === 2) return ['3학년 1학기','3학년 2학기'];  // 2학년은 3학년 과목만 미리 설계
   if(S.grade === 3) return ['3학년 1학기','3학년 2학기'];
   return [];
 }
@@ -3151,32 +3159,36 @@ function renderTeacherTab(n){
           '<button class="btn btn-primary btn-sm" id="teacherShareCopyBtn">링크 복사</button>' +
           '<button class="btn btn-ghost btn-sm" id="teacherShareQrBtn">QR 코드 생성</button>' +
           '</div>' +
-          '<canvas id="teacherShareQrCanvas" style="display:none;margin-top:12px;border-radius:10px;border:1.5px solid var(--border);"></canvas>' +
-          '<div id="teacherShareQrActions" style="display:none;margin-top:8px;display:none;gap:8px;flex-wrap:wrap;"></div>';
+          '<div id="teacherShareQrWrap" style="display:none;margin-top:12px;text-align:center;">' +
+          '<div id="teacherShareQrBox" style="display:inline-block;padding:8px;background:#fff;border-radius:8px;border:1.5px solid var(--border);"></div>' +
+          '<div style="margin-top:8px;"><button class="btn btn-ghost btn-sm" id="qrDownBtn">📥 QR 이미지 저장</button></div>' +
+          '</div>';
         document.getElementById('teacherShareCopyBtn').onclick = function(){
           navigator.clipboard.writeText(url).then(()=>showToast('링크 복사됨!','success'));
         };
         document.getElementById('teacherShareQrBtn').onclick = function(){
-          const canvas = document.getElementById('teacherShareQrCanvas');
-          const actions = document.getElementById('teacherShareQrActions');
-          if(canvas.style.display==='block'){
-            canvas.style.display='none';
-            actions.style.display='none';
+          const wrap = document.getElementById('teacherShareQrWrap');
+          if(wrap.style.display==='block'){
+            wrap.style.display='none';
             this.textContent='QR 코드 생성';
           } else {
-            QRCode.toCanvas(canvas, url, {width:200, margin:2, color:{dark:'#1a237e',light:'#ffffff'}}, function(err){
-              if(!err){
-                canvas.style.display='block';
-                actions.style.display='flex';
-                actions.innerHTML='<button class="btn btn-ghost btn-sm" id="qrDownBtn">📥 QR 이미지 저장</button>';
-                document.getElementById('qrDownBtn').onclick=function(){
-                  const a=document.createElement('a');
-                  a.download='학생공유QR.png';
-                  a.href=canvas.toDataURL('image/png');
-                  a.click();
-                };
-              }
-            });
+            wrap.style.display='block';
+            const box = document.getElementById('teacherShareQrBox');
+            box.innerHTML='';
+            try{
+              new QRCode(box, {
+                text: url, width:180, height:180,
+                colorDark:'#1a237e', colorLight:'#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+              });
+            } catch(e){ box.innerHTML='<div style="color:red;font-size:11px;">QR 생성 실패</div>'; }
+            document.getElementById('qrDownBtn').onclick=function(){
+              const img=box.querySelector('img');
+              if(!img){ showToast('QR 로딩 중...',''); return; }
+              const a=document.createElement('a');
+              a.download='학생공유QR.png'; a.href=img.src; a.click();
+              showToast('QR 저장됨!','success');
+            };
             this.textContent='QR 닫기';
           }
         };
