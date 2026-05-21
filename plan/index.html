@@ -2896,18 +2896,25 @@ function toggleSub(sem, idx){
   if(!sub) return;
   if(!S.selSubs[sem]) S.selSubs[sem]=[];
   const arr=S.selSubs[sem];
-  const pos=arr.findIndex(s=>s.name===sub.name);
+  // 정규화된 이름으로 비교 (편제표 변경/공백 등으로 인한 매칭 누락 방지)
+  const subNorm = normalizeName(sub.name);
+  const pos=arr.findIndex(s=>normalizeName(s.name)===subNorm);
   if(pos>=0){
+    // 편제표 기준으로 공통 여부 판단 (selSubs의 저장 type이 부정확할 수 있음)
     if(sub.type==='공통') return; // 공통과목 해제 불가
     arr.splice(pos,1);
   } else {
     const maxN = (S.semMax&&S.semMax[sem]) || 10;
-    // 공통과목 포함 전체 과목 수로 최대 수 체크
-    // availSubs가 빈 배열이면 DEFAULT_SUBS로 fallback
+    // ★ 견고한 maxN 검사: 편제표 기준 공통과목 이름 집합을 만들어
+    //   selSubs의 type 필드가 손상/누락되어도 정확히 계산되도록 함
     const availSubsRaw = S.availSubs[sem];
     const availSubs = (availSubsRaw && availSubsRaw.length > 0) ? availSubsRaw : (DEFAULT_SUBS[sem] || []);
-    const commonCount = availSubs.filter(s=>s.type==='공통').length;
-    const selNonCommonCount = arr.filter(s=>s.type!=='공통').length;
+    const commonNameSet = new Set(
+      availSubs.filter(s=>s.type==='공통').map(s=>normalizeName(s.name))
+    );
+    const commonCount = commonNameSet.size;
+    // selSubs에서 "편제표 기준으로 공통이 아닌" 과목만 카운트
+    const selNonCommonCount = arr.filter(s=>!commonNameSet.has(normalizeName(s.name))).length;
     const selCount = commonCount + selNonCommonCount;
     if(selCount >= maxN){ showToast(`이 학기 최대 ${maxN}과목까지 선택 가능합니다`,'error'); return; }
     arr.push({...sub});
@@ -2915,7 +2922,8 @@ function toggleSub(sem, idx){
   renderDesigner();
   renderConflictWarnings();
   scheduleAutoSave();
-  if(S.mode==='student' && S.grade===2 && !S.locked){
+  // 1·2학년 모두 localStorage 캐시 (이전엔 2학년만 저장되어 1학년 작업이 새로고침 시 사라질 수 있었음)
+  if(S.mode==='student' && !S.locked && S.studentId){
     const key=`hsc_sel_${S.studentId}`;
     _LS.set(key, JSON.stringify(S.selSubs));
   }
@@ -3971,13 +3979,21 @@ function checkSubjectConflicts(){
   const doneSems = [...completedSems, ...autoSems];
   const activeSems = getActiveSems();
 
+  // ★ 이수완료/자동이수 학기의 모든 과목명을 미리 정규화하여 Set으로 관리
+  //   (편제표가 비어있어 DEFAULT_SUBS로 fallback되는 케이스까지 일관 처리)
+  const doneNameSet = new Set();
+  doneSems.forEach(sem=>{
+    const subs = S.availSubs[sem] || DEFAULT_SUBS[sem] || [];
+    subs.forEach(s=>doneNameSet.add(normalizeName(s.name)));
+  });
+
   // 선수과목이 이수완료/자동이수 학기 or 활성 학기 중 어디에 있는지 확인
   function findSubjectSems(normName){
     const result = { done: false, active: false };
-    doneSems.forEach(sem=>{
-      const subs = S.availSubs[sem] || DEFAULT_SUBS[sem] || [];
-      if(subs.some(s=>normalizeName(s.name).includes(normName))) result.done = true;
-    });
+    // doneNameSet에 있으면 이미 이수한 것
+    for(const dn of doneNameSet){
+      if(dn.includes(normName)){ result.done = true; break; }
+    }
     activeSems.forEach(sem=>{
       const subs = S.availSubs[sem] || DEFAULT_SUBS[sem] || [];
       if(subs.some(s=>normalizeName(s.name).includes(normName))) result.active = true;
@@ -3989,7 +4005,9 @@ function checkSubjectConflicts(){
     const normPre  = normalizeName(pre);
     const normPost = normalizeName(post);
     const hasPost  = selNames.some(n=>n.includes(normPost));
-    const hasPre   = selNames.some(n=>n.includes(normPre));
+    // ★ 선수과목이 이미 이수한 학기(자동이수 포함)에 있으면 hasPre 자동 true
+    const hasPreInDone = [...doneNameSet].some(n=>n.includes(normPre));
+    const hasPre   = hasPreInDone || selNames.some(n=>n.includes(normPre));
     if(!hasPost || hasPre) return; // 후수 미선택이거나 선수 이미 이수 -> 경고 없음
 
     // 선수과목이 이수완료 학기에 있으면 이미 이수한 것 -> 경고 없음
@@ -4012,6 +4030,58 @@ function renderConflictWarnings(){
     ${conflicts.map(msg=>`<div style="font-size:11px;color:#5d4037;margin-bottom:3px;">· ${msg}</div>`).join('')}
   </div>`;
 }
+
+// ═══════════════════════════════════════════════════════════════
+//  🔧 진단용: F12 콘솔에서 __diagStudent() 호출로 학생 상태 점검
+// ═══════════════════════════════════════════════════════════════
+window.__diagStudent = function(){
+  const report = {
+    학번: S.studentId,
+    이름: S.studentName,
+    학년: S.grade,
+    이수완료_학기: getCompletedSems(),
+    자동이수_학기: getAutoCompletedSems(),
+    활성_학기: getActiveSems(),
+    학기별_최대과목수: S.semMax || {},
+    편제표_학기별_과목수: {},
+    편제표_학기별_공통과목: {},
+    선택_학기별_과목수: {},
+    선택_학기별_과목명: {},
+    선택_학기별_type_분포: {},
+  };
+  Object.keys(S.availSubs||{}).forEach(sem=>{
+    const subs = S.availSubs[sem]||[];
+    report.편제표_학기별_과목수[sem] = subs.length;
+    report.편제표_학기별_공통과목[sem] = subs.filter(s=>s.type==='공통').map(s=>s.name);
+  });
+  Object.keys(S.selSubs||{}).forEach(sem=>{
+    const subs = S.selSubs[sem]||[];
+    report.선택_학기별_과목수[sem] = subs.length;
+    report.선택_학기별_과목명[sem] = subs.map(s=>`${s.name}(${s.type||'타입없음'})`);
+    const types = {};
+    subs.forEach(s=>{ const t = s.type||'타입없음'; types[t]=(types[t]||0)+1; });
+    report.선택_학기별_type_분포[sem] = types;
+  });
+  console.log('═══════════ 학생 진단 리포트 ═══════════');
+  console.log(report);
+  console.log('═══════════════════════════════════════');
+  console.log('💡 maxN 초과 의심 학기를 찾으려면 위 "선택_학기별_과목수"와 "학기별_최대과목수"를 비교하세요.');
+  console.log('💡 type이 모두 "공통"으로 잘못 저장된 학기가 있는지 "선택_학기별_type_분포"를 확인하세요.');
+  return report;
+};
+
+// 🔧 진단용: 현재 학생의 selSubs를 초기화 (현재 학년 이전 학기 데이터로 인한 오작동 시)
+window.__resetCurrentStudentSelections = function(){
+  if(!confirm(`학번 ${S.studentId} 학생의 모든 선택과목을 초기화합니다. 계속할까요?`)) return;
+  S.selSubs = {};
+  if(S.studentId){
+    _LS.set(`hsc_sel_${S.studentId}`, JSON.stringify({}));
+  }
+  renderDesigner();
+  renderConflictWarnings();
+  scheduleAutoSave();
+  console.log('✅ 선택과목이 초기화되었습니다. 페이지를 새로고침해도 유지됩니다.');
+};
 
 init();
 window.addEventListener('DOMContentLoaded', ()=>{ if(window.LuxAudio) LuxAudio.init(); });
