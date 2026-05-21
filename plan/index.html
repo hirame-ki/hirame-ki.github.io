@@ -1219,11 +1219,11 @@ footer a:hover{border-bottom-color:var(--gold);}
       <div class="school-grid">
         <div class="field">
           <label>학교명</label>
-          <input type="text" class="inp" id="schoolNameInput" placeholder="예: 성포고등학교">
+          <input type="text" class="inp" id="schoolNameInput" placeholder="예: OO고등학교">
         </div>
         <div class="field">
           <label>학년·반</label>
-          <input type="text" class="inp" id="classInfoInput" placeholder="예: 3학년 2반">
+          <input type="text" class="inp" id="classInfoInput" placeholder="예: 1학년 1반">
         </div>
       </div>
       <div class="school-grid">
@@ -2904,7 +2904,9 @@ function toggleSub(sem, idx){
     arr.splice(pos,1);
   } else {
     const maxN = (S.semMax&&S.semMax[sem]) || 10;
-    if(arr.length >= maxN){ showToast(`이 학기 최대 ${maxN}과목까지 선택 가능합니다`,'error'); return; }
+    // 공통과목은 자동 삽입되므로 최대 수 체크에서 제외
+    const selCount = arr.filter(s=>s.type!=='공통').length;
+    if(selCount >= maxN){ showToast(`이 학기 최대 ${maxN}과목까지 선택 가능합니다`,'error'); return; }
     arr.push({...sub});
   }
   renderDesigner();
