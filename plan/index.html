@@ -2627,7 +2627,7 @@ function buildStudentLeftInfo(){
     </div>
     <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--sub);margin-bottom:10px;">
       <b style="color:var(--mint-d);">${S.grade}학년</b>
-      <span style="color:var(--muted);margin-left:6px;">${S.grade===1?'2·3학년 과목 미리 설계':S.grade===2?'3학년 과목 미리 설계 (1·2학년 이수완료)':'최종 확인 단계'}</span>
+      <span style="color:var(--muted);margin-left:6px;">${S.grade===1?'2·3학년 과목 미리 설계':'3학년 과목 미리 설계 (1·2학년 이수완료)'}</span>
     </div>
     <div class="sec" style="margin-top:4px;">목표 대학·학과</div>
     <div class="field"><label>대학교</label><select class="inp" id="uniSel"></select></div>
@@ -2767,21 +2767,19 @@ function loadRec(){
 
 // ===============================================   과목 설계 렌더 (
 function getCompletedSems(){
-  if(S.grade === 1) return [];                              // 1학년: 이수완료 없음
-  if(S.grade === 2) return ['1학년 1학기','1학년 2학기'];               // 2학년: 1학년만 이수완료
-  if(S.grade === 3) return ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기']; // 3학년: 1·2학년 이수완료
+  if(S.grade === 1) return [];                                                          // 1학년: 이수완료 없음
+  if(S.grade === 2) return ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기']; // 2학년: 1·2학년 이수완료
   return [];
 }
 
 function getAutoCompletedSems(){
-  if(S.grade === 1) return ['1학년 1학기','1학년 2학기']; // 1학년이면 1학년 과목 자동이수
+  if(S.grade === 1) return ['1학년 1학기','1학년 2학기']; // 1학년: 1학년 과목 자동이수
   return [];
 }
 
 function getActiveSems(){
-  if(S.grade === 1) return ['2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
-  if(S.grade === 2) return ['2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];  // 2학년: 2·3학년 과목 선택
-  if(S.grade === 3) return ['3학년 1학기','3학년 2학기'];
+  if(S.grade === 1) return ['2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기']; // 1학년: 2·3학년 과목 미리 설계
+  if(S.grade === 2) return ['3학년 1학기','3학년 2학기'];                              // 2학년: 3학년 과목만 미리 설계
   return [];
 }
 
