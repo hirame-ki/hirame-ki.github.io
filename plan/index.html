@@ -2767,7 +2767,7 @@ function loadRec(){
 // ===============================================   과목 설계 렌더 (
 function getCompletedSems(){
   if(S.grade === 1) return [];                              // 1학년: 이수완료 없음
-  if(S.grade === 2) return ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기'];  // 2학년: 1·2학년 이수완료
+  if(S.grade === 2) return ['1학년 1학기','1학년 2학기'];               // 2학년: 1학년만 이수완료
   if(S.grade === 3) return ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기']; // 3학년: 1·2학년 이수완료
   return [];
 }
@@ -2779,7 +2779,7 @@ function getAutoCompletedSems(){
 
 function getActiveSems(){
   if(S.grade === 1) return ['2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
-  if(S.grade === 2) return ['3학년 1학기','3학년 2학기'];  // 2학년은 3학년 과목만 미리 설계
+  if(S.grade === 2) return ['2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];  // 2학년: 2·3학년 과목 선택
   if(S.grade === 3) return ['3학년 1학기','3학년 2학기'];
   return [];
 }
@@ -2856,7 +2856,7 @@ function renderDesigner(){
 
       if(isCompleted){
         // 이미 이수완료 (2·3학년 이상 학생의 1학년 과목 등)
-        (DEFAULT_SUBS[sem]||S.availSubs[sem]||[]).forEach(s=>{
+        (S.availSubs[sem]||DEFAULT_SUBS[sem]||[]).forEach(s=>{
           html+=`<div class="subj-item done-sub"><span class="subj-name">${s.name}</span><span class="subj-cr">${s.cr}</span></div>`;
         });
       } else if(isAuto){
