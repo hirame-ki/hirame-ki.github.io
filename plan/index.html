@@ -1171,7 +1171,6 @@ footer a:hover{border-bottom-color:var(--gold);}
     <div class="hdr-right">
       <span id="userLabel" style="font-weight:800;color:var(--ink);"></span>
       <span id="schoolLabel2" class="school-badge"></span>
-      <button id="diagBtn" class="btn btn-ghost btn-sm" onclick="showDiagModal()" style="font-size:10px;display:none;background:#fff3e0;border-color:#ffcc80;color:#e65100;">🔧 진단</button>
       <button class="audio-ctl" data-audio-music="1" onclick="LuxAudio&&LuxAudio.toggleMusic()" aria-label="배경음악" type="button"><svg><use href="#i-music"/></svg></button>
       <button class="audio-ctl" data-audio-sfx="1"   onclick="LuxAudio&&LuxAudio.toggleSfx()"   aria-label="효과음" type="button"><svg><use href="#i-volume"/></svg></button>
       <button class="btn btn-ghost btn-sm" onclick="logout()" style="font-size:10px;">로그아웃</button>
@@ -1623,17 +1622,26 @@ const REQUIRED_AREAS = [
 ];
 const KEA_KEYS = ['국어','문학','화법','독서','언어','작문','매체','수학','대수','미적분','확률','통계','기하','수학과제','영어','심화영어'];
 
-// ── 과목명 정규화: 로마자 ↔ 숫자 혼용 통일 ──────────────────────
-// 로마자 Ⅰ→1, Ⅱ→2, Ⅲ→3 / 알파벳 I→Ⅰ 등 양방향을 숫자로 통일
+// ── 과목명 정규화: 로마자 ↔ 영문 대문자 I/II/III ↔ 숫자 통일 ──────────────
+// 1) 로마자 Ⅰ/Ⅱ/Ⅲ → 1/2/3
+// 2) 영문 대문자 III/II/I → 3/2/1 (긴 것부터 매칭 — III를 II+I로 분해 방지)
+// 3) 과목명 내부/끝의 공백 정규화
 function normalizeName(name){
   if(!name) return '';
-  return String(name)
-    .replace(/Ⅰ/g,'1').replace(/Ⅱ/g,'2').replace(/Ⅲ/g,'3')
-    .replace(/ⅰ/g,'1').replace(/ⅱ/g,'2').replace(/ⅲ/g,'3')
-    // 단독 알파벳 I (앞뒤가 한글이거나 공백/끝인 경우만) → 1
-    .replace(/(?<=[가-힣\s])I(?=[가-힣\s]|$)/g,'1')
-    .replace(/(?<=^|\s)I(?=[가-힣])/g,'1')
-    .trim();
+  let s = String(name);
+  // 로마자 숫자 → 아라비아 숫자
+  s = s.replace(/Ⅰ/g,'1').replace(/Ⅱ/g,'2').replace(/Ⅲ/g,'3')
+       .replace(/ⅰ/g,'1').replace(/ⅱ/g,'2').replace(/ⅲ/g,'3');
+  // 영문 대문자 I/II/III: 한글 또는 공백/시작 뒤에 오고, 뒤가 한글/공백/끝인 경우만 변환
+  // 순서 중요: 긴 것부터! (III → 3, II → 2, I → 1)
+  s = s.replace(/(?<=^|[가-힣\s])III(?=[가-힣\s]|$)/g,'3')
+       .replace(/(?<=^|[가-힣\s])II(?=[가-힣\s]|$)/g,'2')
+       .replace(/(?<=^|[가-힣\s])I(?=[가-힣\s]|$)/g,'1');
+  // 과목명 내부의 모든 공백 제거 (예: '미적분 1' 과 '미적분1'을 동일 취급)
+  s = s.replace(/\s+/g,'');
+  // 가운뎃점/특수문자 통일 (예: '기술·가정' ↔ '기술가정')
+  s = s.replace(/[·•∙ㆍ]/g,'');
+  return s.trim();
 }
 // 키워드 포함 여부도 정규화 후 비교
 function nameIncludes(subName, keyword){
@@ -1843,9 +1851,6 @@ function enterStudent(data){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='';
   document.getElementById('userLabel').textContent = `${data.name} (${data.id})`;
-  // 학생 모드에서 진단 버튼 노출
-  const diagBtn = document.getElementById('diagBtn');
-  if(diagBtn) diagBtn.style.display='';
 
   // 뒤로가기 히스토리: 로그인→앱 전환 시 push
   history.pushState({screen:'app', mode:'student'}, '');
