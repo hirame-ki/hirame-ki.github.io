@@ -2615,7 +2615,7 @@ function renderStudentTab(n){
   left.scrollTop=0; right.scrollTop=0;
   if(n===1){
     left.innerHTML = buildStudentLeftInfo();
-    right.innerHTML = `<div id="recEmpty" class="empty"><div class="icon"></div><p>계열과 학과를 선택하면<br>권장과목 정보가 표시됩니다</p></div><div id="recContent" style="display:none;"></div>`;
+    right.innerHTML = `<div style="padding:4px 2px 8px;display:flex;align-items:center;justify-content:flex-end;">${REC_GUIDE_CHIP}</div><div id="recEmpty" class="empty"><div class="icon"></div><p>계열과 학과를 선택하면<br>권장과목 정보가 표시됩니다</p></div><div id="recContent" style="display:none;"></div>`;
     initSelects();
     if(S.track && S.major) loadRec();
   }
@@ -2707,7 +2707,7 @@ function buildDesignerLeft(){
       <div style="font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.5;">교과별 최소 이수학점 기준입니다.<br>빨간색=부족 / 초록색=충족</div>
       <div id="areaBars"></div>
     </div>
-    <div class="check-panel"><div class="sec" style="margin-bottom:6px;">권장과목 확인</div><div id="checkList"><div style="font-size:12px;color:var(--muted);">대학·학과를 먼저 선택하세요</div></div></div>
+    <div class="check-panel"><div class="sec" style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:6px;"><span>권장과목 확인</span>${REC_GUIDE_CHIP}</div><div id="checkList"><div style="font-size:12px;color:var(--muted);">대학·학과를 먼저 선택하세요</div></div></div>
     ${S.locked
       ? `<div class="notice-warn" style="margin-bottom:8px;">제출 완료. 수정은 담임 선생님께 문의하세요.</div>`
       : `<button class="btn btn-primary btn-full" onclick="submitSelection()">제출하기</button>`}
@@ -3193,7 +3193,7 @@ function renderTeacherTab(n){
   }
   else if(n===1){
     left.innerHTML=`<div class="t-banner">선택한 학생 상세</div><div id="studentDetailLeft" style="font-size:12px;color:var(--muted);">전체 학생 탭에서 학생을 선택하세요</div>`;
-    right.innerHTML=`<div id="studentDetailRight" class="empty"><div class="icon"></div><p>전체 학생 탭에서<br>학생을 클릭하세요</p></div>`;
+    right.innerHTML=`<div style="padding:4px 2px 8px;display:flex;align-items:center;justify-content:flex-end;">${REC_GUIDE_CHIP}</div><div id="studentDetailRight" class="empty"><div class="icon"></div><p>전체 학생 탭에서<br>학생을 클릭하세요</p></div>`;
   }
   else if(n===4){
     left.innerHTML=`<div class="t-banner">설정</div>`;
@@ -4112,6 +4112,67 @@ function checkSubjectConflicts(){
   });
   return conflicts;
 }
+
+// ── 권장과목 도움말 팝업 ──────────────────────────────────
+function showRecGuideModal(){
+  const old = document.getElementById('_recGuideModal');
+  if(old){ old.remove(); return; }
+  const el = document.createElement('div');
+  el.id = '_recGuideModal';
+  el.style.cssText = 'position:fixed;inset:0;background:rgba(10,15,25,.55);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;';
+  el.innerHTML = `
+    <div style="background:var(--surface);border-radius:14px;max-width:540px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.35);overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#1c2330,#0a0e15);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--gold-l);letter-spacing:.04em;">권장과목, 얼마나 중요한가요?</div>
+          <div style="font-size:10px;color:rgba(212,170,112,.6);margin-top:2px;">대학 그룹별 권장과목 반영 특징</div>
+        </div>
+        <button onclick="document.getElementById('_recGuideModal').remove()" style="background:rgba(255,255,255,.08);border:none;border-radius:6px;color:rgba(255,255,255,.6);font-size:16px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+          <thead>
+            <tr style="background:var(--bg2);">
+              <th style="padding:9px 12px;text-align:left;font-weight:800;color:var(--sub);border-bottom:1.5px solid var(--border2);white-space:nowrap;">대학 그룹</th>
+              <th style="padding:9px 12px;text-align:left;font-weight:800;color:var(--sub);border-bottom:1.5px solid var(--border2);">권장과목 반영 특징</th>
+              <th style="padding:9px 12px;text-align:left;font-weight:800;color:var(--sub);border-bottom:1.5px solid var(--border2);">예시</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border2);">
+              <td style="padding:10px 12px;vertical-align:top;white-space:nowrap;">
+                <span style="display:inline-block;background:#fff0f0;border:1px solid #ffb3b3;color:#c62828;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:800;">최상위 ~ 상위권</span>
+              </td>
+              <td style="padding:10px 12px;vertical-align:top;color:var(--text);line-height:1.7;">권장과목을 이수하지 않으면 합격 확률이 크게 떨어질 수 있습니다. <span style="color:#c62828;font-weight:700;">사실상 필수 과목</span>처럼 여겨집니다.</td>
+              <td style="padding:10px 12px;vertical-align:top;color:var(--muted);line-height:1.7;">기계공학과 지원 시<br>미적분, 기하,<br>물리학Ⅱ 이수 권장</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border2);background:var(--bg2);">
+              <td style="padding:10px 12px;vertical-align:top;white-space:nowrap;">
+                <span style="display:inline-block;background:#fff8e1;border:1px solid #ffe082;color:#e65100;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:800;">중위권 ~ 수도권</span>
+              </td>
+              <td style="padding:10px 12px;vertical-align:top;color:var(--text);line-height:1.7;">이수하면 가산점이나 긍정적 평가를 받지만, <span style="color:var(--rec);font-weight:700;">다른 과목 성적이 우수하면 만회</span> 가능합니다.</td>
+              <td style="padding:10px 12px;vertical-align:top;color:var(--muted);line-height:1.7;">경영학과 지원 시<br>경제 또는<br>확률과 통계 권장</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 12px;vertical-align:top;white-space:nowrap;">
+                <span style="display:inline-block;background:#f1f8e9;border:1px solid #aed581;color:#33691e;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:800;">교과/정시 위주</span>
+              </td>
+              <td style="padding:10px 12px;vertical-align:top;color:var(--text);line-height:1.7;">권장과목 이수 여부보다 <span style="color:var(--ink);font-weight:700;">성적(등급)·수능 점수</span>가 훨씬 중요합니다. 가이드라인은 있으나 합불의 절대적 영향력은 낮습니다.</td>
+              <td style="padding:10px 12px;vertical-align:top;color:var(--muted);line-height:1.7;">가이드라인 존재하나<br>등급·점수가<br>결정적 요소</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:10px 14px;background:var(--bg2);font-size:10px;color:var(--muted);line-height:1.7;border-top:1px solid var(--border2);">
+        💡 위 내용은 일반적인 경향이며, 대학·전형·연도에 따라 다를 수 있습니다. 반드시 목표 대학 입학처 공지를 직접 확인하세요.
+      </div>
+    </div>`;
+  el.addEventListener('click', e=>{ if(e.target===el) el.remove(); });
+  document.body.appendChild(el);
+}
+
+// 권장과목 도움말 칩 HTML
+const REC_GUIDE_CHIP = `<span onclick="showRecGuideModal()" style="display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#1c2330,#2a3448);border:1px solid rgba(184,149,106,.4);color:var(--gold-l);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:opacity .2s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">✦ 너가추천</span>`;
 
 function renderConflictWarnings(){
   const el = document.getElementById('conflictWarnings');
