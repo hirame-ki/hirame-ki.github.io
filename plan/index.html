@@ -1320,7 +1320,7 @@ footer a:hover{border-bottom-color:var(--gold);}
         <div style="margin-top:8px;font-size:11px;color:var(--muted);">인식 결과를 아래 편집 칸에 적용했습니다. 오타·누락이 있으면 직접 수정 후 저장하세요.</div>
       </div>
     </div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6;">한 줄에 하나씩 입력하세요. <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명</code> 만 입력해도 되고, <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명,학점</code> 또는 <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명,학점,유형</code> 형식도 가능합니다. 학점 기본값 4학점 / 유형 기본값 일반선택</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6;">한 줄에 하나씩 입력하세요. <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명</code> 만 입력해도 되고, <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명,학점</code> 또는 <code style="background:var(--bg2);padding:1px 5px;border-radius:4px;">과목명,학점,유형</code> 형식도 가능합니다. 학점 기본값 4학점 / 유형 기본값 선택</p>
     <div id="scheduleEditorArea"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeScheduleEditor()">취소</button>
@@ -1568,43 +1568,43 @@ const DEFAULT_SUBS = {
     {name:'공통국어1',cr:4,type:'공통'},{name:'공통수학1',cr:4,type:'공통'},
     {name:'공통영어1',cr:4,type:'공통'},{name:'한국사1',cr:3,type:'공통'},
     {name:'통합사회1',cr:4,type:'공통'},{name:'통합과학1',cr:4,type:'공통'},
-    {name:'과학탐구실험1',cr:1,type:'공통'},{name:'체육1',cr:3,type:'일반선택'},
-    {name:'음악',cr:3,type:'일반선택'},{name:'정보',cr:4,type:'일반선택'},
+    {name:'과학탐구실험1',cr:1,type:'공통'},{name:'체육1',cr:3,type:'선택'},
+    {name:'음악',cr:3,type:'선택'},{name:'정보',cr:4,type:'선택'},
   ],
   '1학년 2학기':[
     {name:'공통국어2',cr:4,type:'공통'},{name:'공통수학2',cr:4,type:'공통'},
     {name:'공통영어2',cr:4,type:'공통'},{name:'한국사2',cr:3,type:'공통'},
     {name:'통합사회2',cr:4,type:'공통'},{name:'통합과학2',cr:4,type:'공통'},
-    {name:'과학탐구실험2',cr:1,type:'공통'},{name:'체육2',cr:3,type:'일반선택'},
-    {name:'미술',cr:3,type:'일반선택'},{name:'기술가정',cr:4,type:'일반선택'},
+    {name:'과학탐구실험2',cr:1,type:'공통'},{name:'체육2',cr:3,type:'선택'},
+    {name:'미술',cr:3,type:'선택'},{name:'기술가정',cr:4,type:'선택'},
   ],
   '2학년 1학기':[
-    {name:'화법과 언어',cr:4,type:'일반선택'},{name:'대수',cr:4,type:'일반선택'},
-    {name:'영어Ⅰ',cr:4,type:'일반선택'},{name:'물리학',cr:4,type:'일반선택'},
-    {name:'화학',cr:4,type:'일반선택'},{name:'사회와 문화',cr:4,type:'일반선택'},
-    {name:'정치',cr:4,type:'일반선택'},{name:'체육3',cr:3,type:'일반선택'},
-    {name:'일본문화',cr:4,type:'진로선택'},{name:'경제',cr:4,type:'일반선택'},
+    {name:'화법과 언어',cr:4,type:'선택'},{name:'대수',cr:4,type:'선택'},
+    {name:'영어Ⅰ',cr:4,type:'선택'},{name:'물리학',cr:4,type:'선택'},
+    {name:'화학',cr:4,type:'선택'},{name:'사회와 문화',cr:4,type:'선택'},
+    {name:'정치',cr:4,type:'선택'},{name:'체육3',cr:3,type:'선택'},
+    {name:'일본문화',cr:4,type:'선택'},{name:'경제',cr:4,type:'선택'},
   ],
   '2학년 2학기':[
-    {name:'독서와 작문',cr:4,type:'일반선택'},{name:'미적분Ⅰ',cr:4,type:'일반선택'},
-    {name:'확률과 통계',cr:4,type:'일반선택'},{name:'영어Ⅱ',cr:4,type:'일반선택'},
-    {name:'생명과학',cr:4,type:'일반선택'},{name:'지구과학',cr:4,type:'일반선택'},
-    {name:'세계사',cr:4,type:'일반선택'},{name:'정보',cr:4,type:'일반선택'},
-    {name:'기하',cr:4,type:'일반선택'},{name:'한국사 심화 탐구',cr:4,type:'진로선택'},
+    {name:'독서와 작문',cr:4,type:'선택'},{name:'미적분Ⅰ',cr:4,type:'선택'},
+    {name:'확률과 통계',cr:4,type:'선택'},{name:'영어Ⅱ',cr:4,type:'선택'},
+    {name:'생명과학',cr:4,type:'선택'},{name:'지구과학',cr:4,type:'선택'},
+    {name:'세계사',cr:4,type:'선택'},{name:'정보',cr:4,type:'선택'},
+    {name:'기하',cr:4,type:'선택'},{name:'한국사 심화 탐구',cr:4,type:'선택'},
   ],
   '3학년 1학기':[
-    {name:'주제탐구독서',cr:4,type:'융합선택'},{name:'수학과제탐구',cr:4,type:'진로선택'},
-    {name:'미적분Ⅱ',cr:4,type:'진로선택'},{name:'심화영어Ⅰ',cr:4,type:'진로선택'},
-    {name:'세포와 물질대사',cr:4,type:'진로선택'},{name:'역학과 에너지',cr:4,type:'진로선택'},
-    {name:'화학 반응의 세계',cr:4,type:'진로선택'},{name:'데이터과학',cr:4,type:'진로선택'},
-    {name:'인공지능기초',cr:4,type:'진로선택'},{name:'스포츠 생활1',cr:3,type:'융합선택'},
+    {name:'주제탐구독서',cr:4,type:'선택'},{name:'수학과제탐구',cr:4,type:'선택'},
+    {name:'미적분Ⅱ',cr:4,type:'선택'},{name:'심화영어Ⅰ',cr:4,type:'선택'},
+    {name:'세포와 물질대사',cr:4,type:'선택'},{name:'역학과 에너지',cr:4,type:'선택'},
+    {name:'화학 반응의 세계',cr:4,type:'선택'},{name:'데이터과학',cr:4,type:'선택'},
+    {name:'인공지능기초',cr:4,type:'선택'},{name:'스포츠 생활1',cr:3,type:'선택'},
   ],
   '3학년 2학기':[
-    {name:'독서토론과 글쓰기',cr:4,type:'융합선택'},{name:'고급수학Ⅱ',cr:4,type:'진로선택'},
-    {name:'심화영어 독해Ⅰ',cr:4,type:'진로선택'},{name:'생물의 유전',cr:4,type:'진로선택'},
-    {name:'전자기와 양자',cr:4,type:'진로선택'},{name:'프로그래밍',cr:4,type:'진로선택'},
-    {name:'사회문제탐구',cr:4,type:'융합선택'},{name:'융합과학탐구',cr:4,type:'융합선택'},
-    {name:'미술 창작',cr:4,type:'진로선택'},{name:'스포츠 생활2',cr:3,type:'융합선택'},
+    {name:'독서토론과 글쓰기',cr:4,type:'선택'},{name:'고급수학Ⅱ',cr:4,type:'선택'},
+    {name:'심화영어 독해Ⅰ',cr:4,type:'선택'},{name:'생물의 유전',cr:4,type:'선택'},
+    {name:'전자기와 양자',cr:4,type:'선택'},{name:'프로그래밍',cr:4,type:'선택'},
+    {name:'사회문제탐구',cr:4,type:'선택'},{name:'융합과학탐구',cr:4,type:'선택'},
+    {name:'미술 창작',cr:4,type:'선택'},{name:'스포츠 생활2',cr:3,type:'선택'},
   ],
 };
 
@@ -2005,9 +2005,7 @@ function closeScheduleEditor(){
 const SEM_PATTERNS = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기'];
 const TYPE_KEYWORDS = {
   '공통':['공통'],
-  '일반선택':['일반선택','일반 선택'],
-  '진로선택':['진로선택','진로 선택'],
-  '융합선택':['융합선택','융합 선택'],
+  '선택':['선택'],
 };
 // 학점처럼 보이는 숫자 패턴 (1~8)
 const CR_RE = /^[1-8]$/;
@@ -2018,7 +2016,7 @@ function detectType(str){
   for(const [t, keys] of Object.entries(TYPE_KEYWORDS)){
     if(keys.some(k=>str.includes(k))) return t;
   }
-  return '일반선택';
+  return '선택';
 }
 
 function detectSem(str){
@@ -2276,7 +2274,7 @@ async function parseCurriculumPDF(arrayBuffer){
         }
         if(subjects.length===0||taekN===null) continue;
         const cr=credit||4;
-        const typeStr=taekN===1?'일반선택':'진로선택';
+        const typeStr='선택';
         subjects.forEach(name=>semesters[sid].subjects.push({name,cr,type:typeStr}));
       }
     }
@@ -2320,12 +2318,12 @@ function extractSubFromRow(row,sem,parsed){
   if(!parsed[sem]) parsed[sem]=[];
   const cells=row.map(c=>String(c||'').trim()).filter(Boolean);
   if(cells.length<2) return;
-  let name='',cr=0,type='일반선택';
+  let name='',cr=0,type='선택';
   cells.forEach(cell=>{
     if(SKIP_RE.test(cell)) return;
     if(CR_RE.test(cell)&&!name) return;
     if(CR_RE.test(cell)&&name&&!cr){cr=parseInt(cell);return;}
-    if(detectType(cell)!=='일반선택'&&cell.length<=6){type=detectType(cell);return;}
+    if(detectType(cell)==='공통'&&cell.length<=6){type='공통';return;}
     if(!name&&cell.length>=2&&cell.length<=20&&!/^\d+$/.test(cell)) name=cell;
   });
   if(name&&cr>=1&&cr<=8) parsed[sem].push({name,cr,type});
@@ -2382,7 +2380,7 @@ function renderReview(){
         <span class="review-subj-name" contenteditable="true" onblur="updateReviewSubj(${si},${idx},'name',this.textContent.trim())">${sub.name}</span>
         <input type="number" class="inp review-subj-cr" value="${sub.cr}" min="1" max="8" onchange="updateReviewSubj(${si},${idx},'cr',this.value)" style="width:46px;padding:3px 6px;font-size:11px;">
         <select class="inp review-subj-type" onchange="updateReviewSubj(${si},${idx},'type',this.value)" style="width:80px;padding:3px 5px;font-size:11px;">
-          ${['공통','일반선택','진로선택','융합선택'].map(t=>`<option${sub.type===t?' selected':''}>${t}</option>`).join('')}
+          ${['공통','선택'].map(t=>`<option${sub.type===t?' selected':''}>${t}</option>`).join('')}
         </select>
         <button onclick="removeReviewSubj(${si},${idx})" style="background:none;border:none;cursor:pointer;color:var(--core);font-size:14px;flex-shrink:0;padding:0 2px;" title="삭제">×</button>
       </div>`).join('')||`<div style="font-size:11px;color:var(--muted);padding:4px 0;">과목 없음 — 아래에서 직접 추가하세요</div>`;
@@ -2397,7 +2395,7 @@ function renderReview(){
           <input type="text" class="inp" id="radd_name_${si}" placeholder="과목명" style="flex:2;font-size:12px;padding:5px 8px;">
           <input type="number" class="inp" id="radd_cr_${si}" placeholder="학점" value="4" min="1" max="8" style="width:52px;padding:5px 8px;font-size:12px;">
           <select class="inp" id="radd_type_${si}" style="width:88px;padding:5px 6px;font-size:12px;">
-            ${['공통','일반선택','진로선택','융합선택'].map(t=>`<option>${t}</option>`).join('')}
+            ${['공통','선택'].map(t=>`<option>${t}</option>`).join('')}
           </select>
           <button class="btn btn-ghost btn-sm" onclick="addReviewSubj(${si})" style="flex-shrink:0;">+ 추가</button>
         </div>
@@ -2420,7 +2418,7 @@ function removeReviewSubj(si,idx){
 function addReviewSubj(si){
   const name=(document.getElementById(`radd_name_${si}`)?.value||'').trim();
   const cr=parseInt(document.getElementById(`radd_cr_${si}`)?.value)||4;
-  const type=document.getElementById(`radd_type_${si}`)?.value||'일반선택';
+  const type=document.getElementById(`radd_type_${si}`)?.value||'선택';
   if(!name){showToast('과목명을 입력하세요','error');return;}
   if(!S._reviewData[si]) return;
   S._reviewData[si].subjects.push({name,cr,type});
@@ -2476,9 +2474,9 @@ function saveScheduleEditor(){
       // 학점: 두 번째 항목이 숫자면 사용, 아니면 기본 4
       const rawCr = parts[1]?.trim();
       const cr = (rawCr && !isNaN(parseInt(rawCr))) ? Math.max(1, Math.min(8, parseInt(rawCr))) : 4;
-      // 유형: 세 번째 항목이 있으면 사용, 없으면 자동 판별 후 기본 '일반선택'
+      // 유형: 세 번째 항목이 있으면 사용, 없으면 기본 '선택' (공통은 명시 필요)
       const rawType = parts[2]?.trim();
-      const type = rawType ? rawType : detectType(name) !== '일반선택' ? detectType(name) : '일반선택';
+      const type = rawType === '공통' ? '공통' : (rawType && rawType !== '선택' ? '선택' : (detectType(name) === '공통' ? '공통' : '선택'));
       newSubs[sem].push({name, cr, type});
     });
   });
