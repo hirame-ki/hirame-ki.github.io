@@ -1443,13 +1443,16 @@ const TRACKS = {
 // ── localStorage 안전 래퍼 (Edge Tracking Prevention / file:// 환경 대응) ──
 const _LS = (function(){
   var _mem = {};
-  try{ _LS.set('__test__','1'); _LS.remove('__test__'); }
-  catch(e){ console.warn('[localStorage 차단됨] 메모리 스토리지로 대체합니다.'); }
-  function _avail(){ try{ return !!localStorage; }catch(e){ return false; } }
+  function _avail(){
+    try{ localStorage.setItem('__test__','1'); localStorage.removeItem('__test__'); return true; }
+    catch(e){ return false; }
+  }
+  var _ok = _avail();
+  if(!_ok) console.warn('[localStorage 차단됨] 메모리 스토리지로 대체합니다.');
   return {
-    get: function(k){ try{ return _avail()?_LS.get(k):(_mem[k]||null); }catch(e){ return _mem[k]||null; } },
-    set: function(k,v){ try{ if(_avail()) _LS.set(k,v); else _mem[k]=v; }catch(e){ _mem[k]=v; } },
-    remove: function(k){ try{ if(_avail()) _LS.remove(k); else delete _mem[k]; }catch(e){ delete _mem[k]; } }
+    get:    function(k){ try{ return _ok ? localStorage.getItem(k)    : (_mem[k]||null); }catch(e){ return _mem[k]||null; } },
+    set:    function(k,v){ try{ if(_ok) localStorage.setItem(k,v);    else _mem[k]=v; }catch(e){ _mem[k]=v; } },
+    remove: function(k){ try{ if(_ok) localStorage.removeItem(k);     else delete _mem[k]; }catch(e){ delete _mem[k]; } }
   };
 })();
 
