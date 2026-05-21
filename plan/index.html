@@ -2903,12 +2903,13 @@ function toggleSub(sem, idx){
   } else {
     const maxN = (S.semMax&&S.semMax[sem]) || 10;
     // 공통과목 포함 전체 과목 수로 최대 수 체크
-    // selSubs에 없는 공통과목도 편제표 기준으로 카운트
-    const availSubs = S.availSubs[sem] || DEFAULT_SUBS[sem] || [];
+    // availSubs가 빈 배열이면 DEFAULT_SUBS로 fallback
+    const availSubsRaw = S.availSubs[sem];
+    const availSubs = (availSubsRaw && availSubsRaw.length > 0) ? availSubsRaw : (DEFAULT_SUBS[sem] || []);
     const commonCount = availSubs.filter(s=>s.type==='공통').length;
     const selNonCommonCount = arr.filter(s=>s.type!=='공통').length;
     const selCount = commonCount + selNonCommonCount;
-    if(selCount >= maxN){ showToast(`이 학기 최대 ${maxN}과목까지 선택 가능합니다 (공통 ${commonCount}과목 포함)`,'error'); return; }
+    if(selCount >= maxN){ showToast(`이 학기 최대 ${maxN}과목까지 선택 가능합니다`,'error'); return; }
     arr.push({...sub});
   }
   renderDesigner();
@@ -3963,12 +3964,40 @@ function checkSubjectConflicts(){
   const allSel = getAllSelectedSubs();
   const selNames = allSel.map(s=>normalizeName(s.name));
   const conflicts = [];
+
+  // 이수완료/자동이수 학기 과목은 이미 이수한 것으로 간주
+  const completedSems = getCompletedSems();
+  const autoSems = getAutoCompletedSems();
+  const doneSems = [...completedSems, ...autoSems];
+  const activeSems = getActiveSems();
+
+  // 선수과목이 이수완료/자동이수 학기 or 활성 학기 중 어디에 있는지 확인
+  function findSubjectSems(normName){
+    const result = { done: false, active: false };
+    doneSems.forEach(sem=>{
+      const subs = S.availSubs[sem] || DEFAULT_SUBS[sem] || [];
+      if(subs.some(s=>normalizeName(s.name).includes(normName))) result.done = true;
+    });
+    activeSems.forEach(sem=>{
+      const subs = S.availSubs[sem] || DEFAULT_SUBS[sem] || [];
+      if(subs.some(s=>normalizeName(s.name).includes(normName))) result.active = true;
+    });
+    return result;
+  }
+
   SUBJECT_HIERARCHY.forEach(([pre, post, msg])=>{
     const normPre  = normalizeName(pre);
     const normPost = normalizeName(post);
     const hasPost  = selNames.some(n=>n.includes(normPost));
     const hasPre   = selNames.some(n=>n.includes(normPre));
-    if(hasPost && !hasPre) conflicts.push(msg);
+    if(!hasPost || hasPre) return; // 후수 미선택이거나 선수 이미 이수 -> 경고 없음
+
+    // 선수과목이 이수완료 학기에 있으면 이미 이수한 것 -> 경고 없음
+    const preSems = findSubjectSems(normPre);
+    if(preSems.done) return;
+
+    // 선수과목이 활성(선택 가능) 학기에 있고 아직 선택 안 된 경우만 경고
+    if(preSems.active) conflicts.push(msg);
   });
   return conflicts;
 }
