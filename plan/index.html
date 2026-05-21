@@ -2902,9 +2902,13 @@ function toggleSub(sem, idx){
     arr.splice(pos,1);
   } else {
     const maxN = (S.semMax&&S.semMax[sem]) || 10;
-    // 공통과목은 자동 삽입되므로 최대 수 체크에서 제외
-    const selCount = arr.filter(s=>s.type!=='공통').length;
-    if(selCount >= maxN){ showToast(`이 학기 최대 ${maxN}과목까지 선택 가능합니다`,'error'); return; }
+    // 공통과목 포함 전체 과목 수로 최대 수 체크
+    // selSubs에 없는 공통과목도 편제표 기준으로 카운트
+    const availSubs = S.availSubs[sem] || DEFAULT_SUBS[sem] || [];
+    const commonCount = availSubs.filter(s=>s.type==='공통').length;
+    const selNonCommonCount = arr.filter(s=>s.type!=='공통').length;
+    const selCount = commonCount + selNonCommonCount;
+    if(selCount >= maxN){ showToast(`이 학기 최대 ${maxN}과목까지 선택 가능합니다 (공통 ${commonCount}과목 포함)`,'error'); return; }
     arr.push({...sub});
   }
   renderDesigner();
