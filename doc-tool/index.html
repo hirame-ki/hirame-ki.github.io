@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>공문서 도우미 — 히라메키</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0fdf8; --bg2:#e4f7f1; --surface:#fff; --surface2:#f5fcf9;
+  --border:#b2e0d4; --border2:#cdeee5;
+  --mint:#2dd4bf; --mint-d:#0d9488; --mint-l:#ccfbef;
+  --mint-btn:linear-gradient(135deg,#2dd4bf 0%,#0d9488 100%);
+  --teal:#0f766e;
+  --text:#1a3a30; --sub:#3d6b5c; --muted:#7aaa97;
+  --shadow:0 2px 14px rgba(43,191,154,.10);
+  --shadow-md:0 4px 20px rgba(43,191,154,.15);
+  --r:14px; --rs:10px; --hh:60px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* HEADER */
+.hdr{height:var(--hh);min-height:var(--hh);flex-shrink:0;background:var(--surface);border-bottom:1.5px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;box-shadow:var(--shadow);z-index:100}
+.logo-box{width:36px;height:36px;border-radius:12px;background:var(--mint-btn);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.logo-txt{font-family:'Noto Sans KR',sans-serif;font-size:17px;font-weight:700;color:var(--text)}
+.logo-sub{font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:2px 9px;white-space:nowrap;flex-shrink:0}
+
+/* API BAR - hidden */
+
+/* DASHBOARD */
+.dashboard{background:var(--surface);border-bottom:1.5px solid var(--border);padding:16px 20px;flex-shrink:0}
+.dash-title{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+.dash-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:900px}
+.dash-btn{border:2px solid var(--border);border-radius:var(--r);padding:14px 16px;background:var(--surface2);cursor:pointer;transition:all .18s;text-align:left;display:flex;align-items:center;gap:12px}
+.dash-btn:hover{border-color:var(--mint);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.dash-btn.active{border-color:var(--mint);background:var(--mint-l);box-shadow:var(--shadow-md)}
+.dash-btn.active .db-num{background:var(--mint-d);color:#fff;border-color:var(--mint-d)}
+.dash-btn.active .db-title{color:var(--mint-d)}
+.dash-btn.active .db-arrow{color:var(--mint-d)}
+.db-num{width:34px;height:34px;border-radius:10px;background:var(--bg2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;transition:all .18s}
+.db-info{flex:1;min-width:0}
+.db-title{font-family:'Noto Sans KR',sans-serif;font-size:13.5px;font-weight:800;color:var(--sub);margin-bottom:3px;transition:color .18s}
+.db-desc{font-size:11px;color:var(--muted);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-arrow{font-size:18px;color:var(--border);flex-shrink:0;transition:color .18s}
+
+/* GUIDE PILLS */
+.guide-pills{background:var(--bg2);border-bottom:1.5px solid var(--border);padding:7px 20px;display:flex;align-items:center;gap:7px;overflow-x:auto;flex-shrink:0}
+.guide-pills::-webkit-scrollbar{height:0}
+.gp-label{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.06em;white-space:nowrap;flex-shrink:0}
+.gp-item{display:flex;align-items:center;gap:5px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--sub);white-space:nowrap;flex-shrink:0;font-weight:700}
+.gp-dot{width:6px;height:6px;border-radius:50%;background:var(--mint);flex-shrink:0}
+
+/* PANELS */
+.tab-panel{display:none;flex:1;min-height:0;overflow:hidden}
+.tab-panel.active{display:flex}
+.two-col{display:grid;grid-template-columns:1fr 1fr;width:100%;overflow:hidden}
+.col-left{border-right:1.5px solid var(--border);overflow-y:auto;padding:18px 16px 40px;background:var(--bg)}
+.col-right{overflow-y:auto;padding:18px 16px 40px;background:var(--surface)}
+
+/* SECTION CARD */
+.sec{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);margin-bottom:14px;overflow:hidden}
+.sec-head{display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--surface2);border-bottom:1.5px solid var(--border2)}
+.sec-num{width:22px;height:22px;border-radius:7px;background:var(--mint-btn);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sec-ttl{font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.03em}
+.sec-body{padding:14px}
+
+/* FORM */
+.field{margin-bottom:13px}
+.field:last-child{margin-bottom:0}
+.field-lbl{font-size:11px;font-weight:800;color:var(--sub);margin-bottom:5px}
+.inp{width:100%;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--bg2);font-size:13px;font-family:'Noto Sans KR',sans-serif;color:var(--text);outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--mint);background:var(--surface)}
+.inp::placeholder{color:var(--muted);font-size:12px}
+textarea.inp{resize:vertical;line-height:1.7}
+
+/* CHIPS */
+.chip-sect-lbl{font-size:10px;font-weight:800;color:var(--muted);margin-bottom:6px;margin-top:12px;letter-spacing:.04em;text-transform:uppercase;display:block}
+.chip-sect-lbl:first-child{margin-top:0}
+.chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:2px}
+.chip{padding:5px 13px;border:1.5px solid var(--border);border-radius:20px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .14s;background:var(--surface);color:var(--sub);user-select:none}
+.chip:hover{border-color:var(--mint);color:var(--mint-d)}
+.chip.selected{background:var(--mint-l);border-color:var(--mint);color:var(--mint-d);font-weight:700}
+
+/* TONE */
+.tone-group{display:flex;border:1.5px solid var(--border);border-radius:var(--rs);overflow:hidden}
+.tone-btn{flex:1;padding:8px;border:none;background:var(--surface);font-family:'Noto Sans KR',sans-serif;font-size:12.5px;cursor:pointer;transition:all .15s;color:var(--muted)}
+.tone-btn.active{background:var(--mint-d);color:#fff;font-weight:700}
+.tone-btn:not(.active):hover{background:var(--bg2);color:var(--sub)}
+
+/* BUTTONS */
+.btn-primary{width:100%;padding:14px;background:var(--mint-btn);color:#fff;border:none;border-radius:var(--r);font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(45,212,191,.3);transition:all .18s;margin-top:4px}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(45,212,191,.4)}
+.btn-primary:disabled{background:linear-gradient(135deg,#a0d5c9,#7ab5ac);cursor:not-allowed;transform:none}
+.btn-copy{padding:6px 14px;background:var(--mint-d);color:#fff;border:none;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-copy:hover{background:var(--teal)}
+.btn-copy.copied{background:#059669}
+
+/* RESULT */
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.result-label{font-size:10px;font-weight:800;color:var(--mint-d);letter-spacing:.1em;text-transform:uppercase}
+.result-box{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rs);padding:16px;font-size:13px;line-height:1.85;color:var(--text);white-space:pre-wrap;min-height:80px;font-family:'Noto Sans KR',sans-serif}
+.result-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--muted);font-size:13px;gap:8px;text-align:center;line-height:1.8}
+.result-empty .em-icon{font-size:32px}
+
+/* EXPLAIN */
+.explain-box{background:#f0fdf9;border:1.5px solid var(--border);border-left:3px solid var(--mint-d);border-radius:var(--rs);padding:14px 16px;font-size:12.5px;line-height:1.75;color:var(--sub);white-space:pre-wrap;font-family:'Noto Sans KR',sans-serif}
+.explain-box strong{display:block;font-size:10.5px;font-weight:800;color:var(--mint-d);letter-spacing:.06em;margin-bottom:8px;text-transform:uppercase}
+
+/* GUIDE SECTION */
+.guide-sec{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);margin-top:14px;overflow:hidden}
+.guide-toggle{display:flex;align-items:center;gap:8px;padding:11px 14px;cursor:pointer;background:var(--surface2);user-select:none;font-size:11.5px;font-weight:800;color:var(--sub)}
+.guide-toggle:hover{background:var(--mint-l);color:var(--mint-d)}
+.guide-icon{width:20px;height:20px;border-radius:6px;background:var(--mint-btn);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.guide-arrow{margin-left:auto;font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:2px 9px}
+.guide-content{display:none;padding:14px;font-size:12px;line-height:1.9;color:var(--sub);border-top:1.5px solid var(--border2)}
+.guide-source{font-size:10.5px;font-weight:800;color:var(--mint-d);margin-bottom:12px;padding:6px 10px;background:var(--mint-l);border-radius:8px;display:block}
+.guide-section{margin-bottom:10px}
+.guide-section b{color:var(--text)}
+.guide-section .src{font-size:10px;color:var(--muted)}
+.guide-star{color:#e11d48;font-weight:800}
+
+/* LOADING */
+.loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12.5px;padding:20px 0}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--mint);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.streaming-cursor::after{content:'▍';animation:blink .6s step-end infinite;color:var(--mint)}
+@keyframes blink{50%{opacity:0}}
+
+/* FOOTER */
+footer{background:var(--surface);border-top:1.5px solid var(--border);padding:11px 20px;text-align:center;font-size:12.5px;color:var(--muted);flex-shrink:0}
+footer a{color:var(--mint-d);text-decoration:none;font-weight:700}
+footer a:hover{text-decoration:underline}
+
+@media(max-width:720px){
+  .two-col{grid-template-columns:1fr}
+  .col-left{border-right:none;border-bottom:1.5px solid var(--border)}
+  .tab-panel.active{flex-direction:column;overflow-y:auto}
+  .two-col{overflow:visible}
+  .col-left,.col-right{overflow:visible}
+  .dash-btns{grid-template-columns:1fr}
+}
+
+/* AI WARNING BANNER */
+.ai-warn{display:flex;align-items:center;gap:10px;background:linear-gradient(90deg,#fff7ed,#fef3c7);border:1.5px solid #f59e0b;border-radius:10px;padding:10px 14px;margin-bottom:14px;flex-shrink:0}
+.ai-warn-icon{font-size:18px;flex-shrink:0}
+.ai-warn-text{font-size:12px;line-height:1.6;color:#92400e;font-weight:700}
+.ai-warn-text span{display:block;font-size:11px;font-weight:400;color:#b45309;margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo-box">📋</div>
+  <div class="logo-txt">공문서 도우미</div>
+  <div class="logo-sub">2025 편람 기준 · Qwen3-32B</div>
+</div>
+
+<!-- API KEY: 하드코딩 (내부 사용) -->
+
+<!-- DASHBOARD -->
+<div class="dashboard">
+  <div class="dash-title">🗂 기능 선택</div>
+  <div class="dash-btns">
+    <button class="dash-btn active" id="dashKian" onclick="switchPanel('kian')">
+      <div class="db-num">✍️</div>
+      <div class="db-info">
+        <div class="db-title">기안 수정</div>
+        <div class="db-desc">2025 편람 기준 · 공문서 교정 + 수정 이유 설명</div>
+      </div>
+      <div class="db-arrow">›</div>
+    </button>
+    <button class="dash-btn" id="dashGato" onclick="switchPanel('gato')">
+      <div class="db-num">📄</div>
+      <div class="db-info">
+        <div class="db-title">가정통신문 생성</div>
+        <div class="db-desc">상황별 칩 선택 · 어조 설정 · AI 자동 생성</div>
+      </div>
+      <div class="db-arrow">›</div>
+    </button>
+  </div>
+</div>
+
+<!-- GUIDE PILLS -->
+<div class="guide-pills" id="guidePills"></div>
+
+<!-- ═══ PANEL: 기안수정 ═══ -->
+<div class="tab-panel active" id="panel-kian">
+  <div class="two-col">
+    <div class="col-left">
+      <div class="sec">
+        <div class="sec-head"><div class="sec-num">①</div><span class="sec-ttl">기안문 붙여넣기</span></div>
+        <div class="sec-body">
+          <div class="field">
+            <div class="field-lbl">수정할 기안문 전문</div>
+            <textarea class="inp" id="kianInput" rows="16" placeholder="수정이 필요한 기안문 전체를 붙여넣으세요.
+
+예시)
+수 신: 내부결재
+제 목: 2026년도 1학기 수학여행 계획서
+
+1. 목적
+  - 학생들의 견문을 넓히기 위해서 ...
+2. 일정
+  ..."></textarea>
+          </div>
+          <button class="btn-primary" onclick="correctKian()" id="kianBtn"><span>✍️</span> 기안문 교정 요청</button>
+        </div>
+      </div>
+
+      <div class="guide-sec">
+        <div class="guide-toggle" onclick="toggleGuide('kianGuide','kianArrow')">
+          <div class="guide-icon">📖</div>
+          내장 공문서 작성 지침 보기
+          <span class="guide-arrow" id="kianArrow">▼ 펼치기</span>
+        </div>
+        <div class="guide-content" id="kianGuide">
+          <span class="guide-source">출처: 행정안전부 「2025 행정업무운영 편람」 PDF 직접 확인 · 「행정업무의 운영 및 혁신에 관한 규정」(대통령령, 2023. 6. 28. 개정)</span>
+          <div class="guide-section"><b>1. 항목 번호 체계</b> <span class="src">(규칙 제2조제1항, 편람 51~52쪽)</span><br>1단계 1., 2. → 2단계 가., 나. → 3단계 1), 2) → 4단계 가), 나)<br>5단계 (1) → 6단계 (가) → 7단계 ① → 8단계 ㉮<br>• 항목 하나뿐이면 기호 부여 안 함 / 기호와 내용 사이 1타<br>• 둘째 항목부터 오른쪽으로 2타씩 이동</div>
+          <div class="guide-section"><b>2. 날짜·시간 표기</b> <span class="src">(영 제7조제5항, 편람 49쪽)</span><br>• 2026. 5. 30. (○) / 2026.5.30. (×) — 숫자·마침표 사이 1타<br>• 앞자리 0 금지: 1985. 9. 6. (○) / 1985. 09. 06. (×)<br>• 요일 병기: 2026. 5. 30.(금). / 시간: 15:20, 07:09</div>
+          <div class="guide-section"><b class="guide-star">★ 3. 연도 자동 수정</b><br>• 이전 연도(2025 등)가 올해(2026)를 가리키는 맥락이면 자동 수정<br>• 역사적 사실·과거 실적은 수정 안 함</div>
+          <div class="guide-section"><b>4. 금액 표기</b> <span class="src">(규칙 제2조제2항, 편람 49쪽)</span><br>• 금113,560원(금일십일만삼천오백육십원)</div>
+          <div class="guide-section"><b>5. 어문 규범 교정</b> <span class="src">(편람 41~44쪽)</span><br>• 두음법칙: 년간→연간, 시설 년도→시설 연도<br>• 사이시옷: 하교길→하굣길, 최소값→최솟값<br>• 외래어: 컨퍼런스→콘퍼런스, 워크샵→워크숍<br>• 괄호 뒤 조사: 인공지능(AI)를→인공지능(AI)을 (괄호 앞 글자 기준)</div>
+          <div class="guide-section"><b>6. 띄어쓰기·문장 부호</b> <span class="src">(편람 43~44쪽)</span><br>• 10만톤→10만 톤 / 홍길동씨→홍길동 씨<br>• 쌍점: 원장 : 김갑동→원장: 김갑동<br>• 물결표: 4. 23. ~ 6. 15.→4. 23.~6. 15.</div>
+          <div class="guide-section"><b>7. 어휘 순화 · 고압적 표현</b><br>• 금번→이번, 상기→위, 차년도→다음 해<br>• 매뉴얼→지침, 인프라→기반시설<br>• '작성할 것'→'작성해 주십시오'</div>
+          <div class="guide-section"><b>8. 붙임·끝 표시</b> <span class="src">(편람 59~61쪽)</span><br>• '첨부'→'붙임'<br>• 붙임 없음: ~바랍니다.&nbsp;&nbsp;끝.<br>• 붙임 1개: 붙임&nbsp;&nbsp;○○○ 1부.&nbsp;&nbsp;끝.<br>• 붙임 2개↑: 붙임&nbsp;&nbsp;1. ○○ 1부.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. ○○ 1부.&nbsp;&nbsp;끝.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <div class="ai-warn">
+        <div class="ai-warn-icon">⚠️</div>
+        <div class="ai-warn-text">AI는 실수할 수 있습니다. 결과물은 반드시 교사가 직접 검토 후 사용하세요.
+          <span>날짜·이름·규정 등 중요한 내용은 꼭 재확인 바랍니다.</span>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-head"><div class="sec-num" style="background:linear-gradient(135deg,#059669,#0d9488)">✓</div><span class="sec-ttl">교정된 기안문</span></div>
+        <div class="sec-body"><div id="kianResult"><div class="result-empty"><div class="em-icon">✍️</div>기안문을 붙여넣고<br>교정 버튼을 눌러주세요</div></div></div>
+      </div>
+      <div class="sec">
+        <div class="sec-head"><div class="sec-num" style="background:linear-gradient(135deg,#d97706,#b45309)">!</div><span class="sec-ttl">수정 이유 설명</span></div>
+        <div class="sec-body"><div id="kianExplain"><div class="result-empty" style="padding:28px 20px"><div class="em-icon">💬</div>교정 후 이곳에 설명이 표시됩니다</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PANEL: 가정통신문 ═══ -->
+<div class="tab-panel" id="panel-gato">
+  <div class="two-col">
+    <div class="col-left">
+      <div class="sec">
+        <div class="sec-head"><div class="sec-num">①</div><span class="sec-ttl">상황 선택 <span style="font-size:10px;color:var(--muted);font-weight:400">(1개 선택)</span></span></div>
+        <div class="sec-body">
+          <span class="chip-sect-lbl">📅 학사 일정</span>
+          <div class="chip-group">
+            <div class="chip" onclick="toggleChip(this)">학기 시작 안내</div>
+            <div class="chip" onclick="toggleChip(this)">방학 안내</div>
+            <div class="chip" onclick="toggleChip(this)">종업식·졸업식</div>
+            <div class="chip" onclick="toggleChip(this)">학교장 허가 체험학습</div>
+            <div class="chip" onclick="toggleChip(this)">수련활동·수학여행</div>
+            <div class="chip" onclick="toggleChip(this)">현장 체험학습</div>
+          </div>
+          <span class="chip-sect-lbl">🍱 건강·급식</span>
+          <div class="chip-group">
+            <div class="chip" onclick="toggleChip(this)">건강검진 안내</div>
+            <div class="chip" onclick="toggleChip(this)">예방접종 안내</div>
+            <div class="chip" onclick="toggleChip(this)">전염병 예방 안내</div>
+            <div class="chip" onclick="toggleChip(this)">급식비 납부 안내</div>
+            <div class="chip" onclick="toggleChip(this)">알레르기 조사</div>
+          </div>
+          <span class="chip-sect-lbl">🚦 안전·생활</span>
+          <div class="chip-group">
+            <div class="chip" onclick="toggleChip(this)">교통 안전 교육</div>
+            <div class="chip" onclick="toggleChip(this)">재난 대피 훈련</div>
+            <div class="chip" onclick="toggleChip(this)">생활 안전 교육</div>
+            <div class="chip" onclick="toggleChip(this)">스마트폰 사용 안내</div>
+            <div class="chip" onclick="toggleChip(this)">학교폭력 예방</div>
+          </div>
+          <span class="chip-sect-lbl">🎉 행사·가정</span>
+          <div class="chip-group">
+            <div class="chip" onclick="toggleChip(this)">학부모 상담 주간</div>
+            <div class="chip" onclick="toggleChip(this)">학부모 총회</div>
+            <div class="chip" onclick="toggleChip(this)">운동회·체육대회</div>
+            <div class="chip" onclick="toggleChip(this)">학예발표회</div>
+            <div class="chip" onclick="toggleChip(this)">동의서·신청서 제출</div>
+          </div>
+          <div style="margin-top:14px;border-top:1px solid var(--border2);padding-top:14px">
+            <div class="field-lbl">✏️ 직접 입력 <span style="color:var(--muted);font-weight:400">(칩에 없는 상황)</span></div>
+            <input type="text" class="inp" id="customSituation" placeholder="예) 독서 교육 주간 안내, 미세먼지 대응 안내 등" />
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-head"><div class="sec-num">②</div><span class="sec-ttl">세부 내용</span></div>
+        <div class="sec-body">
+          <div class="field"><div class="field-lbl">학교명</div><input type="text" class="inp" id="schoolName" placeholder="예) ○○고등학교" /></div>
+          <div class="field"><div class="field-lbl">날짜·장소·참고사항 등</div><textarea class="inp" id="details" rows="4" placeholder="예) 일시: 2026년 5월 30일(금)&#10;장소: 학교 운동장&#10;준비물: 체육복, 물&#10;기타 안내할 사항 등"></textarea></div>
+          <div class="field"><div class="field-lbl">문서 어조</div>
+            <div class="tone-group">
+              <button class="tone-btn active" id="tone-formal" onclick="setTone('formal')">🏛 공식체 (정중)</button>
+              <button class="tone-btn" id="tone-friendly" onclick="setTone('friendly')">🌸 친근체 (따뜻)</button>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="field-lbl">문서 길이 <span id="lengthLabel" style="color:var(--mint-d);font-weight:800;">③ 보통</span></div>
+            <input type="range" id="lengthSlider" min="1" max="5" value="3" step="1"
+              oninput="updateLengthLabel(this.value)"
+              style="width:100%;accent-color:var(--mint-d);margin:6px 0 4px;cursor:pointer;" />
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:2px;">
+              <span>① 짧게</span><span>② 조금 짧게</span><span>③ 보통</span><span>④ 길게</span><span>⑤ 매우 길게</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="generateGato()" id="gatoBtn"><span>📄</span> 가정통신문 생성</button>
+
+      <div class="guide-sec">
+        <div class="guide-toggle" onclick="toggleGuide('gatoGuide','gatoArrow')">
+          <div class="guide-icon">📖</div>
+          가정통신문 작성 기준 보기
+          <span class="guide-arrow" id="gatoArrow">▼ 펼치기</span>
+        </div>
+        <div class="guide-content" id="gatoGuide">
+          <div class="guide-section"><b>작성 원칙</b><br>• 제목: 핵심 내용 + '안내' / '알림'으로 마무리<br>• 인사말로 시작 (학부모님께 드리는 형식)<br>• 본문: 목적 → 일정/내용 → 협조·요청 사항 순<br>• 날짜 표기: 2026. 5. 30. 형식 (마침표+1타 띄움)<br>• 존댓말로 완결 / 마지막에 발신기관·담당 교사 표기</div>
+          <div class="guide-section"><b class="guide-star">★★ 한자·영어 사용 절대 금지</b><br>• 한자 단 한 글자도 금지 — 例(×)→예시, 本校(×)→저희 학교, 貴中(×)→귀중<br>• 영어·영문 약어 금지 — AI(×)→인공지능, URL(×)→누리집 주소<br>• 예외: 사용자가 입력한 내용 속 고유명사·수치는 그대로 유지</div>
+          <div class="guide-section"><b>어조 선택</b><br>• 공식체: 격식적이고 정중한 어조<br>• 친근체: 따뜻하고 가까운 어조 (격식 유지)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <div class="ai-warn">
+        <div class="ai-warn-icon">⚠️</div>
+        <div class="ai-warn-text">AI는 실수할 수 있습니다. 결과물은 반드시 교사가 직접 검토 후 사용하세요.
+          <span>한자·영어 오류, 날짜·내용 등을 꼭 재확인 바랍니다.</span>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-head"><div class="sec-num" style="background:linear-gradient(135deg,#059669,#0d9488)">✓</div><span class="sec-ttl">생성 결과</span></div>
+        <div class="sec-body"><div id="gatoResult"><div class="result-empty"><div class="em-icon">📄</div>상황을 선택하고<br>생성 버튼을 눌러주세요</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="https://www.instagram.com/hirame.ki" target="_blank">📷 @hirame.ki</a>
+</footer>
+
+<script>
+let selectedTone = 'formal';
+let selectedChips = [];
+
+const PILLS = {
+  kian: ['항목번호 체계 1.→가.→1)','날짜 마침표+1타','연도 자동 수정','시간 24시각제','금액 한글 병기','사이시옷·두음법칙','외래어 표기법','고압적 표현 순화','붙임·끝 표시'],
+  gato: ['상황별 칩 선택','날짜 2026. 5. 30. 형식','공식체 / 친근체','인사말→본문→요청 순','발신기관·담당교사 포함'],
+};
+
+function updateLengthLabel(val) {
+  const labels = {1:'① 짧게', 2:'② 조금 짧게', 3:'③ 보통', 4:'④ 길게', 5:'⑤ 매우 길게'};
+  document.getElementById('lengthLabel').textContent = labels[val];
+}
+
+function renderPills(panel) {
+  const el = document.getElementById('guidePills');
+  el.innerHTML = '<span class="gp-label">📌 적용 지침</span>';
+  PILLS[panel].forEach(p => {
+    el.innerHTML += `<span class="gp-item"><span class="gp-dot"></span>${p}</span>`;
+  });
+}
+
+function switchPanel(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('dashKian').classList.toggle('active', name === 'kian');
+  document.getElementById('dashGato').classList.toggle('active', name === 'gato');
+  renderPills(name);
+}
+
+function toggleChip(el) {
+  const wasSelected = el.classList.contains('selected');
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  selectedChips = [];
+  if (!wasSelected) { el.classList.add('selected'); selectedChips = [el.textContent.trim()]; }
+}
+
+function setTone(t) {
+  selectedTone = t;
+  document.getElementById('tone-formal').classList.toggle('active', t === 'formal');
+  document.getElementById('tone-friendly').classList.toggle('active', t === 'friendly');
+}
+
+function toggleGuide(cId, aId) {
+  const c = document.getElementById(cId);
+  const a = document.getElementById(aId);
+  const open = c.style.display === 'block';
+  c.style.display = open ? 'none' : 'block';
+  a.textContent = open ? '▼ 펼치기' : '▲ 접기';
+}
+
+const STORAGE_KEY = 'groq_api_key_hirameki';
+const GROQ_API_KEY = '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';
+
+function loadApiKey() { /* 하드코딩 키 사용 — 입력창 없음 */ }
+function saveApiKey() {}
+function deleteApiKey() {}
+
+function getApiKey() {
+  return GROQ_API_KEY;
+}
+
+async function streamGroq(apiKey, systemPrompt, userContent, onChunk) {
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'qwen/qwen3-32b', max_tokens: 2048, stream: true,
+      reasoning_effort: 'none',
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userContent }] })
+  });
+  if (!resp.ok) { const err = await resp.json(); throw new Error(err.error?.message || 'API 오류'); }
+  const reader = resp.body.getReader(); const decoder = new TextDecoder(); let full = '';
+  while (true) {
+    const { done, value } = await reader.read(); if (done) break;
+    const lines = decoder.decode(value).split('\n').filter(l => l.startsWith('data: ') && l !== 'data: [DONE]');
+    for (const line of lines) {
+      try { const d = JSON.parse(line.slice(6)); const t = d.choices?.[0]?.delta?.content || ''; full += t; onChunk(full); } catch {}
+    }
+  }
+  return full;
+}
+
+function detectIssues(text, userInput) {
+  const issues = [];
+
+  // 사용자 입력 텍스트 추출 (예외 처리용)
+  const userWords = new Set();
+  if (userInput) {
+    // 영어 단어 추출
+    (userInput.match(/[A-Za-z]{2,}/g) || []).forEach(w => userWords.add(w.toLowerCase()));
+    // 한자 추출
+    (userInput.match(/[一-鿿㐀-䶿]/g) || []).forEach(c => userWords.add(c));
+  }
+
+  // 한자 감지 (CJK 통합 한자 범위)
+  const kanjiMatches = [];
+  const kanjiRe = /[一-鿿㐀-䶿]/g;
+  let m;
+  while ((m = kanjiRe.exec(text)) !== null) {
+    if (!userWords.has(m[0])) kanjiMatches.push(m[0]);
+  }
+  if (kanjiMatches.length > 0) {
+    const unique = [...new Set(kanjiMatches)];
+    issues.push({ type: 'kanji', label: '한자 감지', chars: unique.slice(0, 10) });
+  }
+
+  // 영어 단어 감지 (2글자 이상)
+  const engMatches = [];
+  const engRe = /[A-Za-z]{2,}/g;
+  while ((m = engRe.exec(text)) !== null) {
+    if (!userWords.has(m[0].toLowerCase())) engMatches.push(m[0]);
+  }
+  if (engMatches.length > 0) {
+    const unique = [...new Set(engMatches)];
+    issues.push({ type: 'english', label: '영어 감지', chars: unique.slice(0, 8) });
+  }
+
+  return issues;
+}
+
+function showDetectWarning(resultEl, issues, userInput) {
+  if (issues.length === 0) {
+    const ok = document.createElement('div');
+    ok.style.cssText = 'display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:10px 14px;margin-top:12px;font-size:12px;color:#166534;font-weight:700;';
+    ok.innerHTML = '<span style="font-size:16px">✅</span> 한자·영어가 감지되지 않았습니다. 그래도 내용을 꼭 검토해 주세요.';
+    resultEl.appendChild(ok);
+    return;
+  }
+
+  const warn = document.createElement('div');
+  warn.style.cssText = 'background:#fff7ed;border:2px solid #f97316;border-radius:10px;padding:14px 16px;margin-top:12px;font-size:12px;line-height:1.8;';
+
+  let html = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+    + '<span style="font-size:18px">⚠️</span>'
+    + '<span style="font-weight:800;font-size:13px;color:#c2410c;">한자·영어가 감지되었습니다 — 수정이 필요합니다</span>'
+    + '</div>';
+
+  for (const issue of issues) {
+    const color = issue.type === 'kanji' ? '#7c3aed' : '#0369a1';
+    const bg = issue.type === 'kanji' ? '#f5f3ff' : '#eff6ff';
+    html += `<div style="margin-bottom:6px;padding:6px 10px;background:${bg};border-radius:7px;color:${color};font-weight:700;">`;
+    html += `${issue.type === 'kanji' ? '🈳 한자' : '🔤 영어'} 발견: `;
+    html += issue.chars.map(c => `<span style="background:#fff;border:1px solid ${color};border-radius:4px;padding:1px 6px;margin:0 2px;">${c}</span>`).join(' ');
+    html += '</div>';
+  }
+
+  html += '<div style="margin-top:10px;padding:8px 10px;background:#fef3c7;border-radius:7px;color:#92400e;font-size:11.5px;">'
+    + '<b>안내:</b> AI 언어모델은 학습 데이터의 특성상 한자·영어를 완전히 차단하기 어렵습니다. '
+    + '프롬프트로 금지 지시를 내려도 간헐적으로 포함될 수 있으므로, '
+    + '<b>생성된 결과는 반드시 교사가 직접 검토하고 수정한 후 사용</b>하시기 바랍니다.'
+    + '</div>';
+
+  warn.innerHTML = html;
+  resultEl.appendChild(warn);
+}
+
+function friendlyError(msg) {
+  const isRateLimit = msg.includes('Rate limit') || msg.includes('rate_limit') || msg.includes('TPM') || msg.includes('RPM') || msg.includes('tokens per minute') || msg.includes('requests per minute');
+  if (isRateLimit) {
+    return `<div style="background:#fff7ed;border:1.5px solid #fed7aa;border-left:4px solid #f97316;border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.8;color:#7c2d12;">
+      <div style="font-weight:800;font-size:13px;color:#c2410c;margin-bottom:6px;">⏳ 잠시 요청이 몰렸어요</div>
+      AI 서버의 분당 처리 한도에 일시적으로 도달했습니다.<br>
+      <b>1분 후 다시 시도</b>하시면 정상적으로 이용할 수 있어요.<br>
+      <span style="font-size:11px;color:#9a3412;margin-top:6px;display:block;">※ 무료 서비스 특성상 동시 사용자가 많을 때 간헐적으로 발생할 수 있습니다.</span>
+    </div>`;
+  }
+  return `<div style="background:#fff1f2;border:1.5px solid #fecdd3;border-radius:10px;padding:12px 16px;font-size:12.5px;color:#e11d48;">
+    ⚠️ 오류가 발생했습니다: ${msg}
+  </div>`;
+}
+
+function makeCopyBtn(text) {
+  const btn = document.createElement('button');
+  btn.className = 'btn-copy'; btn.textContent = '📋 복사';
+  btn.onclick = () => navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ 복사됨'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 복사'; btn.classList.remove('copied'); }, 2000);
+  });
+  return btn;
+}
+
+async function generateGato() {
+  const apiKey = getApiKey(); if (!apiKey) return;
+  const chips = selectedChips.join(', ');
+  const custom = document.getElementById('customSituation').value.trim();
+  const school = document.getElementById('schoolName').value.trim();
+  const details = document.getElementById('details').value.trim();
+  const situation = [chips, custom].filter(Boolean).join(', ');
+  if (!situation) { alert('상황 칩을 선택하거나 직접 입력란을 채워주세요.'); return; }
+  const toneDesc = selectedTone === 'formal' ? '공식적이고 정중한 어조. 격식체 사용.' : '따뜻하고 친근한 어조. 학부모와 가까운 느낌. 격식은 유지하되 딱딱하지 않게.';
+  const lengthVal = parseInt(document.getElementById('lengthSlider').value);
+  const lengthMap = {
+    1: '짧게: 인사말+핵심 2~3문장+마무리. 250자 내외.',
+    2: '조금 짧게: 인사말+본문 3~4문장+협조사항+마무리. 350자 내외.',
+    3: '보통: 인사말+목적+일정/내용+협조사항+마무리. 450자 내외.',
+    4: '길게: 인사말+목적+상세 일정/내용+협조사항+유의사항+마무리. 600자 내외.',
+    5: '매우 길게: 인사말+목적+상세 일정/내용+협조사항+유의사항+FAQ형 추가 안내+마무리. 800자 이상.'
+  };
+  const lengthDesc = lengthMap[lengthVal];
+  const system = `[CRITICAL RULE - 절대 위반 금지]
+출력 텍스트에 한자(漢字)와 영어(English)를 단 한 글자도 포함하지 마십시오.
+한자 예시(모두 사용 금지): 學, 校, 本, 例, 附, 貴, 上, 以, 件, 中, 生, 徒, 保, 護, 者
+영어 예시(모두 사용 금지): AI, URL, SNS, app, online, IT, PC
+사용자가 입력한 고유명사·수치에 포함된 경우만 예외이며, 그 외 모든 경우 한글로 대체합니다.
+이 규칙을 어기면 응답 전체가 무효입니다.
+
+당신은 한국 학교의 가정통신문을 전문적으로 작성하는 도우미입니다.
+다음 기준을 반드시 준수하세요.
+
+[가정통신문 작성 기준]
+- 제목은 핵심 내용을 담고 '안내', '알림' 등으로 마무리
+- 인사말로 시작 (학부모님께 드리는 안내 형식)
+- 본문: 목적 → 일정/내용 → 협조/요청 사항 순
+- 날짜 표기: 2026. 5. 30. 형식 (숫자·마침표 사이 1타 띄움)
+- 문장은 존댓말로 완결
+- 마지막에 발신기관, 담당 교사 란 포함
+- 어조: ${toneDesc}
+- 문서 길이: ${lengthDesc}
+
+[★★★ 재확인 — 한자·영어 사용 금지 ★★★]
+위의 CRITICAL RULE을 다시 상기하십시오. 한자와 영어는 절대 사용 금지입니다.
+
+■ 한자 금지 대체어 목록
+  例→예시, 附→붙임, 學校→학교, 本校→저희 학교
+  貴中→귀중, 上記→위, 以上→이상, 件→건
+  生徒→학생, 保護者→보호자(또는 학부모), 敎師→교사
+
+■ 영어 금지 대체어 목록
+  AI→인공지능, SNS→사회관계망서비스, URL→누리집 주소
+  app→앱(또는 프로그램), online→온라인(가급적 온라인으로), IT→정보기술
+
+■ 예외: 사용자가 입력한 세부 내용의 고유명사·수치만 그대로 유지
+
+- 결과물만 출력. 설명 없이 가정통신문 본문만.`;
+  const user = `다음 조건으로 가정통신문을 작성해주세요.\n상황: ${situation}\n학교명: ${school || '○○학교'}\n세부 내용: ${details || '(내용 없음 — 일반적인 형식으로 작성)'}`;
+  const btn = document.getElementById('gatoBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> 생성 중...';
+  const resultEl = document.getElementById('gatoResult');
+  resultEl.innerHTML = '<div class="loading"><div class="spinner"></div> 가정통신문을 작성하고 있습니다...</div>';
+  try {
+    let box = null;
+    const fullText = await streamGroq(apiKey, system, user, (partial) => {
+      if (!box) {
+        resultEl.innerHTML = '';
+        const header = document.createElement('div'); header.className = 'result-header';
+        const lbl = document.createElement('span'); lbl.className = 'result-label'; lbl.textContent = 'RESULT';
+        header.appendChild(lbl); resultEl.appendChild(header);
+        box = document.createElement('div'); box.className = 'result-box streaming-cursor';
+        resultEl.appendChild(box);
+      }
+      box.textContent = partial;
+    });
+    if (box) {
+      box.classList.remove('streaming-cursor');
+      resultEl.querySelector('.result-header').appendChild(makeCopyBtn(fullText));
+      const userInput = document.getElementById('details').value + ' ' + document.getElementById('customSituation').value;
+      const issues = detectIssues(fullText, userInput);
+      showDetectWarning(resultEl, issues, userInput);
+    }
+  } catch (e) {
+    resultEl.innerHTML = friendlyError(e.message);
+  } finally { btn.disabled = false; btn.innerHTML = '<span>📄</span> 가정통신문 생성'; }
+}
+
+async function correctKian() {
+  const apiKey = getApiKey(); if (!apiKey) return;
+  const input = document.getElementById('kianInput').value.trim();
+  if (!input) { alert('수정할 기안문을 붙여넣어 주세요.'); return; }
+  const currentYear = new Date().getFullYear();
+  const system = `당신은 대한민국 공공기관 공문서 기안 전문 교정 도우미입니다.
+아래 지침은 행정안전부 「2025 행정업무운영 편람」(2025) 및 「행정업무의 운영 및 혁신에 관한 규정」(대통령령, 2023. 6. 28. 개정)을 PDF 직접 확인한 내용 기준입니다.
+
+[공문서 작성 기준 — 2025 편람 직접 확인 지침]
+
+■ 항목 번호 체계 (규칙 제2조제1항, 2025편람 51쪽)
+첫째: 1., 2., 3. / 둘째: 가., 나., 다. / 셋째: 1), 2), 3) / 넷째: 가), 나), 다)
+다섯째: (1), (2) / 여섯째: (가), (나) / 일곱째: ①, ② / 여덟째: ㉮, ㉯
+- 항목이 하나뿐이면 항목기호 부여 안 함 (편람 52쪽 마항)
+- 항목기호와 내용 사이 1타 띄움 (편람 52쪽 라항)
+- 첫째 항목은 왼쪽 기본선, 둘째부터 오른쪽으로 2타씩 이동 (편람 52쪽 나항)
+
+■ 날짜 표기 (영 제7조제5항, 2025편람 49쪽)
+- 연·월·일 글자 생략, 마침표로 대체, 숫자와 마침표 사이 반드시 1타 띄움
+  올바른 예: 2026. 5. 30. (○) / 틀린 예: 2026.5.30. 또는 2026.12.12. (×)
+- 월·일 앞자리 0 표기 금지: 1985. 9. 6. (○) / 1985. 09. 06. (×)
+- 요일 병기 시: 2026. 5. 30.(금).
+- 연월일 마침표 누락 교정: '26. 1 → '26. 1. / 2023. 6. 27(화) → 2023. 6. 27.(화) (편람 44쪽)
+
+■ ★ 연도 오류 자동 수정
+- 문서 내 이전 연도(2024., 2025. 등)가 올해(${currentYear})를 가리키는 맥락이면 ${currentYear}년으로 수정
+- '○○년도' 제목·본문에서 전년도 잘못 기재된 경우도 수정
+- 단, 과거 실적·역사적 사실 서술은 연도 수정 금지
+
+■ 시간 표기 (영 제7조제5항, 2025편람 49쪽)
+- 24시각제, 쌍점으로 구분: 15:20 (○) / 오후 3시 20분 (×) / 07:09 (○)
+
+■ 금액 표기 (규칙 제2조제2항, 2025편람 49쪽)
+- 아라비아 숫자 뒤 괄호에 한글 병기: 금113,560원(금일십일만삼천오백육십원)
+
+■ 어문 규범 교정 (2025편람 41~44쪽 직접 확인)
+[두음법칙] 년간→연간, 시설 년도→시설 연도, 회계 년도→회계 연도, 남여→남녀
+[사이시옷] 하교길→하굣길, 수도물→수돗물, 최소값→최솟값, 갯수→개수
+[가운뎃점 오류] 국내·외→국내외, 민·관→민관 (사전 등재 단어), 융복합→융·복합 (대등 열거는 유지)
+[외래어 표기법] 컨퍼런스→콘퍼런스, 솔루션→설루션, 어플리케이션→애플리케이션, 워크샵→워크숍, 파트너쉽→파트너십
+[괄호 뒤 조사] 인공지능(AI)를→인공지능(AI)을 (괄호 앞 글자 기준 적용)
+
+■ 띄어쓰기 교정 (2025편람 43~44쪽)
+- 단위명사: 296억달러→296억 달러, 10만톤→10만 톤
+- 호칭어: 홍길동씨→홍길동 씨, 행정안전부장관→행정안전부 장관
+- 접두사: 비 공개→비공개, 재 교육→재교육
+- 관형사: 본제도→본 제도, 총300대→총 300대
+- 의존명사: 기관간→기관 간 (단, 이틀간·한달간은 붙임)
+- 조사: 지방공무원 뿐만→지방공무원뿐만
+
+■ 문장 부호 (2025편람 44쪽)
+- 쌍점: 원장 : 김갑동→원장: 김갑동
+- 물결표: 4. 23. ~ 6. 15.→4. 23.~6. 15.
+
+■ 어휘 순화 (2025편람 기준)
+[외래어→우리말] 매뉴얼→안내서/지침, 가이드라인→방침/지침, 인프라→기반시설, 모니터링→점검/감시
+[한자어→쉬운 우리말] 금번→이번, 상기(의)→위(의), 제반→여러, 동(同)→이, 본(本)→이, 차년도→다음 해/다음 연도, 제고하다→높이다, 확행 바랍니다→꼭 하시기 바랍니다
+
+■ 고압적·권위적 표현 (2025편람 47~48쪽)
+- 작성할 것→작성해 주십시오 / 제출바람→제출해 주시기 바랍니다
+- '~바람' '~할 것'→'~하기 바랍니다' '~하여 주시기 바랍니다'로 완곡하게
+
+■ 붙임·끝 표시 (2025편람 59~61쪽)
+- '첨부' 아닌 '붙임' 사용
+
+[경우 1] 붙임 없음 → 본문 마지막 문장 종결어미 뒤 마침표, 2칸 띄고 '끝.' 붙임
+  예: ~하시기 바랍니다.  끝.
+
+[경우 2] 붙임 1개 → 본문 끝 다음 줄에 아래 형식. 파일명 뒤 마침표, 2칸 띄고 '끝.'
+  예: 붙임  제3회 생활교육위원회 관련서류 1부.  끝.
+  (주의: '붙임' 뒤 2칸 띄움, 마지막 '1부.' 뒤 2칸 띄고 '끝.')
+
+[경우 3] 붙임 2개 이상 → 번호 목록으로 나열, 마지막 항목 뒤에만 2칸 띄고 '끝.'
+  예: 붙임  1. ○○○ 1부.
+              2. ○○○ 1부.  끝.
+  (주의: '붙임' 뒤 2칸, 두 번째 항목부터는 번호 앞 공백으로 첫째 항목과 정렬)
+
+■ 문서 구조 (2025편람 54~55쪽)
+- 두문: 행정기관명, 수신(경유), 제목 / 본문: 내용, 붙임 / 결문: 발신명의, 서명, 등록번호, 주소, 공개구분
+- 경유기관 없으면 (경유)란 빈칸으로 둠
+
+■ 제목: 핵심 내용만, 조사로 끝내지 않음, '~의 건' 지양
+
+[출력 형식 — 반드시 준수]
+===교정문===
+(교정된 전체 기안문)
+===끝===
+===설명===
+(수정한 이유를 항목별로 간결하게. 번호로 구분. 잘못된 내용 → 수정 내용 형식)
+===끝===`;
+
+  const user = `다음 기안문을 교정해주세요:\n\n${input}`;
+  const btn = document.getElementById('kianBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> 교정 중...';
+  const resultEl = document.getElementById('kianResult');
+  const explainEl = document.getElementById('kianExplain');
+  resultEl.innerHTML = '<div class="loading"><div class="spinner"></div> 기안문을 분석하고 있습니다...</div>';
+  explainEl.innerHTML = '';
+  try {
+    let fullText = await streamGroq(apiKey, system, user, (partial) => {
+      const corrected = extractSection(partial, '===교정문===', '===끝===');
+      if (corrected) {
+        resultEl.innerHTML = '';
+        const header = document.createElement('div'); header.className = 'result-header';
+        const lbl = document.createElement('span'); lbl.className = 'result-label'; lbl.textContent = 'CORRECTED';
+        header.appendChild(lbl); resultEl.appendChild(header);
+        const box = document.createElement('div'); box.className = 'result-box streaming-cursor';
+        box.textContent = corrected; resultEl.appendChild(box);
+      }
+    });
+    const corrected = extractSection(fullText, '===교정문===', '===끝===');
+    const explain = extractSection(fullText, '===설명===', '===끝===');
+    resultEl.innerHTML = '';
+    const header = document.createElement('div'); header.className = 'result-header';
+    const lbl = document.createElement('span'); lbl.className = 'result-label'; lbl.textContent = 'CORRECTED';
+    header.appendChild(lbl);
+    if (corrected) header.appendChild(makeCopyBtn(corrected));
+    resultEl.appendChild(header);
+    const box = document.createElement('div'); box.className = 'result-box';
+    box.textContent = corrected || fullText; resultEl.appendChild(box);
+    if (explain) {
+      explainEl.innerHTML = '';
+      const exBox = document.createElement('div'); exBox.className = 'explain-box';
+      exBox.innerHTML = `<strong>수정 이유</strong>${escapeHtml(explain)}`; explainEl.appendChild(exBox);
+    }
+  } catch (e) {
+    resultEl.innerHTML = friendlyError(e.message);
+  } finally { btn.disabled = false; btn.innerHTML = '<span>✍️</span> 기안문 교정 요청'; }
+}
+
+function extractSection(text, start, end) {
+  const s = text.indexOf(start); if (s === -1) return null;
+  const content = text.slice(s + start.length);
+  const e = content.indexOf(end);
+  return (e === -1 ? content : content.slice(0, e)).trim();
+}
+function escapeHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+renderPills('kian');
+loadApiKey();
+</script>
+</body>
+</html>
