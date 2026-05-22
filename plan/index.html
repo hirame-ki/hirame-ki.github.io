@@ -434,6 +434,11 @@ select.inp option{background:var(--surface);color:var(--text);}
   font-family:'Cormorant Garamond','Noto Serif KR',serif;
   font-weight:600;
 }
+.login-big::placeholder{
+  font-size:22px;letter-spacing:8px;opacity:.45;font-weight:500;
+}
+.login-big::-webkit-input-placeholder{font-size:22px;letter-spacing:8px;opacity:.45;font-weight:500;}
+.login-big::-moz-placeholder{font-size:22px;letter-spacing:8px;opacity:.45;font-weight:500;}
 .confirm-box{
   background:var(--paper);
   border:1px solid var(--border);
@@ -1076,6 +1081,8 @@ footer a:hover{border-bottom-color:var(--gold);}
   .login-card{padding:26px 22px;border-radius:10px;}
   .login-card h2{font-size:18px;}
   .login-big{font-size:20px!important;letter-spacing:5px;}
+  .login-big::placeholder{font-size:18px;letter-spacing:5px;}
+  .login-big::-webkit-input-placeholder{font-size:18px;letter-spacing:5px;}
 
   .setup-wrap{padding:14px;max-width:100%;}
   .setup-card{padding:16px;}
@@ -1260,6 +1267,11 @@ footer a:hover{border-bottom-color:var(--gold);}
       <div style="background:var(--warn-bg);border:1.5px solid var(--warn-border);border-radius:8px;padding:9px 12px;font-size:11.5px;color:var(--warn);margin-bottom:10px;line-height:1.6;">
         <b>최초 1회 저장이 필요합니다.</b> 편제표와 학교 정보를 입력하고 저장하면, 이후 로그인 시 바로 교사 대시보드로 진입합니다.
       </div>
+      <!-- 드래그앤드롭 정확성 안내 -->
+      <div style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border:1.5px solid #ff9800;border-radius:8px;padding:10px 12px;font-size:11.5px;color:#bf360c;margin-bottom:8px;line-height:1.6;">
+        <b>⚠️ 권장: 구글 시트에 직접 입력하세요.</b><br>
+        드래그 앤 드롭(PDF·엑셀 자동 인식)은 편제표 구조에 따라 인식 정확성이 떨어질 수 있습니다. <b>구글 시트의 「편제표」 탭에 직접 입력하는 방법이 가장 빠르고 정확합니다.</b> 입력 후 아래 <b>[↻ 서버에서 불러오기]</b> 버튼을 누르세요.
+      </div>
       <!-- 드롭존 -->
       <div class="drop-zone" id="schedDropZone">
         <div class="dz-icon"><svg><use href="#i-doc"/></svg></div>
@@ -1418,46 +1430,197 @@ footer a:hover{border-bottom-color:var(--gold);}
 
 <script>
 // ===============================================   데이터: 계열/학과
+// ── 명칭은 2022 개정 교육과정 보통교과(표5) 공식 명칭을 기준으로 표기 ──
+// ── 일부 심화과목(고급 생명과학 / 생명과학 실험 / 심화 영어Ⅰ / 심화 영어 독해Ⅰ)은 표6(특목고 전공 선택) ──
+// ── '인공지능 생물정보학 기초와 활용'은 학교 자율 신설과목 ──
 const TRACKS = {
   '인문·사회':{
-    '국어국문/문예창작':{desc:'문학과 언어 능력이 핵심입니다.',core:['문학','화법과 언어','독서와 작문','주제탐구독서'],recommend:['인문학과 윤리','세계사','독서토론과 글쓰기','한국사 심화 탐구'],reference:['사회와 문화','현대사회와 윤리','동아시아 역사기행','음악 감상과 비평']},
-    '영어영문/영미문화':{desc:'영어 실력과 문화적 이해가 중요합니다.',core:['영어Ⅰ','영어Ⅱ','심화영어Ⅰ','심화영어 독해Ⅰ'],recommend:['화법과 언어','문학','독서와 작문','세계사'],reference:['인문학과 윤리','현대사회와 윤리','주제탐구독서','독서토론과 글쓰기']},
-    '역사/사학':{desc:'역사적 사고력과 광범위한 독서가 핵심입니다.',core:['한국사 심화 탐구','세계사','동아시아 역사기행','인문학과 윤리'],recommend:['문학','독서와 작문','주제탐구독서','독서토론과 글쓰기'],reference:['사회와 문화','여행지리','현대사회와 윤리','화법과 언어']},
-    '경영/경제':{desc:'수학적 사고와 사회 과학적 분석 능력이 필요합니다.',core:['경제','수학과제탐구','확률과 통계','사회와 문화'],recommend:['대수','미적분Ⅰ','정치','법과 사회'],reference:['화법과 언어','독서와 작문','데이터과학','인문학과 윤리']},
-    '법학/정치외교':{desc:'논리적 사고와 사회 현상 이해가 핵심입니다.',core:['정치','법과 사회','현대사회와 윤리','사회와 문화'],recommend:['인문학과 윤리','독서토론과 글쓰기','윤리문제탐구','화법과 언어'],reference:['세계사','경제','사회문제탐구','주제탐구독서']},
-    '사회/복지/행정':{desc:'다양한 사회 현상에 대한 폭넓은 이해가 필요합니다.',core:['사회와 문화','인문학과 윤리','현대사회와 윤리','윤리문제탐구'],recommend:['생명과학','문학','독서와 작문','음악','미술'],reference:['주제탐구독서','사회문제탐구','독서토론과 글쓰기','체육1']},
+    '국어국문/문예창작':{desc:'문학과 언어 능력이 핵심입니다.',
+      core:['문학','화법과 언어','독서와 작문','주제 탐구 독서'],
+      recommend:['인문학과 윤리','세계사','독서 토론과 글쓰기','역사로 탐구하는 현대 세계','문학과 영상'],
+      reference:['사회와 문화','현대사회와 윤리','동아시아 역사 기행','음악 감상과 비평','언어생활 탐구']},
+    '영어영문/영미문화':{desc:'영어 실력과 문화적 이해가 중요합니다.',
+      core:['영어Ⅰ','영어Ⅱ','심화 영어','심화 영어 독해와 작문'],
+      recommend:['영어 발표와 토론','화법과 언어','문학','독서와 작문','세계사'],
+      reference:['인문학과 윤리','현대사회와 윤리','주제 탐구 독서','세계 문화와 영어']},
+    '역사/사학':{desc:'역사적 사고력과 광범위한 독서가 핵심입니다.',
+      core:['역사로 탐구하는 현대 세계','세계사','동아시아 역사 기행','인문학과 윤리'],
+      recommend:['문학','독서와 작문','주제 탐구 독서','독서 토론과 글쓰기','여행지리'],
+      reference:['사회와 문화','현대사회와 윤리','화법과 언어','국제 관계의 이해']},
+    '경영/경제':{desc:'수학적 사고와 사회 과학적 분석 능력이 필요합니다.',
+      core:['경제','확률과 통계','사회와 문화','수학과제 탐구'],
+      recommend:['대수','미적분Ⅰ','정치','법과 사회','금융과 경제생활'],
+      reference:['화법과 언어','독서와 작문','데이터 과학','인문학과 윤리','실용 통계']},
+    '법학/정치외교':{desc:'논리적 사고와 사회 현상 이해가 핵심입니다.',
+      core:['정치','법과 사회','현대사회와 윤리','사회와 문화'],
+      recommend:['인문학과 윤리','독서 토론과 글쓰기','윤리문제 탐구','화법과 언어','국제 관계의 이해'],
+      reference:['세계사','경제','사회문제 탐구','주제 탐구 독서','기후변화와 지속가능한 세계']},
+    '사회/복지/행정':{desc:'다양한 사회 현상에 대한 폭넓은 이해가 필요합니다.',
+      core:['사회와 문화','인문학과 윤리','현대사회와 윤리','윤리문제 탐구'],
+      recommend:['사회문제 탐구','독서와 작문','문학','금융과 경제생활','기후변화와 지속가능한 세계'],
+      reference:['주제 탐구 독서','독서 토론과 글쓰기','생태와 환경','인간과 심리']},
+    '심리학':{desc:'인간 행동과 마음을 탐구하는 분야입니다.',
+      core:['사회와 문화','인문학과 윤리','현대사회와 윤리','생명과학'],
+      recommend:['인간과 심리','확률과 통계','독서와 작문','문학','윤리문제 탐구'],
+      reference:['화법과 언어','주제 탐구 독서','사회문제 탐구','데이터 과학']},
+    '언론/미디어/광고':{desc:'언어 표현력과 사회 현상 분석 능력이 핵심입니다.',
+      core:['화법과 언어','문학','독서와 작문','사회와 문화'],
+      recommend:['문학과 영상','매체 의사소통','주제 탐구 독서','독서 토론과 글쓰기','영어Ⅰ'],
+      reference:['현대사회와 윤리','인문학과 윤리','소프트웨어와 생활','데이터 과학']},
+    '국제학/국제관계':{desc:'세계 현상을 다각도로 이해하는 역량이 필요합니다.',
+      core:['국제 관계의 이해','세계사','정치','경제','영어Ⅰ'],
+      recommend:['법과 사회','사회와 문화','심화 영어','세계시민과 지리','현대사회와 윤리'],
+      reference:['영어 발표와 토론','독서 토론과 글쓰기','인문학과 윤리','기후변화와 지속가능한 세계']},
+    '지리/지역학':{desc:'지리적 사고력과 환경 이해가 핵심입니다.',
+      core:['세계시민과 지리','한국지리 탐구','사회와 문화','생태와 환경'],
+      recommend:['도시의 미래 탐구','여행지리','세계사','지구과학','기후변화와 지속가능한 세계'],
+      reference:['사회문제 탐구','현대사회와 윤리','융합과학 탐구','데이터 과학']},
   },
   '이·공학':{
-    '수학/통계':{desc:'깊이 있는 수학 과목 이수가 가장 중요합니다.',core:['대수','확률과 통계','미적분Ⅰ','미적분Ⅱ','기하'],recommend:['인공지능 수학','수학과제탐구','데이터과학','물리학'],reference:['화학','생명과학','프로그래밍','정보']},
-    '물리/천문':{desc:'물리학과 수학의 위계적 이수가 핵심입니다.',core:['물리학','역학과 에너지','전자기와 양자','미적분Ⅰ'],recommend:['미적분Ⅱ','기하','화학','융합과학탐구'],reference:['수학과제탐구','지구과학','인공지능 수학','데이터과학']},
-    '화학':{desc:'화학의 심화 이수와 함께 수학 역량도 필요합니다.',core:['화학','화학 반응의 세계','물질과 에너지','미적분Ⅰ'],recommend:['생명과학','물리학','확률과 통계','융합과학탐구'],reference:['세포와 물질대사','수학과제탐구','데이터과학','인공지능 수학']},
-    '생명과학/생물':{desc:'생명과학을 중심으로 화학·수학을 함께 이수하세요.',core:['생명과학','세포와 물질대사','생물의 유전','화학'],recommend:['미적분Ⅰ','확률과 통계','융합과학탐구','화학 반응의 세계'],reference:['지구과학','물리학','데이터과학','인공지능 생물정보학 기초와 활용']},
-    '컴퓨터/소프트웨어':{desc:'수학과 프로그래밍 능력이 모두 필요합니다.',core:['정보','프로그래밍','인공지능기초','미적분Ⅰ'],recommend:['대수','확률과 통계','데이터과학','수학과제탐구'],reference:['미적분Ⅱ','기하','소프트웨어와 생활','인공지능 수학']},
-    'AI/데이터사이언스':{desc:'AI와 데이터 역량을 위한 수학·코딩을 집중 이수하세요.',core:['인공지능기초','데이터과학','인공지능 수학','확률과 통계'],recommend:['프로그래밍','미적분Ⅰ','미적분Ⅱ','정보'],reference:['생명과학','화학','소프트웨어와 생활','융합과학탐구']},
-    '전기/전자/반도체':{desc:'물리와 수학 심화 이수가 핵심입니다.',core:['물리학','역학과 에너지','전자기와 양자','미적분Ⅰ'],recommend:['미적분Ⅱ','화학','프로그래밍','데이터과학'],reference:['기하','인공지능기초','융합과학탐구','수학과제탐구']},
-    '기계/항공우주':{desc:'물리와 수학의 깊이 있는 이수가 필요합니다.',core:['물리학','역학과 에너지','미적분Ⅰ','미적분Ⅱ'],recommend:['전자기와 양자','화학','기하','융합과학탐구'],reference:['수학과제탐구','데이터과학','인공지능 수학','프로그래밍']},
-    '의예/치의예/한의예':{desc:'생명과학과 화학을 심화까지 이수해야 합니다.',core:['생명과학','화학','세포와 물질대사','생물의 유전','화학 반응의 세계'],recommend:['물리학','미적분Ⅰ','융합과학탐구','윤리문제탐구'],reference:['미적분Ⅱ','역학과 에너지','데이터과학','인공지능 생물정보학 기초와 활용']},
-    '약학/제약':{desc:'화학과 생명과학 심화 이수가 핵심입니다.',core:['화학','생명과학','화학 반응의 세계','세포와 물질대사'],recommend:['생물의 유전','미적분Ⅰ','물리학','융합과학탐구'],reference:['확률과 통계','데이터과학','인공지능 수학','지구과학']},
-    '화학/신소재/에너지':{desc:'화학 심화와 물리·수학 역량을 함께 갖추세요.',core:['화학','화학 반응의 세계','물질과 에너지','미적분Ⅰ'],recommend:['역학과 에너지','전자기와 양자','미적분Ⅱ','융합과학탐구'],reference:['생명과학','데이터과학','수학과제탐구','기하']},
-    '건축/토목/환경':{desc:'물리·수학 기초 위에 설계·공학 과목을 더하세요.',core:['물리학','역학과 에너지','미적분Ⅰ','화학'],recommend:['미적분Ⅱ','기하','데이터과학','융합과학탐구'],reference:['수학과제탐구','인공지능기초','생명과학','지구과학']},
-    '생명/바이오/의공학':{desc:'생명과학 심화와 공학 역량을 함께 키우세요.',core:['생명과학','세포와 물질대사','생물의 유전','화학'],recommend:['물리학','미적분Ⅰ','데이터과학','인공지능 생물정보학 기초와 활용'],reference:['융합과학탐구','인공지능기초','확률과 통계','수학과제탐구']},
+    '수학/통계':{desc:'깊이 있는 수학 과목 이수가 가장 중요합니다.',
+      core:['대수','확률과 통계','미적분Ⅰ','미적분Ⅱ','기하'],
+      recommend:['인공지능 수학','수학과제 탐구','데이터 과학','실용 통계','물리학'],
+      reference:['화학','생명과학','소프트웨어와 생활','정보']},
+    '물리/천문':{desc:'물리학과 수학의 위계적 이수가 핵심입니다.',
+      core:['물리학','역학과 에너지','전자기와 양자','미적분Ⅰ'],
+      recommend:['미적분Ⅱ','기하','화학','융합과학 탐구','행성우주과학'],
+      reference:['수학과제 탐구','지구시스템과학','인공지능 수학','데이터 과학']},
+    '화학':{desc:'화학의 심화 이수와 함께 수학 역량도 필요합니다.',
+      core:['화학','화학 반응의 세계','물질과 에너지','미적분Ⅰ'],
+      recommend:['생명과학','물리학','확률과 통계','융합과학 탐구','기후변화와 환경생태'],
+      reference:['세포와 물질대사','수학과제 탐구','데이터 과학','인공지능 수학']},
+    '생명과학/생물':{desc:'생명과학을 중심으로 화학·수학을 함께 이수하세요.',
+      core:['생명과학','세포와 물질대사','생물의 유전','화학'],
+      recommend:['미적분Ⅰ','확률과 통계','융합과학 탐구','화학 반응의 세계','기후변화와 환경생태'],
+      reference:['지구과학','물리학','데이터 과학','인공지능 생물정보학 기초와 활용']},
+    '지구/환경/해양':{desc:'지구과학과 생태·환경 과목을 중심으로 이수하세요.',
+      core:['지구과학','지구시스템과학','생명과학','화학'],
+      recommend:['행성우주과학','기후변화와 환경생태','생태와 환경','융합과학 탐구','기후변화와 지속가능한 세계'],
+      reference:['물리학','데이터 과학','수학과제 탐구','역학과 에너지']},
+    '컴퓨터/소프트웨어':{desc:'수학과 컴퓨팅 능력이 모두 필요합니다.',
+      core:['정보','인공지능 기초','소프트웨어와 생활','미적분Ⅰ'],
+      recommend:['대수','확률과 통계','데이터 과학','수학과제 탐구','로봇과 공학세계'],
+      reference:['미적분Ⅱ','기하','인공지능 수학','융합과학 탐구']},
+    'AI/데이터사이언스':{desc:'AI와 데이터 역량을 위한 수학·코딩을 집중 이수하세요.',
+      core:['인공지능 기초','데이터 과학','인공지능 수학','확률과 통계'],
+      recommend:['소프트웨어와 생활','미적분Ⅰ','미적분Ⅱ','정보','실용 통계'],
+      reference:['생명과학','화학','수학과제 탐구','융합과학 탐구']},
+    '전기/전자/반도체':{desc:'물리와 수학 심화 이수가 핵심입니다.',
+      core:['물리학','역학과 에너지','전자기와 양자','미적분Ⅰ'],
+      recommend:['미적분Ⅱ','화학','소프트웨어와 생활','데이터 과학','로봇과 공학세계'],
+      reference:['기하','인공지능 기초','융합과학 탐구','수학과제 탐구']},
+    '기계/항공우주':{desc:'물리와 수학의 깊이 있는 이수가 필요합니다.',
+      core:['물리학','역학과 에너지','미적분Ⅰ','미적분Ⅱ'],
+      recommend:['전자기와 양자','화학','기하','융합과학 탐구','창의 공학 설계'],
+      reference:['수학과제 탐구','데이터 과학','인공지능 수학','소프트웨어와 생활']},
+    '의예/치의예/한의예':{desc:'생명과학과 화학을 심화까지 이수해야 합니다.',
+      core:['생명과학','화학','세포와 물질대사','생물의 유전','화학 반응의 세계'],
+      recommend:['물리학','미적분Ⅰ','융합과학 탐구','윤리문제 탐구','현대사회와 윤리'],
+      reference:['미적분Ⅱ','역학과 에너지','데이터 과학','인공지능 생물정보학 기초와 활용']},
+    '간호/보건':{desc:'생명과학과 화학 기초에 더해 의료 윤리와 사회 이해가 필요합니다.',
+      core:['생명과학','화학','세포와 물질대사','현대사회와 윤리'],
+      recommend:['생물의 유전','확률과 통계','인간과 심리','윤리문제 탐구','보건'],
+      reference:['물리학','데이터 과학','사회와 문화','화학 반응의 세계']},
+    '약학/제약':{desc:'화학과 생명과학 심화 이수가 핵심입니다.',
+      core:['화학','생명과학','화학 반응의 세계','세포와 물질대사'],
+      recommend:['생물의 유전','미적분Ⅰ','물리학','융합과학 탐구','기후변화와 환경생태'],
+      reference:['확률과 통계','데이터 과학','인공지능 수학','지구과학']},
+    '화학/신소재/에너지':{desc:'화학 심화와 물리·수학 역량을 함께 갖추세요.',
+      core:['화학','화학 반응의 세계','물질과 에너지','미적분Ⅰ'],
+      recommend:['역학과 에너지','전자기와 양자','미적분Ⅱ','융합과학 탐구','기후변화와 환경생태'],
+      reference:['생명과학','데이터 과학','수학과제 탐구','기하']},
+    '건축/토목/환경':{desc:'물리·수학 기초 위에 설계·공학 과목을 더하세요.',
+      core:['물리학','역학과 에너지','미적분Ⅰ','화학'],
+      recommend:['미적분Ⅱ','기하','데이터 과학','융합과학 탐구','창의 공학 설계'],
+      reference:['수학과제 탐구','인공지능 기초','생명과학','지구과학','기후변화와 지속가능한 세계']},
+    '생명/바이오/의공학':{desc:'생명과학 심화와 공학 역량을 함께 키우세요.',
+      core:['생명과학','세포와 물질대사','생물의 유전','화학'],
+      recommend:['물리학','미적분Ⅰ','데이터 과학','인공지능 생물정보학 기초와 활용','로봇과 공학세계'],
+      reference:['융합과학 탐구','인공지능 기초','확률과 통계','수학과제 탐구']},
+    '농업/식품/자원':{desc:'생명과학과 화학에 더해 지구환경 이해가 필요합니다.',
+      core:['생명과학','화학','세포와 물질대사','지구과학'],
+      recommend:['생물의 유전','화학 반응의 세계','생태와 환경','기후변화와 환경생태','확률과 통계'],
+      reference:['물리학','융합과학 탐구','데이터 과학','기후변화와 지속가능한 세계']},
   },
   '교육·사범':{
-    '교육학/교육공학':{desc:'교육학적 기반 위에 다양한 교과 과목을 균형 있게 이수하세요.',core:['사회와 문화','인문학과 윤리','현대사회와 윤리','화법과 언어'],recommend:['독서와 작문','문학','데이터과학','소프트웨어와 생활'],reference:['윤리문제탐구','정치','법과 사회','주제탐구독서']},
-    '수학교육':{desc:'수학 전 범위를 깊이 있게 이수하세요.',core:['대수','미적분Ⅰ','미적분Ⅱ','확률과 통계','기하'],recommend:['수학과제탐구','인공지능 수학','물리학','정보'],reference:['화학','독서와 작문','화법과 언어','사회와 문화']},
-    '과학교육':{desc:'과학 전 분야의 균형 있는 이수가 필요합니다.',core:['물리학','화학','생명과학','지구과학','융합과학탐구'],recommend:['대수','미적분Ⅰ','확률과 통계','화학 반응의 세계'],reference:['세포와 물질대사','역학과 에너지','데이터과학','독서와 작문']},
-    '영어교육':{desc:'영어 심화 이수와 함께 언어 교육론 기반을 쌓으세요.',core:['영어Ⅰ','영어Ⅱ','심화영어Ⅰ','심화영어 독해Ⅰ'],recommend:['화법과 언어','문학','독서와 작문','세계사'],reference:['인문학과 윤리','현대사회와 윤리','독서토론과 글쓰기','주제탐구독서']},
+    '교육학/교육공학':{desc:'교육학적 기반 위에 다양한 교과 과목을 균형 있게 이수하세요.',
+      core:['사회와 문화','인문학과 윤리','현대사회와 윤리','화법과 언어'],
+      recommend:['독서와 작문','문학','데이터 과학','소프트웨어와 생활','인간과 심리'],
+      reference:['윤리문제 탐구','정치','법과 사회','주제 탐구 독서']},
+    '국어교육':{desc:'언어와 문학 능력을 깊이 쌓고 교육적 소양을 더하세요.',
+      core:['문학','화법과 언어','독서와 작문','주제 탐구 독서'],
+      recommend:['독서 토론과 글쓰기','문학과 영상','인문학과 윤리','매체 의사소통','언어생활 탐구'],
+      reference:['세계사','현대사회와 윤리','사회와 문화','음악 감상과 비평']},
+    '수학교육':{desc:'수학 전 범위를 깊이 있게 이수하세요.',
+      core:['대수','미적분Ⅰ','미적분Ⅱ','확률과 통계','기하'],
+      recommend:['수학과제 탐구','인공지능 수학','물리학','정보','실용 통계'],
+      reference:['화학','독서와 작문','화법과 언어','사회와 문화']},
+    '과학교육':{desc:'과학 전 분야의 균형 있는 이수가 필요합니다.',
+      core:['물리학','화학','생명과학','지구과학','융합과학 탐구'],
+      recommend:['대수','미적분Ⅰ','확률과 통계','화학 반응의 세계','과학의 역사와 문화'],
+      reference:['세포와 물질대사','역학과 에너지','데이터 과학','독서와 작문']},
+    '사회교육/역사교육':{desc:'사회·역사 전 영역을 폭넓게 이수하세요.',
+      core:['세계사','사회와 문화','역사로 탐구하는 현대 세계','현대사회와 윤리'],
+      recommend:['정치','법과 사회','경제','동아시아 역사 기행','인문학과 윤리'],
+      reference:['윤리문제 탐구','지리','세계시민과 지리','독서 토론과 글쓰기']},
+    '영어교육':{desc:'영어 심화 이수와 함께 언어 교육론 기반을 쌓으세요.',
+      core:['영어Ⅰ','영어Ⅱ','심화 영어','심화 영어 독해와 작문'],
+      recommend:['영어 발표와 토론','화법과 언어','문학','독서와 작문','세계사'],
+      reference:['인문학과 윤리','현대사회와 윤리','독서 토론과 글쓰기','주제 탐구 독서']},
+    '체육교육':{desc:'체육 과목을 폭넓게 이수하고 생명과학적 기초도 갖추세요.',
+      core:['체육1','체육2','운동과 건강','스포츠 과학','스포츠 생활1'],
+      recommend:['생명과학','세포와 물질대사','역학과 에너지','스포츠 문화','사회와 문화'],
+      reference:['확률과 통계','인간과 심리','현대사회와 윤리','데이터 과학']},
   },
   '예체능':{
-    '미술/디자인/시각예술':{desc:'미술 과목과 함께 인문학적 배경을 위한 과목도 이수하세요.',core:['미술','미술 창작','미술 감상과 비평'],recommend:['문학','문학과 영상','세계사','주제탐구독서','인문학과 윤리'],reference:['소프트웨어와 생활','음악','여행지리','한국사 심화 탐구']},
-    '음악':{desc:'음악 과목을 적극 선택하고, 음악사 이해를 위한 인문학 과목도 이수하세요.',core:['음악','음악 연주와 창작','음악 감상과 비평'],recommend:['문학','세계사','인문학과 윤리','주제탐구독서'],reference:['미술','동아시아 역사기행','현대사회와 윤리']},
-    '체육/스포츠과학':{desc:'체육 과목과 함께 운동과학을 위한 생명과학·물리도 이수하세요.',core:['체육1','체육2','운동과 건강','스포츠생활1','스포츠문화','스포츠과학'],recommend:['생명과학','세포와 물질대사','물리학','역학과 에너지','사회와 문화'],reference:['확률과 통계','인문학과 윤리','현대사회와 윤리','데이터과학']},
-    '연극영화/공연/미디어아트':{desc:'문학과 영상 콘텐츠 이해, 인문학적 깊이를 위한 과목을 이수하세요.',core:['문학','문학과 영상','화법과 언어','미술 감상과 비평','음악 감상과 비평'],recommend:['독서와 작문','독서토론과 글쓰기','주제탐구독서','세계사','인문학과 윤리'],reference:['소프트웨어와 생활','사회와 문화','현대사회와 윤리','미술 창작']},
+    '미술/디자인/시각예술':{desc:'미술 과목과 함께 인문학적 배경을 위한 과목도 이수하세요.',
+      core:['미술','미술 창작','미술 감상과 비평'],
+      recommend:['문학','문학과 영상','세계사','주제 탐구 독서','인문학과 윤리'],
+      reference:['소프트웨어와 생활','음악','여행지리','역사로 탐구하는 현대 세계','미술과 매체']},
+    '음악/음악교육':{desc:'음악 과목을 적극 선택하고, 음악사 이해를 위한 인문학 과목도 이수하세요.',
+      core:['음악','음악 연주와 창작','음악 감상과 비평'],
+      recommend:['문학','세계사','인문학과 윤리','주제 탐구 독서','음악과 미디어'],
+      reference:['미술','동아시아 역사 기행','현대사회와 윤리','화법과 언어']},
+    '체육/스포츠과학':{desc:'체육 과목과 함께 운동과학을 위한 생명과학·물리도 이수하세요.',
+      core:['체육1','체육2','운동과 건강','스포츠 생활1','스포츠 문화','스포츠 과학'],
+      recommend:['생명과학','세포와 물질대사','물리학','역학과 에너지','사회와 문화'],
+      reference:['확률과 통계','인문학과 윤리','현대사회와 윤리','데이터 과학']},
+    '연극영화/공연/미디어아트':{desc:'문학과 영상 콘텐츠 이해, 인문학적 깊이를 위한 과목을 이수하세요.',
+      core:['문학','문학과 영상','화법과 언어','미술 감상과 비평','음악 감상과 비평'],
+      recommend:['독서와 작문','독서 토론과 글쓰기','주제 탐구 독서','세계사','인문학과 윤리'],
+      reference:['소프트웨어와 생활','사회와 문화','현대사회와 윤리','미술 창작','음악과 미디어']},
+  },
+  '공학/기술/디자인':{
+    '산업디자인/UX':{desc:'디자인 감각과 기술 이해력을 함께 갖춰야 합니다.',
+      core:['미술','미술 창작','미술 감상과 비평','정보'],
+      recommend:['소프트웨어와 생활','인공지능 기초','문학과 영상','화법과 언어'],
+      reference:['사회와 문화','데이터 과학','창의 공학 설계','음악']},
+    '건설/환경/에너지공학':{desc:'물리·수학 기반에 환경 이해가 더해져야 합니다.',
+      core:['물리학','역학과 에너지','미적분Ⅰ','화학'],
+      recommend:['미적분Ⅱ','기하','기후변화와 환경생태','융합과학 탐구','창의 공학 설계'],
+      reference:['지구과학','생태와 환경','데이터 과학','기후변화와 지속가능한 세계']},
+    '로봇/자동화/스마트팩토리':{desc:'물리·정보·공학 역량을 통합적으로 갖추세요.',
+      core:['물리학','정보','인공지능 기초','미적분Ⅰ'],
+      recommend:['역학과 에너지','전자기와 양자','소프트웨어와 생활','로봇과 공학세계','데이터 과학'],
+      reference:['창의 공학 설계','기하','확률과 통계','수학과제 탐구']},
   },
   '융복합/자유전공':{
-    '자유전공/광역(인문·사회)':{desc:'인문·사회 전반을 폭넓게 다루는 트랙입니다.',core:['문학','독서와 작문','사회와 문화','경제','확률과 통계'],recommend:['주제탐구독서','독서토론과 글쓰기','정치','법과 사회','인문학과 윤리','미적분Ⅰ'],reference:['세계사','현대사회와 윤리','심화영어 독해Ⅰ','데이터과학']},
-    '자유전공/광역(자연·공학)':{desc:'이공계 전반에 진입할 수 있도록 수학과 과학 전 영역을 이수하세요.',core:['대수','확률과 통계','미적분Ⅰ','미적분Ⅱ','물리학','화학'],recommend:['생명과학','지구과학','기하','인공지능 수학','정보','데이터과학'],reference:['프로그래밍','인공지능기초','소프트웨어와 생활','융합과학탐구']},
-    '의과학/의생명융합':{desc:'생명·화학을 기반으로 데이터·AI 역량까지 갖춰야 하는 융합 분야입니다.',core:['생명과학','화학','세포와 물질대사','생물의 유전','확률과 통계','미적분Ⅰ'],recommend:['화학 반응의 세계','생명과학실험','데이터과학','인공지능 수학','인공지능 생물정보학 기초와 활용'],reference:['물리학','인공지능기초','고급생명과학','윤리문제탐구','융합과학탐구']},
+    '자유전공/광역(인문·사회)':{desc:'인문·사회 전반을 폭넓게 다루는 트랙입니다.',
+      core:['문학','독서와 작문','사회와 문화','경제','확률과 통계'],
+      recommend:['주제 탐구 독서','독서 토론과 글쓰기','정치','법과 사회','인문학과 윤리','미적분Ⅰ'],
+      reference:['세계사','현대사회와 윤리','심화 영어 독해와 작문','데이터 과학','국제 관계의 이해']},
+    '자유전공/광역(자연·공학)':{desc:'이공계 전반에 진입할 수 있도록 수학과 과학 전 영역을 이수하세요.',
+      core:['대수','확률과 통계','미적분Ⅰ','미적분Ⅱ','물리학','화학'],
+      recommend:['생명과학','지구과학','기하','인공지능 수학','정보','데이터 과학'],
+      reference:['수학과제 탐구','인공지능 기초','소프트웨어와 생활','융합과학 탐구']},
+    '의과학/의생명융합':{desc:'생명·화학을 기반으로 데이터·AI 역량까지 갖춰야 하는 융합 분야입니다.',
+      core:['생명과학','화학','세포와 물질대사','생물의 유전','확률과 통계','미적분Ⅰ'],
+      recommend:['화학 반응의 세계','생명과학 실험','데이터 과학','인공지능 수학','인공지능 생물정보학 기초와 활용'],
+      reference:['물리학','인공지능 기초','고급 생명과학','윤리문제 탐구','융합과학 탐구']},
+    '기후/환경/지속가능':{desc:'기후·환경 위기 해결을 위한 과학·사회·공학의 융합 역량이 필요합니다.',
+      core:['기후변화와 환경생태','기후변화와 지속가능한 세계','생태와 환경','지구과학'],
+      recommend:['생명과학','지구시스템과학','화학','사회문제 탐구','융합과학 탐구'],
+      reference:['물리학','데이터 과학','현대사회와 윤리','인문학과 윤리','인공지능 수학']},
   },
 };
 
@@ -1584,64 +1747,135 @@ const UNI_NOTES = {
 };
 
 /* ── 기본 편제표 (교사가 미설정 시) ── */
+/* 모든 과목명은 2022 개정 교육과정 보통교과(표5) 공식 명칭 기준입니다 */
+/* 본 편제표는 표5의 모든 영역(국어/수학/영어/사회/과학/체육/예술/기술가정/정보/제2외국어/한문/교양)을 망라하는 풍부한 샘플 */
 const DEFAULT_SUBS = {
+  /* 1학년 — 공통과목 위주 + 필수이수 일반선택 */
   '1학년 1학기':[
+    // 공통(표5 공통과목 7종)
     {name:'공통국어1',cr:4,type:'공통'},{name:'공통수학1',cr:4,type:'공통'},
     {name:'공통영어1',cr:4,type:'공통'},{name:'한국사1',cr:3,type:'공통'},
     {name:'통합사회1',cr:4,type:'공통'},{name:'통합과학1',cr:4,type:'공통'},
-    {name:'과학탐구실험1',cr:1,type:'공통'},{name:'체육1',cr:3,type:'선택'},
-    {name:'음악',cr:3,type:'선택'},{name:'정보',cr:4,type:'선택'},
+    {name:'과학탐구실험1',cr:1,type:'공통'},
+    // 선택
+    {name:'체육1',cr:3,type:'선택'},{name:'음악',cr:3,type:'선택'},
+    {name:'정보',cr:4,type:'선택'},{name:'진로와 직업',cr:2,type:'선택'},
   ],
   '1학년 2학기':[
     {name:'공통국어2',cr:4,type:'공통'},{name:'공통수학2',cr:4,type:'공통'},
     {name:'공통영어2',cr:4,type:'공통'},{name:'한국사2',cr:3,type:'공통'},
     {name:'통합사회2',cr:4,type:'공통'},{name:'통합과학2',cr:4,type:'공통'},
-    {name:'과학탐구실험2',cr:1,type:'공통'},{name:'체육2',cr:3,type:'선택'},
-    {name:'미술',cr:3,type:'선택'},{name:'기술가정',cr:4,type:'선택'},
+    {name:'과학탐구실험2',cr:1,type:'공통'},
+    {name:'체육2',cr:3,type:'선택'},{name:'미술',cr:3,type:'선택'},
+    {name:'기술·가정',cr:4,type:'선택'},{name:'생태와 환경',cr:2,type:'선택'},
   ],
+  /* 2학년 1학기 — 일반선택 핵심 진입(국·수·영·사·과) + 제2외국어·교양 */
   '2학년 1학기':[
+    // 국어/수학/영어 일반선택
     {name:'화법과 언어',cr:4,type:'선택'},{name:'대수',cr:4,type:'선택'},
-    {name:'영어Ⅰ',cr:4,type:'선택'},{name:'물리학',cr:4,type:'선택'},
-    {name:'화학',cr:4,type:'선택'},{name:'사회와 문화',cr:4,type:'선택'},
-    {name:'정치',cr:4,type:'선택'},{name:'체육3',cr:3,type:'선택'},
-    {name:'일본문화',cr:4,type:'선택'},{name:'경제',cr:4,type:'선택'},
+    {name:'영어Ⅰ',cr:4,type:'선택'},
+    // 사회 일반선택
+    {name:'세계시민과 지리',cr:4,type:'선택'},{name:'사회와 문화',cr:4,type:'선택'},
+    {name:'정치',cr:4,type:'선택'},{name:'경제',cr:4,type:'선택'},
+    // 과학 일반선택
+    {name:'물리학',cr:4,type:'선택'},{name:'화학',cr:4,type:'선택'},
+    // 체육
+    {name:'운동과 건강',cr:3,type:'선택'},
+    // 제2외국어/한문(2개 옵션)
+    {name:'일본어',cr:4,type:'선택'},{name:'중국어',cr:4,type:'선택'},
+    {name:'한문',cr:4,type:'선택'},
+    // 교양
+    {name:'논리와 사고',cr:2,type:'선택'},
   ],
+  /* 2학년 2학기 — 일반선택 확대 + 사회/과학/예술 다양화 */
   '2학년 2학기':[
-    {name:'독서와 작문',cr:4,type:'선택'},{name:'미적분Ⅰ',cr:4,type:'선택'},
-    {name:'확률과 통계',cr:4,type:'선택'},{name:'영어Ⅱ',cr:4,type:'선택'},
+    {name:'독서와 작문',cr:4,type:'선택'},{name:'문학',cr:4,type:'선택'},
+    {name:'미적분Ⅰ',cr:4,type:'선택'},{name:'확률과 통계',cr:4,type:'선택'},
+    {name:'영어Ⅱ',cr:4,type:'선택'},
+    // 사회
+    {name:'세계사',cr:4,type:'선택'},{name:'법과 사회',cr:4,type:'선택'},
+    {name:'윤리와 사상',cr:4,type:'선택'},
+    // 과학
     {name:'생명과학',cr:4,type:'선택'},{name:'지구과학',cr:4,type:'선택'},
-    {name:'세계사',cr:4,type:'선택'},{name:'정보',cr:4,type:'선택'},
-    {name:'기하',cr:4,type:'선택'},{name:'한국사 심화 탐구',cr:4,type:'선택'},
+    // 정보·기술
+    {name:'정보',cr:4,type:'선택'},{name:'기술·가정',cr:4,type:'선택'},
+    // 예술
+    {name:'음악 감상과 비평',cr:3,type:'선택'},{name:'미술 감상과 비평',cr:3,type:'선택'},
+    // 진로선택 일부 진입(수학)
+    {name:'기하',cr:4,type:'선택'},
   ],
+  /* 3학년 1학기 — 진로선택 본격화 + 학과별 심화 */
   '3학년 1학기':[
-    {name:'주제탐구독서',cr:4,type:'선택'},{name:'수학과제탐구',cr:4,type:'선택'},
-    {name:'미적분Ⅱ',cr:4,type:'선택'},{name:'심화영어Ⅰ',cr:4,type:'선택'},
+    // 국어/수학/영어 진로선택
+    {name:'주제 탐구 독서',cr:4,type:'선택'},{name:'수학과제 탐구',cr:4,type:'선택'},
+    {name:'미적분Ⅱ',cr:4,type:'선택'},{name:'심화 영어',cr:4,type:'선택'},
+    // 사회 진로/융합선택
+    {name:'한국지리 탐구',cr:4,type:'선택'},
+    {name:'동아시아 역사 기행',cr:4,type:'선택'},
+    {name:'현대사회와 윤리',cr:4,type:'선택'},
+    {name:'국제 관계의 이해',cr:4,type:'선택'},
+    // 과학 진로선택
     {name:'세포와 물질대사',cr:4,type:'선택'},{name:'역학과 에너지',cr:4,type:'선택'},
-    {name:'화학 반응의 세계',cr:4,type:'선택'},{name:'데이터과학',cr:4,type:'선택'},
-    {name:'인공지능기초',cr:4,type:'선택'},{name:'스포츠 생활1',cr:3,type:'선택'},
+    {name:'화학 반응의 세계',cr:4,type:'선택'},
+    {name:'지구시스템과학',cr:4,type:'선택'},
+    // 정보·기술
+    {name:'데이터 과학',cr:4,type:'선택'},{name:'인공지능 기초',cr:4,type:'선택'},
+    {name:'로봇과 공학세계',cr:4,type:'선택'},
+    // 제2외국어 회화
+    {name:'일본어 회화',cr:4,type:'선택'},{name:'중국어 회화',cr:4,type:'선택'},
+    // 체육
+    {name:'스포츠 생활1',cr:3,type:'선택'},{name:'스포츠 문화',cr:3,type:'선택'},
+    // 교양
+    {name:'인간과 심리',cr:2,type:'선택'},{name:'보건',cr:2,type:'선택'},
   ],
+  /* 3학년 2학기 — 진로/융합선택 마무리 + 융합과학·실용교과 */
   '3학년 2학기':[
-    {name:'독서토론과 글쓰기',cr:4,type:'선택'},{name:'고급수학Ⅱ',cr:4,type:'선택'},
-    {name:'심화영어 독해Ⅰ',cr:4,type:'선택'},{name:'생물의 유전',cr:4,type:'선택'},
-    {name:'전자기와 양자',cr:4,type:'선택'},{name:'프로그래밍',cr:4,type:'선택'},
-    {name:'사회문제탐구',cr:4,type:'선택'},{name:'융합과학탐구',cr:4,type:'선택'},
-    {name:'미술 창작',cr:4,type:'선택'},{name:'스포츠 생활2',cr:3,type:'선택'},
+    // 국어/수학/영어 진로/융합
+    {name:'독서 토론과 글쓰기',cr:4,type:'선택'},
+    {name:'문학과 영상',cr:4,type:'선택'},
+    {name:'심화 영어 독해와 작문',cr:4,type:'선택'},
+    {name:'영어 발표와 토론',cr:4,type:'선택'},
+    {name:'인공지능 수학',cr:4,type:'선택'},
+    {name:'실용 통계',cr:4,type:'선택'},
+    // 사회 융합선택
+    {name:'사회문제 탐구',cr:4,type:'선택'},
+    {name:'기후변화와 지속가능한 세계',cr:4,type:'선택'},
+    {name:'금융과 경제생활',cr:4,type:'선택'},
+    // 과학 진로/융합
+    {name:'생물의 유전',cr:4,type:'선택'},{name:'전자기와 양자',cr:4,type:'선택'},
+    {name:'행성우주과학',cr:4,type:'선택'},
+    {name:'융합과학 탐구',cr:4,type:'선택'},
+    {name:'기후변화와 환경생태',cr:4,type:'선택'},
+    // 정보·기술 융합
+    {name:'소프트웨어와 생활',cr:4,type:'선택'},
+    {name:'창의 공학 설계',cr:4,type:'선택'},
+    {name:'생애 설계와 자립',cr:2,type:'선택'},
+    // 제2외국어 융합
+    {name:'일본 문화',cr:4,type:'선택'},
+    // 예술
+    {name:'미술 창작',cr:4,type:'선택'},{name:'음악과 미디어',cr:3,type:'선택'},
+    // 체육
+    {name:'스포츠 생활2',cr:3,type:'선택'},
+    // 교양
+    {name:'논술',cr:2,type:'선택'},
   ],
 };
 
 /* ── 영역별 이수 기준 ── */
+/* keys: 과목명에 이 키워드가 포함되면 해당 영역에 가산. 2022 개정 표5 전 영역 커버 ── */
+/* '국어'는 '중국어' 등에 잘못 매칭되지 않도록 '공통국어'로 명시 */
 const REQUIRED_AREAS = [
-  {name:'국어',   min:8,  keys:['국어','문학','화법','독서','언어','작문','매체']},
+  {name:'국어',   min:8,  keys:['공통국어','문학','화법','독서','작문','매체']},
   {name:'수학',   min:8,  keys:['수학','대수','미적분','확률','통계','기하','수학과제']},
-  {name:'영어',   min:8,  keys:['영어','심화영어']},
-  {name:'사회',   min:10, keys:['사회','역사','도덕','윤리','정치','법','경제','지리','세계사','한국사','동아시아']},
-  {name:'과학',   min:10, keys:['과학','물리','화학','생명','지구','생물','역학','전자기','세포','융합과학']},
+  {name:'영어',   min:8,  keys:['공통영어','영어Ⅰ','영어Ⅱ','심화 영어','심화영어','영미','영어 발표','직무 영어','실생활 영어','미디어 영어','세계 문화와 영어','영어 독해']},
+  {name:'사회',   min:10, keys:['사회','역사','도덕','윤리','정치','법','경제','지리','세계사','한국사','동아시아','국제 관계','금융','기후변화와 지속']},
+  {name:'과학',   min:10, keys:['과학','물리','화학','생명','지구','생물','역학','전자기','세포','융합과학','환경생태']},
   {name:'체육',   min:10, keys:['체육','스포츠','운동']},
   {name:'예술',   min:10, keys:['음악','미술','연극']},
-  {name:'기타',   min:16, keys:['기술','가정','정보','일본어','중국어','한문','교양','소프트웨어','인공지능','프로그래밍','데이터']},
+  {name:'기타',   min:16, keys:['기술','가정','정보','일본어','중국어','한문','교양','소프트웨어','인공지능','데이터','공학','로봇','진로','직업','보건','논리','논술','심리','철학','종교','생애','생태','교육','일본 문화','중국 문화','독일','프랑스','스페인','러시아','아랍','베트남','언어생활']},
   {name:'한국사', min:6,  keys:['한국사']},
 ];
-const KEA_KEYS = ['국어','문학','화법','독서','언어','작문','매체','수학','대수','미적분','확률','통계','기하','수학과제','영어','심화영어'];
+const KEA_KEYS = ['공통국어','문학','화법','독서','작문','매체','언어 탐구','수학','대수','미적분','확률','통계','기하','수학과제','공통영어','영어Ⅰ','영어Ⅱ','심화 영어','심화영어','영미','영어 발표'];
 
 // ── 과목명 정규화: 로마자 ↔ 영문 대문자 I/II/III ↔ 숫자 통일 ──────────────
 // 1) 로마자 Ⅰ/Ⅱ/Ⅲ → 1/2/3
@@ -1800,7 +2034,9 @@ function renderLogin(state, data={}){
       ${!S.gasUrl?`<div class="notice-warn">GAS URL이 설정되지 않았습니다.<br>교사가 먼저 설정해야 합니다.</div>`:''}
       ${S.schoolName?`<div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--sub);margin-bottom:12px;">${S.schoolName}${S.classInfo?' · '+S.classInfo:''}</div>`:''}
       <div class="field"><label>학번 입력</label>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.02em;">5자리 학번을 입력하세요 · 학년(1자리) + 반(2자리) + 번호(2자리)</div>
         <input type="number" class="inp login-big" id="loginIdInput" placeholder="10101" maxlength="6" onkeydown="if(event.key==='Enter')tryLogin()">
+        <div style="font-size:10.5px;color:var(--whisper);margin-top:5px;text-align:center;letter-spacing:.04em;">예) 10101 = 1학년 1반 1번 &nbsp;·&nbsp; 20305 = 2학년 3반 5번</div>
       </div>
       <button class="btn btn-primary btn-full" onclick="tryLogin()">입장하기 →</button>`;
     setTimeout(()=>{ const el=document.getElementById('loginIdInput'); if(el) el.focus(); },100);
@@ -3438,7 +3674,12 @@ async function openStudentDetail(id){
   const allSubsFlat = allSel;
   const keaScore = Number(s.kea)||0;
   const totalScore = Number(s.total)||0;
-  const totalPct = isFinite(totalScore) ? Math.min(100,(totalScore/192)*100).toFixed(0) : 0;
+  const ACT_CR = 18; // 창의적 체험활동 고정 학점
+  const grandTotal = totalScore + ACT_CR; // 선택학점 + 창체 18
+  // 학생 화면과 동일 계산: 창체 9.375% + 선택과목(total/192*100, 최대 90.625%)
+  const actPct = 9.375;
+  const selectPct = Math.min(100 - actPct, (totalScore/192)*100);
+  const totalPct = actPct + selectPct; // 전체 진행률 %
   const keaPct   = isFinite(keaScore)   ? Math.min(100,(keaScore/81)*100).toFixed(0)   : 0;
   const areaScores = REQUIRED_AREAS.map(area=>({
     name:area.name, min:area.min,
@@ -3458,12 +3699,17 @@ async function openStudentDetail(id){
       <div style="background:var(--bg2);border:1.5px solid var(--border2);border-radius:12px;padding:11px 13px;grid-column:1/-1;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
           <span style="font-size:11px;font-weight:800;color:var(--sub);">총 이수학점</span>
-          <span style="font-size:15px;font-weight:800;color:${totalScore>=192?'var(--rec)':'var(--mint-d)'};">${totalScore}<span style="font-size:11px;font-weight:400;color:var(--muted);"> / 192</span></span>
+          <span style="font-size:15px;font-weight:800;color:${grandTotal>=192?'var(--rec)':'var(--mint-d)'};">${totalScore}<span style="font-size:11px;font-weight:400;color:var(--muted);"> + 18 / 192</span></span>
         </div>
-        <div style="height:7px;background:var(--surface);border-radius:4px;overflow:hidden;">
-          <div style="height:100%;width:${totalPct}%;background:var(--mint-btn);border-radius:4px;transition:width .4s;"></div>
+        <div style="height:9px;background:var(--surface);border-radius:5px;overflow:hidden;display:flex;border:1px solid var(--border2);">
+          <div style="width:9.375%;flex-shrink:0;background:linear-gradient(90deg,#7b5ea7,#9c6fbe);box-shadow:0 0 4px rgba(123,94,167,.4);position:relative;" title="창의적 체험활동 18학점 (고정)"></div>
+          <div style="height:100%;width:${selectPct.toFixed(2)}%;background:${grandTotal>=192?'linear-gradient(90deg,var(--rec),#4a8a64)':'var(--mint-btn)'};transition:width .4s;"></div>
         </div>
-        <div style="font-size:10px;color:var(--muted);margin-top:3px;">${totalPct}% 달성 · 선택과목 ${allSel.length}과목</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px;font-size:9.5px;color:var(--muted);">
+          <span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:linear-gradient(90deg,#7b5ea7,#9c6fbe);flex-shrink:0;"></span>
+          <span>창의적 체험활동 18학점 (고정 포함)</span>
+          <span style="margin-left:auto;">${Math.round(totalPct)}% 달성 · 선택과목 ${allSel.length}과목</span>
+        </div>
       </div>
       <!-- 국영수 -->
       <div style="background:${keaScore>81?'var(--core-bg)':'var(--bg2)'};border:1.5px solid ${keaScore>81?'var(--core-border)':'var(--border2)'};border-radius:12px;padding:11px 13px;">
@@ -3811,6 +4057,17 @@ function _xlBar(cell, pct, ok){
   cell.alignment = {horizontal:'left',vertical:'middle'};
   cell.border    = _B;
 }
+// 창체 18학점 고정칸 + 선택과목 막대 (총 이수학점용)
+function _xlBarAct(cell, selCr, ok){
+  // 10칸 중 1칸은 창체(고정), 나머지 9칸은 선택과목 174학점 기준
+  var selFill = Math.min(9, Math.round((selCr/174)*9));
+  // ◆=창체 / ■=선택과목 채움 / □=빈칸
+  cell.value     = '\u25C6'+'\u25A0'.repeat(selFill)+'\u25A1'.repeat(9-selFill)+'  창체18+선택'+selCr;
+  cell.font      = {size:9,color:{argb:ok?'FF1B5E20':'FF5D4037'},name:'Courier New'};
+  cell.fill      = {type:'pattern',pattern:'solid',fgColor:{argb:ok?'FFE8F5E9':'FFF3E5F5'}};
+  cell.alignment = {horizontal:'left',vertical:'middle'};
+  cell.border    = _B;
+}
 async function _xlDown(wb, fname){
   var buf  = await wb.xlsx.writeBuffer();
   var blob = new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
@@ -3833,18 +4090,21 @@ async function exportStudentsExcel(){
     ws1.columns=[
       {width:13},{width:10},{width:6},{width:5},{width:5},
       {width:18},{width:14},{width:20},
-      {width:9},{width:9},{width:10},{width:10},{width:8},{width:18}
+      {width:18},{width:9},{width:10},{width:10},{width:8},{width:18}
     ];
-    var h1=['학번','이름','학년','반','번호','목표대학','계열','학과','총학점','국·영·수','핵심이수','제출여부','확정여부','제출일시'];
+    var h1=['학번','이름','학년','반','번호','목표대학','계열','학과','총학점(선택+창체18/192)','국·영·수','핵심이수','제출여부','확정여부','제출일시'];
     var hr1=ws1.addRow(h1); hr1.height=24;
     hr1.eachCell(function(c){_xlHdr(c,'1A237E');});
 
     students.forEach(function(s){
       var id=String(s.id||'');
+      var selCr=Number(s.total)||0;
+      var grand=selCr+18;
+      var totalDisplay=selCr>0?(selCr+' + 18 = '+grand):'';
       var row=ws1.addRow([
         s.id,s.name,parseInt(id[0])||'',parseInt(id.slice(1,3))||'',parseInt(id.slice(3))||'',
         s.univ||'',s.track||'',s.major||'',
-        s.total||0,s.kea||0,
+        totalDisplay,s.kea||0,
         s.coreOk!==undefined?s.coreOk+'/'+s.coreTotal:'',
         s.locked?'제출완료':'미제출',s.confirmed?'확정':'',s.submittedAt||''
       ]);
@@ -3852,6 +4112,7 @@ async function exportStudentsExcel(){
       var bg=s.confirmed?'E6F4EA':s.locked?'FFF8E1':'FFFFFF';
       row.eachCell(function(c,ci){
         _xlDat(c,bg,{center:ci>=9&&ci<=13});
+        if(ci===9&&grand>=192&&selCr>0) c.font={bold:true,color:{argb:'FF1B5E20'},size:10};
         if(ci===10&&s.kea>81) c.font={bold:true,color:{argb:'FFC62828'},size:10};
         if(ci===13&&s.confirmed) c.font={bold:true,color:{argb:'FF1B5E20'},size:10};
       });
@@ -3865,13 +4126,14 @@ async function exportStudentsExcel(){
     var SBG=['BBDEFB','C8E6C9','E1BEE7','F8BBD9','FFCCBC','FFE0B2'];
     var ws2=wb.addWorksheet('과목선택상세');
     ws2.columns=[{width:13},{width:10}].concat(SEMS.map(function(){return {width:36};})).concat([{width:8}]);
-    var h2=['학번','이름'].concat(SEMS).concat(['총학점']);
+    var h2=['학번','이름'].concat(SEMS).concat(['선택합계+창체18']);
     var hr2=ws2.addRow(h2); hr2.height=24;
     hr2.eachCell(function(c,ci){_xlHdr(c,ci>=3&&ci<=8?SHB[ci-3]:'1A237E');});
 
     students.filter(function(s){return s.locked||s.confirmed;}).forEach(function(s,ri){
       var cells=SEMS.map(function(sem){return ((s.selSubs&&s.selSubs[sem])||[]).map(function(x){return x.name;}).join(', ');});
-      var row=ws2.addRow([s.id,s.name].concat(cells).concat([s.total||0]));
+      var selCr2=Number(s.total)||0;
+      var row=ws2.addRow([s.id,s.name].concat(cells).concat([selCr2+' + 18 = '+(selCr2+18)]));
       row.height=30;
       row.eachCell(function(c,ci){
         var si=ci-3;
@@ -3934,14 +4196,17 @@ async function exportStudentDetailExcel(id){
     var hr=ws1.addRow(['항목','현재값','기준','달성여부','그래프']); hr.height=22;
     hr.eachCell(function(c){_xlHdr(c,'1A237E');});
 
-    // 총 이수학점
-    var tp=Math.min(100,Math.round((total/192)*100));
-    var r1=ws1.addRow(['총 이수학점',total,192,total>=192?'\u2705 충족':'\u26A0\uFE0F 미달','']); r1.height=22;
+    // 총 이수학점 (선택학점 + 창체 18 = 192 기준)
+    var ACT_CR = 18;
+    var grandTotal = total + ACT_CR;
+    var tp = Math.min(100, Math.round((grandTotal/192)*100));
+    var totalOk = grandTotal >= 192;
+    var r1=ws1.addRow(['총 이수학점 (선택+창체18)', total+' + 18 = '+grandTotal, 192, totalOk?'\u2705 충족':'\u26A0\uFE0F 미달','']); r1.height=22;
     _xlDat(r1.getCell(1),'F3F4FF',{bold:true});
-    _xlDat(r1.getCell(2),'F3F4FF',{center:true,bold:true,color:total>=192?'FF1B5E20':'FFC62828'});
+    _xlDat(r1.getCell(2),'F3F4FF',{center:true,bold:true,color:totalOk?'FF1B5E20':'FFC62828'});
     _xlDat(r1.getCell(3),'F3F4FF',{center:true});
-    _xlDat(r1.getCell(4),total>=192?'E8F5E9':'FFEBEE',{center:true,bold:true,color:total>=192?'FF1B5E20':'FFC62828'});
-    _xlBar(r1.getCell(5),tp,total>=192);
+    _xlDat(r1.getCell(4),totalOk?'E8F5E9':'FFEBEE',{center:true,bold:true,color:totalOk?'FF1B5E20':'FFC62828'});
+    _xlBarAct(r1.getCell(5),total,totalOk);
 
     // 국영수
     var kp=Math.min(100,Math.round((kea/81)*100));
@@ -4055,9 +4320,10 @@ const SUBJECT_HIERARCHY = [
   ['생명과학','세포와 물질대사','생명과학 이수 후 세포와 물질대사 선택을 권장합니다'],
   ['생명과학','생물의 유전','생명과학 이수 후 생물의 유전 선택을 권장합니다'],
   ['영어1','영어2','영어Ⅰ 이수 후 영어Ⅱ를 선택하세요'],
-  ['영어2','심화영어1','영어Ⅱ 이수 후 심화영어Ⅰ 선택을 권장합니다'],
-  ['정보','프로그래밍','정보 이수 후 프로그래밍 선택을 권장합니다'],
-  ['정보','인공지능기초','정보 이수 후 인공지능기초 선택을 권장합니다'],
+  ['영어2','심화 영어','영어Ⅱ 이수 후 심화 영어 선택을 권장합니다'],
+  ['심화 영어','심화 영어 독해와 작문','심화 영어 이수 후 심화 영어 독해와 작문을 권장합니다'],
+  ['정보','인공지능 기초','정보 이수 후 인공지능 기초 선택을 권장합니다'],
+  ['정보','소프트웨어와 생활','정보 이수 후 소프트웨어와 생활 선택을 권장합니다'],
   ['확률과 통계','인공지능 수학','확률과 통계 이수 후 인공지능 수학을 권장합니다'],
 ];
 
@@ -4121,7 +4387,7 @@ function showRecGuideModal(){
   el.id = '_recGuideModal';
   el.style.cssText = 'position:fixed;inset:0;background:rgba(10,15,25,.55);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;';
   el.innerHTML = `
-    <div style="background:var(--surface);border-radius:14px;max-width:540px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.35);overflow:hidden;">
+    <div style="background:var(--surface);border-radius:14px;max-width:760px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.35);overflow:hidden;">
       <div style="background:linear-gradient(135deg,#1c2330,#0a0e15);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
         <div>
           <div style="font-size:13px;font-weight:800;color:var(--gold-l);letter-spacing:.04em;">권장과목, 얼마나 중요한가요?</div>
@@ -4144,21 +4410,21 @@ function showRecGuideModal(){
                 <span style="display:inline-block;background:#fff0f0;border:1px solid #ffb3b3;color:#c62828;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:800;">최상위 ~ 상위권</span>
               </td>
               <td style="padding:10px 12px;vertical-align:top;color:var(--text);line-height:1.7;">권장과목을 이수하지 않으면 합격 확률이 크게 떨어질 수 있습니다. <span style="color:#c62828;font-weight:700;">사실상 필수 과목</span>처럼 여겨집니다.</td>
-              <td style="padding:10px 12px;vertical-align:top;color:var(--muted);line-height:1.7;">기계공학과 지원 시<br>미적분, 기하,<br>물리학Ⅱ 이수 권장</td>
+              <td style="padding:10px 12px;vertical-align:top;color:var(--muted);line-height:1.7;">기계공학과 지원 시 미적분Ⅱ, 기하, 역학과 에너지 이수 권장</td>
             </tr>
             <tr style="border-bottom:1px solid var(--border2);background:var(--bg2);">
               <td style="padding:10px 12px;vertical-align:top;white-space:nowrap;">
                 <span style="display:inline-block;background:#fff8e1;border:1px solid #ffe082;color:#e65100;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:800;">중위권 ~ 수도권</span>
               </td>
               <td style="padding:10px 12px;vertical-align:top;color:var(--text);line-height:1.7;">이수하면 가산점이나 긍정적 평가를 받지만, <span style="color:var(--rec);font-weight:700;">다른 과목 성적이 우수하면 만회</span> 가능합니다.</td>
-              <td style="padding:10px 12px;vertical-align:top;color:var(--muted);line-height:1.7;">경영학과 지원 시<br>경제 또는<br>확률과 통계 권장</td>
+              <td style="padding:10px 12px;vertical-align:top;color:var(--muted);line-height:1.7;">경영학과 지원 시 경제 또는 확률과 통계 권장</td>
             </tr>
             <tr>
               <td style="padding:10px 12px;vertical-align:top;white-space:nowrap;">
                 <span style="display:inline-block;background:#f1f8e9;border:1px solid #aed581;color:#33691e;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:800;">교과/정시 위주</span>
               </td>
               <td style="padding:10px 12px;vertical-align:top;color:var(--text);line-height:1.7;">권장과목 이수 여부보다 <span style="color:var(--ink);font-weight:700;">성적(등급)·수능 점수</span>가 훨씬 중요합니다. 가이드라인은 있으나 합불의 절대적 영향력은 낮습니다.</td>
-              <td style="padding:10px 12px;vertical-align:top;color:var(--muted);line-height:1.7;">가이드라인 존재하나<br>등급·점수가<br>결정적 요소</td>
+              <td style="padding:10px 12px;vertical-align:top;color:var(--muted);line-height:1.7;">가이드라인 존재하나 등급·점수가 결정적 요소</td>
             </tr>
           </tbody>
         </table>
