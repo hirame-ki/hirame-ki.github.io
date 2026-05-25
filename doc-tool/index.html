@@ -28,12 +28,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .logo-txt{font-family:'Noto Sans KR',sans-serif;font-size:17px;font-weight:700;color:var(--text)}
 .logo-sub{font-size:11px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:2px 9px;white-space:nowrap;flex-shrink:0}
 
-/* API BAR - hidden */
-
 /* DASHBOARD */
 .dashboard{background:var(--surface);border-bottom:1.5px solid var(--border);padding:16px 20px;flex-shrink:0}
 .dash-title{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
-.dash-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:900px}
+.dash-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;max-width:1100px}
 .dash-btn{border:2px solid var(--border);border-radius:var(--r);padding:14px 16px;background:var(--surface2);cursor:pointer;transition:all .18s;text-align:left;display:flex;align-items:center;gap:12px}
 .dash-btn:hover{border-color:var(--mint);box-shadow:var(--shadow-md);transform:translateY(-1px)}
 .dash-btn.active{border-color:var(--mint);background:var(--mint-l);box-shadow:var(--shadow-md)}
@@ -134,6 +132,9 @@ footer{background:var(--surface);border-top:1.5px solid var(--border);padding:11
 footer a{color:var(--mint-d);text-decoration:none;font-weight:700}
 footer a:hover{text-decoration:underline}
 
+@media(max-width:900px){
+  .dash-btns{grid-template-columns:1fr 1fr}
+}
 @media(max-width:720px){
   .two-col{grid-template-columns:1fr}
   .col-left{border-right:none;border-bottom:1.5px solid var(--border)}
@@ -148,6 +149,12 @@ footer a:hover{text-decoration:underline}
 .ai-warn-icon{font-size:18px;flex-shrink:0}
 .ai-warn-text{font-size:12px;line-height:1.6;color:#92400e;font-weight:700}
 .ai-warn-text span{display:block;font-size:11px;font-weight:400;color:#b45309;margin-top:2px}
+
+/* 기안 초안 전용 */
+.draft-type-group{display:flex;flex-wrap:wrap;gap:6px}
+.draft-type-chip{padding:5px 13px;border:1.5px solid var(--border);border-radius:20px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .14s;background:var(--surface);color:var(--sub);user-select:none}
+.draft-type-chip:hover{border-color:var(--mint);color:var(--mint-d)}
+.draft-type-chip.selected{background:var(--mint-l);border-color:var(--mint);color:var(--mint-d);font-weight:700}
 </style>
 </head>
 <body>
@@ -156,16 +163,22 @@ footer a:hover{text-decoration:underline}
 <div class="hdr">
   <div class="logo-box">📋</div>
   <div class="logo-txt">공문서 도우미</div>
-  <div class="logo-sub">2025 편람 기준 · Claude AI</div>
+  <div class="logo-sub">2025 편람 기준 · Groq AI</div>
 </div>
-
-<!-- API KEY: 하드코딩 (내부 사용) -->
 
 <!-- DASHBOARD -->
 <div class="dashboard">
   <div class="dash-title">🗂 기능 선택</div>
   <div class="dash-btns">
-    <button class="dash-btn active" id="dashKian" onclick="switchPanel('kian')">
+    <button class="dash-btn active" id="dashDraft" onclick="switchPanel('draft')">
+      <div class="db-num">📝</div>
+      <div class="db-info">
+        <div class="db-title">기안 초안 작성</div>
+        <div class="db-desc">문서 종류 선택 · 주요 내용 입력 · 본문 초안 생성</div>
+      </div>
+      <div class="db-arrow">›</div>
+    </button>
+    <button class="dash-btn" id="dashKian" onclick="switchPanel('kian')">
       <div class="db-num">✍️</div>
       <div class="db-info">
         <div class="db-title">기안 수정</div>
@@ -188,7 +201,7 @@ footer a:hover{text-decoration:underline}
 <div class="guide-pills" id="guidePills"></div>
 
 <!-- ═══ PANEL: 기안수정 ═══ -->
-<div class="tab-panel active" id="panel-kian">
+<div class="tab-panel" id="panel-kian">
   <div class="two-col">
     <div class="col-left">
       <div class="sec">
@@ -245,6 +258,92 @@ footer a:hover{text-decoration:underline}
       <div class="sec">
         <div class="sec-head"><div class="sec-num" style="background:linear-gradient(135deg,#d97706,#b45309)">!</div><span class="sec-ttl">수정 이유 설명</span></div>
         <div class="sec-body"><div id="kianExplain"><div class="result-empty" style="padding:28px 20px"><div class="em-icon">💬</div>교정 후 이곳에 설명이 표시됩니다</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PANEL: 기안 초안 작성 ═══ -->
+<div class="tab-panel active" id="panel-draft">
+  <div class="two-col">
+    <div class="col-left">
+
+      <div class="sec">
+        <div class="sec-head"><div class="sec-num">①</div><span class="sec-ttl">문서 종류 선택 <span style="font-size:10px;color:var(--muted);font-weight:400">(1개 선택)</span></span></div>
+        <div class="sec-body">
+          <div class="draft-type-group" id="draftTypeChips">
+            <div class="draft-type-chip" onclick="toggleDraftType(this)">계획서</div>
+            <div class="draft-type-chip" onclick="toggleDraftType(this)">협조 요청</div>
+            <div class="draft-type-chip" onclick="toggleDraftType(this)">통보</div>
+            <div class="draft-type-chip" onclick="toggleDraftType(this)">결과 보고</div>
+            <div class="draft-type-chip" onclick="toggleDraftType(this)">안내</div>
+            <div class="draft-type-chip" onclick="toggleDraftType(this)">행사 개최</div>
+            <div class="draft-type-chip" onclick="toggleDraftType(this)">예산 요청</div>
+            <div class="draft-type-chip" onclick="toggleDraftType(this)">출장 신청</div>
+          </div>
+          <div style="margin-top:12px;border-top:1px solid var(--border2);padding-top:12px">
+            <div class="field-lbl">✏️ 직접 입력 <span style="color:var(--muted);font-weight:400">(위에 없는 종류)</span></div>
+            <input type="text" class="inp" id="draftTypeCustom" placeholder="예) 포상 추천, 물품 구입 요청, 위원회 구성 등" />
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-head"><div class="sec-num">②</div><span class="sec-ttl">문서 정보 입력</span></div>
+        <div class="sec-body">
+          <div class="field">
+            <div class="field-lbl">제목 <span style="color:var(--muted);font-weight:400">(문서 제목 또는 주제)</span></div>
+            <input type="text" class="inp" id="draftTitle" placeholder="예) 2026학년도 1학기 현장 체험학습 계획" />
+          </div>
+          <div class="field">
+            <div class="field-lbl">주요 내용 <span style="color:var(--muted);font-weight:400">(핵심 사항, 날짜, 장소, 예산 등 알고 있는 정보)</span></div>
+            <textarea class="inp" id="draftContent" rows="7" placeholder="예)
+- 일시: 2026년 6월 15일(월)
+- 장소: ○○박물관
+- 대상: 1학년 전체 (120명)
+- 예산: 1인당 15,000원
+- 목적: 역사 교육 및 현장 학습 강화
+- 인솔 교사: 담임 교사 전원 + 부교장"></textarea>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <div class="field-lbl">붙임 파일 <span style="color:var(--muted);font-weight:400">(있는 경우, 없으면 비워두세요)</span></div>
+            <input type="text" class="inp" id="draftAttach" placeholder="예) 현장 체험학습 계획서 1부, 동의서 양식 1부" />
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="generateDraft()" id="draftBtn"><span>📝</span> 기안 초안 생성</button>
+
+      <div class="guide-sec">
+        <div class="guide-toggle" onclick="toggleGuide('draftGuide','draftArrow')">
+          <div class="guide-icon">📖</div>
+          기안문 본문 작성 기준 보기
+          <span class="guide-arrow" id="draftArrow">▼ 펼치기</span>
+        </div>
+        <div class="guide-content" id="draftGuide">
+          <span class="guide-source">출처: 행정안전부 「2025 행정업무운영 편람」 · 본문(이유+내용) 구조 기준</span>
+          <div class="guide-section"><b>본문 구성 원칙</b><br>• 본문은 이유 + 내용(항목) + 붙임으로 구성<br>• 첫 문장: 문서 작성 이유를 간결하게 기재<br>• 항목 번호: 1. → 가. → 1) → 가) 순<br>• 붙임: '붙임'으로 표기, '첨부' 사용 금지</div>
+          <div class="guide-section"><b>날짜·금액 표기</b><br>• 날짜: 2026. 6. 15.(월) 형식<br>• 금액: 15,000원(일만오천원) 형식</div>
+          <div class="guide-section"><b>어휘·어조</b><br>• 금번→이번, 상기→위, 차년도→다음 해<br>• 고압적 표현 금지: '~할 것' → '~하시기 바랍니다'<br>• 두음법칙·사이시옷·외래어 표기 준수</div>
+          <div class="guide-section"><b>주의사항</b><br>• 생성된 본문은 반드시 실제 정보로 수정 필요<br>• ○○ 표시는 실제 내용으로 채워주세요</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <div class="ai-warn">
+        <div class="ai-warn-icon">⚠️</div>
+        <div class="ai-warn-text">AI는 실수할 수 있습니다. 결과물은 반드시 교사가 직접 검토 후 사용하세요.
+          <span>날짜·이름·금액·규정 등 중요한 내용은 꼭 재확인 바랍니다.</span>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-head"><div class="sec-num" style="background:linear-gradient(135deg,#059669,#0d9488)">✓</div><span class="sec-ttl">생성된 기안 본문 초안</span></div>
+        <div class="sec-body">
+          <div id="draftResult">
+            <div class="result-empty"><div class="em-icon">📝</div>문서 종류와 내용을 입력하고<br>생성 버튼을 눌러주세요</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -353,15 +452,17 @@ footer a:hover{text-decoration:underline}
 
 <!-- FOOTER -->
 <footer>
-  <a href="https://www.instagram.com/hirame.ki" target="_blank">📷 @hirame.ki</a>
+  Made with ☕ &amp; 🍜 by <a href="https://www.instagram.com/hirame.ki" target="_blank">@hirame.ki</a> &nbsp;·&nbsp; Powered by Groq AI
 </footer>
 
 <script>
 let selectedTone = 'formal';
 let selectedChips = [];
+let selectedDraftType = null;
 
 const PILLS = {
   kian: ['항목번호 체계 1.→가.→1)','날짜 마침표+1타','연도 자동 수정','시간 24시각제','금액 한글 병기','사이시옷·두음법칙','외래어 표기법','고압적 표현 순화','붙임·끝 표시'],
+  draft: ['본문(이유+내용) 구조','항목번호 1.→가.→1)','날짜 2026. 6. 15. 형식','붙임 표기','어휘 순화','고압적 표현 금지'],
   gato: ['상황별 칩 선택','날짜 2026. 5. 30. 형식','공식체 / 친근체','인사말→본문→요청 순','발신기관·담당교사 포함'],
 };
 
@@ -381,6 +482,7 @@ function renderPills(panel) {
 function switchPanel(name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('dashDraft').classList.toggle('active', name === 'draft');
   document.getElementById('dashKian').classList.toggle('active', name === 'kian');
   document.getElementById('dashGato').classList.toggle('active', name === 'gato');
   renderPills(name);
@@ -391,6 +493,13 @@ function toggleChip(el) {
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
   selectedChips = [];
   if (!wasSelected) { el.classList.add('selected'); selectedChips = [el.textContent.trim()]; }
+}
+
+function toggleDraftType(el) {
+  const wasSelected = el.classList.contains('selected');
+  document.querySelectorAll('.draft-type-chip').forEach(c => c.classList.remove('selected'));
+  selectedDraftType = null;
+  if (!wasSelected) { el.classList.add('selected'); selectedDraftType = el.textContent.trim(); }
 }
 
 function setTone(t) {
@@ -407,16 +516,9 @@ function toggleGuide(cId, aId) {
   a.textContent = open ? '▼ 펼치기' : '▲ 접기';
 }
 
-const STORAGE_KEY = 'groq_api_key_hirameki';
 const GROQ_API_KEY = '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';
 
-function loadApiKey() { /* 하드코딩 키 사용 — 입력창 없음 */ }
-function saveApiKey() {}
-function deleteApiKey() {}
-
-function getApiKey() {
-  return GROQ_API_KEY;
-}
+function getApiKey() { return GROQ_API_KEY; }
 
 async function streamGroq(apiKey, systemPrompt, userContent, onChunk) {
   const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -436,80 +538,6 @@ async function streamGroq(apiKey, systemPrompt, userContent, onChunk) {
     }
   }
   return full;
-}
-
-function detectIssues(text, userInput) {
-  const issues = [];
-
-  // 사용자 입력 텍스트 추출 (예외 처리용)
-  const userWords = new Set();
-  if (userInput) {
-    // 영어 단어 추출
-    (userInput.match(/[A-Za-z]{2,}/g) || []).forEach(w => userWords.add(w.toLowerCase()));
-    // 한자 추출
-    (userInput.match(/[一-鿿㐀-䶿]/g) || []).forEach(c => userWords.add(c));
-  }
-
-  // 한자 감지 (CJK 통합 한자 범위)
-  const kanjiMatches = [];
-  const kanjiRe = /[一-鿿㐀-䶿]/g;
-  let m;
-  while ((m = kanjiRe.exec(text)) !== null) {
-    if (!userWords.has(m[0])) kanjiMatches.push(m[0]);
-  }
-  if (kanjiMatches.length > 0) {
-    const unique = [...new Set(kanjiMatches)];
-    issues.push({ type: 'kanji', label: '한자 감지', chars: unique.slice(0, 10) });
-  }
-
-  // 영어 단어 감지 (2글자 이상)
-  const engMatches = [];
-  const engRe = /[A-Za-z]{2,}/g;
-  while ((m = engRe.exec(text)) !== null) {
-    if (!userWords.has(m[0].toLowerCase())) engMatches.push(m[0]);
-  }
-  if (engMatches.length > 0) {
-    const unique = [...new Set(engMatches)];
-    issues.push({ type: 'english', label: '영어 감지', chars: unique.slice(0, 8) });
-  }
-
-  return issues;
-}
-
-function showDetectWarning(resultEl, issues, userInput) {
-  if (issues.length === 0) {
-    const ok = document.createElement('div');
-    ok.style.cssText = 'display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:10px 14px;margin-top:12px;font-size:12px;color:#166534;font-weight:700;';
-    ok.innerHTML = '<span style="font-size:16px">✅</span> 한자·영어가 감지되지 않았습니다. 그래도 내용을 꼭 검토해 주세요.';
-    resultEl.appendChild(ok);
-    return;
-  }
-
-  const warn = document.createElement('div');
-  warn.style.cssText = 'background:#fff7ed;border:2px solid #f97316;border-radius:10px;padding:14px 16px;margin-top:12px;font-size:12px;line-height:1.8;';
-
-  let html = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
-    + '<span style="font-size:18px">⚠️</span>'
-    + '<span style="font-weight:800;font-size:13px;color:#c2410c;">한자·영어가 감지되었습니다 — 수정이 필요합니다</span>'
-    + '</div>';
-
-  for (const issue of issues) {
-    const color = issue.type === 'kanji' ? '#7c3aed' : '#0369a1';
-    const bg = issue.type === 'kanji' ? '#f5f3ff' : '#eff6ff';
-    html += `<div style="margin-bottom:6px;padding:6px 10px;background:${bg};border-radius:7px;color:${color};font-weight:700;">`;
-    html += `${issue.type === 'kanji' ? '🈳 한자' : '🔤 영어'} 발견: `;
-    html += issue.chars.map(c => `<span style="background:#fff;border:1px solid ${color};border-radius:4px;padding:1px 6px;margin:0 2px;">${c}</span>`).join(' ');
-    html += '</div>';
-  }
-
-  html += '<div style="margin-top:10px;padding:8px 10px;background:#fef3c7;border-radius:7px;color:#92400e;font-size:11.5px;">'
-    + '<b>안내:</b> AI 언어모델은 학습 데이터의 특성상 한자·영어를 완전히 차단하기 어렵습니다. '
-    + '프롬프트로 금지 지시를 내려도 간헐적으로 포함될 수 있으므로, '
-    + '<b>생성된 결과는 반드시 교사가 직접 검토하고 수정한 후 사용</b>하시기 바랍니다.'
-    + '</div>';
-
-  warn.innerHTML = html;
-  resultEl.appendChild(warn);
 }
 
 function friendlyError(msg) {
@@ -535,6 +563,333 @@ function makeCopyBtn(text) {
     setTimeout(() => { btn.textContent = '📋 복사'; btn.classList.remove('copied'); }, 2000);
   });
   return btn;
+}
+
+// ── 기안 초안 생성 ──────────────────────────────────────
+async function generateDraft() {
+  const apiKey = getApiKey();
+  const chipType = selectedDraftType;
+  const customType = document.getElementById('draftTypeCustom').value.trim();
+  const docType = customType || chipType;
+  if (!docType) { alert('문서 종류를 선택하거나 직접 입력해 주세요.'); return; }
+
+  const title = document.getElementById('draftTitle').value.trim();
+  const receiver = document.getElementById('draftReceiver').value.trim();
+  const content = document.getElementById('draftContent').value.trim();
+  const attach = document.getElementById('draftAttach').value.trim();
+
+  if (!content) { alert('주요 내용을 입력해 주세요.'); return; }
+
+  const currentYear = new Date().getFullYear();
+
+  const system = `당신은 대한민국 공공기관 공문서 기안 전문 작성 도우미입니다.
+행정안전부 「2025 행정업무운영 편람」(2025) 및 「행정업무의 운영 및 혁신에 관한 규정」(대통령령, 2023. 6. 28. 개정) 기준을 엄격히 준수하여 기안문 본문 초안을 작성합니다.
+
+[출력 범위]
+- 본문만 작성합니다. (수신·경유·제목·발신명의·기안자 등 두문·결문 제외)
+- 본문 = 이유 문장 + '다 음' + 항목별 내용 + 붙임(있는 경우)
+
+[공문서 본문 구성 원칙 (2025편람 54~58쪽)]
+- 첫 줄: 문서 작성 이유를 한 문장으로 간결하게 기재
+  예) "○○○과 관련하여 다음과 같이 알려드립니다."
+  예) "○○○을 다음과 같이 계획하여 보고합니다."
+- 이유 문장 다음 줄: '  다 음  ' (좌측 2칸 들여쓰기)
+- 항목 번호로 본문 내용 기재
+- 붙임이 있는 경우 항목 뒤에 붙임 표기
+
+[공문서 작성 기준 — 2025 편람 직접 확인 지침]
+
+■ 항목 번호 체계 (규칙 제2조제1항, 2025편람 51쪽)
+첫째: 1., 2., 3. / 둘째: 가., 나., 다. / 셋째: 1), 2), 3) / 넷째: 가), 나), 다)
+다섯째: (1), (2) / 여섯째: (가), (나) / 일곱째: ①, ② / 여덟째: ㉮, ㉯
+- 항목이 하나뿐이면 항목기호 부여 안 함 (편람 52쪽 마항)
+- 항목기호와 내용 사이 1타 띄움 (편람 52쪽 라항)
+- 첫째 항목은 왼쪽 기본선, 둘째부터 오른쪽으로 2타씩 이동 (편람 52쪽 나항)
+
+■ 날짜 표기 (영 제7조제5항, 2025편람 49쪽)
+- 연·월·일 글자 생략, 마침표로 대체, 숫자와 마침표 사이 반드시 1타 띄움
+  올바른 예: 2026. 5. 30. (○) / 틀린 예: 2026.5.30. 또는 2026.12.12. (×)
+- 월·일 앞자리 0 표기 금지: 1985. 9. 6. (○) / 1985. 09. 06. (×)
+- 요일 병기 시: 2026. 5. 30.(금).
+- 올해는 ${currentYear}년
+
+■ 시간 표기 (영 제7조제5항, 2025편람 49쪽)
+- 24시각제, 쌍점으로 구분: 15:20 (○) / 오후 3시 20분 (×) / 07:09 (○)
+
+■ 금액 표기 (규칙 제2조제2항, 2025편람 49쪽)
+- 아라비아 숫자 뒤 괄호에 한글 병기: 금113,560원(금일십일만삼천오백육십원)
+
+■ 어문 규범 교정 (2025편람 41~44쪽 직접 확인)
+[두음법칙] 년간→연간, 시설 년도→시설 연도, 회계 년도→회계 연도, 남여→남녀
+[사이시옷] 하교길→하굣길, 수도물→수돗물, 최소값→최솟값, 갯수→개수
+[가운뎃점 오류] 국내·외→국내외, 민·관→민관 (사전 등재 단어), 융복합→융·복합 (대등 열거는 유지)
+[외래어 표기법] 컨퍼런스→콘퍼런스, 솔루션→설루션, 어플리케이션→애플리케이션, 워크샵→워크숍, 파트너쉽→파트너십
+[괄호 뒤 조사] 인공지능(AI)를→인공지능(AI)을 (괄호 앞 글자 기준 적용)
+
+■ 띄어쓰기 교정 (2025편람 43~44쪽)
+- 단위명사: 296억달러→296억 달러, 10만톤→10만 톤
+- 호칭어: 홍길동씨→홍길동 씨, 행정안전부장관→행정안전부 장관
+- 접두사: 비 공개→비공개, 재 교육→재교육
+- 관형사: 본제도→본 제도, 총300대→총 300대
+- 의존명사: 기관간→기관 간 (단, 이틀간·한달간은 붙임)
+- 조사: 지방공무원 뿐만→지방공무원뿐만
+
+■ 문장 부호 (2025편람 44쪽)
+- 쌍점: 원장 : 김갑동→원장: 김갑동
+- 물결표: 4. 23. ~ 6. 15.→4. 23.~6. 15.
+
+■ 어휘 순화 (2025편람 기준)
+[외래어→우리말] 매뉴얼→안내서/지침, 가이드라인→방침/지침, 인프라→기반시설, 모니터링→점검/감시
+[한자어→쉬운 우리말] 금번→이번, 상기(의)→위(의), 제반→여러, 동(同)→이, 본(本)→이, 차년도→다음 해/다음 연도, 제고하다→높이다, 확행 바랍니다→꼭 하시기 바랍니다
+
+■ 고압적·권위적 표현 (2025편람 47~48쪽)
+- 작성할 것→작성해 주십시오 / 제출바람→제출해 주시기 바랍니다
+- '~바람' '~할 것'→'~하기 바랍니다' '~하여 주시기 바랍니다'로 완곡하게
+
+■ 붙임·끝 표시 (2025편람 59~61쪽)
+- '첨부' 아닌 '붙임' 사용
+
+[경우 1] 붙임 없음 → 본문 마지막 문장 종결어미 뒤 마침표, 2칸 띄고 '끝.' 붙임
+  예: ~하시기 바랍니다.  끝.
+
+[경우 2] 붙임 1개 → 본문 끝 다음 줄에 아래 형식. 파일명 뒤 마침표, 2칸 띄고 '끝.'
+  예: 붙임  ○○○ 1부.  끝.
+
+[경우 3] 붙임 2개 이상 → 번호 목록으로 나열, 마지막 항목 뒤에만 2칸 띄고 '끝.'
+  예: 붙임  1. ○○○ 1부.
+              2. ○○○ 1부.  끝.
+
+■ 모르는 정보 처리
+- 사용자가 입력하지 않은 고유명사·수치는 ○○○으로 표기
+
+[출력 형식]
+본문 텍스트만 출력합니다. 설명·주석·마크다운 기호 없이 본문 내용만 작성하세요.`;
+
+  const user = `다음 정보를 바탕으로 기안문 본문 초안을 작성해주세요.
+
+문서 종류: ${docType}
+제목(주제): ${title || '(미입력)'}
+주요 내용:
+${content}
+붙임 파일: ${attach || '없음'}`;
+
+  const btn = document.getElementById('draftBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> 초안 생성 중...';
+  const resultEl = document.getElementById('draftResult');
+  resultEl.innerHTML = '<div class="loading"><div class="spinner"></div> 기안문 본문을 작성하고 있습니다...</div>';
+
+  try {
+    let box = null;
+    const fullText = await streamGroq(apiKey, system, user, (partial) => {
+      if (!box) {
+        resultEl.innerHTML = '';
+        const header = document.createElement('div'); header.className = 'result-header';
+        const lbl = document.createElement('span'); lbl.className = 'result-label'; lbl.textContent = 'DRAFT';
+        header.appendChild(lbl); resultEl.appendChild(header);
+        box = document.createElement('div'); box.className = 'result-box streaming-cursor';
+        resultEl.appendChild(box);
+      }
+      box.textContent = partial;
+    });
+    if (box) {
+      box.classList.remove('streaming-cursor');
+      resultEl.querySelector('.result-header').appendChild(makeCopyBtn(fullText));
+    }
+  } catch (e) {
+    resultEl.innerHTML = friendlyError(e.message);
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<span>📝</span> 기안 초안 생성';
+  }
+}
+
+// ── 기안 수정 ──────────────────────────────────────────
+async function correctKian() {
+  const apiKey = getApiKey(); if (!apiKey) return;
+  const input = document.getElementById('kianInput').value.trim();
+  if (!input) { alert('수정할 기안문을 붙여넣어 주세요.'); return; }
+  const currentYear = new Date().getFullYear();
+  const system = `당신은 대한민국 공공기관 공문서 기안 전문 교정 도우미입니다.
+아래 지침은 행정안전부 「2025 행정업무운영 편람」(2025) 및 「행정업무의 운영 및 혁신에 관한 규정」(대통령령, 2023. 6. 28. 개정)을 PDF 직접 확인한 내용 기준입니다.
+
+[공문서 작성 기준 — 2025 편람 직접 확인 지침]
+
+■ 항목 번호 체계 (규칙 제2조제1항, 2025편람 51쪽)
+첫째: 1., 2., 3. / 둘째: 가., 나., 다. / 셋째: 1), 2), 3) / 넷째: 가), 나), 다)
+다섯째: (1), (2) / 여섯째: (가), (나) / 일곱째: ①, ② / 여덟째: ㉮, ㉯
+- 항목이 하나뿐이면 항목기호 부여 안 함 (편람 52쪽 마항)
+- 항목기호와 내용 사이 1타 띄움 (편람 52쪽 라항)
+- 첫째 항목은 왼쪽 기본선, 둘째부터 오른쪽으로 2타씩 이동 (편람 52쪽 나항)
+
+■ 날짜 표기 (영 제7조제5항, 2025편람 49쪽)
+- 연·월·일 글자 생략, 마침표로 대체, 숫자와 마침표 사이 반드시 1타 띄움
+  올바른 예: 2026. 5. 30. (○) / 틀린 예: 2026.5.30. 또는 2026.12.12. (×)
+- 월·일 앞자리 0 표기 금지: 1985. 9. 6. (○) / 1985. 09. 06. (×)
+- 요일 병기 시: 2026. 5. 30.(금).
+- 연월일 마침표 누락 교정: '26. 1 → '26. 1. / 2023. 6. 27(화) → 2023. 6. 27.(화) (편람 44쪽)
+
+■ ★ 연도 오류 자동 수정
+- 문서 내 이전 연도(2024., 2025. 등)가 올해(${currentYear})를 가리키는 맥락이면 ${currentYear}년으로 수정
+- '○○년도' 제목·본문에서 전년도 잘못 기재된 경우도 수정
+- 단, 과거 실적·역사적 사실 서술은 연도 수정 금지
+
+■ 시간 표기 (영 제7조제5항, 2025편람 49쪽)
+- 24시각제, 쌍점으로 구분: 15:20 (○) / 오후 3시 20분 (×) / 07:09 (○)
+
+■ 금액 표기 (규칙 제2조제2항, 2025편람 49쪽)
+- 아라비아 숫자 뒤 괄호에 한글 병기: 금113,560원(금일십일만삼천오백육십원)
+
+■ 어문 규범 교정 (2025편람 41~44쪽 직접 확인)
+[두음법칙] 년간→연간, 시설 년도→시설 연도, 회계 년도→회계 연도, 남여→남녀
+[사이시옷] 하교길→하굣길, 수도물→수돗물, 최소값→최솟값, 갯수→개수
+[가운뎃점 오류] 국내·외→국내외, 민·관→민관 (사전 등재 단어), 융복합→융·복합 (대등 열거는 유지)
+[외래어 표기법] 컨퍼런스→콘퍼런스, 솔루션→설루션, 어플리케이션→애플리케이션, 워크샵→워크숍, 파트너쉽→파트너십
+[괄호 뒤 조사] 인공지능(AI)를→인공지능(AI)을 (괄호 앞 글자 기준 적용)
+
+■ 띄어쓰기 교정 (2025편람 43~44쪽)
+- 단위명사: 296억달러→296억 달러, 10만톤→10만 톤
+- 호칭어: 홍길동씨→홍길동 씨, 행정안전부장관→행정안전부 장관
+- 접두사: 비 공개→비공개, 재 교육→재교육
+- 관형사: 본제도→본 제도, 총300대→총 300대
+- 의존명사: 기관간→기관 간 (단, 이틀간·한달간은 붙임)
+- 조사: 지방공무원 뿐만→지방공무원뿐만
+
+■ 문장 부호 (2025편람 44쪽)
+- 쌍점: 원장 : 김갑동→원장: 김갑동
+- 물결표: 4. 23. ~ 6. 15.→4. 23.~6. 15.
+
+■ 어휘 순화 (2025편람 기준)
+[외래어→우리말] 매뉴얼→안내서/지침, 가이드라인→방침/지침, 인프라→기반시설, 모니터링→점검/감시
+[한자어→쉬운 우리말] 금번→이번, 상기(의)→위(의), 제반→여러, 동(同)→이, 본(本)→이, 차년도→다음 해/다음 연도, 제고하다→높이다, 확행 바랍니다→꼭 하시기 바랍니다
+
+■ 고압적·권위적 표현 (2025편람 47~48쪽)
+- 작성할 것→작성해 주십시오 / 제출바람→제출해 주시기 바랍니다
+- '~바람' '~할 것'→'~하기 바랍니다' '~하여 주시기 바랍니다'로 완곡하게
+
+■ 붙임·끝 표시 (2025편람 59~61쪽)
+- '첨부' 아닌 '붙임' 사용
+
+[경우 1] 붙임 없음 → 본문 마지막 문장 종결어미 뒤 마침표, 2칸 띄고 '끝.' 붙임
+  예: ~하시기 바랍니다.  끝.
+
+[경우 2] 붙임 1개 → 본문 끝 다음 줄에 아래 형식. 파일명 뒤 마침표, 2칸 띄고 '끝.'
+  예: 붙임  제3회 생활교육위원회 관련서류 1부.  끝.
+
+[경우 3] 붙임 2개 이상 → 번호 목록으로 나열, 마지막 항목 뒤에만 2칸 띄고 '끝.'
+  예: 붙임  1. ○○○ 1부.
+              2. ○○○ 1부.  끝.
+
+■ 문서 구조 (2025편람 54~55쪽)
+- 두문: 행정기관명, 수신(경유), 제목 / 본문: 내용, 붙임 / 결문: 발신명의, 서명, 등록번호, 주소, 공개구분
+- 경유기관 없으면 (경유)란 빈칸으로 둠
+
+■ 제목: 핵심 내용만, 조사로 끝내지 않음, '~의 건' 지양
+
+[출력 형식 — 반드시 준수]
+===교정문===
+(교정된 전체 기안문)
+===끝===
+===설명===
+(수정한 이유를 항목별로 간결하게. 번호로 구분. 잘못된 내용 → 수정 내용 형식)
+===끝===`;
+
+  const user = `다음 기안문을 교정해주세요:\n\n${input}`;
+  const btn = document.getElementById('kianBtn');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> 교정 중...';
+  const resultEl = document.getElementById('kianResult');
+  const explainEl = document.getElementById('kianExplain');
+  resultEl.innerHTML = '<div class="loading"><div class="spinner"></div> 기안문을 분석하고 있습니다...</div>';
+  explainEl.innerHTML = '';
+  try {
+    let fullText = await streamGroq(apiKey, system, user, (partial) => {
+      const corrected = extractSection(partial, '===교정문===', '===끝===');
+      if (corrected) {
+        resultEl.innerHTML = '';
+        const header = document.createElement('div'); header.className = 'result-header';
+        const lbl = document.createElement('span'); lbl.className = 'result-label'; lbl.textContent = 'CORRECTED';
+        header.appendChild(lbl); resultEl.appendChild(header);
+        const box = document.createElement('div'); box.className = 'result-box streaming-cursor';
+        box.textContent = corrected; resultEl.appendChild(box);
+      }
+    });
+    const corrected = extractSection(fullText, '===교정문===', '===끝===');
+    const explain = extractSection(fullText, '===설명===', '===끝===');
+    resultEl.innerHTML = '';
+    const header = document.createElement('div'); header.className = 'result-header';
+    const lbl = document.createElement('span'); lbl.className = 'result-label'; lbl.textContent = 'CORRECTED';
+    header.appendChild(lbl);
+    if (corrected) header.appendChild(makeCopyBtn(corrected));
+    resultEl.appendChild(header);
+    const box = document.createElement('div'); box.className = 'result-box';
+    box.textContent = corrected || fullText; resultEl.appendChild(box);
+    if (explain) {
+      explainEl.innerHTML = '';
+      const exBox = document.createElement('div'); exBox.className = 'explain-box';
+      exBox.innerHTML = `<strong>수정 이유</strong>${escapeHtml(explain)}`; explainEl.appendChild(exBox);
+    }
+  } catch (e) {
+    resultEl.innerHTML = friendlyError(e.message);
+  } finally { btn.disabled = false; btn.innerHTML = '<span>✍️</span> 기안문 교정 요청'; }
+}
+
+// ── 가정통신문 생성 ────────────────────────────────────
+function detectIssues(text, userInput) {
+  const issues = [];
+  const userWords = new Set();
+  if (userInput) {
+    (userInput.match(/[A-Za-z]{2,}/g) || []).forEach(w => userWords.add(w.toLowerCase()));
+    (userInput.match(/[一-鿿㐀-䶿]/g) || []).forEach(c => userWords.add(c));
+  }
+  const kanjiMatches = [];
+  const kanjiRe = /[一-鿿㐀-䶿]/g;
+  let m;
+  while ((m = kanjiRe.exec(text)) !== null) {
+    if (!userWords.has(m[0])) kanjiMatches.push(m[0]);
+  }
+  if (kanjiMatches.length > 0) {
+    const unique = [...new Set(kanjiMatches)];
+    issues.push({ type: 'kanji', label: '한자 감지', chars: unique.slice(0, 10) });
+  }
+  const engMatches = [];
+  const engRe = /[A-Za-z]{2,}/g;
+  while ((m = engRe.exec(text)) !== null) {
+    if (!userWords.has(m[0].toLowerCase())) engMatches.push(m[0]);
+  }
+  if (engMatches.length > 0) {
+    const unique = [...new Set(engMatches)];
+    issues.push({ type: 'english', label: '영어 감지', chars: unique.slice(0, 8) });
+  }
+  return issues;
+}
+
+function showDetectWarning(resultEl, issues, userInput) {
+  if (issues.length === 0) {
+    const ok = document.createElement('div');
+    ok.style.cssText = 'display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:10px 14px;margin-top:12px;font-size:12px;color:#166534;font-weight:700;';
+    ok.innerHTML = '<span style="font-size:16px">✅</span> 한자·영어가 감지되지 않았습니다. 그래도 내용을 꼭 검토해 주세요.';
+    resultEl.appendChild(ok);
+    return;
+  }
+  const warn = document.createElement('div');
+  warn.style.cssText = 'background:#fff7ed;border:2px solid #f97316;border-radius:10px;padding:14px 16px;margin-top:12px;font-size:12px;line-height:1.8;';
+  let html = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'
+    + '<span style="font-size:18px">⚠️</span>'
+    + '<span style="font-weight:800;font-size:13px;color:#c2410c;">한자·영어가 감지되었습니다 — 수정이 필요합니다</span>'
+    + '</div>';
+  for (const issue of issues) {
+    const color = issue.type === 'kanji' ? '#7c3aed' : '#0369a1';
+    const bg = issue.type === 'kanji' ? '#f5f3ff' : '#eff6ff';
+    html += `<div style="margin-bottom:6px;padding:6px 10px;background:${bg};border-radius:7px;color:${color};font-weight:700;">`;
+    html += `${issue.type === 'kanji' ? '🈳 한자' : '🔤 영어'} 발견: `;
+    html += issue.chars.map(c => `<span style="background:#fff;border:1px solid ${color};border-radius:4px;padding:1px 6px;margin:0 2px;">${c}</span>`).join(' ');
+    html += '</div>';
+  }
+  html += '<div style="margin-top:10px;padding:8px 10px;background:#fef3c7;border-radius:7px;color:#92400e;font-size:11.5px;">'
+    + '<b>안내:</b> AI 언어모델은 학습 데이터의 특성상 한자·영어를 완전히 차단하기 어렵습니다. '
+    + '프롬프트로 금지 지시를 내려도 간헐적으로 포함될 수 있으므로, '
+    + '<b>생성된 결과는 반드시 교사가 직접 검토하고 수정한 후 사용</b>하시기 바랍니다.'
+    + '</div>';
+  warn.innerHTML = html;
+  resultEl.appendChild(warn);
 }
 
 async function generateGato() {
@@ -620,136 +975,6 @@ async function generateGato() {
   } finally { btn.disabled = false; btn.innerHTML = '<span>📄</span> 가정통신문 생성'; }
 }
 
-async function correctKian() {
-  const apiKey = getApiKey(); if (!apiKey) return;
-  const input = document.getElementById('kianInput').value.trim();
-  if (!input) { alert('수정할 기안문을 붙여넣어 주세요.'); return; }
-  const currentYear = new Date().getFullYear();
-  const system = `당신은 대한민국 공공기관 공문서 기안 전문 교정 도우미입니다.
-아래 지침은 행정안전부 「2025 행정업무운영 편람」(2025) 및 「행정업무의 운영 및 혁신에 관한 규정」(대통령령, 2023. 6. 28. 개정)을 PDF 직접 확인한 내용 기준입니다.
-
-[공문서 작성 기준 — 2025 편람 직접 확인 지침]
-
-■ 항목 번호 체계 (규칙 제2조제1항, 2025편람 51쪽)
-첫째: 1., 2., 3. / 둘째: 가., 나., 다. / 셋째: 1), 2), 3) / 넷째: 가), 나), 다)
-다섯째: (1), (2) / 여섯째: (가), (나) / 일곱째: ①, ② / 여덟째: ㉮, ㉯
-- 항목이 하나뿐이면 항목기호 부여 안 함 (편람 52쪽 마항)
-- 항목기호와 내용 사이 1타 띄움 (편람 52쪽 라항)
-- 첫째 항목은 왼쪽 기본선, 둘째부터 오른쪽으로 2타씩 이동 (편람 52쪽 나항)
-
-■ 날짜 표기 (영 제7조제5항, 2025편람 49쪽)
-- 연·월·일 글자 생략, 마침표로 대체, 숫자와 마침표 사이 반드시 1타 띄움
-  올바른 예: 2026. 5. 30. (○) / 틀린 예: 2026.5.30. 또는 2026.12.12. (×)
-- 월·일 앞자리 0 표기 금지: 1985. 9. 6. (○) / 1985. 09. 06. (×)
-- 요일 병기 시: 2026. 5. 30.(금).
-- 연월일 마침표 누락 교정: '26. 1 → '26. 1. / 2023. 6. 27(화) → 2023. 6. 27.(화) (편람 44쪽)
-
-■ ★ 연도 오류 자동 수정
-- 문서 내 이전 연도(2024., 2025. 등)가 올해(${currentYear})를 가리키는 맥락이면 ${currentYear}년으로 수정
-- '○○년도' 제목·본문에서 전년도 잘못 기재된 경우도 수정
-- 단, 과거 실적·역사적 사실 서술은 연도 수정 금지
-
-■ 시간 표기 (영 제7조제5항, 2025편람 49쪽)
-- 24시각제, 쌍점으로 구분: 15:20 (○) / 오후 3시 20분 (×) / 07:09 (○)
-
-■ 금액 표기 (규칙 제2조제2항, 2025편람 49쪽)
-- 아라비아 숫자 뒤 괄호에 한글 병기: 금113,560원(금일십일만삼천오백육십원)
-
-■ 어문 규범 교정 (2025편람 41~44쪽 직접 확인)
-[두음법칙] 년간→연간, 시설 년도→시설 연도, 회계 년도→회계 연도, 남여→남녀
-[사이시옷] 하교길→하굣길, 수도물→수돗물, 최소값→최솟값, 갯수→개수
-[가운뎃점 오류] 국내·외→국내외, 민·관→민관 (사전 등재 단어), 융복합→융·복합 (대등 열거는 유지)
-[외래어 표기법] 컨퍼런스→콘퍼런스, 솔루션→설루션, 어플리케이션→애플리케이션, 워크샵→워크숍, 파트너쉽→파트너십
-[괄호 뒤 조사] 인공지능(AI)를→인공지능(AI)을 (괄호 앞 글자 기준 적용)
-
-■ 띄어쓰기 교정 (2025편람 43~44쪽)
-- 단위명사: 296억달러→296억 달러, 10만톤→10만 톤
-- 호칭어: 홍길동씨→홍길동 씨, 행정안전부장관→행정안전부 장관
-- 접두사: 비 공개→비공개, 재 교육→재교육
-- 관형사: 본제도→본 제도, 총300대→총 300대
-- 의존명사: 기관간→기관 간 (단, 이틀간·한달간은 붙임)
-- 조사: 지방공무원 뿐만→지방공무원뿐만
-
-■ 문장 부호 (2025편람 44쪽)
-- 쌍점: 원장 : 김갑동→원장: 김갑동
-- 물결표: 4. 23. ~ 6. 15.→4. 23.~6. 15.
-
-■ 어휘 순화 (2025편람 기준)
-[외래어→우리말] 매뉴얼→안내서/지침, 가이드라인→방침/지침, 인프라→기반시설, 모니터링→점검/감시
-[한자어→쉬운 우리말] 금번→이번, 상기(의)→위(의), 제반→여러, 동(同)→이, 본(本)→이, 차년도→다음 해/다음 연도, 제고하다→높이다, 확행 바랍니다→꼭 하시기 바랍니다
-
-■ 고압적·권위적 표현 (2025편람 47~48쪽)
-- 작성할 것→작성해 주십시오 / 제출바람→제출해 주시기 바랍니다
-- '~바람' '~할 것'→'~하기 바랍니다' '~하여 주시기 바랍니다'로 완곡하게
-
-■ 붙임·끝 표시 (2025편람 59~61쪽)
-- '첨부' 아닌 '붙임' 사용
-
-[경우 1] 붙임 없음 → 본문 마지막 문장 종결어미 뒤 마침표, 2칸 띄고 '끝.' 붙임
-  예: ~하시기 바랍니다.  끝.
-
-[경우 2] 붙임 1개 → 본문 끝 다음 줄에 아래 형식. 파일명 뒤 마침표, 2칸 띄고 '끝.'
-  예: 붙임  제3회 생활교육위원회 관련서류 1부.  끝.
-  (주의: '붙임' 뒤 2칸 띄움, 마지막 '1부.' 뒤 2칸 띄고 '끝.')
-
-[경우 3] 붙임 2개 이상 → 번호 목록으로 나열, 마지막 항목 뒤에만 2칸 띄고 '끝.'
-  예: 붙임  1. ○○○ 1부.
-              2. ○○○ 1부.  끝.
-  (주의: '붙임' 뒤 2칸, 두 번째 항목부터는 번호 앞 공백으로 첫째 항목과 정렬)
-
-■ 문서 구조 (2025편람 54~55쪽)
-- 두문: 행정기관명, 수신(경유), 제목 / 본문: 내용, 붙임 / 결문: 발신명의, 서명, 등록번호, 주소, 공개구분
-- 경유기관 없으면 (경유)란 빈칸으로 둠
-
-■ 제목: 핵심 내용만, 조사로 끝내지 않음, '~의 건' 지양
-
-[출력 형식 — 반드시 준수]
-===교정문===
-(교정된 전체 기안문)
-===끝===
-===설명===
-(수정한 이유를 항목별로 간결하게. 번호로 구분. 잘못된 내용 → 수정 내용 형식)
-===끝===`;
-
-  const user = `다음 기안문을 교정해주세요:\n\n${input}`;
-  const btn = document.getElementById('kianBtn');
-  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> 교정 중...';
-  const resultEl = document.getElementById('kianResult');
-  const explainEl = document.getElementById('kianExplain');
-  resultEl.innerHTML = '<div class="loading"><div class="spinner"></div> 기안문을 분석하고 있습니다...</div>';
-  explainEl.innerHTML = '';
-  try {
-    let fullText = await streamGroq(apiKey, system, user, (partial) => {
-      const corrected = extractSection(partial, '===교정문===', '===끝===');
-      if (corrected) {
-        resultEl.innerHTML = '';
-        const header = document.createElement('div'); header.className = 'result-header';
-        const lbl = document.createElement('span'); lbl.className = 'result-label'; lbl.textContent = 'CORRECTED';
-        header.appendChild(lbl); resultEl.appendChild(header);
-        const box = document.createElement('div'); box.className = 'result-box streaming-cursor';
-        box.textContent = corrected; resultEl.appendChild(box);
-      }
-    });
-    const corrected = extractSection(fullText, '===교정문===', '===끝===');
-    const explain = extractSection(fullText, '===설명===', '===끝===');
-    resultEl.innerHTML = '';
-    const header = document.createElement('div'); header.className = 'result-header';
-    const lbl = document.createElement('span'); lbl.className = 'result-label'; lbl.textContent = 'CORRECTED';
-    header.appendChild(lbl);
-    if (corrected) header.appendChild(makeCopyBtn(corrected));
-    resultEl.appendChild(header);
-    const box = document.createElement('div'); box.className = 'result-box';
-    box.textContent = corrected || fullText; resultEl.appendChild(box);
-    if (explain) {
-      explainEl.innerHTML = '';
-      const exBox = document.createElement('div'); exBox.className = 'explain-box';
-      exBox.innerHTML = `<strong>수정 이유</strong>${escapeHtml(explain)}`; explainEl.appendChild(exBox);
-    }
-  } catch (e) {
-    resultEl.innerHTML = friendlyError(e.message);
-  } finally { btn.disabled = false; btn.innerHTML = '<span>✍️</span> 기안문 교정 요청'; }
-}
-
 function extractSection(text, start, end) {
   const s = text.indexOf(start); if (s === -1) return null;
   const content = text.slice(s + start.length);
@@ -758,8 +983,7 @@ function extractSection(text, start, end) {
 }
 function escapeHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-renderPills('kian');
-loadApiKey();
+renderPills('draft');
 </script>
 </body>
 </html>
