@@ -658,6 +658,8 @@ select.inp option{background:var(--surface);color:var(--text);}
 }
 .sem-box:hover{box-shadow:var(--shadow-md);border-color:var(--border);}
 .sem-box.completed{opacity:.55;pointer-events:none;}
+.sem-box.g2-saved{opacity:.75;pointer-events:none;}
+.sem-box.g2-saved .sem-save-btn{pointer-events:all;opacity:1;cursor:pointer;}
 .sem-title{
   font-size:10px;color:var(--muted);font-weight:800;
   letter-spacing:.14em;text-transform:uppercase;
@@ -2359,7 +2361,7 @@ let S = {
   schoolName:'', classInfo:'', teacherName:'',
   univ:'', track:'', major:'',
   coreList:[], recList:[], refList:[],
-  availSubs:{}, selSubs:{},
+  availSubs:{}, selSubs:{}, savedSems:[],
   _scheduleIsDefault: true,
   deadline: null,
   semMax: {
@@ -2545,7 +2547,13 @@ function enterStudent(data){
   // trim()으로 공백 제거 후 파싱, data.grade(과거 저장값)는 무시하고 학번 기반 강제 적용
   const gradeFromId = parseInt(String(data.id||'').trim()[0]);
   S.grade = (gradeFromId>=1&&gradeFromId<=3) ? gradeFromId : 1;
-  if(data.selSubs)  S.selSubs  = data.selSubs;
+  if(data.selSubs)   S.selSubs   = data.selSubs;
+  if(data.savedSems) S.savedSems = data.savedSems;
+  // localStorage 캐시에서도 savedSems 복원 (GAS 응답에 없을 경우 대비)
+  if(!S.savedSems || S.savedSems.length===0){
+    const cached = _LS.get(`hsc_saved_sems_${data.id}`);
+    if(cached) try{ S.savedSems = JSON.parse(cached); }catch(e){}
+  }
   if(data.univ)     S.univ     = data.univ;
   if(data.track)    S.track    = data.track;
   if(data.major)    S.major    = data.major;
@@ -3346,7 +3354,7 @@ function buildStudentLeftInfo(){
     </div>
     <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--sub);margin-bottom:10px;">
       <b style="color:var(--mint-d);">${S.grade}학년</b>
-      <span style="color:var(--muted);margin-left:6px;">${S.grade===1?'2·3학년 과목 미리 설계':'3학년 과목 미리 설계 (1·2학년 이수완료)'}</span>
+      <span style="color:var(--muted);margin-left:6px;">${S.grade===1?'2·3학년 과목 미리 설계':'2학년 수강과목 저장 후 3학년 과목 설계'}</span>
     </div>
     <div class="sec" style="margin-top:4px;">목표 대학·학과</div>
     <div class="field"><label>대학교</label><select class="inp" id="uniSel"></select></div>
@@ -3553,9 +3561,15 @@ function loadRec(){
 
 // ===============================================   과목 설계 렌더 (
 function getCompletedSems(){
-  if(S.grade === 1) return [];                                                          // 1학년: 이수완료 없음
-  if(S.grade === 2) return ['1학년 1학기','1학년 2학기','2학년 1학기','2학년 2학기']; // 2학년: 1·2학년 이수완료
+  if(S.grade === 1) return [];                           // 1학년: 이수완료 없음
+  if(S.grade === 2) return ['1학년 1학기','1학년 2학기']; // 2학년: 1학년만 자동 이수완료
   return [];
+}
+
+// 2학년이 학기별 저장 버튼으로 이수완료 처리한 학기 목록
+function getSavedSems(){
+  if(S.grade !== 2) return [];
+  return S.savedSems || [];
 }
 
 function getAutoCompletedSems(){
@@ -3567,6 +3581,12 @@ function getActiveSems(){
   if(S.grade === 1) return ['2학년 1학기','2학년 2학기','3학년 1학기','3학년 2학기']; // 1학년: 2·3학년 과목 미리 설계
   if(S.grade === 2) return ['3학년 1학기','3학년 2학기'];                              // 2학년: 3학년 과목만 미리 설계
   return [];
+}
+
+// 2학년의 2학년 학기 (직접 선택·저장 대상)
+function getGrade2EditSems(){
+  if(S.grade !== 2) return [];
+  return ['2학년 1학기','2학년 2학기'];
 }
 
 function renderDesigner(){
@@ -3620,10 +3640,12 @@ function renderDesigner(){
     warnEl.style.display = isDefault ? 'flex' : 'none';
   }
 
-  const completedSems = getCompletedSems();      // DB 기반 이수완료 (1·2학년 과목)
+  const completedSems = getCompletedSems();      // DB 기반 이수완료 (1학년)
   const autoSems      = getAutoCompletedSems();  // 자동 이수완료 (1학년이면 1학년 과목)
   const activeSems    = getActiveSems();
-  const allSems       = [...new Set([...completedSems,...autoSems,...activeSems])];
+  const grade2EditSems = getGrade2EditSems();    // 2학년의 2학년 학기 (직접 선택)
+  const savedSems     = getSavedSems();          // 2학년이 저장 완료한 학기
+  const allSems       = [...new Set([...completedSems,...autoSems,...grade2EditSems,...activeSems])];
   const years         = [...new Set(allSems.map(s=>s.split(' ')[0]))];
 
   // 자동이수 학기의 과목은 selSubs에 자동 추가
@@ -3632,7 +3654,7 @@ function renderDesigner(){
   });
 
   // ★ 모든 활성 학기의 공통과목 → selSubs에 강제 삽입 (그래프 반영용)
-  activeSems.forEach(sem=>{
+  [...activeSems, ...grade2EditSems].forEach(sem=>{
     const subs = S.availSubs[sem]||DEFAULT_SUBS[sem]||[];
     if(!S.selSubs[sem]) S.selSubs[sem]=[];
     subs.forEach(sub=>{
@@ -3645,7 +3667,7 @@ function renderDesigner(){
   let html='';
   years.forEach(yr=>{
     const semList = allSems.filter(s=>s.startsWith(yr));
-    const allDone = semList.every(s=>completedSems.includes(s)||autoSems.includes(s));
+    const allDone = semList.every(s=>completedSems.includes(s)||autoSems.includes(s)||(grade2EditSems.includes(s)&&savedSems.includes(s)));
     html+=`<div class="year-block">
       <div class="year-head">
         <span class="year-pill${allDone?' done':''}">${yr}</span>
@@ -3653,31 +3675,32 @@ function renderDesigner(){
       </div>
       <div class="sem-grid">`;
     semList.forEach(sem=>{
-      const isCompleted = completedSems.includes(sem);
-      const isAuto      = autoSems.includes(sem);
-      const isDone      = isCompleted || isAuto;
-
-      // 2학년의 2학년 과목: 선택/저장 가능
-      // 2학년의 3학년 과목: 미리 선택 (학점 설계)
-      // 1학년의 2·3학년 과목: 미리 선택 (학점 설계)
-      // 3학년의 3학년 과목: 선택/제출
-      const yearNum = parseInt(sem.charAt(0));
-      const isLocked2nd = S.grade === 2 && yearNum === 2; // 2학년이 2학년 과목 선택
+      const isCompleted  = completedSems.includes(sem);
+      const isAuto       = autoSems.includes(sem);
+      const isG2Edit     = grade2EditSems.includes(sem);  // 2학년의 2학년 학기
+      const isSaved      = savedSems.includes(sem);       // 저장 완료된 학기
+      const isG2Saved    = isG2Edit && isSaved;
+      const isDone       = isCompleted || isAuto || isG2Saved;
+      const boxClass     = isCompleted||isAuto ? 'completed' : isG2Saved ? 'g2-saved' : '';
 
       const subs = S.availSubs[sem] || DEFAULT_SUBS[sem] || [];
       const sel  = S.selSubs[sem]||[];
 
-      html+=`<div class="sem-box${isDone?' completed':''}">
+      html+=`<div class="sem-box${boxClass?' '+boxClass:''}">
         <div class="sem-title">
           ${sem.includes('1학기')?'1학기':'2학기'}
-          ${isDone
+          ${isCompleted||isAuto
             ? '<span class="done-tag">이수완료</span>'
-            : '<span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:4px;">(최대 '+((S.semMax&&S.semMax[sem])||10)+'과목)</span>'
+            : isG2Saved
+              ? '<span class="done-tag">이수완료</span>'
+              : isG2Edit
+                ? '<span style="font-size:10px;color:var(--gold-l);font-weight:600;margin-left:4px;">✎ 수강과목 선택</span>'
+                : '<span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:4px;">(최대 '+((S.semMax&&S.semMax[sem])||10)+'과목)</span>'
           }
         </div>`;
 
       if(isCompleted){
-        // 이미 이수완료 (2·3학년 이상 학생의 1학년 과목 등)
+        // 1학년 이수완료 자동
         (S.availSubs[sem]||DEFAULT_SUBS[sem]||[]).forEach(s=>{
           html+=`<div class="subj-item done-sub"><span class="subj-name">${s.name}</span><span class="subj-cr">${s.cr}</span></div>`;
         });
@@ -3686,8 +3709,33 @@ function renderDesigner(){
         subs.forEach(s=>{
           html+=`<div class="subj-item done-sub sel"><span class="subj-name">${s.name}</span><span class="subj-cr">${s.cr}</span></div>`;
         });
+      } else if(isG2Edit){
+        // ── 2학년의 2학년 학기: 직접 선택 + 저장 ──
+        subs.forEach((sub,idx)=>{
+          const isSel  = sel.some(s=>normalizeName(s.name)===normalizeName(sub.name));
+          const isCommon = sub.type==='공통';
+          const isCore = S.coreList.includes(sub.name);
+          const isRec  = S.recList.includes(sub.name);
+          const isRef  = S.refList.includes(sub.name);
+          const cls    = isSel?`sel${isCore?' is-core':isRec?' is-rec':isRef?' is-ref':''}`:'' ;
+          const px     = isCore?'<span class="dot dot-core"></span>':isRec?'<span class="dot dot-rec"></span>':isRef?'<span class="dot dot-ref"></span>':'';
+          // 공통과목은 항상 체크 (클릭 불가), 선택과목만 토글
+          const clickable = isCommon ? '' : `onclick="toggleSub('${sem}',${idx})"`;
+          const lockIcon  = isCommon ? '<span style="font-size:9px;color:var(--muted);margin-left:3px;">공통</span>' : '';
+          html+=`<div class="subj-item ${cls}${isCommon?' done-sub':''}" ${clickable} style="${isCommon?'':'cursor:pointer;'}"><span class="subj-name">${px}${sub.name}${lockIcon}</span><span class="subj-cr">${sub.cr}</span></div>`;
+        });
+        // 저장 버튼 (이수완료 처리) + 수정 안내
+        if(isSaved){
+          html+=`<div style="margin-top:8px;display:flex;gap:6px;align-items:center;">
+            <button class="sem-save-btn" onclick="unsaveSem('${sem}')" style="padding:5px 8px;font-size:11px;font-weight:700;background:var(--muted);color:#fff;border:none;border-radius:6px;cursor:pointer;">✎ 수정하기</button>
+          </div>`;
+        } else {
+          html+=`<div style="margin-top:8px;">
+            <button class="sem-save-btn" onclick="saveSemCompletion('${sem}')" style="width:100%;padding:6px 0;font-size:12px;font-weight:700;background:var(--gold-l);color:#111;border:none;border-radius:6px;cursor:pointer;">💾 이수완료로 저장</button>
+          </div>`;
+        }
       } else {
-        // 선택 가능한 학기
+        // 선택 가능한 학기 (3학년 등)
         subs.forEach((sub,idx)=>{
           const isSel  = sel.some(s=>normalizeName(s.name)===normalizeName(sub.name));
           const isCore = S.coreList.includes(sub.name);
@@ -3698,7 +3746,6 @@ function renderDesigner(){
           const clickable = S.locked?'':`onclick="toggleSub('${sem}',${idx})"`;
           html+=`<div class="subj-item ${cls}" ${clickable}><span class="subj-name">${px}${sub.name}</span><span class="subj-cr">${sub.cr}</span></div>`;
         });
-        // 학생은 편제표 과목만 선택 가능 — 직접 추가 없음
       }
       html+=`</div>`;
     });
@@ -3756,10 +3803,20 @@ function getAllSelectedSubs(){
   const all=[];
   const completedSems=getCompletedSems();
   const autoSems=getAutoCompletedSems();
+  const grade2EditSems=getGrade2EditSems();
   // 이수완료 학기 과목 (편제표 우선, 없으면 DEFAULT)
   completedSems.forEach(sem=>(S.availSubs[sem]||DEFAULT_SUBS[sem]||[]).forEach(s=>all.push(s)));
   // 자동이수 학기
   autoSems.forEach(sem=>(S.availSubs[sem]||DEFAULT_SUBS[sem]||[]).forEach(s=>all.push(s)));
+  // 2학년의 2학년 학기: selSubs에 선택된 과목 반영 (저장 여부와 무관하게 학점 계산에 반영)
+  grade2EditSems.forEach(sem=>{
+    const subs = S.availSubs[sem]||DEFAULT_SUBS[sem]||[];
+    const sel  = S.selSubs[sem]||[];
+    subs.filter(s=>s.type==='공통').forEach(s=>{
+      if(!all.some(a=>normalizeName(a.name)===normalizeName(s.name))) all.push(s);
+    });
+    sel.filter(s=>s.type!=='공통').forEach(s=>all.push(s));
+  });
   // 선택 학기: selSubs에 있는 과목 포함
   // + 공통과목은 selSubs 여부와 관계없이 항상 포함 (편제표 기준)
   const activeSems = getActiveSems();
@@ -3856,6 +3913,29 @@ function updateCheckList(){
   S.recList.slice(0,5).forEach(s=>{ const d=names.includes(normalizeName(s)); html+=`<div class="check-row"><span>${s} <span class="badge badge-rec" style="font-size:9px;">권장</span></span><span class="${d?'check-ok':'check-no'}">${d?'✓':'✗'}</span></div>`; });
   const el=document.getElementById('checkList');
   if(el) el.innerHTML=html||'<div style="font-size:12px;color:var(--muted);">대학·학과를 먼저 선택하세요</div>';
+}
+
+/* ── 2학년 학기별 이수완료 저장 (localStorage) ── */
+function saveSemCompletion(sem){
+  if(!S.savedSems) S.savedSems = [];
+  if(!S.savedSems.includes(sem)) S.savedSems.push(sem);
+  if(S.studentId){
+    _LS.set(`hsc_saved_sems_${S.studentId}`, JSON.stringify(S.savedSems));
+    _LS.set(`hsc_sel_${S.studentId}`, JSON.stringify(S.selSubs));
+  }
+  showToast(`${sem} 이수완료로 저장되었습니다 ✓`,'success');
+  renderDesigner();
+}
+
+// 저장 취소 → 다시 편집 모드
+function unsaveSem(sem){
+  if(!S.savedSems) return;
+  S.savedSems = S.savedSems.filter(s=>s!==sem);
+  if(S.studentId){
+    _LS.set(`hsc_saved_sems_${S.studentId}`, JSON.stringify(S.savedSems));
+  }
+  showToast(`${sem} 수정 모드로 전환되었습니다`,'success');
+  renderDesigner();
 }
 
 /* ── 제출 ── */
@@ -4518,7 +4598,8 @@ async function autoSaveSelection(){
   try{
     await fetch(S.gasUrl,{method:'POST',
       body:JSON.stringify({action:'autoSave', id:S.studentId,
-        selSubs:S.selSubs, univ:S.univ, track:S.track, major:S.major,
+        selSubs:S.selSubs,
+        univ:S.univ, track:S.track, major:S.major,
         coreList:S.coreList, recList:S.recList}),
       headers:{'Content-Type':'text/plain'}});
     const ts = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
