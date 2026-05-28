@@ -3716,7 +3716,7 @@ function renderDesigner(){
     const seen = new Set();
     const cleaned = [];
     subs.forEach(s=>{
-      const key = normalizeName(s.name);
+      const key = normalizeName(s.name) + '|' + (s.group||'') + '|' + (s.type||'');
       if(!seen.has(key)){
         seen.add(key);
         cleaned.push(s);
@@ -3734,7 +3734,7 @@ function renderDesigner(){
     const seen = new Set();
     const cleaned = [];
     subs.forEach(s=>{
-      const key = normalizeName(s.name);
+      const key = normalizeName(s.name) + '|' + (s.group||'') + '|' + (s.type||'');
       if(!seen.has(key)){
         seen.add(key);
         cleaned.push(s);
