@@ -3709,8 +3709,8 @@ function renderDesigner(){
   const area=document.getElementById('designer');
   if(!area) return;
 
-  // ★ 편제표 학기 내 중복 과목 자동 정리 (예: '미적분Ⅰ'과 '미적분I'가 같은 학기에 둘 다 있는 경우)
-  //   normalizeName 기준으로 같은 과목이면 첫 번째만 남기고 나머지 제거
+  // ★ 편제표 학기 내 완전 중복 과목 자동 정리 (이름+그룹+유형이 모두 같을 때만 제거)
+  //   예: '미적분Ⅰ'과 '미적분I' 같은 표기 혼용. 같은 이름이라도 그룹/유형이 다르면 유지
   Object.keys(S.availSubs||{}).forEach(sem=>{
     const subs = S.availSubs[sem]||[];
     const seen = new Set();
