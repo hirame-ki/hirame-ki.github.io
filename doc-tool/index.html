@@ -1057,6 +1057,23 @@ footer a:hover{text-decoration:underline}
   border-radius:4px;transition:color .15s;
 }
 .api-change-btn:hover{color:rgba(255,255,255,.9)}
+.api-quick-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(201,161,74,.18);color:var(--gold);
+  border:1px solid rgba(201,161,74,.45);
+  border-radius:20px;
+  font-size:11px;font-weight:700;padding:2px 11px;
+  text-decoration:none;white-space:nowrap;
+  transition:background .15s,border-color .15s;
+  margin-left:4px;
+}
+.api-quick-badge:hover{background:rgba(201,161,74,.32);border-color:var(--gold);text-decoration:none}
+.api-saved-privacy{
+  font-size:10.5px;font-weight:500;
+  color:rgba(74,222,128,.65);
+  margin-left:8px;
+  letter-spacing:-.01em;
+}
 
 /* ============================================================
    DOC TABLE (마크다운 표 → HTML 표)
@@ -1263,6 +1280,7 @@ footer a:hover{text-decoration:underline}
     <div class="api-banner-title">
       <div class="key-icon">🔑</div>
       AI 기능을 사용하려면 무료 API 키가 필요합니다
+      <a href="https://console.groq.com/keys" target="_blank" class="api-quick-badge">⚡ Groq API 발급 (1분 이내)</a>
     </div>
 
     <!-- Groq 소개 -->
@@ -1397,7 +1415,7 @@ footer a:hover{text-decoration:underline}
     </div>
   </div>
   <div class="api-saved-bar" id="apiSavedBar" style="display:none">
-    <div class="api-saved-ok">✅ API 키가 저장되었습니다 — AI 기능을 사용할 수 있습니다</div>
+    <div class="api-saved-ok">✅ API 키가 저장되었습니다 — AI 기능을 사용할 수 있습니다<span class="api-saved-privacy">🔒 키는 이 브라우저에만 저장되며 외부로 전송되지 않습니다</span></div>
     <button class="api-change-btn" onclick="changeApiKey()">키 변경</button>
   </div>
 </div>
