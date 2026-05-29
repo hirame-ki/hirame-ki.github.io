@@ -4178,9 +4178,10 @@ function renderDesigner(){
         subs.forEach((sub,idx)=>{
           const isSel  = sel.some(s=>normalizeName(s.name)===normalizeName(sub.name));
           const isCommon = sub.type==='공통';
-          const isCore = S.coreList.includes(sub.name);
-          const isRec  = S.recList.includes(sub.name);
-          const isRef  = S.refList.includes(sub.name);
+          const _subNorm = normalizeName(sub.name);
+          const isCore = S.coreList.some(c=>normalizeName(c)===_subNorm);
+          const isRec  = S.recList.some(c=>normalizeName(c)===_subNorm);
+          const isRef  = S.refList.some(c=>normalizeName(c)===_subNorm);
           const cls    = isSel?`sel${isCore?' is-core':isRec?' is-rec':isRef?' is-ref':''}`:'' ;
           const px     = isCore?'<span class="dot dot-core"></span>':isRec?'<span class="dot dot-rec"></span>':isRef?'<span class="dot dot-ref"></span>':'';
           // 공통과목은 항상 체크 (클릭 불가), 선택과목만 토글
@@ -4202,9 +4203,10 @@ function renderDesigner(){
         // 선택 가능한 학기 (3학년 등)
         subs.forEach((sub,idx)=>{
           const isSel  = sel.some(s=>normalizeName(s.name)===normalizeName(sub.name));
-          const isCore = S.coreList.includes(sub.name);
-          const isRec  = S.recList.includes(sub.name);
-          const isRef  = S.refList.includes(sub.name);
+          const _subNorm2 = normalizeName(sub.name);
+          const isCore = S.coreList.some(c=>normalizeName(c)===_subNorm2);
+          const isRec  = S.recList.some(c=>normalizeName(c)===_subNorm2);
+          const isRef  = S.refList.some(c=>normalizeName(c)===_subNorm2);
           const cls    = isSel?`sel${isCore?' is-core':isRec?' is-rec':isRef?' is-ref':''}`:'' ;
           const px     = isCore?'<span class="dot dot-core"></span>':isRec?'<span class="dot dot-rec"></span>':isRef?'<span class="dot dot-ref"></span>':'';
           const clickable = S.locked?'':`onclick="toggleSub('${sem}',${idx})"`;
@@ -4798,7 +4800,7 @@ async function openStudentDetail(id){
       <div style="margin-bottom:12px;">
         <div style="font-size:11px;font-weight:800;color:var(--mint-d);margin-bottom:5px;">${sem}</div>
         ${(selSubs[sem]||[]).map(sub=>{
-          const isCore=core.includes(sub.name), isRec=rec.includes(sub.name);
+          const _sn=normalizeName(sub.name), isCore=core.some(c=>normalizeName(c)===_sn), isRec=rec.some(c=>normalizeName(c)===_sn);
           return `<div style="display:flex;justify-content:space-between;padding:4px 8px;border-radius:6px;font-size:12px;background:${isCore?'var(--core-bg)':isRec?'var(--rec-bg)':'var(--bg2)'};margin-bottom:2px;border:1px solid ${isCore?'var(--core-border)':isRec?'var(--rec-border)':'var(--border2)'};">
             <span>${isCore?'<span class="dot dot-core"></span>':isRec?'<span class="dot dot-rec"></span>':''}${sub.name}</span>
             <span style="font-size:10px;color:var(--muted);">${sub.cr}</span>
