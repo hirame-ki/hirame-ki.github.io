@@ -3049,6 +3049,132 @@ function saveGasUrl(){
   loadStudentRegList();
 }
 
+// ═══════════════════════════════════════════════════
+// 학교 맞춤 이수 설정 (고시외과목 / 교과별 min 조정)
+// ═══════════════════════════════════════════════════
+const CUSTOM_AREAS_KEY = 'hsc_custom_areas';
+const CUSTOM_SUBS_KEY  = 'hsc_custom_subs';
+
+function loadCustomSettings(){
+  try {
+    const mins = JSON.parse(_LS.get(CUSTOM_AREAS_KEY)||'{}');
+    const subs = JSON.parse(_LS.get(CUSTOM_SUBS_KEY)||'[]');
+    return { mins, subs };
+  } catch(e){ return { mins:{}, subs:[] }; }
+}
+
+function getEffectiveAreas(){
+  const { mins } = loadCustomSettings();
+  return REQUIRED_AREAS.map(a => ({
+    ...a, min: (mins[a.name] !== undefined) ? mins[a.name] : a.min
+  }));
+}
+
+function calcAreaCreditsCustom(){
+  const all = getAllSelectedSubs();
+  const { subs: customSubs } = loadCustomSettings();
+  return getEffectiveAreas().map(area => {
+    let earned = all.filter(s => area.keys.some(k => nameEquals(s.name, k))).reduce((a,s) => a+s.cr, 0);
+    customSubs.filter(cs => cs.area === area.name).forEach(cs => {
+      const matched = all.find(s => nameEquals(s.name, cs.name));
+      if(matched) earned += matched.cr;
+    });
+    return { ...area, earned };
+  });
+}
+
+function calcKEACustom(){
+  const all = getAllSelectedSubs();
+  const { subs: customSubs } = loadCustomSettings();
+  let base = all.filter(s => KEA_KEYS.some(k => nameIncludes(s.name, k))).reduce((a,s) => a+s.cr, 0);
+  customSubs.filter(cs => ['국어','수학','영어','국영수'].includes(cs.area)).forEach(cs => {
+    const matched = all.find(s => nameEquals(s.name, cs.name));
+    if(matched) base += matched.cr;
+  });
+  return base;
+}
+
+function initCustomAreaCard(){
+  const { mins, subs } = loadCustomSettings();
+  const grid = document.getElementById('areaMinGrid');
+  if(!grid) return;
+  grid.innerHTML = REQUIRED_AREAS.map(a => {
+    const val = (mins[a.name] !== undefined) ? mins[a.name] : a.min;
+    return `<div style="display:flex;align-items:center;gap:4px;background:var(--bg2);border-radius:6px;padding:5px 8px;">
+      <span style="font-size:11.5px;font-weight:600;flex:1;color:var(--text);">${a.name}</span>
+      <span style="font-size:10px;color:var(--muted);">기본:${a.min}</span>
+      <input type="number" class="inp" data-area="${a.name}" value="${val}" min="0" max="30"
+             style="width:44px;text-align:center;padding:3px;font-size:12px;">
+      <span style="font-size:10px;color:var(--muted);">학점</span>
+    </div>`;
+  }).join('');
+  _tempCustomSubs = [...subs];
+  renderCustomSubList(subs);
+}
+
+function resetAreaMins(){
+  document.querySelectorAll('#areaMinGrid input[data-area]').forEach(inp => {
+    const area = REQUIRED_AREAS.find(a => a.name === inp.dataset.area);
+    if(area) inp.value = area.min;
+  });
+  showToast('기본값으로 초기화됨','info');
+}
+
+let _tempCustomSubs = null;
+function getTempSubs(){
+  if(_tempCustomSubs === null) _tempCustomSubs = [...loadCustomSettings().subs];
+  return _tempCustomSubs;
+}
+
+function addCustomSub(){
+  const name = document.getElementById('customSubName').value.trim();
+  const cr   = parseInt(document.getElementById('customSubCr').value)||4;
+  const area = document.getElementById('customSubArea').value;
+  if(!name){ showToast('과목명을 입력하세요','error'); return; }
+  const subs = getTempSubs();
+  if(subs.find(s => nameEquals(s.name, name))){ showToast('이미 추가된 과목입니다','error'); return; }
+  subs.push({ name, cr, area });
+  renderCustomSubList(subs);
+  document.getElementById('customSubName').value = '';
+  showToast(`"${name}" 추가됨`,'success');
+}
+
+function removeCustomSub(name){
+  const subs = getTempSubs();
+  const idx = subs.findIndex(s => s.name === name);
+  if(idx > -1){ subs.splice(idx,1); renderCustomSubList(subs); }
+}
+
+function renderCustomSubList(subs){
+  const el = document.getElementById('customSubList');
+  if(!el) return;
+  if(!subs.length){ el.innerHTML='<div style="color:var(--muted);font-size:11px;padding:4px 0;">추가된 과목 없음</div>'; return; }
+  el.innerHTML = subs.map(s =>
+    `<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:var(--bg2);border-radius:6px;margin-bottom:4px;">
+      <span style="flex:1;font-size:12px;font-weight:600;">${s.name}</span>
+      <span style="font-size:11px;color:var(--muted);">${s.cr}학점</span>
+      <span style="font-size:10px;background:var(--mint-l,#e8f5f0);color:var(--mint-d,#1a7a5e);padding:1px 6px;border-radius:10px;">${s.area}</span>
+      <button onclick="removeCustomSub('${s.name.replace(/'/g,"\'")}')" style="background:none;border:none;color:#e53;font-size:13px;cursor:pointer;padding:0 2px;">✕</button>
+    </div>`
+  ).join('');
+}
+
+function saveCustomAreas(){
+  const mins = {};
+  document.querySelectorAll('#areaMinGrid input[data-area]').forEach(inp => {
+    mins[inp.dataset.area] = parseInt(inp.value)||0;
+  });
+  const subs = getTempSubs();
+  _tempCustomSubs = null;
+  _LS.set(CUSTOM_AREAS_KEY, JSON.stringify(mins));
+  _LS.set(CUSTOM_SUBS_KEY,  JSON.stringify(subs));
+  const ok = document.getElementById('customAreaOk');
+  if(ok){ ok.style.display='block'; setTimeout(()=>ok.style.display='none', 2500); }
+  showToast('맞춤 설정 저장됨!','success');
+  updateCheckList && updateCheckList();
+  updateCreditBar && updateCreditBar();
+}
+
 function saveSchoolInfo(){
   S.schoolName  = document.getElementById('schoolNameInput').value.trim();
   S.classInfo   = document.getElementById('classInfoInput').value.trim();
@@ -4470,12 +4596,14 @@ function calcCredits(){
 }
 
 function calcKEA(){
-  return getAllSelectedSubs().filter(s=>KEA_KEYS.some(k=>nameIncludes(s.name,k))).reduce((a,s)=>a+s.cr,0);
+  return calcKEACustom ? calcKEACustom() : getAllSelectedSubs().filter(s=>KEA_KEYS.some(k=>nameIncludes(s.name,k))).reduce((a,s)=>a+s.cr,0);
 }
 
 function calcAreaCredits(){
-  const all=getAllSelectedSubs();
-  return REQUIRED_AREAS.map(area=>({...area, earned:all.filter(s=>area.keys.some(k=>nameEquals(s.name,k))).reduce((a,s)=>a+s.cr,0)}));
+  return calcAreaCreditsCustom ? calcAreaCreditsCustom() : (()=>{
+    const all=getAllSelectedSubs();
+    return REQUIRED_AREAS.map(area=>({...area, earned:all.filter(s=>area.keys.some(k=>nameEquals(s.name,k))).reduce((a,s)=>a+s.cr,0)}));
+  })();
 }
 
 function updateCreditBar(){
@@ -4703,6 +4831,41 @@ function renderTeacherTab(n){
           <div style="font-size:10px;color:var(--muted);margin-top:4px;">※ GAS 서버 특성상 5~10초 소요될 수 있습니다.</div>
         </div>
       </div>
+      <!-- 학교 맞춤 이수 설정 -->
+      <div class="setup-card" id="customAreaCard" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:12px;">
+        <h3 style="font-size:13px;font-weight:800;margin-bottom:6px;">학교 맞춤 이수 설정</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">교과별 최소이수학점 조정, 고시외·특목고 과목 추가가 가능합니다.</p>
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">📊 교과별 최소이수학점 조정</div>
+          <div id="areaMinGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"></div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:8px;font-size:11px;" onclick="resetAreaMins()">기본값으로 초기화</button>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">➕ 고시외·특목고 과목 추가</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6;">심화일본어·심화중국어 등 편제에 없는 과목을 추가하고, 어느 교과로 계산할지 지정하세요.</div>
+          <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap;">
+            <input type="text" class="inp" id="customSubName" placeholder="과목명 (예: 심화일본어)" style="flex:2;min-width:120px;">
+            <input type="number" class="inp" id="customSubCr" placeholder="학점" style="flex:0 0 56px;text-align:center;" min="1" max="8" value="4">
+            <select class="inp" id="customSubArea" style="flex:1.5;min-width:80px;">
+              <option value="국어">국어</option>
+              <option value="수학">수학</option>
+              <option value="영어">영어</option>
+              <option value="사회">사회</option>
+              <option value="과학">과학</option>
+              <option value="체육">체육</option>
+              <option value="예술">예술</option>
+              <option value="기타" selected>기타</option>
+              <option value="한국사">한국사</option>
+
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="addCustomSub()">추가</button>
+          </div>
+          <div id="customSubList" style="font-size:11.5px;"></div>
+        </div>
+        <button class="btn btn-primary btn-full" style="margin-top:12px;" onclick="saveCustomAreas()">맞춤 설정 저장</button>
+        <div id="customAreaOk" style="font-size:11px;color:var(--rec);margin-top:4px;display:none;font-weight:700;">맞춤 설정이 저장되었습니다</div>
+      </div>
+
       <!-- 학생 명단 관리 -->
       <div class="setup-card" style="background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);padding:16px;margin-bottom:12px;">
         <h3 style="font-size:13px;font-weight:800;margin-bottom:10px;">학생 명단 관리</h3>
@@ -4816,6 +4979,8 @@ function renderTeacherTab(n){
         box.innerHTML = '<div style="font-size:12px;color:var(--muted);">GAS URL을 먼저 설정하면 공유 링크가 생성됩니다.</div>';
       }
     })();
+    // 맞춤 이수 설정 초기화
+    setTimeout(initCustomAreaCard, 50);
   }
 }
 
@@ -4902,9 +5067,15 @@ async function openStudentDetail(id){
   const selectPct = Math.min(100 - actPct, (totalScore/192)*100);
   const totalPct = actPct + selectPct; // 전체 진행률 %
   const keaPct   = isFinite(keaScore)   ? Math.min(100,(keaScore/81)*100).toFixed(0)   : 0;
-  const areaScores = REQUIRED_AREAS.map(area=>({
+  const _effAreas = getEffectiveAreas ? getEffectiveAreas() : REQUIRED_AREAS;
+  const { subs: _customSubs } = loadCustomSettings ? loadCustomSettings() : { subs:[] };
+  const areaScores = _effAreas.map(area=>({
     name:area.name, min:area.min,
-    earned:allSubsFlat.filter(sub=>area.keys.some(k=>nameEquals(sub.name,k))).reduce((a,sub)=>a+(sub.cr||0),0)
+    earned: (()=>{
+      let e = allSubsFlat.filter(sub=>area.keys.some(k=>nameEquals(sub.name,k))).reduce((a,sub)=>a+(sub.cr||0),0);
+      _customSubs.filter(cs=>cs.area===area.name).forEach(cs=>{ const m=allSubsFlat.find(s=>nameEquals(s.name,cs.name)); if(m) e+=m.cr||0; });
+      return e;
+    })()
   }));
   right.innerHTML=`
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
