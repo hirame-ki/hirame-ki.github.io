@@ -4519,6 +4519,25 @@ function toggleSub(sem, idx){
     if(sub.type==='공통') return; // 공통과목 해제 불가
     arr.splice(pos,1);
   } else {
+    // ★ [체크1] 이수완료 학기에 동일 과목명이 있으면 선택 차단 + 경고
+    const doneSems = [...getCompletedSems(), ...getAutoCompletedSems(), ...getSavedSems()];
+    const alreadyDoneSem = doneSems.find(doneSem=>{
+      const doneSubs = S.availSubs[doneSem] || DEFAULT_SUBS[doneSem] || [];
+      return doneSubs.some(s=>normalizeName(s.name)===subNorm);
+    });
+    if(alreadyDoneSem){
+      showToast(`'${sub.name}'은(는) ${alreadyDoneSem}에 이미 이수한 과목입니다`,'error');
+      return;
+    }
+    // ★ [체크2] 다른 활성 학기에 동일 과목명이 이미 선택되어 있으면 중복 차단
+    const otherSemWithSub = Object.keys(S.selSubs).find(otherSem=>{
+      if(otherSem === sem) return false;
+      return (S.selSubs[otherSem]||[]).some(s=>normalizeName(s.name)===subNorm);
+    });
+    if(otherSemWithSub){
+      showToast(`'${sub.name}'은(는) ${otherSemWithSub}에 이미 선택되어 있습니다`,'error');
+      return;
+    }
     const maxN = (S.semMax&&S.semMax[sem]) || 10;
     // ★ 견고한 maxN 검사: 편제표 기준 공통과목 이름 집합을 만들어
     //   selSubs의 type 필드가 손상/누락되어도 정확히 계산되도록 함
