@@ -4402,6 +4402,17 @@ function renderDesigner(){
     });
   });
 
+  // ★ 고시외·특목고 과목 → S.availSubs['고시외'] 에 주입 (선택 화면 표시 + 학점 계산 반영)
+  const { subs: _custSubs } = loadCustomSettings();
+  if(_custSubs.length > 0){
+    S.availSubs['고시외'] = _custSubs.map(cs=>({
+      name: cs.name, cr: Number(cs.cr)||4, type: '선택', area: cs.area
+    }));
+    if(!S.selSubs['고시외']) S.selSubs['고시외'] = [];
+  } else {
+    delete S.availSubs['고시외'];
+  }
+
   let html='';
   years.forEach(yr=>{
     const semList = allSems.filter(s=>s.startsWith(yr));
@@ -4470,6 +4481,26 @@ function renderDesigner(){
   });
 
   area.innerHTML = html;
+
+  // ★ 고시외·특목고 과목 섹션 렌더링 (학기 구분 없이 별도 블록)
+  const custSubs2 = S.availSubs['고시외']||[];
+  if(custSubs2.length > 0 && !S.locked){
+    const custSel = S.selSubs['고시외']||[];
+    let custHtml = `<div class="year-block" style="margin-top:10px;">
+      <div class="year-head"><span class="year-pill">고시외·특목고 과목</span></div>
+      <div class="sem-grid"><div class="sem-box">
+        <div class="sem-title">추가 과목 <span style="font-size:10px;color:var(--muted);font-weight:400;">(교사 설정)</span></div>`;
+    custSubs2.forEach((sub, idx)=>{
+      const isSel = custSel.some(s=>normalizeName(s.name)===normalizeName(sub.name));
+      const cls   = isSel ? 'sel' : '';
+      custHtml += `<div class="subj-item ${cls}" onclick="toggleCustomSub(${idx})" style="cursor:pointer;">
+        <span class="subj-name">${sub.name} <span style="font-size:9px;color:var(--sub);">${sub.area}</span></span>
+        <span class="subj-cr">${sub.cr}</span></div>`;
+    });
+    custHtml += `</div></div></div>`;
+    area.innerHTML += custHtml;
+  }
+
   updateCreditBar();
   updateCheckList();
   // 충돌 경고는 designer 위에 별도 div에 렌더
@@ -4613,6 +4644,30 @@ function toggleSub(sem, idx){
   }
 }
 
+/* ── 고시외·특목고 과목 토글 (이름 기반, 인덱스 독립) ── */
+function toggleCustomSub(idx){
+  if(S.locked) return;
+  const custSubs = S.availSubs['고시외']||[];
+  const sub = custSubs[idx];
+  if(!sub) return;
+  if(!S.selSubs['고시외']) S.selSubs['고시외']=[];
+  const arr = S.selSubs['고시외'];
+  const subNorm = normalizeName(sub.name);
+  const pos = arr.findIndex(s=>normalizeName(s.name)===subNorm);
+  if(pos>=0){
+    arr.splice(pos,1);
+  } else {
+    arr.push({...sub});
+  }
+  renderDesigner();
+  scheduleAutoSave();
+  if(S.mode==='student' && !S.locked && S.studentId){
+    const key=`hsc_sel_${S.studentId}`;
+    _LS.set(key, JSON.stringify(S.selSubs));
+  }
+}
+
+
 /* ── 학점 계산 ── */
 function getAllSelectedSubs(){
   const all=[];
@@ -4645,6 +4700,8 @@ function getAllSelectedSubs(){
     // 선택과목: selSubs에 있는 것만
     sel.filter(s=>s.type!=='공통').forEach(s=>all.push(s));
   });
+  // ★ 고시외·특목고 선택 과목 포함
+  (S.selSubs['고시외']||[]).forEach(s=>all.push(s));
   return all;
 }
 
@@ -5614,13 +5671,25 @@ async function exportStudentDetailExcel(id){
     var core=s.coreList||[];
     var rec=s.recList||[];
     var selNames=allSel.map(function(x){return normalizeName(x.name);});
-    var kea=Number(s.kea)||0;
-    var total=Number(s.total)||0;
-    var areas=REQUIRED_AREAS.map(function(a){
-      return {
-        name:a.name,min:a.min,
-        earned:allSel.filter(function(sub){return a.keys.some(function(k){return nameEquals(sub.name,k);});}).reduce(function(t,sub){return t+(sub.cr||0);},0)
-      };
+    // 맞춤 설정 반영: kea 재계산, 영역별도 getEffectiveAreas + 고시외 과목 반영
+    var _effAreas2 = getEffectiveAreas ? getEffectiveAreas() : REQUIRED_AREAS;
+    var _cSubs2 = loadCustomSettings ? loadCustomSettings().subs : [];
+    var kea=(function(){
+      var base=allSel.filter(function(sub){return KEA_KEYS.some(function(k){return nameEquals(sub.name,k);});}).reduce(function(t,sub){return t+(sub.cr||0);},0);
+      _cSubs2.filter(function(cs){return ['국어','수학','영어','국영수'].includes(cs.area);}).forEach(function(cs){
+        var m=allSel.find(function(sub){return nameEquals(sub.name,cs.name);});
+        if(m) base+=m.cr||0;
+      });
+      return base;
+    })();
+    var total=allSel.reduce(function(t,sub){return t+(sub.cr||0);},0);
+    var areas=_effAreas2.map(function(a){
+      var earned=allSel.filter(function(sub){return a.keys.some(function(k){return nameEquals(sub.name,k);});}).reduce(function(t,sub){return t+(sub.cr||0);},0);
+      _cSubs2.filter(function(cs){return cs.area===a.name;}).forEach(function(cs){
+        var m=allSel.find(function(sub){return nameEquals(sub.name,cs.name);});
+        if(m) earned+=m.cr||0;
+      });
+      return { name:a.name, min:a.min, earned:earned };
     });
 
     // 시트1: 학점요약 + 그래프
