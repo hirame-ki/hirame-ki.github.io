@@ -3125,7 +3125,7 @@ function calcAreaCreditsCustom(){
 function calcKEACustom(){
   const all = getAllSelectedSubs();
   const { subs: customSubs } = loadCustomSettings();
-  let base = all.filter(s => KEA_KEYS.some(k => nameIncludes(s.name, k))).reduce((a,s) => a+s.cr, 0);
+  let base = all.filter(s => KEA_KEYS.some(k => nameEquals(s.name, k))).reduce((a,s) => a+s.cr, 0);
   customSubs.filter(cs => ['국어','수학','영어','국영수'].includes(cs.area)).forEach(cs => {
     const matched = all.find(s => nameEquals(s.name, cs.name));
     if(matched) base += matched.cr;
@@ -4654,7 +4654,7 @@ function calcCredits(){
 }
 
 function calcKEA(){
-  return calcKEACustom ? calcKEACustom() : getAllSelectedSubs().filter(s=>KEA_KEYS.some(k=>nameIncludes(s.name,k))).reduce((a,s)=>a+s.cr,0);
+  return calcKEACustom ? calcKEACustom() : getAllSelectedSubs().filter(s=>KEA_KEYS.some(k=>nameEquals(s.name,k))).reduce((a,s)=>a+s.cr,0);
 }
 
 function calcAreaCredits(){
