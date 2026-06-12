@@ -2895,6 +2895,21 @@ async function loadScheduleFromGAS(){
     const json = await res.json();
     if(!json.ok || !json.data) return;
     const data = json.data;
+    // ★ 맞춤 설정 동기화: __HSC_CFG__ 마커 과목의 group 필드에 설정을 JSON으로 인코딩.
+    //   GAS는 일반 과목처럼 저장/반환 → GAS 수정 없이 학생 기기에 교사 설정 동기화.
+    Object.keys(data).forEach(sem=>{
+      data[sem] = (data[sem]||[]).filter(sub=>{
+        if(String(sub.name||'').trim() === '__HSC_CFG__'){
+          try{
+            const cs = JSON.parse(sub.group||'{}');
+            if(cs.mins) _LS.set(CUSTOM_AREAS_KEY, JSON.stringify(cs.mins));
+            if(cs.subs) _LS.set(CUSTOM_SUBS_KEY,  JSON.stringify(cs.subs));
+          }catch(e){}
+          return false;
+        }
+        return true;
+      });
+    });
     // 타입 정규화
     Object.keys(data).forEach(sem=>{
       data[sem] = (data[sem]||[]).map(sub=>({
@@ -2902,7 +2917,7 @@ async function loadScheduleFromGAS(){
       }));
     });
     // GAS에 과목이 1개라도 있으면 적용
-    const hasData = Object.values(data).some(arr=>arr.length>0);
+    const hasData = Object.values(data).some(arr=>arr.some(s=>s.name!=='__HSC_CFG__'));
     if(!hasData){ S._scheduleIsDefault = true; return; }
     S._scheduleIsDefault = false;
     S.availSubs = data;
@@ -2923,11 +2938,20 @@ async function loadScheduleFromGAS(){
 // ===============================================   GAS 편제표 저장
 async function saveScheduleToGAS(subsData){
   if(!S.gasUrl) return;
-  // ★ 학기에 주입된 고시외 과목(_custom)은 편제표 원본이 아니므로 저장에서 제외
+  // ★ 학기에 주입된 고시외 과목(_custom)과 __HSC_CFG__ 마커는 편제표 원본이 아니므로 제외 후 재주입
   const clean = {};
   Object.keys(subsData||{}).forEach(sem=>{
-    clean[sem] = (subsData[sem]||[]).filter(s=>!s._custom);
+    clean[sem] = (subsData[sem]||[]).filter(s=>!s._custom && s.name!=='__HSC_CFG__');
   });
+  // ★ 맞춤 설정을 __HSC_CFG__ 마커 과목의 group 필드에 JSON 인코딩해 '1학년 1학기'에 심는다.
+  //   GAS는 일반 과목(name/cr/type/group)으로 인식해 저장/반환 → GAS 수정 불필요.
+  try{
+    const { mins: _m, subs: _sb } = loadCustomSettings();
+    const cfgJson = JSON.stringify({ mins: _m||{}, subs: _sb||[] });
+    const anchor = '1학년 1학기';
+    if(!clean[anchor]) clean[anchor]=[];
+    clean[anchor].push({ name:'__HSC_CFG__', cr:0, type:'선택', group: cfgJson });
+  }catch(e){}
   try{
     await fetch(S.gasUrl,{
       method:'POST',
@@ -3226,7 +3250,12 @@ function saveCustomAreas(){
   _LS.set(CUSTOM_SUBS_KEY,  JSON.stringify(subs));
   const ok = document.getElementById('customAreaOk');
   if(ok){ ok.style.display='block'; setTimeout(()=>ok.style.display='none', 2500); }
-  showToast('맞춤 설정 저장됨!','success');
+  // ★ 즉시 서버 반영 — __HSC_CFG__ 마커로 편제표와 함께 저장되어 학생 기기에 동기화
+  if(S.gasUrl){
+    saveScheduleToGAS(S.availSubs).then(()=>showToast('맞춤 설정 저장됨! (서버 반영)','success'));
+  } else {
+    showToast('맞춤 설정 저장됨! (서버 미연동 — 이 기기에만 적용)','warn');
+  }
   updateCheckList && updateCheckList();
   updateCreditBar && updateCreditBar();
 }
@@ -3321,7 +3350,7 @@ const SEM_KEYS = ['1학년 1학기','1학년 2학기','2학년 1학기','2학년
 function openScheduleEditor(){
   const area = document.getElementById('scheduleEditorArea');
   area.innerHTML = SEM_KEYS.map(sem=>{
-    const subs = (S.availSubs[sem] || DEFAULT_SUBS[sem] || []).filter(s=>!s._custom);
+    const subs = (S.availSubs[sem] || DEFAULT_SUBS[sem] || []).filter(s=>!s._custom && s.name!=='__HSC_CFG__');
     const text = subs.map(s=>`${s.name},${s.cr},${s.type}`).join('\n');
     return `<div style="margin-bottom:14px;">
       <div style="font-size:11px;font-weight:800;color:var(--mint-d);margin-bottom:5px;">${sem}</div>
