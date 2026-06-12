@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>평가 계획 작성 도우미 — 평가계획서 AI 프롬프트 생성기</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+<script>
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "navy",
+  "bg": "cool",
+  "layout": "focus",
+  "density": "compact",
+  "dark": false
+}/*EDITMODE-END*/;
+</script>
+<style>
+/* ───────── tokens (생기부 공장 아이덴티티) ───────── */
+:root{
+  --accent:#2A3B73; --accent-d:#1E2C58; --accent-l:#EAECF4; --accent-l2:#DBE0EE; --accent-ink:#fff;
+  --bg:#F4F0E6; --bg2:#EBE5D6; --surface:#FFFFFF; --surface2:#FBF8F1;
+  --border:#E5DECF; --border2:#EFE9DC;
+  --ink:#222A3F; --sub:#54607A; --muted:#8C8E9B;
+  --ok:#3C7458; --ok-bg:#EAF2EC;
+  --warn:#9A6B16; --warn-bg:#FAF3E2; --warn-bd:#EAD9B2;
+  --danger:#A23B47;
+  --shadow:0 1px 2px rgba(34,42,63,.04), 0 6px 20px rgba(34,42,63,.05);
+  --shadow-lg:0 12px 36px rgba(34,42,63,.12);
+  --r-lg:16px; --r-md:12px; --r-sm:9px;
+  --hh:62px;
+  --gap:14px; --pad:18px; --secgap:14px;
+}
+body[data-accent="indigo"]{--accent:#3D45A8;--accent-d:#2C338A;--accent-l:#ECEDF8;--accent-l2:#DDDFF2;}
+body[data-accent="slate"]{--accent:#38516E;--accent-d:#2A3E55;--accent-l:#E9EDF2;--accent-l2:#D8E0EA;}
+body[data-bg="cool"]{--bg:#EFF2F6;--bg2:#E4E9EF;--surface2:#F7F9FB;--border:#DDE3EB;--border2:#E9EDF3;}
+body[data-density="compact"]{--gap:10px;--pad:13px;--secgap:9px;}
+
+body.dark{
+  --bg:#13151D; --bg2:#181B25; --surface:#1B1E2A; --surface2:#20242F;
+  --border:#2D3242; --border2:#272C3A;
+  --ink:#E7E9F1; --sub:#A8AEC1; --muted:#6C7286;
+  --ok:#5FB089; --ok-bg:#16241D;
+  --warn:#D6B36C; --warn-bg:#241D0E; --warn-bd:#473A1C;
+  --danger:#DB8993;
+  --shadow:0 2px 16px rgba(0,0,0,.4);
+  --shadow-lg:0 16px 40px rgba(0,0,0,.5);
+}
+body.dark[data-accent="navy"]{--accent:#8E9CDD;--accent-d:#A8B2E7;--accent-l:#212747;--accent-l2:#2B3258;--accent-ink:#101321;}
+body.dark[data-accent="indigo"]{--accent:#9aa1ee;--accent-d:#b2b7f2;--accent-l:#1f2150;--accent-l2:#2a2d63;--accent-ink:#0e0f22;}
+body.dark[data-accent="slate"]{--accent:#8FB2D8;--accent-d:#a8c4e2;--accent-l:#172636;--accent-l2:#203247;--accent-ink:#0c1722;}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);
+  display:flex;flex-direction:column;min-height:100vh;overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  transition:background .35s, color .35s;
+  letter-spacing:-.01em;
+  word-break:keep-all;            /* ← 한글 단어 단위 줄바꿈 */
+}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+i[data-lucide]{width:1em;height:1em;stroke-width:1.9;vertical-align:-.06em;flex-shrink:0}
+
+/* ───────── header ───────── */
+.hdr{height:var(--hh);min-height:var(--hh);flex-shrink:0;background:var(--surface);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;
+  padding:0 22px;gap:14px;z-index:200;transition:background .35s,border-color .35s}
+.brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.brand-mark{width:38px;height:38px;border-radius:11px;background:var(--accent);
+  color:var(--accent-ink);display:flex;align-items:center;justify-content:center;
+  font-size:19px;flex-shrink:0;box-shadow:0 2px 8px rgba(42,59,115,.22)}
+body.dark .brand-mark{box-shadow:none}
+.brand-name{font-size:16px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.brand-sub{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ver-badge{font-size:11px;color:var(--accent);font-weight:600;background:var(--accent-l);
+  border:1px solid var(--accent-l2);border-radius:8px;padding:5px 10px;white-space:nowrap;flex-shrink:0;margin-left:4px}
+.hdr-acts{display:flex;gap:8px;flex-shrink:0;align-items:center}
+.ghost-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--r-sm);
+  background:var(--surface);border:1px solid var(--border);color:var(--sub);
+  font-size:12.5px;font-weight:600;cursor:pointer;transition:all .16s;white-space:nowrap;font-family:inherit}
+.ghost-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.ghost-btn i{font-size:14px;color:var(--muted);transition:color .16s}
+.ghost-btn:hover i{color:var(--accent)}
+.ghost-btn.active-ghost{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.ghost-btn.active-ghost i{color:var(--accent)}
+.icon-btn{width:36px;height:36px;border-radius:var(--r-sm);background:var(--surface);
+  border:1px solid var(--border);color:var(--sub);cursor:pointer;display:flex;
+  align-items:center;justify-content:center;font-size:15px;transition:all .16s}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+
+/* ───────── progress stepper ───────── */
+.stepbar{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:stretch;gap:0;padding:0 14px;overflow-x:auto;overflow-y:hidden;
+  transition:background .35s,border-color .35s}
+.stepbar::-webkit-scrollbar{height:0}
+.step{display:flex;align-items:center;gap:9px;padding:11px 16px;background:none;border:none;
+  cursor:pointer;font-family:inherit;white-space:nowrap;position:relative;transition:opacity .15s;flex-shrink:0}
+.step:not(:last-child)::after{content:"";width:14px;height:1px;background:var(--border);margin-left:14px}
+.step-no{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;
+  color:var(--muted);background:var(--surface);flex-shrink:0;transition:all .25s}
+.step-tx{font-size:12.5px;font-weight:600;color:var(--muted);transition:color .25s}
+.step:hover .step-tx{color:var(--ink)}
+.step:hover .step-no{border-color:var(--accent);color:var(--accent)}
+.step.req .step-tx::after{content:"*";color:var(--danger);margin-left:3px;font-weight:800}
+.step.done .step-no{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.step.done .step-tx{color:var(--ink)}
+.step.done .step-no .num{display:none}
+.step.done .step-no .ck{display:block}
+.step-no .ck{display:none;width:13px;height:13px;stroke-width:3}
+
+/* ───────── mobile tabs ───────── */
+.mob-tabs{display:none;background:var(--surface);border-bottom:1px solid var(--border)}
+.mob-tabs button{flex:1;padding:13px;font-size:13.5px;font-weight:700;border:none;cursor:pointer;
+  background:none;color:var(--muted);border-bottom:2.5px solid transparent;transition:all .18s;
+  font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px}
+.mob-tabs button.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ───────── main split ───────── */
+.main{display:flex;flex:1;min-height:0;overflow:hidden}
+.lp{width:50%;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;overflow-x:hidden;
+  padding:calc(var(--pad) + 6px) var(--pad) 80px;background:var(--bg);transition:background .35s,border-color .35s,width .3s}
+.rp{width:50%;flex-shrink:0;overflow-y:auto;overflow-x:hidden;
+  padding:calc(var(--pad) + 6px) var(--pad) 80px;background:var(--bg2);transition:background .35s,width .3s}
+body[data-layout="focus"] .lp{width:58%}
+body[data-layout="focus"] .rp{width:42%}
+.lp-inner{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:var(--secgap)}
+.rp-inner{max-width:600px;margin:0 auto}
+
+/* ───────── section accordion ───────── */
+.sh{display:flex;align-items:center;gap:11px;font-size:13.5px;font-weight:700;white-space:nowrap;
+  padding:14px var(--pad);border-radius:var(--r-lg);background:var(--surface);
+  border:1px solid var(--border2);cursor:pointer;user-select:none;transition:all .18s;box-shadow:var(--shadow);color:var(--ink)}
+.sh:hover{border-color:var(--accent-l2)}
+.sw:not(.collapsed) .sh{border-radius:var(--r-lg) var(--r-lg) 0 0;border-bottom-color:transparent;box-shadow:none}
+.req-tag{font-size:11px;color:var(--danger);font-weight:700;margin-left:1px;white-space:nowrap}
+.opt-tag{font-size:11px;color:var(--muted);font-weight:600;margin-left:1px;white-space:nowrap}
+.toggle-pill{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+  color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:4px 9px;
+  border-radius:20px;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.sh:hover .toggle-pill{border-color:var(--accent-l2);color:var(--accent)}
+.toggle-pill .chev{font-size:11px;transition:transform .25s}
+.sw.collapsed .toggle-pill .chev{transform:rotate(-90deg)}
+.toggle-pill .pt::before{content:"접기"}
+.sw.collapsed .toggle-pill .pt::before{content:"펼치기"}
+.sn{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;background:var(--accent-l);color:var(--accent)}
+.sn i{font-size:14px}
+.sb{overflow:hidden;transition:max-height .34s cubic-bezier(.4,0,.2,1);max-height:6000px}
+.sw.collapsed .sb{max-height:0}
+.sec-block{background:var(--surface);border:1px solid var(--border2);border-top:none;
+  padding:var(--pad);border-radius:0 0 var(--r-lg) var(--r-lg);box-shadow:var(--shadow)}
+
+.sub-lbl{font-size:11.5px;font-weight:700;color:var(--sub);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.sub-lbl i{color:var(--accent);font-size:13px}
+.field-lbl{font-size:12px;font-weight:700;color:var(--sub);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.field-req{color:var(--danger);font-weight:800;font-size:11px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.mt13{margin-top:13px}
+
+/* ───────── chips ───────── */
+.fg6{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:var(--r-sm);
+  font-size:13px;font-weight:500;cursor:pointer;user-select:none;border:1px solid var(--border);
+  background:var(--surface);color:var(--sub);transition:all .15s;line-height:1.25;white-space:nowrap;flex-shrink:0}
+.chip i{font-size:14px;color:var(--muted);transition:color .15s}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.chip:hover i{color:var(--accent)}
+.chip.active-chip{background:var(--accent)!important;border-color:var(--accent)!important;color:var(--accent-ink)!important}
+.chip.active-chip i{color:var(--accent-ink)!important}
+
+/* ───────── inputs ───────── */
+.inp{width:100%;padding:11px 13px;border-radius:var(--r-sm);background:var(--surface2);
+  border:1px solid var(--border);font-size:13.5px;font-family:inherit;color:var(--ink);
+  outline:none;transition:border-color .15s,box-shadow .15s;letter-spacing:-.01em}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-l)}
+.inp::placeholder{color:var(--muted)}
+textarea.inp{resize:vertical;line-height:1.75}
+select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1.5l5 5 5-5' stroke='%238C8E9B' stroke-width='1.7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px;cursor:pointer}
+.note{font-size:12px;color:var(--muted);line-height:1.6}
+
+.callout{display:flex;align-items:flex-start;gap:9px;border-radius:var(--r-md);padding:11px 13px;font-size:12.5px;line-height:1.65}
+.callout i{font-size:15px;flex-shrink:0;margin-top:1px}
+.callout-info{background:var(--accent-l);border:1px solid var(--accent-l2);color:var(--accent-d)}
+.callout-info i{color:var(--accent)}
+.callout-warn{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn)}
+.callout-warn i{color:var(--warn)}
+
+/* ───────── ratio bar ───────── */
+.ratio-wrap{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-md);padding:13px 14px;margin-top:6px}
+.ratio-head{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--sub);margin-bottom:9px}
+.ratio-head .v{font-variant-numeric:tabular-nums;color:var(--accent)}
+.ratio-head .v.gold{color:var(--warn)}
+.ratio-bar{height:12px;border-radius:7px;background:var(--surface);border:1px solid var(--border);overflow:hidden;display:flex}
+.ratio-fill{height:100%;background:var(--accent);transition:width .4s cubic-bezier(.2,.7,.2,1)}
+.ratio-fill.perf{flex:1;background:repeating-linear-gradient(45deg,var(--warn),var(--warn) 6px,#b3812a 6px,#b3812a 12px)}
+.ratio-warn{font-size:11.5px;color:var(--danger);font-weight:600;margin-top:8px;display:none;align-items:center;gap:5px}
+.ratio-warn.show{display:flex}
+
+/* ───────── 수행평가 회차 블록 ───────── */
+.perf-round{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-md);padding:14px;margin-bottom:11px}
+.perf-round-hd{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--accent);margin-bottom:13px;flex-wrap:wrap}
+.round-unit-wrap{display:flex;align-items:center;gap:6px;margin-left:auto}
+.round-unit-lbl{font-size:11px;font-weight:600;color:var(--sub);white-space:nowrap}
+.perf-round-hd .pill{font-size:11px;font-weight:700;background:var(--accent);color:var(--accent-ink);padding:3px 10px;border-radius:20px;flex-shrink:0}
+.area-head,.area-row{display:grid;grid-template-columns:56px 64px 58px 58px 66px 36px 30px;gap:7px;align-items:center}
+.area-head{margin-bottom:7px}
+.area-row{margin-bottom:7px}
+.area-lbl{font-size:10.5px;font-weight:700;color:var(--muted);text-align:center}
+.area-lbl.lead{text-align:left;padding-left:2px}
+.area-row .inp{padding:9px 9px;font-size:12.5px}
+.area-row .inp.num{text-align:center;padding:9px 4px}
+/* 논술 체크박스 셀 */
+.essay-check-cell{display:flex;flex-direction:column;align-items:center;gap:3px}
+.essay-check-cell input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;margin-top:2px}
+.essay-calc-row{background:var(--accent-l);border:1px solid var(--accent-l2);border-radius:var(--r-sm);
+  padding:8px 12px;margin-top:8px;font-size:12px;font-weight:600;color:var(--accent-d);display:flex;align-items:center;gap:6px}
+.essay-calc-row i{font-size:13px;color:var(--accent)}
+.btn-add-area{width:100%;background:var(--surface);border:1.5px dashed var(--border);color:var(--sub);
+  border-radius:var(--r-sm);padding:9px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;
+  transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:3px}
+.btn-add-area:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.btn-add-area i{font-size:14px}
+.btn-rm{width:30px;height:34px;border-radius:8px;background:var(--surface);border:1px solid var(--border);
+  color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
+.btn-rm:hover{border-color:var(--danger);color:var(--danger);background:var(--warn-bg)}
+
+/* essay area checkboxes reuse chips; empty note */
+.empty-note{font-size:12.5px;color:var(--muted);background:var(--surface2);border:1px dashed var(--border);
+  border-radius:var(--r-sm);padding:12px 13px;line-height:1.6}
+
+/* ───────── generate button ───────── */
+.gen-btn{width:100%;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:700;
+  padding:16px;border-radius:var(--r-md);border:none;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:9px;box-shadow:0 4px 16px rgba(42,59,115,.25);transition:all .18s;font-family:inherit;margin-top:2px}
+.gen-btn i{font-size:18px}
+.gen-btn:hover{background:var(--accent-d);transform:translateY(-1px);box-shadow:0 8px 22px rgba(42,59,115,.32)}
+body.dark .gen-btn{box-shadow:none}
+#err-box{display:none;align-items:center;gap:8px;margin-top:10px;background:var(--warn-bg);
+  border:1px solid var(--warn-bd);border-radius:var(--r-md);padding:11px 14px;font-size:12.5px;color:var(--danger);font-weight:600}
+#err-box i{font-size:15px}
+
+/* ───────── right panel cards ───────── */
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-lg);
+  padding:var(--pad);margin-bottom:var(--gap);box-shadow:var(--shadow)}
+.card-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:13px;display:flex;align-items:center;gap:8px}
+.card-title i{color:var(--accent);font-size:15px}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.s-cell{background:var(--surface2);border-radius:var(--r-sm);padding:10px 12px;border:1px solid var(--border2)}
+.s-cell.full{grid-column:1 / -1}
+.s-cell-lbl{color:var(--muted);font-size:11px;font-weight:600}
+.s-cell-val{font-weight:600;color:var(--ink);font-size:13px;margin-top:4px;line-height:1.5}
+.s-cell-val.nowrap{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.prompt-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-lg);
+  overflow:hidden;box-shadow:var(--shadow);display:none;margin-bottom:var(--gap)}
+.prompt-hdr{background:var(--surface2);padding:14px var(--pad);display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1px solid var(--border2)}
+.prompt-hdr-t{font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px}
+.prompt-hdr-t i{color:var(--accent);font-size:15px}
+.copy-btn{display:flex;align-items:center;gap:7px;background:var(--accent);color:var(--accent-ink);
+  border:none;padding:9px 15px;border-radius:var(--r-sm);font-size:12.5px;font-weight:700;cursor:pointer;
+  font-family:inherit;transition:all .18s}
+.copy-btn i{font-size:14px}
+.copy-btn:hover{background:var(--accent-d)}
+.copy-btn.done{background:var(--ok)}
+#copy-status{display:none;align-items:center;gap:7px;color:var(--ok);font-size:12.5px;font-weight:600;padding:9px var(--pad)}
+#copy-status i{font-size:15px}
+#prompt-output{width:100%;min-height:300px;max-height:480px;padding:var(--pad);font-size:12.5px;
+  font-family:'SF Mono',ui-monospace,'DM Mono',Menlo,monospace;line-height:1.85;border:none;outline:none;
+  resize:vertical;color:var(--ink);background:var(--surface);white-space:pre-wrap}
+.ai-links{padding:14px var(--pad);border-top:1px solid var(--border2)}
+.ai-links-t{font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px}
+.ai-link-btns{display:flex;flex-wrap:wrap;gap:7px}
+.ai-link-btn{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;
+  border:1px solid var(--border);color:var(--sub);transition:all .15s;background:var(--surface2)}
+.ai-link-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+
+#empty-state{margin-top:50px;text-align:center;color:var(--muted)}
+.empty-icon{width:64px;height:64px;border-radius:18px;background:var(--accent-l);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:28px}
+.empty-t{font-size:14.5px;font-weight:700;margin-bottom:8px;color:var(--sub)}
+.empty-d{font-size:12.5px;line-height:1.9;color:var(--muted)}
+.empty-d b{color:var(--accent)}
+
+/* ───────── toast / modal ───────── */
+#toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  padding:12px 20px;border-radius:var(--r-md);font-size:13px;font-weight:600;z-index:9999;opacity:0;
+  transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow-lg)}
+.modal-bg{position:fixed;inset:0;background:rgba(20,24,35,.5);z-index:1000;display:none;
+  align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(5px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:20px;padding:28px;max-width:560px;width:100%;
+  max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);border:1px solid var(--border2)}
+.modal-x{background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:34px;height:34px;
+  border-radius:9px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal-x:hover{border-color:var(--danger);color:var(--danger)}
+.guide-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border2)}
+.guide-step:last-of-type{border-bottom:none}
+.guide-no{width:28px;height:28px;border-radius:50%;background:var(--accent-l);border:1px solid var(--accent-l2);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);flex-shrink:0}
+.guide-st{font-weight:700;font-size:13.5px;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.guide-sd{font-size:12.5px;color:var(--sub);line-height:1.7}
+.modal-btn{background:var(--accent);color:var(--accent-ink);border:none;padding:11px 34px;border-radius:var(--r-md);
+  font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+.modal-btn:hover{background:var(--accent-d)}
+
+footer{background:var(--surface);border-top:1px solid var(--border);padding:13px 22px;text-align:center;
+  font-size:11.5px;color:var(--muted);flex-shrink:0;transition:background .35s,border-color .35s}
+footer a{color:var(--accent);text-decoration:none;font-weight:600}
+
+/* ───────── design panel ───────── */
+.tw-backdrop{position:fixed;inset:0;z-index:2147483645;display:none}
+.tw-backdrop.show{display:block}
+.tw-panel{position:fixed;right:16px;top:calc(var(--hh) + 8px);z-index:2147483646;width:280px;display:none;
+  flex-direction:column;background:var(--surface);color:var(--ink);border:1px solid var(--border);
+  border-radius:16px;box-shadow:var(--shadow-lg);font-size:12px;overflow:hidden;opacity:1;
+  transform-origin:top right;transition:opacity .15s, transform .15s}
+.tw-panel.show{display:flex}
+.tw-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 12px 13px 17px;border-bottom:1px solid var(--border2)}
+.tw-hd b{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.tw-hd b i{color:var(--accent);font-size:15px}
+.tw-foot{padding:11px 16px;border-top:1px solid var(--border2);display:flex;justify-content:flex-end}
+.tw-reset{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--sub);
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;cursor:pointer;font-family:inherit;transition:all .15s}
+.tw-reset:hover{border-color:var(--accent);color:var(--accent)}
+.tw-reset i{font-size:13px}
+@media(max-width:880px){.tw-panel{right:12px;left:12px;width:auto;top:auto;bottom:12px;max-width:380px;margin:0 auto}}
+.tw-x{border:0;background:transparent;color:var(--muted);width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:13px}
+.tw-x:hover{background:var(--bg2);color:var(--ink)}
+.tw-body{padding:6px 16px 16px;display:flex;flex-direction:column;gap:9px;overflow-y:auto;max-height:70vh}
+.tw-sect{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:8px}
+.tw-sect:first-child{padding-top:2px}
+.tw-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tw-lbl{font-weight:600;color:var(--sub)}
+.tw-seg{display:flex;padding:3px;border-radius:9px;background:var(--bg2);gap:3px}
+.tw-seg button{flex:1;border:0;background:transparent;color:var(--sub);font:inherit;font-weight:600;padding:6px 4px;border-radius:6px;cursor:pointer;transition:all .15s}
+.tw-seg button.on{background:var(--surface);color:var(--accent);box-shadow:var(--shadow)}
+.tw-sw-row{display:flex;gap:7px}
+.tw-sw{flex:1;border:1px solid var(--border);background:var(--surface2);border-radius:9px;padding:8px 4px 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .15s;font-family:inherit}
+.tw-sw-dot{width:20px;height:20px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px rgba(0,0,0,.06)}
+.tw-sw-lbl{font-size:10.5px;font-weight:600;color:var(--sub)}
+.tw-sw.on{border-color:var(--c);background:var(--accent-l)}
+.tw-sw.on .tw-sw-lbl{color:var(--ink)}
+.tw-sw.on .tw-sw-dot{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--c)}
+.tw-toggle{position:relative;width:38px;height:22px;border:0;border-radius:999px;background:var(--border);cursor:pointer;padding:0;transition:background .15s;flex-shrink:0}
+.tw-toggle[data-on="1"]{background:var(--accent)}
+.tw-toggle i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+.tw-toggle[data-on="1"] i{transform:translateX(16px)}
+
+/* ───────── responsive ───────── */
+@media(max-width:880px){
+  html,body{height:auto;min-height:100vh;overflow:visible}
+  .brand-sub,.ver-badge{display:none}
+  .ghost-btn span{display:none}
+  .ghost-btn{padding:8px 11px}
+  .hdr{position:sticky;top:0;z-index:200;padding:0 14px}
+  .stepbar{display:none}
+  .mob-tabs{display:flex;position:sticky;top:var(--hh);z-index:190}
+  .main{flex-direction:column;overflow:visible;flex:1}
+  .lp,.rp{width:100%!important;height:auto;border-right:none;padding:18px 14px 50px;overflow:visible;flex:1}
+  .lp.mh,.rp.mh{display:none}
+  .grid3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:420px){
+  .area-head,.area-row{grid-template-columns:44px 52px 46px 46px 54px 32px 26px;gap:5px}
+  .area-row .inp{padding:8px 5px;font-size:12px}
+  .grid3{grid-template-columns:1fr}
+}
+@media(max-height:640px){footer{display:none}}
+</style>
+</head>
+<body data-accent="navy" data-bg="cool" data-layout="focus" data-density="compact">
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="brand">
+    <div class="brand-mark"><i data-lucide="clipboard-check"></i></div>
+    <div>
+      <div class="brand-name">평가 계획 작성 도우미</div>
+      <div class="brand-sub">수행평가 평가계획서 AI 프롬프트 생성기</div>
+    </div>
+    <div class="ver-badge">평가계획 설계 기준</div>
+  </div>
+  <div class="hdr-acts">
+    <button class="ghost-btn" onclick="openGuide()"><i data-lucide="book-open"></i><span>사용 가이드</span></button>
+    <button class="ghost-btn" id="design-btn" onclick="Design.toggle()"><i data-lucide="palette"></i><span>디자인</span></button>
+    <button class="ghost-btn" onclick="resetAll()"><i data-lucide="rotate-ccw"></i><span>초기화</span></button>
+    <button class="icon-btn" id="dark-btn" onclick="Design.toggleDark()" title="다크 모드"><i data-lucide="moon"></i></button>
+  </div>
+</header>
+
+<!-- PROGRESS STEPPER -->
+<nav class="stepbar" aria-label="진행 단계">
+  <button class="step req" id="cl-basic" onclick="goStep('s0')"><span class="step-no"><span class="num">1</span><i data-lucide="check" class="ck"></i></span><span class="step-tx">기본 정보</span></button>
+  <button class="step req" id="cl-ratio" onclick="goStep('s1')"><span class="step-no"><span class="num">2</span><i data-lucide="check" class="ck"></i></span><span class="step-tx">평가 비율</span></button>
+  <button class="step" id="cl-perf" onclick="goStep('s2')"><span class="step-no"><span class="num">3</span><i data-lucide="check" class="ck"></i></span><span class="step-tx">배점 설계</span></button>
+  <button class="step" id="cl-essay" onclick="goStep('s3')"><span class="step-no"><span class="num">4</span><i data-lucide="check" class="ck"></i></span><span class="step-tx">논술·요청사항</span></button>
+</nav>
+
+<!-- MOB TABS -->
+<div class="mob-tabs" id="mob-tabs">
+  <button class="active" id="mob-l" onclick="switchMob('left')"><i data-lucide="sliders-horizontal"></i> 설정</button>
+  <button id="mob-r" onclick="switchMob('right')"><i data-lucide="file-text"></i> 결과</button>
+</div>
+
+<div class="main">
+<!-- ════ LEFT PANEL ════ -->
+<div class="lp" id="lp">
+<div class="lp-inner">
+
+<!-- S0: 기본 정보 -->
+<div class="sw" id="s0">
+  <div class="sh" onclick="ts('s0')">
+    <div class="sn"><i data-lucide="info"></i></div> 기본 정보 <span class="req-tag">필수</span>
+    <div class="toggle-pill"><span class="pt"></span><i data-lucide="chevron-down" class="chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block">
+    <div class="grid2" style="margin-bottom:13px">
+      <div>
+        <div class="field-lbl">과목명 <span class="field-req">필수</span></div>
+        <input type="text" class="inp" id="subject" placeholder="예) 일본문화, 한국사, 통합과학…" oninput="uc()">
+      </div>
+      <div>
+        <div class="field-lbl">학년 <span class="field-req">필수</span></div>
+        <input type="text" class="inp" id="grade" placeholder="예) 고2, 3학년" oninput="uc()">
+      </div>
+    </div>
+    <div class="field-lbl">평가에 포함되는 단원 <span class="opt-tag">선택</span></div>
+    <div class="note" style="margin-bottom:5px">※ 단원을 여러 개 입력할 경우 <b style="color:#e03131">줄바꿈(Enter)으로 구분</b>하세요. 입력한 단원은 각 회차 배점 설계에서 선택 가능합니다.</div>
+    <textarea class="inp" id="units" rows="4" oninput="uc();updateUnitDropdowns()" placeholder="예) 1단원. 일본의 전통문화
+2단원. 일본의 현대사회
+3단원. 한일관계의 역사"></textarea>
+  </div></div>
+</div>
+
+<!-- S1: 평가 반영 비율 -->
+<div class="sw" id="s1">
+  <div class="sh" onclick="ts('s1')">
+    <div class="sn"><i data-lucide="percent"></i></div> 평가 반영 비율 <span class="req-tag">필수</span>
+    <div class="toggle-pill"><span class="pt"></span><i data-lucide="chevron-down" class="chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block">
+    <div class="grid2">
+      <div>
+        <div class="field-lbl">정기고사 반영비율 (%)</div>
+        <input type="number" class="inp" id="exam-ratio" min="0" max="100" value="60" oninput="updateRatioBar();uc()">
+      </div>
+      <div>
+        <div class="field-lbl">수행평가 반영비율 (%)</div>
+        <input type="number" class="inp" id="perf-ratio" min="0" max="100" value="40" oninput="updateRatioBar();uc()">
+      </div>
+    </div>
+    <div class="ratio-wrap">
+      <div class="ratio-head">
+        <span>정기고사 <span class="v" id="ratio-exam-label">60%</span></span>
+        <span>수행평가 <span class="v gold" id="ratio-perf-label">40%</span></span>
+      </div>
+      <div class="ratio-bar">
+        <div class="ratio-fill" id="ratio-fill" style="width:60%"></div>
+        <div class="ratio-fill perf"></div>
+      </div>
+      <div class="ratio-warn" id="ratio-warn"><i data-lucide="alert-triangle"></i> 두 비율의 합이 100%가 아닙니다.</div>
+    </div>
+    <div class="grid2 mt13">
+      <div>
+        <div class="field-lbl">정기고사 횟수</div>
+        <input type="number" class="inp" id="exam-count" min="0" max="4" value="2" oninput="uc()">
+        <div class="note" style="margin-top:5px">중간·기말 = 2회</div>
+      </div>
+      <div>
+        <div class="field-lbl">수행평가 횟수</div>
+        <input type="number" class="inp" id="perf-count" min="1" max="10" value="3" oninput="onPerfCountChange()">
+        <div class="note" style="margin-top:5px">아래 3단계에서 영역 설정</div>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<!-- S2: 배점 설계 -->
+<div class="sw" id="s2">
+  <div class="sh" onclick="ts('s2')">
+    <div class="sn"><i data-lucide="list-checks"></i></div> 수행평가 배점 설계 <span class="opt-tag">권장</span>
+    <div class="toggle-pill"><span class="pt"></span><i data-lucide="chevron-down" class="chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block">
+    <div class="callout callout-info" style="margin-bottom:12px">
+      <i data-lucide="info"></i>
+      <div>회차별 <b>만점·기본점수·급간·합산비율·논술여부</b>를 입력합니다.<br>
+      <span style="color:var(--muted)">어떤 수행평가를 할지는 AI가 추천합니다. 여기서는 점수 구조만 설정하세요.</span></div>
+    </div>
+    <div id="perf-sections"></div>
+    <div id="essay-calc-display" style="display:none" class="essay-calc-row">
+      <i data-lucide="calculator"></i>
+      <span id="essay-calc-text"></span>
+    </div>
+  </div></div>
+</div>
+
+<!-- S3: 요청사항 -->
+<div class="sw" id="s3">
+  <div class="sh" onclick="ts('s3')">
+    <div class="sn"><i data-lucide="pen-tool"></i></div> 수행평가 요청사항 <span class="opt-tag">선택</span>
+    <div class="toggle-pill"><span class="pt"></span><i data-lucide="chevron-down" class="chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block">
+    <div class="callout callout-info" style="margin-bottom:14px">
+      <i data-lucide="sparkles"></i>
+      <div><b style="color:var(--accent-d)">AI가 수행평가를 추천합니다</b><br>
+      <span style="color:var(--sub)">원하는 수행평가 방향을 자유롭게 입력하세요. 비워두면 과목·단원·학년에 맞게 자동 추천합니다.</span></div>
+    </div>
+    <div class="field-lbl">원하는 수행평가 유형 또는 요청사항 <span class="opt-tag">선택</span></div>
+    <textarea class="inp" id="request" rows="4" oninput="uc()" placeholder="예) 발표 위주의 평가를 원합니다. 학생들이 일본 문화를 조사하고 발표하는 형식이 좋겠습니다. 포트폴리오도 포함해주세요."></textarea>
+    <div class="note" style="margin-top:7px">※ 비워두면 AI가 과목·단원·학년에 맞게 자동 추천합니다.</div>
+  </div></div>
+</div>
+
+<!-- GEN BUTTON -->
+<div>
+  <button class="gen-btn" onclick="gen()"><i data-lucide="sparkles"></i> 프롬프트 생성하기 <span style="opacity:.7;font-weight:600;font-size:12px">(Ctrl+Enter)</span></button>
+  <div class="callout callout-info" style="margin-top:11px">
+    <i data-lucide="table-2"></i>
+    <div><b style="color:var(--accent-d)">2단계 워크플로 자동 포함</b><br>
+    <span style="color:var(--sub)">AI가 먼저 수행평가를 추천하고, 교사가 선택하면 한셀 호환 엑셀 채점기준표를 생성하도록 지침이 기본 포함됩니다.</span></div>
+  </div>
+  <div id="err-box"></div>
+</div>
+
+</div><!-- /lp-inner -->
+</div><!-- /lp -->
+
+<!-- ════ RIGHT PANEL ════ -->
+<div class="rp" id="rp">
+<div class="rp-inner">
+
+  <!-- 요약 -->
+  <div class="card">
+    <div class="card-title"><i data-lucide="clipboard-list"></i> 현재 입력 요약</div>
+    <div class="summary-grid">
+      <div class="s-cell"><div class="s-cell-lbl">과목 · 학년</div><div class="s-cell-val nowrap" id="s-subject">미입력</div></div>
+      <div class="s-cell"><div class="s-cell-lbl">반영비율 (정기 / 수행)</div><div class="s-cell-val nowrap" id="s-ratio">60% / 40%</div></div>
+      <div class="s-cell"><div class="s-cell-lbl">정기고사 · 수행평가 횟수</div><div class="s-cell-val nowrap" id="s-count">2회 / 3회</div></div>
+      <div class="s-cell"><div class="s-cell-lbl">논술형 반영비율</div><div class="s-cell-val nowrap" id="s-essay">0%</div></div>
+      <div class="s-cell full"><div class="s-cell-lbl">수행평가 영역</div><div class="s-cell-val" id="s-areas">미입력</div></div>
+    </div>
+  </div>
+
+  <!-- 안내 -->
+  <div class="card">
+    <div class="card-title"><i data-lucide="workflow"></i> 생성 결과로 할 수 있는 것</div>
+    <div class="note" style="line-height:1.85">
+      ① AI가 과목·요청에 맞는 <b style="color:var(--accent)">수행평가 후보</b>를 추천합니다.<br>
+      ② 원하는 번호를 <b style="color:#e03131">순서대로</b> 선택하면, 선택한 항목만으로<br>
+      ③ <b style="color:var(--accent)">한셀(.xlsx) 호환 채점기준표</b>와 평가계획 총괄표를 만들어 줍니다.
+    </div>
+    <div style="margin-top:10px;padding:8px 10px;background:#fff5f5;border-left:3px solid #e03131;border-radius:4px;font-size:11.5px;color:#c92a2a;line-height:1.7">
+      ⚠️ <b>Gemini</b>는 파일 생성이 불안정합니다. 디자인 없이 텍스트만 출력되거나 결과가 매번 달라질 수 있습니다.<br>
+      안정적인 결과를 원하면 <b>Claude</b> 또는 <b>ChatGPT Plus</b>를 권장합니다.
+    </div>
+  </div>
+
+  <!-- 프롬프트 카드 -->
+  <div class="prompt-card" id="prompt-card">
+    <div class="prompt-hdr">
+      <div class="prompt-hdr-t"><i data-lucide="file-text"></i> 생성된 프롬프트</div>
+      <button class="copy-btn" id="copy-btn" onclick="copyPrompt()"><i data-lucide="copy"></i><span>복사</span></button>
+    </div>
+    <div id="copy-status"><i data-lucide="check-circle-2"></i> 복사되었습니다. AI에 붙여넣으세요.</div>
+    <textarea id="prompt-output" readonly></textarea>
+    <div class="ai-links">
+      <div class="ai-links-t">복사 후 바로 사용하기</div>
+      <div class="ai-link-btns">
+        <a class="ai-link-btn" href="https://claude.ai/new" target="_blank">Claude</a>
+        <a class="ai-link-btn" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+        <a class="ai-link-btn" href="https://www.wrtn.ai" target="_blank">뤼튼</a>
+        <a class="ai-link-btn" href="https://gemini.google.com" target="_blank">Gemini</a>
+        <a class="ai-link-btn" href="https://clova-x.naver.com" target="_blank">클로바X</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 빈 상태 -->
+  <div id="empty-state">
+    <div class="empty-icon"><i data-lucide="clipboard-pen"></i></div>
+    <div class="empty-t">왼쪽에서 입력 후 생성 버튼을 눌러주세요</div>
+    <div class="empty-d">기본 정보 → 평가 비율 → 수행평가 영역<br>→ <b>프롬프트 생성하기</b></div>
+  </div>
+
+</div>
+</div><!-- /rp -->
+</div><!-- /main -->
+
+<!-- GUIDE MODAL -->
+<div class="modal-bg" id="guide-modal" onclick="if(event.target.id==='guide-modal')closeGuide()">
+  <div class="modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="font-size:18px;font-weight:800;display:flex;align-items:center;gap:9px"><i data-lucide="book-open" style="color:var(--accent)"></i> 사용 가이드</div>
+      <button class="modal-x" onclick="closeGuide()">✕</button>
+    </div>
+    <div>
+      <div class="guide-step">
+        <div class="guide-no">1</div>
+        <div><div class="guide-st">기본 정보 입력 <span class="req-tag">필수</span></div><div class="guide-sd">과목명·학년을 입력합니다.<br>단원은 선택사항이지만 입력하면 더 구체적인 채점기준이 생성됩니다.<br><b style="color:#e03131">단원이 여러 개일 경우 줄바꿈(Enter)으로 구분</b>하세요.<br>입력한 단원은 각 회차 배점 설계에서 선택 가능합니다.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-no">2</div>
+        <div><div class="guide-st">평가 비율 설정 <span class="req-tag">필수</span></div><div class="guide-sd">정기고사·수행평가 반영비율 합계가 100%가 되도록 설정합니다.<br>정기고사·수행평가 횟수도 함께 입력하세요. 막대그래프로 비율을 확인할 수 있습니다.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-no">3</div>
+        <div><div class="guide-st">수행평가 배점 설계 <span class="req-tag">필수</span></div><div class="guide-sd">회차별로 만점·기본점수·급간·합산비율을 입력합니다.<br>영역이 여러 개이면 영역 추가 버튼으로 추가하세요. 같은 회차의 영역은 하나의 수행평가로 처리됩니다.<br>단원을 입력했다면 각 회차의 <b>평가 단원 드롭다운</b>에서 단원을 지정할 수 있습니다. 미선택 시 AI가 자동으로 정합니다.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-no">4</div>
+        <div><div class="guide-st">논술형·요청사항 <span class="opt-tag">선택</span></div><div class="guide-sd">논술형 평가를 포함할 경우 해당 영역의 논술 체크박스를 선택하세요. 합산비율이 자동 계산됩니다.<br>원하는 수행평가 방향이나 특이사항이 있으면 요청사항란에 자유롭게 입력하세요.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-no">5</div>
+        <div><div class="guide-st">프롬프트 생성 → AI에 붙여넣기</div><div class="guide-sd">생성 버튼을 누르면 Claude·ChatGPT 등에 바로 쓸 수 있는 프롬프트가 만들어집니다.<br>① 복사 버튼으로 복사 → AI에 붙여넣기<br>② AI가 수행평가 목록을 추천하면 원하는 번호를 <b style="color:#e03131">회차 순서대로</b> 입력하세요.<br>예) 수행평가 3회차 → <b>5, 2, 7</b> 입력 시 1회차=5번, 2회차=2번, 3회차=7번 적용<br>③ AI가 채점기준표·운영가이드가 포함된 파일을 생성합니다.</div></div>
+      </div>
+    </div>
+    <div class="callout callout-warn" style="margin-top:18px;flex-direction:column;gap:6px">
+      <div style="font-weight:700;display:flex;align-items:center;gap:6px"><i data-lucide="shield-check"></i> 안내</div>
+      <div style="line-height:1.9;color:var(--warn)">
+        입력 정보는 이 브라우저 안에서만 처리되며 외부로 전송되지 않습니다.<br>
+        AI가 생성한 평가계획·채점기준은 반드시 교사가 검토 후 사용하세요.
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:18px">
+      <button class="modal-btn" onclick="closeGuide()">확인</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  평가 계획 작성 도우미 · 교사 업무 지원 도구 · 입력 정보는 외부로 전송되지 않습니다 · Made by 황성재
+  <a href="https://www.instagram.com/hirame.ki" target="_blank" style="margin-left:6px">@hirame.ki</a>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   평가계획 도우미 — 기능 스크립트
+   디자인: 생기부 공장 아이덴티티 (분할 레이아웃 · Lucide · 디자인 패널)
+   ============================================================ */
+function icons(){ if(window.lucide&&lucide.createIcons) lucide.createIcons(); }
+
+/* ───────── 아코디언 ───────── */
+function ts(id){
+  document.getElementById(id).classList.toggle('collapsed');
+}
+function goStep(id){
+  const sw=document.getElementById(id);
+  if(sw.classList.contains('collapsed')) sw.classList.remove('collapsed');
+  if(window.innerWidth<=880) switchMob('left');
+  const lp=document.getElementById('lp');
+  requestAnimationFrame(()=>{
+    const r=sw.getBoundingClientRect(), lr=lp.getBoundingClientRect();
+    lp.scrollTo({top:lp.scrollTop+(r.top-lr.top)-14,behavior:'smooth'});
+  });
+}
+
+/* ───────── 비율 바 ───────── */
+function updateRatioBar(){
+  const exam=parseFloat(document.getElementById('exam-ratio').value)||0;
+  const perf=parseFloat(document.getElementById('perf-ratio').value)||0;
+  const total=exam+perf;
+  const pct=total>0?(exam/total*100):60;
+  document.getElementById('ratio-fill').style.width=pct+'%';
+  document.getElementById('ratio-exam-label').textContent=exam+'%';
+  document.getElementById('ratio-perf-label').textContent=perf+'%';
+  document.getElementById('ratio-warn').classList.toggle('show', total!==100 && total>0);
+}
+
+/* ───────── 수행평가 회차/영역 ───────── */
+function onPerfCountChange(){ renderPerfSections(); uc(); }
+
+function renderPerfSections(){
+  const count=Math.max(1,Math.min(10,parseInt(document.getElementById('perf-count').value)||1));
+  const container=document.getElementById('perf-sections');
+
+  const existing=[];
+  container.querySelectorAll('.perf-round').forEach(sec=>{
+    const areas=[];
+    sec.querySelectorAll('.area-row').forEach(row=>{
+      areas.push({
+        base:row.querySelector('.area-base')?.value||'',
+        max:row.querySelector('.area-max')?.value||'',
+        step:row.querySelector('.area-step')?.value||'',
+        ratio:row.querySelector('.area-ratio')?.value||'',
+        essay:row.querySelector('.area-essay')?.checked||false
+      });
+    });
+    const unitSel=sec.querySelector('.round-unit-select');
+    const achieveInp=sec.querySelector('.round-achievement-input');
+    existing.push({areas, unit: unitSel?unitSel.value:'', achievement: achieveInp?achieveInp.value:''});
+  });
+
+  container.innerHTML='';
+  for(let i=0;i<count;i++){
+    const saved=existing[i]||{areas:[{base:'',max:'',step:'',ratio:'',essay:false}],unit:'',achievement:''};
+    container.appendChild(createPerfSection(i+1, saved.areas||saved, saved.unit||'', saved.achievement||''));
+  }
+  icons();
+}
+
+function getUnitOptions(selectedVal=''){
+  const raw=document.getElementById('units')?.value||'';
+  const units=raw.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+  let opts='<option value="">AI 자동 선택</option>';
+  units.forEach(function(u){
+    const sel=u===selectedVal?'selected':'';
+    opts+='<option value="'+u+'" '+sel+'>'+u+'</option>';
+  });
+  return opts;
+}
+
+function onUnitChange(sel){
+  const wrap=sel.closest('.perf-round').querySelector('.round-achievement-wrap');
+  if(wrap) wrap.style.display=sel.value?'block':'none';
+  uc();
+}
+
+function updateUnitDropdowns(){
+  document.querySelectorAll('.round-unit-select').forEach(sel=>{
+    const cur=sel.value;
+    sel.innerHTML=getUnitOptions(cur);
+  });
+}
+
+function createPerfSection(num,areas,savedUnit='',savedAchievement=''){
+  const sec=document.createElement('div');
+  sec.className='perf-round';
+  const hasUnit=savedUnit&&savedUnit!=='';
+  sec.innerHTML=`
+    <div class="perf-round-hd">
+      <span class="pill">${num}회차</span> 배점 설계
+      <div class="round-unit-wrap">
+        <label class="round-unit-lbl">평가 단원</label>
+        <select class="inp round-unit-select" onchange="onUnitChange(this)" style="font-size:12px;padding:4px 28px 4px 8px;height:32px">${getUnitOptions(savedUnit)}</select>
+      </div>
+    </div>
+    <div class="round-achievement-wrap" style="margin-bottom:11px;display:${hasUnit?'block':'none'}">
+      <div class="field-lbl" style="margin-bottom:5px"><i data-lucide="bookmark"></i> 성취기준 <span class="opt-tag">선택</span></div>
+      <input type="text" class="inp round-achievement-input" placeholder="예) [12일문01-03] 일본의 전통 문화를 이해하고 현대 문화와 비교한다." value="${savedAchievement}" oninput="uc()" style="font-size:12.5px">
+      <div class="note" style="margin-top:5px">입력하지 않으면 AI가 성취기준을 자동으로 추론하여 설정합니다. 실제 교육과정 성취기준이 아닐 수 있으므로 반드시 확인 후 사용하세요.</div>
+    </div>
+    <div class="area-head">
+      <div class="area-lbl">영역</div>
+      <div class="area-lbl">만점</div>
+      <div class="area-lbl">기본점수</div>
+      <div class="area-lbl">급간</div>
+      <div class="area-lbl">합산비율%</div>
+      <div class="area-lbl" style="font-size:9.5px;line-height:1.3">논술<br>여부</div>
+      <div></div>
+    </div>
+    <div class="area-list"></div>
+    <button class="btn-add-area" onclick="addArea(this)"><i data-lucide="plus"></i> 영역 추가</button>`;
+  const list=sec.querySelector('.area-list');
+  areas.forEach((a,i)=>list.appendChild(createAreaRow(a,i+1)));
+  return sec;
+}
+
+function createAreaRow(d={},num){
+  const row=document.createElement('div');
+  row.className='area-row';
+  const n=num||1;
+  row.innerHTML=`
+    <div style="font-size:11.5px;font-weight:700;color:var(--sub);text-align:center;padding:4px 0">영역 ${n}</div>
+    <input type="number" class="inp num area-max" placeholder="20" min="0" value="${d.max||''}" oninput="uc()">
+    <input type="number" class="inp num area-base" placeholder="0" min="0" value="${d.base||''}" oninput="uc()">
+    <input type="number" class="inp num area-step" placeholder="2" min="1" value="${d.step||''}" oninput="uc()" title="점수 급간(간격)">
+    <input type="number" class="inp num area-ratio" placeholder="10" min="0" max="100" value="${d.ratio||''}" oninput="uc()">
+    <div class="essay-check-cell">
+      <input type="checkbox" class="area-essay" ${d.essay?'checked':''} onchange="uc()" title="논술형 여부">
+    </div>
+    <button class="btn-rm" onclick="removeArea(this)" title="삭제"><i data-lucide="x"></i></button>`;
+  return row;
+}
+
+function addArea(btn){
+  const list=btn.previousElementSibling;
+  const num=list.children.length+1;
+  list.appendChild(createAreaRow({},num));
+  icons(); uc();
+}
+function removeArea(btn){
+  const row=btn.closest('.area-row');
+  const list=row.parentElement;
+  if(list.children.length>1){ row.remove(); uc(); }
+  else showToast('각 회차에는 최소 1개 영역이 필요합니다.');
+}
+
+/* ───────── 논술형 비율 자동계산 ───────── */
+function calcEssayRatio(){
+  const rows=document.querySelectorAll('.perf-round .area-row');
+  let essayRatioSum=0;
+  let essayCount=0;
+  const essayList=[];
+  rows.forEach((row,idx)=>{
+    const checked=row.querySelector('.area-essay')?.checked;
+    const ratio=parseFloat(row.querySelector('.area-ratio')?.value)||0;
+    // 회차 번호 파악
+    const round=row.closest('.perf-round');
+    const rounds=Array.from(document.querySelectorAll('.perf-round'));
+    const roundIdx=rounds.indexOf(round);
+    const areaIdx=Array.from(round.querySelectorAll('.area-row')).indexOf(row);
+    if(checked){
+      essayRatioSum+=ratio;
+      essayCount++;
+      essayList.push(`${roundIdx+1}회차 영역${areaIdx+1}`);
+    }
+  });
+  const display=document.getElementById('essay-calc-display');
+  const text=document.getElementById('essay-calc-text');
+  if(essayCount>0){
+    display.style.display='flex';
+    text.textContent=`논술형 반영 영역: ${essayList.join(', ')} → 논술형 합산비율 ${essayRatioSum}%`;
+    icons();
+  } else {
+    display.style.display='none';
+  }
+  // 요약 업데이트용 숨은 값
+  const hidden=document.getElementById('essay-ratio-hidden');
+  if(hidden) hidden.value=essayRatioSum;
+}
+
+/* ───────── 요약 + 스텝 업데이트 ───────── */
+function uc(){
+  const subject=val('subject'), grade=val('grade');
+  const exam=val('exam-ratio')||'0', perf=val('perf-ratio')||'0';
+  const ec=val('exam-count')||'-', pc=val('perf-count')||'-';
+
+  // 논술 자동계산
+  calcEssayRatio();
+  let essayRatioSum=0;
+  document.querySelectorAll('.perf-round .area-row').forEach(row=>{
+    if(row.querySelector('.area-essay')?.checked){
+      essayRatioSum+=parseFloat(row.querySelector('.area-ratio')?.value)||0;
+    }
+  });
+
+  setText('s-subject', (subject||grade)?`${subject||'미입력'} · ${grade||'미입력'}`:'미입력');
+  setText('s-ratio', `${exam}% / ${perf}%`);
+  setText('s-count', `${ec}회 / ${pc}회`);
+  setText('s-essay', essayRatioSum>0?`${essayRatioSum}%`:'없음');
+
+  const areas=[];
+  document.querySelectorAll('.perf-round').forEach((sec,si)=>{
+    const cnt=sec.querySelectorAll('.area-row').length;
+    if(cnt>0) areas.push(`${si+1}회차: 영역${cnt}개`);
+  });
+  setText('s-areas', areas.length?areas.join(' / '):'미입력');
+
+  done('cl-basic', subject.trim() && grade.trim());
+  done('cl-ratio', (parseFloat(exam)+parseFloat(perf))>0);
+  done('cl-perf', areas.length>0);
+  done('cl-essay', val('request').trim());
+}
+function val(id){ const e=document.getElementById(id); return e?e.value:''; }
+function setText(id,t){ const e=document.getElementById(id); if(e)e.textContent=t; }
+function done(id,cond){ const e=document.getElementById(id); if(e)e.classList.toggle('done',!!cond); }
+
+/* ───────── 프롬프트 생성 ───────── */
+function gen(){
+  clearErr();
+  const subject=val('subject').trim();
+  const grade=val('grade').trim();
+  if(!subject){ showErr('과목명을 입력해주세요.'); goStep('s0'); return; }
+  if(!grade){ showErr('학년을 입력해주세요.'); goStep('s0'); return; }
+
+  const units=val('units').trim()||'(미입력)';
+  const examRatio=val('exam-ratio')||'?';
+  const perfRatio=val('perf-ratio')||'?';
+  const examCount=val('exam-count')||'?';
+  const perfCount=val('perf-count')||'?';
+  const request=val('request').trim()||'없음';
+
+  // 급간 기반 점수 목록 계산 함수
+  function calcScoreList(max, base, step){
+    const m=parseFloat(max), b=parseFloat(base), s=parseFloat(step);
+    if(!m||!b||!s||m<b||s<=0) return null;
+    const scores=[];
+    for(let score=m; score>=b; score-=s){
+      scores.push(Math.round(score*10)/10);
+    }
+    return scores;
+  }
+
+  let perfDetails='';
+  let essayAreasList=[];
+  let essayRatioSum=0;
+
+  document.querySelectorAll('.perf-round').forEach((sec,si)=>{
+    const unitSel=sec.querySelector('.round-unit-select');
+    const selectedUnit=unitSel&&unitSel.value?unitSel.value:'(AI 자동 선택)';
+    const achieveInp=sec.querySelector('.round-achievement-input');
+    const achievement=achieveInp&&achieveInp.value.trim()?achieveInp.value.trim():'(AI 자동 설정)';
+    perfDetails+=`\n  [수행평가 ${si+1}회차] 지정 단원: ${selectedUnit} | 성취기준: ${achievement}\n`;
+    sec.querySelectorAll('.area-row').forEach((row,ri)=>{
+      const base=row.querySelector('.area-base')?.value||'0';
+      const max=row.querySelector('.area-max')?.value||'?';
+      const step=row.querySelector('.area-step')?.value||'';
+      const ratio=row.querySelector('.area-ratio')?.value||'?';
+      const isEssay=row.querySelector('.area-essay')?.checked||false;
+      const areaLabel=`${si+1}회차 영역${ri+1}`;
+
+      // 급간 점수 목록
+      const scores=calcScoreList(max,base,step);
+      let scoreLine='';
+      if(scores){
+        scoreLine=`\n       점수 목록(${scores.length}단계): ${scores.join(', ')}점`;
+      } else if(step){
+        scoreLine=`\n       점수 급간: ${step}점`;
+      }
+
+      if(isEssay){
+        essayAreasList.push(areaLabel);
+        essayRatioSum+=parseFloat(ratio)||0;
+      }
+
+      perfDetails+=`    - ${areaLabel} | 만점: ${max}점 | 기본점수: ${base}점 | 합산비율: ${ratio}%${isEssay?' | 논술형: 포함':''}${scoreLine}\n`;
+    });
+  });
+
+  const essayInfo = essayAreasList.length>0
+    ? `${essayAreasList.join(', ')} (합산비율 합계: ${essayRatioSum}%)`
+    : '없음';
+
+  const recommend=parseInt(perfCount)*3||3;
+
+  const prompt=`당신은 학교 교사를 돕는 평가계획 전문가입니다.
+아래 [교과 정보]와 [평가 설계]를 바탕으로 두 단계로 진행해 주세요.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+[교과 정보]
+• 과목명: ${subject}
+• 학년: ${grade}
+• 평가 단원: ${units}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+[평가 설계]
+• 반영비율: 정기고사 ${examRatio}% / 수행평가 ${perfRatio}%
+• 정기고사 횟수: ${examCount}회
+• 수행평가 횟수: ${perfCount}회 (회차별 배점 아래 참조)
+  ※ 1개 회차 = 1개의 수행평가입니다. 영역이 여러 개여도 하나의 평가 안에서 나누어 채점하는 구성입니다.
+${perfDetails}
+• 논술형 평가 해당 영역: ${essayInfo}
+• 교사 요청사항: ${request}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【STEP 1 - 수행평가 추천】
+위 교과 정보와 요청사항을 바탕으로 ${subject} 과목에 적합한 수행평가를 ${recommend}개 추천해 주세요.
+각 항목은 번호, 평가 이름, 한 줄 설명으로 간결하게 제시하세요.
+※ 수행평가 추천은 회차 단위로 해주세요. 영역이 여러 개인 회차는 하나의 수행평가 안에서 영역을 나누는 방식입니다.
+※ [평가 설계]에 각 회차별 "지정 단원"이 표시됩니다. 지정 단원이 있으면 반드시 해당 단원으로 수행평가를 추천하고, "(AI 자동 선택)"이면 전체 단원 중 적합한 단원을 자유롭게 선택하세요.
+※ 반드시 1차시(수업 시간) 내에 완료 가능한 평가만 추천하세요. 과제형(수업 외 완성)은 제외합니다.
+※ 각 수행평가는 해당 단원의 성취기준과 연계하여, 학생이 핵심 아이디어를 이해하고 새로운 상황에 적용(전이)할 수 있는지를 확인하는 과제여야 합니다.
+목록 제시 후 반드시 이렇게 질문하세요:
+"위 ${recommend}개 수행평가 중 어떤 것을 선택하시겠어요?
+수행평가 회차 수(${perfCount}회)에 맞게 번호를 순서대로 입력해 주세요.
+예) 5,1 → 1회차에 5번, 2회차에 1번 적용"
+
+⚠️ STEP 1이 끝나면 엑셀 파일은 아직 만들지 마세요. 반드시 교사의 선택을 먼저 기다리세요.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+【STEP 2 - 파일 생성】
+교사가 번호를 순서대로 입력하면 (예: 5,1), 아래 규칙으로 회차에 매핑하세요:
+• 입력 순서 = 회차 순서 (첫 번째 번호 → 1회차, 두 번째 번호 → 2회차, ...)
+• 각 회차의 배점 설계([평가 설계] 참조)는 매핑된 수행평가에 그대로 적용
+• 파일은 매핑된 수행평가에 대해서만 생성하세요.
+
+[시트 구성]
+• 시트 1: 평가계획 총괄표
+  - 과목명, 학년, 정기고사/수행평가 반영비율, 회차별 수행평가명, 배점, 논술형 반영 여부 포함
+  - 각 수행평가별로 연계 성취기준 코드 및 핵심 평가 내용 한 줄 포함
+
+• 시트 2~N: 선택된 수행평가별 채점기준표 (각 1장씩, 회차 기준)
+  ※ 1회차 = 1개의 시트. 영역이 여러 개인 경우 같은 시트 안에서 영역을 구분하여 표시
+  각 시트 포함 내용:
+  - 수행평가명, 평가 단원, 연계 성취기준, 평가 방법
+  - 채점기준표 구성 (아래 규칙을 반드시 준수):
+
+    ① 평가요소 (채점기준표 상단에 별도 제시)
+       - 점수 목록 단계 수만큼 A, B, C, D... 순으로 생성
+       - 예) 7단계 → 요소 A~G (7개)
+       - 각 요소의 종결어미는 반드시 '~하기' 또는 명사형으로 작성
+       - 요소는 단순 기능·암기가 아닌 이해와 적용(전이) 수준을 반영하여 작성
+       - 예) "학습 내용을 새로운 상황에 연결하여 설명하기", "핵심 개념 간의 관계를 파악하기"
+
+    ② 채점기준 (평가요소 아래 별도 표로 제시)
+       - 점수 목록 단계 수만큼 행 생성
+       - 각 행은 위에서 제시한 평가요소를 몇 개 충족했는지를 기준으로 서술
+       - 만점 행: 모든 요소(A~N) 충족
+       - 그 다음 행: N-1개 충족 (가장 낮은 요소 1개 미충족)
+       - 이후 행: 순차적으로 1개씩 줄어드는 방식으로 서술
+       - 최저점 행: 요소 A만 충족
+       - 서술식 문장으로 작성, '매우우수/우수/보통' 등 수준 명칭 절대 사용 금지
+       - 배점은 점수 목록 값 그대로 사용
+
+• 시트 N+1: 평가 운영 가이드 (선택된 수행평가별 1섹션씩)
+  ※ 수행평가는 반드시 수업 시간(1차시) 내에 완료되는 형태로만 구성하세요.
+     과제형(수업 외 시간에 완성해오는 형태)은 절대 포함하지 마세요.
+  각 섹션 포함 내용:
+  - 수행평가명
+  - 연계 성취기준 및 이 평가를 통해 확인하고자 하는 핵심 이해(학생이 무엇을 깊이 이해했는지 확인하는 평가인지 한 문장으로 서술)
+  - 사전 안내 방법 (전 차시 또는 당일 수업 시작 시 학생에게 안내할 내용)
+  - 1차시 진행 순서 (도입/전개/마무리 흐름으로 구체적으로 서술)
+    예) 도입(5분): 평가 기준 안내 → 전개(35분): 개인별 수행 → 마무리(5분): 제출 및 확인
+  - 형성평가 연계 제안 (이 수행평가 이전 수업에서 학생 이해 수준을 확인할 수 있는 간단한 진단·형성 방법 1가지)
+  - 교사 유의사항 (채점 시 주의할 점, 공정성 확보 방법 등)
+  - 소요 차시: 1차시 기준으로 작성
+
+[디자인 요구사항]
+• Claude 사용 시: 한셀(HanCell)과 호환되는 .xlsx 형식으로 Artifacts 다운로드 제공
+• Gemini 사용 시: Google Sheets로 생성하며 아래 서식을 반드시 적용
+  - 제목 행: 배경색 진한 파랑(#1a3a6e), 글씨 흰색·굵게
+  - 항목 행: 연한 파랑(#dce6f1)과 흰색 교차 적용
+  - 모든 셀 테두리 표시
+  - 열 너비 내용에 맞게 자동 조정
+• 공통: 읽기 쉽고 인쇄 가능한 레이아웃`;
+
+  const ta=document.getElementById('prompt-output');
+  ta.value=prompt;
+  ta.removeAttribute('readonly');
+  document.getElementById('prompt-card').style.display='block';
+  document.getElementById('empty-state').style.display='none';
+
+  // 복사: clipboard API 우선, 실패시 select+execCommand
+  function doCopy(){
+    if(navigator.clipboard&&window.isSecureContext){
+      navigator.clipboard.writeText(prompt).then(()=>{
+        showCopyStatus(true); showToast('프롬프트가 생성되어 자동 복사되었습니다. AI에 붙여넣으세요.');
+      }).catch(()=>fallbackCopy());
+    } else { fallbackCopy(); }
+  }
+  function fallbackCopy(){
+    try{
+      ta.select(); ta.setSelectionRange(0,99999);
+      const ok=document.execCommand('copy');
+      if(ok){ showCopyStatus(true); showToast('프롬프트가 생성되었습니다. AI에 붙여넣으세요.'); }
+      else { showToast('복사 버튼을 눌러주세요.'); }
+    }catch(e){ showToast('복사 버튼을 눌러주세요.'); }
+    ta.setSelectionRange(0,0);
+  }
+  doCopy();
+
+  if(window.innerWidth<=880) switchMob('right');
+  const rp=document.getElementById('rp');
+  requestAnimationFrame(()=>{
+    const card=document.getElementById('prompt-card');
+    const r=card.getBoundingClientRect(), rr=rp.getBoundingClientRect();
+    rp.scrollTo({top:rp.scrollTop+(r.top-rr.top)-14,behavior:'smooth'});
+  });
+}
+
+function showCopyStatus(ok){ const el=document.getElementById('copy-status'); if(el)el.style.display=ok?'flex':'none'; }
+
+async function copyPrompt(){
+  const txt=document.getElementById('prompt-output').value; if(!txt)return;
+  const btn=document.getElementById('copy-btn');
+  function onCopied(){
+    btn.innerHTML='<i data-lucide="check"></i><span>복사됨</span>'; icons();
+    btn.classList.add('done'); showCopyStatus(true); showToast('클립보드에 복사되었습니다.');
+    setTimeout(()=>{btn.innerHTML='<i data-lucide="copy"></i><span>복사</span>';btn.classList.remove('done');icons();},2000);
+  }
+  if(navigator.clipboard&&window.isSecureContext){
+    try{ await navigator.clipboard.writeText(txt); onCopied(); return; }catch(e){}
+  }
+  try{
+    const ta=document.getElementById('prompt-output');
+    ta.select(); ta.setSelectionRange(0,99999);
+    if(document.execCommand('copy')){ onCopied(); }
+    else { document.getElementById('prompt-output').select(); showToast('Ctrl+C로 복사해 주세요.'); }
+    ta.setSelectionRange(0,0);
+  }catch(e){ showToast('Ctrl+C로 복사해 주세요.'); }
+}
+
+function showErr(m){ const b=document.getElementById('err-box'); b.innerHTML='<i data-lucide="alert-triangle"></i><span>'+m+'</span>'; b.style.display='flex'; icons(); }
+function clearErr(){ document.getElementById('err-box').style.display='none'; }
+function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.style.opacity='1'; setTimeout(()=>t.style.opacity='0',2800); }
+
+function resetAll(){
+  if(!confirm('모든 입력을 초기화할까요?'))return;
+  ['subject','grade','units','request'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('exam-ratio').value='60';
+  document.getElementById('perf-ratio').value='40';
+  document.getElementById('exam-count').value='2';
+  document.getElementById('perf-count').value='3';
+  document.getElementById('prompt-card').style.display='none';
+  document.getElementById('empty-state').style.display='block';
+  document.getElementById('err-box').style.display='none';
+  document.getElementById('copy-status').style.display='none';
+  renderPerfSections(); updateRatioBar(); uc(); showToast('초기화되었습니다.');
+}
+
+function openGuide(){ document.getElementById('guide-modal').classList.add('open'); }
+function closeGuide(){ document.getElementById('guide-modal').classList.remove('open'); }
+
+let mobP='left';
+function switchMob(p){
+  mobP=p;
+  document.getElementById('lp').classList.toggle('mh',p!=='left');
+  document.getElementById('rp').classList.toggle('mh',p!=='right');
+  document.getElementById('mob-l').classList.toggle('active',p==='left');
+  document.getElementById('mob-r').classList.toggle('active',p==='right');
+}
+
+window.addEventListener('load',()=>{ renderPerfSections(); updateRatioBar(); uc(); icons(); });
+document.addEventListener('keydown',e=>{ if(e.ctrlKey&&e.key==='Enter'){ e.preventDefault(); gen(); } });
+</script>
+
+<script>
+/* ============================================================
+   Design — 사용자용 디자인 설정 패널 (자동 저장)
+   ============================================================ */
+window.Design = (function(){
+  const KEY='evalplan-design-prefs-v1';
+  const DEFAULTS = Object.assign(
+    {accent:'navy', bg:'cool', layout:'focus', density:'compact', dark:false},
+    (window.TWEAK_DEFAULTS||{})
+  );
+  const ACCENTS = {
+    navy:   {label:'네이비',   swatch:'#2A3B73'},
+    indigo: {label:'인디고',   swatch:'#3D45A8'},
+    slate:  {label:'슬레이트', swatch:'#38516E'}
+  };
+  const SEGS = {
+    bg:      [{val:'ivory',label:'아이보리'},{val:'cool',label:'쿨 그레이'}],
+    layout:  [{val:'split',label:'좌우 균등'},{val:'focus',label:'집중형'}],
+    density: [{val:'roomy',label:'넉넉'},{val:'compact',label:'조밀'}]
+  };
+  let state = load();
+  let panel, backdrop, built=false, open=false;
+
+  function load(){ let s={}; try{ s=JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){} return Object.assign({},DEFAULTS,s); }
+  function persist(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+  function ic(){ if(window.lucide&&lucide.createIcons) lucide.createIcons(); }
+
+  function apply(){
+    const b=document.body;
+    b.setAttribute('data-accent',state.accent);
+    b.setAttribute('data-bg',state.bg);
+    b.setAttribute('data-layout',state.layout);
+    b.setAttribute('data-density',state.density);
+    b.classList.toggle('dark',!!state.dark);
+    const dk=document.getElementById('dark-btn');
+    if(dk){ dk.innerHTML=state.dark?'<i data-lucide="sun"></i>':'<i data-lucide="moon"></i>'; }
+    ic();
+  }
+  function set(k,v){ state[k]=v; apply(); persist(); syncUI();
+    try{ window.parent.postMessage({type:'__edit_mode_set_keys',edits:{[k]:v}},'*'); }catch(e){} }
+  function toggleDark(){ set('dark',!state.dark); }
+  function reset(){ state=Object.assign({},DEFAULTS); apply(); persist(); syncUI(); }
+
+  function el(t,c,h){const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
+  function sect(l){return el('div','tw-sect',l);}
+  function seg(key){
+    const w=el('div','tw-seg');
+    SEGS[key].forEach(o=>{const b=el('button',null,o.label);b.type='button';b.dataset.key=key;b.dataset.val=o.val;b.onclick=()=>set(key,o.val);w.appendChild(b);});
+    return w;
+  }
+  function swatches(){
+    const w=el('div','tw-sw-row');
+    Object.entries(ACCENTS).forEach(([val,o])=>{
+      const b=el('button','tw-sw',`<span class="tw-sw-dot"></span><span class="tw-sw-lbl">${o.label}</span>`);
+      b.type='button';b.dataset.key='accent';b.dataset.val=val;b.title=o.label;b.style.setProperty('--c',o.swatch);
+      b.onclick=()=>set('accent',val);w.appendChild(b);
+    });
+    return w;
+  }
+  function row(l,c){const r=el('div','tw-row');r.appendChild(el('div','tw-lbl',l));r.appendChild(c);return r;}
+
+  function build(){
+    backdrop=el('div','tw-backdrop'); backdrop.setAttribute('data-omelette-chrome','');
+    backdrop.onclick=hide; document.body.appendChild(backdrop);
+    panel=el('div','tw-panel'); panel.setAttribute('data-omelette-chrome','');
+    const hd=el('div','tw-hd','<b><i data-lucide="palette"></i> 디자인 설정</b>');
+    const x=el('button','tw-x','✕'); x.setAttribute('aria-label','닫기');
+    x.onclick=()=>{ hide(); try{window.parent.postMessage({type:'__edit_mode_dismissed'},'*');}catch(e){} };
+    hd.appendChild(x); panel.appendChild(hd);
+    const body=el('div','tw-body');
+    body.appendChild(sect('포인트 컬러')); body.appendChild(swatches());
+    body.appendChild(sect('배경 톤'));     body.appendChild(seg('bg'));
+    body.appendChild(sect('레이아웃'));     body.appendChild(seg('layout'));
+    body.appendChild(sect('정보 밀도'));    body.appendChild(seg('density'));
+    body.appendChild(sect('테마'));
+    const tg=el('button','tw-toggle','<i></i>'); tg.type='button'; tg.dataset.role='dark'; tg.onclick=()=>toggleDark();
+    body.appendChild(row('다크 모드',tg));
+    panel.appendChild(body);
+    const foot=el('div','tw-foot');
+    const rs=el('button','tw-reset','<i data-lucide="rotate-ccw"></i> 기본값으로'); rs.onclick=reset; foot.appendChild(rs); panel.appendChild(foot);
+    document.body.appendChild(panel);
+    built=true; syncUI(); ic();
+  }
+  function syncUI(){
+    if(!panel)return;
+    panel.querySelectorAll('.tw-seg button, .tw-sw').forEach(b=>{ b.classList.toggle('on',String(state[b.dataset.key])===String(b.dataset.val)); });
+    const tg=panel.querySelector('.tw-toggle'); if(tg)tg.dataset.on=state.dark?'1':'0';
+  }
+  function show(){ if(!built)build(); panel.style.display='flex'; panel.classList.add('show'); backdrop.classList.add('show'); open=true; syncUI();
+    const db=document.getElementById('design-btn'); if(db)db.classList.add('active-ghost'); }
+  function hide(){ if(panel){panel.style.display='none';panel.classList.remove('show');backdrop.classList.remove('show');} open=false;
+    const db=document.getElementById('design-btn'); if(db)db.classList.remove('active-ghost'); }
+  function toggle(){ open?hide():show(); }
+
+  window.addEventListener('message',e=>{ const t=e&&e.data&&e.data.type; if(t==='__activate_edit_mode')show(); else if(t==='__deactivate_edit_mode')hide(); });
+  try{ window.parent.postMessage({type:'__edit_mode_available'},'*'); }catch(e){}
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&open)hide(); });
+  apply();
+  return { toggle, show, hide, set, toggleDark, reset };
+})();
+</script>
+</body>
+</html>
