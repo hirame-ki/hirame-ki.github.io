@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>생기부 초안 작성 도우미 — 생활기록부 AI 프롬프트 생성기</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://unpkg.com/lucide@0.453.0/dist/umd/lucide.min.js"></script>
+<script>
+window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "navy",
+  "bg": "cool",
+  "layout": "split",
+  "density": "compact",
+  "dark": false
+}/*EDITMODE-END*/;
+</script>
+<style>
+/* ───────── tokens ───────── */
+:root{
+  --accent:#2A3B73; --accent-d:#1E2C58; --accent-l:#EAECF4; --accent-l2:#DBE0EE; --accent-ink:#fff;
+  --bg:#F4F0E6; --bg2:#EBE5D6; --surface:#FFFFFF; --surface2:#FBF8F1;
+  --border:#E5DECF; --border2:#EFE9DC;
+  --ink:#222A3F; --sub:#54607A; --muted:#8C8E9B;
+  --ok:#3C7458; --ok-bg:#EAF2EC;
+  --warn:#9A6B16; --warn-bg:#FAF3E2; --warn-bd:#EAD9B2;
+  --danger:#A23B47;
+  --shadow:0 1px 2px rgba(34,42,63,.04), 0 6px 20px rgba(34,42,63,.05);
+  --shadow-lg:0 12px 36px rgba(34,42,63,.12);
+  --r-lg:16px; --r-md:12px; --r-sm:9px;
+  --hh:62px;
+  --gap:14px; --pad:18px; --secgap:14px;
+}
+/* accent variants */
+body[data-accent="indigo"]{--accent:#3D45A8;--accent-d:#2C338A;--accent-l:#ECEDF8;--accent-l2:#DDDFF2;}
+body[data-accent="slate"]{--accent:#38516E;--accent-d:#2A3E55;--accent-l:#E9EDF2;--accent-l2:#D8E0EA;}
+/* bg variants */
+body[data-bg="cool"]{--bg:#EFF2F6;--bg2:#E4E9EF;--surface2:#F7F9FB;--border:#DDE3EB;--border2:#E9EDF3;}
+/* density */
+body[data-density="compact"]{--gap:10px;--pad:13px;--secgap:9px;}
+
+/* dark */
+body.dark{
+  --bg:#13151D; --bg2:#181B25; --surface:#1B1E2A; --surface2:#20242F;
+  --border:#2D3242; --border2:#272C3A;
+  --ink:#E7E9F1; --sub:#A8AEC1; --muted:#6C7286;
+  --ok:#5FB089; --ok-bg:#16241D;
+  --warn:#D6B36C; --warn-bg:#241D0E; --warn-bd:#473A1C;
+  --danger:#DB8993;
+  --shadow:0 2px 16px rgba(0,0,0,.4);
+  --shadow-lg:0 16px 40px rgba(0,0,0,.5);
+}
+body.dark[data-accent="navy"]{--accent:#8E9CDD;--accent-d:#A8B2E7;--accent-l:#212747;--accent-l2:#2B3258;--accent-ink:#101321;}
+body.dark[data-accent="indigo"]{--accent:#9aa1ee;--accent-d:#b2b7f2;--accent-l:#1f2150;--accent-l2:#2a2d63;--accent-ink:#0e0f22;}
+body.dark[data-accent="slate"]{--accent:#8FB2D8;--accent-d:#a8c4e2;--accent-l:#172636;--accent-l2:#203247;--accent-ink:#0c1722;}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);
+  display:flex;flex-direction:column;min-height:100vh;overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  transition:background .35s, color .35s;
+  letter-spacing:-.01em;
+  word-break:keep-all;
+}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+i[data-lucide]{width:1em;height:1em;stroke-width:1.9;vertical-align:-.06em;flex-shrink:0}
+
+/* ───────── header ───────── */
+.hdr{height:var(--hh);min-height:var(--hh);flex-shrink:0;background:var(--surface);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;
+  padding:0 22px;gap:14px;z-index:200;transition:background .35s,border-color .35s}
+.brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.brand-mark{width:38px;height:38px;border-radius:11px;background:var(--accent);
+  color:var(--accent-ink);display:flex;align-items:center;justify-content:center;
+  font-size:19px;flex-shrink:0;box-shadow:0 2px 8px rgba(42,59,115,.22)}
+body.dark .brand-mark{box-shadow:none}
+.brand-name{font-size:16px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.brand-sub{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ver-badge{font-size:11px;color:var(--accent);font-weight:600;background:var(--accent-l);
+  border:1px solid var(--accent-l2);border-radius:8px;padding:5px 10px;white-space:nowrap;flex-shrink:0;margin-left:4px}
+.hdr-acts{display:flex;gap:8px;flex-shrink:0;align-items:center}
+.ghost-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--r-sm);
+  background:var(--surface);border:1px solid var(--border);color:var(--sub);
+  font-size:12.5px;font-weight:600;cursor:pointer;transition:all .16s;white-space:nowrap;font-family:inherit}
+.ghost-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.ghost-btn i{font-size:14px;color:var(--muted);transition:color .16s}
+.ghost-btn:hover i{color:var(--accent)}
+.ghost-btn.active-ghost{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.ghost-btn.active-ghost i{color:var(--accent)}
+.icon-btn{width:36px;height:36px;border-radius:var(--r-sm);background:var(--surface);
+  border:1px solid var(--border);color:var(--sub);cursor:pointer;display:flex;
+  align-items:center;justify-content:center;font-size:15px;transition:all .16s}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+
+/* ───────── progress stepper (merged guide + checklist) ───────── */
+.stepbar{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:stretch;gap:0;padding:0 14px;overflow-x:auto;overflow-y:hidden;
+  transition:background .35s,border-color .35s}
+.stepbar::-webkit-scrollbar{height:0}
+.step{display:flex;align-items:center;gap:9px;padding:11px 16px;background:none;border:none;
+  cursor:pointer;font-family:inherit;white-space:nowrap;position:relative;transition:opacity .15s;flex-shrink:0}
+.step:not(:last-child)::after{content:"";width:14px;height:1px;background:var(--border);margin-left:14px}
+.step-no{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;
+  color:var(--muted);background:var(--surface);flex-shrink:0;transition:all .25s}
+.step-tx{font-size:12.5px;font-weight:600;color:var(--muted);transition:color .25s}
+.step:hover .step-tx{color:var(--ink)}
+.step:hover .step-no{border-color:var(--accent);color:var(--accent)}
+.step.req .step-tx::after{content:"*";color:var(--danger);margin-left:3px;font-weight:800}
+.step.done .step-no{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.step.done .step-tx{color:var(--ink)}
+.step.done .step-no .num{display:none}
+.step.done .step-no .ck{display:block}
+.step-no .ck{display:none;width:13px;height:13px;stroke-width:3}
+
+/* ───────── mobile tabs ───────── */
+.mob-tabs{display:none;background:var(--surface);border-bottom:1px solid var(--border)}
+.mob-tabs button{flex:1;padding:13px;font-size:13.5px;font-weight:700;border:none;cursor:pointer;
+  background:none;color:var(--muted);border-bottom:2.5px solid transparent;transition:all .18s;
+  font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px}
+.mob-tabs button.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ───────── main split ───────── */
+.main{display:flex;flex:1;min-height:0;overflow:hidden}
+.lp{width:50%;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;overflow-x:hidden;
+  padding:calc(var(--pad) + 6px) var(--pad) 80px;background:var(--bg);transition:background .35s,border-color .35s,width .3s}
+.rp{width:50%;flex-shrink:0;overflow-y:auto;overflow-x:hidden;
+  padding:calc(var(--pad) + 6px) var(--pad) 80px;background:var(--bg2);transition:background .35s,width .3s}
+body[data-layout="focus"] .lp{width:58%}
+body[data-layout="focus"] .rp{width:42%}
+.lp-inner{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:var(--secgap)}
+.rp-inner{max-width:600px;margin:0 auto}
+
+/* ───────── section accordion ───────── */
+.sw{}
+.sh{display:flex;align-items:center;gap:11px;font-size:13.5px;font-weight:700;white-space:nowrap;
+  padding:14px var(--pad);border-radius:var(--r-lg);background:var(--surface);
+  border:1px solid var(--border2);cursor:pointer;user-select:none;transition:all .18s;box-shadow:var(--shadow);color:var(--ink)}
+.sh:hover{border-color:var(--accent-l2)}
+.sw:not(.collapsed) .sh{border-radius:var(--r-lg) var(--r-lg) 0 0;border-bottom-color:transparent;box-shadow:none}
+.req-tag{font-size:11px;color:var(--danger);font-weight:700;margin-left:1px;white-space:nowrap}
+.opt-tag{font-size:11px;color:var(--muted);font-weight:600;margin-left:1px;white-space:nowrap}
+.toggle-pill{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;
+  color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:4px 9px;
+  border-radius:20px;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.sh:hover .toggle-pill{border-color:var(--accent-l2);color:var(--accent)}
+.toggle-pill .chev{font-size:11px;transition:transform .25s}
+.sw.collapsed .toggle-pill .chev{transform:rotate(-90deg)}
+.toggle-pill .pt::before{content:"접기"}
+.sw.collapsed .toggle-pill .pt::before{content:"펼치기"}
+.sn{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;background:var(--accent-l);color:var(--accent)}
+.sn i{font-size:14px}
+.sb{overflow:hidden;transition:max-height .34s cubic-bezier(.4,0,.2,1);max-height:6000px}
+.sw.collapsed .sb{max-height:0}
+.sec-block{background:var(--surface);border:1px solid var(--border2);border-top:none;
+  padding:var(--pad);border-radius:0 0 var(--r-lg) var(--r-lg);box-shadow:var(--shadow)}
+
+.sub-lbl{font-size:11.5px;font-weight:700;color:var(--sub);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.sub-lbl i{color:var(--accent);font-size:13px}
+.field-lbl{font-size:12px;font-weight:700;color:var(--sub);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.field-req{color:var(--danger);font-weight:800;font-size:11px}
+
+.fg6{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:4px}
+
+/* ───────── chips (unified neutral, accent when active) ───────── */
+.chip{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:var(--r-sm);
+  font-size:13px;font-weight:500;cursor:pointer;user-select:none;border:1px solid var(--border);
+  background:var(--surface);color:var(--sub);transition:all .15s;line-height:1.25;white-space:nowrap;flex-shrink:0}
+.chip i{font-size:14px;color:var(--muted);transition:color .15s}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.chip:hover i{color:var(--accent)}
+.chip.active-chip{background:var(--accent)!important;border-color:var(--accent)!important;color:var(--accent-ink)!important}
+.chip.active-chip i{color:var(--accent-ink)!important}
+.ch-mint,.ch-blue,.ch-rose,.ch-amber,.ch-gray,.ch-purple,.ch-teal,.ch-violet,.ch-green{}
+
+/* ───────── area-specific extra settings ───────── */
+.area-extra{display:none;background:var(--surface);border:1px solid var(--accent-l2);
+  border-radius:var(--r-lg);padding:var(--pad);box-shadow:var(--shadow)}
+.area-extra.show{display:block;animation:fadeIn .2s ease}
+.extra-title{font-size:12.5px;font-weight:700;color:var(--accent);display:inline-flex;
+  align-items:center;gap:7px;margin-bottom:13px}
+.extra-title i{font-size:15px}
+.area-extra .field-lbl{margin-top:13px}
+.area-extra .field-lbl:first-of-type{margin-top:0}
+
+/* ───────── domain accordion ───────── */
+#domain-area{display:flex;flex-direction:column;gap:6px}
+.domain-btn{width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);
+  font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;user-select:none;transition:all .15s}
+.domain-btn:hover{border-color:var(--accent);color:var(--accent)}
+.domain-btn.open{border-color:var(--accent);color:var(--accent);background:var(--accent-l);
+  border-radius:var(--r-sm) var(--r-sm) 0 0;border-bottom-color:transparent}
+.domain-btn .chev{display:flex;font-size:14px;transition:transform .22s;color:var(--muted)}
+.domain-btn.open .chev{transform:rotate(180deg);color:var(--accent)}
+.domain-panel{display:none;background:var(--surface);border:1px solid var(--accent);border-top:none;
+  border-radius:0 0 var(--r-sm) var(--r-sm);padding:13px 14px;margin-top:-6px;margin-bottom:2px;animation:fadeIn .18s ease}
+.domain-panel.show{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ───────── inputs ───────── */
+.inp{width:100%;padding:11px 13px;border-radius:var(--r-sm);background:var(--surface2);
+  border:1px solid var(--border);font-size:13.5px;font-family:inherit;color:var(--ink);
+  outline:none;transition:border-color .15s,box-shadow .15s;letter-spacing:-.01em}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-l)}
+.inp::placeholder{color:var(--muted)}
+textarea.inp{resize:vertical;line-height:1.75}
+select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1.5l5 5 5-5' stroke='%238C8E9B' stroke-width='1.7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px;cursor:pointer}
+
+.note{font-size:12px;color:var(--muted);line-height:1.6}
+.callout{display:flex;align-items:flex-start;gap:9px;border-radius:var(--r-md);padding:11px 13px;font-size:12.5px;line-height:1.65}
+.callout i{font-size:15px;flex-shrink:0;margin-top:1px}
+.callout-info{background:var(--accent-l);border:1px solid var(--accent-l2);color:var(--accent-d)}
+.callout-info i{color:var(--accent)}
+.callout-warn{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn)}
+.callout-warn i{color:var(--warn)}
+
+.opt-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--sub);font-size:12.5px;
+  font-weight:600;user-select:none;padding:4px 0;margin-bottom:8px}
+.opt-toggle .arr{font-size:11px;transition:transform .2s;color:var(--muted);display:flex}
+.opt-toggle.open .arr{transform:rotate(90deg)}
+.opt-body{display:none}
+.opt-body.show{display:block}
+
+.ver-help{font-size:12.5px;color:var(--sub);margin-top:9px;line-height:1.75;background:var(--surface2);
+  padding:11px 13px;border-radius:var(--r-md);border:1px solid var(--border2)}
+.ver-help b{color:var(--accent)}
+.ver-help .human{color:var(--danger)}
+
+/* ───────── generate button ───────── */
+.gen-btn{width:100%;background:var(--accent);color:var(--accent-ink);font-size:15px;font-weight:700;
+  padding:16px;border-radius:var(--r-md);border:none;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:9px;box-shadow:0 4px 16px rgba(42,59,115,.25);transition:all .18s;font-family:inherit;margin-top:2px}
+.gen-btn i{font-size:18px}
+.gen-btn:hover{background:var(--accent-d);transform:translateY(-1px);box-shadow:0 8px 22px rgba(42,59,115,.32)}
+body.dark .gen-btn{box-shadow:none}
+#err-box{display:none;align-items:center;gap:8px;margin-top:10px;background:var(--warn-bg);
+  border:1px solid var(--warn-bd);border-radius:var(--r-md);padding:11px 14px;font-size:12.5px;color:var(--danger);font-weight:600}
+#err-box i{font-size:15px}
+
+/* ───────── right panel cards ───────── */
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-lg);
+  padding:var(--pad);margin-bottom:var(--gap);box-shadow:var(--shadow)}
+.card-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:13px;display:flex;align-items:center;gap:8px}
+.card-title i{color:var(--accent);font-size:15px}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.s-cell{background:var(--surface2);border-radius:var(--r-sm);padding:10px 12px;border:1px solid var(--border2)}
+.s-cell-lbl{color:var(--muted);font-size:11px;font-weight:600}
+.s-cell-val{font-weight:600;color:var(--ink);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.s-keywords-wrap{margin-top:10px;padding-top:12px;border-top:1px solid var(--border2)}
+
+.forbidden-tags{display:flex;flex-wrap:wrap;gap:6px}
+.f-tag{font-size:11px;font-weight:600;background:var(--warn-bg);border:1px solid var(--warn-bd);
+  color:var(--warn);padding:4px 9px;border-radius:7px;white-space:nowrap}
+
+.prompt-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-lg);
+  overflow:hidden;box-shadow:var(--shadow);display:none;margin-bottom:var(--gap)}
+.prompt-hdr{background:var(--surface2);padding:14px var(--pad);display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1px solid var(--border2)}
+.prompt-hdr-t{font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px}
+.prompt-hdr-t i{color:var(--accent);font-size:15px}
+.copy-btn{display:flex;align-items:center;gap:7px;background:var(--accent);color:var(--accent-ink);
+  border:none;padding:9px 15px;border-radius:var(--r-sm);font-size:12.5px;font-weight:700;cursor:pointer;
+  font-family:inherit;transition:all .18s}
+.copy-btn i{font-size:14px}
+.copy-btn:hover{background:var(--accent-d)}
+.copy-btn.done{background:var(--ok)}
+#copy-status{display:none;align-items:center;gap:7px;color:var(--ok);font-size:12.5px;font-weight:600;padding:9px var(--pad)}
+#copy-status i{font-size:15px}
+#prompt-output{width:100%;min-height:340px;max-height:520px;padding:var(--pad);font-size:12.5px;
+  font-family:'SF Mono',ui-monospace,'DM Mono',Menlo,monospace;line-height:1.85;border:none;outline:none;
+  resize:vertical;color:var(--ink);background:var(--surface)}
+.ai-links{padding:14px var(--pad);border-top:1px solid var(--border2)}
+.ai-links-t{font-size:12px;font-weight:700;color:var(--sub);margin-bottom:10px}
+.ai-link-btns{display:flex;flex-wrap:wrap;gap:7px}
+.ai-link-btn{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;
+  border:1px solid var(--border);color:var(--sub);transition:all .15s;background:var(--surface2)}
+.ai-link-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+
+#empty-state{margin-top:60px;text-align:center;color:var(--muted)}
+.empty-icon{width:64px;height:64px;border-radius:18px;background:var(--accent-l);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:28px}
+.empty-t{font-size:14.5px;font-weight:700;margin-bottom:8px;color:var(--sub)}
+.empty-d{font-size:12.5px;line-height:1.9;color:var(--muted)}
+.empty-d b{color:var(--accent)}
+
+/* ───────── toast / modal ───────── */
+#toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  padding:12px 20px;border-radius:var(--r-md);font-size:13px;font-weight:600;z-index:9999;opacity:0;
+  transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow-lg)}
+.modal-bg{position:fixed;inset:0;background:rgba(20,24,35,.5);z-index:1000;display:none;
+  align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(5px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:20px;padding:28px;max-width:560px;width:100%;
+  max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);border:1px solid var(--border2)}
+.modal-x{background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:34px;height:34px;
+  border-radius:9px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal-x:hover{border-color:var(--danger);color:var(--danger)}
+.guide-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border2)}
+.guide-step:last-of-type{border-bottom:none}
+.guide-no{width:28px;height:28px;border-radius:50%;background:var(--accent-l);border:1px solid var(--accent-l2);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);flex-shrink:0}
+.guide-st{font-weight:700;font-size:13.5px;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.guide-sd{font-size:12.5px;color:var(--sub);line-height:1.7}
+.modal-btn{background:var(--accent);color:var(--accent-ink);border:none;padding:11px 34px;border-radius:var(--r-md);
+  font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+.modal-btn:hover{background:var(--accent-d)}
+
+footer{background:var(--surface);border-top:1px solid var(--border);padding:13px 22px;text-align:center;
+  font-size:11.5px;color:var(--muted);flex-shrink:0;transition:background .35s,border-color .35s}
+footer a{color:var(--accent);text-decoration:none;font-weight:600}
+
+/* ───────── design panel (in-page, user-facing) ───────── */
+.tw-backdrop{position:fixed;inset:0;z-index:2147483645;display:none}
+.tw-backdrop.show{display:block}
+.tw-panel{position:fixed;right:16px;top:calc(var(--hh) + 8px);z-index:2147483646;width:280px;display:none;
+  flex-direction:column;background:var(--surface);color:var(--ink);border:1px solid var(--border);
+  border-radius:16px;box-shadow:var(--shadow-lg);font-size:12px;overflow:hidden;opacity:1;
+  transform-origin:top right;transition:opacity .15s, transform .15s}
+.tw-panel.show{display:flex}
+@keyframes dpopIn{from{opacity:0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+.tw-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 12px 13px 17px;
+  border-bottom:1px solid var(--border2)}
+.tw-hd b{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.tw-hd b i{color:var(--accent);font-size:15px}
+.tw-foot{padding:11px 16px;border-top:1px solid var(--border2);display:flex;justify-content:flex-end}
+.tw-reset{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--sub);
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;cursor:pointer;font-family:inherit;transition:all .15s}
+.tw-reset:hover{border-color:var(--accent);color:var(--accent)}
+.tw-reset i{font-size:13px}
+@media(max-width:880px){
+  .tw-panel{right:12px;left:12px;width:auto;top:auto;bottom:12px;max-width:380px;margin:0 auto}
+}
+.tw-x{border:0;background:transparent;color:var(--muted);width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:13px}
+.tw-x:hover{background:var(--bg2);color:var(--ink)}
+.tw-body{padding:6px 16px 16px;display:flex;flex-direction:column;gap:9px;overflow-y:auto;max-height:70vh}
+.tw-sect{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:8px}
+.tw-sect:first-child{padding-top:2px}
+.tw-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tw-lbl{font-weight:600;color:var(--sub)}
+.tw-seg{display:flex;padding:3px;border-radius:9px;background:var(--bg2);gap:3px}
+.tw-seg button{flex:1;border:0;background:transparent;color:var(--sub);font:inherit;font-weight:600;
+  padding:6px 4px;border-radius:6px;cursor:pointer;transition:all .15s}
+.tw-seg button.on{background:var(--surface);color:var(--accent);box-shadow:var(--shadow)}
+.tw-sw-row{display:flex;gap:7px}
+.tw-sw{flex:1;border:1px solid var(--border);background:var(--surface2);border-radius:9px;padding:8px 4px 7px;
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .15s;font-family:inherit}
+.tw-sw-dot{width:20px;height:20px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px rgba(0,0,0,.06)}
+.tw-sw-lbl{font-size:10.5px;font-weight:600;color:var(--sub)}
+.tw-sw.on{border-color:var(--c);background:var(--accent-l)}
+.tw-sw.on .tw-sw-lbl{color:var(--ink)}
+.tw-sw.on .tw-sw-dot{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--c)}
+.tw-toggle{position:relative;width:38px;height:22px;border:0;border-radius:999px;background:var(--border);
+  cursor:pointer;padding:0;transition:background .15s;flex-shrink:0}
+.tw-toggle[data-on="1"]{background:var(--accent)}
+.tw-toggle i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+.tw-toggle[data-on="1"] i{transform:translateX(16px)}
+
+/* ───────── responsive ───────── */
+@media(max-width:880px){
+  html,body{height:auto;min-height:100vh;overflow:visible}
+  .brand-sub,.ver-badge{display:none}
+  .ghost-btn span{display:none}
+  .ghost-btn{padding:8px 11px}
+  .hdr{position:sticky;top:0;z-index:200;padding:0 14px}
+  .stepbar{display:none}
+  .mob-tabs{display:flex;position:sticky;top:var(--hh);z-index:190}
+  .main{flex-direction:column;overflow:visible;flex:1}
+  .lp,.rp{width:100%!important;height:auto;border-right:none;padding:18px 14px 50px;overflow:visible;flex:1}
+  .lp.mh,.rp.mh{display:none}
+}
+@media(max-height:640px){footer{display:none}}
+</style>
+</head>
+<body data-accent="navy" data-bg="cool" data-layout="focus" data-density="compact">
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="brand">
+    <div class="brand-mark"><i data-lucide="pen-line"></i></div>
+    <div>
+      <div class="brand-name">생기부 초안 작성 도우미</div>
+      <div class="brand-sub">생활기록부 세특·행특·창체 AI 프롬프트 생성기</div>
+    </div>
+    <div class="ver-badge">2026 기재요령 기준</div>
+  </div>
+  <div class="hdr-acts">
+    <button class="ghost-btn" onclick="openGuide()"><i data-lucide="book-open"></i><span>사용 가이드</span></button>
+    <button class="ghost-btn" id="design-btn" onclick="Design.toggle()"><i data-lucide="palette"></i><span>디자인</span></button>
+    <button class="ghost-btn" onclick="resetAll()"><i data-lucide="rotate-ccw"></i><span>초기화</span></button>
+    <button class="icon-btn" id="dark-btn" onclick="Design.toggleDark()" title="다크 모드"><i data-lucide="moon"></i></button>
+  </div>
+</header>
+
+<!-- PROGRESS STEPPER -->
+<nav class="stepbar" aria-label="진행 단계">
+  <button class="step req pending" id="cl-area" onclick="goStep('s0')"><span class="step-no"><span class="num">1</span><i data-lucide="check" class="ck"></i></span><span class="step-tx">영역 선택</span></button>
+  <button class="step req pending" id="cl-grade" onclick="goStep('s1')"><span class="step-no"><span class="num">2</span><i data-lucide="check" class="ck"></i></span><span class="step-tx">기본 정보</span></button>
+  <button class="step pending" id="cl-case" onclick="goStep('s2')"><span class="step-no"><span class="num">3</span><i data-lucide="check" class="ck"></i></span><span class="step-tx">학생 사례</span></button>
+  <button class="step pending" id="cl-kw" onclick="goStep('s3')"><span class="step-no"><span class="num">4</span><i data-lucide="check" class="ck"></i></span><span class="step-tx">키워드</span></button>
+  <button class="step pending" id="cl-tone" onclick="goStep('s4')"><span class="step-no"><span class="num">5</span><i data-lucide="check" class="ck"></i></span><span class="step-tx">문체·버전</span></button>
+  <button class="step pending" id="cl-style" onclick="goStep('s5')"><span class="step-no"><span class="num">6</span><i data-lucide="check" class="ck"></i></span><span class="step-tx">문장 스타일</span></button>
+  <button class="step pending" id="cl-dup" onclick="goStep('s6')"><span class="step-no"><span class="num">7</span><i data-lucide="check" class="ck"></i></span><span class="step-tx">중복 방지</span></button>
+</nav>
+
+<!-- MOB TABS -->
+<div class="mob-tabs" id="mob-tabs">
+  <button class="active" id="mob-l" onclick="switchMob('left')"><i data-lucide="sliders-horizontal"></i> 설정</button>
+  <button id="mob-r" onclick="switchMob('right')"><i data-lucide="file-text"></i> 결과</button>
+</div>
+
+<div class="main">
+<!-- ════ LEFT PANEL ════ -->
+<div class="lp" id="lp">
+<div class="lp-inner">
+
+<!-- S0: 영역 선택 -->
+<div class="sw" id="s0">
+  <div class="sh" onclick="ts('s0')">
+    <div class="sn"><i data-lucide="layout-grid"></i></div> 생기부 영역 선택 <span class="req-tag">필수</span>
+    <div class="toggle-pill"><span class="pt"></span><i data-lucide="chevron-down" class="chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block">
+    <div class="fg6">
+      <div class="chip" data-area="교과세특" onclick="selAreaFn(this)"><i data-lucide="book-open"></i> 교과세특</div>
+      <div class="chip" data-area="행동특성 및 종합의견" onclick="selAreaFn(this)"><i data-lucide="user-round"></i> 행동특성 및 종합의견</div>
+      <div class="chip" data-area="자율·자치활동 특기사항" onclick="selAreaFn(this)"><i data-lucide="users"></i> 자율·자치활동</div>
+      <div class="chip" data-area="동아리활동 특기사항" onclick="selAreaFn(this)"><i data-lucide="palette"></i> 동아리활동</div>
+      <div class="chip" data-area="봉사활동 특기사항" onclick="selAreaFn(this)"><i data-lucide="heart-handshake"></i> 봉사활동</div>
+      <div class="chip" data-area="진로활동 특기사항" onclick="selAreaFn(this)"><i data-lucide="compass"></i> 진로활동</div>
+    </div>
+    <div id="subj-field" style="display:none;margin-top:12px">
+      <div class="field-lbl">과목명 <span class="field-req">필수</span></div>
+      <input type="text" class="inp" id="subj-inp" placeholder="예) 한국사, 수학, 통합과학, 일본어…" oninput="uc()">
+    </div>
+  </div></div>
+</div>
+
+<!-- Area-specific extra settings (dynamic) -->
+<div class="area-extra" id="area-extra">
+  <div id="area-extra-content"></div>
+</div>
+
+<!-- S1: 기본 정보 -->
+<div class="sw" id="s1">
+  <div class="sh" onclick="ts('s1')">
+    <div class="sn"><i data-lucide="info"></i></div> 기본 정보 <span class="req-tag">필수</span>
+    <div class="toggle-pill"><span class="pt"></span><i data-lucide="chevron-down" class="chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;margin-bottom:13px">
+      <div>
+        <div class="field-lbl">학년 <span class="field-req">필수</span></div>
+        <select class="inp" id="grade-sel" onchange="uc()">
+          <option value="">선택</option>
+          <optgroup label="중학교">
+            <option value="중학교 1학년">중1</option>
+            <option value="중학교 2학년">중2</option>
+            <option value="중학교 3학년">중3</option>
+          </optgroup>
+          <optgroup label="고등학교">
+            <option value="고등학교 1학년">고1</option>
+            <option value="고등학교 2학년">고2</option>
+            <option value="고등학교 3학년">고3 (진로 연계 강화)</option>
+          </optgroup>
+        </select>
+      </div>
+      <div>
+        <div class="field-lbl">학기</div>
+        <select class="inp" id="semester-sel" onchange="uc()">
+          <option value="">선택 안 함</option>
+          <option value="1학기">1학기</option>
+          <option value="2학기">2학기</option>
+          <option value="연간">연간(통합)</option>
+        </select>
+      </div>
+      <div>
+        <div class="field-lbl">글자 수 목표</div>
+        <select class="inp" id="char-sel" onchange="uc()">
+          <option value="150자 내외">150자 내외</option>
+          <option value="300자 내외">300자 내외</option>
+          <option value="500자 내외" selected>500자 내외</option>
+          <option value="700자 내외">700자 내외</option>
+          <option value="1000자 이내">1000자 이내</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <div class="field-lbl">학생 진로 희망 <span class="opt-tag">선택 · 입력 시 진로 연계 강화</span></div>
+      <input type="text" class="inp" id="career-inp" placeholder="예) 교사, 간호사, 소프트웨어 개발자, 환경공학자…" oninput="uc()">
+    </div>
+  </div></div>
+</div>
+
+<!-- S2: 학생 사례 -->
+<div class="sw" id="s2">
+  <div class="sh" onclick="ts('s2')">
+    <div class="sn"><i data-lucide="clipboard-pen"></i></div> 학생 실제 사례 입력
+    <div class="toggle-pill"><span class="pt"></span><i data-lucide="chevron-down" class="chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block">
+    <div class="sub-lbl"><i data-lucide="eye"></i> 교사가 관찰한 수업 장면·에피소드·활동 내용</div>
+    <div class="callout callout-info" style="margin-bottom:11px">
+      <i data-lucide="sparkles"></i>
+      <div>학생마다 개별화된 세특 작성을 위해, 각 학생의 구체적인 행동·사례를 입력하는 것을 강력히 권장합니다.</div>
+    </div>
+    <textarea class="inp" id="case-inp" rows="5" oninput="uc()" placeholder="• 수업 중 발표한 내용, 모둠 활동에서의 역할
+• 발표·토론·실험·프로젝트에서 보여준 특성
+• 인상 깊었던 에피소드나 순간
+• 여러 개 나열해도 됩니다 — AI가 자연스럽게 엮어드립니다"></textarea>
+  </div></div>
+</div>
+
+<!-- S3: 키워드 -->
+<div class="sw" id="s3">
+  <div class="sh" onclick="ts('s3')">
+    <div class="sn"><i data-lucide="tags"></i></div> 특장점 키워드 선택
+    <div class="toggle-pill"><span class="pt"></span><i data-lucide="chevron-down" class="chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block">
+    <div class="note" style="margin-bottom:11px">분야를 클릭하면 키워드가 펼쳐집니다 · 여러 분야·키워드 동시 선택 가능</div>
+    <div id="domain-area"></div>
+  </div></div>
+</div>
+
+<!-- S4: 문체 -->
+<div class="sw" id="s4">
+  <div class="sh" onclick="ts('s4')">
+    <div class="sn"><i data-lucide="pen-tool"></i></div> 문체 · 버전 설정
+    <div class="toggle-pill"><span class="pt"></span><i data-lucide="chevron-down" class="chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block">
+    <div class="sub-lbl"><i data-lucide="type"></i> 문체 스타일</div>
+    <div class="fg6" id="tone-chips" style="margin-bottom:14px">
+      <div class="chip active-chip" data-tone="관찰자형 (학생을 직접 관찰한 교사의 시점으로 생생하게)" onclick="selToneFn(this)"><i data-lucide="eye"></i> 관찰자형</div>
+      <div class="chip" data-tone="분석적 (학생의 특성을 분석적이고 구체적으로 서술)" onclick="selToneFn(this)"><i data-lucide="search"></i> 분석적</div>
+      <div class="chip" data-tone="따뜻한 (학생에 대한 따뜻한 교사의 시선과 격려가 담긴)" onclick="selToneFn(this)"><i data-lucide="heart"></i> 따뜻한</div>
+      <div class="chip" data-tone="간결한 (군더더기 없이 핵심만 간결하게)" onclick="selToneFn(this)"><i data-lucide="scissors"></i> 간결한</div>
+      <div class="chip" data-tone="서사적 (학생의 성장 스토리가 자연스럽게 느껴지는)" onclick="selToneFn(this)"><i data-lucide="book-open"></i> 서사적</div>
+    </div>
+    <div class="sub-lbl"><i data-lucide="copy"></i> 출력 버전 옵션</div>
+    <div class="fg6" id="version-chips">
+      <div class="chip active-chip" data-ver="both" onclick="selVerFn(this)"><i data-lucide="sparkles"></i> AI 답변 + 인간화 답변</div>
+      <div class="chip" data-ver="draft" onclick="selVerFn(this)"><i data-lucide="file-text"></i> AI 답변만</div>
+      <div class="chip" data-ver="human" onclick="selVerFn(this)"><i data-lucide="user-round"></i> 인간화 답변만</div>
+    </div>
+    <div class="ver-help">
+      <div style="margin-bottom:5px"><b>[AI 답변]</b> 입력된 정보를 충실하게 담아 구조적이고 완성도 있게 작성</div>
+      <div><b class="human">[인간화 답변]</b> 실제 교사가 학생을 직접 관찰하고 쓴 것처럼 자연스럽고 인간적인 문체. 관료적 표현보다 생생한 장면과 구체적 행동 중심</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- S5: 교사 스타일 -->
+<div class="sw collapsed" id="s5">
+  <div class="sh" onclick="ts('s5')">
+    <div class="sn"><i data-lucide="feather"></i></div> 교사 문장 스타일 참고 <span class="opt-tag">선택</span>
+    <div class="toggle-pill"><span class="pt"></span><i data-lucide="chevron-down" class="chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block">
+    <div class="opt-toggle" id="style-toggle" onclick="toggleOpt('style-body','style-toggle')">
+      <span class="arr"><i data-lucide="chevron-right"></i></span> 내 문장 스타일을 AI에게 알려주기
+    </div>
+    <div class="opt-body show" id="style-body">
+      <textarea class="inp" id="style-inp" rows="4" oninput="uc()" placeholder="선생님이 직접 작성하신 생기부 문장 3~4문장을 붙여주세요.
+AI가 해당 문체·어투를 참고하여 비슷한 스타일로 작성해 드립니다.
+
+예) '수업 중 질문이 많고 탐구 의지가 강하여 교사도 미처 생각하지 못한 시각을 제시함. 모둠 활동에서 구성원의 의견을 취합하는 역할을 자발적으로 맡아 프로젝트 완성에 크게 기여함.'"></textarea>
+      <div class="note" style="margin-top:7px">※ 입력하지 않아도 기본 스타일로 작성됩니다.</div>
+    </div>
+  </div></div>
+</div>
+
+<!-- S6: 중복 방지 -->
+<div class="sw collapsed" id="s6">
+  <div class="sh" onclick="ts('s6')">
+    <div class="sn"><i data-lucide="copy-check"></i></div> 중복 표현 방지 <span class="opt-tag">선택</span>
+    <div class="toggle-pill"><span class="pt"></span><i data-lucide="chevron-down" class="chev"></i></div>
+  </div>
+  <div class="sb"><div class="sec-block">
+    <div class="opt-toggle" id="dup-toggle" onclick="toggleOpt('dup-body','dup-toggle')">
+      <span class="arr"><i data-lucide="chevron-right"></i></span> 이전 학생 결과물 붙여넣기 (중복 방지)
+    </div>
+    <div class="opt-body show" id="dup-body">
+      <textarea class="inp" id="dup-inp" rows="4" oninput="uc()" placeholder="이전에 작성한 다른 학생의 생기부 문장을 붙여넣으면, AI가 비슷한 표현·구조·어휘가 반복되지 않도록 작성해 드립니다.
+
+여러 학생을 연속으로 작성할 때 특히 유용합니다.
+또는 피하고 싶은 특정 표현을 직접 입력해도 됩니다."></textarea>
+    </div>
+  </div></div>
+</div>
+
+<!-- GEN BUTTON -->
+<div>
+  <button class="gen-btn" onclick="gen()"><i data-lucide="sparkles"></i> 프롬프트 생성하기 <span style="opacity:.7;font-weight:600;font-size:12px">(Ctrl+Enter)</span></button>
+  <div class="callout callout-info" style="margin-top:11px">
+    <i data-lucide="puzzle"></i>
+    <div><b style="color:var(--accent-d)">개별화 프롬프트 자동 포함</b><br>
+    <span style="color:var(--sub)">앞서 작성된 AI 답변과 표현·구조가 겹치지 않도록 비교·개별화하는 지침이 기본 포함됩니다. 여러 학생을 연속 작성할 때 같은 AI 대화창을 유지하면 더욱 효과적입니다.</span></div>
+  </div>
+  <div id="err-box"></div>
+</div>
+
+</div><!-- /lp-inner -->
+</div><!-- /lp -->
+
+<!-- ════ RIGHT PANEL ════ -->
+<div class="rp" id="rp">
+<div class="rp-inner">
+
+  <!-- 현재 선택 요약 -->
+  <div class="card">
+    <div class="card-title"><i data-lucide="clipboard-list"></i> 현재 선택 요약</div>
+    <div class="summary-grid">
+      <div class="s-cell"><div class="s-cell-lbl">영역</div><div class="s-cell-val" id="s-area">미선택</div></div>
+      <div class="s-cell"><div class="s-cell-lbl">학년 · 학기 · 과목</div><div class="s-cell-val" id="s-grade">미입력</div></div>
+      <div class="s-cell"><div class="s-cell-lbl">진로 희망</div><div class="s-cell-val" id="s-career">미입력</div></div>
+      <div class="s-cell"><div class="s-cell-lbl">문체 · 버전</div><div class="s-cell-val" id="s-tone">관찰자형 · AI 답변+인간화 답변</div></div>
+    </div>
+    <div class="s-keywords-wrap">
+      <div class="s-cell-lbl" style="margin-bottom:6px">선택된 키워드</div>
+      <div id="s-keywords" class="note" style="font-weight:500">없음</div>
+    </div>
+  </div>
+
+  <!-- 입력불가 용어 안내 -->
+  <div class="card">
+    <div class="card-title" style="color:var(--warn)"><i data-lucide="shield-alert" style="color:var(--warn)"></i> 2026 기재요령 입력 불가 표현</div>
+    <div class="note" style="margin-bottom:11px">아래 항목은 프롬프트에 자동 반영되어 결과물에서 배제됩니다.</div>
+    <div class="forbidden-tags">
+      <span class="f-tag">대회·수상실적</span><span class="f-tag">자격증명</span><span class="f-tag">소논문·논문</span>
+      <span class="f-tag">어학시험·인증시험</span><span class="f-tag">모의고사·전국연합</span><span class="f-tag">해외활동(연수·봉사)</span>
+      <span class="f-tag">도서출간</span><span class="f-tag">특허등록</span><span class="f-tag">장학생·장학금</span>
+      <span class="f-tag">부모·친인척 지위</span><span class="f-tag">특정 대학·기관명</span><span class="f-tag">상호명·강사명</span>
+      <span class="f-tag">학교명·재단명</span><span class="f-tag">축제명·학교별칭</span><span class="f-tag">불필요한 영어약칭</span>
+      <span class="f-tag">방과후학교 활동</span><span class="f-tag">K-MOOC·MOOC</span>
+    </div>
+  </div>
+
+  <!-- 프롬프트 카드 -->
+  <div class="prompt-card" id="prompt-card">
+    <div class="prompt-hdr">
+      <div class="prompt-hdr-t"><i data-lucide="file-text"></i> 생성된 프롬프트</div>
+      <button class="copy-btn" id="copy-btn" onclick="copyPrompt()"><i data-lucide="copy"></i><span>복사</span></button>
+    </div>
+    <div id="copy-status"><i data-lucide="check-circle-2"></i> 복사되었습니다. AI에 붙여넣으세요.</div>
+    <textarea id="prompt-output" readonly></textarea>
+    <div class="ai-links">
+      <div class="ai-links-t">복사 후 바로 사용하기</div>
+      <div class="ai-link-btns">
+        <a class="ai-link-btn" href="https://claude.ai/new" target="_blank">Claude</a>
+        <a class="ai-link-btn" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+        <a class="ai-link-btn" href="https://www.wrtn.ai" target="_blank">뤼튼</a>
+        <a class="ai-link-btn" href="https://gemini.google.com" target="_blank">Gemini</a>
+        <a class="ai-link-btn" href="https://clova-x.naver.com" target="_blank">클로바X</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 빈 상태 -->
+  <div id="empty-state">
+    <div class="empty-icon"><i data-lucide="file-pen-line"></i></div>
+    <div class="empty-t">왼쪽에서 설정 후 생성 버튼을 눌러주세요</div>
+    <div class="empty-d">영역 선택 → 기본 정보 → 학생 사례<br>→ 키워드 → <b>프롬프트 생성하기</b></div>
+  </div>
+
+</div>
+</div><!-- /rp -->
+</div><!-- /main -->
+
+<!-- GUIDE MODAL -->
+<div class="modal-bg" id="guide-modal" onclick="if(event.target.id==='guide-modal')closeGuide()">
+  <div class="modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div style="font-size:18px;font-weight:800;display:flex;align-items:center;gap:9px"><i data-lucide="book-open" style="color:var(--accent)"></i> 사용 가이드</div>
+      <button class="modal-x" onclick="closeGuide()">✕</button>
+    </div>
+    <div>
+      <div class="guide-step">
+        <div class="guide-no">1</div>
+        <div><div class="guide-st">영역 선택 <span class="req-tag">필수</span></div><div class="guide-sd">교과세특·행동특성·자율·동아리·봉사·진로활동 중 작성할 영역을 선택합니다. 교과세특은 과목명도 함께 입력하세요.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-no">2</div>
+        <div><div class="guide-st">기본 정보 입력 <span class="req-tag">필수</span></div><div class="guide-sd">학년(중1~고3), 글자수 목표, 진로 희망 등을 입력합니다. 진로 입력 시 연계 문장이 강화됩니다.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-no">3</div>
+        <div><div class="guide-st">학생 사례 입력</div><div class="guide-sd">교사가 관찰한 수업 장면, 에피소드, 행동을 자유롭게 적으세요. 여러 개 나열해도 됩니다.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-no">4</div>
+        <div><div class="guide-st">키워드 선택</div><div class="guide-sd">분야 버튼을 클릭하면 펼쳐집니다. 여러 분야·키워드 동시 선택 가능합니다.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-no">5</div>
+        <div><div class="guide-st">문체·버전 선택 / 스타일·중복 설정 <span class="opt-tag">선택</span></div><div class="guide-sd">문체와 버전 수를 고르세요. 내 문장 스타일 입력 및 중복 방지 설정은 선택사항입니다.</div></div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-no">6</div>
+        <div><div class="guide-st">프롬프트 생성 → AI에 붙여넣기</div><div class="guide-sd">생성 버튼을 누르면 프롬프트가 화면 오른쪽에 표시됩니다. 복사 버튼을 눌러 Claude·ChatGPT 등에 붙여넣으세요.</div></div>
+      </div>
+    </div>
+    <div class="callout callout-warn" style="margin-top:18px;flex-direction:column;gap:6px">
+      <div style="font-weight:700;display:flex;align-items:center;gap:6px"><i data-lucide="shield-check"></i> 2026 기재요령 반영</div>
+      <div style="line-height:1.9;color:var(--warn)">
+        입력 불가 용어(대회·수상·자격증·소논문 등)가 프롬프트에 자동 포함<br>
+        종결어미 ~임/~함/~됨 통일, 이름·특수기호 금지 지침 자동 반영<br>
+        중1~고3 학년 선택, 봉사활동 1~2학년/3학년 차이 반영<br>
+        생성된 문장은 교사가 반드시 검토 후 NEIS에 입력하세요.
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:18px">
+      <button class="modal-btn" onclick="closeGuide()">확인</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  생기부 초안 작성 도우미 · by <a href="https://www.instagram.com/hirame.ki" target="_blank">@hirame.ki</a> 황성재 · 성포고등학교
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   생기부 초안 작성 도우미 — 기능 스크립트 (동작 로직은 원본과 동일)
+   디자인 리뉴얼: 이모지 제거 · 라인 아이콘 · 통합 진행 스텝퍼
+   ============================================================ */
+
+const DOMAINS={
+  '학습능력':['자기주도적 학습','예습·복습 습관','오답 분석','집중력','성실함','적극적 질문','개념 이해력 우수','수업 참여도 높음','과제 완성도','핵심 파악 능력','응용력','독해력'],
+  '사고력':['비판적 사고','논리적 사고','근거 제시','문제 인식','다각적 관점','분석적 접근','추론 능력','원인 탐색','결론 도출','메타인지','구조화 능력'],
+  '창의력':['아이디어 발산','독창적 시각','새로운 방식 시도','융합적 사고','상상력','틀을 벗어난 접근','유연한 사고','문제 재정의','예술적 감수성'],
+  '협력':['팀워크','역할 분담','배려','갈등 조율','리더십','팔로워십','분위기 형성','의견 조율','공동 목표 지향','신뢰 형성','적극적 참여'],
+  '의사소통':['발표력','경청','설득력','글쓰기 능력','피드백 수용','질문 능력','명확한 표현','토론 참여','공감적 대화','핵심 전달력'],
+  '봉사·나눔':['자발적 참여','지속성','공감 능력','타인 배려','사회적 책임감','나눔 실천','지역사회 기여','봉사 후 성찰'],
+  '진로':['목표 의식','관련 활동 경험','직업 탐색','전공 연계','자기이해','관련 독서','직업 가치관 확립'],
+  '태도':['책임감','끈기','도전 정신','긍정적 태도','실패 극복','자기효능감','시간 관리','약속 이행','솔선수범','주도성','침착함'],
+  '정서·관계':['공감 능력','감정 조절','친화력','또래 관계 우수','정서적 안정','배려심','포용력','유머 감각'],
+  '성장':['초반 대비 향상','꾸준한 성장','어려운 개념 극복','성적 향상','자기 피드백','약점 보완','슬럼프 극복','장기 성장세'],
+  '탐구':['탐구 의욕','자료 수집','심화 학습','연계 독서','실험·관찰','가설 설정','데이터 해석','지식 확장 욕구'],
+  '실천력':['계획 실행력','즉각적 행동','지속적 실천','목표 달성','행동력','시도 후 수정','완수 능력'],
+  '교과 역량':['수학적 추론','수학적 모델링','실험 설계','가설 검증','데이터 해석','텍스트 분석','수사적 표현','과학적 탐구','역사적 사고','사회 참여 의식','미적 감수성','비교 분석','융합적 사고','탐구 설계'],
+  '인성 역량':['자기관리 역량','공동체 역량','민주 시민 의식','배려와 나눔','책임 의식','갈등 조율 능력','포용력','도덕적 판단력','사회적 약자 배려','환경 의식']
+};
+
+const FORBIDDEN=`[2026 학교생활기록부 기재요령 준수 — 절대 입력 금지 항목]
+다음 내용은 학교생활기록부 어떠한 항목에도 입력할 수 없으므로 절대 포함하지 마세요:
+- 대회명, 수상 실적(교내외 대회 참여 사실 및 성적, 수상 실적 일체)
+- 자격증명, 자격시험 응시 사실
+- 연구보고서(소논문) 실적(제목, 연구 주제, 참여 인원, 소요시간)
+- 어학시험 점수 및 인증시험 성적(토익·토플·텝스·토스·오픽 등 포함)
+- 모의고사·전국연합학력평가 성적 및 관련 언급
+- 해외활동(해외 연수, 해외 봉사활동 포함)
+- 도서 출간, 특허 등록, 장학생·장학금 수혜 사실
+- 부모·친인척의 사회경제적 지위(직업, 직위, 재산 등)
+- 특정 대학명, 기관명(기구·단체·조직 포함), 상호명, 강사명
+- 학교명, 재단명, 학교 축제명, 학교 별칭
+- 불필요한 영어 약칭(대중적으로 알려진 약칭 제외, 그 외는 반드시 한국어로 표현)
+- K-MOOC, MOOC, KOCW 관련 사항
+- 방과후학교 활동 내용
+- 학생 이름(성명) 포함 금지
+- 특수기호(♦ ▶ ★ 등), 괄호, 따옴표 사용 금지`;
+
+let selAreaVal='', selToneVal='관찰자형 (학생을 직접 관찰한 교사의 시점으로 생생하게)', selVerVal='both';
+let selKeywords=new Set(), openDomains=new Set();
+let selActivityTypes=new Set();
+let selClubType='', selClubRole='', selVolunteerType='', selCareerActType='', selAutonomyType='';
+
+/* ───────── area-specific extra settings (lucide icons, neutral chips) ───────── */
+const AREA_EXTRA={
+  '교과세특':`
+    <div class="extra-title"><i data-lucide="settings-2"></i> 교과세특 추가 설정</div>
+    <div class="field-lbl">수업 활동 유형 <span class="opt-tag">선택 · 중복 가능</span></div>
+    <div class="fg6" id="activity-chips" style="margin-bottom:4px">
+      <div class="chip" data-act="토론·토의" onclick="toggleAct(this)"><i data-lucide="messages-square"></i> 토론·토의</div>
+      <div class="chip" data-act="발표·설명" onclick="toggleAct(this)"><i data-lucide="mic"></i> 발표·설명</div>
+      <div class="chip" data-act="실험·관찰" onclick="toggleAct(this)"><i data-lucide="flask-conical"></i> 실험·관찰</div>
+      <div class="chip" data-act="탐구·조사" onclick="toggleAct(this)"><i data-lucide="search"></i> 탐구·조사</div>
+      <div class="chip" data-act="프로젝트·제작" onclick="toggleAct(this)"><i data-lucide="wrench"></i> 프로젝트</div>
+      <div class="chip" data-act="모둠·협력활동" onclick="toggleAct(this)"><i data-lucide="users"></i> 모둠활동</div>
+      <div class="chip" data-act="독서·연계활동" onclick="toggleAct(this)"><i data-lucide="book-open"></i> 독서연계</div>
+    </div>
+    <div class="field-lbl">단원 / 주제명 <span class="opt-tag">선택</span></div>
+    <input type="text" class="inp" id="unit-inp" placeholder="예) 생태계와 환경, 이차방정식, 근현대사 이행기…" oninput="uc()">
+  `,
+  '행동특성 및 종합의견':`
+    <div class="extra-title"><i data-lucide="lightbulb"></i> 행동특성 작성 팁</div>
+    <div class="callout callout-info">
+      <i data-lucide="sparkles"></i>
+      <div><b>입학사정관이 주목하는 행특</b>은 모든 학생에게 쓸 수 있는 일반 표현이 아닌, 이 학생만의 구체적 에피소드와 1년 성장 궤적이 핵심입니다. 사례 입력란에 인상 깊었던 장면을 꼭 입력해주세요.</div>
+    </div>
+  `,
+  '동아리활동 특기사항':`
+    <div class="extra-title"><i data-lucide="settings-2"></i> 동아리활동 추가 설정</div>
+    <div class="field-lbl">동아리 유형</div>
+    <div class="fg6" id="club-type-chips" style="margin-bottom:4px">
+      <div class="chip" data-ctype="학술·탐구" onclick="selClubTypeFn(this)"><i data-lucide="flask-conical"></i> 학술·탐구</div>
+      <div class="chip" data-ctype="예술·체육" onclick="selClubTypeFn(this)"><i data-lucide="palette"></i> 예술·체육</div>
+      <div class="chip" data-ctype="봉사·사회참여" onclick="selClubTypeFn(this)"><i data-lucide="sprout"></i> 봉사·사회참여</div>
+      <div class="chip" data-ctype="진로·직업" onclick="selClubTypeFn(this)"><i data-lucide="target"></i> 진로·직업</div>
+      <div class="chip" data-ctype="자율동아리" onclick="selClubTypeFn(this)"><i data-lucide="star"></i> 자율동아리</div>
+    </div>
+    <div class="field-lbl">학생 역할</div>
+    <div class="fg6" id="club-role-chips">
+      <div class="chip" data-crole="회장·부장" onclick="selClubRoleFn(this)"><i data-lucide="crown"></i> 회장·부장</div>
+      <div class="chip" data-crole="프로젝트 리더" onclick="selClubRoleFn(this)"><i data-lucide="rocket"></i> 프로젝트 리더</div>
+      <div class="chip" data-crole="발표·대표" onclick="selClubRoleFn(this)"><i data-lucide="mic"></i> 발표·대표</div>
+      <div class="chip" data-crole="일반 부원" onclick="selClubRoleFn(this)"><i data-lucide="user-round"></i> 일반 부원</div>
+    </div>
+  `,
+  '봉사활동 특기사항':`
+    <div class="extra-title"><i data-lucide="settings-2"></i> 봉사활동 추가 설정</div>
+    <div class="field-lbl">봉사 유형</div>
+    <div class="fg6" id="vol-type-chips" style="margin-bottom:4px">
+      <div class="chip" data-vtype="교내 봉사" onclick="selVolTypeFn(this)"><i data-lucide="school"></i> 교내</div>
+      <div class="chip" data-vtype="교외 봉사" onclick="selVolTypeFn(this)"><i data-lucide="globe"></i> 교외</div>
+      <div class="chip" data-vtype="개인 봉사" onclick="selVolTypeFn(this)"><i data-lucide="user-round"></i> 개인</div>
+      <div class="chip" data-vtype="단체 봉사" onclick="selVolTypeFn(this)"><i data-lucide="users"></i> 단체</div>
+    </div>
+    <div class="field-lbl">봉사 시간 <span class="opt-tag">선택</span></div>
+    <input type="text" class="inp" id="vol-hours-inp" placeholder="예) 총 12시간, 매주 2시간씩 6회…" oninput="uc()">
+  `,
+  '진로활동 특기사항':`
+    <div class="extra-title"><i data-lucide="settings-2"></i> 진로활동 추가 설정</div>
+    <div class="field-lbl">진로활동 유형</div>
+    <div class="fg6" id="career-act-chips">
+      <div class="chip" data-catype="진로 탐색·조사" onclick="selCareerActFn(this)"><i data-lucide="search"></i> 진로 탐색</div>
+      <div class="chip" data-catype="직업 체험" onclick="selCareerActFn(this)"><i data-lucide="briefcase"></i> 직업 체험</div>
+      <div class="chip" data-catype="진로 심리검사" onclick="selCareerActFn(this)"><i data-lucide="bar-chart-3"></i> 심리검사</div>
+      <div class="chip" data-catype="진로 상담·특강" onclick="selCareerActFn(this)"><i data-lucide="messages-square"></i> 상담·특강</div>
+      <div class="chip" data-catype="직업인 멘토링" onclick="selCareerActFn(this)"><i data-lucide="graduation-cap"></i> 멘토링</div>
+    </div>
+  `,
+  '자율·자치활동 특기사항':`
+    <div class="extra-title"><i data-lucide="settings-2"></i> 자율·자치활동 추가 설정</div>
+    <div class="field-lbl">활동 유형</div>
+    <div class="fg6" id="autonomy-chips" style="margin-bottom:4px">
+      <div class="chip" data-atype="학급 자치활동" onclick="selAutonomyFn(this)"><i data-lucide="school"></i> 학급 자치</div>
+      <div class="chip" data-atype="학교 행사·수련활동" onclick="selAutonomyFn(this)"><i data-lucide="tent"></i> 학교 행사</div>
+      <div class="chip" data-atype="체험학습" onclick="selAutonomyFn(this)"><i data-lucide="leaf"></i> 체험학습</div>
+      <div class="chip" data-atype="안전·보건교육" onclick="selAutonomyFn(this)"><i data-lucide="shield"></i> 안전교육</div>
+      <div class="chip" data-atype="민주시민·인권교육" onclick="selAutonomyFn(this)"><i data-lucide="scale"></i> 민주시민교육</div>
+    </div>
+    <div class="field-lbl">학생 역할 <span class="opt-tag">선택</span></div>
+    <div class="fg6" id="autonomy-role-chips">
+      <div class="chip" data-arole="임원·대표" onclick="selAutonomyRoleFn(this)"><i data-lucide="crown"></i> 임원·대표</div>
+      <div class="chip" data-arole="일반 참여" onclick="selAutonomyRoleFn(this)"><i data-lucide="user-round"></i> 일반 참여</div>
+    </div>
+  `
+};
+
+function icons(){ if(window.lucide&&lucide.createIcons) lucide.createIcons(); }
+
+function initDomains(){
+  const area=document.getElementById('domain-area');
+  area.innerHTML='';
+  Object.keys(DOMAINS).forEach(d=>{
+    const btn=document.createElement('div');
+    btn.className='domain-btn';
+    btn.innerHTML=`<span>${d}</span><span class="chev"><i data-lucide="chevron-down"></i></span>`;
+    btn.onclick=()=>toggleDomain(d,btn);
+    const panel=document.createElement('div');
+    panel.className='domain-panel';
+    panel.id='dp-'+d;
+    const kg=document.createElement('div');
+    kg.className='fg6';
+    DOMAINS[d].forEach(kw=>{
+      const kc=document.createElement('div');
+      kc.className='chip';
+      kc.textContent=kw;
+      if(selKeywords.has(kw))kc.classList.add('active-chip');
+      kc.onclick=()=>toggleKw(kw,kc);
+      kg.appendChild(kc);
+    });
+    panel.appendChild(kg);
+    area.appendChild(btn);
+    area.appendChild(panel);
+  });
+  icons();
+}
+
+function toggleDomain(d,btn){
+  const panel=document.getElementById('dp-'+d);
+  if(openDomains.has(d)){
+    openDomains.delete(d);btn.classList.remove('open');panel.classList.remove('show');
+  }else{
+    openDomains.add(d);btn.classList.add('open');panel.classList.add('show');
+  }
+}
+
+function toggleKw(kw,chip){
+  if(selKeywords.has(kw)){selKeywords.delete(kw);chip.classList.remove('active-chip');}
+  else{selKeywords.add(kw);chip.classList.add('active-chip');}
+  uc();
+}
+
+function selAreaFn(chip){
+  document.querySelectorAll('[data-area]').forEach(c=>c.classList.remove('active-chip'));
+  chip.classList.add('active-chip');
+  selAreaVal=chip.dataset.area;
+  document.getElementById('subj-field').style.display=selAreaVal==='교과세특'?'block':'none';
+  selActivityTypes.clear();selClubType='';selClubRole='';selVolunteerType='';selCareerActType='';selAutonomyType='';
+  const extra=document.getElementById('area-extra');
+  const content=document.getElementById('area-extra-content');
+  if(AREA_EXTRA[selAreaVal]){content.innerHTML=AREA_EXTRA[selAreaVal];extra.classList.add('show');icons();}
+  else{extra.classList.remove('show');content.innerHTML='';}
+  uc();
+}
+function toggleAct(chip){
+  const act=chip.dataset.act;
+  if(selActivityTypes.has(act)){selActivityTypes.delete(act);chip.classList.remove('active-chip');}
+  else{selActivityTypes.add(act);chip.classList.add('active-chip');}
+  uc();
+}
+function selClubTypeFn(chip){document.querySelectorAll('[data-ctype]').forEach(c=>c.classList.remove('active-chip'));chip.classList.add('active-chip');selClubType=chip.dataset.ctype;uc();}
+function selClubRoleFn(chip){document.querySelectorAll('[data-crole]').forEach(c=>c.classList.remove('active-chip'));chip.classList.add('active-chip');selClubRole=chip.dataset.crole;uc();}
+function selVolTypeFn(chip){document.querySelectorAll('[data-vtype]').forEach(c=>c.classList.remove('active-chip'));chip.classList.add('active-chip');selVolunteerType=chip.dataset.vtype;uc();}
+function selCareerActFn(chip){document.querySelectorAll('[data-catype]').forEach(c=>c.classList.remove('active-chip'));chip.classList.add('active-chip');selCareerActType=chip.dataset.catype;uc();}
+function selAutonomyFn(chip){document.querySelectorAll('[data-atype]').forEach(c=>c.classList.remove('active-chip'));chip.classList.add('active-chip');selAutonomyType=chip.dataset.atype;uc();}
+function selAutonomyRoleFn(chip){document.querySelectorAll('[data-arole]').forEach(c=>c.classList.remove('active-chip'));chip.classList.add('active-chip');selClubRole=chip.dataset.arole;uc();}
+
+function selToneFn(chip){
+  document.querySelectorAll('#tone-chips .chip').forEach(c=>c.classList.remove('active-chip'));
+  chip.classList.add('active-chip');
+  selToneVal=chip.dataset.tone;
+  uc();
+}
+
+function selVerFn(chip){
+  document.querySelectorAll('#version-chips .chip').forEach(c=>c.classList.remove('active-chip'));
+  chip.classList.add('active-chip');
+  selVerVal=chip.dataset.ver;
+  uc();
+}
+
+function ts(id){document.getElementById(id).classList.toggle('collapsed');}
+
+/* 진행 스텝퍼 클릭 → 해당 섹션 펼치고 좌측 패널 내에서 스크롤 (scrollIntoView 미사용) */
+function goStep(secId){
+  const sw=document.getElementById(secId);
+  if(!sw)return;
+  sw.classList.remove('collapsed');
+  if(window.innerWidth<=768){switchMob('left');}
+  const lp=document.getElementById('lp');
+  requestAnimationFrame(()=>{
+    const r=sw.getBoundingClientRect(), lr=lp.getBoundingClientRect();
+    lp.scrollTo({top:lp.scrollTop+(r.top-lr.top)-14,behavior:'smooth'});
+  });
+}
+
+function toggleOpt(bodyId,toggleId){
+  document.getElementById(bodyId).classList.toggle('show');
+  document.getElementById(toggleId).classList.toggle('open');
+}
+
+function uc(){
+  const areaOk=!!selAreaVal;
+  const gradeOk=!!document.getElementById('grade-sel').value;
+  const caseOk=!!document.getElementById('case-inp').value.trim();
+  const kwOk=selKeywords.size>0;
+  const styleOk=!!document.getElementById('style-inp').value.trim();
+  const dupOk=!!document.getElementById('dup-inp').value.trim();
+  setCl('cl-area',areaOk);setCl('cl-grade',gradeOk);setCl('cl-case',caseOk);
+  setCl('cl-kw',kwOk);setCl('cl-tone',true);setCl('cl-style',styleOk);setCl('cl-dup',dupOk);
+  document.getElementById('s-area').textContent=selAreaVal||'미선택';
+  const grade=document.getElementById('grade-sel').value;
+  const semester=document.getElementById('semester-sel').value;
+  const subj=document.getElementById('subj-inp').value.trim();
+  let gs=grade||'미입력';
+  if(grade&&semester)gs+=' '+semester;
+  if(grade&&subj)gs+=' · '+subj;
+  document.getElementById('s-grade').textContent=gs;
+  const career=document.getElementById('career-inp').value.trim();
+  document.getElementById('s-career').textContent=career||'미입력';
+  const verLabel=selVerVal==='both'?'AI 답변+인간화 답변':selVerVal==='draft'?'AI 답변만':'인간화 답변만';
+  document.getElementById('s-tone').textContent=selToneVal.split(' ')[0]+' · '+verLabel;
+  const kws=[...selKeywords];
+  document.getElementById('s-keywords').textContent=kws.length?kws.join(', '):'없음';
+}
+
+function setCl(id,done){
+  const el=document.getElementById(id);if(!el)return;
+  el.classList.toggle('done',done);el.classList.toggle('pending',!done);
+}
+
+const HR='━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+
+function getRoleText(area){
+  const m={'교과세특':'교과 담당 교사로서 학생을 직접 지도하고 수업 중 관찰한','행동특성 및 종합의견':'담임 교사로서 1년간 학생의 생활과 성장을 곁에서 지켜본','동아리활동 특기사항':'동아리 지도 교사로서 활동 전반을 관찰한','봉사활동 특기사항':'봉사활동을 지도하고 학생의 참여 과정을 관찰한','진로활동 특기사항':'진로 담당 교사로서 학생의 진로 탐색 과정을 지원한','자율·자치활동 특기사항':'담임 교사로서 학생의 자율·자치활동을 관찰한'};
+  return m[area]||'숙련된 한국 학교 교사';
+}
+
+function buildNarrativeGuide(area,grade){
+  let p='';
+  if(area==='교과세특'){
+    p+=HR;
+    p+=`■ [교과세특 핵심 서술 구조 — 입학사정관 관점]\n\n`;
+    p+=`다음 4단계 흐름이 문장 속에 자연스럽게 녹아들도록 서술하세요:\n`;
+    p+=`① 계기: 이 학생이 어떤 계기로 해당 개념·주제에 의문을 품거나 탐구를 시작했는지\n`;
+    p+=`② 탐구: 어떤 방법으로 탐구했는지 (실험, 자료 조사, 비교분석, 토론 등 구체적 과정)\n`;
+    p+=`③ 결론·발견: 탐구를 통해 이 학생이 도달한 결론, 깨달음, 새로운 이해\n`;
+    p+=`④ 변화·확장: 이 경험이 학생의 사고방식·진로 인식·가치관에 가져온 변화 또는 새로운 질문\n\n`;
+    p+=`입학사정관이 매력적으로 느끼는 교과세특:\n`;
+    p+=`• 이 학생만의 고유한 질문에서 출발한 탐구 (누구에게나 쓸 수 있는 문장 금지)\n`;
+    p+=`• 교과 내용을 실제 세계 문제나 진로와 연결한 사례\n`;
+    p+=`• 단순 이해를 넘어 비판적 시각이나 새로운 해석을 제시한 순간\n`;
+    p+=`• 어려움을 겪고도 포기하지 않은 탐구 과정 (실패와 재시도 포함 가능)\n`;
+    p+=`• 수업 내용이 다른 교과나 관심사로 자연스럽게 연결된 융합적 사고\n`;
+    p+=`• 교사도 예상하지 못한 질문이나 시각을 제시한 순간\n\n`;
+    p+=`[입학사정관 3대 평가요소 반영 지침]\n`;
+    p+=`▸ 학업역량: 수동적 수용이 아닌 "꼬리에 꼬리를 무는 심화 탐구"가 보이는가\n`;
+    p+=`  → 수업 중 생긴 의문을 스스로 파고든 흔적, 지식을 넘어선 분석·추론이 드러나야 함\n`;
+    p+=`▸ 진로역량: 진로 이름을 억지로 끼워 넣는 것이 아닌, 활동·사고가 자연스럽게 연결되는가\n`;
+    p+=`  → "~에 관심을 가짐" 수준 금지 — 탐구 과정과 진로의 구체적 연결고리를 서술\n`;
+    p+=`▸ 공동체역량: 모둠·협력 활동이 있다면 갈등 조율, 구체적 역할·태도·기여가 드러나는가\n`;
+    p+=`  → 단순 "협력을 잘함" 금지 — 어떤 어려움에서 어떤 행동으로 공동 목표를 달성했는지 서술\n\n`;
+    p+=`[Bad vs Good 서술 기준 — 반드시 참고]\n`;
+    p+=`✗ 아쉬운 서술: "미세플라스틱의 위험성에 대해 조사하여 발표함." → 누구나 할 수 있는 결과 나열\n`;
+    p+=`✓ 훌륭한 서술: "미세플라스틱이 해양 생물 소화기관에 미치는 메커니즘에 의문을 가지고 관련 논문을 분석하여 물리적 훼손 과정을 설명함. 이후 생분해성 플라스틱의 화학적 구조로 탐구를 확장함."\n`;
+    p+=`→ 동기(Why) → 탐구 과정(How) → 발견(What) → 심화·확장(Next) 흐름이 핵심\n\n`;
+    p+=`서술 수준 기준:\n`;
+    p+=`안 되는 수준: "수업에 성실히 참여하고 발표력이 우수하며 팀원들과 협력을 잘함."\n`;
+    p+=`목표 수준: "[구체적 개념] 수업 중 [구체적 의문]에 흥미를 느껴 [구체적 탐구 방법]으로 [구체적 발견]에 도달함. 이를 [진로/사회적 맥락]과 연결하여 사고를 확장하고 [새로운 질문이나 변화]로 이어짐."\n\n`;
+    const acts=[...selActivityTypes];
+    if(acts.length)p+=`■ 수업 활동 유형: ${acts.join(', ')}\n→ 위 활동 유형에서 학생이 보여준 구체적 사고 과정이 드러나도록 서술하세요.\n\n`;
+    const ui=document.getElementById('unit-inp');
+    if(ui&&ui.value.trim())p+=`■ 단원·주제: ${ui.value.trim()}\n\n`;
+  } else if(area==='행동특성 및 종합의견'){
+    p+=HR;
+    p+=`■ [행동특성 및 종합의견 핵심 서술 — 입학사정관 관점]\n\n`;
+    p+=`행특은 담임 교사가 1년을 함께한 학생의 '사람됨' 전체를 담는 영역입니다.\n\n`;
+    p+=`① 구체적 에피소드 기반 진정성\n   - 모든 학생에게 쓸 수 있는 일반적 표현 절대 금지\n   - 이 학생만의 특별한 순간이나 행동이 담긴 구체적 장면 1~2개 반드시 포함\n\n`;
+    p+=`② 성장의 궤적\n   - "연초에는 ~했지만, ~을 경험하며 ~로 성장함" 구조를 자연스럽게 활용\n   - 단순 현재 상태가 아닌, 변화하고 성장한 과정이 느껴지도록\n\n`;
+    p+=`③ 인성·학업·진로의 유기적 통합\n   - 세 축이 따로 나열되지 않고 하나의 자연스러운 서사로 연결\n\n`;
+    p+=`④ 공동체 기여도\n   - 이 학생이 학급·학교에 어떤 긍정적 영향을 미쳤는지 구체적으로\n\n`;
+    p+=`⑤ 잠재력 서술\n   - 현재 모습뿐 아니라 앞으로 어떤 사람이 될지에 대한 교사의 진솔한 판단\n\n`;
+    p+=`[입학사정관 3대 평가요소 반영 지침]\n`;
+    p+=`▸ 학업역량: 단순 성실성이 아닌, 지적 호기심·스스로 탐구하는 모습이 드러나는 구체적 장면\n`;
+    p+=`▸ 진로역량: 진로 탐색 과정에서 보인 치열함과 깊이 — 어떤 고민과 실천이 있었는지\n`;
+    p+=`▸ 공동체역량: 학급·조별 활동에서 갈등을 어떻게 조율·극복했는지 구체적 태도와 역할\n`;
+    p+=`→ 세 요소가 따로 나열되지 않고 한 인물의 서사로 자연스럽게 통합되어야 함\n\n`;
+    if(grade&&grade.includes('고등학교 3학년')){
+      p+=`[고3 행특 특별 지침]\n• 대입 맥락에서 읽힌다는 것을 인식하고 작성\n• 학업 역량+인성+진로 의식이 유기적으로 연결된 통합적 역량 서술\n• 대학 진학 후 성장 가능성을 엿볼 수 있는 구체적 잠재력 서술\n\n`;
+    }
+    p+=`서술 수준 기준:\n`;
+    p+=`안 되는 수준: "성실하고 책임감이 있으며 친구들과 사이좋게 지냄. 수업 태도가 바름."\n`;
+    p+=`목표 수준: "[구체적 에피소드]에서 보여준 [인성적 특성]이 인상적이었으며, 연초 [초기 모습]에서 [변화 계기]를 통해 [현재 모습]으로 성장함. [공동체 기여]를 통해 [잠재력 판단].\n\n`;
+  } else if(area==='동아리활동 특기사항'){
+    p+=HR;
+    p+=`■ [동아리활동 핵심 서술 — 입학사정관 관점]\n\n`;
+    p+=`① 기여도와 차별성: 이 학생이 동아리에서 어떤 역할을 했고, 이 학생이 있어서 달라진 것\n`;
+    p+=`② 탐구 심화 과정: 관심 분야를 어떻게 구체적으로 심화·확장했는지의 과정\n`;
+    p+=`③ 협력과 성장: 팀 내 어려움을 극복한 경험, 타인에게서 배운 것과 나눠준 것\n`;
+    p+=`④ 진로 연계: 동아리 경험이 진로 방향과 어떻게 자연스럽게 연결되는지\n`;
+    p+=`⑤ 구체적 결과물·성과: 이 학생의 참여로 만들어진 변화나 산출물\n\n`;
+    if(selClubType)p+=`■ 동아리 유형: ${selClubType}\n`;
+    if(selClubRole)p+=`■ 학생 역할: ${selClubRole}\n`;
+    if(selClubType||selClubRole)p+=`→ 위 유형과 역할이 서술에 자연스럽게 반영되도록 하세요.\n\n`;
+  } else if(area==='봉사활동 특기사항'){
+    p+=HR;
+    p+=`■ [봉사활동 핵심 서술 — 입학사정관 관점]\n\n`;
+    p+=`① 진정성: 의무감이 아닌 자발적 참여와 진심 어린 공감이 느껴지는 서술\n   - 봉사 대상에 대한 구체적 이해와 공감이 담긴 장면 반드시 포함\n`;
+    p+=`② 성찰의 깊이: 봉사 전후 가치관이나 인식이 어떻게 달라졌는지\n   - "뿌듯했다", "보람을 느꼈다" 등 단순 감정 표현 금지 → 구체적이고 지적인 성찰\n`;
+    p+=`③ 지속성과 실천: 일회성이 아닌 지속적 참여나 적극적 태도\n`;
+    p+=`④ 사회적 맥락 인식: 봉사를 통해 사회 문제를 바라보는 시야가 넓어진 서술\n\n`;
+    if(selVolunteerType)p+=`■ 봉사 유형: ${selVolunteerType}\n`;
+    const vh=document.getElementById('vol-hours-inp');
+    if(vh&&vh.value.trim())p+=`■ 봉사 시간: ${vh.value.trim()}\n`;
+    if(selVolunteerType||(vh&&vh.value.trim()))p+='\n';
+  } else if(area==='진로활동 특기사항'){
+    p+=HR;
+    p+=`■ [진로활동 핵심 서술 — 입학사정관 관점]\n\n`;
+    p+=`① 구체적 탐색 과정: "꿈이 생겼다"는 결론이 아닌, 어떤 과정을 통해 어떤 분야를 탐색했는지\n`;
+    p+=`② 자기이해 기반: 자신의 강점·약점·가치관을 탐색하며 진로를 설정한 흔적\n`;
+    p+=`③ 현실적 이해: 해당 직업·분야에 대한 막연한 동경이 아닌 깊이 있는 이해\n`;
+    p+=`④ 실천과 준비: 진로를 위해 구체적으로 어떤 준비를 하고 있는지\n`;
+    p+=`⑤ 진로 변화 과정: 처음 생각과 탐색 후 변화된 생각이 있다면 그 과정 포함\n\n`;
+    if(selCareerActType)p+=`■ 진로활동 유형: ${selCareerActType}\n→ 위 활동 유형의 특성이 서술에 반영되도록 하세요.\n\n`;
+  } else if(area==='자율·자치활동 특기사항'){
+    p+=HR;
+    p+=`■ [자율·자치활동 핵심 서술 — 입학사정관 관점]\n\n`;
+    p+=`① 주도성과 참여도: 이 학생이 얼마나 자발적으로 참여했고 어떤 기여를 했는지\n`;
+    p+=`② 공동체 의식: 학급·학교 공동체를 위해 어떤 역할을 자처했는지\n`;
+    p+=`③ 문제 해결 경험: 활동 중 겪은 어려움과 극복 방식\n`;
+    p+=`④ 성찰과 성장: 활동을 통해 얻은 깨달음이나 가치관 변화\n\n`;
+    if(selAutonomyType)p+=`■ 활동 유형: ${selAutonomyType}\n`;
+    if(selClubRole)p+=`■ 학생 역할: ${selClubRole}\n`;
+    if(selAutonomyType||selClubRole)p+='\n';
+  }
+  return p;
+}
+
+function gen(){
+  clearErr();
+  if(!selAreaVal){showErr('생기부 영역을 선택해주세요.');return;}
+  const grade=document.getElementById('grade-sel').value;
+  if(!grade){showErr('학년을 선택해주세요.');return;}
+  const semester=document.getElementById('semester-sel').value;
+  const subj=document.getElementById('subj-inp').value.trim();
+  const career=document.getElementById('career-inp').value.trim();
+  const charLimit=document.getElementById('char-sel').value;
+  const caseText=document.getElementById('case-inp').value.trim();
+  const styleText=document.getElementById('style-inp').value.trim();
+  const dupText=document.getElementById('dup-inp').value.trim();
+  const keywords=[...selKeywords];
+  let p='';
+
+  p+=`당신은 ${getRoleText(selAreaVal)} 숙련된 한국 학교 교사입니다. 아래 조건에 맞는 학교생활기록부 [${selAreaVal}] 문장을 작성해주세요.\n\n`;
+
+  p+=HR;
+  p+=`■ 개별화 필수 지침:\n이전에 작성된 생기부 문장이 있다면, 이번 답변에서 앞서 작성된 내용과 겹치는 표현·구조·어휘·문장 패턴이 없도록 면밀히 비교하여 이 학생 고유의 개별화된 내용으로 작성하세요.\n`;
+  p+=HR+'\n';
+
+  p+=HR;
+  p+=`■ 작성 정보:\n`;
+  p+=`■ 영역: ${selAreaVal}\n■ 학년: ${grade}\n`;
+  if(semester)p+=`■ 학기: ${semester}\n`;
+  if(selAreaVal==='교과세특'&&subj)p+=`■ 과목: ${subj}\n`;
+  if(career)p+=`■ 학생 진로 희망: ${career}\n`;
+  p+=`■ 목표 분량: ${charLimit}\n■ 문체: ${selToneVal}\n`;
+  if(keywords.length)p+=`■ 반영할 특장점 키워드: ${keywords.join(', ')}\n`;
+  p+=HR+'\n';
+
+  if(caseText){
+    p+=HR;
+    p+=`■ 교사 관찰 사례 / 학생 실제 행동·에피소드:\n${caseText}\n`;
+    p+=HR+'\n';
+  }
+
+  p+=buildNarrativeGuide(selAreaVal,grade);
+
+  if(career){
+    p+=HR;
+    p+=`■ 진로 연계 지침:\n학생의 진로 희망(${career})과 자연스럽게 연계하여, 해당 분야로의 성장 잠재력과 구체적 연결고리가 드러나도록 서술하세요. "~에 관심을 가짐"과 같은 추상적 연결이 아닌, 구체적 활동·사고·행동이 진로와 어떻게 연결되는지 보여주세요.\n`;
+    p+=HR+'\n';
+  }
+
+  p+=HR;
+  p+=`■ 필수 작성 규칙 (2026 생기부 기재요령 반영):\n`;
+  p+=`1. 종결어미: 반드시 ~임 / ~함 / ~됨 / ~나타냄 / ~보임 등으로 통일 (~했습니다, ~합니다 금지)\n`;
+  p+=`2. 금지어 철저 배제: 학생 이름, 가족·친인척 관련, 학교명, 1인칭(나, 저) 사용 금지\n`;
+  p+=`3. 기호 관련: 특수기호(♦ ▶ ★ 등), 괄호, 따옴표 사용 절대 금지\n`;
+  p+=`4. 긍정적 서술: 부정적 표현 배제, 약점이 있더라도 극복 노력과 긍정적 성장 중심\n`;
+  p+=`5. 구체적 서술: AI 특유의 추상적 미사여구(탁월한, 훌륭한, 뛰어난 등 단순 수식어) 지양\n`;
+  p+=`6. 개별화: 단순 활동 나열 금지 — 이 학생만의 개별적 특성·역할·사고가 드러나도록\n`;
+  p+=`7. 정량화: 횟수·시간 등 정량 정보가 맥락에 있으면 구체적 수치로 표현\n`;
+  p+=`8. 성장 맥락: 활동 결과뿐만 아니라 과정에서 보인 행동 변화와 성장의 흐름 반영\n`;
+  p+=`9. 글자 수: ${charLimit}를 최대한 근접하여 작성. 작성 후 스스로 글자 수를 계산하여 편차가 크면 조정할 것\n\n`;
+
+  p+=`■ 생기부 절대 입력 금지 항목 (엄격 준수):\n`;
+  p+=FORBIDDEN+'\n\n';
+
+  if(styleText){
+    p+=HR;
+    p+=`■ 참고 문체 (아래 문장의 어투·스타일 참고, 내용 복사 금지):\n${styleText}\n\n`;
+  }
+
+  if(dupText){
+    p+=HR;
+    p+=`■ 중복 방지 (아래 문장과 비슷한 표현·구조·어휘 반복 금지):\n${dupText}\n\n`;
+  }
+
+  p+=HR;
+  p+=`■ 출력 전 자기점검 (아래 항목 확인 후 수정하여 최종 출력):\n`;
+  p+=`□ 금지어(대회명, 수상실적, 학교명, 이름 등) 미포함\n`;
+  p+=`□ 모든 문장 종결어미 ~임/~함/~됨 통일\n`;
+  p+=`□ 특수기호·괄호·따옴표 미사용\n`;
+  p+=`□ 글자 수 ${charLimit} 근접 여부\n`;
+  p+=`□ 이 학생만의 개별화된 내용 (일반적 표현 최소화)\n`;
+  if(selAreaVal==='교과세특')p+=`□ 계기→탐구→결론→변화 흐름이 자연스럽게 반영\n`;
+  if(selAreaVal==='행동특성 및 종합의견')p+=`□ 구체적 에피소드와 성장 궤적 포함\n`;
+  p+=`□ [입학사정관 관점] 학업역량: 스스로 파고드는 탐구력이 보이는가\n`;
+  p+=`□ [입학사정관 관점] 진로역량: "~에 관심을 가짐" 수준을 넘어 구체적 탐색·연결이 있는가\n`;
+  p+=`□ [입학사정관 관점] 공동체역량: 협력 상황에서 구체적 역할·태도·갈등 조율이 드러나는가\n`;
+  p+='\n';
+
+  p+=HR;
+  p+=`위 조건을 모두 반영하여 아래와 같이 작성해주세요.\n\n`;
+  if(selVerVal==='both'){
+    p+=`【1. AI 답변】\n입력 정보를 충실하게 담아 구조적이고 완성도 있게 작성 (목표: ${charLimit})\n\n(여기에 AI 답변 작성)\n\n---\n\n`;
+    p+=`【2. 인간화 답변】\n실제 교사가 학생을 직접 관찰하고 쓴 것처럼 자연스럽고 인간적인 문체로 작성.\n관료적·딱딱한 표현보다 생생한 장면·구체적 행동 중심. ~임/~함 형식 유지하되 교사의 시선이 담긴 서술. 도입부에 교사가 직접 목격한 장면 하나를 배치하면 좋음. (목표: ${charLimit})\n\n(여기에 인간화 답변 작성)`;
+  }else if(selVerVal==='draft'){
+    p+=`【AI 답변】\n입력 정보를 충실하게 담아 구조적이고 완성도 있게 작성 (목표: ${charLimit})\n\n(여기에 AI 답변 작성)`;
+  }else if(selVerVal==='human'){
+    p+=`【인간화 답변】\n실제 교사가 학생을 직접 관찰하고 쓴 것처럼 자연스럽고 인간적인 문체.\n관료적 표현 지양, 생생한 장면·구체적 행동 중심. ~임/~함 형식 유지. (목표: ${charLimit})\n\n(여기에 인간화 답변 작성)`;
+  }
+  const ta=document.getElementById('prompt-output');
+  ta.value=p;
+  document.getElementById('prompt-card').style.display='block';
+  document.getElementById('empty-state').style.display='none';
+  navigator.clipboard.writeText(p).then(()=>{
+    showCopyStatus(true);showToast('프롬프트가 생성되어 자동 복사되었습니다. AI에 붙여넣으세요.');
+  }).catch(()=>{
+    try{ta.select();document.execCommand('copy');showCopyStatus(true);}catch(e){}
+    showToast('프롬프트가 생성되었습니다. 복사 버튼을 눌러주세요.');
+  });
+  const lp=document.getElementById(window.innerWidth<=768?'rp':'rp');
+  if(window.innerWidth<=768)switchMob('right');
+  requestAnimationFrame(()=>{
+    const card=document.getElementById('prompt-card');
+    const r=card.getBoundingClientRect(), lr=lp.getBoundingClientRect();
+    lp.scrollTo({top:lp.scrollTop+(r.top-lr.top)-14,behavior:'smooth'});
+  });
+}
+
+function showCopyStatus(ok){
+  const el=document.getElementById('copy-status');
+  if(el)el.style.display=ok?'flex':'none';
+}
+
+async function copyPrompt(){
+  const txt=document.getElementById('prompt-output').value;if(!txt)return;
+  try{
+    await navigator.clipboard.writeText(txt);
+    const btn=document.getElementById('copy-btn');
+    btn.innerHTML='<i data-lucide="check"></i><span>복사됨</span>';icons();
+    btn.classList.add('done');
+    showCopyStatus(true);showToast('클립보드에 복사되었습니다.');
+    setTimeout(()=>{btn.innerHTML='<i data-lucide="copy"></i><span>복사</span>';btn.classList.remove('done');icons();},2000);
+  }catch(e){document.getElementById('prompt-output').select();document.execCommand('copy');showToast('복사되었습니다.');}
+}
+
+function showErr(m){const b=document.getElementById('err-box');b.innerHTML='<i data-lucide="alert-triangle"></i><span>'+m+'</span>';b.style.display='flex';icons();}
+function clearErr(){document.getElementById('err-box').style.display='none';}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity='1';setTimeout(()=>t.style.opacity='0',2800);}
+
+function resetAll(){
+  if(!confirm('모든 입력을 초기화할까요?'))return;
+  selAreaVal='';selToneVal='관찰자형 (학생을 직접 관찰한 교사의 시점으로 생생하게)';selVerVal='both';
+  selKeywords.clear();openDomains.clear();
+  selActivityTypes.clear();selClubType='';selClubRole='';selVolunteerType='';selCareerActType='';selAutonomyType='';
+  document.querySelectorAll('[data-area]').forEach(c=>c.classList.remove('active-chip'));
+  document.querySelectorAll('#tone-chips .chip').forEach((c,i)=>{c.classList.remove('active-chip');if(i===0)c.classList.add('active-chip');});
+  document.querySelectorAll('#version-chips .chip').forEach((c,i)=>{c.classList.remove('active-chip');if(i===0)c.classList.add('active-chip');});
+  ['grade-sel','semester-sel'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('char-sel').value='500자 내외';
+  ['subj-inp','career-inp','case-inp','style-inp','dup-inp'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('subj-field').style.display='none';
+  document.getElementById('area-extra').classList.remove('show');
+  document.getElementById('area-extra-content').innerHTML='';
+  document.getElementById('prompt-card').style.display='none';
+  document.getElementById('empty-state').style.display='block';
+  document.getElementById('err-box').style.display='none';
+  document.getElementById('copy-status').style.display='none';
+  initDomains();uc();showToast('초기화되었습니다.');
+}
+
+function openGuide(){document.getElementById('guide-modal').classList.add('open');}
+function closeGuide(){document.getElementById('guide-modal').classList.remove('open');}
+function toggleDark(){
+  const on=document.body.classList.toggle('dark');
+  const btn=document.getElementById('dark-btn');
+  btn.innerHTML=on?'<i data-lucide="sun"></i>':'<i data-lucide="moon"></i>';
+  icons();
+}
+
+let mobP='left';
+function switchMob(p){
+  mobP=p;
+  document.getElementById('lp').classList.toggle('mh',p!=='left');
+  document.getElementById('rp').classList.toggle('mh',p!=='right');
+  document.getElementById('mob-l').classList.toggle('active',p==='left');
+  document.getElementById('mob-r').classList.toggle('active',p==='right');
+}
+
+window.addEventListener('load',()=>{initDomains();uc();icons();});
+document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();gen();}});
+
+</script>
+<script>
+/* ============================================================
+   Design — 사용자용 디자인 설정 (상시 패널 + 자동 저장)
+   · 헤더 "디자인" 버튼으로 열림
+   · 호스트 Tweaks 토글과도 호환
+   · 선택값은 localStorage에 저장되어 새로고침/재방문 시 유지
+   ============================================================ */
+window.Design = (function(){
+  const KEY='sgb-design-prefs-v1';
+  const DEFAULTS = Object.assign(
+    {accent:'navy', bg:'cool', layout:'focus', density:'compact', dark:false},
+    (window.TWEAK_DEFAULTS||{})
+  );
+
+  const ACCENTS = {
+    navy:   {label:'네이비',   swatch:'#2A3B73'},
+    indigo: {label:'인디고',   swatch:'#3D45A8'},
+    slate:  {label:'슬레이트', swatch:'#38516E'}
+  };
+  const SEGS = {
+    bg:      [{val:'ivory',label:'아이보리'},{val:'cool',label:'쿨 그레이'}],
+    layout:  [{val:'split',label:'좌우 분할'},{val:'focus',label:'집중형'}],
+    density: [{val:'roomy',label:'넉넉'},{val:'compact',label:'조밀'}]
+  };
+
+  let state = load();
+  let panel, backdrop, built=false, open=false;
+
+  function load(){
+    let saved={};
+    try{ saved=JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){}
+    return Object.assign({}, DEFAULTS, saved);
+  }
+  function persist(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  }
+  function icons(){ if(window.lucide&&lucide.createIcons) lucide.createIcons(); }
+
+  function apply(){
+    const b=document.body;
+    b.setAttribute('data-accent', state.accent);
+    b.setAttribute('data-bg', state.bg);
+    b.setAttribute('data-layout', state.layout);
+    b.setAttribute('data-density', state.density);
+    b.classList.toggle('dark', !!state.dark);
+    const dk=document.getElementById('dark-btn');
+    if(dk){ dk.innerHTML = state.dark?'<i data-lucide="sun"></i>':'<i data-lucide="moon"></i>'; }
+    icons();
+  }
+
+  function set(key,val){
+    state[key]=val; apply(); persist(); syncUI();
+    try{ window.parent.postMessage({type:'__edit_mode_set_keys',edits:{[key]:val}},'*'); }catch(e){}
+  }
+  function toggleDark(){ set('dark', !state.dark); }
+
+  function reset(){
+    state = Object.assign({}, DEFAULTS);
+    apply(); persist(); syncUI();
+  }
+
+  /* ---------- panel DOM ---------- */
+  function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+  function sect(label){return el('div','tw-sect',label);}
+  function seg(key){
+    const wrap=el('div','tw-seg');
+    SEGS[key].forEach(o=>{
+      const btn=el('button',null,o.label); btn.type='button';
+      btn.dataset.key=key; btn.dataset.val=o.val;
+      btn.onclick=()=>set(key,o.val);
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+  function swatches(){
+    const wrap=el('div','tw-sw-row');
+    Object.entries(ACCENTS).forEach(([val,o])=>{
+      const btn=el('button','tw-sw',`<span class="tw-sw-dot"></span><span class="tw-sw-lbl">${o.label}</span>`);
+      btn.type='button'; btn.dataset.key='accent'; btn.dataset.val=val;
+      btn.title=o.label; btn.style.setProperty('--c',o.swatch);
+      btn.onclick=()=>set('accent',val);
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+  function row(label,control){
+    const r=el('div','tw-row'); r.appendChild(el('div','tw-lbl',label)); r.appendChild(control); return r;
+  }
+
+  function build(){
+    backdrop=el('div','tw-backdrop'); backdrop.setAttribute('data-omelette-chrome','');
+    backdrop.onclick=hide; document.body.appendChild(backdrop);
+
+    panel=el('div','tw-panel'); panel.setAttribute('data-omelette-chrome','');
+    const hd=el('div','tw-hd','<b><i data-lucide="palette"></i> 디자인 설정</b>');
+    const x=el('button','tw-x','✕'); x.setAttribute('aria-label','닫기');
+    x.onclick=()=>{ hide(); try{window.parent.postMessage({type:'__edit_mode_dismissed'},'*');}catch(e){} };
+    hd.appendChild(x); panel.appendChild(hd);
+
+    const body=el('div','tw-body');
+    body.appendChild(sect('포인트 컬러')); body.appendChild(swatches());
+    body.appendChild(sect('배경 톤'));     body.appendChild(seg('bg'));
+    body.appendChild(sect('레이아웃'));     body.appendChild(seg('layout'));
+    body.appendChild(sect('정보 밀도'));    body.appendChild(seg('density'));
+    body.appendChild(sect('테마'));
+    const tg=el('button','tw-toggle','<i></i>'); tg.type='button'; tg.dataset.role='dark';
+    tg.onclick=()=>toggleDark();
+    body.appendChild(row('다크 모드', tg));
+    panel.appendChild(body);
+
+    const foot=el('div','tw-foot');
+    const rs=el('button','tw-reset','<i data-lucide="rotate-ccw"></i> 기본값으로');
+    rs.onclick=reset; foot.appendChild(rs); panel.appendChild(foot);
+
+    document.body.appendChild(panel);
+    built=true; syncUI(); icons();
+  }
+
+  function syncUI(){
+    if(!panel) return;
+    panel.querySelectorAll('.tw-seg button, .tw-sw').forEach(btn=>{
+      btn.classList.toggle('on', String(state[btn.dataset.key])===String(btn.dataset.val));
+    });
+    const tg=panel.querySelector('.tw-toggle');
+    if(tg) tg.dataset.on = state.dark?'1':'0';
+  }
+
+  function show(){ if(!built) build(); panel.style.display='flex'; panel.classList.add('show'); backdrop.classList.add('show'); open=true; syncUI();
+    const db=document.getElementById('design-btn'); if(db) db.classList.add('active-ghost'); }
+  function hide(){ if(panel){panel.style.display='none'; panel.classList.remove('show'); backdrop.classList.remove('show');} open=false;
+    const db=document.getElementById('design-btn'); if(db) db.classList.remove('active-ghost'); }
+  function toggle(){ open?hide():show(); }
+
+  /* host Tweaks toolbar compatibility */
+  window.addEventListener('message',e=>{
+    const t=e&&e.data&&e.data.type;
+    if(t==='__activate_edit_mode') show();
+    else if(t==='__deactivate_edit_mode') hide();
+  });
+  try{ window.parent.postMessage({type:'__edit_mode_available'},'*'); }catch(e){}
+
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&open) hide(); });
+
+  /* apply saved prefs immediately on load */
+  apply();
+
+  return { toggle, show, hide, set, toggleDark, reset };
+})();
+
+</script>
+</body>
+</html>
