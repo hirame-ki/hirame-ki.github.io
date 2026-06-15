@@ -27,9 +27,18 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 .recent-room{background:#f8f9fa;border-radius:8px;padding:.9rem;margin-bottom:.4rem}
 .recent-room.hidden{display:none}
 .recent-room p{margin:0 0 .4rem;font-size:12px;color:#888}
-.recent-room .recent-code{font-size:18px;letter-spacing:3px;font-family:monospace;font-weight:600;color:#2c3e50;margin-bottom:.6rem}
-.recent-room button{background:#2c3e50;color:#fff}
-.recent-room button:hover{background:#1a252f}
+.recent-room-row{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:#fff;border:1px solid #eee;border-radius:8px;padding:.55rem .7rem;margin-bottom:.4rem}
+.recent-room-row:last-child{margin-bottom:0}
+.recent-room-info{text-align:left;min-width:0}
+.recent-room-info .recent-name{font-size:12.5px;font-weight:600;color:#444;margin-bottom:1px}
+.recent-room-info .recent-code{font-size:14px;letter-spacing:2px;font-family:monospace;font-weight:600;color:#2c3e50}
+.recent-room-btns{display:flex;gap:4px;flex-shrink:0}
+.recent-room-btns button{width:auto;padding:7px 10px;font-size:12px;background:#2c3e50;color:#fff}
+.recent-room-btns button:hover{background:#1a252f}
+.recent-room-btns button.ghost-sm{background:#eee;color:#666;padding:7px 8px}
+.recent-room-btns button.ghost-sm:hover{background:#ddd}
+.recent-room-btns button.ghost-sm.del{color:#e74c3c}
 
 /* ===== 레이아웃 ===== */
 #dash{display:none}
@@ -136,6 +145,20 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 #qrModal canvas{max-width:100%;border:1px solid #eee;border-radius:8px}
 #qrModal .qr-url{font-size:11px;color:#999;word-break:break-all;margin:10px 0;font-family:monospace}
 
+/* ===== 실시간 맵 보기 모달 ===== */
+#liveMapModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:55;padding:16px}
+#liveMapModal-bg.show{display:flex}
+#liveMapModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:960px;max-height:92vh;overflow-y:auto}
+#liveMapModal h2{margin:0 0 .6rem;font-size:16px}
+.lm-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.lm-tabs button{padding:6px 12px;border-radius:6px;border:1px solid #ccc;background:#fff;font-size:12.5px;cursor:pointer}
+.lm-tabs button.active{background:#2c3e50;color:#fff;border-color:#2c3e50}
+.lm-tabs button:hover:not(.active){background:#eee}
+.lm-stage{position:relative}
+.lm-frame-wrap{position:relative;width:100%;height:60vh;max-height:560px;background:#1a252f;border-radius:8px;overflow:hidden}
+.lm-frame-wrap iframe{position:absolute;border:0;transform-origin:top left;pointer-events:none;background:#fff}
+.lm-online{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:12px;z-index:1}
+
 /* ===== 상단바 버튼 그룹 ===== */
 .topbar .right{display:flex;gap:8px}
 .topbar .right button{padding:6px 14px;border-radius:6px;border:none;font-size:12px;font-weight:500;cursor:pointer}
@@ -165,8 +188,7 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     <p>새 수업을 만들거나, 기존 수업 코드를 입력해 이어서 관리하세요</p>
     <div id="recentRoom" class="recent-room hidden">
       <p>최근에 사용한 수업 코드</p>
-      <div class="recent-code" id="recentRoomCode"></div>
-      <button onclick="continueRoom()">이 수업 계속하기</button>
+      <div id="recentRoomList"></div>
     </div>
     <div class="gate-divider">또는</div>
     <button onclick="createNewRoom()">+ 새 수업 만들기</button>
@@ -187,6 +209,7 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     <div class="right">
       <button class="primary" onclick="openLinkModal()">🔗 학생 초대 링크</button>
       <button class="primary" onclick="openOrderModal()">🚪 맵 이동 순서</button>
+      <button class="primary" onclick="openLiveMapModal()">🗺️ 실시간 맵 보기</button>
       <button class="primary" onclick="downloadProgressExcel()">📊 진행현황 다운로드</button>
       <button class="ghost" onclick="newClass()">수업 변경</button>
       <button class="ghost" onclick="logout()">로그아웃</button>
@@ -219,6 +242,7 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
   <div id="qrModal">
     <h2 id="qr_title">QR 코드</h2>
     <canvas id="qr_canvas"></canvas>
+    <img id="qr_img" alt="QR 코드" style="display:none;max-width:100%;border:1px solid #eee;border-radius:8px">
     <div class="qr-url" id="qr_url"></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeQrModal()">닫기</button>
@@ -236,6 +260,24 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeOrderModal()">닫기</button>
       <button class="btn-save" onclick="saveMapOrder()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 실시간 맵 보기 모달 -->
+<div id="liveMapModal-bg">
+  <div id="liveMapModal">
+    <h2>🗺️ 실시간 맵 보기</h2>
+    <div class="section-hint">학생들이 맵 위에서 이동하는 모습을 실시간으로 확인할 수 있어요. (이 화면에서는 직접 조작할 수 없습니다)</div>
+    <div class="lm-tabs" id="lm_tabs"></div>
+    <div class="lm-stage">
+      <div class="lm-frame-wrap" id="lm_frame_wrap">
+        <iframe id="lm_iframe" frameborder="0" title="실시간 맵 보기"></iframe>
+        <div class="lm-online" id="lm_online">접속 인원: -</div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeLiveMapModal()">닫기</button>
     </div>
   </div>
 </div>
@@ -295,8 +337,59 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 <script>
 /* ===================== 설정 ===================== */
 const ACCESS_CODE = 'ssambus2026';   // 교사 접속 코드 (필요시 이 값을 변경하세요)
-const ROOM_KEY = 'ssambus_teacher_room';
+const ROOM_KEY = 'ssambus_teacher_room';        // (이전 버전과의 호환용) 마지막으로 사용한 수업 코드
+const ROOM_LIST_KEY = 'ssambus_teacher_rooms';  // 최근 사용한 수업 코드 목록 (최신순)
 let ROOM_ID = localStorage.getItem(ROOM_KEY) || null;
+
+/* ===================== 최근 수업 코드 목록 ===================== */
+/* 목록 항목 형태: { id: '수업코드', name: '수업 이름(선택)' } */
+function getRoomList(){
+  let list = [];
+  try{ list = JSON.parse(localStorage.getItem(ROOM_LIST_KEY) || '[]'); }
+  catch(e){ list = []; }
+  if(!Array.isArray(list)) list = [];
+  // 이전 버전 호환: 문자열 코드만 저장돼 있던 경우 객체로 변환
+  list = list.map(item => typeof item === 'string' ? { id: item, name: '' } : item)
+             .filter(item => item && item.id);
+  // 이전 버전 호환: 단일 코드만 저장돼 있던 경우 목록으로 가져오기
+  if(!list.length && ROOM_ID) list = [{ id: ROOM_ID, name: '' }];
+  return list;
+}
+
+function saveRoomList(list){
+  localStorage.setItem(ROOM_LIST_KEY, JSON.stringify(list));
+}
+
+function addRoomToList(roomId, name){
+  let list = getRoomList();
+  const existing = list.find(item => item.id === roomId);
+  const finalName = (name !== undefined) ? name : (existing ? existing.name : '');
+  list = list.filter(item => item.id !== roomId);
+  list.unshift({ id: roomId, name: finalName || '' });
+  if(list.length > 10) list = list.slice(0, 10);
+  saveRoomList(list);
+  localStorage.setItem(ROOM_KEY, roomId);
+}
+
+function removeRoomFromList(roomId){
+  const list = getRoomList().filter(item => item.id !== roomId);
+  saveRoomList(list);
+  if(ROOM_ID === roomId){
+    ROOM_ID = list[0] ? list[0].id : null;
+    localStorage.setItem(ROOM_KEY, ROOM_ID || '');
+  }
+  showRoomGate();
+}
+
+function renameRoom(roomId){
+  const list = getRoomList();
+  const item = list.find(r => r.id === roomId);
+  const current = item ? item.name : '';
+  const name = prompt('이 수업의 이름을 입력하세요 (예: 3학년 2반)', current || '');
+  if(name === null) return; // 취소
+  addRoomToList(roomId, name.trim());
+  showRoomGate();
+}
 
 /* 학생용 맵 파일 (수업 코드를 ?room= 파라미터로 붙여 안내) */
 const MAP_FILES = {
@@ -306,6 +399,16 @@ const MAP_FILES = {
   gym:'ssambus_map_gym.html',
   city:'ssambus_map_city.html',
   forest:'ssambus_map_forest.html'
+};
+
+/* 각 맵의 실제 캔버스 픽셀 크기 (실시간 맵 보기에서 축소 표시용) */
+const MAP_CANVAS_SIZE = {
+  classroom:{ w:720,  h:768  },
+  library:  { w:720,  h:1008 },
+  playground:{ w:1536, h:672  },
+  gym:      { w:1344, h:672  },
+  city:     { w:1344, h:672  },
+  forest:   { w:1344, h:672  }
 };
 
 const MAPS = [
@@ -434,15 +537,38 @@ function showRoomGate(){
   document.getElementById('dash').classList.remove('show');
   document.getElementById('roomGate').classList.remove('hidden');
   const recent = document.getElementById('recentRoom');
-  if(ROOM_ID){
-    document.getElementById('recentRoomCode').textContent = ROOM_ID;
+  const list = getRoomList();
+  const listEl = document.getElementById('recentRoomList');
+  listEl.innerHTML = '';
+  if(list.length){
+    list.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'recent-room-row';
+      row.innerHTML = `
+        <div class="recent-room-info">
+          ${item.name ? `<div class="recent-name">${item.name}</div>` : ''}
+          <div class="recent-code">${item.id}</div>
+        </div>
+        <div class="recent-room-btns">
+          <button class="go">이 수업 계속하기</button>
+          <button class="ghost-sm" title="이름 변경">✏️</button>
+          <button class="ghost-sm del" title="목록에서 삭제">✕</button>
+        </div>
+      `;
+      row.querySelector('.go').onclick = () => continueRoom(item.id);
+      row.querySelector('.ghost-sm:not(.del)').onclick = () => renameRoom(item.id);
+      row.querySelector('.del').onclick = () => removeRoomFromList(item.id);
+      listEl.appendChild(row);
+    });
     recent.classList.remove('hidden');
   }else{
     recent.classList.add('hidden');
   }
 }
 
-function continueRoom(){
+function continueRoom(roomId){
+  ROOM_ID = roomId;
+  addRoomToList(roomId);
   document.getElementById('roomGate').classList.add('hidden');
   showDash();
 }
@@ -466,7 +592,8 @@ function genRoomCode(){
 
 function createNewRoom(){
   ROOM_ID = genRoomCode();
-  localStorage.setItem(ROOM_KEY, ROOM_ID);
+  const name = prompt('이 수업의 이름을 입력하세요 (예: 3학년 2반, 입력 안 해도 됩니다)', '');
+  addRoomToList(ROOM_ID, name === null ? '' : name.trim());
   document.getElementById('roomGate').classList.add('hidden');
   showDash();
 }
@@ -478,7 +605,7 @@ function loadExistingRoom(){
     return;
   }
   ROOM_ID = v;
-  localStorage.setItem(ROOM_KEY, ROOM_ID);
+  addRoomToList(ROOM_ID);
   document.getElementById('roomGate').classList.add('hidden');
   document.getElementById('roomErr').textContent = '';
   showDash();
@@ -534,10 +661,27 @@ function showQr(url, label){
   document.getElementById('qr_title').textContent = `📱 ${label} QR 코드`;
   document.getElementById('qr_url').textContent = url;
   const canvas = document.getElementById('qr_canvas');
-  QRCode.toCanvas(canvas, url, { width: 240, margin: 2 }, (err) => {
-    if(err) showToast('QR 코드 생성에 실패했습니다.');
-  });
+  const img = document.getElementById('qr_img');
+  canvas.style.display = '';
+  img.style.display = 'none';
+  try{
+    if(typeof QRCode === 'undefined' || !QRCode.toCanvas) throw new Error('QRCode 라이브러리를 불러오지 못했습니다.');
+    QRCode.toCanvas(canvas, url, { width: 240, margin: 2 }, (err) => {
+      if(err){
+        canvas.style.display = 'none';
+        __qrShowFallback(img, url);
+      }
+    });
+  }catch(e){
+    canvas.style.display = 'none';
+    __qrShowFallback(img, url);
+  }
   document.getElementById('qrModal-bg').classList.add('show');
+}
+
+function __qrShowFallback(img, url){
+  img.style.display = '';
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data=' + encodeURIComponent(url);
 }
 
 function closeQrModal(){
@@ -546,10 +690,85 @@ function closeQrModal(){
 
 function downloadQr(){
   const canvas = document.getElementById('qr_canvas');
-  const link = document.createElement('a');
-  link.download = (document.getElementById('qr_title').textContent.replace(/[^\w가-힣]+/g, '_')) + '.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
+  const img = document.getElementById('qr_img');
+  const filename = (document.getElementById('qr_title').textContent.replace(/[^\w가-힣]+/g, '_')) + '.png';
+  if(canvas.style.display !== 'none'){
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } else {
+    fetch(img.src).then(r => r.blob()).then(blob => {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }).catch(() => showToast('PNG 다운로드에 실패했습니다. QR 이미지를 길게 눌러 저장해주세요.'));
+  }
+}
+
+/* ===================== 실시간 맵 보기 ===================== */
+let __lmCurrentMap = null;
+let __lmChannel = null;
+
+function openLiveMapModal(){
+  const tabs = document.getElementById('lm_tabs');
+  tabs.innerHTML = MAPS.map(m => `<button onclick="switchLiveMap('${m.id}')" data-map="${m.id}">${m.label}</button>`).join('');
+  document.getElementById('liveMapModal-bg').classList.add('show');
+  switchLiveMap(currentMap);
+}
+
+function closeLiveMapModal(){
+  document.getElementById('liveMapModal-bg').classList.remove('show');
+  document.getElementById('lm_iframe').src = 'about:blank';
+  if(__lmChannel){
+    try{ client.removeChannel(__lmChannel); }catch(e){ /* 무시 */ }
+    __lmChannel = null;
+  }
+}
+
+function switchLiveMap(mapId){
+  __lmCurrentMap = mapId;
+  document.querySelectorAll('#lm_tabs button').forEach(b => b.classList.toggle('active', b.dataset.map === mapId));
+
+  const size = MAP_CANVAS_SIZE[mapId];
+  const wrap = document.getElementById('lm_frame_wrap');
+  const iframe = document.getElementById('lm_iframe');
+  const wrapW = wrap.clientWidth, wrapH = wrap.clientHeight;
+  const scale = Math.min(wrapW / size.w, wrapH / size.h);
+  iframe.style.width = size.w + 'px';
+  iframe.style.height = size.h + 'px';
+  iframe.style.transform = `scale(${scale})`;
+  iframe.style.left = Math.max(0, (wrapW - size.w*scale) / 2) + 'px';
+  iframe.style.top = Math.max(0, (wrapH - size.h*scale) / 2) + 'px';
+  iframe.src = MAP_FILES[mapId] + '?room=' + encodeURIComponent(ROOM_ID) + '&teacherView=1';
+
+  __lmConnectPresence();
+}
+
+function __lmConnectPresence(){
+  document.getElementById('lm_online').textContent = '접속 인원: -';
+  if(!client) return;
+  if(__lmChannel){
+    try{ client.removeChannel(__lmChannel); }catch(e){ /* 무시 */ }
+    __lmChannel = null;
+  }
+  __lmChannel = client.channel('room:' + ROOM_ID, {
+    config: { presence: { key: 'dash_' + Math.random().toString(36).slice(2, 10) } }
+  });
+  __lmChannel.on('presence', { event: 'sync' }, () => {
+    const state = __lmChannel.presenceState();
+    let count = 0;
+    Object.keys(state).forEach(key => {
+      const presences = state[key];
+      if(!presences || !presences.length) return;
+      const s = presences[presences.length - 1];
+      if(s && s.map === __lmCurrentMap) count++;
+    });
+    document.getElementById('lm_online').textContent = `접속 인원: ${count}명`;
+  });
+  __lmChannel.subscribe();
 }
 
 /* ===================== 맵 이동 순서 ===================== */

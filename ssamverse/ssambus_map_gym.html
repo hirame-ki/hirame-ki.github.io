@@ -62,6 +62,14 @@ h2{margin:.3rem 0}
 <script>
 /* ===================== 맵 정의 (28열 x 14행, 타일 48px) - 가로로 넓은 체육관 ===================== */
 const TS = 48, COLS = 28, ROWS = 14;
+
+/* 교사 대시보드의 "실시간 맵 보기"에서 ?teacherView=1 로 열리면 자기 캐릭터/조작 UI를 숨기고 전체 맵을 보여줍니다 */
+const TEACHER_VIEW = new URLSearchParams(window.location.search).get('teacherView') === '1';
+if(TEACHER_VIEW){
+  document.body.style.padding = '0';
+  document.body.style.background = 'transparent';
+  document.querySelectorAll('h2, .info, .pad, .legend').forEach(el => el.style.display = 'none');
+}
 // 0:코트바닥 1:벽 4:농구골대(벽부착) 5:출입문 7:관람석 8:용품보관대 9:무대
 const grid = [
   [1,1,1,1,1,1,1,4,4,1,1,1,1,1,1,1,1,1,1,4,4,1,1,1,1,1,1,1], // 0: 상단 벽 + 좌/우 코트 농구골대
@@ -239,6 +247,12 @@ function renderPlayer(){
 let pos = { r:3, c:5 }; // 앞문 근처 코트에서 시작
 function updateCamera(){
   const wrap = document.querySelector('.stage-wrap');
+  if(TEACHER_VIEW){
+    wrap.style.width = (COLS*TS) + 'px';
+    wrap.style.height = (ROWS*TS) + 'px';
+    wrap.style.overflow = 'visible';
+    return;
+  }
   const canvasW = COLS*TS, canvasH = ROWS*TS;
   const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
   wrap.scrollLeft = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
@@ -246,6 +260,7 @@ function updateCamera(){
 }
 function placePlayer(){
   const el = document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display = 'none';
   el.style.left = (pos.c*TS) + 'px';
   el.style.top  = (pos.r*TS - 24) + 'px'; // 캐릭터 높이(72)가 타일(48)보다 커서 발 위치 보정
   updateCamera();
@@ -269,14 +284,15 @@ function move(dir){
   placePlayer();
 }
 window.addEventListener('keydown', e=>{
+  if(TEACHER_VIEW) return;
   const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
   if(map[e.key]){ e.preventDefault(); move(map[e.key]); }
 });
 
 renderPlayer();
 placePlayer();
-initRealtime();
-initMissionSystem('gym');
+initRealtime('gym');
+if(!TEACHER_VIEW) initMissionSystem('gym');
 </script>
 </body>
 </html>

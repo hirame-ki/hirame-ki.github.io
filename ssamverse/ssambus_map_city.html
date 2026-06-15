@@ -63,6 +63,14 @@ h2{margin:.3rem 0}
 /* ===================== 맵 정의 (28열 x 14행, 타일 48px) ===================== */
 const TS = 48, COLS = 28, ROWS = 14;
 const VIEW_W = 768, VIEW_H = 672;
+
+/* 교사 대시보드의 "실시간 맵 보기"에서 ?teacherView=1 로 열리면 자기 캐릭터/조작 UI를 숨기고 전체 맵을 보여줍니다 */
+const TEACHER_VIEW = new URLSearchParams(window.location.search).get('teacherView') === '1';
+if(TEACHER_VIEW){
+  document.body.style.padding = '0';
+  document.body.style.background = 'transparent';
+  document.querySelectorAll('h2, .info, .pad, .legend').forEach(el => el.style.display = 'none');
+}
 // 0:인도 1:건물 2:도로 3:횡단보도 4:신호등(인도) 9:사거리광장/분수
 // 8열 너비의 건물 블록 3개(0-7,10-17,20-27) 사이로 남북 도로 2개(8-9열, 18-19열)가 가로지르는 가로로 넓은 도심.
 // 상/하단 도로가 지도 끝까지 뻗어 출입구 역할(상단 0행, 하단 13행 양쪽 도로)
@@ -233,6 +241,12 @@ function renderPlayer(){
 /* ===================== 카메라 추적 ===================== */
 function updateCamera(){
   const wrap = document.querySelector('.stage-wrap');
+  if(TEACHER_VIEW){
+    wrap.style.width = (COLS*TS) + 'px';
+    wrap.style.height = (ROWS*TS) + 'px';
+    wrap.style.overflow = 'visible';
+    return;
+  }
   const canvasW = COLS*TS, canvasH = ROWS*TS;
   const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
   wrap.scrollLeft = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
@@ -243,6 +257,7 @@ function updateCamera(){
 let pos = { r:0, c:8 }; // 상단 도로 입구에서 시작
 function placePlayer(){
   const el = document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display = 'none';
   el.style.left = (pos.c*TS) + 'px';
   el.style.top  = (pos.r*TS - 24) + 'px'; // 캐릭터 높이(72)가 타일(48)보다 커서 발 위치 보정
   updateCamera();
@@ -266,14 +281,15 @@ function move(dir){
   placePlayer();
 }
 window.addEventListener('keydown', e=>{
+  if(TEACHER_VIEW) return;
   const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
   if(map[e.key]){ e.preventDefault(); move(map[e.key]); }
 });
 
 renderPlayer();
 placePlayer();
-initRealtime();
-initMissionSystem('city');
+initRealtime('city');
+if(!TEACHER_VIEW) initMissionSystem('city');
 </script>
 </body>
 </html>

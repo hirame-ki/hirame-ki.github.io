@@ -64,6 +64,13 @@ h2{margin:.3rem 0}
 <script>
 /* ===================== 맵 정의 (15열 x 16행, 타일 48px) ===================== */
 const TS = 48, COLS = 15, ROWS = 16;
+/* 교사 대시보드의 "실시간 맵 보기"에서 ?teacherView=1 로 열리면 자기 캐릭터/조작 UI를 숨기고 전체 맵을 보여줍니다 */
+const TEACHER_VIEW = new URLSearchParams(window.location.search).get('teacherView') === '1';
+if(TEACHER_VIEW){
+  document.body.style.padding = '0';
+  document.body.style.background = 'transparent';
+  document.querySelectorAll('h2, .info, .pad, .legend').forEach(el => el.style.display = 'none');
+}
 // 0:바닥 1:벽 2:칠판 3:교탁 4:책상+의자 5:문 7:게시판/사물함
 const grid = [
   [1,8,2,2,2,2,2,2,2,2,2,2,2,1,1], // 0: 칠판(가로로 긴) + 좌측 TV
@@ -284,6 +291,13 @@ function renderPlayer(){
 const VIEW_W = 720, VIEW_H = 672;
 function updateCamera(){
   const wrap = document.querySelector('.stage-wrap');
+  if(TEACHER_VIEW){
+    // 전체 맵을 한눈에 볼 수 있도록 스크롤 없이 전체 캔버스를 표시
+    wrap.style.width = (COLS*TS) + 'px';
+    wrap.style.height = (ROWS*TS) + 'px';
+    wrap.style.overflow = 'visible';
+    return;
+  }
   const canvasW = COLS*TS, canvasH = ROWS*TS;
   const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
   wrap.scrollLeft = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
@@ -294,6 +308,7 @@ function updateCamera(){
 let pos = { r:2, c:7 }; // 앞쪽 통로(칠판/교탁 앞)에서 시작
 function placePlayer(){
   const el = document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display = 'none';
   el.style.left = (pos.c*TS) + 'px';
   el.style.top  = (pos.r*TS - 24) + 'px'; // 캐릭터 높이(72)가 타일(48)보다 커서 발 위치 보정
   updateCamera();
@@ -317,14 +332,15 @@ function move(dir){
   placePlayer();
 }
 window.addEventListener('keydown', e=>{
+  if(TEACHER_VIEW) return;
   const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
   if(map[e.key]){ e.preventDefault(); move(map[e.key]); }
 });
 
 renderPlayer();
 placePlayer();
-initRealtime();
-initMissionSystem('classroom');
+initRealtime('classroom');
+if(!TEACHER_VIEW) initMissionSystem('classroom');
 </script>
 </body>
 </html>

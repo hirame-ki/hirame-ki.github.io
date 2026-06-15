@@ -179,6 +179,7 @@ let __msQueue = [];
 let __msMapOrder = null;        // 교사가 설정한(또는 기본) 맵 순서
 let __msMapsWithMissions = null; // 이 수업(room)에 미션이 등록된 맵 id 집합
 let __msTransitioning = false;   // 다음 맵으로 이동 처리 중 중복 방지
+let __msAllDoneShown = false;    // 이 맵의 "전체 완료" 축하 팝업을 이미 보여줬는지
 
 function __msParam(name, fallback){
   if(typeof __rtGetParam === 'function') return __rtGetParam(name, fallback);
@@ -190,6 +191,10 @@ function __msParam(name, fallback){
 
 function __msStorageKey(){
   return 'ssambus_missions_done_' + __msRoomId + '_' + __msStudentId;
+}
+
+function __msAllDoneKey(){
+  return 'ssambus_alldone_' + __msRoomId + '_' + __msStudentId + '_' + __msMapId;
 }
 
 function __msGetClient(){
@@ -350,6 +355,47 @@ function __msShowExitNotice(mapId, cb){
   setTimeout(cb, 1500);
 }
 
+/* ===================== 전체 미션 완료 축하 팝업 ===================== */
+function __msSpawnConfetti(){
+  const colors = ['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#e67e22'];
+  const confetti = document.createElement('div');
+  confetti.id = 'ms-confetti';
+  for(let i = 0; i < 40; i++){
+    const piece = document.createElement('div');
+    piece.className = 'ms-confetti-piece';
+    piece.style.left = (Math.random() * 100) + '%';
+    piece.style.background = colors[i % colors.length];
+    piece.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+    piece.style.animationDelay = (Math.random() * 0.5) + 's';
+    confetti.appendChild(piece);
+  }
+  document.body.appendChild(confetti);
+  setTimeout(() => confetti.remove(), 4000);
+}
+
+function __msShowAllDoneCelebration(){
+  __msInjectStyle();
+  __msSpawnConfetti();
+
+  const hasNext = !!__msNextMap();
+  const message = hasNext
+    ? '이 맵의 모든 미션을 완료했어요!<br>출입구(문/게이트)를 찾아 다음 장소로 이동해보세요.'
+    : '모든 미션을 완료했어요!<br>오늘 활동 수고 많았어요 👏';
+
+  const bg = document.createElement('div');
+  bg.id = 'ms-celebrate-bg';
+  bg.innerHTML = `
+    <div id="ms-celebrate">
+      <div class="ms-emoji">🎉</div>
+      <h3>미션 완료!</h3>
+      <p>${message}</p>
+      <button id="ms-celebrate-close">확인</button>
+    </div>
+  `;
+  document.body.appendChild(bg);
+  bg.querySelector('#ms-celebrate-close').addEventListener('click', () => bg.remove());
+}
+
 /* ===================== UI: 진행률 바 / 미션 모달 ===================== */
 function __msInjectStyle(){
   if(document.getElementById('ms-style')) return;
@@ -387,6 +433,22 @@ function __msInjectStyle(){
     #ms-block-banner{position:fixed;top:50px;left:50%;transform:translateX(-50%);background:rgba(192,57,43,.95);
       color:#fff;font-size:13px;padding:10px 16px;border-radius:10px;z-index:55;max-width:280px;text-align:center;
       box-shadow:0 2px 6px rgba(0,0,0,.25);font-family:sans-serif}
+    #ms-celebrate-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;
+      align-items:center;justify-content:center;z-index:120;padding:16px;font-family:sans-serif}
+    #ms-celebrate{background:#fff;border-radius:16px;padding:28px 24px;text-align:center;
+      max-width:340px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.3);animation:ms-pop .35s ease}
+    #ms-celebrate .ms-emoji{font-size:54px;display:inline-block;animation:ms-bounce 1s ease infinite}
+    #ms-celebrate h3{margin:10px 0 6px;color:#2c3e50;font-size:18px}
+    #ms-celebrate p{margin:0 0 18px;font-size:13.5px;color:#666;line-height:1.6}
+    #ms-celebrate button{padding:10px 22px;border:none;border-radius:8px;background:#2c3e50;
+      color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+    #ms-celebrate button:hover{background:#1a252f}
+    #ms-confetti{position:fixed;inset:0;pointer-events:none;z-index:121;overflow:hidden}
+    .ms-confetti-piece{position:absolute;top:-20px;width:8px;height:14px;opacity:.9;
+      animation:ms-fall linear forwards}
+    @keyframes ms-pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+    @keyframes ms-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+    @keyframes ms-fall{to{transform:translateY(110vh) rotate(360deg)}}
   `;
   document.head.appendChild(style);
 }
@@ -524,6 +586,12 @@ function __msComplete(id){
   __msQueue.shift();
   __msShowNext();
   if(!__msQueue.length) checkZoneOnMove(pos); // 마지막 미션 완료 시 출입구 위치라면 즉시 이동 판정
+
+  if(__msMissions.length && __msAllRequiredDone() && !__msAllDoneShown){
+    __msAllDoneShown = true;
+    try{ localStorage.setItem(__msAllDoneKey(), '1'); }catch(e){ /* 무시 */ }
+    setTimeout(__msShowAllDoneCelebration, __msQueue.length ? 0 : 300);
+  }
 }
 
 /* 교사 대시보드의 미션 진행현황 엑셀 다운로드용 기록 (실패해도 학생 진행에는 영향 없음) */
@@ -561,6 +629,12 @@ async function initMissionSystem(mapId){
     __msDone = new Set(JSON.parse(localStorage.getItem(__msStorageKey()) || '[]'));
   }catch(e){
     __msDone = new Set();
+  }
+
+  try{
+    __msAllDoneShown = localStorage.getItem(__msAllDoneKey()) === '1';
+  }catch(e){
+    __msAllDoneShown = false;
   }
 
   __msBuildUI();

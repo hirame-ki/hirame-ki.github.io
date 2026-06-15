@@ -13,6 +13,8 @@ let __rtChannel = null;
 let __rtStudentId = null;
 let __rtNickname = null;
 let __rtRoomId = null;
+let __rtMapId = null;
+let __rtTeacherView = false;
 
 function __rtIsConfigured(){
   return typeof SUPABASE_URL === 'string'
@@ -42,7 +44,8 @@ function __rtMyState(){
     cloth: PLAYER.cloth,
     gender: PLAYER.gender,
     acc: PLAYER.acc,
-    nickname: __rtNickname
+    nickname: __rtNickname,
+    map: __rtMapId
   };
 }
 
@@ -67,7 +70,7 @@ function __rtConnect(){
 
     __rtChannel.subscribe((status, err) => {
       if(status === 'SUBSCRIBED'){
-        __rtChannel.track(__rtMyState());
+        if(!__rtTeacherView) __rtChannel.track(__rtMyState());
       } else if(status === 'CLOSED' || status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
         console.warn('[쌤버스] Realtime 연결 끊김 - 재연결 시도:', status, err || '');
         if(!__rtReconnectTimer){
@@ -84,7 +87,10 @@ function __rtConnect(){
   }
 }
 
-function initRealtime(){
+function initRealtime(mapId){
+  __rtMapId = mapId || null;
+  __rtTeacherView = __rtGetParam('teacherView', '') === '1';
+
   if(!__rtIsConfigured()){
     console.info('[쌤버스] Supabase가 설정되지 않아 멀티플레이어가 비활성화됩니다. ssambus_supabase_config.js를 확인하세요.');
     return;
@@ -95,6 +101,7 @@ function initRealtime(){
     __rtStudentId = 'stu_' + Math.random().toString(36).slice(2, 10);
     sessionStorage.setItem('ssambus_student_id', __rtStudentId);
   }
+  if(__rtTeacherView) __rtStudentId = 'teacher_' + Math.random().toString(36).slice(2, 10);
   __rtNickname = __rtGetParam('nickname', '학생' + Math.floor(1000 + Math.random()*9000));
 
   __rtClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -136,6 +143,7 @@ function renderRemotePlayers(presenceState){
     const presences = presenceState[key];
     if(!presences || !presences.length) return;
     const s = presences[presences.length - 1];
+    if(s.map && __rtMapId && s.map !== __rtMapId) return; // 다른 맵에 있는 학생은 표시하지 않음
     seen.add(key);
 
     let el = container.querySelector('[data-student="' + key + '"]');

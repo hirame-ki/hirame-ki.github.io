@@ -65,6 +65,14 @@ h2{margin:.3rem 0}
 /* ===================== 맵 정의 (28열 x 14행, 타일 48px) ===================== */
 const TS = 48, COLS = 28, ROWS = 14;
 const VIEW_W = 768, VIEW_H = 672;
+
+/* 교사 대시보드의 "실시간 맵 보기"에서 ?teacherView=1 로 열리면 자기 캐릭터/조작 UI를 숨기고 전체 맵을 보여줍니다 */
+const TEACHER_VIEW = new URLSearchParams(window.location.search).get('teacherView') === '1';
+if(TEACHER_VIEW){
+  document.body.style.padding = '0';
+  document.body.style.background = 'transparent';
+  document.querySelectorAll('h2, .info, .pad, .legend').forEach(el => el.style.display = 'none');
+}
 // 0:풀밭 1:나무 2:바위 3:연못 4:덤불 5:입구(흙길) 6:통나무다리 7:꽃밭 8:숲경계
 // 좌측 입구(0행 1열의 흙길)에서 시작해 가로로 넓은 풀밭을 가로질러 중앙의 연못/통나무다리를 지나는 구조
 const grid = [
@@ -243,6 +251,12 @@ function renderPlayer(){
 /* ===================== 카메라 추적 ===================== */
 function updateCamera(){
   const wrap = document.querySelector('.stage-wrap');
+  if(TEACHER_VIEW){
+    wrap.style.width = (COLS*TS) + 'px';
+    wrap.style.height = (ROWS*TS) + 'px';
+    wrap.style.overflow = 'visible';
+    return;
+  }
   const canvasW = COLS*TS, canvasH = ROWS*TS;
   const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
   wrap.scrollLeft = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
@@ -253,6 +267,7 @@ function updateCamera(){
 let pos = { r:1, c:1 }; // 숲 입구 쪽 풀밭에서 시작
 function placePlayer(){
   const el = document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display = 'none';
   el.style.left = (pos.c*TS) + 'px';
   el.style.top  = (pos.r*TS - 24) + 'px'; // 캐릭터 높이(72)가 타일(48)보다 커서 발 위치 보정
   updateCamera();
@@ -276,14 +291,15 @@ function move(dir){
   placePlayer();
 }
 window.addEventListener('keydown', e=>{
+  if(TEACHER_VIEW) return;
   const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
   if(map[e.key]){ e.preventDefault(); move(map[e.key]); }
 });
 
 renderPlayer();
 placePlayer();
-initRealtime();
-initMissionSystem('forest');
+initRealtime('forest');
+if(!TEACHER_VIEW) initMissionSystem('forest');
 </script>
 </body>
 </html>
