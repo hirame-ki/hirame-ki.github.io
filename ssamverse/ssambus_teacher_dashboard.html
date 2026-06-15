@@ -9,8 +9,9 @@
 body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 
 /* ===== 접속 코드 / 수업 선택 화면 ===== */
-#gate, #roomGate{position:fixed;inset:0;background:#2c3e50;display:flex;align-items:center;justify-content:center;z-index:100}
+#gate, #roomGate{position:fixed;inset:0;background:#2c3e50;display:flex;align-items:flex-start;justify-content:center;z-index:100;overflow-y:auto;padding:24px 0}
 #gate.hidden, #roomGate.hidden{display:none}
+#gate .gate-box, #roomGate .gate-box{margin:auto}
 .gate-box{background:#fff;padding:2rem 2.5rem;border-radius:12px;text-align:center;width:320px}
 .gate-box.wide{width:380px}
 .gate-box h1{margin:0 0 .3rem;font-size:1.3rem}
