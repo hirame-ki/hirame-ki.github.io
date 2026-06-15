@@ -23,6 +23,11 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 .gate-err{color:#e74c3c;font-size:12px;margin-top:.5rem;min-height:16px}
 .gate-divider{display:flex;align-items:center;gap:8px;margin:1.2rem 0;color:#bbb;font-size:11px}
 .gate-divider::before,.gate-divider::after{content:'';flex:1;height:1px;background:#eee}
+.recent-room{background:#f8f9fa;border-radius:8px;padding:.9rem;margin-bottom:.4rem}
+.recent-room p{margin:0 0 .4rem;font-size:12px;color:#888}
+.recent-room .recent-code{font-size:18px;letter-spacing:3px;font-family:monospace;font-weight:600;color:#2c3e50;margin-bottom:.6rem}
+.recent-room button{background:#2c3e50;color:#fff}
+.recent-room button:hover{background:#1a252f}
 
 /* ===== 레이아웃 ===== */
 #dash{display:none}
@@ -104,6 +109,31 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 .linkrow button{padding:7px 10px;font-size:12px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;flex-shrink:0}
 .linkrow button:hover{background:#eee}
 
+/* ===== 맵 이동 순서 모달 ===== */
+#orderModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#orderModal-bg.show{display:flex}
+#orderModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+#orderModal h2{margin:0 0 1rem;font-size:16px}
+.orderrow{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #eee;border-radius:8px;margin-bottom:6px}
+.orderrow .om-idx{width:22px;height:22px;border-radius:50%;background:#2c3e50;color:#fff;font-size:12px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.orderrow .om-label{flex:1;font-size:13.5px;font-weight:500}
+.orderrow .om-badge{font-size:11.5px;padding:3px 8px;border-radius:10px;flex-shrink:0}
+.orderrow .om-badge.ok{background:#e8f5e9;color:#2e7d32}
+.orderrow .om-badge.none{background:#f5f5f5;color:#999}
+.orderrow .om-arrows{display:flex;gap:4px;flex-shrink:0}
+.orderrow .om-arrows button{padding:4px 8px;font-size:12px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer}
+.orderrow .om-arrows button:hover{background:#eee}
+.orderrow .om-arrows button:disabled{opacity:.35;cursor:not-allowed}
+
+/* ===== QR 코드 모달 ===== */
+#qrModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:60;padding:16px}
+#qrModal-bg.show{display:flex}
+#qrModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:320px;text-align:center}
+#qrModal h2{margin:0 0 1rem;font-size:15px}
+#qrModal canvas{max-width:100%;border:1px solid #eee;border-radius:8px}
+#qrModal .qr-url{font-size:11px;color:#999;word-break:break-all;margin:10px 0;font-family:monospace}
+
 /* ===== 상단바 버튼 그룹 ===== */
 .topbar .right{display:flex;gap:8px}
 .topbar .right button{padding:6px 14px;border-radius:6px;border:none;font-size:12px;font-weight:500;cursor:pointer}
@@ -131,6 +161,12 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
   <div class="gate-box wide">
     <h1>🏫 수업 선택</h1>
     <p>새 수업을 만들거나, 기존 수업 코드를 입력해 이어서 관리하세요</p>
+    <div id="recentRoom" class="recent-room hidden">
+      <p>최근에 사용한 수업 코드</p>
+      <div class="recent-code" id="recentRoomCode"></div>
+      <button onclick="continueRoom()">이 수업 계속하기</button>
+    </div>
+    <div class="gate-divider">또는</div>
     <button onclick="createNewRoom()">+ 새 수업 만들기</button>
     <div class="gate-divider">또는</div>
     <input type="text" id="roomCodeInput" placeholder="기존 수업 코드 입력 (예: A3F9K2)" maxlength="12" style="text-transform:uppercase">
@@ -148,6 +184,8 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     </div>
     <div class="right">
       <button class="primary" onclick="openLinkModal()">🔗 학생 초대 링크</button>
+      <button class="primary" onclick="openOrderModal()">🚪 맵 이동 순서</button>
+      <button class="primary" onclick="downloadProgressExcel()">📊 진행현황 다운로드</button>
       <button class="ghost" onclick="newClass()">수업 변경</button>
       <button class="ghost" onclick="logout()">로그아웃</button>
     </div>
@@ -170,6 +208,32 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     <div id="lm_links"></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeLinkModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR 코드 모달 -->
+<div id="qrModal-bg">
+  <div id="qrModal">
+    <h2 id="qr_title">QR 코드</h2>
+    <canvas id="qr_canvas"></canvas>
+    <div class="qr-url" id="qr_url"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeQrModal()">닫기</button>
+      <button class="btn-save" onclick="downloadQr()">PNG 다운로드</button>
+    </div>
+  </div>
+</div>
+
+<!-- 맵 이동 순서 모달 -->
+<div id="orderModal-bg">
+  <div id="orderModal">
+    <h2>🚪 맵 이동 순서</h2>
+    <div class="section-hint">학생이 한 맵의 필수 미션을 모두 마치고 출입구(문/게이트)를 통과하면, 아래 순서에서 다음에 오는 맵 중 "미션이 등록된" 맵으로 자동 이동합니다. 미션이 없는 맵은 자동 이동 대상에서 제외됩니다. 화살표로 순서를 바꾼 뒤 저장하세요.</div>
+    <div id="om_list"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeOrderModal()">닫기</button>
+      <button class="btn-save" onclick="saveMapOrder()">저장</button>
     </div>
   </div>
 </div>
@@ -223,6 +287,8 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style/dist/xlsx.bundle.js"></script>
 <script src="ssambus_supabase_config.js"></script>
 <script>
 /* ===================== 설정 ===================== */
@@ -359,11 +425,24 @@ document.getElementById('gateCode').addEventListener('keydown', e=>{
 
 function afterLogin(){
   document.getElementById('gate').classList.add('hidden');
+  showRoomGate();
+}
+
+function showRoomGate(){
+  document.getElementById('dash').classList.remove('show');
+  document.getElementById('roomGate').classList.remove('hidden');
+  const recent = document.getElementById('recentRoom');
   if(ROOM_ID){
-    showDash();
+    document.getElementById('recentRoomCode').textContent = ROOM_ID;
+    recent.classList.remove('hidden');
   }else{
-    document.getElementById('roomGate').classList.remove('hidden');
+    recent.classList.add('hidden');
   }
+}
+
+function continueRoom(){
+  document.getElementById('roomGate').classList.add('hidden');
+  showDash();
 }
 
 function logout(){
@@ -404,10 +483,9 @@ function loadExistingRoom(){
 }
 
 function newClass(){
-  document.getElementById('dash').classList.remove('show');
   document.getElementById('roomCodeInput').value = '';
   document.getElementById('roomErr').textContent = '';
-  document.getElementById('roomGate').classList.remove('hidden');
+  showRoomGate();
 }
 
 async function showDash(){
@@ -437,8 +515,9 @@ function openLinkModal(){
     const url = new URL(MAP_FILES[m.id], window.location.href).href + '?room=' + encodeURIComponent(ROOM_ID);
     const row = document.createElement('div');
     row.className = 'linkrow';
-    row.innerHTML = `<span class="lbl">${m.label}</span><input type="text" readonly value="${url}"><button>복사</button>`;
-    row.querySelector('button').onclick = (e) => copyText(url, e.target);
+    row.innerHTML = `<span class="lbl">${m.label}</span><input type="text" readonly value="${url}"><button class="qr-btn">QR</button><button>복사</button>`;
+    row.querySelector('.qr-btn').onclick = () => showQr(url, m.label);
+    row.querySelector('button:not(.qr-btn)').onclick = (e) => copyText(url, e.target);
     wrap.appendChild(row);
   });
   document.getElementById('linkModal-bg').classList.add('show');
@@ -446,6 +525,126 @@ function openLinkModal(){
 
 function closeLinkModal(){
   document.getElementById('linkModal-bg').classList.remove('show');
+}
+
+/* ===================== QR 코드 ===================== */
+function showQr(url, label){
+  document.getElementById('qr_title').textContent = `📱 ${label} QR 코드`;
+  document.getElementById('qr_url').textContent = url;
+  const canvas = document.getElementById('qr_canvas');
+  QRCode.toCanvas(canvas, url, { width: 240, margin: 2 }, (err) => {
+    if(err) showToast('QR 코드 생성에 실패했습니다.');
+  });
+  document.getElementById('qrModal-bg').classList.add('show');
+}
+
+function closeQrModal(){
+  document.getElementById('qrModal-bg').classList.remove('show');
+}
+
+function downloadQr(){
+  const canvas = document.getElementById('qr_canvas');
+  const link = document.createElement('a');
+  link.download = (document.getElementById('qr_title').textContent.replace(/[^\w가-힣]+/g, '_')) + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+/* ===================== 맵 이동 순서 ===================== */
+let mapOrderState = [];
+let mapsWithMissionsCache = new Set();
+
+async function openOrderModal(){
+  document.getElementById('orderModal-bg').classList.add('show');
+  document.getElementById('om_list').innerHTML = '<div class="empty">불러오는 중...</div>';
+  const [order, withMissions] = await Promise.all([loadMapOrder(), loadMapsWithMissions()]);
+  mapOrderState = order;
+  mapsWithMissionsCache = withMissions;
+  renderOrderList();
+}
+
+function closeOrderModal(){
+  document.getElementById('orderModal-bg').classList.remove('show');
+}
+
+async function loadMapOrder(){
+  try{
+    const { data, error } = await client
+      .from('room_settings')
+      .select('map_order')
+      .eq('room_id', ROOM_ID)
+      .maybeSingle();
+    if(error) throw error;
+    if(data && Array.isArray(data.map_order) && data.map_order.length){
+      // 새로 추가된 맵이 있으면 목록 끝에 보강
+      const order = data.map_order.filter(id => MAPS.some(m => m.id === id));
+      MAPS.forEach(m => { if(!order.includes(m.id)) order.push(m.id); });
+      return order;
+    }
+  }catch(e){
+    console.error(e);
+  }
+  return MAPS.map(m => m.id);
+}
+
+async function loadMapsWithMissions(){
+  const set = new Set();
+  try{
+    const { data, error } = await client
+      .from('missions')
+      .select('map_id')
+      .eq('room_id', ROOM_ID);
+    if(error) throw error;
+    (data || []).forEach(row => set.add(row.map_id));
+  }catch(e){
+    console.error(e);
+  }
+  return set;
+}
+
+function renderOrderList(){
+  const wrap = document.getElementById('om_list');
+  wrap.innerHTML = '';
+  mapOrderState.forEach((mapId, idx) => {
+    const m = MAPS.find(x => x.id === mapId);
+    const has = mapsWithMissionsCache.has(mapId);
+    const row = document.createElement('div');
+    row.className = 'orderrow';
+    row.innerHTML = `
+      <span class="om-idx">${idx + 1}</span>
+      <span class="om-label">${m ? m.label : mapId}</span>
+      <span class="om-badge ${has ? 'ok' : 'none'}">${has ? '✅ 미션 있음' : '⚪ 미션 없음'}</span>
+      <div class="om-arrows">
+        <button class="up" ${idx === 0 ? 'disabled' : ''}>▲</button>
+        <button class="down" ${idx === mapOrderState.length - 1 ? 'disabled' : ''}>▼</button>
+      </div>`;
+    row.querySelector('.up').onclick = () => moveOrder(idx, -1);
+    row.querySelector('.down').onclick = () => moveOrder(idx, 1);
+    wrap.appendChild(row);
+  });
+}
+
+function moveOrder(idx, dir){
+  const j = idx + dir;
+  if(j < 0 || j >= mapOrderState.length) return;
+  [mapOrderState[idx], mapOrderState[j]] = [mapOrderState[j], mapOrderState[idx]];
+  renderOrderList();
+}
+
+async function saveMapOrder(){
+  try{
+    const { error } = await client.from('room_settings').upsert({
+      room_id: ROOM_ID,
+      map_order: mapOrderState,
+      teacher_id: currentUserId
+    });
+    if(error) throw error;
+    showToast('저장되었습니다.');
+    closeOrderModal();
+  }catch(e){
+    console.error(e);
+    alert('저장에 실패했습니다: ' + e.message);
+  }
 }
 
 function copyText(text, btn){
@@ -693,6 +892,171 @@ async function deleteMission(mapId, mission){
     console.error(e);
     alert('삭제에 실패했습니다: ' + e.message);
   }
+}
+
+/* ===================== 미션 진행현황 엑셀 다운로드 ===================== */
+const MAP_COLORS = {
+  classroom:'2C3E50', library:'6D4C41', playground:'2E7D32',
+  gym:'1565C0', city:'6A1B9A', forest:'00695C'
+};
+const THIN_BORDER = {
+  top:{style:'thin',color:{rgb:'BBBBBB'}}, bottom:{style:'thin',color:{rgb:'BBBBBB'}},
+  left:{style:'thin',color:{rgb:'BBBBBB'}}, right:{style:'thin',color:{rgb:'BBBBBB'}}
+};
+
+async function downloadProgressExcel(){
+  if(!client){
+    alert('Supabase 설정을 확인할 수 없습니다.');
+    return;
+  }
+  showToast('진행현황을 불러오는 중...');
+  try{
+    const [missionsRes, progressRes] = await Promise.all([
+      client.from('missions').select('*').eq('room_id', ROOM_ID),
+      client.from('mission_progress').select('*').eq('room_id', ROOM_ID)
+    ]);
+    if(missionsRes.error) throw missionsRes.error;
+    if(progressRes.error) throw progressRes.error;
+
+    const missions = missionsRes.data || [];
+    const progress = progressRes.data || [];
+
+    if(!missions.length){
+      showToast('등록된 미션이 없습니다.');
+      return;
+    }
+    if(!progress.length){
+      showToast('아직 미션을 완료한 학생이 없습니다.');
+      return;
+    }
+    buildAndDownloadExcel(missions, progress);
+  }catch(e){
+    console.error(e);
+    alert('진행현황을 불러오지 못했습니다: ' + e.message);
+  }
+}
+
+function buildAndDownloadExcel(missions, progress){
+  const mapIndex = {};
+  MAPS.forEach((m, i) => { mapIndex[m.id] = i; });
+
+  missions = missions.slice().sort((a, b) => {
+    const ai = mapIndex[a.map_id] ?? 99, bi = mapIndex[b.map_id] ?? 99;
+    if(ai !== bi) return ai - bi;
+    if(a.zone_id !== b.zone_id) return a.zone_id < b.zone_id ? -1 : 1;
+    return (a.order || 1) - (b.order || 1);
+  });
+
+  // 학생별 완료 미션 집계
+  const studentsMap = new Map();
+  progress.forEach(p => {
+    if(!studentsMap.has(p.student_id)){
+      studentsMap.set(p.student_id, { nickname: p.nickname || p.student_id, done: new Set() });
+    }
+    const s = studentsMap.get(p.student_id);
+    if(p.nickname) s.nickname = p.nickname;
+    s.done.add(p.mission_id);
+  });
+  const students = Array.from(studentsMap.values())
+    .sort((a, b) => a.nickname.localeCompare(b.nickname, 'ko'));
+
+  const totalAll = missions.length;
+  const mapLabel = {};
+  MAPS.forEach(m => { mapLabel[m.id] = m.label; });
+
+  // 헤더 2행: 1행 = 맵 그룹, 2행 = 미션명
+  const header1 = [''];
+  const header2 = ['닉네임'];
+  missions.forEach(m => {
+    header1.push(mapLabel[m.map_id] || m.map_id);
+    header2.push(m.title + (m.required ? '' : ' (선택)'));
+  });
+  header1.push('요약', '');
+  header2.push('완료/전체', '진행률');
+
+  const rows = [header1, header2];
+  students.forEach(s => {
+    const row = [s.nickname];
+    let doneCount = 0;
+    missions.forEach(m => {
+      const ok = s.done.has(m.id);
+      if(ok) doneCount++;
+      row.push(ok ? '✅' : '');
+    });
+    row.push(`${doneCount}/${totalAll}`, Math.round(doneCount / totalAll * 100) + '%');
+    rows.push(row);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const colCount = header1.length;
+  const rowCount = rows.length;
+
+  // 1행 병합: 맵별 그룹 + 요약
+  const merges = [];
+  let startCol = 1;
+  missions.forEach((m, i) => {
+    const isLast = (i === missions.length - 1) || (missions[i + 1].map_id !== m.map_id);
+    if(isLast){
+      const endCol = 1 + i;
+      if(endCol > startCol) merges.push({ s:{r:0,c:startCol}, e:{r:0,c:endCol} });
+      startCol = endCol + 1;
+    }
+  });
+  merges.push({ s:{r:0,c:colCount-2}, e:{r:0,c:colCount-1} });
+  ws['!merges'] = merges;
+
+  // 열 너비 / 행 높이
+  ws['!cols'] = header2.map((_, i) => i === 0 ? { wch:14 } : (i >= colCount-2 ? { wch:10 } : { wch:18 }));
+  ws['!rows'] = [{ hpt:22 }, { hpt:48 }, ...students.map(() => ({ hpt:20 }))];
+
+  const setStyle = (r, c, style) => {
+    const addr = XLSX.utils.encode_cell({ r, c });
+    if(!ws[addr]) ws[addr] = { t:'s', v:'' };
+    ws[addr].s = style;
+  };
+
+  // 1행: 맵 그룹 헤더
+  for(let c = 0; c < colCount; c++){
+    let bg = '37474F';
+    if(c >= 1 && c <= missions.length) bg = MAP_COLORS[missions[c-1].map_id] || '455A64';
+    setStyle(0, c, {
+      font:{ bold:true, color:{rgb:'FFFFFF'}, sz:11 },
+      fill:{ fgColor:{rgb:bg} },
+      alignment:{ horizontal:'center', vertical:'center', wrapText:true },
+      border:THIN_BORDER
+    });
+  }
+
+  // 2행: 미션명/요약 헤더
+  for(let c = 0; c < colCount; c++){
+    const isSummary = c >= colCount - 2;
+    setStyle(1, c, {
+      font:{ bold:true, color:{rgb: isSummary ? 'FFFFFF' : '333333'}, sz:10 },
+      fill:{ fgColor:{rgb: isSummary ? '37474F' : 'ECEFF1'} },
+      alignment:{ horizontal:'center', vertical:'center', wrapText:true },
+      border:THIN_BORDER
+    });
+  }
+
+  // 데이터 행
+  for(let r = 2; r < rowCount; r++){
+    for(let c = 0; c < colCount; c++){
+      const isSummary = c >= colCount - 2;
+      const isDone = !isSummary && c >= 1 && rows[r][c] === '✅';
+      setStyle(r, c, {
+        font:{ bold: (c === 0 || isSummary), sz:11 },
+        fill:{ fgColor:{rgb: isDone ? 'C8E6C9' : (isSummary ? 'FFF9C4' : (c === 0 ? 'F5F5F5' : 'FFFFFF'))} },
+        alignment:{ horizontal:'center', vertical:'center' },
+        border:THIN_BORDER
+      });
+    }
+  }
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '미션 진행현황');
+
+  const today = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `쌤버스_미션진행현황_${ROOM_ID}_${today}.xlsx`);
 }
 
 /* ===================== 토스트 ===================== */

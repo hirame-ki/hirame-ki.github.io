@@ -75,6 +75,51 @@ const MISSION_ZONES = {
   ]
 };
 
+/* ===================== 맵 간 이동(출입구) 설정 ===================== */
+/* 맵별 출입구(문/게이트) 칸 - 미션 완료 후 이 칸에 들어가면 다음 맵으로 자동 이동 */
+const EXIT_ZONES = {
+  classroom: [
+    {r0:3,  c0:14, r1:3,  c1:14},  // 앞문
+    {r0:13, c0:14, r1:13, c1:14}   // 뒷문
+  ],
+  library: [
+    {r0:0, c0:6, r1:0, c1:8}       // 입구
+  ],
+  playground: [
+    {r0:13, c0:15, r1:13, c1:16}   // 정문 게이트
+  ],
+  gym: [
+    {r0:3, c0:27, r1:4,  c1:27},   // 앞문
+    {r0:9, c0:27, r1:10, c1:27}    // 뒷문
+  ],
+  city: [
+    {r0:0,  c0:8,  r1:0,  c1:9},   // 상단 도로 입구
+    {r0:0,  c0:18, r1:0,  c1:19},
+    {r0:13, c0:8,  r1:13, c1:9},   // 하단 도로 입구
+    {r0:13, c0:18, r1:13, c1:19}
+  ],
+  forest: [
+    {r0:1, c0:0, r1:1, c1:0}       // 좌측 입구(흙길)
+  ]
+};
+
+/* 학생용 맵 파일 경로 / 표시 이름 (교사 대시보드의 MAP_FILES, MAPS와 동일) */
+const MAP_FILES = {
+  classroom:'ssambus_map_classroom.html',
+  library:'ssambus_map_library.html',
+  playground:'ssambus_map_playground.html',
+  gym:'ssambus_map_gym.html',
+  city:'ssambus_map_city.html',
+  forest:'ssambus_map_forest.html'
+};
+const MAP_LABELS = {
+  classroom:'일반교실', library:'도서관', playground:'운동장',
+  gym:'체육관', city:'현대도시', forest:'자연숲'
+};
+
+/* 교사가 순서를 설정하지 않았을 때 사용할 기본 맵 순서 */
+const MAP_ORDER_DEFAULT = ['classroom','library','playground','gym','city','forest'];
+
 /* ===================== 데모 미션 (Supabase 미설정/데이터 없을 때 대체) ===================== */
 const __MS_DEMO_VIDEO = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
 
@@ -131,6 +176,9 @@ let __msMissions = null;  // null = 아직 로드 전
 let __msDone = new Set();
 let __msCurrentZone;       // undefined = 아직 판정 전
 let __msQueue = [];
+let __msMapOrder = null;        // 교사가 설정한(또는 기본) 맵 순서
+let __msMapsWithMissions = null; // 이 수업(room)에 미션이 등록된 맵 id 집합
+let __msTransitioning = false;   // 다음 맵으로 이동 처리 중 중복 방지
 
 function __msParam(name, fallback){
   if(typeof __rtGetParam === 'function') return __rtGetParam(name, fallback);
@@ -171,6 +219,40 @@ async function __msLoadMissions(mapId){
   return (DEMO_MISSIONS[mapId] || []).map(m => Object.assign({}, m));
 }
 
+/* 교사가 대시보드에서 설정한 맵 이동 순서 (없으면 기본 순서) */
+async function __msLoadMapOrder(){
+  const client = __msGetClient();
+  if(client){
+    try{
+      const { data, error } = await client
+        .from('room_settings')
+        .select('map_order')
+        .eq('room_id', __msRoomId)
+        .maybeSingle();
+      if(!error && data && Array.isArray(data.map_order) && data.map_order.length){
+        return data.map_order;
+      }
+    }catch(e){ /* room_settings 미설정 시 기본 순서 사용 */ }
+  }
+  return MAP_ORDER_DEFAULT.slice();
+}
+
+/* 이 수업(room)에 실제로 미션이 등록된 맵 id 집합 (데모 미션은 포함하지 않음) */
+async function __msLoadMapsWithMissions(){
+  const set = new Set();
+  const client = __msGetClient();
+  if(client){
+    try{
+      const { data, error } = await client
+        .from('missions')
+        .select('map_id')
+        .eq('room_id', __msRoomId);
+      if(!error && data) data.forEach(row => set.add(row.map_id));
+    }catch(e){ /* 조회 실패 시 빈 집합 - 자동 이동 없음 */ }
+  }
+  return set;
+}
+
 /* ===================== 구역 판정 ===================== */
 function __msZoneAt(pos){
   const zones = MISSION_ZONES[__msMapId] || [];
@@ -182,6 +264,8 @@ function __msZoneAt(pos){
 
 function checkZoneOnMove(pos){
   if(__msMissions === null) return; // 미션 로드 전에는 판정하지 않음
+  __msCheckExit(pos);
+
   const zone = __msZoneAt(pos);
   const zoneId = zone ? zone.id : null;
   if(zoneId === __msCurrentZone) return;
@@ -190,6 +274,80 @@ function checkZoneOnMove(pos){
 
   const pending = __msMissions.filter(m => m.zone_id === zoneId && !__msDone.has(m.id));
   if(pending.length) __msOpenMission(pending);
+}
+
+/* ===================== 맵 간 자동 이동(출입구) ===================== */
+function __msAllRequiredDone(){
+  return __msMissions.every(m => !m.required || __msDone.has(m.id));
+}
+
+function __msNextMap(){
+  if(!__msMapOrder || !__msMapsWithMissions) return null;
+  const idx = __msMapOrder.indexOf(__msMapId);
+  if(idx === -1) return null;
+  for(let i = idx + 1; i < __msMapOrder.length; i++){
+    const m = __msMapOrder[i];
+    if(__msMapsWithMissions.has(m)) return m;
+  }
+  return null;
+}
+
+let __msBlockNoticeShown = false;
+function __msShowBlockedNotice(){
+  if(__msBlockNoticeShown) return;
+  __msBlockNoticeShown = true;
+  __msInjectStyle();
+  const banner = document.createElement('div');
+  banner.id = 'ms-block-banner';
+  banner.textContent = '🔒 이 맵의 미션을 모두 완료해야 출입구를 통과할 수 있어요!';
+  document.body.appendChild(banner);
+  setTimeout(() => { banner.remove(); __msBlockNoticeShown = false; }, 1500);
+}
+
+/* 맵 페이지(move())에서 이동 직전 호출: 출입구 칸인데 필수 미션을 다 마치지 못했으면 true(이동 차단) */
+function __msBlockExit(r, c){
+  if(__msMissions === null) return false;            // 미션 로드 전에는 막지 않음
+  if(!__msMapsWithMissions || !__msMapsWithMissions.has(__msMapId)) return false; // 이 맵에 미션이 없으면 잠금 없음
+  const exits = EXIT_ZONES[__msMapId] || [];
+  const inExit = exits.some(z => r >= z.r0 && r <= z.r1 && c >= z.c0 && c <= z.c1);
+  if(!inExit) return false;
+  return !__msAllRequiredDone();
+}
+
+function __msCheckExit(pos){
+  if(__msTransitioning) return;
+  if(!__msMapOrder || !__msMapsWithMissions) return; // 아직 로드 전
+  if(!__msMapsWithMissions.has(__msMapId)) return;   // 이 맵에 등록된 미션이 없으면 자동 이동 없음
+  if(!__msMissions.length || !__msAllRequiredDone()) return;
+
+  const exits = EXIT_ZONES[__msMapId] || [];
+  const inExit = exits.some(z => pos.r >= z.r0 && pos.r <= z.r1 && pos.c >= z.c0 && pos.c <= z.c1);
+  if(!inExit) return;
+
+  const next = __msNextMap();
+  if(!next) return;
+
+  __msTransitioning = true;
+  __msGoToMap(next);
+}
+
+function __msGoToMap(mapId){
+  const file = MAP_FILES[mapId];
+  if(!file){ __msTransitioning = false; return; }
+  const url = new URL(file, window.location.href);
+  url.searchParams.set('room', __msRoomId);
+  const nickname = __msParam('nickname', null);
+  if(nickname) url.searchParams.set('nickname', nickname);
+  __msShowExitNotice(mapId, () => { window.location.href = url.href; });
+}
+
+function __msShowExitNotice(mapId, cb){
+  __msInjectStyle();
+  const banner = document.createElement('div');
+  banner.id = 'ms-exit-banner';
+  banner.textContent = `🎉 미션 완료! "${MAP_LABELS[mapId] || mapId}" 맵으로 이동합니다...`;
+  document.body.appendChild(banner);
+  setTimeout(cb, 1500);
 }
 
 /* ===================== UI: 진행률 바 / 미션 모달 ===================== */
@@ -223,6 +381,12 @@ function __msInjectStyle(){
     #ms-actions button:disabled{opacity:.5;cursor:not-allowed}
     #ms-card .ms-link-btn{display:inline-block;margin-bottom:10px;padding:8px 14px;
       background:#4a3728;color:#fff;border-radius:6px;text-decoration:none;font-size:14px}
+    #ms-exit-banner{position:fixed;top:50px;right:10px;background:rgba(46,125,50,.95);color:#fff;
+      font-size:13px;padding:10px 16px;border-radius:10px;z-index:55;max-width:240px;text-align:center;
+      box-shadow:0 2px 6px rgba(0,0,0,.25);font-family:sans-serif}
+    #ms-block-banner{position:fixed;top:50px;left:50%;transform:translateX(-50%);background:rgba(192,57,43,.95);
+      color:#fff;font-size:13px;padding:10px 16px;border-radius:10px;z-index:55;max-width:280px;text-align:center;
+      box-shadow:0 2px 6px rgba(0,0,0,.25);font-family:sans-serif}
   `;
   document.head.appendChild(style);
 }
@@ -355,8 +519,31 @@ function __msComplete(id){
   try{ localStorage.setItem(__msStorageKey(), JSON.stringify(Array.from(__msDone))); }
   catch(e){ /* 저장 실패 시 진행은 계속 가능 */ }
   __msUpdateProgress();
+  const mission = __msMissions.find(m => m.id === id);
+  if(mission) __msRecordProgress(mission);
   __msQueue.shift();
   __msShowNext();
+  if(!__msQueue.length) checkZoneOnMove(pos); // 마지막 미션 완료 시 출입구 위치라면 즉시 이동 판정
+}
+
+/* 교사 대시보드의 미션 진행현황 엑셀 다운로드용 기록 (실패해도 학생 진행에는 영향 없음) */
+async function __msRecordProgress(mission){
+  const client = __msGetClient();
+  if(!client) return;
+  try{
+    await client.from('mission_progress').upsert({
+      room_id: __msRoomId,
+      student_id: __msStudentId,
+      nickname: __msParam('nickname', null),
+      map_id: __msMapId,
+      mission_id: mission.id,
+      mission_title: mission.title,
+      required: !!mission.required,
+      completed_at: new Date().toISOString()
+    }, { onConflict: 'room_id,student_id,mission_id' });
+  }catch(e){
+    console.warn('[쌤버스] 미션 진행도 기록 실패', e);
+  }
 }
 
 /* ===================== 초기화 ===================== */
@@ -378,6 +565,8 @@ async function initMissionSystem(mapId){
 
   __msBuildUI();
   __msMissions = await __msLoadMissions(mapId);
+  __msMapOrder = await __msLoadMapOrder();
+  __msMapsWithMissions = await __msLoadMapsWithMissions();
   __msUpdateProgress();
   checkZoneOnMove(pos);
 }
