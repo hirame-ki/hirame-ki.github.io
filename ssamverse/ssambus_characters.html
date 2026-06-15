@@ -31,6 +31,10 @@ body{font-family:sans-serif;padding:20px;background:#fff}
 </head>
 <body>
 
+<div id="welcomeBanner" style="display:none;background:#eaf4ff;border:1px solid #b8dcff;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:#1a5276">
+  🎨 나만의 캐릭터를 자유롭게 꾸민 뒤, <b>"이 캐릭터로 입장하기"</b> 버튼을 눌러 교실로 입장하세요!
+</div>
+
 <div class="enter-bar">
   <label>입장할 교실: <select id="mapSelect">
     <option value="ssambus_map_classroom.html">일반 교실</option>
@@ -333,9 +337,25 @@ function enterMap(){
   var data = Object.assign({type:type}, ST[currentChar]);
   localStorage.setItem('ssambus_player_character', JSON.stringify(data));
   var target = document.getElementById('mapSelect').value;
-  var qs = window.location.search;
-  window.location.href = target + qs;
+  var params = new URLSearchParams(window.location.search);
+  params.delete('map');
+  var qs = params.toString();
+  window.location.href = target + (qs ? '?' + qs : '');
 }
+
+/* 학생 초대 링크로 들어온 경우, 원래 가려던 맵을 자동으로 선택하고 안내 문구를 보여줍니다 */
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var targetMap = params.get('map');
+  if(params.get('room')){
+    document.getElementById('welcomeBanner').style.display = '';
+  }
+  if(!targetMap) return;
+  var select = document.getElementById('mapSelect');
+  for(var i=0; i<select.options.length; i++){
+    if(select.options[i].value === targetMap){ select.value = targetMap; break; }
+  }
+})();
 
 function render(c){
   var s=ST[c];

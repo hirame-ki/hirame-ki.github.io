@@ -71,6 +71,16 @@ if(TEACHER_VIEW){
   document.body.style.background = 'transparent';
   document.querySelectorAll('h2, .info, .pad, .legend').forEach(el => el.style.display = 'none');
 }
+
+/* 캐릭터를 한 번도 만들지 않은 학생은 캐릭터 선택 화면으로 먼저 이동시킵니다 */
+let __hasCharacter = true;
+try{ __hasCharacter = !!localStorage.getItem('ssambus_player_character'); }catch(e){ /* 무시 */ }
+const __NEEDS_CHAR_SETUP = !TEACHER_VIEW && !__hasCharacter;
+if(__NEEDS_CHAR_SETUP){
+  const __params = new URLSearchParams(window.location.search);
+  __params.set('map', 'ssambus_map_library.html');
+  location.replace('ssambus_characters.html?' + __params.toString());
+}
 // 0:바닥 1:벽 5:입구문 9:서가(책장) 10:사서대출대 11:열람석(책상+의자)
 const grid = [
   [1,1,1,1,1,1,5,5,5,1,1,1,1,1,1], // 0: 상단 벽 + 입구
@@ -315,10 +325,38 @@ window.addEventListener('keydown', e=>{
   if(map[e.key]){ e.preventDefault(); move(map[e.key]); }
 });
 
-renderPlayer();
-placePlayer();
-initRealtime('library');
-if(!TEACHER_VIEW) initMissionSystem('library');
+/* ===================== 터치 스와이프 이동 ===================== */
+if(!TEACHER_VIEW){
+  const stage = document.querySelector('.stage-wrap');
+  let touchStartX = 0, touchStartY = 0, touchActive = false;
+  const SWIPE_THRESHOLD = 30; // px
+  stage.addEventListener('touchstart', e=>{
+    if(e.touches.length !== 1) return;
+    touchActive = true;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive:true });
+  stage.addEventListener('touchmove', e=>{
+    if(touchActive) e.preventDefault(); // 스와이프 중 화면 스크롤 방지
+  }, { passive:false });
+  stage.addEventListener('touchend', e=>{
+    if(!touchActive) return;
+    touchActive = false;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    if(Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_THRESHOLD) return;
+    if(Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 'right' : 'left');
+    else move(dy > 0 ? 'down' : 'up');
+  }, { passive:true });
+}
+
+if(!__NEEDS_CHAR_SETUP){
+  renderPlayer();
+  placePlayer();
+  initRealtime('library');
+  if(!TEACHER_VIEW) initMissionSystem('library');
+}
 </script>
 </body>
 </html>
