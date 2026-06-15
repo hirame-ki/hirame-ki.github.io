@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>쌤버스 캐릭터 시스템</title>
+<style>
+body{font-family:sans-serif;padding:20px;background:#fff}
+.wrap{display:flex;gap:1.5rem;padding:1rem 0;flex-wrap:wrap}
+.preview{display:flex;flex-direction:column;align-items:center;gap:.8rem;min-width:180px}
+.opts{flex:1;min-width:260px}
+.og{margin-bottom:1rem}
+.ol{font-size:12px;color:#666;margin-bottom:6px;display:block}
+.sr{display:flex;gap:5px;flex-wrap:wrap}
+.sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;flex-shrink:0}
+.sw.on{border-color:#000}
+.sb{padding:3px 9px;font-size:11px;border-radius:6px;cursor:pointer;border:1px solid #ccc;background:#fff;margin-bottom:3px}
+.sb.on{background:#eee;border-color:#999}
+.ab{padding:3px 9px;font-size:11px;border-radius:6px;cursor:pointer;border:1px solid #ccc;background:#fff;margin-bottom:3px}
+.ab.on{background:#eee;border-color:#999;font-weight:500}
+.dr{display:flex;gap:6px;margin-top:6px}
+.tabs{display:flex;gap:8px;margin-bottom:1rem}
+.tab{padding:5px 16px;font-size:13px;border-radius:6px;cursor:pointer;border:1px solid #ccc;background:#fff}
+.tab.on{background:#eee;border-color:#999;font-weight:500}
+.section{display:none}
+.section.on{display:block}
+.enter-bar{display:flex;align-items:center;gap:8px;margin-bottom:1rem;padding:10px 12px;background:#f5f5f5;border-radius:8px;flex-wrap:wrap}
+.enter-bar select{padding:5px 8px;border-radius:6px;border:1px solid #ccc;font-size:13px}
+.enter-bar button{padding:7px 16px;border-radius:6px;border:none;background:#2c3e50;color:#fff;font-size:13px;font-weight:500;cursor:pointer}
+.enter-bar button:hover{background:#1a252f}
+</style>
+</head>
+<body>
+
+<div class="enter-bar">
+  <label>입장할 교실: <select id="mapSelect">
+    <option value="ssambus_map_classroom.html">일반 교실</option>
+    <option value="ssambus_map_library.html">도서관</option>
+    <option value="ssambus_map_playground.html">운동장</option>
+    <option value="ssambus_map_gym.html">체육관</option>
+    <option value="ssambus_map_city.html">현대 도시</option>
+    <option value="ssambus_map_forest.html">자연 숲</option>
+  </select></label>
+  <button onclick="enterMap()">이 캐릭터로 입장하기</button>
+</div>
+
+<div class="tabs">
+  <button class="tab on" onclick="switchTab('student',this)">교복 캐릭터</button>
+  <button class="tab" onclick="switchTab('teacher',this)">교사 캐릭터</button>
+  <button class="tab" onclick="switchTab('fantasy',this)">판타지 캐릭터</button>
+</div>
+
+<!-- 교복 -->
+<div class="section on" id="S_student">
+<div class="wrap">
+  <div class="preview">
+    <svg width="96" height="144" viewBox="0 0 32 48"><g id="cg_s"></g></svg>
+    <div class="dr">
+      <button class="sb on" data-d="down" onclick="setDir('s',this)">앞</button>
+      <button class="sb" data-d="left" onclick="setDir('s',this)">옆</button>
+      <button class="sb" data-d="up" onclick="setDir('s',this)">뒤</button>
+    </div>
+    <span style="font-size:12px;color:#666">교복 캐릭터</span>
+  </div>
+  <div class="opts">
+    <div class="og"><span class="ol">성별</span><div class="sr" id="G_s_gender">
+      <button class="sb on" data-v="male" onclick="pickB('s','gender','G_s_gender',this)">남</button>
+      <button class="sb" data-v="female" onclick="pickB('s','gender','G_s_gender',this)">여</button>
+    </div></div>
+    <div class="og"><span class="ol">피부색</span><div class="sr" id="G_s_skin">
+      <div class="sw on" style="background:#FDEBD0" data-v="#FDEBD0" onclick="pickS('s','skin','G_s_skin',this)"></div>
+      <div class="sw" style="background:#FDDBB4" data-v="#FDDBB4" onclick="pickS('s','skin','G_s_skin',this)"></div>
+      <div class="sw" style="background:#F5C48A" data-v="#F5C48A" onclick="pickS('s','skin','G_s_skin',this)"></div>
+      <div class="sw" style="background:#E8A87C" data-v="#E8A87C" onclick="pickS('s','skin','G_s_skin',this)"></div>
+      <div class="sw" style="background:#D4956A" data-v="#D4956A" onclick="pickS('s','skin','G_s_skin',this)"></div>
+      <div class="sw" style="background:#C17A4A" data-v="#C17A4A" onclick="pickS('s','skin','G_s_skin',this)"></div>
+      <div class="sw" style="background:#8D5524" data-v="#8D5524" onclick="pickS('s','skin','G_s_skin',this)"></div>
+      <div class="sw" style="background:#5C3317" data-v="#5C3317" onclick="pickS('s','skin','G_s_skin',this)"></div>
+    </div></div>
+    <div class="og"><span class="ol">머리 스타일</span><div class="sr" id="G_s_hair">
+      <button class="sb on" data-v="short" onclick="pickB('s','hair','G_s_hair',this)">숏컷</button>
+      <button class="sb" data-v="buzz" onclick="pickB('s','hair','G_s_hair',this)">짧은머리</button>
+      <button class="sb" data-v="parted" onclick="pickB('s','hair','G_s_hair',this)">가르마</button>
+      <button class="sb" data-v="bob" onclick="pickB('s','hair','G_s_hair',this)">보브컷</button>
+      <button class="sb" data-v="medium" onclick="pickB('s','hair','G_s_hair',this)">단발</button>
+      <button class="sb" data-v="long" onclick="pickB('s','hair','G_s_hair',this)">장발</button>
+      <button class="sb" data-v="wavy" onclick="pickB('s','hair','G_s_hair',this)">웨이브</button>
+      <button class="sb" data-v="twintail" onclick="pickB('s','hair','G_s_hair',this)">양갈래</button>
+      <button class="sb" data-v="ponytail" onclick="pickB('s','hair','G_s_hair',this)">포니테일</button>
+      <button class="sb" data-v="bun" onclick="pickB('s','hair','G_s_hair',this)">올림머리</button>
+    </div></div>
+    <div class="og"><span class="ol">머리색</span><div class="sr" id="G_s_hcolor">
+      <div class="sw on" style="background:#1a1008" data-v="#1a1008" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#2c1b0e" data-v="#2c1b0e" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#5c3d1e" data-v="#5c3d1e" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#8B5E3C" data-v="#8B5E3C" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#c8a96e" data-v="#c8a96e" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#E8D5A3" data-v="#E8D5A3" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#1a1a2e" data-v="#1a1a2e" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#2E4A7A" data-v="#2E4A7A" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#4A2E7A" data-v="#4A2E7A" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#8B0000" data-v="#8B0000" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#C41E3A" data-v="#C41E3A" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#2E7A4A" data-v="#2E7A4A" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#708090" data-v="#708090" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#E8E8E8;border:1px solid #ccc" data-v="#E8E8E8" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+    </div></div>
+    <div class="og"><span class="ol">교복 색상</span><div class="sr" id="G_s_ccolor">
+      <div class="sw on" style="background:#1a3a6b" data-v="#1a3a6b" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+      <div class="sw" style="background:#1a5276" data-v="#1a5276" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+      <div class="sw" style="background:#2d6a4f" data-v="#2d6a4f" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+      <div class="sw" style="background:#1E8449" data-v="#1E8449" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+      <div class="sw" style="background:#6b1a3a" data-v="#6b1a3a" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+      <div class="sw" style="background:#922B21" data-v="#922B21" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+      <div class="sw" style="background:#4a4a4a" data-v="#4a4a4a" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+      <div class="sw" style="background:#2C3E50" data-v="#2C3E50" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+      <div class="sw" style="background:#8B6914" data-v="#8B6914" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+      <div class="sw" style="background:#6E2F8C" data-v="#6E2F8C" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+      <div class="sw" style="background:#D4AC0D" data-v="#D4AC0D" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+      <div class="sw" style="background:#FDFEFE;border:1px solid #ccc" data-v="#FDFEFE" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
+    </div></div>
+    <div class="og"><span class="ol">액세서리 (중복 선택)</span><div class="sr" id="G_s_acc">
+      <button class="ab" data-v="glasses" onclick="togAcc('s',this)">안경</button>
+      <button class="ab" data-v="glasses2" onclick="togAcc('s',this)">뿔테</button>
+      <button class="ab" data-v="bag" onclick="togAcc('s',this)">가방</button>
+      <button class="ab" data-v="hat" onclick="togAcc('s',this)">모자</button>
+      <button class="ab" data-v="scarf" onclick="togAcc('s',this)">목도리</button>
+      <button class="ab" data-v="mask" onclick="togAcc('s',this)">마스크</button>
+      <button class="ab" data-v="earring" onclick="togAcc('s',this)">귀걸이</button>
+      <button class="ab" data-v="ribbon" onclick="togAcc('s',this)">리본</button>
+    </div></div>
+  </div>
+</div>
+</div>
+
+<!-- 교사 -->
+<div class="section" id="S_teacher">
+<div class="wrap">
+  <div class="preview">
+    <svg width="96" height="144" viewBox="0 0 32 48"><g id="cg_t"></g></svg>
+    <div class="dr">
+      <button class="sb on" data-d="down" onclick="setDir('t',this)">앞</button>
+      <button class="sb" data-d="left" onclick="setDir('t',this)">옆</button>
+      <button class="sb" data-d="up" onclick="setDir('t',this)">뒤</button>
+    </div>
+    <span style="font-size:12px;color:#666">교사 캐릭터</span>
+  </div>
+  <div class="opts">
+    <div class="og"><span class="ol">성별</span><div class="sr" id="G_t_gender">
+      <button class="sb on" data-v="male" onclick="pickB('t','gender','G_t_gender',this)">남</button>
+      <button class="sb" data-v="female" onclick="pickB('t','gender','G_t_gender',this)">여</button>
+    </div></div>
+    <div class="og"><span class="ol">피부색</span><div class="sr" id="G_t_skin">
+      <div class="sw on" style="background:#FDEBD0" data-v="#FDEBD0" onclick="pickS('t','skin','G_t_skin',this)"></div>
+      <div class="sw" style="background:#FDDBB4" data-v="#FDDBB4" onclick="pickS('t','skin','G_t_skin',this)"></div>
+      <div class="sw" style="background:#F5C48A" data-v="#F5C48A" onclick="pickS('t','skin','G_t_skin',this)"></div>
+      <div class="sw" style="background:#E8A87C" data-v="#E8A87C" onclick="pickS('t','skin','G_t_skin',this)"></div>
+      <div class="sw" style="background:#D4956A" data-v="#D4956A" onclick="pickS('t','skin','G_t_skin',this)"></div>
+      <div class="sw" style="background:#C17A4A" data-v="#C17A4A" onclick="pickS('t','skin','G_t_skin',this)"></div>
+      <div class="sw" style="background:#8D5524" data-v="#8D5524" onclick="pickS('t','skin','G_t_skin',this)"></div>
+      <div class="sw" style="background:#5C3317" data-v="#5C3317" onclick="pickS('t','skin','G_t_skin',this)"></div>
+    </div></div>
+    <div class="og"><span class="ol">머리 스타일</span><div class="sr" id="G_t_hair">
+      <button class="sb on" data-v="short" onclick="pickB('t','hair','G_t_hair',this)">숏컷</button>
+      <button class="sb" data-v="buzz" onclick="pickB('t','hair','G_t_hair',this)">짧은머리</button>
+      <button class="sb" data-v="parted" onclick="pickB('t','hair','G_t_hair',this)">옆가르마</button>
+      <button class="sb" data-v="slickback" onclick="pickB('t','hair','G_t_hair',this)">올백</button>
+      <button class="sb" data-v="bob" onclick="pickB('t','hair','G_t_hair',this)">보브컷</button>
+      <button class="sb" data-v="medium" onclick="pickB('t','hair','G_t_hair',this)">단발</button>
+      <button class="sb" data-v="long" onclick="pickB('t','hair','G_t_hair',this)">장발</button>
+      <button class="sb" data-v="wavy" onclick="pickB('t','hair','G_t_hair',this)">웨이브</button>
+      <button class="sb" data-v="ponytail" onclick="pickB('t','hair','G_t_hair',this)">포니테일</button>
+      <button class="sb" data-v="bun" onclick="pickB('t','hair','G_t_hair',this)">올림머리</button>
+    </div></div>
+    <div class="og"><span class="ol">머리색</span><div class="sr" id="G_t_hcolor">
+      <div class="sw on" style="background:#1a1008" data-v="#1a1008" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#2c1b0e" data-v="#2c1b0e" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#5c3d1e" data-v="#5c3d1e" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#8B5E3C" data-v="#8B5E3C" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#c8a96e" data-v="#c8a96e" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#E8D5A3" data-v="#E8D5A3" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#708090" data-v="#708090" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#C0C0C0" data-v="#C0C0C0" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#E8E8E8;border:1px solid #ccc" data-v="#E8E8E8" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#1a1a2e" data-v="#1a1a2e" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#8B0000" data-v="#8B0000" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#C41E3A" data-v="#C41E3A" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+    </div></div>
+    <div class="og"><span class="ol">의상 스타일</span><div class="sr" id="G_t_cloth">
+      <button class="sb on" data-v="suit" onclick="pickB('t','cloth','G_t_cloth',this)">정장</button>
+      <button class="sb" data-v="hoodie" onclick="pickB('t','cloth','G_t_cloth',this)">후드</button>
+      <button class="sb" data-v="cardigan" onclick="pickB('t','cloth','G_t_cloth',this)">가디건</button>
+      <button class="sb" data-v="vest" onclick="pickB('t','cloth','G_t_cloth',this)">조끼</button>
+      <button class="sb" data-v="shirt" onclick="pickB('t','cloth','G_t_cloth',this)">셔츠</button>
+      <button class="sb" data-v="sport" onclick="pickB('t','cloth','G_t_cloth',this)">체육복</button>
+    </div></div>
+    <div class="og"><span class="ol">의상 색상</span><div class="sr" id="G_t_ccolor">
+      <div class="sw on" style="background:#2C3E50" data-v="#2C3E50" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#1a3a6b" data-v="#1a3a6b" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#4a4a4a" data-v="#4a4a4a" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#7D3C98" data-v="#7D3C98" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#922B21" data-v="#922B21" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#1E8449" data-v="#1E8449" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#8B6914" data-v="#8B6914" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#A04000" data-v="#A04000" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#FDFEFE;border:1px solid #ccc" data-v="#FDFEFE" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#AED6F1" data-v="#AED6F1" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#A9DFBF" data-v="#A9DFBF" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#F5CBA7" data-v="#F5CBA7" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+    </div></div>
+    <div class="og"><span class="ol">액세서리 (중복 선택)</span><div class="sr" id="G_t_acc">
+      <button class="ab" data-v="glasses" onclick="togAcc('t',this)">안경</button>
+      <button class="ab" data-v="glasses2" onclick="togAcc('t',this)">뿔테</button>
+      <button class="ab" data-v="tie" onclick="togAcc('t',this)">넥타이</button>
+      <button class="ab" data-v="bowtie" onclick="togAcc('t',this)">나비넥타이</button>
+      <button class="ab" data-v="briefcase" onclick="togAcc('t',this)">서류가방</button>
+      <button class="ab" data-v="bag" onclick="togAcc('t',this)">숄더백</button>
+      <button class="ab" data-v="lanyard" onclick="togAcc('t',this)">목걸이카드</button>
+      <button class="ab" data-v="hat" onclick="togAcc('t',this)">모자</button>
+      <button class="ab" data-v="earring" onclick="togAcc('t',this)">귀걸이</button>
+      <button class="ab" data-v="mask" onclick="togAcc('t',this)">마스크</button>
+      <button class="ab" data-v="scarf" onclick="togAcc('t',this)">목도리</button>
+      <button class="ab" data-v="watch" onclick="togAcc('t',this)">시계</button>
+    </div></div>
+  </div>
+</div>
+</div>
+
+<!-- 판타지 -->
+<div class="section" id="S_fantasy">
+<div class="wrap">
+  <div class="preview">
+    <svg width="96" height="144" viewBox="0 0 32 48"><g id="cg_f"></g></svg>
+    <div class="dr">
+      <button class="sb on" data-d="down" onclick="setDir('f',this)">앞</button>
+      <button class="sb" data-d="left" onclick="setDir('f',this)">옆</button>
+      <button class="sb" data-d="up" onclick="setDir('f',this)">뒤</button>
+    </div>
+    <span style="font-size:12px;color:#666">판타지 캐릭터</span>
+  </div>
+  <div class="opts">
+    <div class="og"><span class="ol">성별</span><div class="sr" id="G_f_gender">
+      <button class="sb on" data-v="male" onclick="pickB('f','gender','G_f_gender',this)">남</button>
+      <button class="sb" data-v="female" onclick="pickB('f','gender','G_f_gender',this)">여</button>
+    </div></div>
+    <div class="og"><span class="ol">피부색</span><div class="sr" id="G_f_skin">
+      <div class="sw on" style="background:#FDEBD0" data-v="#FDEBD0" onclick="pickS('f','skin','G_f_skin',this)"></div>
+      <div class="sw" style="background:#FDDBB4" data-v="#FDDBB4" onclick="pickS('f','skin','G_f_skin',this)"></div>
+      <div class="sw" style="background:#F5C48A" data-v="#F5C48A" onclick="pickS('f','skin','G_f_skin',this)"></div>
+      <div class="sw" style="background:#E8A87C" data-v="#E8A87C" onclick="pickS('f','skin','G_f_skin',this)"></div>
+      <div class="sw" style="background:#D4956A" data-v="#D4956A" onclick="pickS('f','skin','G_f_skin',this)"></div>
+      <div class="sw" style="background:#C17A4A" data-v="#C17A4A" onclick="pickS('f','skin','G_f_skin',this)"></div>
+      <div class="sw" style="background:#8D5524" data-v="#8D5524" onclick="pickS('f','skin','G_f_skin',this)"></div>
+      <div class="sw" style="background:#5C3317" data-v="#5C3317" onclick="pickS('f','skin','G_f_skin',this)"></div>
+    </div></div>
+    <div class="og"><span class="ol">머리 스타일</span><div class="sr" id="G_f_hair">
+      <button class="sb on" data-v="short" onclick="pickB('f','hair','G_f_hair',this)">숏컷</button>
+      <button class="sb" data-v="buzz" onclick="pickB('f','hair','G_f_hair',this)">짧은머리</button>
+      <button class="sb" data-v="parted" onclick="pickB('f','hair','G_f_hair',this)">가르마</button>
+      <button class="sb" data-v="bob" onclick="pickB('f','hair','G_f_hair',this)">보브컷</button>
+      <button class="sb" data-v="medium" onclick="pickB('f','hair','G_f_hair',this)">단발</button>
+      <button class="sb" data-v="long" onclick="pickB('f','hair','G_f_hair',this)">장발</button>
+      <button class="sb" data-v="wavy" onclick="pickB('f','hair','G_f_hair',this)">웨이브</button>
+      <button class="sb" data-v="twintail" onclick="pickB('f','hair','G_f_hair',this)">양갈래</button>
+      <button class="sb" data-v="ponytail" onclick="pickB('f','hair','G_f_hair',this)">포니테일</button>
+      <button class="sb" data-v="bun" onclick="pickB('f','hair','G_f_hair',this)">올림머리</button>
+    </div></div>
+    <div class="og"><span class="ol">머리색</span><div class="sr" id="G_f_hcolor">
+      <div class="sw on" style="background:#1a1008" data-v="#1a1008" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#2c1b0e" data-v="#2c1b0e" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#5c3d1e" data-v="#5c3d1e" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#8B5E3C" data-v="#8B5E3C" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#c8a96e" data-v="#c8a96e" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#E8D5A3" data-v="#E8D5A3" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#E8E8E8;border:1px solid #ccc" data-v="#E8E8E8" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#2E4A7A" data-v="#2E4A7A" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#4A2E7A" data-v="#4A2E7A" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#7A2E4A" data-v="#7A2E4A" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#2E7A4A" data-v="#2E7A4A" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#C41E3A" data-v="#C41E3A" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#FF69B4" data-v="#FF69B4" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#00CED1" data-v="#00CED1" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+    </div></div>
+    <div class="og"><span class="ol">의상 종류</span><div class="sr" id="G_f_cloth">
+      <button class="sb on" data-v="mage" onclick="pickB('f','cloth','G_f_cloth',this)">마법사</button>
+      <button class="sb" data-v="knight" onclick="pickB('f','cloth','G_f_cloth',this)">기사</button>
+      <button class="sb" data-v="archer" onclick="pickB('f','cloth','G_f_cloth',this)">궁수</button>
+      <button class="sb" data-v="healer" onclick="pickB('f','cloth','G_f_cloth',this)">힐러</button>
+    </div></div>
+    <div class="og"><span class="ol">의상 색상</span><div class="sr" id="G_f_ccolor">
+      <div class="sw on" style="background:#4A235A" data-v="#4A235A" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+      <div class="sw" style="background:#1a3a6b" data-v="#1a3a6b" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+      <div class="sw" style="background:#8B0000" data-v="#8B0000" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+      <div class="sw" style="background:#1E8449" data-v="#1E8449" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+      <div class="sw" style="background:#2C3E50" data-v="#2C3E50" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+      <div class="sw" style="background:#784212" data-v="#784212" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+      <div class="sw" style="background:#B7950B" data-v="#B7950B" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+      <div class="sw" style="background:#117A65" data-v="#117A65" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+      <div class="sw" style="background:#922B21" data-v="#922B21" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+      <div class="sw" style="background:#4a4a4a" data-v="#4a4a4a" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+      <div class="sw" style="background:#C0C0C0" data-v="#C0C0C0" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+      <div class="sw" style="background:#FDFEFE;border:1px solid #ccc" data-v="#FDFEFE" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
+    </div></div>
+    <div class="og"><span class="ol">액세서리 (중복 선택)</span><div class="sr" id="G_f_acc">
+      <button class="ab" data-v="fstaff" onclick="togAcc('f',this)">마법봉</button>
+      <button class="ab" data-v="fsword" onclick="togAcc('f',this)">검</button>
+      <button class="ab" data-v="fbow" onclick="togAcc('f',this)">활</button>
+      <button class="ab" data-v="fcape" onclick="togAcc('f',this)">망토</button>
+      <button class="ab" data-v="fcrown" onclick="togAcc('f',this)">왕관</button>
+      <button class="ab" data-v="fhat" onclick="togAcc('f',this)">마법모자</button>
+      <button class="ab" data-v="glasses" onclick="togAcc('f',this)">안경</button>
+      <button class="ab" data-v="earring" onclick="togAcc('f',this)">귀걸이</button>
+    </div></div>
+  </div>
+</div>
+</div>
+
+<script src="ssambus_character_render.js"></script>
+<script>
+var ST={
+  s:{skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',ccolor:'#1a3a6b',acc:[],dir:'down',gender:'male'},
+  t:{skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',cloth:'suit',ccolor:'#2C3E50',acc:[],dir:'down',gender:'male'},
+  f:{skin:'#FDEBD0',hcolor:'#4A2E7A',hair:'short',cloth:'mage',ccolor:'#4A235A',acc:[],dir:'down',gender:'male'}
+};
+var TAB_MAP={student:'s',teacher:'t',fantasy:'f'};
+var currentChar='s';
+function switchTab(id,el){document.querySelectorAll('.tab').forEach(function(e){e.classList.remove('on')});document.querySelectorAll('.section').forEach(function(e){e.classList.remove('on')});el.classList.add('on');document.getElementById('S_'+id).classList.add('on');currentChar=TAB_MAP[id];}
+function pickS(c,k,gid,el){ST[c][k]=el.dataset.v;document.querySelectorAll('#'+gid+' .sw').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
+function pickB(c,k,gid,el){ST[c][k]=el.dataset.v;document.querySelectorAll('#'+gid+' .sb').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
+function togAcc(c,el){var v=el.dataset.v,i=ST[c].acc.indexOf(v);if(i>-1){ST[c].acc.splice(i,1);el.classList.remove('on');}else{ST[c].acc.push(v);el.classList.add('on');}render(c);}
+function setDir(c,el){ST[c].dir=el.dataset.d;document.querySelectorAll('#S_'+(c==='s'?'student':'teacher')+' .dr .sb').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
+function enterMap(){
+  var type = currentChar==='s'?'student':(currentChar==='t'?'teacher':'fantasy');
+  var data = Object.assign({type:type}, ST[currentChar]);
+  localStorage.setItem('ssambus_player_character', JSON.stringify(data));
+  var target = document.getElementById('mapSelect').value;
+  var qs = window.location.search;
+  window.location.href = target + qs;
+}
+
+function render(c){
+  var s=ST[c];
+  var type=c==='s'?'student':(c==='t'?'teacher':'fantasy');
+  document.getElementById('cg_'+c).innerHTML=renderCharacterSVG(Object.assign({type:type},s));
+}
+render('s');
+render('t');
+render('f');
+</script>
+</body>
+</html>

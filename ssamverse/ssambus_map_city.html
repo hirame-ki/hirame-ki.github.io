@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>쌤버스 - 현대도시 맵</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:sans-serif;background:#eef2f5;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
+h2{margin:.3rem 0}
+.info{font-size:13px;color:#777;margin-bottom:12px;text-align:center}
+.stage-wrap{width:768px;max-width:100%;height:672px;overflow:hidden;border:4px solid #4a3728;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.stage{position:relative;line-height:0}
+#map{display:block}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear, top .1s linear;z-index:5}
+#player svg{display:block;width:100%;height:100%;overflow:visible}
+#player.flip svg{transform:scaleX(-1)}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear, top .15s linear;z-index:4}
+.remote-player svg{display:block;width:100%;height:100%;overflow:visible}
+.remote-player.flip svg{transform:scaleX(-1)}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.85);padding:1px 4px;border-radius:4px;white-space:nowrap}
+.pad{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:48px 48px 48px;gap:4px;margin-top:16px}
+.pad button{font-size:18px;border-radius:8px;border:1px solid #bbb;background:#fff;cursor:pointer}
+.pad button:active{background:#ddd}
+.legend{margin-top:10px;font-size:12px;color:#888;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.legend span{display:flex;align-items:center;gap:4px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;border:1px solid #999}
+</style>
+</head>
+<body>
+
+<h2>🏙️ 현대도시</h2>
+<div class="info">방향키(↑↓←→) 또는 아래 버튼으로 캐릭터를 이동하세요<br>가로로 넓은 도심 - 3개의 건물 블록 사이로 남북 도로 2개가 가로지르고, 각 교차로에 사거리 광장(분수)/횡단보도/신호등이 있습니다. 상단 도로(0행)로 진입<br>화면 밖으로 이동하면 맵이 캐릭터를 따라 스크롤됩니다</div>
+
+<div class="stage-wrap">
+<div class="stage">
+  <canvas id="map" width="1344" height="672"></canvas>
+  <div id="player"><svg viewBox="0 0 32 48"><g id="cg_p"></g></svg></div>
+  <div id="remote-players"></div>
+</div>
+</div>
+
+<div class="pad">
+  <div></div><button onclick="move('up')">▲</button><div></div>
+  <button onclick="move('left')">◀</button><div></div><button onclick="move('right')">▶</button>
+  <div></div><button onclick="move('down')">▼</button><div></div>
+</div>
+
+<div class="legend">
+  <span><span class="sw" style="background:#5d6d7e"></span>건물</span>
+  <span><span class="sw" style="background:#d5d8dc"></span>인도</span>
+  <span><span class="sw" style="background:#3a3f44"></span>도로</span>
+  <span><span class="sw" style="background:#fff"></span>횡단보도</span>
+  <span><span class="sw" style="background:#e74c3c"></span>신호등</span>
+  <span><span class="sw" style="background:#5dade2"></span>사거리 광장(분수)</span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="ssambus_supabase_config.js"></script>
+<script src="ssambus_character_render.js"></script>
+<script src="ssambus_realtime.js?v=7"></script>
+<script src="ssambus_missions.js"></script>
+<script>
+/* ===================== 맵 정의 (28열 x 14행, 타일 48px) ===================== */
+const TS = 48, COLS = 28, ROWS = 14;
+const VIEW_W = 768, VIEW_H = 672;
+// 0:인도 1:건물 2:도로 3:횡단보도 4:신호등(인도) 9:사거리광장/분수
+// 8열 너비의 건물 블록 3개(0-7,10-17,20-27) 사이로 남북 도로 2개(8-9열, 18-19열)가 가로지르는 가로로 넓은 도심.
+// 상/하단 도로가 지도 끝까지 뻗어 출입구 역할(상단 0행, 하단 13행 양쪽 도로)
+const grid = [
+  [0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0], // 0: 상단 인도 + 남북도로(상단 입구)
+  [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0], // 1: 건물 블록(상단 3개)
+  [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0], // 2
+  [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0], // 3
+  [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0], // 4
+  [0,0,0,0,0,0,0,4,3,3,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0], // 5: 인도+횡단보도+신호등
+  [2,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,2], // 6: 동서도로 + 사거리 광장(분수) x2
+  [2,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,2], // 7: 동서도로 + 사거리 광장(분수) x2
+  [0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,3,3,0,0,0,4,0,0,0,0], // 8: 인도+횡단보도+신호등
+  [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0], // 9: 건물 블록(하단 3개)
+  [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0], //10
+  [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0], //11
+  [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0], //12
+  [0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0]  //13: 하단 인도 + 남북도로(하단 입구)
+];
+const WALKABLE = new Set([0,2,3,4,9]);
+
+/* ===================== 타일 그리기 ===================== */
+const cv = document.getElementById('map');
+const ctx = cv.getContext('2d');
+
+function drawSidewalk(x,y,r,c){
+  ctx.fillStyle = '#d5d8dc';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle = 'rgba(150,160,170,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x, y+TS); ctx.lineTo(x+TS, y+TS);
+  ctx.moveTo(x, y); ctx.lineTo(x, y+TS);
+  ctx.stroke();
+  // 가로수 (인도 위 일부 칸에 장식, 통행 가능)
+  if((r===0||r===13) && [2,6,12,16,22,26].includes(c)){
+    ctx.fillStyle = '#8a6a44';
+    ctx.fillRect(x+TS/2-2,y+TS/2+2,4,TS/2-6);
+    ctx.fillStyle = '#2d7a3a';
+    ctx.beginPath();
+    ctx.arc(x+TS/2,y+TS/2-2,10,0,Math.PI*2);
+    ctx.fill();
+  }
+  // 벤치 (인도 위 일부 칸에 장식, 통행 가능)
+  if((c===0||c===27) && (r===2||r===11)){
+    ctx.fillStyle = '#8B6914';
+    ctx.fillRect(x+8,y+TS/2-4,TS-16,5);
+    ctx.fillStyle = '#5a4310';
+    ctx.fillRect(x+10,y+TS/2+1,3,8);
+    ctx.fillRect(x+TS-13,y+TS/2+1,3,8);
+  }
+}
+function drawBuilding(x,y,c,r){
+  const palette=['#5d6d7e','#6b7d8f','#54677a'];
+  ctx.fillStyle = palette[(c+r)%palette.length];
+  ctx.fillRect(x,y,TS,TS);
+  // 창문 그리드
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  for(let wy=6; wy<TS-6; wy+=12){
+    for(let wx=6; wx<TS-6; wx+=14){
+      ctx.fillRect(x+wx,y+wy,8,7);
+    }
+  }
+  // 1층 상가 어닝 (각 블록의 도로쪽 가장자리 건물)
+  if([6,11,16,21].includes(c)){
+    const colors=['#e74c3c','#f1c40f','#2ecc71','#5dade2'];
+    ctx.fillStyle = colors[r%colors.length];
+    ctx.fillRect(x, y+TS-8, TS, 6);
+  }
+}
+function drawRoad(x,y,r,c){
+  ctx.fillStyle = '#3a3f44';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6,6]);
+  ctx.beginPath();
+  if(c===8||c===9||c===18||c===19){ // 남북 도로 - 중앙선은 수직
+    ctx.moveTo(x+TS/2,y); ctx.lineTo(x+TS/2,y+TS);
+  } else { // 동서 도로 - 중앙선은 수평
+    ctx.moveTo(x,y+TS/2); ctx.lineTo(x+TS,y+TS/2);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+function drawCrosswalk(x,y,r,c){
+  ctx.fillStyle = '#3a3f44';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle = '#fff';
+  if(r===5||r===8){ // 남북 도로를 건너는 가로형 횡단보도
+    for(let i=4;i<TS;i+=12){
+      ctx.fillRect(x+i,y,6,TS);
+    }
+  } else { // 동서 도로를 건너는 세로형 횡단보도
+    for(let i=4;i<TS;i+=12){
+      ctx.fillRect(x,y+i,TS,6);
+    }
+  }
+}
+function drawTrafficLight(x,y,r,c){
+  drawSidewalk(x,y,r,c);
+  ctx.fillStyle = '#444';
+  ctx.fillRect(x+TS/2-2,y+8,4,TS-12);
+  ctx.fillStyle = '#222';
+  ctx.fillRect(x+TS/2-6,y+4,12,18);
+  ctx.fillStyle = '#e74c3c';
+  ctx.beginPath(); ctx.arc(x+TS/2,y+9,2.5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#f1c40f';
+  ctx.beginPath(); ctx.arc(x+TS/2,y+15,2.5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#2ecc71';
+  ctx.beginPath(); ctx.arc(x+TS/2,y+21,2.5,0,Math.PI*2); ctx.fill();
+}
+function drawPlaza(x,y,r,c){
+  ctx.fillStyle = '#bfc9ca';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle = '#5dade2';
+  ctx.fillRect(x+6,y+6,TS-12,TS-12);
+  // 물줄기 표시 (분수 중심부에만)
+  if(r===6 && (c===8||c===9||c===18||c===19)){
+    ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x+TS/2,y+TS-4); ctx.lineTo(x+TS/2,y+6);
+    ctx.stroke();
+  }
+}
+
+function drawMap(){
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const x=c*TS, y=r*TS, t=grid[r][c];
+      if(t===0) drawSidewalk(x,y,r,c);
+      else if(t===1) drawBuilding(x,y,c,r);
+      else if(t===2) drawRoad(x,y,r,c);
+      else if(t===3) drawCrosswalk(x,y,r,c);
+      else if(t===4) drawTrafficLight(x,y,r,c);
+      else if(t===9) drawPlaza(x,y,r,c);
+    }
+  }
+  // 상단 도로 입구 표지판
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(7.5*TS, 6, TS*2-12, 16);
+  ctx.strokeStyle = '#3a3f44';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(7.5*TS, 6, TS*2-12, 16);
+  ctx.fillStyle = '#3a3f44';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('현대도시 입구', 8.5*TS, 18);
+  ctx.textAlign = 'left';
+}
+drawMap();
+
+/* ===================== 캐릭터 (커스터마이징 연동) ===================== */
+const __savedChar = (function(){
+  try{ return JSON.parse(localStorage.getItem('ssambus_player_character')); }
+  catch(e){ return null; }
+})();
+const PLAYER = Object.assign({
+  type:'student', skin:'#FDEBD0', hcolor:'#1a1008', hair:'short',
+  ccolor:'#1a3a6b', cloth:'suit', gender:'male', acc:[], dir:'down'
+}, __savedChar || {});
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML = renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip', PLAYER.dir==='right');
+}
+
+/* ===================== 카메라 추적 ===================== */
+function updateCamera(){
+  const wrap = document.querySelector('.stage-wrap');
+  const canvasW = COLS*TS, canvasH = ROWS*TS;
+  const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
+  wrap.scrollLeft = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
+  wrap.scrollTop  = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
+}
+
+/* ===================== 이동 처리 ===================== */
+let pos = { r:0, c:8 }; // 상단 도로 입구에서 시작
+function placePlayer(){
+  const el = document.getElementById('player');
+  el.style.left = (pos.c*TS) + 'px';
+  el.style.top  = (pos.r*TS - 24) + 'px'; // 캐릭터 높이(72)가 타일(48)보다 커서 발 위치 보정
+  updateCamera();
+  broadcastMyPosition();
+  checkZoneOnMove(pos);
+}
+function move(dir){
+  let nr=pos.r, nc=pos.c;
+  if(dir==='up') nr--;
+  else if(dir==='down') nr++;
+  else if(dir==='left') nc--;
+  else if(dir==='right') nc++;
+
+  PLAYER.dir = (dir==='right') ? 'left' : dir; // 오른쪽은 left 모션을 좌우반전
+  renderPlayer();
+
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+  if(!WALKABLE.has(grid[nr][nc])) return;
+  pos.r=nr; pos.c=nc;
+  placePlayer();
+}
+window.addEventListener('keydown', e=>{
+  const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(map[e.key]){ e.preventDefault(); move(map[e.key]); }
+});
+
+renderPlayer();
+placePlayer();
+initRealtime();
+initMissionSystem('city');
+</script>
+</body>
+</html>

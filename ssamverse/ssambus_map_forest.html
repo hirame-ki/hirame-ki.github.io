@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>쌤버스 - 자연숲 맵</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:sans-serif;background:#eef2f5;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
+h2{margin:.3rem 0}
+.info{font-size:13px;color:#777;margin-bottom:12px;text-align:center}
+.stage-wrap{width:768px;max-width:100%;height:672px;overflow:hidden;border:4px solid #4a3728;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.stage{position:relative;line-height:0}
+#map{display:block}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear, top .1s linear;z-index:5}
+#player svg{display:block;width:100%;height:100%;overflow:visible}
+#player.flip svg{transform:scaleX(-1)}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear, top .15s linear;z-index:4}
+.remote-player svg{display:block;width:100%;height:100%;overflow:visible}
+.remote-player.flip svg{transform:scaleX(-1)}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.85);padding:1px 4px;border-radius:4px;white-space:nowrap}
+.pad{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:48px 48px 48px;gap:4px;margin-top:16px}
+.pad button{font-size:18px;border-radius:8px;border:1px solid #bbb;background:#fff;cursor:pointer}
+.pad button:active{background:#ddd}
+.legend{margin-top:10px;font-size:12px;color:#888;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.legend span{display:flex;align-items:center;gap:4px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;border:1px solid #999}
+</style>
+</head>
+<body>
+
+<h2>🌳 자연숲</h2>
+<div class="info">방향키(↑↓←→) 또는 아래 버튼으로 캐릭터를 이동하세요<br>가로로 넓은 숲 - 드문드문 배치된 나무·바위·덤불·꽃밭 사이로 넓은 풀밭이 펼쳐지고, 중앙에는 연못과 통나무 다리가 있습니다. 좌측 입구(흙길)로 진입<br>화면 밖으로 이동하면 맵이 캐릭터를 따라 스크롤됩니다</div>
+
+<div class="stage-wrap">
+<div class="stage">
+  <canvas id="map" width="1344" height="672"></canvas>
+  <div id="player"><svg viewBox="0 0 32 48"><g id="cg_p"></g></svg></div>
+  <div id="remote-players"></div>
+</div>
+</div>
+
+<div class="pad">
+  <div></div><button onclick="move('up')">▲</button><div></div>
+  <button onclick="move('left')">◀</button><div></div><button onclick="move('right')">▶</button>
+  <div></div><button onclick="move('down')">▼</button><div></div>
+</div>
+
+<div class="legend">
+  <span><span class="sw" style="background:#1f5c2e"></span>숲 경계</span>
+  <span><span class="sw" style="background:#7cc06a"></span>풀밭</span>
+  <span><span class="sw" style="background:#3a6b2e"></span>나무</span>
+  <span><span class="sw" style="background:#9a9a9a"></span>바위</span>
+  <span><span class="sw" style="background:#4a8fc0"></span>연못</span>
+  <span><span class="sw" style="background:#8a6a44"></span>통나무 다리</span>
+  <span><span class="sw" style="background:#5a8a4a"></span>덤불</span>
+  <span><span class="sw" style="background:#ff9dc4"></span>꽃밭</span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="ssambus_supabase_config.js"></script>
+<script src="ssambus_character_render.js"></script>
+<script src="ssambus_realtime.js?v=7"></script>
+<script src="ssambus_missions.js"></script>
+<script>
+/* ===================== 맵 정의 (28열 x 14행, 타일 48px) ===================== */
+const TS = 48, COLS = 28, ROWS = 14;
+const VIEW_W = 768, VIEW_H = 672;
+// 0:풀밭 1:나무 2:바위 3:연못 4:덤불 5:입구(흙길) 6:통나무다리 7:꽃밭 8:숲경계
+// 좌측 입구(0행 1열의 흙길)에서 시작해 가로로 넓은 풀밭을 가로질러 중앙의 연못/통나무다리를 지나는 구조
+const grid = [
+  [8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8], // 0: 숲 경계
+  [5,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,8], // 1: 좌측 입구(흙길)
+  [8,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,4,0,0,0,0,2,0,0,4,0,0,8], // 2
+  [8,0,0,0,0,7,7,0,0,0,4,0,0,0,0,0,0,0,0,7,7,0,0,1,0,0,0,8], // 3
+  [8,0,1,0,0,0,0,0,0,0,0,0,2,3,3,3,3,0,0,0,0,1,0,0,2,0,0,8], // 4
+  [8,0,0,4,0,0,0,0,0,0,0,0,0,3,6,6,3,0,0,0,4,0,0,0,0,7,0,8], // 5
+  [8,0,0,0,0,0,2,0,0,0,0,0,0,3,6,6,3,0,0,0,0,0,1,0,0,0,0,8], // 6
+  [8,0,4,0,0,0,0,0,0,2,0,0,0,3,6,6,3,0,7,0,0,0,0,1,0,0,0,8], // 7
+  [8,0,0,0,0,1,0,0,0,0,0,0,0,3,3,3,3,0,0,0,2,0,0,0,0,4,0,8], // 8
+  [8,0,0,7,7,0,0,0,0,0,0,1,0,0,0,0,0,4,0,0,0,0,0,2,0,0,0,8], // 9
+  [8,0,2,0,0,0,0,0,1,0,0,0,0,0,0,7,7,0,0,0,0,4,0,0,0,0,0,8], //10
+  [8,0,0,0,1,0,0,0,0,4,0,0,0,2,0,0,0,0,0,1,0,0,0,0,4,0,0,8], //11
+  [8,0,4,0,0,0,1,0,0,0,0,0,4,0,0,0,0,2,0,0,0,0,1,0,0,4,0,8], //12
+  [8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8]  //13: 숲 경계
+];
+const WALKABLE = new Set([0,5,6,7]);
+
+/* ===================== 타일 그리기 ===================== */
+const cv = document.getElementById('map');
+const ctx = cv.getContext('2d');
+
+function drawGrass(x,y){
+  ctx.fillStyle = '#7cc06a';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle = 'rgba(60,120,40,0.25)';
+  ctx.lineWidth = 1;
+  for(let i=0;i<3;i++){
+    const gx=x+8+i*13, gy=y+10+(i%2)*16;
+    ctx.beginPath();
+    ctx.moveTo(gx,gy+8); ctx.lineTo(gx+2,gy); ctx.lineTo(gx+4,gy+8);
+    ctx.stroke();
+  }
+}
+function drawBoundary(x,y){
+  ctx.fillStyle = '#1f5c2e';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle = '#174a25';
+  for(let i=0;i<3;i++){
+    ctx.beginPath();
+    ctx.arc(x+8+i*16, y+TS-6, 9, Math.PI, Math.PI*2);
+    ctx.fill();
+  }
+}
+function drawTree(x,y){
+  drawGrass(x,y);
+  ctx.fillStyle = '#8a6a44';
+  ctx.fillRect(x+TS/2-3,y+TS/2+4,6,TS/2-6);
+  ctx.fillStyle = '#3a6b2e';
+  ctx.beginPath();
+  ctx.arc(x+TS/2,y+TS/2,15,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#4f8f3e';
+  ctx.beginPath();
+  ctx.arc(x+TS/2-6,y+TS/2-6,8,0,Math.PI*2);
+  ctx.fill();
+}
+function drawRock(x,y){
+  drawGrass(x,y);
+  ctx.fillStyle = '#9a9a9a';
+  ctx.beginPath();
+  ctx.ellipse(x+TS/2,y+TS/2+4,16,11,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#bdbdbd';
+  ctx.beginPath();
+  ctx.ellipse(x+TS/2-4,y+TS/2,7,5,0,0,Math.PI*2);
+  ctx.fill();
+}
+function drawBush(x,y){
+  drawGrass(x,y);
+  ctx.fillStyle = '#5a8a4a';
+  ctx.beginPath();
+  ctx.arc(x+TS/2-7,y+TS/2+2,9,0,Math.PI*2);
+  ctx.arc(x+TS/2+7,y+TS/2+2,9,0,Math.PI*2);
+  ctx.arc(x+TS/2,y+TS/2-4,10,0,Math.PI*2);
+  ctx.fill();
+}
+function drawFlowerBed(x,y){
+  drawGrass(x,y);
+  const colors=['#ff9dc4','#fff066','#bb88ff','#ff8866'];
+  for(let i=0;i<5;i++){
+    const fx = x + 8 + (i%3)*14;
+    const fy = y + 10 + Math.floor(i/3)*16;
+    ctx.fillStyle = colors[i%colors.length];
+    ctx.beginPath();
+    ctx.arc(fx,fy,3,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#3a6b2e';
+    ctx.fillRect(fx-0.5,fy+2,1,3);
+  }
+}
+function drawPond(x,y){
+  ctx.fillStyle = '#4a8fc0';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.beginPath();
+  ctx.arc(x+TS*0.3,y+TS*0.35,6,0,Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(x+6,y+TS*0.7); ctx.quadraticCurveTo(x+TS/2,y+TS*0.6,x+TS-6,y+TS*0.75);
+  ctx.stroke();
+}
+function drawBridge(x,y){
+  ctx.fillStyle = '#4a8fc0';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle = '#8a6a44';
+  for(let i=0;i<5;i++){
+    ctx.fillRect(x+2,y+4+i*8,TS-4,6);
+  }
+  ctx.strokeStyle = '#5a4310';
+  ctx.lineWidth = 1;
+  for(let i=0;i<5;i++){
+    ctx.strokeRect(x+2,y+4+i*8,TS-4,6);
+  }
+}
+
+function drawTrail(x,y){
+  ctx.fillStyle = '#c9a876';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle = 'rgba(140,110,70,0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x+8,y); ctx.lineTo(x+8,y+TS);
+  ctx.moveTo(x+TS-8,y); ctx.lineTo(x+TS-8,y+TS);
+  ctx.stroke();
+}
+
+function drawMap(){
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const x=c*TS, y=r*TS, t=grid[r][c];
+      if(t===0) drawGrass(x,y);
+      else if(t===8) drawBoundary(x,y);
+      else if(t===1) drawTree(x,y);
+      else if(t===2) drawRock(x,y);
+      else if(t===3) drawPond(x,y);
+      else if(t===4) drawBush(x,y);
+      else if(t===5) drawTrail(x,y);
+      else if(t===6) drawBridge(x,y);
+      else if(t===7) drawFlowerBed(x,y);
+    }
+  }
+  // 입구 표지판 (1행 0열 입구 흙길 위)
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0*TS+2, 0*TS+12, TS-4, 22);
+  ctx.strokeStyle = '#8a6a44';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(0*TS+2, 0*TS+12, TS-4, 22);
+  ctx.fillStyle = '#5a4310';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('자연숲', 0.5*TS, 0*TS+24);
+  ctx.fillText('입구', 0.5*TS, 0*TS+33);
+  ctx.textAlign = 'left';
+}
+drawMap();
+
+/* ===================== 캐릭터 (커스터마이징 연동) ===================== */
+const __savedChar = (function(){
+  try{ return JSON.parse(localStorage.getItem('ssambus_player_character')); }
+  catch(e){ return null; }
+})();
+const PLAYER = Object.assign({
+  type:'student', skin:'#FDEBD0', hcolor:'#1a1008', hair:'short',
+  ccolor:'#1a3a6b', cloth:'suit', gender:'male', acc:[], dir:'down'
+}, __savedChar || {});
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML = renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip', PLAYER.dir==='right');
+}
+
+/* ===================== 카메라 추적 ===================== */
+function updateCamera(){
+  const wrap = document.querySelector('.stage-wrap');
+  const canvasW = COLS*TS, canvasH = ROWS*TS;
+  const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
+  wrap.scrollLeft = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
+  wrap.scrollTop  = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
+}
+
+/* ===================== 이동 처리 ===================== */
+let pos = { r:1, c:1 }; // 숲 입구 쪽 풀밭에서 시작
+function placePlayer(){
+  const el = document.getElementById('player');
+  el.style.left = (pos.c*TS) + 'px';
+  el.style.top  = (pos.r*TS - 24) + 'px'; // 캐릭터 높이(72)가 타일(48)보다 커서 발 위치 보정
+  updateCamera();
+  broadcastMyPosition();
+  checkZoneOnMove(pos);
+}
+function move(dir){
+  let nr=pos.r, nc=pos.c;
+  if(dir==='up') nr--;
+  else if(dir==='down') nr++;
+  else if(dir==='left') nc--;
+  else if(dir==='right') nc++;
+
+  PLAYER.dir = (dir==='right') ? 'left' : dir; // 오른쪽은 left 모션을 좌우반전
+  renderPlayer();
+
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+  if(!WALKABLE.has(grid[nr][nc])) return;
+  pos.r=nr; pos.c=nc;
+  placePlayer();
+}
+window.addEventListener('keydown', e=>{
+  const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(map[e.key]){ e.preventDefault(); move(map[e.key]); }
+});
+
+renderPlayer();
+placePlayer();
+initRealtime();
+initMissionSystem('forest');
+</script>
+</body>
+</html>

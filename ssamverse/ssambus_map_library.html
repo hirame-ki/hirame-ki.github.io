@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>쌤버스 - 도서관 맵</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:sans-serif;background:#eef2f5;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
+h2{margin:.3rem 0}
+.info{font-size:13px;color:#777;margin-bottom:12px;text-align:center}
+.stage-wrap{width:720px;max-width:100%;height:672px;overflow:hidden;border:4px solid #4a3728;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.stage{position:relative;line-height:0}
+#map{display:block}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear, top .1s linear;z-index:5}
+#player svg{display:block;width:100%;height:100%;overflow:visible}
+#player.flip svg{transform:scaleX(-1)}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear, top .15s linear;z-index:4}
+.remote-player svg{display:block;width:100%;height:100%;overflow:visible}
+.remote-player.flip svg{transform:scaleX(-1)}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.85);padding:1px 4px;border-radius:4px;white-space:nowrap}
+.pad{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:48px 48px 48px;gap:4px;margin-top:16px}
+.pad button{font-size:18px;border-radius:8px;border:1px solid #bbb;background:#fff;cursor:pointer}
+.pad button:active{background:#ddd}
+.legend{margin-top:10px;font-size:12px;color:#888;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:720px}
+.legend span{display:flex;align-items:center;gap:4px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;border:1px solid #999}
+</style>
+</head>
+<body>
+
+<h2>📚 도서관</h2>
+<div class="info">방향키(↑↓←→) 또는 아래 버튼으로 캐릭터를 이동하세요<br>상단 입구+사서 대출대 / 중단 서가(책장) 구역 / 하단 열람석 25석 — 일반교실과 동일한 비율로 25인 동시 활동 시 겹침 최소화<br>화면 밖으로 이동하면 맵이 캐릭터를 따라 스크롤됩니다</div>
+
+<div class="stage-wrap">
+<div class="stage">
+  <canvas id="map" width="720" height="1008"></canvas>
+  <div id="player"><svg viewBox="0 0 32 48"><g id="cg_p"></g></svg></div>
+  <div id="remote-players"></div>
+</div>
+</div>
+
+<div class="pad">
+  <div></div><button onclick="move('up')">▲</button><div></div>
+  <button onclick="move('left')">◀</button><div></div><button onclick="move('right')">▶</button>
+  <div></div><button onclick="move('down')">▼</button><div></div>
+</div>
+
+<div class="legend">
+  <span><span class="sw" style="background:#7a5230"></span>입구</span>
+  <span><span class="sw" style="background:#8B6914"></span>사서 대출대</span>
+  <span><span class="sw" style="background:#7a5a3a"></span>서가(책장)</span>
+  <span><span class="sw" style="background:#dcc9a3"></span>열람석(25석)</span>
+  <span><span class="sw" style="background:#aee0f5"></span>창문</span>
+  <span><span class="sw" style="background:#dde6ee"></span>바닥(카펫)</span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="ssambus_supabase_config.js"></script>
+<script src="ssambus_character_render.js"></script>
+<script src="ssambus_realtime.js?v=7"></script>
+<script src="ssambus_missions.js"></script>
+<script>
+/* ===================== 맵 정의 (15열 x 21행, 타일 48px) ===================== */
+const TS = 48, COLS = 15, ROWS = 21;
+const VIEW_W = 720, VIEW_H = 672;
+// 0:바닥 1:벽 5:입구문 9:서가(책장) 10:사서대출대 11:열람석(책상+의자)
+const grid = [
+  [1,1,1,1,1,1,5,5,5,1,1,1,1,1,1], // 0: 상단 벽 + 입구
+  [1,0,0,0,0,0,10,0,10,0,0,0,0,0,1], // 1: 사서 대출대(입구 앞, 중앙 통로 확보)
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 2: 통로
+  [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1], // 3: 서가 1열
+  [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1], // 4: 서가 1열(2칸 높이)
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 5: 통로
+  [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1], // 6: 서가 2열
+  [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1], // 7: 서가 2열(2칸 높이)
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 8: 통로
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 9: 통로(열람석 구역 진입)
+  [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1], //10: 열람석 1열
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], //11: 통로
+  [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1], //12: 열람석 2열
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], //13: 통로
+  [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1], //14: 열람석 3열
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], //15: 통로
+  [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1], //16: 열람석 4열
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], //17: 통로
+  [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1], //18: 열람석 5열
+  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], //19: 통로
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]  //20: 하단 벽
+];
+const WALKABLE = new Set([0,5]);
+// 우측 벽면 = 창문 (1~19행)
+const windowRows = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19];
+
+/* ===================== 타일 그리기 ===================== */
+const cv = document.getElementById('map');
+const ctx = cv.getContext('2d');
+
+function drawFloor(x,y){
+  ctx.fillStyle = '#dde6ee';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle = 'rgba(120,140,160,0.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x, y+TS); ctx.lineTo(x+TS, y+TS);
+  ctx.moveTo(x, y); ctx.lineTo(x, y+TS);
+  ctx.stroke();
+}
+function drawWall(x,y){
+  ctx.fillStyle = '#f3ecdf';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle = '#cdbfa6';
+  ctx.fillRect(x,y+TS-4,TS,4);
+}
+function drawDoor(x,y){
+  ctx.fillStyle = '#f3ecdf';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle = '#7a5230';
+  ctx.fillRect(x+2,y-2,TS-4,TS-2);
+  ctx.fillStyle = '#9c6d44';
+  ctx.fillRect(x+5,y+3,TS-10,TS-10);
+  ctx.fillStyle = '#ffd34d';
+  ctx.beginPath();
+  ctx.arc(x+TS-9,y+TS/2,2,0,Math.PI*2);
+  ctx.fill();
+}
+function drawWindow(x,y){
+  ctx.fillStyle = '#f3ecdf';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle = '#aee0f5';
+  const pad = 6;
+  ctx.fillRect(x+pad,y+pad,TS-pad*2,TS-pad*2);
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillRect(x+pad,y+pad,TS-pad*2,(TS-pad*2)/2);
+  ctx.strokeStyle = '#7a5230';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x+pad,y+pad,TS-pad*2,TS-pad*2);
+  ctx.beginPath();
+  ctx.moveTo(x+TS/2,y+pad); ctx.lineTo(x+TS/2,y+TS-pad);
+  ctx.moveTo(x+pad,y+TS/2); ctx.lineTo(x+TS-pad,y+TS/2);
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+function drawBookshelf(x,y){
+  drawFloor(x,y);
+  // 책장 프레임
+  ctx.fillStyle = '#7a5a3a';
+  ctx.fillRect(x+3,y+2,TS-6,TS-4);
+  ctx.fillStyle = '#5c4226';
+  ctx.fillRect(x+3,y+2,TS-6,4); // 윗면
+  // 칸막이 선반
+  ctx.fillStyle = '#5c4226';
+  for(let i=1;i<=2;i++){
+    ctx.fillRect(x+3,y+2+i*((TS-6)/3),TS-6,2);
+  }
+  // 책 (색상 스파인)
+  const bookColors=['#e74c3c','#3498db','#2ecc71','#f1c40f','#9b59b6','#e67e22'];
+  let idx=0;
+  for(let row=0;row<3;row++){
+    const rowY = y+6 + row*((TS-6)/3);
+    let cx = x+5;
+    while(cx < x+TS-6){
+      const w = 3 + (idx%3);
+      ctx.fillStyle = bookColors[idx % bookColors.length];
+      ctx.fillRect(cx, rowY, w, (TS-6)/3 - 4);
+      cx += w+1;
+      idx++;
+    }
+  }
+}
+function drawLibrarianDesk(x,y,col){
+  drawFloor(x,y);
+  ctx.fillStyle = '#8B6914';
+  ctx.fillRect(x+2,y+16,TS-4,TS-22);
+  ctx.fillStyle = '#a9842c';
+  ctx.fillRect(x+2,y+16,TS-4,5);
+  ctx.fillStyle = '#5a4310';
+  ctx.fillRect(x+4,y+TS-6,5,6);
+  ctx.fillRect(x+TS-9,y+TS-6,5,6);
+  if(col===6){ // 좌측 칸 - 컴퓨터
+    ctx.fillStyle = '#444';
+    ctx.fillRect(x+TS/2-7,y+8,14,9);
+    ctx.fillStyle = '#6fa8dc';
+    ctx.fillRect(x+TS/2-5,y+10,10,5);
+  }
+  if(col===8){ // 우측 칸 - 책 더미
+    ctx.fillStyle = '#3498db';
+    ctx.fillRect(x+TS/2-10,y+9,20,5);
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(x+TS/2-8,y+5,16,5);
+  }
+}
+function drawReadingTable(x,y){
+  drawFloor(x,y);
+  // 의자 (뒤쪽)
+  ctx.fillStyle = '#9aa3ad';
+  ctx.fillRect(x+10,y+7,TS-20,12);
+  // 책상 상판 (밝은 원목)
+  ctx.fillStyle = '#dcc9a3';
+  ctx.fillRect(x+4,y+22,TS-8,TS-28);
+  ctx.fillStyle = '#ecdcc0';
+  ctx.fillRect(x+4,y+22,TS-8,5);
+  // 책 + 스탠드
+  ctx.fillStyle = '#2ecc71';
+  ctx.fillRect(x+8,y+29,13,7);
+  ctx.fillStyle = '#f4d03f';
+  ctx.beginPath();
+  ctx.moveTo(x+TS-16,y+34);
+  ctx.lineTo(x+TS-10,y+34);
+  ctx.lineTo(x+TS-13,y+27);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#888';
+  ctx.fillRect(x+TS-14,y+34,2,4);
+  // 책상 다리
+  ctx.fillStyle = '#b89a6e';
+  ctx.fillRect(x+5,y+TS-5,4,5);
+  ctx.fillRect(x+TS-9,y+TS-5,4,5);
+}
+
+function drawMap(){
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const x=c*TS, y=r*TS, t=grid[r][c];
+      if(t===0) drawFloor(x,y);
+      else if(t===1) drawWall(x,y);
+      else if(t===5) drawDoor(x,y);
+      else if(t===9) drawBookshelf(x,y);
+      else if(t===10) drawLibrarianDesk(x,y,c);
+      else if(t===11) drawReadingTable(x,y);
+    }
+  }
+  // 우측 통창 (col14, 1~19행)
+  windowRows.forEach(r=>drawWindow((COLS-1)*TS, r*TS));
+  // 입구 위 "도서관" 표지판 (0행 6~8열 문 위)
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(6*TS+6, 0*TS+6, TS*3-12, 16);
+  ctx.strokeStyle = '#8B6914';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(6*TS+6, 0*TS+6, TS*3-12, 16);
+  ctx.fillStyle = '#5a4310';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('도서관 입구', 7.5*TS, 0*TS+18);
+  ctx.textAlign = 'left';
+}
+drawMap();
+
+/* ===================== 캐릭터 (커스터마이징 연동) ===================== */
+const __savedChar = (function(){
+  try{ return JSON.parse(localStorage.getItem('ssambus_player_character')); }
+  catch(e){ return null; }
+})();
+const PLAYER = Object.assign({
+  type:'student', skin:'#FDEBD0', hcolor:'#1a1008', hair:'short',
+  ccolor:'#1a3a6b', cloth:'suit', gender:'male', acc:[], dir:'down'
+}, __savedChar || {});
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML = renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip', PLAYER.dir==='right');
+}
+
+/* ===================== 이동 처리 ===================== */
+/* ===================== 카메라 추적 ===================== */
+function updateCamera(){
+  const wrap = document.querySelector('.stage-wrap');
+  const canvasW = COLS*TS, canvasH = ROWS*TS;
+  const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
+  wrap.scrollLeft = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
+  wrap.scrollTop  = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
+}
+
+let pos = { r:2, c:7 }; // 입구/대출대 앞 통로에서 시작
+function placePlayer(){
+  const el = document.getElementById('player');
+  el.style.left = (pos.c*TS) + 'px';
+  el.style.top  = (pos.r*TS - 24) + 'px'; // 캐릭터 높이(72)가 타일(48)보다 커서 발 위치 보정
+  updateCamera();
+  broadcastMyPosition();
+  checkZoneOnMove(pos);
+}
+function move(dir){
+  let nr=pos.r, nc=pos.c;
+  if(dir==='up') nr--;
+  else if(dir==='down') nr++;
+  else if(dir==='left') nc--;
+  else if(dir==='right') nc++;
+
+  PLAYER.dir = (dir==='right') ? 'left' : dir; // 오른쪽은 left 모션을 좌우반전
+  renderPlayer();
+
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+  if(!WALKABLE.has(grid[nr][nc])) return;
+  pos.r=nr; pos.c=nc;
+  placePlayer();
+}
+window.addEventListener('keydown', e=>{
+  const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(map[e.key]){ e.preventDefault(); move(map[e.key]); }
+});
+
+renderPlayer();
+placePlayer();
+initRealtime();
+initMissionSystem('library');
+</script>
+</body>
+</html>
