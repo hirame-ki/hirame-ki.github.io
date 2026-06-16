@@ -183,9 +183,9 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 #pdf-dropzone:hover,#pdf-dropzone.drag-over{background:#f0f6ff;border-color:#3498db}
 #pdf-dropzone.has-file{border-color:#27ae60;background:#f0fff4;color:#1a7a40;font-weight:600}
 #pdf-preview-list .pdf-qcard{background:#f8f9fa;border:1px solid #e6e6e6;border-radius:8px;padding:12px;margin-bottom:8px}
-#pdf-preview-list .pdf-qcard .qtype-row{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #e6e6e6}
-#pdf-preview-list .pdf-qcard .qtype-row label{font-size:11.5px;color:#888;white-space:nowrap}
-#pdf-preview-list .pdf-qcard .qtype-row select{font-size:12px;padding:2px 6px;border:1px solid #ccc;border-radius:4px}
+#pdf-preview-list .pdf-qcard .qmeta-row{display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid #e6e6e6;flex-wrap:wrap}
+#pdf-preview-list .pdf-qcard .qmeta-row label{font-size:11.5px;color:#888;white-space:nowrap}
+#pdf-preview-list .pdf-qcard .qmeta-row select{font-size:12px;padding:2px 6px;border:1px solid #ccc;border-radius:4px}
 
 /* ===== 상단바 버튼 그룹 ===== */
 .topbar .right{display:flex;gap:8px}
@@ -351,6 +351,17 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     </div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeLiveMapModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 토의토론 학생 답변 보기 모달 -->
+<div id="discAnsModal-bg" style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:60;padding:16px">
+  <div id="discAnsModal" style="background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:560px;max-height:80vh;display:flex;flex-direction:column;gap:12px">
+    <h2 id="discAnsTitle" style="margin:0;font-size:16px"></h2>
+    <div id="discAnsBody" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeDiscAnsModal()">닫기</button>
     </div>
   </div>
 </div>
@@ -533,6 +544,7 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
             <option value="quiz">객관식 (4지선다)</option>
             <option value="ox_quiz">O/X 퀴즈</option>
             <option value="short_answer">주관식</option>
+            <option value="discussion">토론/토의</option>
           </select>
         </div>
       </div>
@@ -890,24 +902,81 @@ async function showDash(){
 }
 
 /* ===================== 학생 초대 링크 ===================== */
-function openLinkModal(){
+async function openLinkModal(){
   document.getElementById('lm_roomcode').textContent = ROOM_ID;
   const wrap = document.getElementById('lm_links');
+  wrap.innerHTML = '<div style="text-align:center;padding:12px;color:#999;font-size:13px">불러오는 중...</div>';
+  document.getElementById('linkModal-bg').classList.add('show');
+
+  const order = await loadMapOrder();
+  const firstMapId = order[0];
+
   wrap.innerHTML = '';
-  MAPS.forEach(m=>{
+  // 맵 순서대로 표시
+  const orderedMaps = order.map(id => MAPS.find(m => m.id === id)).filter(Boolean);
+  orderedMaps.forEach(m => {
     const url = new URL(MAP_FILES[m.id], window.location.href).href + '?room=' + encodeURIComponent(ROOM_ID);
+    const isFirst = m.id === firstMapId;
     const row = document.createElement('div');
     row.className = 'linkrow';
-    row.innerHTML = `<span class="lbl">${m.label}</span><input type="text" readonly value="${url}"><button class="qr-btn">QR</button><button>복사</button>`;
-    row.querySelector('.qr-btn').onclick = () => showQr(url, m.label);
-    row.querySelector('button:not(.qr-btn)').onclick = (e) => copyText(url, e.target);
+    const badge = isFirst
+      ? '<span style="color:#27ae60;font-size:11px;font-weight:600">시작</span>'
+      : '<span style="color:#aaa;font-size:11px">자동이동</span>';
+    row.innerHTML = `
+      <span class="lbl">${m.label} ${badge}</span>
+      <input type="text" readonly value="${url}">
+      ${isFirst ? '<button class="qr-btn">QR</button>' : ''}
+      <button class="copy-btn">복사</button>`;
+    if(isFirst) row.querySelector('.qr-btn').onclick = () => showQr(url, m.label);
+    row.querySelector('.copy-btn').onclick = (e) => copyText(url, e.target);
     wrap.appendChild(row);
   });
-  document.getElementById('linkModal-bg').classList.add('show');
 }
 
 function closeLinkModal(){
   document.getElementById('linkModal-bg').classList.remove('show');
+}
+
+/* ===================== 토의토론 학생 답변 보기 ===================== */
+async function viewDiscussionAnswers(missionId, title){
+  document.getElementById('discAnsTitle').textContent = `💬 학생 답변 — ${title}`;
+  const body = document.getElementById('discAnsBody');
+  body.innerHTML = '<div style="color:#aaa;text-align:center;padding:16px">불러오는 중...</div>';
+  document.getElementById('discAnsModal-bg').style.display = 'flex';
+
+  try{
+    const { data, error } = await client
+      .from('mission_answers')
+      .select('nickname, answer, created_at')
+      .eq('room_id', ROOM_ID)
+      .eq('mission_id', missionId)
+      .order('created_at', { ascending: true });
+    if(error) throw error;
+    if(!data || data.length === 0){
+      body.innerHTML = '<div style="color:#aaa;text-align:center;padding:24px">아직 제출된 답변이 없습니다.</div>';
+      return;
+    }
+    body.innerHTML = '';
+    data.forEach(row => {
+      const t = new Date(row.created_at);
+      const time = `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+      const card = document.createElement('div');
+      card.style.cssText = 'background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;padding:10px 14px';
+      card.innerHTML = `
+        <div style="font-size:12px;color:#888;margin-bottom:4px">
+          <strong style="color:#333">${escapeHtml(row.nickname || '익명')}</strong>
+          <span style="margin-left:8px">${time}</span>
+        </div>
+        <div style="font-size:13px;white-space:pre-wrap;line-height:1.6">${escapeHtml(row.answer || '')}</div>`;
+      body.appendChild(card);
+    });
+  }catch(e){
+    body.innerHTML = `<div style="color:#e74c3c;padding:12px">불러오기 실패: ${escapeHtml(String(e))}</div>`;
+  }
+}
+
+function closeDiscAnsModal(){
+  document.getElementById('discAnsModal-bg').style.display = 'none';
 }
 
 /* ===================== QR 코드 ===================== */
@@ -1275,9 +1344,13 @@ function renderZones(mapId){
             </div>
           </div>
           <div class="btns">
+            ${m.type === 'discussion' ? '<button class="ans-btn">답변 보기</button>' : ''}
             <button class="edit" ${!isOwner ? 'disabled' : ''}>수정</button>
             <button class="del" ${!isOwner ? 'disabled' : ''}>삭제</button>
           </div>`;
+        if(m.type === 'discussion'){
+          card.querySelector('.ans-btn').onclick = () => viewDiscussionAnswers(m.id, m.title);
+        }
         if(isOwner){
           card.querySelector('.edit').onclick = () => openModal(mapId, zone.id, m);
           card.querySelector('.del').onclick = () => deleteMission(mapId, m);
@@ -2273,7 +2346,7 @@ function __initTriggerSection(mapId, mission){
   });
 
   document.getElementById('trigTileArea').style.display = hasCustomTiles ? 'block' : 'none';
-  if(hasCustomTiles) __renderTriggerMap();
+  if(hasCustomTiles){ __bindTriggerCanvas(); __renderTriggerMap(); }
 }
 
 function onTriggerModeChange(){
@@ -2282,8 +2355,13 @@ function onTriggerModeChange(){
   area.style.display = (mode === 'tile') ? 'block' : 'none';
   if(mode === 'tile'){
     if(!__triggerTiles) __triggerTiles = [];
-    __renderTriggerMap();
     __bindTriggerCanvas();
+    __renderTriggerMap();
+    // 캔버스가 모달 아래 숨겨져 있을 수 있으므로 스크롤
+    setTimeout(() => {
+      const wrap = document.getElementById('trig-canvas-wrap');
+      if(wrap) wrap.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }, 60);
   } else {
     __triggerTiles = [];
     __updateTrigInfo();
@@ -2352,26 +2430,26 @@ function __renderTriggerMap(){
 function __bindTriggerCanvas(){
   const canvas = document.getElementById('trig-canvas');
   if(!canvas) return;
-  const clone = canvas.cloneNode(true);
-  canvas.parentNode.replaceChild(clone, canvas);
 
-  clone.addEventListener('click', (e) => {
-    const rect = clone.getBoundingClientRect();
+  // cloneNode 대신 기존 핸들러만 교체 (clone은 픽셀 데이터를 복사 안 해서 빈 화면이 됨)
+  if(canvas.__trigHandler) canvas.removeEventListener('click', canvas.__trigHandler);
+
+  canvas.__trigHandler = (e) => {
+    const rect = canvas.getBoundingClientRect();
     const c = Math.floor((e.clientX - rect.left)  / __trigTS);
     const r = Math.floor((e.clientY - rect.top)   / __trigTS);
     const info = MAP_EDITOR_GRIDS[__trigPickMap];
     if(!info || r < 0 || r >= info.rows || c < 0 || c >= info.cols) return;
-    // 보행 가능 타일에만 설정
     if(!info.walkable.has(info.grid[r][c])) return;
 
     const idx = __triggerTiles.findIndex(t => t.r === r && t.c === c);
-    if(idx >= 0) __triggerTiles.splice(idx, 1);  // 토글 해제
+    if(idx >= 0) __triggerTiles.splice(idx, 1);
     else __triggerTiles.push({ r, c });
 
-    __renderTriggerMap();
-    // 캔버스가 교체됐으므로 다시 바인드
-    __bindTriggerCanvas();
-  });
+    __renderTriggerMap(); // 같은 canvas에 바로 다시 그림
+  };
+
+  canvas.addEventListener('click', canvas.__trigHandler);
 }
 
 function __updateTrigInfo(){
@@ -2503,7 +2581,9 @@ async function __pdfCallGroq(apiKey, pdfText, count, type){
     ox_quiz:
       `O/X 퀴즈. 문장이 맞으면 O, 틀리면 X. answer는 "O" 또는 "X" 문자열.`,
     short_answer:
-      `주관식 단답형. model_answer에 짧은 예시 답안.`
+      `주관식 단답형. model_answer에 짧은 예시 답안.`,
+    discussion:
+      `토론/토의 주제. topic에 토론 주제 1개, guides 배열에 학생들이 생각해볼 안내 질문 3개.`
   };
   const exampleJSON = {
     quiz:
@@ -2511,7 +2591,9 @@ async function __pdfCallGroq(apiKey, pdfText, count, type){
     ox_quiz:
       `[{"title":"미션 제목(15자 이내)","question":"참/거짓을 판단할 문장","answer":"O"}]`,
     short_answer:
-      `[{"title":"미션 제목(15자 이내)","question":"질문 내용","model_answer":"예시 답안"}]`
+      `[{"title":"미션 제목(15자 이내)","question":"질문 내용","model_answer":"예시 답안"}]`,
+    discussion:
+      `[{"title":"미션 제목(15자 이내)","topic":"토론 주제 문장","guides":["안내 질문 1","안내 질문 2","안내 질문 3"]}]`
   };
 
   const system =
@@ -2519,8 +2601,10 @@ async function __pdfCallGroq(apiKey, pdfText, count, type){
     `[절대 규칙]\n` +
     `1. 순수 한글(한국어)만 사용하세요. 한자(漢字)를 절대 사용하지 마세요.\n` +
     `2. JSON 배열 외에 다른 텍스트를 출력하지 마세요.\n` +
-    `3. 주어진 학습 자료 내용만을 근거로 핵심 이해를 묻는 문제를 출제하세요.\n` +
-    `4. 문제는 명확하고 한 가지 정답이 있어야 합니다.`;
+    `3. 주어진 학습 자료 내용만을 근거로 핵심을 묻는 문제를 출제하세요.\n` +
+    (type === 'discussion'
+      ? `4. 토론/토의 주제는 학생들이 다양한 의견을 나눌 수 있는 열린 질문이어야 합니다.`
+      : `4. 문제는 명확하고 한 가지 정답이 있어야 합니다.`);
 
   const user =
     `/no_think\n\n` +
@@ -2541,7 +2625,7 @@ async function __pdfCallGroq(apiKey, pdfText, count, type){
         { role: 'user',   content: user   }
       ],
       temperature: 0.4,
-      max_tokens: count * 320
+      max_tokens: type === 'discussion' ? count * 500 : count * 320
     })
   });
 
@@ -2612,6 +2696,17 @@ async function generatePdfMissions(){
 /* 미리보기 렌더링 */
 function __pdfRenderPreview(missions, type){
   const list = document.getElementById('pdf-preview-list');
+
+  // 구역 목록 (루프 밖에서 한 번만 계산 → 카드마다 순환 배정)
+  const _map = MAPS.find(m => m.id === currentMap);
+  const _mapZones = _map ? _map.zones : [];
+  const _knownIds = new Set(_mapZones.map(z => z.id));
+  const _allZones = [..._mapZones];
+  (missionsCache[currentMap] || []).forEach(ms => {
+    if(!_knownIds.has(ms.zone_id)){ _knownIds.add(ms.zone_id); _allZones.push({id:ms.zone_id, label:ms.zone_id}); }
+  });
+  if(_allZones.length === 0) _allZones.push({ id:'zone_A', label:'구역 A' });
+
   list.innerHTML = missions.map((m, i) => {
     let detail = '';
     if(type === 'quiz'){
@@ -2624,20 +2719,33 @@ function __pdfRenderPreview(missions, type){
         `정답: ${m.answer === 'O' ? '⭕ O (맞다)' : '❌ X (틀리다)'}</div>`;
     } else if(type === 'short_answer' && m.model_answer){
       detail = `<div style="font-size:12px;color:#16a085;padding-top:4px">예시 답안: ${m.model_answer}</div>`;
+    } else if(type === 'discussion'){
+      const guides = Array.isArray(m.guides) ? m.guides.filter(Boolean) : [];
+      detail = `<div style="font-size:12.5px;color:#2980b9;font-weight:600;padding-top:4px">💬 토론 주제: ${m.topic || ''}</div>`
+        + (guides.length ? `<ul style="margin:4px 0 0 16px;padding:0;font-size:12px;color:#555">${guides.map(g=>`<li>${g}</li>`).join('')}</ul>` : '');
     }
     const typeOpts = [
       ['quiz','객관식 (4지선다)'],
       ['ox_quiz','O/X 퀴즈'],
-      ['short_answer','주관식']
+      ['short_answer','주관식'],
+      ['discussion','토론/토의']
     ].map(([v,l]) => `<option value="${v}"${v===type?' selected':''}>${l}</option>`).join('');
+
+    // 순환 배정: 문제 0→구역A, 1→구역B, 2→구역C, 3→구역A ...
+    const assignedZoneId = _allZones[i % _allZones.length].id;
+    const zoneOpts = _allZones.map(z =>
+      `<option value="${z.id}"${z.id===assignedZoneId?' selected':''}>${z.label} (${z.id})</option>`
+    ).join('');
+
+    const bodyText = type === 'discussion' ? (m.topic || '') : (m.question || '');
     return `<div class="pdf-qcard" data-q-idx="${i}">
-      <div style="font-size:11px;color:#aaa;margin-bottom:3px">문제 ${i + 1}</div>
-      <div style="font-weight:600;font-size:13.5px;margin-bottom:5px">${m.title || `문제 ${i+1}`}</div>
-      <div style="font-size:13px;color:#333;margin-bottom:4px">${m.question}</div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:3px">${type === 'discussion' ? '토론' : '문제'} ${i + 1}</div>
+      <div style="font-weight:600;font-size:13.5px;margin-bottom:5px">${m.title || `미션 ${i+1}`}</div>
+      <div style="font-size:13px;color:#333;margin-bottom:4px">${bodyText}</div>
       ${detail}
-      <div class="qtype-row">
-        <label>저장 유형:</label>
-        <select class="q-type-sel" data-idx="${i}">${typeOpts}</select>
+      <div class="qmeta-row">
+        <label>유형: <select class="q-type-sel" data-idx="${i}">${typeOpts}</select></label>
+        <label>구역: <select class="q-zone-sel" data-idx="${i}">${zoneOpts}</select></label>
       </div>
     </div>`;
   }).join('');
@@ -2647,21 +2755,31 @@ function __pdfRenderPreview(missions, type){
 /* Supabase에 저장 */
 async function savePdfMissions(){
   if(!client){ alert('Supabase 설정을 확인해주세요.'); return; }
-  const zoneId   = document.getElementById('pdf-zone').value;
-  const required = document.getElementById('pdf-required').checked;
-  const base     = nextOrder(currentMap, zoneId);
+  const defaultZoneId = document.getElementById('pdf-zone').value;
+  const required      = document.getElementById('pdf-required').checked;
+  const defaultType   = document.getElementById('pdf-type').value;
 
-  // 각 카드의 개별 유형 선택 읽기
   const typeSelects = document.querySelectorAll('.q-type-sel');
+  const zoneSelects = document.querySelectorAll('.q-zone-sel');
+
+  // 구역별 현재 최대 순서 캐시
+  const orderCache = {};
+  const getBase = (zid) => {
+    if(orderCache[zid] === undefined) orderCache[zid] = nextOrder(currentMap, zid);
+    return orderCache[zid]++;
+  };
 
   const rows = __pdfMissions.map((m, i) => {
-    const type = typeSelects[i] ? typeSelects[i].value : document.getElementById('pdf-type').value;
+    const type   = typeSelects[i] ? typeSelects[i].value : defaultType;
+    const zoneId = zoneSelects[i] ? zoneSelects[i].value : defaultZoneId;
     let quiz = null;
     if(type === 'quiz'){
       quiz = { question: m.question, options: m.options || [], answer: Number(m.answer) || 0 };
     } else if(type === 'ox_quiz'){
       const ans = String(m.answer);
       quiz = { question: m.question, answer: (ans === 'O' || ans === 'X') ? ans : 'O' };
+    } else if(type === 'discussion'){
+      quiz = { topic: m.topic || m.question || '', guides: Array.isArray(m.guides) ? m.guides.filter(Boolean) : [] };
     } else {
       quiz = { question: m.question, model_answer: m.model_answer || null };
     }
@@ -2674,7 +2792,7 @@ async function savePdfMissions(){
       title:      m.title || `AI 미션 ${i + 1}`,
       type,
       content:    null,
-      order:      base + i,
+      order:      getBase(zoneId),
       required,
       quiz
     };

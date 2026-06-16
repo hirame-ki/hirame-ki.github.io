@@ -397,6 +397,25 @@ function __msShowExitNotice(mapId, cb){
   setTimeout(cb, 1500);
 }
 
+/* ===================== 토의토론 답변 저장 ===================== */
+async function __msSaveDiscussionAnswer(missionId, answer){
+  const client = __msGetClient();
+  if(!client) return;
+  const nickname = __msParam('nickname', null)
+    || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('ssambus_nickname'))
+    || '익명';
+  try{
+    await client.from('mission_answers').insert({
+      room_id: __msRoomId,
+      mission_id: missionId,
+      nickname: nickname,
+      answer: answer
+    });
+  }catch(e){
+    console.warn('토의 답변 저장 실패:', e);
+  }
+}
+
 /* ===================== 전체 미션 완료 축하 팝업 ===================== */
 function __msSpawnConfetti(){
   const colors = ['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#e67e22'];
@@ -578,8 +597,16 @@ function __msRenderMission(m){
     body = `<div class="ms-body"><strong>📢 토론 주제</strong><br>${__msEscHtml(q.topic || '')}</div>
       ${guides ? `<div class="ms-body"><strong>생각해볼 질문</strong><ul style="margin:4px 0;padding-left:20px">${guides}</ul></div>` : ''}
       <div class="ms-body" style="background:#e8f4fd;border-radius:6px;padding:8px 10px;font-size:13px;color:#1a6fa0">
-        💬 맵 하단 채팅창으로 친구들과 자유롭게 토론해보세요!<br>토론을 마쳤으면 아래 완료를 눌러주세요.
+        💬 X 버튼으로 나가서 팀원들과 채팅으로 토의해보세요!<br>결론이 정해지면 다시 미션으로 돌아와 아래에 작성하세요.
+      </div>
+      <div class="ms-body">
+        <label style="font-size:13px;font-weight:600;margin-bottom:6px;display:block">📝 우리 모둠의 결론 (필수, 10자 이상)</label>
+        <textarea id="ms-disc-answer" placeholder="팀원들과 토의한 결론을 작성해주세요."
+          style="width:100%;min-height:80px;padding:8px 10px;border:1px solid #ccc;border-radius:6px;
+            font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box"></textarea>
+        <div class="ms-feedback" id="ms-feedback" style="display:none"></div>
       </div>`;
+    completeDisabled = 'disabled';
   } else if(m.type === 'ox_quiz'){
     const q = m.quiz || {};
     body = `<div class="ms-body">${__msEscHtml(q.question || '')}</div>
@@ -661,6 +688,33 @@ function __msBindMission(m, card){
       } else {
         __msComplete(m.id, answer);
       }
+    });
+    customComplete = true;
+
+  } else if(m.type === 'discussion'){
+    const textarea = card.querySelector('#ms-disc-answer');
+    const completeBtn = card.querySelector('#ms-complete');
+    const fb = card.querySelector('#ms-feedback');
+    const MIN_LEN = 10;
+
+    if(textarea) textarea.addEventListener('input', () => {
+      if(completeBtn) completeBtn.disabled = textarea.value.trim().length < MIN_LEN;
+    });
+
+    if(completeBtn) completeBtn.addEventListener('click', () => {
+      const answer = textarea ? textarea.value.trim() : '';
+      if(answer.length < MIN_LEN) return;
+      if(textarea) textarea.disabled = true;
+      if(fb){
+        fb.textContent = '✅ 제출 완료!';
+        fb.style.display = 'block';
+        fb.className = 'ms-feedback ok';
+      }
+      completeBtn.textContent = '닫기';
+      __msSaveDiscussionAnswer(m.id, answer);
+      const newBtn = completeBtn.cloneNode(true);
+      completeBtn.replaceWith(newBtn);
+      newBtn.addEventListener('click', () => __msComplete(m.id, answer));
     });
     customComplete = true;
 

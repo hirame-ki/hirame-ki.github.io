@@ -284,8 +284,12 @@ function __rtBuildChatUI(){
   };
   bar.querySelector('#rt-chat-send').addEventListener('click', send);
   input.addEventListener('keydown', e => {
-    e.stopPropagation(); // 방향키 등이 맵 이동으로 전달되지 않도록 막음
-    if(e.key === 'Enter') send();
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
+      input.blur(); // 포커스 해제 후 방향키를 맵 이동 핸들러로 통과
+      return;
+    }
+    e.stopPropagation();
+    if(e.key === 'Enter'){ send(); input.blur(); }
   });
 
   // 채팅창 밖에서 글자 키를 누르면 자동으로 입력창에 포커스

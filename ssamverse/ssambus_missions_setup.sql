@@ -103,3 +103,27 @@ alter table missions add constraint missions_type_check
 -- 이 값이 있으면 구역(zone) 대신 해당 타일을 밟을 때 미션이 발동됩니다.
 alter table missions
   add column if not exists trigger_tiles jsonb;
+
+-- =====================================================================
+-- 5) 토의토론 학생 답변 저장 테이블
+-- =====================================================================
+create table if not exists mission_answers (
+  id        bigserial primary key,
+  room_id   text not null,
+  mission_id text not null,
+  nickname  text,
+  answer    text,
+  created_at timestamptz default now()
+);
+
+alter table mission_answers enable row level security;
+
+drop policy if exists "answers insert by anyone" on mission_answers;
+create policy "answers insert by anyone"
+  on mission_answers for insert
+  with check (true);
+
+drop policy if exists "answers readable by anyone" on mission_answers;
+create policy "answers readable by anyone"
+  on mission_answers for select
+  using (true);
