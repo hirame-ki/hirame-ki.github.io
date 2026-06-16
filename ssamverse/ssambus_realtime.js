@@ -103,9 +103,12 @@ function __rtConnect(){
   }
 }
 
+let __rtTeacherParticipant = false; // 교사가 맵 참가하기로 입장 시 채팅 금지 면제
+
 function initRealtime(mapId){
   __rtMapId = mapId || null;
   __rtTeacherView = __rtGetParam('teacherView', '') === '1';
+  __rtTeacherParticipant = __rtGetParam('teacherMode', '') === '1';
 
   if(!__rtIsConfigured()){
     console.info('[쌤버스] Supabase가 설정되지 않아 멀티플레이어가 비활성화됩니다. ssambus_supabase_config.js를 확인하세요.');
@@ -118,13 +121,59 @@ function initRealtime(mapId){
     sessionStorage.setItem('ssambus_student_id', __rtStudentId);
   }
   if(__rtTeacherView) __rtStudentId = 'teacher_' + Math.random().toString(36).slice(2, 10);
-  __rtNickname = __rtGetParam('nickname', '학생' + Math.floor(1000 + Math.random()*9000));
+  __rtNickname = __rtGetParam('nickname', null)
+    || sessionStorage.getItem('ssambus_nickname')
+    || ('학생' + Math.floor(1000 + Math.random()*9000));
+  if(__rtNickname) sessionStorage.setItem('ssambus_nickname', __rtNickname);
 
   __rtClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   __rtConnect();
   __rtLoadChatMode();
 
-  if(!__rtTeacherView) __rtBuildChatUI();
+  if(!__rtTeacherView){
+    __rtBuildChatUI();
+    __rtInjectNickStyle();
+    __rtInjectLocalNick();
+  }
+}
+
+function __rtInjectNickStyle(){
+  if(document.getElementById('rt-nick-style')) return;
+  const s = document.createElement('style');
+  s.id = 'rt-nick-style';
+  s.textContent = `
+    #player .nick, .remote-player .nick {
+      position:absolute !important;
+      top:-20px !important;
+      left:50% !important;
+      transform:translateX(-50%) !important;
+      font-size:11px !important;
+      font-weight:600 !important;
+      font-family:sans-serif !important;
+      background:rgba(255,255,255,.95) !important;
+      border:1px solid rgba(0,0,0,.12) !important;
+      padding:1px 6px !important;
+      border-radius:4px !important;
+      white-space:nowrap !important;
+      pointer-events:none !important;
+      z-index:10 !important;
+      color:#222 !important;
+      box-shadow:0 1px 3px rgba(0,0,0,.18) !important;
+    }
+  `;
+  document.head.appendChild(s);
+}
+
+function __rtInjectLocalNick(){
+  const player = document.getElementById('player');
+  if(!player) return;
+  let nick = player.querySelector('.nick');
+  if(!nick){
+    nick = document.createElement('span');
+    nick.className = 'nick';
+    player.appendChild(nick);
+  }
+  nick.textContent = __rtNickname || '';
 }
 
 let __rtLastSendAt = 0;
@@ -252,7 +301,7 @@ function __rtBuildChatUI(){
 }
 
 function __rtSendChat(text){
-  if(__rtChatMode === 'disabled') return; // 교사가 채팅 금지 중
+  if(__rtChatMode === 'disabled' && !__rtTeacherParticipant) return; // 교사가 채팅 금지 중 (교사 참가자는 면제)
   __rtShowBubble(__rtStudentId, text);
   if(!__rtChannel) return;
   try{
@@ -319,7 +368,7 @@ function __rtApplyChatMode(){
   const bar = document.getElementById('rt-chat-bar');
   if(!bar) return; // 교사 뷰나 채팅바 미생성 시 무시
 
-  if(__rtChatMode === 'disabled'){
+  if(__rtChatMode === 'disabled' && !__rtTeacherParticipant){
     bar.style.display = 'none';
     // 금지 안내 배너 표시
     let notice = document.getElementById('rt-chat-notice');

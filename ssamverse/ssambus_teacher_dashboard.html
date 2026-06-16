@@ -335,10 +335,18 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     <h2>🗺️ 실시간 맵 보기</h2>
     <div class="section-hint">학생들이 맵 위에서 이동하는 모습을 실시간으로 확인할 수 있어요. (이 화면에서는 직접 조작할 수 없습니다)</div>
     <div class="lm-tabs" id="lm_tabs"></div>
-    <div class="lm-stage">
-      <div class="lm-frame-wrap" id="lm_frame_wrap">
-        <iframe id="lm_iframe" frameborder="0" title="실시간 맵 보기"></iframe>
-        <div class="lm-online" id="lm_online">접속 인원: -</div>
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <div class="lm-stage" style="flex:1;min-width:0">
+        <div class="lm-frame-wrap" id="lm_frame_wrap">
+          <iframe id="lm_iframe" frameborder="0" title="실시간 맵 보기"></iframe>
+          <div class="lm-online" id="lm_online">접속 인원: -</div>
+        </div>
+      </div>
+      <div id="lm_student_panel" style="min-width:150px;max-width:180px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;padding:10px;font-size:13px">
+        <div style="font-weight:600;margin-bottom:8px;color:#333">👥 이 맵의 학생</div>
+        <div id="lm_student_list" style="display:flex;flex-direction:column;gap:4px;max-height:380px;overflow-y:auto">
+          <div style="color:#aaa;font-size:12px">접속자 없음</div>
+        </div>
       </div>
     </div>
     <div class="modal-btns">
@@ -496,13 +504,16 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 
     <div id="pdf-form">
       <div class="field">
-        <label>Groq API 키 <span style="font-weight:normal;color:#999">(groq.com 무료 발급)</span></label>
+        <label style="display:flex;justify-content:space-between;align-items:center">
+          <span>Groq API 키 <span style="font-weight:normal;color:#999">(groq.com 무료 발급)</span></span>
+          <button type="button" onclick="resetPdfApiKey()" style="font-size:11px;padding:2px 8px;border:1px solid #e74c3c;background:#fff;color:#e74c3c;border-radius:4px;cursor:pointer">초기화</button>
+        </label>
         <input type="password" id="pdf-apikey" placeholder="gsk_...">
       </div>
       <div class="field">
         <label>PDF 파일</label>
         <div id="pdf-dropzone">
-          📄 클릭하거나 PDF 파일을 여기로 드래그하세요
+          <span id="pdf-drop-text">📄 클릭하거나 PDF 파일을 여기로 드래그하세요</span>
           <input type="file" id="pdf-file" accept=".pdf" style="display:none">
         </div>
         <div class="section-hint">텍스트 레이어가 있는 PDF만 지원됩니다. (스캔본 불가)</div>
@@ -968,7 +979,9 @@ function closeJoinMapModal(){
 
 function joinMap(mapId){
   const url = new URL(MAP_FILES[mapId], window.location.href).href
-    + '?room=' + encodeURIComponent(ROOM_ID) + '&nickname=' + encodeURIComponent('선생님');
+    + '?room=' + encodeURIComponent(ROOM_ID)
+    + '&nickname=' + encodeURIComponent('선생님')
+    + '&teacherMode=1';
   window.open(url, '_blank');
   closeJoinMapModal();
 }
@@ -1020,14 +1033,24 @@ function __lmConnectPresence(){
   });
   __lmChannel.on('presence', { event: 'sync' }, () => {
     const state = __lmChannel.presenceState();
-    let count = 0;
+    const students = [];
     Object.keys(state).forEach(key => {
       const presences = state[key];
       if(!presences || !presences.length) return;
       const s = presences[presences.length - 1];
-      if(s && s.map === __lmCurrentMap) count++;
+      if(s && s.map === __lmCurrentMap && !key.startsWith('dash_')){
+        students.push({ nickname: s.nickname || '이름 없음', key });
+      }
     });
-    document.getElementById('lm_online').textContent = `접속 인원: ${count}명`;
+    document.getElementById('lm_online').textContent = `접속 인원: ${students.length}명`;
+    const list = document.getElementById('lm_student_list');
+    if(list){
+      list.innerHTML = students.length
+        ? students.map(st =>
+            `<div style="background:#fff;border:1px solid #e0e0e0;border-radius:5px;padding:4px 8px;font-size:12.5px;color:#333">🧑 ${escapeHtml(st.nickname)}</div>`
+          ).join('')
+        : '<div style="color:#aaa;font-size:12px">접속자 없음</div>';
+    }
   });
   __lmChannel.subscribe();
 }
@@ -2372,12 +2395,12 @@ function __pdfInitDropzone(){
   if(dz.__pdfDzReady) return;
   dz.__pdfDzReady = true;
 
+  const txt = document.getElementById('pdf-drop-text');
   dz.addEventListener('click', () => inp.click());
   inp.addEventListener('change', () => {
     const f = inp.files[0];
-    dz.textContent = f ? `📄 ${f.name}` : '📄 클릭하거나 PDF 파일을 여기로 드래그하세요';
+    txt.textContent = f ? `📄 ${f.name}` : '📄 클릭하거나 PDF 파일을 여기로 드래그하세요';
     dz.classList.toggle('has-file', !!f);
-    if(f){ const dt = new DataTransfer(); dt.items.add(f); inp.files = dt.files; }
   });
   dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
   dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
@@ -2389,9 +2412,15 @@ function __pdfInitDropzone(){
     const dt = new DataTransfer();
     dt.items.add(f);
     inp.files = dt.files;
-    dz.textContent = `📄 ${f.name}`;
+    txt.textContent = `📄 ${f.name}`;
     dz.classList.add('has-file');
   });
+}
+
+function resetPdfApiKey(){
+  if(!confirm('저장된 API 키를 삭제할까요?')) return;
+  localStorage.removeItem(PDF_APIKEY_KEY);
+  document.getElementById('pdf-apikey').value = '';
 }
 
 function openPdfModal(){
@@ -2544,7 +2573,8 @@ async function __pdfCallGroq(apiKey, pdfText, count, type){
 /* 생성 실행 */
 async function generatePdfMissions(){
   const apiKey  = document.getElementById('pdf-apikey').value.trim();
-  const file    = document.getElementById('pdf-file').files[0];
+  const fileInp = document.getElementById('pdf-file');
+  const file    = fileInp ? fileInp.files[0] : null;
   const count   = Number(document.getElementById('pdf-count').value);
   const type    = document.getElementById('pdf-type').value;
   const sPage   = Number(document.getElementById('pdf-page-start').value) || 1;

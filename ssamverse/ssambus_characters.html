@@ -27,6 +27,9 @@ body{font-family:sans-serif;padding:20px;background:#fff}
 .enter-bar select{padding:5px 8px;border-radius:6px;border:1px solid #ccc;font-size:13px}
 .enter-bar button{padding:7px 16px;border-radius:6px;border:none;background:#2c3e50;color:#fff;font-size:13px;font-weight:500;cursor:pointer}
 .enter-bar button:hover{background:#1a252f}
+#nicknameInput{padding:6px 10px;border-radius:6px;border:2px solid #3498db;font-size:13px;width:140px;outline:none}
+#nicknameInput:focus{border-color:#1a5276}
+.nick-label{font-size:13px;color:#444;font-weight:500;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -36,7 +39,9 @@ body{font-family:sans-serif;padding:20px;background:#fff}
 </div>
 
 <div class="enter-bar">
-  <label>입장할 교실: <select id="mapSelect">
+  <span class="nick-label">이름:</span>
+  <input type="text" id="nicknameInput" placeholder="이름을 입력하세요" maxlength="10" autocomplete="off">
+  <label>교실: <select id="mapSelect">
     <option value="ssambus_map_classroom.html">일반 교실</option>
     <option value="ssambus_map_library.html">도서관</option>
     <option value="ssambus_map_playground.html">운동장</option>
@@ -333,14 +338,19 @@ function pickB(c,k,gid,el){ST[c][k]=el.dataset.v;document.querySelectorAll('#'+g
 function togAcc(c,el){var v=el.dataset.v,i=ST[c].acc.indexOf(v);if(i>-1){ST[c].acc.splice(i,1);el.classList.remove('on');}else{ST[c].acc.push(v);el.classList.add('on');}render(c);}
 function setDir(c,el){ST[c].dir=el.dataset.d;document.querySelectorAll('#S_'+(c==='s'?'student':'teacher')+' .dr .sb').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
 function enterMap(){
+  var nickname = (document.getElementById('nicknameInput').value || '').trim();
+  if(!nickname){ alert('이름을 입력해주세요.'); document.getElementById('nicknameInput').focus(); return; }
+  sessionStorage.setItem('ssambus_nickname', nickname);
+
   var type = currentChar==='s'?'student':(currentChar==='t'?'teacher':'fantasy');
   var data = Object.assign({type:type}, ST[currentChar]);
   localStorage.setItem('ssambus_player_character', JSON.stringify(data));
+
   var target = document.getElementById('mapSelect').value;
   var params = new URLSearchParams(window.location.search);
   params.delete('map');
-  var qs = params.toString();
-  window.location.href = target + (qs ? '?' + qs : '');
+  params.set('nickname', nickname);
+  window.location.href = target + '?' + params.toString();
 }
 
 /* 학생 초대 링크로 들어온 경우, 원래 가려던 맵을 자동으로 선택하고 안내 문구를 보여줍니다 */
@@ -350,11 +360,15 @@ function enterMap(){
   if(params.get('room')){
     document.getElementById('welcomeBanner').style.display = '';
   }
-  if(!targetMap) return;
-  var select = document.getElementById('mapSelect');
-  for(var i=0; i<select.options.length; i++){
-    if(select.options[i].value === targetMap){ select.value = targetMap; break; }
+  if(targetMap){
+    var select = document.getElementById('mapSelect');
+    for(var i=0; i<select.options.length; i++){
+      if(select.options[i].value === targetMap){ select.value = targetMap; break; }
+    }
   }
+  // URL 또는 sessionStorage에서 이름 복원
+  var savedNick = params.get('nickname') || sessionStorage.getItem('ssambus_nickname') || '';
+  if(savedNick) document.getElementById('nicknameInput').value = savedNick;
 })();
 
 function render(c){
