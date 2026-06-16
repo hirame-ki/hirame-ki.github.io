@@ -238,6 +238,17 @@ function __rtBuildChatUI(){
     e.stopPropagation(); // 방향키 등이 맵 이동으로 전달되지 않도록 막음
     if(e.key === 'Enter') send();
   });
+
+  // 채팅창 밖에서 글자 키를 누르면 자동으로 입력창에 포커스
+  document.addEventListener('keydown', e => {
+    if(document.activeElement === input) return;
+    const tag = document.activeElement ? document.activeElement.tagName : '';
+    if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if(e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey){
+      input.focus();
+      // focus 후 keypress 이벤트가 input에서 발생하므로 글자가 자동 입력됨
+    }
+  });
 }
 
 function __rtSendChat(text){
