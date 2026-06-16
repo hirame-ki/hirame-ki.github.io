@@ -34,3 +34,13 @@ create policy "room_settings update by owner"
   on room_settings for update
   using (teacher_id = auth.uid())
   with check (teacher_id = auth.uid());
+
+-- 채팅 모드 컬럼 추가 (기존 테이블에 적용 시 아래 구문 실행)
+alter table room_settings
+  add column if not exists chat_mode text not null default 'all'; -- 'all' | 'proximity'
+
+-- 맵 타일 오버레이 컬럼 추가 (맵 에디터 가구 배치 저장)
+-- 형식: {"classroom": {"2,3": 20, "5,7": 21}, "library": {...}}
+-- 키 = "행,열", 값 = 타일 타입 (20: 책상/가구, 21: 화분, 22: 책장, 23: 칸막이)
+alter table room_settings
+  add column if not exists map_tiles jsonb;

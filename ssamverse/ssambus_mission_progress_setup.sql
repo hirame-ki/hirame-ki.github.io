@@ -20,6 +20,7 @@ create table if not exists mission_progress (
   mission_title text,
   required boolean default true,
   completed_at timestamptz default now(),
+  student_answer text,          -- 주관식(short_answer) 미션에서 학생이 입력한 답안
   unique (room_id, student_id, mission_id)
 );
 
@@ -42,3 +43,7 @@ create policy "mission_progress update by anyone"
   on mission_progress for update
   using (true)
   with check (true);
+
+-- 주관식 답안 컬럼 추가 (기존 테이블에 적용)
+alter table mission_progress
+  add column if not exists student_answer text;

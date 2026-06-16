@@ -72,6 +72,10 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 .mtype.quiz{background:#9b59b6}
 .mtype.google_form{background:#27ae60}
 .mtype.link{background:#3498db}
+.mtype.image_quiz{background:#e67e22}
+.mtype.short_answer{background:#16a085}
+.mtype.discussion{background:#2980b9}
+.mtype.ox_quiz{background:#8e44ad}
 .req{color:#e67e22;font-weight:600}
 .mcard .btns{display:flex;gap:6px;flex-shrink:0}
 .mcard .btns button{padding:5px 10px;font-size:11.5px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer}
@@ -159,6 +163,24 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 .lm-frame-wrap iframe{position:absolute;border:0;transform-origin:top left;pointer-events:none;background:#fff}
 .lm-online{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:12px;z-index:1}
 
+/* ===== 맵 참가 모달 ===== */
+#joinMapModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:55;padding:16px}
+#joinMapModal-bg.show{display:flex}
+#joinMapModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:420px}
+#joinMapModal h2{margin:0 0 .6rem;font-size:16px}
+.jm-tabs{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.jm-tabs button{padding:10px 14px;border-radius:8px;border:1px solid #ccc;background:#fff;font-size:13.5px;cursor:pointer;text-align:left}
+.jm-tabs button:hover{background:#eee}
+
+/* ===== PDF 미션 생성 모달 ===== */
+#pdfModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#pdfModal-bg.show{display:flex}
+#pdfModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto}
+#pdfModal h2{margin:0 0 .3rem;font-size:16px}
+#pdf-status{margin:10px 0;font-size:13px;padding:10px 12px;background:#f0f4ff;border-radius:6px;border-left:3px solid #3498db;line-height:1.5}
+#pdf-status.err{background:#fff0f0;border-left-color:#e74c3c;color:#c0392b}
+#pdf-preview-list .pdf-qcard{background:#f8f9fa;border:1px solid #e6e6e6;border-radius:8px;padding:12px;margin-bottom:8px}
+
 /* ===== 상단바 버튼 그룹 ===== */
 .topbar .right{display:flex;gap:8px}
 .topbar .right button{padding:6px 14px;border-radius:6px;border:none;font-size:12px;font-weight:500;cursor:pointer}
@@ -166,6 +188,38 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 .topbar .right .primary:hover{background:#eee}
 .topbar .right .ghost{background:#3d5166;color:#fff}
 .topbar .right .ghost:hover{background:#4a6178}
+.topbar .right .chat-prox{background:#f39c12;color:#fff}
+.topbar .right .chat-prox:hover{background:#e67e22}
+.topbar .right .chat-ban{background:#e74c3c;color:#fff}
+.topbar .right .chat-ban:hover{background:#c0392b}
+
+/* ===== 맵 에디터 모달 ===== */
+#edModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:20px;overflow-y:auto}
+#edModal-bg.show{display:flex}
+#edModal{background:#fff;border-radius:12px;padding:1.4rem;width:100%;max-width:720px;margin:auto}
+#edModal h2{margin:0 0 .5rem;font-size:16px}
+.ed-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.ed-tabs button{padding:5px 12px;border-radius:6px;border:1px solid #ccc;background:#fff;font-size:12.5px;cursor:pointer}
+.ed-tabs button.on{background:#2c3e50;color:#fff;border-color:#2c3e50}
+.ed-palette{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding:8px 10px;background:#f8f9fa;border-radius:8px;border:1px solid #e6e6e6}
+.ed-palette .ptile{padding:5px 8px;border-radius:6px;border:2px solid #ccc;background:#fff;font-size:13px;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:52px}
+.ed-palette .ptile.on{border-color:#2c3e50;background:#e8f0fe}
+.ed-palette .ptile:hover{background:#eee}
+.ed-palette .ptile.erase{border-color:#e74c3c}
+.ed-palette .ptile.erase.on{border-color:#e74c3c;background:#fdecea}
+#ed-canvas-wrap{overflow:auto;max-height:500px;border:1px solid #ddd;border-radius:6px;cursor:crosshair;margin-bottom:10px}
+#ed-canvas{display:block}
+.ed-hint{font-size:11.5px;color:#888;margin-bottom:10px}
+
+/* ===== 트리거 타일 선택기 ===== */
+#trigSection{margin-top:12px;padding:12px;background:#f0f7ff;border:1px solid #c5d8f5;border-radius:8px;display:none}
+#trigSection.show{display:block}
+.trig-mode-row{display:flex;gap:16px;margin-bottom:8px;font-size:13px}
+.trig-mode-row label{display:flex;align-items:center;gap:5px;cursor:pointer}
+#trig-canvas-wrap{overflow:auto;max-height:280px;border:1px solid #ccc;border-radius:6px;cursor:crosshair;margin-top:8px}
+#trig-canvas{display:block}
+#trig-info{font-size:11.5px;color:#555;margin-top:6px}
+.trig-hint{font-size:11.5px;color:#7a9abf;margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -207,9 +261,14 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
       <span class="room" id="roomBadge">수업 코드: -</span>
     </div>
     <div class="right">
+      <button class="primary" onclick="openMapEditor()">🪑 맵 에디터</button>
+      <button class="primary" onclick="openPdfModal()">📄 PDF 미션 생성</button>
       <button class="primary" onclick="openLinkModal()">🔗 학생 초대 링크</button>
       <button class="primary" onclick="openOrderModal()">🚪 맵 이동 순서</button>
       <button class="primary" onclick="openLiveMapModal()">🗺️ 실시간 맵 보기</button>
+      <button class="primary" onclick="openJoinMapModal()">🧑‍🏫 맵 참가하기</button>
+      <button class="primary" id="chatModeBtn" onclick="toggleChatMode()">💬 채팅: 전체</button>
+      <button class="ghost" id="chatBanBtn" onclick="toggleChatBan()">🚫 채팅 금지</button>
       <button class="primary" onclick="downloadProgressExcel()">📊 진행현황 다운로드</button>
       <button class="ghost" onclick="newClass()">수업 변경</button>
       <button class="ghost" onclick="logout()">로그아웃</button>
@@ -282,6 +341,18 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
   </div>
 </div>
 
+<!-- 맵 참가 모달 (교사 참여) -->
+<div id="joinMapModal-bg">
+  <div id="joinMapModal">
+    <h2>🧑‍🏫 학생들과 함께 맵 입장하기</h2>
+    <div class="section-hint">선생님 캐릭터로 직접 맵에 들어가 학생들과 함께 이동하고 채팅할 수 있어요. 새 탭에서 열리며, 처음 입장 시 캐릭터를 선택할 수 있습니다(교사 캐릭터 탭 추천).</div>
+    <div class="jm-tabs" id="jm_tabs"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeJoinMapModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- 미션 추가/수정 모달 -->
 <div id="modal-bg">
   <div id="modal">
@@ -295,7 +366,11 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
         <label>유형</label>
         <select id="f_type" onchange="onTypeChange()">
           <option value="youtube">유튜브 영상</option>
-          <option value="quiz">퀴즈</option>
+          <option value="quiz">객관식 퀴즈</option>
+          <option value="image_quiz">이미지 퀴즈</option>
+          <option value="ox_quiz">O/X 퀴즈</option>
+          <option value="short_answer">주관식</option>
+          <option value="discussion">토론/토의</option>
           <option value="google_form">구글 설문</option>
           <option value="link">링크</option>
         </select>
@@ -318,9 +393,72 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
       <div class="opt-row"><input type="radio" name="q_answer" value="2"><input type="text" id="q_opt2" placeholder="보기 3"></div>
       <div class="opt-row"><input type="radio" name="q_answer" value="3"><input type="text" id="q_opt3" placeholder="보기 4"></div>
     </div>
+    <!-- 이미지 퀴즈: 이미지 URL -->
+    <div class="field" id="imageField" style="display:none">
+      <label>이미지 URL</label>
+      <input type="url" id="f_image_url" placeholder="https://...">
+      <div class="section-hint">이미지의 직접 링크를 입력하세요. (구글 드라이브 공유 링크, Imgur 등)</div>
+    </div>
+
+    <!-- 주관식 -->
+    <div id="shortAnswerField" style="display:none">
+      <div class="field">
+        <label>질문</label>
+        <textarea id="sa_question" placeholder="학생에게 물어볼 질문을 입력하세요"></textarea>
+      </div>
+      <div class="field">
+        <label>예시 답안 <span style="font-weight:normal;color:#999">(선택 – 학생이 제출 후 참고용으로 공개됩니다)</span></label>
+        <textarea id="sa_model" placeholder="모범 답안 또는 힌트 (없으면 비워두세요)"></textarea>
+      </div>
+    </div>
+
+    <!-- 토론/토의 -->
+    <div id="discussionField" style="display:none">
+      <div class="field">
+        <label>토론 주제</label>
+        <textarea id="di_topic" placeholder="학생들이 함께 이야기할 주제를 입력하세요"></textarea>
+      </div>
+      <div class="field">
+        <label>안내 질문 <span style="font-weight:normal;color:#999">(선택 – 최대 3개)</span></label>
+        <input type="text" id="di_q1" placeholder="안내 질문 1" style="margin-bottom:6px">
+        <input type="text" id="di_q2" placeholder="안내 질문 2" style="margin-bottom:6px">
+        <input type="text" id="di_q3" placeholder="안내 질문 3">
+      </div>
+    </div>
+
+    <!-- O/X 퀴즈 -->
+    <div id="oxField" style="display:none">
+      <div class="field">
+        <label>문제</label>
+        <textarea id="ox_question" placeholder="학생이 O 또는 X로 판단할 문제를 입력하세요"></textarea>
+      </div>
+      <div class="field">
+        <label>정답</label>
+        <div style="display:flex;gap:24px;margin-top:6px">
+          <label style="font-size:17px;cursor:pointer"><input type="radio" name="ox_answer" value="O"> ⭕ O (맞다)</label>
+          <label style="font-size:17px;cursor:pointer"><input type="radio" name="ox_answer" value="X"> ❌ X (틀리다)</label>
+        </div>
+      </div>
+    </div>
+
     <div class="field">
       <label class="checkrow"><input type="checkbox" id="f_required" checked> 필수 미션 (체크 해제 시 선택 미션)</label>
     </div>
+
+    <!-- 트리거 타일 직접 지정 -->
+    <div id="trigSection">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">📍 미션 발동 위치</div>
+      <div class="trig-mode-row">
+        <label><input type="radio" name="trig_mode" value="zone" onchange="onTriggerModeChange()" checked> 구역(zone)으로 발동 <span style="color:#aaa;font-size:11px">(기본)</span></label>
+        <label><input type="radio" name="trig_mode" value="tile" onchange="onTriggerModeChange()"> 타일 직접 지정</label>
+      </div>
+      <div id="trigTileArea" style="display:none">
+        <div class="trig-hint">맵에서 미션이 발동할 위치(타일)를 클릭해 선택하세요. 클릭하면 📌 표시가 됩니다. 다시 클릭하면 취소됩니다.</div>
+        <div id="trig-canvas-wrap"><canvas id="trig-canvas"></canvas></div>
+        <div id="trig-info">선택된 위치: 없음</div>
+      </div>
+    </div>
+
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal()">취소</button>
       <button class="btn-save" onclick="saveMission()">저장</button>
@@ -328,8 +466,98 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
   </div>
 </div>
 
+<!-- 맵 에디터 모달 -->
+<div id="edModal-bg">
+  <div id="edModal">
+    <h2>🪑 맵 에디터</h2>
+    <div class="section-hint">가구를 배치할 맵을 선택한 후, 팔레트에서 가구를 선택하고 타일을 클릭/드래그해 배치하세요. 저장하면 학생 맵에도 반영됩니다.</div>
+    <div class="ed-tabs" id="ed-tabs"></div>
+    <div class="ed-palette" id="ed-palette"></div>
+    <div class="ed-hint">💡 바닥(보행 가능)타일에만 배치 가능합니다. 우클릭 또는 지우개로 제거할 수 있습니다.</div>
+    <div id="ed-canvas-wrap"><canvas id="ed-canvas"></canvas></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeMapEditor()">닫기</button>
+      <button class="btn-save" onclick="saveMapEditor()">💾 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF 미션 자동 생성 모달 -->
+<div id="pdfModal-bg">
+  <div id="pdfModal">
+    <h2>📄 PDF로 미션 자동 생성</h2>
+    <div class="section-hint">학습 자료 PDF를 업로드하면 Qwen3-32B AI가 문제를 자동 생성합니다.</div>
+
+    <div id="pdf-form">
+      <div class="field">
+        <label>Groq API 키 <span style="font-weight:normal;color:#999">(groq.com 무료 발급)</span></label>
+        <input type="password" id="pdf-apikey" placeholder="gsk_...">
+      </div>
+      <div class="field">
+        <label>PDF 파일</label>
+        <input type="file" id="pdf-file" accept=".pdf" style="font-size:13px">
+        <div class="section-hint">텍스트 레이어가 있는 PDF만 지원됩니다. (스캔본 불가)</div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>문제 수</label>
+          <select id="pdf-count">
+            <option value="3">3문제</option>
+            <option value="5" selected>5문제</option>
+            <option value="8">8문제</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>문제 유형</label>
+          <select id="pdf-type">
+            <option value="quiz">객관식 (4지선다)</option>
+            <option value="ox_quiz">O/X 퀴즈</option>
+            <option value="short_answer">주관식</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>시작 페이지</label>
+          <input type="number" id="pdf-page-start" value="1" min="1">
+        </div>
+        <div class="field">
+          <label>끝 페이지 <span style="font-weight:normal;color:#999">(4페이지 이하 권장)</span></label>
+          <input type="number" id="pdf-page-end" value="4" min="1">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>추가할 구역</label>
+          <select id="pdf-zone"></select>
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end;padding-bottom:4px">
+          <label class="checkrow"><input type="checkbox" id="pdf-required" checked> 필수 미션</label>
+        </div>
+      </div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closePdfModal()">닫기</button>
+        <button class="btn-save" id="pdf-gen-btn" onclick="generatePdfMissions()">✨ AI 문제 생성</button>
+      </div>
+    </div>
+
+    <div id="pdf-status" style="display:none"></div>
+
+    <div id="pdf-preview" style="display:none">
+      <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:#333">생성된 문제 미리보기</div>
+      <div id="pdf-preview-list"></div>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="resetPdfPreview()">↩ 다시 생성</button>
+        <button class="btn-save" onclick="savePdfMissions()">📥 미션에 추가</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style/dist/xlsx.bundle.js"></script>
@@ -475,7 +703,8 @@ const MAPS = [
 ];
 
 const TYPE_LABEL = {
-  youtube:'유튜브 영상', quiz:'퀴즈', google_form:'구글 설문', link:'링크'
+  youtube:'유튜브 영상', quiz:'객관식 퀴즈', google_form:'구글 설문', link:'링크',
+  image_quiz:'이미지 퀴즈', short_answer:'주관식', discussion:'토론/토의', ox_quiz:'O/X 퀴즈'
 };
 
 /* ===================== 상태 ===================== */
@@ -574,6 +803,7 @@ function continueRoom(roomId){
 }
 
 function logout(){
+  __disconnectTeacherChannel();
   sessionStorage.removeItem('ssambus_teacher_ok');
   document.getElementById('dash').classList.remove('show');
   document.getElementById('roomGate').classList.add('hidden');
@@ -612,6 +842,7 @@ function loadExistingRoom(){
 }
 
 function newClass(){
+  __disconnectTeacherChannel();
   document.getElementById('roomCodeInput').value = '';
   document.getElementById('roomErr').textContent = '';
   showRoomGate();
@@ -631,6 +862,8 @@ async function showDash(){
   if(!currentUserId){
     showToast('⚠ 인증에 실패했습니다. Supabase에서 익명 로그인(Anonymous Sign-In)이 켜져 있는지 확인해주세요.');
   }
+  __connectTeacherChannel();
+  await loadChatMode();
   renderTabs();
   selectMap(currentMap);
 }
@@ -711,6 +944,24 @@ function downloadQr(){
 /* ===================== 실시간 맵 보기 ===================== */
 let __lmCurrentMap = null;
 let __lmChannel = null;
+
+/* ===================== 맵 참가하기 (교사 참여) ===================== */
+function openJoinMapModal(){
+  const tabs = document.getElementById('jm_tabs');
+  tabs.innerHTML = MAPS.map(m => `<button onclick="joinMap('${m.id}')">${m.label}</button>`).join('');
+  document.getElementById('joinMapModal-bg').classList.add('show');
+}
+
+function closeJoinMapModal(){
+  document.getElementById('joinMapModal-bg').classList.remove('show');
+}
+
+function joinMap(mapId){
+  const url = new URL(MAP_FILES[mapId], window.location.href).href
+    + '?room=' + encodeURIComponent(ROOM_ID) + '&nickname=' + encodeURIComponent('선생님');
+  window.open(url, '_blank');
+  closeJoinMapModal();
+}
 
 function openLiveMapModal(){
   const tabs = document.getElementById('lm_tabs');
@@ -967,9 +1218,15 @@ function renderZones(mapId){
         card.className = 'mcard';
         const typeLabel = TYPE_LABEL[m.type] || m.type;
         let metaExtra = '';
-        if(m.type === 'quiz' && m.quiz && m.quiz.question){
+        if((m.type === 'quiz' || m.type === 'image_quiz') && m.quiz && m.quiz.question){
+          metaExtra = `<span>${m.type === 'image_quiz' ? '🖼️ ' : ''}Q. ${escapeHtml(m.quiz.question)}</span>`;
+        } else if(m.type === 'short_answer' && m.quiz && m.quiz.question){
           metaExtra = `<span>Q. ${escapeHtml(m.quiz.question)}</span>`;
-        }else if(m.content){
+        } else if(m.type === 'discussion' && m.quiz && m.quiz.topic){
+          metaExtra = `<span>주제: ${escapeHtml(m.quiz.topic)}</span>`;
+        } else if(m.type === 'ox_quiz' && m.quiz && m.quiz.question){
+          metaExtra = `<span>Q. ${escapeHtml(m.quiz.question)}</span>`;
+        } else if(m.content){
           metaExtra = `<span>${escapeHtml(m.content)}</span>`;
         }
         const isOwner = !!currentUserId && m.teacher_id === currentUserId;
@@ -1017,7 +1274,7 @@ function openModal(mapId, zoneId, mission){
   document.getElementById('f_content').value = mission && mission.content ? mission.content : '';
   document.getElementById('f_required').checked = mission ? !!mission.required : true;
 
-  // 퀴즈 필드 초기화
+  // 객관식/이미지 퀴즈 필드 초기화
   const q = (mission && mission.quiz) ? mission.quiz : null;
   document.getElementById('q_question').value = q ? (q.question || '') : '';
   for(let i=0;i<4;i++){
@@ -1028,9 +1285,33 @@ function openModal(mapId, zoneId, mission){
     r.checked = (Number(r.value) === ansVal);
   });
 
+  // 이미지 퀴즈
+  document.getElementById('f_image_url').value =
+    (mission && mission.type === 'image_quiz' && q && q.image_url) ? q.image_url : '';
+
+  // 주관식
+  document.getElementById('sa_question').value =
+    (mission && mission.type === 'short_answer' && q) ? (q.question || '') : '';
+  document.getElementById('sa_model').value =
+    (mission && mission.type === 'short_answer' && q) ? (q.model_answer || '') : '';
+
+  // 토론
+  const guides = (mission && mission.type === 'discussion' && q && q.guides) ? q.guides : [];
+  document.getElementById('di_topic').value =
+    (mission && mission.type === 'discussion' && q) ? (q.topic || '') : '';
+  document.getElementById('di_q1').value = guides[0] || '';
+  document.getElementById('di_q2').value = guides[1] || '';
+  document.getElementById('di_q3').value = guides[2] || '';
+
+  // O/X 퀴즈
+  document.getElementById('ox_question').value =
+    (mission && mission.type === 'ox_quiz' && q) ? (q.question || '') : '';
+  const oxAns = (mission && mission.type === 'ox_quiz' && q) ? q.answer : null;
+  document.querySelectorAll('input[name="ox_answer"]').forEach(r => { r.checked = r.value === oxAns; });
+
   onTypeChange();
+  __initTriggerSection(mapId, mission);
   document.getElementById('modal-bg').classList.add('show');
-}
 
 function nextOrder(mapId, zoneId){
   const missions = (missionsCache[mapId] || []).filter(m => m.zone_id === zoneId);
@@ -1040,8 +1321,14 @@ function nextOrder(mapId, zoneId){
 
 function onTypeChange(){
   const type = document.getElementById('f_type').value;
-  document.getElementById('quizField').style.display = (type === 'quiz') ? 'block' : 'none';
-  document.getElementById('contentField').style.display = (type === 'quiz') ? 'none' : 'block';
+  const isUrlType  = ['youtube','google_form','link'].includes(type);
+  const isQuizType = type === 'quiz' || type === 'image_quiz';
+  document.getElementById('contentField').style.display     = isUrlType       ? 'block' : 'none';
+  document.getElementById('quizField').style.display        = isQuizType      ? 'block' : 'none';
+  document.getElementById('imageField').style.display       = (type === 'image_quiz')   ? 'block' : 'none';
+  document.getElementById('shortAnswerField').style.display = (type === 'short_answer') ? 'block' : 'none';
+  document.getElementById('discussionField').style.display  = (type === 'discussion')   ? 'block' : 'none';
+  document.getElementById('oxField').style.display          = (type === 'ox_quiz')      ? 'block' : 'none';
 }
 
 function closeModal(){
@@ -1071,13 +1358,45 @@ async function saveMission(){
       return;
     }
     quiz = { question, options, answer: Number(answerInput.value) };
-  }else{
-    content = document.getElementById('f_content').value.trim();
-    if(!content){
-      alert('내용(URL)을 입력해주세요.');
-      return;
+  } else if(type === 'image_quiz'){
+    const image_url = document.getElementById('f_image_url').value.trim();
+    const question = document.getElementById('q_question').value.trim();
+    const options = [0,1,2,3].map(i => document.getElementById('q_opt'+i).value.trim());
+    const answerInput = document.querySelector('input[name=q_answer]:checked');
+    if(!image_url){ alert('이미지 URL을 입력해주세요.'); return; }
+    if(!question || options.some(o => !o) || !answerInput){
+      alert('질문, 보기 4개, 정답을 모두 입력해주세요.'); return;
     }
+    quiz = { image_url, question, options, answer: Number(answerInput.value) };
+  } else if(type === 'short_answer'){
+    const question = document.getElementById('sa_question').value.trim();
+    const model_answer = document.getElementById('sa_model').value.trim();
+    if(!question){ alert('질문을 입력해주세요.'); return; }
+    quiz = { question, model_answer: model_answer || null };
+  } else if(type === 'discussion'){
+    const topic = document.getElementById('di_topic').value.trim();
+    if(!topic){ alert('토론 주제를 입력해주세요.'); return; }
+    const guides = [
+      document.getElementById('di_q1').value.trim(),
+      document.getElementById('di_q2').value.trim(),
+      document.getElementById('di_q3').value.trim()
+    ].filter(Boolean);
+    quiz = { topic, guides };
+  } else if(type === 'ox_quiz'){
+    const question = document.getElementById('ox_question').value.trim();
+    const answerInput = document.querySelector('input[name="ox_answer"]:checked');
+    if(!question || !answerInput){ alert('문제와 정답(O/X)을 모두 입력해주세요.'); return; }
+    quiz = { question, answer: answerInput.value };
+  } else {
+    content = document.getElementById('f_content').value.trim();
+    if(!content){ alert('내용(URL)을 입력해주세요.'); return; }
   }
+
+  // 트리거 타일 수집
+  const trigMode = document.querySelector('input[name=trig_mode]:checked')?.value;
+  const trigger_tiles = (trigMode === 'tile' && __triggerTiles && __triggerTiles.length)
+    ? __triggerTiles.slice()
+    : null;
 
   const row = {
     id: editingId || `${ROOM_ID}_${editingMapId}_${editingZoneId}_${Date.now()}`,
@@ -1085,7 +1404,7 @@ async function saveMission(){
     map_id: editingMapId,
     zone_id: editingZoneId,
     teacher_id: currentUserId,
-    title, type, content, order, required, quiz
+    title, type, content, order, required, quiz, trigger_tiles
   };
 
   try{
@@ -1278,6 +1597,1007 @@ function buildAndDownloadExcel(missions, progress){
 
   const today = new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb, `쌤버스_미션진행현황_${ROOM_ID}_${today}.xlsx`);
+}
+
+/* ===================== 채팅 모드 설정 ===================== */
+let __chatMode = 'all'; // 'all' | 'proximity' | 'disabled'
+let __prevChatMode = 'all'; // 금지 해제 시 복원할 이전 모드
+let __teacherChannel = null;
+
+function __connectTeacherChannel(){
+  if(!client || !ROOM_ID) return;
+  __disconnectTeacherChannel();
+  __teacherChannel = client.channel('room:' + ROOM_ID);
+  __teacherChannel.subscribe();
+}
+
+function __disconnectTeacherChannel(){
+  if(__teacherChannel){
+    try{ client.removeChannel(__teacherChannel); }catch(e){}
+    __teacherChannel = null;
+  }
+}
+
+async function loadChatMode(){
+  if(!client) return;
+  try{
+    const { data } = await client
+      .from('room_settings')
+      .select('chat_mode')
+      .eq('room_id', ROOM_ID)
+      .maybeSingle();
+    __chatMode = (data && data.chat_mode) ? data.chat_mode : 'all';
+    if(__chatMode !== 'disabled') __prevChatMode = __chatMode;
+  }catch(e){ __chatMode = 'all'; }
+  updateChatModeBtn();
+}
+
+function updateChatModeBtn(){
+  const modeBtn = document.getElementById('chatModeBtn');
+  const banBtn  = document.getElementById('chatBanBtn');
+  const isBanned = __chatMode === 'disabled';
+
+  if(modeBtn){
+    if(!isBanned && __chatMode === 'proximity'){
+      modeBtn.textContent = '💬 채팅: 근접만';
+      modeBtn.className = 'chat-prox';
+    } else {
+      modeBtn.textContent = '💬 채팅: 전체';
+      modeBtn.className = 'primary';
+    }
+    modeBtn.disabled = isBanned;
+    modeBtn.style.opacity = isBanned ? '0.4' : '';
+  }
+
+  if(banBtn){
+    if(isBanned){
+      banBtn.textContent = '🚫 채팅 금지 중 (해제)';
+      banBtn.className = 'chat-ban';
+    } else {
+      banBtn.textContent = '🚫 채팅 금지';
+      banBtn.className = 'ghost';
+    }
+  }
+}
+
+async function __applyChatModeSetting(){
+  try{
+    await client.from('room_settings').upsert({
+      room_id: ROOM_ID,
+      chat_mode: __chatMode,
+      teacher_id: currentUserId
+    });
+  }catch(e){ console.error('[쌤버스] 채팅 설정 저장 실패', e); }
+
+  if(__teacherChannel){
+    try{
+      __teacherChannel.send({
+        type: 'broadcast',
+        event: 'chat_setting',
+        payload: { mode: __chatMode }
+      });
+    }catch(e){ console.error('[쌤버스] 채팅 설정 broadcast 실패', e); }
+  }
+}
+
+async function toggleChatMode(){
+  if(__chatMode === 'disabled') return; // 금지 중엔 모드 변경 불가
+  __chatMode = (__chatMode === 'all') ? 'proximity' : 'all';
+  __prevChatMode = __chatMode;
+  updateChatModeBtn();
+  await __applyChatModeSetting();
+  showToast(__chatMode === 'proximity'
+    ? '📍 근접 캐릭터끼리만 채팅이 보입니다.'
+    : '🌐 모든 캐릭터의 채팅이 보입니다.');
+}
+
+async function toggleChatBan(){
+  if(__chatMode === 'disabled'){
+    __chatMode = __prevChatMode; // 이전 모드로 복원
+  } else {
+    __prevChatMode = __chatMode; // 현재 모드 기억
+    __chatMode = 'disabled';
+  }
+  updateChatModeBtn();
+  await __applyChatModeSetting();
+  showToast(__chatMode === 'disabled'
+    ? '🚫 모든 학생의 채팅이 금지되었습니다.'
+    : '✅ 채팅이 다시 허용되었습니다.');
+}
+
+/* ===================== 맵 에디터 ===================== */
+
+/* 6개 맵의 기본 그리드 + 타일 색상 (에디터 캔버스 렌더용) */
+const MAP_EDITOR_GRIDS = {
+  classroom: {
+    cols:15, rows:16, ts:48, walkable:new Set([0,5]),
+    tileColors:{0:'#ecdcc0',1:'#f3ecdf',2:'#2d4a3a',3:'#8B6914',4:'#c8a06e',5:'#7a5230',7:'#d9c19a',8:'#222'},
+    grid:[
+      [1,8,2,2,2,2,2,2,2,2,2,2,2,1,1],
+      [1,0,0,0,0,0,3,3,3,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
+      [1,0,0,4,0,4,0,4,0,4,0,4,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,4,0,4,0,4,0,4,0,4,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,4,0,4,0,4,0,4,0,4,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,4,0,4,0,4,0,4,0,4,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,4,0,4,0,4,0,4,0,4,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,7,7,7,7,7,7,7,7,7,7,7,7,7,1]
+    ]
+  },
+  library: {
+    cols:15, rows:21, ts:48, walkable:new Set([0,5]),
+    tileColors:{0:'#dde6ee',1:'#f3ecdf',5:'#7a5230',9:'#5a3a1a',10:'#8B6914',11:'#c8a06e'},
+    grid:[
+      [1,1,1,1,1,1,5,5,5,1,1,1,1,1,1],
+      [1,0,0,0,0,0,10,0,10,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1],
+      [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1],
+      [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ]
+  },
+  playground: {
+    cols:32, rows:14, ts:48, walkable:new Set([2,3,5]),
+    tileColors:{1:'#cfe0e8',2:'#7cc06a',3:'#c8b08a',4:'#888',5:'#e8e840',6:'#e87a2a',7:'#d4a48a',8:'#e87a4a',9:'#6a6a6a'},
+    grid:[
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+      [1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1],
+      [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
+      [1,3,2,6,8,8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,8,8,6,2,3,1],
+      [1,3,2,2,8,8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,8,8,2,2,3,1],
+      [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
+      [1,3,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,3,1],
+      [1,3,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,3,1],
+      [1,3,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,3,1],
+      [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
+      [1,3,2,7,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,7,2,3,1],
+      [1,3,2,7,2,2,2,2,2,2,2,2,2,2,2,9,2,2,2,2,2,2,2,2,2,2,2,2,7,2,3,1],
+      [1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ]
+  },
+  gym: {
+    cols:28, rows:14, ts:48, walkable:new Set([0,5]),
+    tileColors:{0:'#e8c79a',1:'#d0b8a0',4:'#888',5:'#7a5230',7:'#3498db',8:'#95a5a6',9:'#f39c12'},
+    grid:[
+      [1,1,1,1,1,1,1,4,4,1,1,1,1,1,1,1,1,1,1,4,4,1,1,1,1,1,1,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,7,9,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1],
+      [1,7,9,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
+      [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
+      [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1],
+      [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1],
+      [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1],
+      [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1],
+      [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
+      [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
+      [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1],
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+      [1,1,1,1,1,1,1,4,4,1,1,1,1,1,1,1,1,1,1,4,4,1,1,1,1,1,1,1]
+    ]
+  },
+  city: {
+    cols:28, rows:14, ts:48, walkable:new Set([0,2,3,4,9]),
+    tileColors:{0:'#d5d8dc',1:'#8e9eaa',2:'#a0a0c0',3:'#f0f0a0',4:'#55aa55',9:'#4a9af0'},
+    grid:[
+      [0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0],
+      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
+      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
+      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
+      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
+      [0,0,0,0,0,0,0,4,3,3,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0],
+      [2,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,2],
+      [2,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,2],
+      [0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,4,0,0],
+      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
+      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
+      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
+      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
+      [0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0]
+    ]
+  },
+  forest: {
+    cols:28, rows:14, ts:48, walkable:new Set([0,5,6,7]),
+    tileColors:{0:'#7cc06a',1:'#2d6a1e',2:'#888',3:'#4a90d9',4:'#558830',5:'#c8a06e',6:'#8B6914',7:'#f0a040',8:'#2d4a1e'},
+    grid:[
+      [8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8],
+      [5,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,8],
+      [8,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,4,0,0,0,0,2,0,0,4,0,0,8],
+      [8,0,0,0,0,7,7,0,0,0,4,0,0,0,0,0,0,0,0,7,7,0,0,1,0,0,0,8],
+      [8,0,1,0,0,0,0,0,0,0,0,0,2,3,3,3,3,0,0,0,0,1,0,0,2,0,0,8],
+      [8,0,0,4,0,0,0,0,0,0,0,0,0,3,6,6,3,0,0,0,4,0,0,0,0,7,0,8],
+      [8,0,0,0,0,0,2,0,0,0,0,0,0,3,6,6,3,0,0,0,0,0,1,0,0,0,0,8],
+      [8,0,4,0,0,0,0,0,0,2,0,0,0,3,6,6,3,0,7,0,0,0,0,1,0,0,0,8],
+      [8,0,0,0,0,1,0,0,0,0,0,0,0,3,3,3,3,0,0,0,2,0,0,0,0,4,0,8],
+      [8,0,0,7,7,0,0,0,0,0,0,1,0,0,0,0,0,4,0,0,0,0,0,2,0,0,0,8],
+      [8,0,2,0,0,0,0,0,1,0,0,0,0,0,0,7,7,0,0,0,0,4,0,0,0,0,0,8],
+      [8,0,0,0,1,0,0,0,0,4,0,0,0,2,0,0,0,0,0,1,0,0,0,0,4,0,0,8],
+      [8,0,4,0,0,0,1,0,0,0,0,0,4,0,0,0,0,2,0,0,0,0,1,0,0,4,0,8],
+      [8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8]
+    ]
+  }
+};
+
+/* 전체 타일 메타 (라벨/색상은 팔레트 버튼용) */
+const ALL_EDIT_TILES = {
+  20: { label:'책상/가구', color:'#c8a06e' },
+  21: { label:'화분',     color:'#2e8b57' },
+  22: { label:'책장',     color:'#7a5230' },
+  23: { label:'칸막이',   color:'#808080' },
+  30: { label:'벤치',     color:'#a07830' },
+  31: { label:'나무',     color:'#27ae60' },
+  32: { label:'바위',     color:'#7a8085' },
+  33: { label:'꽃밭',     color:'#ff69b4' },
+  34: { label:'운동매트', color:'#2c82c9' },
+  35: { label:'운동기구', color:'#888'    },
+  36: { label:'쓰레기통', color:'#2c3e50' },
+  37: { label:'버섯',     color:'#c0392b' },
+   0: { label:'지우개',   color:null      }
+};
+
+/* 맵별 전용 팔레트 (type 목록) */
+const MAP_PALETTE = {
+  classroom:  [20, 21, 22, 23, 0],
+  library:    [20, 21, 22, 23, 0],
+  playground: [21, 30, 32, 33, 0],
+  gym:        [20, 23, 34, 35, 0],
+  city:       [23, 30, 31, 36, 0],
+  forest:     [21, 31, 32, 33, 37, 0]
+};
+
+/* ── 에디터 상태 ───────────────────────────── */
+let __edMapId       = null;
+let __edOverlays    = {};   // { mapId: { 'r,c': tileType } }
+let __edDBTiles     = {};   // DB에서 로드된 원본 (비교/병합용)
+let __edSelTile     = 20;   // 현재 선택된 타일 type
+let __edPainting    = false;
+let __edTS          = 18;   // 에디터 캔버스 타일 픽셀 크기
+
+function __edCalcTS(cols){ return Math.max(12, Math.min(32, Math.floor(620 / cols))); }
+
+/* ── 에디터 열기 / 닫기 ───────────────────── */
+async function openMapEditor(){
+  // 맵탭 생성
+  const tabs = document.getElementById('ed-tabs');
+  tabs.innerHTML = MAPS.map(m =>
+    `<button class="${m.id === currentMap ? 'on' : ''}"
+      onclick="switchEditorMap('${m.id}')">${m.label}</button>`
+  ).join('');
+
+  // DB에서 기존 오버레이 로드
+  __edDBTiles = {};
+  __edOverlays = {};
+  if(client){
+    try{
+      const { data } = await client.from('room_settings')
+        .select('map_tiles').eq('room_id', ROOM_ID).maybeSingle();
+      if(data && data.map_tiles){
+        __edDBTiles = JSON.parse(JSON.stringify(data.map_tiles)); // deep copy
+        __edOverlays = JSON.parse(JSON.stringify(data.map_tiles));
+      }
+    }catch(e){ console.warn('[에디터] 기존 타일 로드 실패', e); }
+  }
+
+  // 팔레트 생성
+  __edBuildPalette();
+
+  document.getElementById('edModal-bg').classList.add('show');
+  switchEditorMap(currentMap);
+}
+
+function closeMapEditor(){
+  document.getElementById('edModal-bg').classList.remove('show');
+}
+
+function __edBuildPalette(){
+  const el = document.getElementById('ed-palette');
+  const types = (MAP_PALETTE[__edMapId] || MAP_PALETTE.classroom);
+  el.innerHTML = types.map(type => {
+    const t = ALL_EDIT_TILES[type] || {};
+    const isErase = (type === 0);
+    const isOn    = (type === __edSelTile);
+    const preview = isErase
+      ? `<span style="font-size:16px">🗑️</span>`
+      : `<canvas width="28" height="28" style="display:block;margin:0 auto 2px"
+           data-ptile="${type}"></canvas>`;
+    return `<div class="ptile ${isErase?'erase':''} ${isOn?'on':''}"
+        onclick="__edSelectTile(${type})" title="${t.label||''}">
+        ${preview}<span style="font-size:11px">${t.label||''}</span>
+      </div>`;
+  }).join('');
+  // 미리보기 캔버스에 픽셀 아트 그리기
+  el.querySelectorAll('canvas[data-ptile]').forEach(cv => {
+    const type = Number(cv.dataset.ptile);
+    const ctx = cv.getContext('2d');
+    __edCTile(ctx, 0, 0, 28, type);
+  });
+}
+
+function __edSelectTile(type){
+  __edSelTile = type;
+  __edBuildPalette();
+}
+
+/* ── 맵 전환 ──────────────────────────────── */
+function switchEditorMap(mapId){
+  __edMapId = mapId;
+  document.querySelectorAll('#ed-tabs button').forEach(b =>
+    b.classList.toggle('on', b.textContent === (MAPS.find(m => m.id === mapId)||{}).label)
+  );
+  // 맵이 바뀌면 해당 맵 팔레트로 재빌드
+  if(!MAP_PALETTE[__edMapId].includes(__edSelTile)) __edSelTile = MAP_PALETTE[__edMapId][0] || 20;
+  __edBuildPalette();
+  __edRender();
+  __edBindCanvas();
+}
+
+/* ── 캔버스 렌더 ──────────────────────────── */
+function __edRender(){
+  const info = MAP_EDITOR_GRIDS[__edMapId];
+  if(!info) return;
+
+  __edTS = __edCalcTS(info.cols);
+  const canvas = document.getElementById('ed-canvas');
+  canvas.width  = info.cols * __edTS;
+  canvas.height = info.rows * __edTS;
+  const ctx = canvas.getContext('2d');
+  const ts = __edTS;
+
+  // 기본 그리드
+  for(let r = 0; r < info.rows; r++){
+    for(let c = 0; c < info.cols; c++){
+      const t = info.grid[r][c];
+      ctx.fillStyle = info.tileColors[t] || '#bbb';
+      ctx.fillRect(c*ts, r*ts, ts, ts);
+      ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(c*ts, r*ts, ts, ts);
+
+      // 비보행 타일에 어두운 틴트
+      if(!info.walkable.has(t)){
+        ctx.fillStyle = 'rgba(0,0,0,0.18)';
+        ctx.fillRect(c*ts, r*ts, ts, ts);
+      }
+    }
+  }
+
+  // 커스텀 오버레이 – 픽셀 아트
+  const overlays = __edOverlays[__edMapId] || {};
+  Object.entries(overlays).forEach(([key, type]) => {
+    if(!type || type === 0) return;
+    const [r, c] = key.split(',').map(Number);
+    __edCTile(ctx, c*ts, r*ts, ts, type);
+  });
+}
+
+/* ── 캔버스 이벤트 ────────────────────────── */
+function __edBindCanvas(){
+  const canvas = document.getElementById('ed-canvas');
+  const clone = canvas.cloneNode(true);
+  canvas.parentNode.replaceChild(clone, canvas);
+
+  const paint = (e) => {
+    e.preventDefault();
+    const rect = clone.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const c = Math.floor((clientX - rect.left) / __edTS);
+    const r = Math.floor((clientY - rect.top)  / __edTS);
+    __edPaintTile(r, c, e.button === 2);
+  };
+
+  clone.addEventListener('mousedown',  (e) => { __edPainting = true; paint(e); });
+  clone.addEventListener('mousemove',  (e) => { if(__edPainting) paint(e); });
+  clone.addEventListener('mouseup',    ()  => { __edPainting = false; });
+  clone.addEventListener('mouseleave', ()  => { __edPainting = false; });
+  clone.addEventListener('contextmenu',(e) => { e.preventDefault(); });
+  clone.addEventListener('touchstart', (e) => { __edPainting = true; paint(e); }, { passive:false });
+  clone.addEventListener('touchmove',  (e) => { if(__edPainting) paint(e); }, { passive:false });
+  clone.addEventListener('touchend',   ()  => { __edPainting = false; });
+}
+
+function __edPaintTile(r, c, isErase){
+  const info = MAP_EDITOR_GRIDS[__edMapId];
+  if(!info || r < 0 || r >= info.rows || c < 0 || c >= info.cols) return;
+
+  const key = `${r},${c}`;
+  const baseType = info.grid[r][c];
+  const type = isErase ? 0 : __edSelTile;
+
+  if(type === 0){
+    // 지우개: 기존 커스텀 타일이 있을 때만 삭제
+    if(__edOverlays[__edMapId] && __edOverlays[__edMapId][key]){
+      delete __edOverlays[__edMapId][key];
+      __edRender();
+    }
+  } else {
+    // 배치: 보행 가능 타일에만 허용
+    if(!info.walkable.has(baseType)) return;
+    if(!__edOverlays[__edMapId]) __edOverlays[__edMapId] = {};
+    // 이미 같은 타일이면 무시 (리렌더 최적화)
+    if(__edOverlays[__edMapId][key] === type) return;
+    __edOverlays[__edMapId][key] = type;
+    __edRender();
+  }
+}
+
+/* ── 픽셀 아트 가구 드로잉 (에디터 캔버스용) ─────────── */
+function __edCTile(ctx, x, y, ts, type){
+  switch(type){
+    case 20: __edCT20(ctx,x,y,ts); break;
+    case 21: __edCT21(ctx,x,y,ts); break;
+    case 22: __edCT22(ctx,x,y,ts); break;
+    case 23: __edCT23(ctx,x,y,ts); break;
+    case 30: __edCT30(ctx,x,y,ts); break;
+    case 31: __edCT31(ctx,x,y,ts); break;
+    case 32: __edCT32(ctx,x,y,ts); break;
+    case 33: __edCT33(ctx,x,y,ts); break;
+    case 34: __edCT34(ctx,x,y,ts); break;
+    case 35: __edCT35(ctx,x,y,ts); break;
+    case 36: __edCT36(ctx,x,y,ts); break;
+    case 37: __edCT37(ctx,x,y,ts); break;
+  }
+}
+function __edCT20(ctx,x,y,ts){
+  ctx.fillStyle='#7a8a96'; ctx.fillRect(x+Math.round(ts*.19),y+Math.round(ts*.13),Math.round(ts*.62),Math.round(ts*.19));
+  ctx.fillStyle='#65757f'; ctx.fillRect(x+Math.round(ts*.23),y+Math.round(ts*.29),Math.round(ts*.54),Math.round(ts*.06));
+  ctx.fillStyle='#c8a06e'; ctx.fillRect(x+Math.round(ts*.08),y+Math.round(ts*.38),Math.round(ts*.84),Math.round(ts*.46));
+  ctx.fillStyle='#dfc09a'; ctx.fillRect(x+Math.round(ts*.08),y+Math.round(ts*.38),Math.round(ts*.84),Math.round(ts*.08));
+  ctx.fillStyle='#7a5230';
+  ctx.fillRect(x+Math.round(ts*.1),y+Math.round(ts*.88),Math.round(ts*.12),Math.round(ts*.1));
+  ctx.fillRect(x+Math.round(ts*.78),y+Math.round(ts*.88),Math.round(ts*.12),Math.round(ts*.1));
+}
+function __edCT21(ctx,x,y,ts){
+  const cx=x+ts/2;
+  ctx.fillStyle='#1e6e3e'; ctx.fillRect(cx-1,y+Math.round(ts*.46),2,Math.round(ts*.22));
+  ctx.fillStyle='#1a8a44'; ctx.fillRect(cx-Math.round(ts*.19),y+Math.round(ts*.26),Math.round(ts*.19),Math.round(ts*.2));
+  ctx.fillStyle='#2ecc71'; ctx.fillRect(cx,y+Math.round(ts*.3),Math.round(ts*.19),Math.round(ts*.17));
+  ctx.fillStyle='#27ae60'; ctx.fillRect(cx-Math.round(ts*.1),y+Math.round(ts*.15),Math.round(ts*.2),Math.round(ts*.18));
+  ctx.fillStyle='#b03a22'; ctx.fillRect(cx-Math.round(ts*.19),y+Math.round(ts*.66),Math.round(ts*.38),Math.round(ts*.06));
+  ctx.fillStyle='#c84b2c'; ctx.fillRect(cx-Math.round(ts*.17),y+Math.round(ts*.71),Math.round(ts*.34),Math.round(ts*.21));
+  ctx.fillStyle='#5a3a1a'; ctx.fillRect(cx-Math.round(ts*.15),y+Math.round(ts*.71),Math.round(ts*.3),Math.round(ts*.06));
+}
+function __edCT22(ctx,x,y,ts){
+  ctx.fillStyle='#6b3a1f'; ctx.fillRect(x+Math.round(ts*.04),y+Math.round(ts*.02),Math.round(ts*.92),Math.round(ts*.96));
+  ctx.fillStyle='#9c6d44';
+  ctx.fillRect(x+Math.round(ts*.04),y+Math.round(ts*.02),Math.round(ts*.92),Math.round(ts*.06));
+  ctx.fillRect(x+Math.round(ts*.04),y+ts/2-1,Math.round(ts*.92),Math.round(ts*.04));
+  ctx.fillRect(x+Math.round(ts*.04),y+Math.round(ts*.92),Math.round(ts*.92),Math.round(ts*.06));
+  const c1=['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6'];
+  const c2=['#1abc9c','#e67e22','#34495e','#c0392b','#8e44ad'];
+  const bw=Math.max(2,Math.floor(ts*.17));
+  for(let i=0;i<5;i++){
+    const ox=Math.round(ts*.06)+i*(bw+1);
+    ctx.fillStyle=c1[i]; ctx.fillRect(x+ox,y+Math.round(ts*.08),bw,Math.round(ts*.4));
+    ctx.fillStyle=c2[i]; ctx.fillRect(x+ox,y+ts/2+Math.round(ts*.04),bw,Math.round(ts*.4));
+  }
+}
+function __edCT23(ctx,x,y,ts){
+  const px=Math.round(x+ts/2-ts*.1);
+  ctx.fillStyle='#a0a7ac'; ctx.fillRect(px,y+Math.round(ts*.06),Math.round(ts*.2),Math.round(ts*.88));
+  ctx.fillStyle='#c0c8cc'; ctx.fillRect(px+Math.round(ts*.02),y+Math.round(ts*.08),Math.round(ts*.16),Math.round(ts*.84));
+  ctx.fillStyle='#b0b8bc';
+  for(let i=0;i<3;i++) ctx.fillRect(px+Math.round(ts*.02),y+Math.round(ts*.22+i*.25*ts),Math.round(ts*.16),Math.round(ts*.04));
+  ctx.fillStyle='#888';
+  ctx.fillRect(x+Math.round(ts*.17),y+Math.round(ts*.9),Math.round(ts*.66),Math.round(ts*.08));
+  ctx.fillRect(x+Math.round(ts*.22),y+Math.round(ts*.84),Math.round(ts*.56),Math.round(ts*.07));
+}
+function __edCT30(ctx,x,y,ts){
+  ctx.fillStyle='#7a5230'; ctx.fillRect(x+Math.round(ts*.1),y+Math.round(ts*.38),Math.round(ts*.8),Math.round(ts*.1));
+  ctx.fillStyle='#9c6d44'; ctx.fillRect(x+Math.round(ts*.1),y+Math.round(ts*.38),Math.round(ts*.8),Math.round(ts*.04));
+  ctx.fillStyle='#a07830'; ctx.fillRect(x+Math.round(ts*.1),y+Math.round(ts*.52),Math.round(ts*.8),Math.round(ts*.12));
+  ctx.fillStyle='#c09848'; ctx.fillRect(x+Math.round(ts*.1),y+Math.round(ts*.52),Math.round(ts*.8),Math.round(ts*.04));
+  ctx.fillStyle='#666';
+  ctx.fillRect(x+Math.round(ts*.16),y+Math.round(ts*.63),Math.round(ts*.1),Math.round(ts*.28));
+  ctx.fillRect(x+Math.round(ts*.74),y+Math.round(ts*.63),Math.round(ts*.1),Math.round(ts*.28));
+  ctx.fillRect(x+Math.round(ts*.16),y+Math.round(ts*.85),Math.round(ts*.68),Math.round(ts*.06));
+}
+function __edCT31(ctx,x,y,ts){
+  const cx=Math.round(x+ts/2);
+  ctx.fillStyle='#6b3a1f'; ctx.fillRect(cx-Math.round(ts*.08),y+Math.round(ts*.52),Math.round(ts*.16),Math.round(ts*.44));
+  ctx.fillStyle='#1a8a44';
+  ctx.beginPath(); ctx.arc(cx,y+Math.round(ts*.45),Math.round(ts*.38),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#27ae60';
+  ctx.beginPath(); ctx.arc(cx-Math.round(ts*.08),y+Math.round(ts*.38),Math.round(ts*.28),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#2ecc71';
+  ctx.beginPath(); ctx.arc(cx+Math.round(ts*.08),y+Math.round(ts*.34),Math.round(ts*.22),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.1)';
+  ctx.beginPath(); ctx.arc(cx-Math.round(ts*.06),y+Math.round(ts*.32),Math.round(ts*.14),0,Math.PI*2); ctx.fill();
+}
+function __edCT32(ctx,x,y,ts){
+  ctx.fillStyle='rgba(0,0,0,.1)'; ctx.fillRect(x+Math.round(ts*.17),y+Math.round(ts*.54),Math.round(ts*.7),Math.round(ts*.38));
+  ctx.fillStyle='#7a8085'; ctx.fillRect(x+Math.round(ts*.12),y+Math.round(ts*.42),Math.round(ts*.76),Math.round(ts*.5));
+  ctx.fillStyle='#8e9499'; ctx.fillRect(x+Math.round(ts*.17),y+Math.round(ts*.3),Math.round(ts*.66),Math.round(ts*.25));
+  ctx.fillStyle='#9aa0a5'; ctx.fillRect(x+Math.round(ts*.25),y+Math.round(ts*.21),Math.round(ts*.5),Math.round(ts*.2));
+  ctx.fillStyle='rgba(255,255,255,.2)'; ctx.fillRect(x+Math.round(ts*.27),y+Math.round(ts*.23),Math.round(ts*.15),Math.round(ts*.06));
+}
+function __edCT33(ctx,x,y,ts){
+  ctx.fillStyle='#2e8b57';
+  const st=[[-ts*.18,ts*.18],[0,ts*.1],[ts*.18,ts*.22]];
+  st.forEach(([dx,dy])=>{ ctx.fillRect(Math.round(x+ts/2+dx-1),Math.round(y+ts-dy-ts*.25),2,Math.round(ts*.25)); });
+  const fc=['#ff69b4','#ff6347','#ffd700'];
+  st.forEach(([dx,dy],i)=>{
+    const cx2=Math.round(x+ts/2+dx), cy2=Math.round(y+ts-dy-ts*.27);
+    ctx.fillStyle=fc[i]; ctx.beginPath(); ctx.arc(cx2,cy2,Math.max(2,Math.round(ts*.1)),0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.7)'; ctx.beginPath(); ctx.arc(cx2,cy2,Math.max(1,Math.round(ts*.04)),0,Math.PI*2); ctx.fill();
+  });
+}
+function __edCT34(ctx,x,y,ts){
+  ctx.fillStyle='#2c82c9'; ctx.fillRect(x+Math.round(ts*.06),y+Math.round(ts*.13),Math.round(ts*.88),Math.round(ts*.74));
+  ctx.fillStyle='#3498db'; ctx.fillRect(x+Math.round(ts*.06),y+Math.round(ts*.13),Math.round(ts*.88),Math.round(ts*.08));
+  ctx.fillStyle='#1a5c99'; ctx.fillRect(x+Math.round(ts*.06),y+Math.round(ts*.79),Math.round(ts*.88),Math.round(ts*.08));
+  ctx.fillStyle='rgba(255,255,255,.12)';
+  const sw=Math.max(2,Math.round(ts*.24));
+  for(let i=0;i<3;i++) ctx.fillRect(x+Math.round(ts*.1)+i*(sw+2),y+Math.round(ts*.18),sw,Math.round(ts*.6));
+  ctx.strokeStyle='#1a5c99'; ctx.lineWidth=Math.max(1,ts*.03);
+  ctx.strokeRect(x+Math.round(ts*.06),y+Math.round(ts*.13),Math.round(ts*.88),Math.round(ts*.74));
+}
+function __edCT35(ctx,x,y,ts){
+  const cx=Math.round(x+ts/2), cy=Math.round(y+ts/2);
+  ctx.fillStyle='#888'; ctx.fillRect(cx-Math.round(ts*.25),cy-Math.round(ts*.04),Math.round(ts*.5),Math.round(ts*.08));
+  ctx.fillStyle='#555';
+  ctx.fillRect(cx-Math.round(ts*.31),cy-Math.round(ts*.13),Math.round(ts*.08),Math.round(ts*.25));
+  ctx.fillRect(cx+Math.round(ts*.23),cy-Math.round(ts*.13),Math.round(ts*.08),Math.round(ts*.25));
+  ctx.fillStyle='#444';
+  ctx.fillRect(cx-Math.round(ts*.38),cy-Math.round(ts*.15),Math.round(ts*.07),Math.round(ts*.29));
+  ctx.fillRect(cx+Math.round(ts*.31),cy-Math.round(ts*.15),Math.round(ts*.07),Math.round(ts*.29));
+  ctx.fillStyle='#aaa'; ctx.fillRect(cx-Math.round(ts*.17),cy-Math.round(ts*.02),Math.round(ts*.33),Math.round(ts*.04));
+}
+function __edCT36(ctx,x,y,ts){
+  const cx=Math.round(x+ts/2);
+  ctx.fillStyle='#2c3e50'; ctx.fillRect(cx-Math.round(ts*.15),y+Math.round(ts*.42),Math.round(ts*.29),Math.round(ts*.38));
+  ctx.fillStyle='#34495e'; ctx.fillRect(cx-Math.round(ts*.17),y+Math.round(ts*.29),Math.round(ts*.33),Math.round(ts*.15));
+  ctx.fillStyle='#7f8c8d'; ctx.fillRect(cx-Math.round(ts*.04),y+Math.round(ts*.21),Math.round(ts*.08),Math.round(ts*.08));
+  ctx.fillStyle='rgba(255,255,255,.1)'; ctx.fillRect(cx-Math.round(ts*.1),y+Math.round(ts*.44),Math.round(ts*.05),Math.round(ts*.3));
+}
+function __edCT37(ctx,x,y,ts){
+  const cx=Math.round(x+ts/2);
+  ctx.fillStyle='#f5f0e8'; ctx.fillRect(cx-Math.round(ts*.08),y+Math.round(ts*.67),Math.round(ts*.17),Math.round(ts*.21));
+  ctx.fillStyle='#e8e0d0'; ctx.fillRect(cx-Math.round(ts*.08),y+Math.round(ts*.6),Math.round(ts*.17),Math.round(ts*.08));
+  ctx.fillStyle='#c0392b';
+  ctx.fillRect(cx-Math.round(ts*.23),y+Math.round(ts*.43),Math.round(ts*.46),Math.round(ts*.19));
+  ctx.fillRect(cx-Math.round(ts*.17),y+Math.round(ts*.29),Math.round(ts*.33),Math.round(ts*.17));
+  ctx.fillRect(cx-Math.round(ts*.1),y+Math.round(ts*.21),Math.round(ts*.21),Math.round(ts*.12));
+  ctx.fillStyle='rgba(255,255,255,.85)';
+  ctx.fillRect(cx-Math.round(ts*.06),y+Math.round(ts*.31),Math.round(ts*.06),Math.round(ts*.06));
+  ctx.fillRect(cx+Math.round(ts*.06),y+Math.round(ts*.45),Math.round(ts*.04),Math.round(ts*.04));
+  ctx.fillRect(cx-Math.round(ts*.12),y+Math.round(ts*.48),Math.round(ts*.04),Math.round(ts*.04));
+}
+
+/* ── 저장 ─────────────────────────────────── */
+async function saveMapEditor(){
+  if(!client){ alert('Supabase 설정을 확인해주세요.'); return; }
+
+  // 빈 맵 키 정리
+  const toSave = {};
+  Object.keys(__edOverlays).forEach(mapId => {
+    if(__edOverlays[mapId] && Object.keys(__edOverlays[mapId]).length > 0){
+      toSave[mapId] = __edOverlays[mapId];
+    }
+  });
+
+  try{
+    const { error } = await client.from('room_settings').upsert({
+      room_id:    ROOM_ID,
+      map_tiles:  toSave,
+      teacher_id: currentUserId
+    });
+    if(error) throw error;
+    showToast('✅ 맵 편집 내용이 저장되었습니다!');
+    closeMapEditor();
+  }catch(e){
+    alert('저장 실패: ' + e.message);
+  }
+}
+
+/* ===================== 미션 트리거 타일 선택기 ===================== */
+
+let __triggerTiles  = [];   // [{r,c}] - 현재 선택된 트리거 위치
+let __trigPickMap   = null; // 선택기가 보여주는 맵 id
+let __trigTS        = 14;   // 트리거 캔버스 타일 크기
+
+function __trigCalcTS(cols){ return Math.max(10, Math.min(20, Math.floor(430 / cols))); }
+
+/* 미션 모달 열릴 때 초기화 */
+function __initTriggerSection(mapId, mission){
+  __trigPickMap   = mapId;
+  __triggerTiles  = [];
+
+  if(mission && Array.isArray(mission.trigger_tiles) && mission.trigger_tiles.length){
+    __triggerTiles = mission.trigger_tiles.map(t => ({ r:t.r, c:t.c }));
+  }
+
+  const section = document.getElementById('trigSection');
+  if(section) section.classList.add('show');
+
+  // 모드 라디오 초기화
+  const hasCustomTiles = __triggerTiles.length > 0;
+  document.querySelectorAll('input[name=trig_mode]').forEach(r => {
+    r.checked = (r.value === 'tile') === hasCustomTiles;
+  });
+
+  document.getElementById('trigTileArea').style.display = hasCustomTiles ? 'block' : 'none';
+  if(hasCustomTiles) __renderTriggerMap();
+}
+
+function onTriggerModeChange(){
+  const mode = document.querySelector('input[name=trig_mode]:checked')?.value;
+  const area = document.getElementById('trigTileArea');
+  area.style.display = (mode === 'tile') ? 'block' : 'none';
+  if(mode === 'tile'){
+    if(!__triggerTiles) __triggerTiles = [];
+    __renderTriggerMap();
+    __bindTriggerCanvas();
+  } else {
+    __triggerTiles = [];
+    __updateTrigInfo();
+  }
+}
+
+function __renderTriggerMap(){
+  const info = MAP_EDITOR_GRIDS[__trigPickMap];
+  if(!info) return;
+
+  __trigTS = __trigCalcTS(info.cols);
+  const canvas = document.getElementById('trig-canvas');
+  if(!canvas) return;
+  canvas.width  = info.cols * __trigTS;
+  canvas.height = info.rows * __trigTS;
+  const ctx = canvas.getContext('2d');
+  const ts = __trigTS;
+
+  // 기본 그리드
+  for(let r = 0; r < info.rows; r++){
+    for(let c = 0; c < info.cols; c++){
+      const t = info.grid[r][c];
+      ctx.fillStyle = info.tileColors[t] || '#bbb';
+      ctx.fillRect(c*ts, r*ts, ts, ts);
+      if(!info.walkable.has(t)){
+        ctx.fillStyle = 'rgba(0,0,0,0.18)';
+        ctx.fillRect(c*ts, r*ts, ts, ts);
+      }
+      ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(c*ts, r*ts, ts, ts);
+    }
+  }
+
+  // 에디터 오버레이 – 픽셀 아트
+  const overlays = (__edOverlays[__trigPickMap] || {});
+  Object.entries(overlays).forEach(([key, type]) => {
+    if(!type || type === 0) return;
+    const [r, c] = key.split(',').map(Number);
+    __edCTile(ctx, c*ts, r*ts, ts, type);
+  });
+
+  // 선택된 트리거 타일 (오렌지 강조 테두리)
+  __triggerTiles.forEach(t => {
+    ctx.fillStyle = 'rgba(255,100,0,.35)';
+    ctx.fillRect(t.c*ts+1, t.r*ts+1, ts-2, ts-2);
+    ctx.strokeStyle = '#ff6400';
+    ctx.lineWidth = Math.max(1.5, ts*.06);
+    ctx.strokeRect(t.c*ts+2, t.r*ts+2, ts-4, ts-4);
+    // 작은 체크 표시
+    if(ts >= 14){
+      ctx.fillStyle = '#ff6400';
+      const sz = Math.round(ts * .22);
+      ctx.fillRect(t.c*ts + ts - sz - 1, t.r*ts + 1, sz, sz);
+      ctx.fillStyle = '#fff';
+      ctx.font = `bold ${Math.round(sz * .8)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('✓', t.c*ts + ts - sz/2 - 1, t.r*ts + sz/2 + 1);
+    }
+  });
+
+  __updateTrigInfo();
+}
+
+function __bindTriggerCanvas(){
+  const canvas = document.getElementById('trig-canvas');
+  if(!canvas) return;
+  const clone = canvas.cloneNode(true);
+  canvas.parentNode.replaceChild(clone, canvas);
+
+  clone.addEventListener('click', (e) => {
+    const rect = clone.getBoundingClientRect();
+    const c = Math.floor((e.clientX - rect.left)  / __trigTS);
+    const r = Math.floor((e.clientY - rect.top)   / __trigTS);
+    const info = MAP_EDITOR_GRIDS[__trigPickMap];
+    if(!info || r < 0 || r >= info.rows || c < 0 || c >= info.cols) return;
+    // 보행 가능 타일에만 설정
+    if(!info.walkable.has(info.grid[r][c])) return;
+
+    const idx = __triggerTiles.findIndex(t => t.r === r && t.c === c);
+    if(idx >= 0) __triggerTiles.splice(idx, 1);  // 토글 해제
+    else __triggerTiles.push({ r, c });
+
+    __renderTriggerMap();
+    // 캔버스가 교체됐으므로 다시 바인드
+    __bindTriggerCanvas();
+  });
+}
+
+function __updateTrigInfo(){
+  const el = document.getElementById('trig-info');
+  if(!el) return;
+  if(!__triggerTiles || !__triggerTiles.length){
+    el.textContent = '선택된 위치: 없음';
+  } else {
+    el.textContent = '선택된 위치: ' + __triggerTiles.map(t => `(${t.r}행, ${t.c}열)`).join(' / ');
+  }
+}
+
+/* ===================== PDF 미션 자동 생성 (Groq · Qwen3-32B) ===================== */
+const PDF_GROQ_MODEL  = 'qwen/qwen3-32b';
+const PDF_APIKEY_KEY  = 'ssambus_groq_apikey';
+let __pdfMissions = []; // 미리보기 중인 생성 결과
+
+function openPdfModal(){
+  const saved = localStorage.getItem(PDF_APIKEY_KEY);
+  if(saved) document.getElementById('pdf-apikey').value = saved;
+
+  // 현재 맵 구역 목록 채우기
+  const map = MAPS.find(m => m.id === currentMap);
+  const sel = document.getElementById('pdf-zone');
+  sel.innerHTML = (map ? map.zones : []).map(z =>
+    `<option value="${z.id}">${z.label} (${z.id})</option>`
+  ).join('');
+
+  resetPdfPreview();
+  document.getElementById('pdfModal-bg').classList.add('show');
+}
+
+function closePdfModal(){
+  document.getElementById('pdfModal-bg').classList.remove('show');
+}
+
+function resetPdfPreview(){
+  document.getElementById('pdf-form').style.display = '';
+  document.getElementById('pdf-status').style.display = 'none';
+  document.getElementById('pdf-preview').style.display = 'none';
+  const btn = document.getElementById('pdf-gen-btn');
+  btn.disabled = false;
+  btn.textContent = '✨ AI 문제 생성';
+  __pdfMissions = [];
+}
+
+function __pdfStatus(msg, isErr = false){
+  const el = document.getElementById('pdf-status');
+  el.className = isErr ? 'err' : '';
+  el.style.display = msg ? 'block' : 'none';
+  el.innerHTML = msg;
+}
+
+/* PDF에서 텍스트 추출 (pdf.js) */
+async function __pdfExtract(file, startPage, endPage){
+  if(typeof pdfjsLib === 'undefined')
+    throw new Error('PDF 라이브러리를 불러오지 못했습니다. 페이지를 새로고침 후 다시 시도하세요.');
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const total = pdf.numPages;
+  const s = Math.max(1, startPage);
+  const e = Math.min(endPage, total);
+
+  let text = '';
+  for(let i = s; i <= e; i++){
+    const page    = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const raw     = content.items.map(it => it.str).join(' ').replace(/\s+/g, ' ').trim();
+    if(raw) text += `[${i}페이지]\n${raw}\n\n`;
+  }
+  if(!text.trim())
+    throw new Error('PDF에서 텍스트를 추출할 수 없습니다. 스캔본이 아닌 텍스트 PDF인지 확인하세요.');
+  return text;
+}
+
+/* Groq API 호출 */
+async function __pdfCallGroq(apiKey, pdfText, count, type){
+  const formatDesc = {
+    quiz:
+      `객관식 4지선다. options 배열에 보기 4개, answer는 정답 인덱스(0~3 숫자).`,
+    ox_quiz:
+      `O/X 퀴즈. 문장이 맞으면 O, 틀리면 X. answer는 "O" 또는 "X" 문자열.`,
+    short_answer:
+      `주관식 단답형. model_answer에 짧은 예시 답안.`
+  };
+  const exampleJSON = {
+    quiz:
+      `[{"title":"미션 제목(15자 이내)","question":"질문 내용","options":["보기1","보기2","보기3","보기4"],"answer":0}]`,
+    ox_quiz:
+      `[{"title":"미션 제목(15자 이내)","question":"참/거짓을 판단할 문장","answer":"O"}]`,
+    short_answer:
+      `[{"title":"미션 제목(15자 이내)","question":"질문 내용","model_answer":"예시 답안"}]`
+  };
+
+  const system =
+    `당신은 한국 초중고 교육 전문가입니다. 학생들을 위한 학습 문제를 출제합니다.\n` +
+    `[절대 규칙]\n` +
+    `1. 순수 한글(한국어)만 사용하세요. 한자(漢字)를 절대 사용하지 마세요.\n` +
+    `2. JSON 배열 외에 다른 텍스트를 출력하지 마세요.\n` +
+    `3. 주어진 학습 자료 내용만을 근거로 핵심 이해를 묻는 문제를 출제하세요.\n` +
+    `4. 문제는 명확하고 한 가지 정답이 있어야 합니다.`;
+
+  const user =
+    `/no_think\n\n` +
+    `아래 학습 자료를 바탕으로 [${formatDesc[type]}] 방식의 문제를 정확히 ${count}개 만들어주세요.\n\n` +
+    `반환 형식(JSON 배열만, 다른 텍스트 없이):\n${exampleJSON[type]}\n\n` +
+    `[학습 자료]\n${pdfText}`;
+
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: PDF_GROQ_MODEL,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user',   content: user   }
+      ],
+      temperature: 0.4,
+      max_tokens: count * 320
+    })
+  });
+
+  if(!res.ok){
+    const err = await res.json().catch(() => ({}));
+    const msg = err.error?.message || `Groq API 오류 (${res.status})`;
+    // 일반적인 오류 메시지 한국어 변환
+    if(msg.includes('invalid_api_key') || msg.includes('Invalid API Key'))
+      throw new Error('API 키가 올바르지 않습니다. Groq 콘솔에서 키를 확인해주세요.');
+    if(msg.includes('rate_limit'))
+      throw new Error('요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.');
+    throw new Error(msg);
+  }
+
+  const data = await res.json();
+  let content = data.choices?.[0]?.message?.content || '';
+
+  // Qwen3 thinking 블록 제거 (혹시 /no_think 가 무시된 경우 대비)
+  content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
+  const match = content.match(/\[[\s\S]*\]/);
+  if(!match) throw new Error('AI 응답에서 문제를 파싱할 수 없습니다. 다시 시도해주세요.');
+  const parsed = JSON.parse(match[0]);
+  if(!Array.isArray(parsed) || !parsed.length)
+    throw new Error('생성된 문제가 없습니다. PDF 내용을 확인 후 다시 시도해주세요.');
+  return parsed;
+}
+
+/* 생성 실행 */
+async function generatePdfMissions(){
+  const apiKey  = document.getElementById('pdf-apikey').value.trim();
+  const file    = document.getElementById('pdf-file').files[0];
+  const count   = Number(document.getElementById('pdf-count').value);
+  const type    = document.getElementById('pdf-type').value;
+  const sPage   = Number(document.getElementById('pdf-page-start').value) || 1;
+  const ePage   = Number(document.getElementById('pdf-page-end').value)   || 4;
+
+  if(!apiKey)  { alert('Groq API 키를 입력해주세요.'); return; }
+  if(!file)    { alert('PDF 파일을 선택해주세요.');    return; }
+  if(sPage > ePage){ alert('시작 페이지가 끝 페이지보다 클 수 없습니다.'); return; }
+
+  localStorage.setItem(PDF_APIKEY_KEY, apiKey);
+
+  const btn = document.getElementById('pdf-gen-btn');
+  btn.disabled = true;
+  btn.textContent = '생성 중...';
+  document.getElementById('pdf-preview').style.display = 'none';
+
+  try{
+    __pdfStatus('📄 PDF에서 텍스트를 추출하는 중...');
+    const pdfText = await __pdfExtract(file, sPage, ePage);
+
+    __pdfStatus(`🤖 Qwen3-32B가 문제를 생성하는 중입니다... (${count}문제)`);
+    const missions = await __pdfCallGroq(apiKey, pdfText, count, type);
+
+    __pdfMissions = missions;
+    __pdfStatus('');
+    __pdfRenderPreview(missions, type);
+
+  }catch(e){
+    __pdfStatus(`❌ ${e.message}`, true);
+    btn.disabled = false;
+    btn.textContent = '✨ AI 문제 생성';
+  }
+}
+
+/* 미리보기 렌더링 */
+function __pdfRenderPreview(missions, type){
+  const list = document.getElementById('pdf-preview-list');
+  list.innerHTML = missions.map((m, i) => {
+    let detail = '';
+    if(type === 'quiz'){
+      detail = (m.options || []).map((opt, j) =>
+        `<div style="padding:2px 0;font-size:12.5px;${j === Number(m.answer) ? 'color:#2e7d32;font-weight:600' : 'color:#555'}">` +
+        `${j === Number(m.answer) ? '✅' : '　'} ${opt}</div>`
+      ).join('');
+    } else if(type === 'ox_quiz'){
+      detail = `<div style="font-size:12.5px;color:#2e7d32;font-weight:600;padding-top:4px">` +
+        `정답: ${m.answer === 'O' ? '⭕ O (맞다)' : '❌ X (틀리다)'}</div>`;
+    } else if(type === 'short_answer' && m.model_answer){
+      detail = `<div style="font-size:12px;color:#16a085;padding-top:4px">예시 답안: ${m.model_answer}</div>`;
+    }
+    return `<div class="pdf-qcard">
+      <div style="font-size:11px;color:#aaa;margin-bottom:3px">문제 ${i + 1}</div>
+      <div style="font-weight:600;font-size:13.5px;margin-bottom:5px">${m.title || `문제 ${i+1}`}</div>
+      <div style="font-size:13px;color:#333;margin-bottom:4px">${m.question}</div>
+      ${detail}
+    </div>`;
+  }).join('');
+  document.getElementById('pdf-preview').style.display = 'block';
+}
+
+/* Supabase에 저장 */
+async function savePdfMissions(){
+  if(!client){ alert('Supabase 설정을 확인해주세요.'); return; }
+  const zoneId   = document.getElementById('pdf-zone').value;
+  const required = document.getElementById('pdf-required').checked;
+  const type     = document.getElementById('pdf-type').value;
+  const base     = nextOrder(currentMap, zoneId);
+
+  const rows = __pdfMissions.map((m, i) => {
+    let quiz = null;
+    if(type === 'quiz'){
+      quiz = { question: m.question, options: m.options || [], answer: Number(m.answer) };
+    } else if(type === 'ox_quiz'){
+      quiz = { question: m.question, answer: String(m.answer) };
+    } else {
+      quiz = { question: m.question, model_answer: m.model_answer || null };
+    }
+    return {
+      id: `${ROOM_ID}_${currentMap}_${zoneId}_pdf_${Date.now()}_${i}`,
+      room_id:    ROOM_ID,
+      map_id:     currentMap,
+      zone_id:    zoneId,
+      teacher_id: currentUserId,
+      title:      m.title || `PDF 미션 ${i + 1}`,
+      type,
+      content:    null,
+      order:      base + i,
+      required,
+      quiz
+    };
+  });
+
+  try{
+    const { error } = await client.from('missions').upsert(rows);
+    if(error) throw error;
+    showToast(`✅ ${rows.length}개 미션이 추가되었습니다!`);
+    closePdfModal();
+    await loadMissions(currentMap);
+    renderZones(currentMap);
+  }catch(e){
+    alert('저장 실패: ' + e.message);
+  }
 }
 
 /* ===================== 토스트 ===================== */

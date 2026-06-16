@@ -15,6 +15,8 @@ let __rtNickname = null;
 let __rtRoomId = null;
 let __rtMapId = null;
 let __rtTeacherView = false;
+let __rtChatMode = 'all'; // 'all' | 'proximity' | 'disabled'  (교사 대시보드에서 broadcast로 업데이트됨)
+const __rtProximityThreshold = 5; // 근접 판정 타일 거리 (유클리드)
 
 function __rtIsConfigured(){
   return typeof SUPABASE_URL === 'string'
@@ -68,6 +70,20 @@ function __rtConnect(){
       catch(e){ console.warn('[쌤버스] 원격 캐릭터 렌더링 실패', e); }
     });
 
+    __rtChannel.on('broadcast', { event: 'chat_setting' }, ({ payload }) => {
+      if(payload && payload.mode){
+        __rtChatMode = payload.mode;
+        __rtApplyChatMode();
+      }
+    });
+
+    __rtChannel.on('broadcast', { event: 'chat' }, ({ payload }) => {
+      if(!payload || payload.id === __rtStudentId) return;
+      // 교사 뷰(모니터링)는 항상 전체 채팅 표시
+      if(!__rtTeacherView && __rtChatMode === 'proximity' && !__rtIsNearby(payload.id)) return;
+      __rtShowBubble(payload.id, payload.text);
+    });
+
     __rtChannel.subscribe((status, err) => {
       if(status === 'SUBSCRIBED'){
         if(!__rtTeacherView) __rtChannel.track(__rtMyState());
@@ -106,6 +122,9 @@ function initRealtime(mapId){
 
   __rtClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   __rtConnect();
+  __rtLoadChatMode();
+
+  if(!__rtTeacherView) __rtBuildChatUI();
 }
 
 let __rtLastSendAt = 0;
@@ -168,4 +187,142 @@ function renderRemotePlayers(presenceState){
   container.querySelectorAll('[data-student]').forEach(el => {
     if(!seen.has(el.dataset.student)) el.remove();
   });
+}
+
+/* ===================== 맵 채팅 (말풍선) ===================== */
+function __rtInjectChatStyle(){
+  if(document.getElementById('rt-chat-style')) return;
+  const style = document.createElement('style');
+  style.id = 'rt-chat-style';
+  style.textContent = `
+    .chat-bubble{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);
+      background:#fff;border:1px solid #ccc;border-radius:10px;padding:4px 8px;margin-bottom:6px;
+      font-size:11px;color:#333;max-width:140px;text-align:center;word-break:break-all;
+      box-shadow:0 1px 4px rgba(0,0,0,.15);z-index:30;pointer-events:none;
+      animation:rt-bubble-in .15s ease}
+    .chat-bubble:after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
+      border:5px solid transparent;border-top-color:#fff}
+    @keyframes rt-bubble-in{from{opacity:0;transform:translate(-50%,4px)}to{opacity:1;transform:translateX(-50%)}}
+    #rt-chat-bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:6px;padding:8px;
+      background:rgba(255,255,255,.95);border-top:1px solid #ddd;z-index:60;font-family:sans-serif}
+    #rt-chat-bar input{flex:1;min-width:0;padding:8px 10px;border:1px solid #ccc;border-radius:20px;font-size:14px}
+    #rt-chat-bar button{padding:8px 16px;border:none;border-radius:20px;background:#2c3e50;color:#fff;font-size:14px;cursor:pointer}
+    #rt-chat-bar button:hover{background:#1a252f}
+  `;
+  document.head.appendChild(style);
+}
+
+function __rtBuildChatUI(){
+  if(document.getElementById('rt-chat-bar')) return;
+  __rtInjectChatStyle();
+
+  const bar = document.createElement('div');
+  bar.id = 'rt-chat-bar';
+  bar.innerHTML = '<input id="rt-chat-input" type="text" placeholder="채팅을 입력하세요" maxlength="60">'
+    + '<button id="rt-chat-send">전송</button>';
+  document.body.appendChild(bar);
+
+  const cs = getComputedStyle(document.body);
+  document.body.style.paddingBottom = (parseFloat(cs.paddingBottom) || 0) + 54 + 'px';
+
+  const input = bar.querySelector('#rt-chat-input');
+  const send = () => {
+    const text = input.value.trim();
+    if(!text) return;
+    __rtSendChat(text);
+    input.value = '';
+  };
+  bar.querySelector('#rt-chat-send').addEventListener('click', send);
+  input.addEventListener('keydown', e => {
+    e.stopPropagation(); // 방향키 등이 맵 이동으로 전달되지 않도록 막음
+    if(e.key === 'Enter') send();
+  });
+}
+
+function __rtSendChat(text){
+  if(__rtChatMode === 'disabled') return; // 교사가 채팅 금지 중
+  __rtShowBubble(__rtStudentId, text);
+  if(!__rtChannel) return;
+  try{
+    __rtChannel.send({
+      type: 'broadcast',
+      event: 'chat',
+      payload: { id: __rtStudentId, nickname: __rtNickname, text: text }
+    });
+  }catch(e){ /* 연결이 끊긴 경우 조용히 무시 */ }
+}
+
+function __rtShowBubble(id, text){
+  __rtInjectChatStyle();
+
+  let target;
+  if(id === __rtStudentId){
+    target = document.getElementById('player');
+  } else {
+    const container = document.getElementById('remote-players');
+    target = container && container.querySelector('[data-student="' + id + '"]');
+  }
+  if(!target) return;
+
+  let bubble = target.querySelector('.chat-bubble');
+  if(!bubble){
+    bubble = document.createElement('div');
+    bubble.className = 'chat-bubble';
+    target.appendChild(bubble);
+  }
+  bubble.textContent = text;
+  clearTimeout(bubble.__rtTimer);
+  bubble.__rtTimer = setTimeout(() => bubble.remove(), 4000);
+}
+
+/* 발신자가 나와 근접 타일 안에 있는지 확인 */
+function __rtIsNearby(senderId){
+  if(!__rtChannel) return true;
+  const state = __rtChannel.presenceState();
+  const presences = state[senderId];
+  if(!presences || !presences.length) return true; // 위치 미확인 시 표시
+  const s = presences[presences.length - 1];
+  if(s.r === undefined || s.c === undefined) return true;
+  const dr = s.r - pos.r;
+  const dc = s.c - pos.c;
+  return Math.sqrt(dr * dr + dc * dc) <= __rtProximityThreshold;
+}
+
+/* 최초 로드 시 room_settings에서 채팅 모드 읽기 */
+async function __rtLoadChatMode(){
+  try{
+    const cl = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data } = await cl
+      .from('room_settings')
+      .select('chat_mode')
+      .eq('room_id', __rtRoomId)
+      .maybeSingle();
+    if(data && data.chat_mode) __rtChatMode = data.chat_mode;
+  }catch(e){ /* 설정 미존재 시 기본값('all') 유지 */ }
+  __rtApplyChatMode();
+}
+
+/* 채팅 모드에 따라 채팅바 UI 적용 */
+function __rtApplyChatMode(){
+  const bar = document.getElementById('rt-chat-bar');
+  if(!bar) return; // 교사 뷰나 채팅바 미생성 시 무시
+
+  if(__rtChatMode === 'disabled'){
+    bar.style.display = 'none';
+    // 금지 안내 배너 표시
+    let notice = document.getElementById('rt-chat-notice');
+    if(!notice){
+      notice = document.createElement('div');
+      notice.id = 'rt-chat-notice';
+      notice.style.cssText = 'position:fixed;left:0;right:0;bottom:0;background:rgba(192,57,43,.92);'
+        + 'color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-family:sans-serif;z-index:60';
+      document.body.appendChild(notice);
+    }
+    notice.textContent = '🚫 선생님이 채팅을 일시 중지했습니다.';
+    notice.style.display = 'block';
+  } else {
+    bar.style.display = '';
+    const notice = document.getElementById('rt-chat-notice');
+    if(notice) notice.style.display = 'none';
+  }
 }

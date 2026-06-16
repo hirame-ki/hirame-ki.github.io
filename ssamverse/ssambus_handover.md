@@ -578,14 +578,79 @@ QR 스캔 입장
 
 ---
 
+## 추가 기능 완료 (2026-06-15)
+
+이번 세션에서 추가로 완료한 작업:
+
+* **교사용 "실시간 맵 보기" (관전)**: 6개 맵 파일 모두에 `?teacherView=1` 모드 추가 - 자기 캐릭터/조작 UI를 숨기고 맵 전체를 보여줌(`updateCamera()`가 `.stage-wrap`을 맵 전체 크기로 표시). 교사 대시보드에 "🗺️ 실시간 맵 보기" 버튼 추가 → 맵 탭 전환 + 축소된 iframe(`MAP_FILES[mapId]+'?room='+ROOM_ID+'&teacherView=1'`) + 접속 인원(Presence 기반) 표시
+* **터치 스와이프 이동**: 모든 맵에서 `.stage-wrap`에 `touchstart/move/end` 기반 스와이프(좌/우/상/하, 30px 임계값)로 `move(dir)` 호출 추가. 기존 방향키/버튼 이동은 그대로 유지
+* **캐릭터 선택 강제 버그 수정**: 처음 접속(localStorage에 `ssambus_player_character` 없음)한 학생은 맵 진입 전 자동으로 `ssambus_characters.html`로 리다이렉트(`location.replace`, 기존 쿼리 + `map=` 파라미터 보존) → 캐릭터를 고른 뒤 원래 가려던 맵으로 입장. `__NEEDS_CHAR_SETUP` 플래그로 처리
+* **맵 채팅 (말풍선)**: `ssambus_realtime.js`에 Supabase Realtime **broadcast** 채널(`chat` 이벤트) 추가. 화면 하단에 채팅 입력창을 자동 주입(`__rtBuildChatUI()`), 전송 시 `#player`/`.remote-player` 위에 `.chat-bubble`로 4초간 표시(`__rtShowBubble()`). teacherView(실시간 맵 보기)에서도 학생 말풍선이 보임
+* **교사 맵 참가 기능**: 교사 대시보드에 "🧑‍🏫 맵 참가하기" 버튼 + 맵 선택 모달 추가. 클릭 시 새 탭에서 `MAP_FILES[mapId]?room=<ROOM_ID>&nickname=선생님`을 일반 참가자 모드로 열어, 캐릭터 선택("교사" 탭) 후 학생들과 함께 이동·채팅 가능
+* `index.html` 사용설명서에 위 기능들 모두 반영(7~9번 항목, 4번 항목에 스와이프/캐릭터 리다이렉트 추가)
+
+\---
+
 ## 다음 작업
 
-미션 시스템(6단계, 8구역 확장) + Supabase 자동 일시정지 방지 + 교사 대시보드(7단계: 수업 코드 분리 + 작성자 본인만 수정/삭제) + 배포 가이드(8단계) 1차 완료. 남은 작업(모두 선택 사항):
+미션 시스템(6단계, 8구역 확장) + Supabase 자동 일시정지 방지 + 교사 대시보드(7단계: 수업 코드 분리 + 작성자 본인만 수정/삭제) + 배포 가이드(8단계) + 실시간 맵 보기/터치 스와이프/캐릭터 선택 리다이렉트/맵 채팅/교사 참가 기능 1차 완료.
+
+**다음 작업 (확정): 새 맵 추가** - 아래 "새 맵 추가 가이드" 섹션 참고. 추가 후보(`ssambus_handover.md` 1차 목록 중 미제작): 음악실, 미술실, 컴퓨터실, 교무실, 한강공원, 동네마을, 일반 길거리
+
+남은 작업(모두 선택 사항, 새 맵 추가와 별개):
 
 * (선택) 빠른 이동 시 원격 캐릭터가 건너뛰어 보이는 현상을 줄이기 위한 타임스탬프 기반 위치 보간 - 메시지 사용량과 트레이드오프 고려 필요
 * (선택) 미션 시스템 고도화: 구역별 미션 1개 이상 누적 시 진행 순서 강제, 전체 클리어 시 "완료 화면" 연동, 교사 대시보드와의 실시간 동기화(Supabase students.missions_done)
 * (선택) 교사 대시보드: 실시간 학생 접속 현황(Presence) 모니터링
 * (선택) 맵 내 사용자 배치 물품(아이템) 시스템 (아래 섹션 참고)
+
+\---
+
+## 새 맵 추가 가이드 (체크리스트)
+
+새 맵(예: 음악실/미술실/컴퓨터실/교무실 = 실내형, 한강공원/동네마을/일반 길거리 = 야외형) 하나를 추가할 때 수정해야 하는 파일과 위치를 정리한 체크리스트. 실내형은 `ssambus_map_classroom.html` 또는 `ssambus_map_gym.html`을, 야외형은 `ssambus_map_city.html` 또는 `ssambus_map_forest.html`을 복사해서 시작하는 것을 추천(가로로 긴 야외형은 `VIEW_W=768,VIEW_H=672` 카메라 추적 패턴 적용됨).
+
+새 맵의 내부 id를 `<id>`(예: `music`, `art`, `computer`, `teacher_office`, `hanriver`, `village`, `street`)라고 할 때:
+
+### 1) `ssambus_map_<id>.html` (새로 생성, 기존 맵 복사 후 수정)
+* `COLS`/`ROWS`/`TS`, 배경 `grid` 배열, `WALKABLE` Set, `drawMap()`의 타일 그리기 로직을 새 맵 디자인에 맞게 교체
+* 그대로 유지(기존 맵과 동일하게 복붙)해야 하는 공용 블록:
+  - `TEACHER_VIEW` 체크 + body 스타일/legend 숨김 블록
+  - `__NEEDS_CHAR_SETUP` 리다이렉트 블록 - `__params.set('map', 'ssambus_map_<id>.html')`로 파일명만 변경
+  - `updateCamera()` (맵이 화면보다 크면 카메라 추적 추가, `VIEW_W`/`VIEW_H` 설정)
+  - `placePlayer()` 안의 `if(TEACHER_VIEW) el.style.display='none'`
+  - keydown 리스너의 `if(TEACHER_VIEW) return;`
+  - 터치 스와이프 블록 (`.stage-wrap`에 touchstart/move/end)
+  - `<head>`의 Supabase config + `ssambus_realtime.js` + `ssambus_missions.js` 로드
+  - 파일 끝 init 블록:
+    ```js
+    if(!__NEEDS_CHAR_SETUP){
+      renderPlayer();
+      placePlayer();
+      initRealtime('<id>');
+      if(!TEACHER_VIEW) initMissionSystem('<id>');
+    }
+    ```
+* 새로 정해야 하는 것: 플레이어 시작 위치(`pos`), 출입구(문/게이트) 칸 좌표, `.stage-wrap` 크기(`width`/`height`, 화면보다 크면 `overflow:hidden`)
+
+### 2) `ssambus_missions.js`
+* `MISSION_ZONES.<id>`: 맵을 8개 구역(zone_A~H)으로 분할해 `{id,label,r0,c0,r1,c1}` 8개 추가 (겹침/공백 없이 전체 영역 커버)
+* `EXIT_ZONES.<id>`: 출입구 칸 좌표 추가 (`[{r0,c0,r1,c1}, ...]`)
+* `MAP_FILES.<id>` / `MAP_LABELS.<id>` 추가
+* `MAP_ORDER_DEFAULT`에 `<id>` 추가 (학생 진행 순서 기본값에 포함시킬지 결정)
+* (선택) `DEMO_MISSIONS.<id>`에 데모 미션 1~2개 추가 - 교사가 아직 미션을 등록하지 않았을 때 표시됨
+
+### 3) `ssambus_teacher_dashboard.html`
+* `MAP_FILES`에 `<id>:'ssambus_map_<id>.html'` 추가
+* `MAP_CANVAS_SIZE`에 `<id>:{w:..., h:...}` 추가 (실시간 맵 보기 축소 표시용, 맵 HTML의 `COLS*TS`/`ROWS*TS`와 동일하게)
+* `MAPS` 배열에 `{id:'<id>', label:'...', zones:[ {id:'zone_A',label:'...'}, ... 8개 ]}` 추가 (`ssambus_missions.js`의 `MISSION_ZONES.<id>` 라벨과 맞추기)
+* "🚪 맵 이동 순서", "🗺️ 실시간 맵 보기", "🧑‍🏫 맵 참가하기" 모달은 모두 `MAPS`/`MAP_FILES`/`MAP_CANVAS_SIZE` 기반으로 자동 동작하므로 추가 수정 불필요
+
+### 4) `index.html`
+* "2. 교사용 대시보드 사용법" 항목의 맵 목록(일반교실/도서관/운동장/체육관/현대도시/자연숲)에 새 맵 이름 추가
+
+### 5) 배포 시
+* "배포 가이드 > 2) GitHub Pages 배포" 업로드 파일 목록에 `ssambus_map_<id>.html` 추가
 
 \---
 

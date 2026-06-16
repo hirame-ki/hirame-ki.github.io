@@ -10,7 +10,7 @@ create table if not exists missions (
   map_id text not null,        -- classroom | library | playground | gym | city | forest
   zone_id text not null,       -- zone_A | zone_B | zone_C
   title text not null,
-  type text not null check (type in ('youtube','quiz','google_form','link')),
+  type text not null check (type in ('youtube','quiz','google_form','link','image_quiz','short_answer','discussion','ox_quiz')),
   content text,                -- youtube/구글폼/링크 URL (퀴즈는 비워도 됨)
   "order" int default 1,
   required boolean default true,
@@ -71,3 +71,16 @@ insert into missions (id, room_id, map_id, zone_id, title, type, content, "order
   '{"question":"숲에서 가져온 쓰레기는 어떻게 처리해야 할까요?","options":["숲 속에 묻는다","연못에 버린다","집까지 가져가 분리배출한다","나무 위에 걸어둔다"],"answer":2}')
 
 on conflict (id) do nothing;
+
+-- =====================================================================
+-- 4) 새 미션 유형 추가 시 type CHECK 제약 업데이트 (기존 테이블에 적용)
+-- =====================================================================
+alter table missions drop constraint if exists missions_type_check;
+alter table missions add constraint missions_type_check
+  check (type in ('youtube','quiz','google_form','link','image_quiz','short_answer','discussion','ox_quiz'));
+
+-- 미션 발동 위치 직접 지정 컬럼 (타일 기반 트리거)
+-- 형식: [{"r":2,"c":3}, {"r":2,"c":4}]
+-- 이 값이 있으면 구역(zone) 대신 해당 타일을 밟을 때 미션이 발동됩니다.
+alter table missions
+  add column if not exists trigger_tiles jsonb;
