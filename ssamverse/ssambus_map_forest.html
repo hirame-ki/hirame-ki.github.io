@@ -229,18 +229,27 @@ function drawMap(){
       else if(t===7) drawFlowerBed(x,y);
     }
   }
-  // 입구 표지판 (1행 0열 입구 흙길 위)
+  // 입·출구 표지판 (row 0 경계 타일 하단에 표지)
   ctx.fillStyle = '#fff';
-  ctx.fillRect(0*TS+2, 0*TS+12, TS-4, 22);
+  ctx.fillRect(2, 26, TS-4, 20);
   ctx.strokeStyle = '#8a6a44';
   ctx.lineWidth = 2;
-  ctx.strokeRect(0*TS+2, 0*TS+12, TS-4, 22);
+  ctx.strokeRect(2, 26, TS-4, 20);
   ctx.fillStyle = '#5a4310';
+  ctx.font = 'bold 10px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('입·출구', TS/2, 42);
+  // 흙길 타일(row 1, col 0)에 출구 방향 화살표 오버레이
+  ctx.fillStyle = 'rgba(46,204,113,0.65)';
+  ctx.fillRect(0, TS, TS, TS);
+  ctx.fillStyle = '#fff';
   ctx.font = 'bold 12px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('자연숲', 0.5*TS, 0*TS+24);
-  ctx.fillText('입구', 0.5*TS, 0*TS+33);
+  ctx.textBaseline = 'middle';
+  ctx.fillText('◀ 출구', TS/2, TS + TS/2);
   ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
 }
 drawMap();
 
@@ -261,16 +270,19 @@ function renderPlayer(){
 /* ===================== 카메라 추적 ===================== */
 function updateCamera(){
   const wrap = document.querySelector('.stage-wrap');
+  const stage = wrap.querySelector('.stage');
   if(TEACHER_VIEW){
     wrap.style.width = (COLS*TS) + 'px';
     wrap.style.height = (ROWS*TS) + 'px';
     wrap.style.overflow = 'visible';
+    stage.style.transform = '';
     return;
   }
   const canvasW = COLS*TS, canvasH = ROWS*TS;
   const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
-  wrap.scrollLeft = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
-  wrap.scrollTop  = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
+  const offX = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
+  const offY = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
+  stage.style.transform = `translate(${-offX}px,${-offY}px)`;
 }
 
 /* ===================== 이동 처리 ===================== */

@@ -121,7 +121,9 @@ const MAP_LABELS = {
 const MAP_ORDER_DEFAULT = ['classroom','library','playground','gym','city','forest'];
 
 /* ===================== 데모 미션 (Supabase 미설정/데이터 없을 때 대체) ===================== */
-const __MS_DEMO_VIDEO = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+const __MS_DEMO_VIDEO = 'https://www.youtube.com/watch?v=v66yDEGA9nk';
+const __MS_DEMO_INSTA = {id_suffix:'_3', zone_id:'zone_C', order:3, required:true,
+  title:'쌤버스 인스타그램 방문하기', type:'link', content:'https://www.instagram.com/hirame.ki/'};
 
 const DEMO_MISSIONS = {
   classroom: [
@@ -129,42 +131,54 @@ const DEMO_MISSIONS = {
       type:'youtube', content:__MS_DEMO_VIDEO},
     {id:'demo_classroom_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 교실 예절',
       type:'quiz', quiz:{question:'친구가 발표할 때 가장 알맞은 태도는 무엇일까요?',
-        options:['딴짓을 한다','발표자를 바라보며 경청한다','옆 친구와 이야기한다','자리에서 일어나 돌아다닌다'], answer:1}}
+        options:['딴짓을 한다','발표자를 바라보며 경청한다','옆 친구와 이야기한다','자리에서 일어나 돌아다닌다'], answer:1}},
+    {id:'demo_classroom_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
   ],
   library: [
     {id:'demo_library_1', zone_id:'zone_A', order:1, required:true, title:'도서관 이용 안내 영상',
       type:'youtube', content:__MS_DEMO_VIDEO},
     {id:'demo_library_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 도서관 예절',
       type:'quiz', quiz:{question:'도서관에서 책을 다 읽은 후 가장 알맞은 행동은?',
-        options:['아무 곳에나 두고 나간다','제자리에 정리한다','다른 칸에 숨겨둔다','바닥에 쌓아둔다'], answer:1}}
+        options:['아무 곳에나 두고 나간다','제자리에 정리한다','다른 칸에 숨겨둔다','바닥에 쌓아둔다'], answer:1}},
+    {id:'demo_library_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
   ],
   playground: [
     {id:'demo_playground_1', zone_id:'zone_A', order:1, required:true, title:'운동장 안전 영상',
       type:'youtube', content:__MS_DEMO_VIDEO},
     {id:'demo_playground_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 운동장 안전',
       type:'quiz', quiz:{question:'축구공이 다른 친구 쪽으로 빠르게 날아갈 때 가장 먼저 해야 할 일은?',
-        options:['소리쳐서 알려준다','모른 척한다','더 세게 찬다','뛰어가서 잡는다'], answer:0}}
+        options:['소리쳐서 알려준다','모른 척한다','더 세게 찬다','뛰어가서 잡는다'], answer:0}},
+    {id:'demo_playground_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
   ],
   gym: [
     {id:'demo_gym_1', zone_id:'zone_A', order:1, required:true, title:'체육관 이용 안내 영상',
       type:'youtube', content:__MS_DEMO_VIDEO},
     {id:'demo_gym_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 체육 안전 수칙',
       type:'quiz', quiz:{question:'체육 활동을 시작하기 전에 가장 먼저 해야 할 일은?',
-        options:['바로 전속력으로 달리기','준비 운동(스트레칭)','물 마시기 생략','신발 벗고 활동하기'], answer:1}}
+        options:['바로 전속력으로 달리기','준비 운동(스트레칭)','물 마시기 생략','신발 벗고 활동하기'], answer:1}},
+    {id:'demo_gym_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
   ],
   city: [
     {id:'demo_city_1', zone_id:'zone_A', order:1, required:true, title:'교통안전 영상',
       type:'youtube', content:__MS_DEMO_VIDEO},
     {id:'demo_city_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 횡단보도 안전',
       type:'quiz', quiz:{question:'횡단보도를 건널 때 가장 알맞은 행동은?',
-        options:['좌우를 살피지 않고 빠르게 건넌다','초록불이 켜지면 좌우를 살피고 건넌다','빨간불에도 차가 없으면 건넌다','휴대폰을 보며 건넌다'], answer:1}}
+        options:['좌우를 살피지 않고 빠르게 건넌다','초록불이 켜지면 좌우를 살피고 건넌다','빨간불에도 차가 없으면 건넌다','휴대폰을 보며 건넌다'], answer:1}},
+    {id:'demo_city_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
   ],
   forest: [
     {id:'demo_forest_1', zone_id:'zone_A', order:1, required:true, title:'자연 생태 안내 영상',
       type:'youtube', content:__MS_DEMO_VIDEO},
     {id:'demo_forest_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 자연 보호',
       type:'quiz', quiz:{question:'숲에서 가져온 쓰레기는 어떻게 처리해야 할까요?',
-        options:['숲 속에 묻는다','연못에 버린다','집까지 가져가 분리배출한다','나무 위에 걸어둔다'], answer:2}}
+        options:['숲 속에 묻는다','연못에 버린다','집까지 가져가 분리배출한다','나무 위에 걸어둔다'], answer:2}},
+    {id:'demo_forest_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
   ]
 };
 

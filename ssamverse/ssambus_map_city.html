@@ -220,17 +220,19 @@ function drawMap(){
       else if(t===9) drawPlaza(x,y,r,c);
     }
   }
-  // 상단 도로 입구 표지판
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(7.5*TS, 6, TS*2-12, 16);
-  ctx.strokeStyle = '#3a3f44';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(7.5*TS, 6, TS*2-12, 16);
-  ctx.fillStyle = '#3a3f44';
-  ctx.font = 'bold 12px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('현대도시 입구', 8.5*TS, 18);
+  // 입·출구 표시 (상단/하단 도로 4곳: 각 2열 너비로 초록 오버레이)
+  [[8,0,'▲'],[18,0,'▲'],[8,13,'▼'],[18,13,'▼']].forEach(([c,r,arrow])=>{
+    const x = c*TS, y = r*TS;
+    ctx.fillStyle = 'rgba(46,204,113,0.62)';
+    ctx.fillRect(x, y, TS*2, TS);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(arrow + ' 입·출구', x + TS, y + TS/2);
+  });
   ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
 }
 drawMap();
 
@@ -251,16 +253,19 @@ function renderPlayer(){
 /* ===================== 카메라 추적 ===================== */
 function updateCamera(){
   const wrap = document.querySelector('.stage-wrap');
+  const stage = wrap.querySelector('.stage');
   if(TEACHER_VIEW){
     wrap.style.width = (COLS*TS) + 'px';
     wrap.style.height = (ROWS*TS) + 'px';
     wrap.style.overflow = 'visible';
+    stage.style.transform = '';
     return;
   }
   const canvasW = COLS*TS, canvasH = ROWS*TS;
   const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
-  wrap.scrollLeft = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
-  wrap.scrollTop  = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
+  const offX = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
+  const offY = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
+  stage.style.transform = `translate(${-offX}px,${-offY}px)`;
 }
 
 /* ===================== 이동 처리 ===================== */

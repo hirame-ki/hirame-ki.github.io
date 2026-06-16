@@ -301,17 +301,19 @@ function renderPlayer(){
 const VIEW_W = 720, VIEW_H = 672;
 function updateCamera(){
   const wrap = document.querySelector('.stage-wrap');
+  const stage = wrap.querySelector('.stage');
   if(TEACHER_VIEW){
-    // 전체 맵을 한눈에 볼 수 있도록 스크롤 없이 전체 캔버스를 표시
     wrap.style.width = (COLS*TS) + 'px';
     wrap.style.height = (ROWS*TS) + 'px';
     wrap.style.overflow = 'visible';
+    stage.style.transform = '';
     return;
   }
   const canvasW = COLS*TS, canvasH = ROWS*TS;
   const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
-  wrap.scrollLeft = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
-  wrap.scrollTop  = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
+  const offX = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
+  const offY = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
+  stage.style.transform = `translate(${-offX}px,${-offY}px)`;
 }
 
 /* ===================== 이동 처리 ===================== */

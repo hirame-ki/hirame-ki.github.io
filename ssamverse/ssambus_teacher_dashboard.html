@@ -1312,6 +1312,7 @@ function openModal(mapId, zoneId, mission){
   onTypeChange();
   __initTriggerSection(mapId, mission);
   document.getElementById('modal-bg').classList.add('show');
+}
 
 function nextOrder(mapId, zoneId){
   const missions = (missionsCache[mapId] || []).filter(m => m.zone_id === zoneId);

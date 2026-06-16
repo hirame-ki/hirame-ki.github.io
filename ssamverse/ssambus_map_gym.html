@@ -257,16 +257,19 @@ function renderPlayer(){
 let pos = { r:3, c:5 }; // 앞문 근처 코트에서 시작
 function updateCamera(){
   const wrap = document.querySelector('.stage-wrap');
+  const stage = wrap.querySelector('.stage');
   if(TEACHER_VIEW){
     wrap.style.width = (COLS*TS) + 'px';
     wrap.style.height = (ROWS*TS) + 'px';
     wrap.style.overflow = 'visible';
+    stage.style.transform = '';
     return;
   }
   const canvasW = COLS*TS, canvasH = ROWS*TS;
   const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
-  wrap.scrollLeft = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
-  wrap.scrollTop  = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
+  const offX = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
+  const offY = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
+  stage.style.transform = `translate(${-offX}px,${-offY}px)`;
 }
 function placePlayer(){
   const el = document.getElementById('player');
