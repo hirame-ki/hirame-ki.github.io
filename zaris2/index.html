@@ -784,7 +784,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;heigh
           <b>· 남녀 구역 분리</b> : 교실 왼쪽 절반은 남학생, 오른쪽 절반은 여학생 구역으로 나뉩니다.
         </div>
         <div class="frow"><div class="fcol"><label>학생</label><select id="gd-stu"></select></div><div class="fcol"><label>성별</label><select id="gd-val"><option value="">미지정</option><option value="M">남 (M)</option><option value="F">여 (F)</option></select></div><button class="btn bink bsm" onclick="setGender()">설정</button></div>
-        <div class="frow" style="margin-top:8px;"><div class="fcol"><label>배치 모드</label><select id="gd-mode" onchange="sv()"><option value="none">제한 없음</option><option value="alternate">남녀 교차 배치</option><option value="separate">남녀 구역 분리</option></select></div></div>
+        <div class="frow" style="margin-top:8px;"><div class="fcol"><label>배치 모드</label><select id="gd-mode" onchange="S.genderMode=this.value; sv()"><option value="none">제한 없음</option><option value="alternate">남녀 교차 배치</option><option value="separate">남녀 구역 분리</option></select></div></div>
         <div id="gender-list" class="plist"></div>
       </div>
     </div>
