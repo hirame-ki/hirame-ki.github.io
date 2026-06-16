@@ -469,10 +469,13 @@ function __msInjectStyle(){
     #ms-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;
       align-items:center;justify-content:center;z-index:100;padding:16px}
     #ms-overlay.hidden{display:none}
-    #ms-card{background:#fffaf0;border:4px solid #4a3728;border-radius:10px;max-width:420px;
+    #ms-card{position:relative;background:#fffaf0;border:4px solid #4a3728;border-radius:10px;max-width:420px;
       width:100%;max-height:90vh;overflow:auto;padding:18px;font-family:sans-serif;
       box-shadow:0 6px 20px rgba(0,0,0,.3)}
-    #ms-card h3{margin:0 0 10px;color:#4a3728;font-size:17px}
+    #ms-card h3{margin:0 0 10px;color:#4a3728;font-size:17px;padding-right:28px}
+    #ms-close-btn{position:absolute;top:10px;right:10px;background:none;border:none;
+      font-size:18px;line-height:1;cursor:pointer;color:#aaa;padding:2px 6px;border-radius:4px}
+    #ms-close-btn:hover{background:#ecdcc0;color:#4a3728}
     #ms-card .ms-body{font-size:14px;color:#333;line-height:1.5;margin-bottom:12px}
     #ms-card iframe{width:100%;border:0;border-radius:6px;background:#000;display:block;margin-bottom:8px}
     #ms-card .ms-quiz label{display:block;background:#f3ecdf;border:1px solid #d9c19a;
@@ -630,6 +633,7 @@ function __msRenderMission(m){
   const skipBtn = m.required ? '' : `<button id="ms-skip">나중에</button>`;
 
   return `
+    <button id="ms-close-btn" onclick="__msDismissOverlay()" title="닫기">✕</button>
     <h3>${icon} ${__msEscHtml(m.title)}</h3>
     ${body}
     <div id="ms-actions">
@@ -637,6 +641,13 @@ function __msRenderMission(m){
       <button id="ms-complete" class="primary" ${completeDisabled}>완료</button>
     </div>
   `;
+}
+
+function __msDismissOverlay(){
+  const overlay = document.getElementById('ms-overlay');
+  if(overlay) overlay.classList.add('hidden');
+  __msQueue = [];
+  __msCurrentZone = null; // 구역 초기화 → 재진입 시 미션 다시 발동
 }
 
 function __msBindMission(m, card){
