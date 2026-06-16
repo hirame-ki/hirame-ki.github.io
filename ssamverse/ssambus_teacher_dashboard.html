@@ -2396,12 +2396,22 @@ function __renderTriggerMap(){
     }
   }
 
-  // 에디터 오버레이 – 픽셀 아트
+  // 에디터 오버레이 – 픽셀 아트 + 가구 타일은 장애물 표시(어둡게)
   const overlays = (__edOverlays[__trigPickMap] || {});
   Object.entries(overlays).forEach(([key, type]) => {
     if(!type || type === 0) return;
     const [r, c] = key.split(',').map(Number);
     __edCTile(ctx, c*ts, r*ts, ts, type);
+    // 가구는 장애물 → 선택 불가 표시
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillRect(c*ts, r*ts, ts, ts);
+    if(ts >= 12){
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.font = `bold ${Math.max(8, Math.round(ts * .4))}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('✕', c*ts + ts/2, r*ts + ts/2);
+    }
   });
 
   // 선택된 트리거 타일 (오렌지 강조 테두리)
@@ -2440,7 +2450,9 @@ function __bindTriggerCanvas(){
     const r = Math.floor((e.clientY - rect.top)   / __trigTS);
     const info = MAP_EDITOR_GRIDS[__trigPickMap];
     if(!info || r < 0 || r >= info.rows || c < 0 || c >= info.cols) return;
-    if(!info.walkable.has(info.grid[r][c])) return;
+    if(!info.walkable.has(info.grid[r][c])) return; // 기본 비보행 타일 차단
+    const _ovl = (__edOverlays[__trigPickMap] || {})[`${r},${c}`];
+    if(_ovl && _ovl !== 0) return; // 가구 오버레이 타일 차단
 
     const idx = __triggerTiles.findIndex(t => t.r === r && t.c === c);
     if(idx >= 0) __triggerTiles.splice(idx, 1);

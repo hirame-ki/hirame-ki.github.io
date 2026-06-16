@@ -216,6 +216,14 @@ body{font-family:sans-serif;margin:0;min-height:100vh;display:flex;flex-directio
           <li><b>💾 저장</b> 버튼 클릭 시 현재 수업에 저장. 학생 맵에 픽셀 아트 스타일로 표시됩니다.</li>
         </ul>
         <div class="note blue">📍 <b>미션 발동 위치 지정</b>: 미션 편집 모달 아래쪽 "미션 발동 위치" 섹션에서 <b>"타일 직접 지정"</b>을 선택하면 맵 미리보기가 열립니다. 학생이 밟으면 미션이 열릴 타일을 클릭으로 선택하세요. 배치한 가구 위치를 활용하면 "책상 앞에 서면 미션 열림" 같은 구성이 가능합니다.</div>
+        <div class="note" style="background:#fff8e1;border-left:4px solid #f9a825;padding:.6rem .8rem;border-radius:6px;margin-top:.5rem;font-size:13.5px">
+          ⚠️ <b>구역(zone) vs 타일 직접 지정 — 발동 조건 차이</b>
+          <ul style="margin:.4rem 0 0;padding-left:1.2rem">
+            <li><b>구역(zone_A~H)</b>: 해당 구역 범위 안으로 들어오면 미션이 열립니다.</li>
+            <li><b>타일 직접 지정</b>: 지정한 타일 칸을 <b>정확히 밟아야만</b> 미션이 열립니다. 구역은 완전히 무시됩니다.</li>
+          </ul>
+          <b>예시</b>: 처음에 미션을 "칠판 앞(zone_A)"에 배정했더라도, 나중에 수정 버튼 → 타일 직접 지정으로 교실 뒤 특정 타일을 선택하면, 그 이후로는 칠판 앞에 가도 미션이 열리지 않고 <b>교실 뒤 그 타일을 밟아야만 미션이 열립니다.</b>
+        </div>
       </div>
     </details>
 

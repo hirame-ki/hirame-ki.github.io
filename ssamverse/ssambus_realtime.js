@@ -293,13 +293,15 @@ function __rtBuildChatUI(){
   });
 
   // 채팅창 밖에서 글자 키를 누르면 자동으로 입력창에 포커스
+  // e.preventDefault()로 첫 키를 차단해야 한글 IME 문제 방지
+  // (차단하지 않으면 IME 미활성 상태에서 첫 글자가 영문 raw key로 찍힘)
   document.addEventListener('keydown', e => {
     if(document.activeElement === input) return;
     const tag = document.activeElement ? document.activeElement.tagName : '';
     if(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
     if(e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey){
-      input.focus();
-      // focus 후 keypress 이벤트가 input에서 발생하므로 글자가 자동 입력됨
+      e.preventDefault(); // 잘못된 첫 글자 입력 차단
+      input.focus();      // 포커스 이동 후 사용자가 다시 타이핑하면 정상 입력
     }
   });
 }
@@ -390,4 +392,174 @@ function __rtApplyChatMode(){
     const notice = document.getElementById('rt-chat-notice');
     if(notice) notice.style.display = 'none';
   }
+}
+
+/* ── 맵 오버레이 (가구/장애물) ─────────────────────────────────── */
+let __rtMapOverlays = {}; // { 'r,c': tileType }
+
+function __rtIsOverlayBlocked(r, c){
+  const v = __rtMapOverlays[`${r},${c}`];
+  return !!(v && v !== 0);
+}
+
+async function loadMapOverlays(mapId, ctx, ts){
+  if(!__rtClient || !__rtRoomId) return;
+  try{
+    const { data } = await __rtClient
+      .from('room_settings')
+      .select('map_tiles')
+      .eq('room_id', __rtRoomId)
+      .maybeSingle();
+    if(data && data.map_tiles && data.map_tiles[mapId]){
+      __rtMapOverlays = data.map_tiles[mapId];
+      Object.entries(__rtMapOverlays).forEach(([key, type]) => {
+        if(!type || type === 0) return;
+        const [r, c] = key.split(',').map(Number);
+        __rtDrawOverlayTile(ctx, c*ts, r*ts, ts, type);
+      });
+    }
+  }catch(e){ console.warn('[쌤버스] 맵 오버레이 로드 실패:', e); }
+}
+
+function __rtDrawOverlayTile(ctx, x, y, ts, type){
+  switch(type){
+    case 20: __rtCT20(ctx,x,y,ts); break;
+    case 21: __rtCT21(ctx,x,y,ts); break;
+    case 22: __rtCT22(ctx,x,y,ts); break;
+    case 23: __rtCT23(ctx,x,y,ts); break;
+    case 30: __rtCT30(ctx,x,y,ts); break;
+    case 31: __rtCT31(ctx,x,y,ts); break;
+    case 32: __rtCT32(ctx,x,y,ts); break;
+    case 33: __rtCT33(ctx,x,y,ts); break;
+    case 34: __rtCT34(ctx,x,y,ts); break;
+    case 35: __rtCT35(ctx,x,y,ts); break;
+    case 36: __rtCT36(ctx,x,y,ts); break;
+    case 37: __rtCT37(ctx,x,y,ts); break;
+  }
+}
+
+function __rtCT20(ctx,x,y,ts){
+  ctx.fillStyle='#7a8a96'; ctx.fillRect(x+Math.round(ts*.19),y+Math.round(ts*.13),Math.round(ts*.62),Math.round(ts*.19));
+  ctx.fillStyle='#65757f'; ctx.fillRect(x+Math.round(ts*.23),y+Math.round(ts*.29),Math.round(ts*.54),Math.round(ts*.06));
+  ctx.fillStyle='#c8a06e'; ctx.fillRect(x+Math.round(ts*.08),y+Math.round(ts*.38),Math.round(ts*.84),Math.round(ts*.46));
+  ctx.fillStyle='#dfc09a'; ctx.fillRect(x+Math.round(ts*.08),y+Math.round(ts*.38),Math.round(ts*.84),Math.round(ts*.08));
+  ctx.fillStyle='#7a5230';
+  ctx.fillRect(x+Math.round(ts*.1),y+Math.round(ts*.88),Math.round(ts*.12),Math.round(ts*.1));
+  ctx.fillRect(x+Math.round(ts*.78),y+Math.round(ts*.88),Math.round(ts*.12),Math.round(ts*.1));
+}
+function __rtCT21(ctx,x,y,ts){
+  const cx=x+ts/2;
+  ctx.fillStyle='#1e6e3e'; ctx.fillRect(cx-1,y+Math.round(ts*.46),2,Math.round(ts*.22));
+  ctx.fillStyle='#1a8a44'; ctx.fillRect(cx-Math.round(ts*.19),y+Math.round(ts*.26),Math.round(ts*.19),Math.round(ts*.2));
+  ctx.fillStyle='#2ecc71'; ctx.fillRect(cx,y+Math.round(ts*.3),Math.round(ts*.19),Math.round(ts*.17));
+  ctx.fillStyle='#27ae60'; ctx.fillRect(cx-Math.round(ts*.1),y+Math.round(ts*.15),Math.round(ts*.2),Math.round(ts*.18));
+  ctx.fillStyle='#b03a22'; ctx.fillRect(cx-Math.round(ts*.19),y+Math.round(ts*.66),Math.round(ts*.38),Math.round(ts*.06));
+  ctx.fillStyle='#c84b2c'; ctx.fillRect(cx-Math.round(ts*.17),y+Math.round(ts*.71),Math.round(ts*.34),Math.round(ts*.21));
+  ctx.fillStyle='#5a3a1a'; ctx.fillRect(cx-Math.round(ts*.15),y+Math.round(ts*.71),Math.round(ts*.3),Math.round(ts*.06));
+}
+function __rtCT22(ctx,x,y,ts){
+  ctx.fillStyle='#6b3a1f'; ctx.fillRect(x+Math.round(ts*.04),y+Math.round(ts*.02),Math.round(ts*.92),Math.round(ts*.96));
+  ctx.fillStyle='#9c6d44';
+  ctx.fillRect(x+Math.round(ts*.04),y+Math.round(ts*.02),Math.round(ts*.92),Math.round(ts*.06));
+  ctx.fillRect(x+Math.round(ts*.04),y+ts/2-1,Math.round(ts*.92),Math.round(ts*.04));
+  ctx.fillRect(x+Math.round(ts*.04),y+Math.round(ts*.92),Math.round(ts*.92),Math.round(ts*.06));
+  const c1=['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6'];
+  const c2=['#1abc9c','#e67e22','#34495e','#c0392b','#8e44ad'];
+  const bw=Math.max(2,Math.floor(ts*.17));
+  for(let i=0;i<5;i++){
+    const ox=Math.round(ts*.06)+i*(bw+1);
+    ctx.fillStyle=c1[i]; ctx.fillRect(x+ox,y+Math.round(ts*.08),bw,Math.round(ts*.4));
+    ctx.fillStyle=c2[i]; ctx.fillRect(x+ox,y+ts/2+Math.round(ts*.04),bw,Math.round(ts*.4));
+  }
+}
+function __rtCT23(ctx,x,y,ts){
+  const px=Math.round(x+ts/2-ts*.1);
+  ctx.fillStyle='#a0a7ac'; ctx.fillRect(px,y+Math.round(ts*.06),Math.round(ts*.2),Math.round(ts*.88));
+  ctx.fillStyle='#c0c8cc'; ctx.fillRect(px+Math.round(ts*.02),y+Math.round(ts*.08),Math.round(ts*.16),Math.round(ts*.84));
+  ctx.fillStyle='#b0b8bc';
+  for(let i=0;i<3;i++) ctx.fillRect(px+Math.round(ts*.02),y+Math.round(ts*.22+i*.25*ts),Math.round(ts*.16),Math.round(ts*.04));
+  ctx.fillStyle='#888';
+  ctx.fillRect(x+Math.round(ts*.17),y+Math.round(ts*.9),Math.round(ts*.66),Math.round(ts*.08));
+  ctx.fillRect(x+Math.round(ts*.22),y+Math.round(ts*.84),Math.round(ts*.56),Math.round(ts*.07));
+}
+function __rtCT30(ctx,x,y,ts){
+  ctx.fillStyle='#7a5230'; ctx.fillRect(x+Math.round(ts*.1),y+Math.round(ts*.38),Math.round(ts*.8),Math.round(ts*.1));
+  ctx.fillStyle='#9c6d44'; ctx.fillRect(x+Math.round(ts*.1),y+Math.round(ts*.38),Math.round(ts*.8),Math.round(ts*.04));
+  ctx.fillStyle='#a07830'; ctx.fillRect(x+Math.round(ts*.1),y+Math.round(ts*.52),Math.round(ts*.8),Math.round(ts*.12));
+  ctx.fillStyle='#c09848'; ctx.fillRect(x+Math.round(ts*.1),y+Math.round(ts*.52),Math.round(ts*.8),Math.round(ts*.04));
+  ctx.fillStyle='#666';
+  ctx.fillRect(x+Math.round(ts*.16),y+Math.round(ts*.63),Math.round(ts*.1),Math.round(ts*.28));
+  ctx.fillRect(x+Math.round(ts*.74),y+Math.round(ts*.63),Math.round(ts*.1),Math.round(ts*.28));
+  ctx.fillRect(x+Math.round(ts*.16),y+Math.round(ts*.85),Math.round(ts*.68),Math.round(ts*.06));
+}
+function __rtCT31(ctx,x,y,ts){
+  const cx=Math.round(x+ts/2);
+  ctx.fillStyle='#6b3a1f'; ctx.fillRect(cx-Math.round(ts*.08),y+Math.round(ts*.52),Math.round(ts*.16),Math.round(ts*.44));
+  ctx.fillStyle='#1a8a44';
+  ctx.beginPath(); ctx.arc(cx,y+Math.round(ts*.45),Math.round(ts*.38),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#27ae60';
+  ctx.beginPath(); ctx.arc(cx-Math.round(ts*.08),y+Math.round(ts*.38),Math.round(ts*.28),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#2ecc71';
+  ctx.beginPath(); ctx.arc(cx+Math.round(ts*.08),y+Math.round(ts*.34),Math.round(ts*.22),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.1)';
+  ctx.beginPath(); ctx.arc(cx-Math.round(ts*.06),y+Math.round(ts*.32),Math.round(ts*.14),0,Math.PI*2); ctx.fill();
+}
+function __rtCT32(ctx,x,y,ts){
+  ctx.fillStyle='rgba(0,0,0,.1)'; ctx.fillRect(x+Math.round(ts*.17),y+Math.round(ts*.54),Math.round(ts*.7),Math.round(ts*.38));
+  ctx.fillStyle='#7a8085'; ctx.fillRect(x+Math.round(ts*.12),y+Math.round(ts*.42),Math.round(ts*.76),Math.round(ts*.5));
+  ctx.fillStyle='#8e9499'; ctx.fillRect(x+Math.round(ts*.17),y+Math.round(ts*.3),Math.round(ts*.66),Math.round(ts*.25));
+  ctx.fillStyle='#9aa0a5'; ctx.fillRect(x+Math.round(ts*.25),y+Math.round(ts*.21),Math.round(ts*.5),Math.round(ts*.2));
+  ctx.fillStyle='rgba(255,255,255,.2)'; ctx.fillRect(x+Math.round(ts*.27),y+Math.round(ts*.23),Math.round(ts*.15),Math.round(ts*.06));
+}
+function __rtCT33(ctx,x,y,ts){
+  ctx.fillStyle='#2e8b57';
+  const st=[[-ts*.18,ts*.18],[0,ts*.1],[ts*.18,ts*.22]];
+  st.forEach(([dx,dy])=>{ ctx.fillRect(Math.round(x+ts/2+dx-1),Math.round(y+ts-dy-ts*.25),2,Math.round(ts*.25)); });
+  const fc=['#ff69b4','#ff6347','#ffd700'];
+  st.forEach(([dx,dy],i)=>{
+    const cx2=Math.round(x+ts/2+dx), cy2=Math.round(y+ts-dy-ts*.27);
+    ctx.fillStyle=fc[i]; ctx.beginPath(); ctx.arc(cx2,cy2,Math.max(2,Math.round(ts*.1)),0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.7)'; ctx.beginPath(); ctx.arc(cx2,cy2,Math.max(1,Math.round(ts*.04)),0,Math.PI*2); ctx.fill();
+  });
+}
+function __rtCT34(ctx,x,y,ts){
+  ctx.fillStyle='#2c82c9'; ctx.fillRect(x+Math.round(ts*.06),y+Math.round(ts*.13),Math.round(ts*.88),Math.round(ts*.74));
+  ctx.fillStyle='#3498db'; ctx.fillRect(x+Math.round(ts*.06),y+Math.round(ts*.13),Math.round(ts*.88),Math.round(ts*.08));
+  ctx.fillStyle='#1a5c99'; ctx.fillRect(x+Math.round(ts*.06),y+Math.round(ts*.79),Math.round(ts*.88),Math.round(ts*.08));
+  ctx.fillStyle='rgba(255,255,255,.12)';
+  const sw=Math.max(2,Math.round(ts*.24));
+  for(let i=0;i<3;i++) ctx.fillRect(x+Math.round(ts*.1)+i*(sw+2),y+Math.round(ts*.18),sw,Math.round(ts*.6));
+  ctx.strokeStyle='#1a5c99'; ctx.lineWidth=Math.max(1,ts*.03);
+  ctx.strokeRect(x+Math.round(ts*.06),y+Math.round(ts*.13),Math.round(ts*.88),Math.round(ts*.74));
+}
+function __rtCT35(ctx,x,y,ts){
+  const cx=Math.round(x+ts/2), cy=Math.round(y+ts/2);
+  ctx.fillStyle='#888'; ctx.fillRect(cx-Math.round(ts*.25),cy-Math.round(ts*.04),Math.round(ts*.5),Math.round(ts*.08));
+  ctx.fillStyle='#555';
+  ctx.fillRect(cx-Math.round(ts*.31),cy-Math.round(ts*.13),Math.round(ts*.08),Math.round(ts*.25));
+  ctx.fillRect(cx+Math.round(ts*.23),cy-Math.round(ts*.13),Math.round(ts*.08),Math.round(ts*.25));
+  ctx.fillStyle='#444';
+  ctx.fillRect(cx-Math.round(ts*.38),cy-Math.round(ts*.15),Math.round(ts*.07),Math.round(ts*.29));
+  ctx.fillRect(cx+Math.round(ts*.31),cy-Math.round(ts*.15),Math.round(ts*.07),Math.round(ts*.29));
+  ctx.fillStyle='#aaa'; ctx.fillRect(cx-Math.round(ts*.17),cy-Math.round(ts*.02),Math.round(ts*.33),Math.round(ts*.04));
+}
+function __rtCT36(ctx,x,y,ts){
+  const cx=Math.round(x+ts/2);
+  ctx.fillStyle='#2c3e50'; ctx.fillRect(cx-Math.round(ts*.15),y+Math.round(ts*.42),Math.round(ts*.29),Math.round(ts*.38));
+  ctx.fillStyle='#34495e'; ctx.fillRect(cx-Math.round(ts*.17),y+Math.round(ts*.29),Math.round(ts*.33),Math.round(ts*.15));
+  ctx.fillStyle='#7f8c8d'; ctx.fillRect(cx-Math.round(ts*.04),y+Math.round(ts*.21),Math.round(ts*.08),Math.round(ts*.08));
+  ctx.fillStyle='rgba(255,255,255,.1)'; ctx.fillRect(cx-Math.round(ts*.1),y+Math.round(ts*.44),Math.round(ts*.05),Math.round(ts*.3));
+}
+function __rtCT37(ctx,x,y,ts){
+  const cx=Math.round(x+ts/2);
+  ctx.fillStyle='#f5f0e8'; ctx.fillRect(cx-Math.round(ts*.08),y+Math.round(ts*.67),Math.round(ts*.17),Math.round(ts*.21));
+  ctx.fillStyle='#e8e0d0'; ctx.fillRect(cx-Math.round(ts*.08),y+Math.round(ts*.6),Math.round(ts*.17),Math.round(ts*.08));
+  ctx.fillStyle='#c0392b';
+  ctx.fillRect(cx-Math.round(ts*.23),y+Math.round(ts*.43),Math.round(ts*.46),Math.round(ts*.19));
+  ctx.fillRect(cx-Math.round(ts*.17),y+Math.round(ts*.29),Math.round(ts*.33),Math.round(ts*.17));
+  ctx.fillRect(cx-Math.round(ts*.1),y+Math.round(ts*.21),Math.round(ts*.21),Math.round(ts*.12));
+  ctx.fillStyle='rgba(255,255,255,.85)';
+  ctx.fillRect(cx-Math.round(ts*.06),y+Math.round(ts*.31),Math.round(ts*.06),Math.round(ts*.06));
+  ctx.fillRect(cx+Math.round(ts*.06),y+Math.round(ts*.45),Math.round(ts*.04),Math.round(ts*.04));
+  ctx.fillRect(cx-Math.round(ts*.12),y+Math.round(ts*.48),Math.round(ts*.04),Math.round(ts*.04));
 }

@@ -341,6 +341,7 @@ function move(dir){
 
   if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
   if(!WALKABLE.has(grid[nr][nc])) return;
+  if(__rtIsOverlayBlocked(nr,nc)) return;
   if(typeof __msBlockExit === 'function' && __msBlockExit(nr,nc)){ __msShowBlockedNotice(); return; }
   pos.r=nr; pos.c=nc;
   placePlayer();
@@ -381,7 +382,7 @@ if(!__NEEDS_CHAR_SETUP){
   renderPlayer();
   placePlayer();
   initRealtime('classroom');
-  if(!TEACHER_VIEW) initMissionSystem('classroom');
+  if(!TEACHER_VIEW){ initMissionSystem('classroom'); loadMapOverlays('classroom', ctx, TS); }
 }
 </script>
 </body>
