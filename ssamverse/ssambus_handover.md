@@ -591,18 +591,130 @@ QR 스캔 입장
 
 \---
 
+## 추가 기능 완료 (2026-06-16)
+
+### 채팅 가시성 설정 (전체 / 근접 / 금지)
+
+* **`ssambus_realtime.js`**: `__rtChatMode` 변수(`'all'|'proximity'|'disabled'`) 추가. 교사 대시보드에서 broadcast(`chat_setting` 이벤트)로 변경 시 모든 학생에게 즉시 반영
+* **근접 판정**: 발신자 presence 위치와 내 `pos`의 유클리드 거리 ≤ `__rtProximityThreshold`(5타일) 이내만 수신 (`__rtIsNearby()`)
+* **채팅 금지**: `disabled`이면 채팅 입력창 숨김 + 하단에 빨간색 "선생님이 채팅을 일시 중지했습니다." 배너 표시 (`__rtApplyChatMode()`)
+* **교사 대시보드**: 상단 토글 버튼(전체 공개 → 근접만 → 채팅 금지 → 반복 순환) 추가 → 클릭 시 broadcast
+* **초기값 로드**: 학생 맵 입장 시 `room_settings.chat_mode`를 Supabase에서 읽어 채팅 모드 초기화 (`__rtLoadChatMode()`)
+* **SQL**: `room_settings` 테이블에 `chat_mode text not null default 'all'` 컬럼 추가 (`ssambus_room_settings_setup.sql` 하단)
+
+---
+
+### 다양한 미션 타입 추가
+
+기존 `youtube/quiz/google_form/link` 외 4종 추가:
+
+| 타입 | 설명 |
+|-|-|
+| `image_quiz` | 이미지 URL + 질문 + 4지선다. 이미지가 모달 상단에 표시됨 |
+| `short_answer` | 주관식 단답형. 정답(텍스트)을 입력하면 대소문자 무시 비교 후 완료 처리 |
+| `discussion` | 토론/의견 제시 미션. 100자 이상 입력 시 완료. 정답 없이 자유 서술 |
+| `ox_quiz` | O/X 2지선다 퀴즈. 이미지 첨부 가능 |
+
+* **교사 대시보드**: 미션 타입 선택 시 해당 입력 폼이 동적으로 바뀜 (`onTypeChange()`)
+* **`ssambus_missions.js`**: 타입별 모달 렌더링 로직 추가 (`__msRenderMission()`)
+* **SQL**: `missions.type` CHECK 제약에 4개 타입 추가 (`ssambus_missions_setup.sql`)
+
+---
+
+### PDF 미션 자동 생성 (Groq API · Qwen3-32B)
+
+* **교사 대시보드 상단 버튼**: "📄 PDF로 미션 생성" → PDF 업로드 모달 열림
+* **PDF 텍스트 추출**: `pdf.js`(v3.11.174 CDN) 브라우저 사이드에서 페이지별 텍스트 추출
+* **AI 미션 생성**: Groq API의 `qwen/qwen3-32b` 모델로 추출 텍스트 전송 → 미션 JSON 배열 응답. 프롬프트 앞에 `/no_think` 접두사, 응답에서 `<think>` 블록 제거 처리
+* **미리보기 & 저장**: 생성된 미션 카드 미리보기(수정 가능) 후 "저장" 클릭 시 현재 수업의 선택 맵/구역에 일괄 등록 (`savePdfMissions()`)
+* **구현 위치**: `ssambus_teacher_dashboard.html` 내 인라인 JS (별도 파일 없음)
+* **API 키**: 대시보드 상단 `GROQ_API_KEY` 상수에 직접 입력 (교사 기기에서만 사용, 배포용 파일에서는 실제 키로 교체 필요)
+
+---
+
+### 맵 에디터 (교사용 가구 배치)
+
+교사가 각 맵에 가구를 직접 배치하고 미션 발동 위치로 활용하는 에디터.
+
+#### 가구 배치 (에디터 모달)
+* **교사 대시보드 상단 "🪑 맵 에디터" 버튼** → 맵별 탭 + 팔레트 + 캔버스 에디터 모달
+* **맵별 전용 팔레트** - 맵 성격에 맞는 가구만 표시:
+
+| 맵 | 가구 |
+|-|-|
+| 교실 / 도서관 | 책상, 화분, 책장, 칸막이 |
+| 운동장 | 화분/나무, 벤치, 바위, 꽃밭 |
+| 체육관 | 책상, 칸막이, 운동매트, 운동기구(덤벨) |
+| 현대도시 | 칸막이, 벤치, 가로수, 쓰레기통 |
+| 자연숲 | 화분, 나무, 바위, 꽃밭, 버섯 |
+
+* **캔버스 조작**: 좌클릭/드래그로 배치, 우클릭 또는 지우개 팔레트로 삭제. 보행 가능 타일에만 배치 허용
+* **충돌 처리**: 배치된 가구 좌표에 `grid[r][c] = 99` 설정 → 기존 WALKABLE 체크가 자동으로 이동 차단
+* **저장**: "💾 저장" 클릭 시 `room_settings.map_tiles` (JSONB)에 `{"classroom":{"2,3":20, ...}}` 형태로 Supabase에 upsert
+* **SQL**: `room_settings` 테이블에 `map_tiles jsonb` 컬럼 추가 (`ssambus_room_settings_setup.sql` 하단)
+
+#### 픽셀 아트 가구 렌더링
+* **교사 에디터 캔버스**: 팔레트 버튼에 28×28px 캔버스 미리보기, 에디터 그리드에 픽셀 아트로 가구 표시 (`__edCTile(ctx, x, y, ts, type)` + `__edCT20~37()`)
+* **학생 맵**: `__msLoadAndApplyOverlays()` — 이모지 div 방식을 완전 제거, `<canvas id="map">` 위에 픽셀 아트 직접 드로잉 (`__msCTile()` + `__msCT20~37()`). `drawMap()` 실행 후 동일 ctx에 겹쳐 그림
+
+#### 가구 타입 번호 체계
+| 번호 | 공통 | 번호 | 맵 특화 |
+|-|-|-|-|
+| 20 | 책상/가구 | 30 | 벤치 |
+| 21 | 화분 | 31 | 나무/가로수 |
+| 22 | 책장 | 32 | 바위 |
+| 23 | 칸막이 | 33 | 꽃밭 |
+| — | — | 34 | 운동매트 |
+| — | — | 35 | 운동기구(덤벨) |
+| — | — | 36 | 쓰레기통 |
+| — | — | 37 | 버섯 |
+
+#### A교사 vs B교사 격리
+`room_settings.map_tiles`는 `room_id` 단위로 저장. A교사와 B교사는 각자 다른 수업 코드를 사용하므로 완전히 격리됨. 학생이 교사의 배치 가구를 봐야 하므로 localStorage가 아닌 Supabase 저장 방식을 유지.
+
+---
+
+### 미션 트리거 타일 (타일 직접 지정 발동)
+
+기존 구역(zone) 진입 방식 외 **특정 타일을 직접 밟을 때 미션이 발동**되는 방식 추가.
+
+* **미션 편집 모달**: "📍 미션 발동 위치" 섹션 추가. 라디오 버튼으로 "구역(zone)으로 발동" / "타일 직접 지정" 선택
+* **타일 직접 지정 UI**: 현재 맵 미리보기 캔버스 표시 → 클릭으로 타일 선택/해제 (토글). 선택된 타일은 오렌지 강조 테두리 + ✓ 뱃지로 표시. 맵 에디터에서 배치한 가구도 미리보기에 픽셀 아트로 표시됨
+* **저장**: `missions.trigger_tiles` JSONB 컬럼에 `[{"r":2,"c":3},{"r":2,"c":4}]` 형태로 저장
+* **발동 우선순위**: `checkZoneOnMove(pos)`에서 tile 트리거를 zone보다 먼저 체크. `trigger_tiles`가 있는 미션은 zone 기반 판정에서 제외됨
+* **현재 zone 추적**: 타일 위에 서 있는 동안 `__msCurrentZone = '__tile_' + missionId`로 설정해 재발동 방지
+* **SQL**: `missions` 테이블에 `trigger_tiles jsonb` 컬럼 추가 (`ssambus_missions_setup.sql` 하단)
+
+---
+
+## SQL 변경 사항 누적 (실행 필요 항목)
+
+아래 두 SQL은 **최초 1회** Supabase SQL Editor에서 실행. `if not exists`이므로 재실행해도 안전.
+
+```sql
+-- room_settings 에 채팅 모드 + 맵 타일 컬럼 추가
+alter table room_settings add column if not exists chat_mode text not null default 'all';
+alter table room_settings add column if not exists map_tiles jsonb;
+
+-- missions 에 트리거 타일 컬럼 추가
+alter table missions add column if not exists trigger_tiles jsonb;
+```
+
+각 파일(`ssambus_room_settings_setup.sql`, `ssambus_missions_setup.sql`) 하단에 이미 포함되어 있음.
+
+---
+
 ## 다음 작업
 
-미션 시스템(6단계, 8구역 확장) + Supabase 자동 일시정지 방지 + 교사 대시보드(7단계: 수업 코드 분리 + 작성자 본인만 수정/삭제) + 배포 가이드(8단계) + 실시간 맵 보기/터치 스와이프/캐릭터 선택 리다이렉트/맵 채팅/교사 참가 기능 1차 완료.
+맵 에디터(가구 배치+픽셀 아트+맵별 팔레트) + 미션 트리거 타일 + 채팅 모드(전체/근접/금지) + 다양한 미션 타입(image_quiz/short_answer/discussion/ox_quiz) + PDF 미션 자동 생성(Groq API) 완료.
 
-**다음 작업 (확정): 새 맵 추가** - 아래 "새 맵 추가 가이드" 섹션 참고. 추가 후보(`ssambus_handover.md` 1차 목록 중 미제작): 음악실, 미술실, 컴퓨터실, 교무실, 한강공원, 동네마을, 일반 길거리
+남은 작업(모두 선택 사항):
 
-남은 작업(모두 선택 사항, 새 맵 추가와 별개):
-
-* (선택) 빠른 이동 시 원격 캐릭터가 건너뛰어 보이는 현상을 줄이기 위한 타임스탬프 기반 위치 보간 - 메시지 사용량과 트레이드오프 고려 필요
-* (선택) 미션 시스템 고도화: 구역별 미션 1개 이상 누적 시 진행 순서 강제, 전체 클리어 시 "완료 화면" 연동, 교사 대시보드와의 실시간 동기화(Supabase students.missions_done)
+* (선택) **새 맵 추가** - 아래 "새 맵 추가 가이드" 섹션 참고. 후보: 음악실, 미술실, 컴퓨터실, 교무실, 한강공원, 동네마을, 일반 길거리
+* (선택) 맵 에디터 저장을 localStorage에도 백업해두고 "이전 수업 맵 불러오기" 기능 추가
+* (선택) 빠른 이동 시 원격 캐릭터가 건너뛰어 보이는 현상을 줄이기 위한 타임스탬프 기반 위치 보간
+* (선택) 미션 시스템 고도화: 전체 클리어 시 "완료 화면" 연동, 교사 대시보드와의 실시간 동기화
 * (선택) 교사 대시보드: 실시간 학생 접속 현황(Presence) 모니터링
-* (선택) 맵 내 사용자 배치 물품(아이템) 시스템 (아래 섹션 참고)
 
 \---
 
@@ -651,23 +763,6 @@ QR 스캔 입장
 
 ### 5) 배포 시
 * "배포 가이드 > 2) GitHub Pages 배포" 업로드 파일 목록에 `ssambus_map_<id>.html` 추가
-
-\---
-
-## 향후 기능: 맵 내 사용자 배치 물품(아이템) 시스템
-
-교사가 맵에 직접 물품(아이템/오브젝트)을 배치할 수 있게 하는 기능은 **현재 구조로 충분히 구현 가능**. 설계 방향:
-
-* **데이터 구조**: `rooms` 또는 `missions` 테이블에 `placed_items` 필드(JSON 배열) 추가
-  ```json
-  { "id": "item_001", "type": "key|book|chest|sign|...", "r": 5, "c": 7, "icon": "🔑", "label": "황금열쇠", "mission_id": "mission_003", "collectible": true }
-  ```
-* **렌더링**: 각 맵의 `drawMap()` 실행 후, `drawItems()` 함수를 추가해 `placed_items` 배열을 순회하며 캔버스에 아이콘/이모지 또는 간단한 SVG를 해당 r,c 좌표에 그림 (플레이어 캐릭터와 동일한 좌표 변환식 `x=c*TS, y=r*TS` 사용)
-* **충돌/상호작용**: 아이템 칸은 기본적으로 WALKABLE 유지(통행 가능, 위에 표시만) 하거나, `collectible:false`인 경우 별도의 `BLOCKED_BY_ITEM` 체크를 `move()`에 추가해 통행 차단 가능
-* **교사 대시보드(미구현)**: 맵 미리보기 위에서 칸을 클릭해 아이템을 배치/삭제하는 "배치 모드" UI 추가 → 좌표를 `placed_items`에 저장 → Supabase에 영속화
-* **학생 화면**: 입장 시 `placed_items`를 불러와 `drawItems()` 호출, 미션 진행에 따라 아이템 표시/숨김 처리 (예: 미션 클리어 시 아이템 제거)
-
-각 맵의 그리드/그리기 함수 구조가 이미 동일한 패턴이라 `drawItems()`를 공용 함수로 만들어 모든 맵 파일에 동일하게 추가하면 됨 (수정 최소화).
 
 \---
 
