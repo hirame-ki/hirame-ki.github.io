@@ -198,7 +198,7 @@ function __rtInjectChatStyle(){
     .chat-bubble{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);
       background:#fff;border:1px solid #ccc;border-radius:10px;padding:5px 9px;margin-bottom:6px;
       font-size:12px;line-height:1.45;font-family:sans-serif;color:#333;
-      max-width:160px;text-align:center;word-break:break-word;white-space:normal;
+      width:max-content;max-width:160px;text-align:center;word-break:break-word;white-space:normal;
       box-shadow:0 2px 6px rgba(0,0,0,.18);z-index:30;pointer-events:none;
       animation:rt-bubble-in .15s ease}
     .chat-bubble:after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);

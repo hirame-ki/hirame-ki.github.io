@@ -172,14 +172,20 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 .jm-tabs button{padding:10px 14px;border-radius:8px;border:1px solid #ccc;background:#fff;font-size:13.5px;cursor:pointer;text-align:left}
 .jm-tabs button:hover{background:#eee}
 
-/* ===== PDF 미션 생성 모달 ===== */
+/* ===== AI 자동문제 생성 모달 ===== */
 #pdfModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
 #pdfModal-bg.show{display:flex}
 #pdfModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto}
 #pdfModal h2{margin:0 0 .3rem;font-size:16px}
 #pdf-status{margin:10px 0;font-size:13px;padding:10px 12px;background:#f0f4ff;border-radius:6px;border-left:3px solid #3498db;line-height:1.5}
 #pdf-status.err{background:#fff0f0;border-left-color:#e74c3c;color:#c0392b}
+#pdf-dropzone{border:2px dashed #b0c4de;border-radius:8px;padding:18px 12px;text-align:center;cursor:pointer;transition:background .15s,border-color .15s;font-size:13px;color:#555}
+#pdf-dropzone:hover,#pdf-dropzone.drag-over{background:#f0f6ff;border-color:#3498db}
+#pdf-dropzone.has-file{border-color:#27ae60;background:#f0fff4;color:#1a7a40;font-weight:600}
 #pdf-preview-list .pdf-qcard{background:#f8f9fa;border:1px solid #e6e6e6;border-radius:8px;padding:12px;margin-bottom:8px}
+#pdf-preview-list .pdf-qcard .qtype-row{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #e6e6e6}
+#pdf-preview-list .pdf-qcard .qtype-row label{font-size:11.5px;color:#888;white-space:nowrap}
+#pdf-preview-list .pdf-qcard .qtype-row select{font-size:12px;padding:2px 6px;border:1px solid #ccc;border-radius:4px}
 
 /* ===== 상단바 버튼 그룹 ===== */
 .topbar .right{display:flex;gap:8px}
@@ -262,7 +268,7 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     </div>
     <div class="right">
       <button class="primary" onclick="openMapEditor()">🪑 맵 에디터</button>
-      <button class="primary" onclick="openPdfModal()">📄 PDF 미션 생성</button>
+      <button class="primary" onclick="openPdfModal()">✨ AI 자동문제 생성</button>
       <button class="primary" onclick="openLinkModal()">🔗 학생 초대 링크</button>
       <button class="primary" onclick="openOrderModal()">🚪 맵 이동 순서</button>
       <button class="primary" onclick="openLiveMapModal()">🗺️ 실시간 맵 보기</button>
@@ -482,10 +488,10 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
   </div>
 </div>
 
-<!-- PDF 미션 자동 생성 모달 -->
+<!-- AI 자동문제 생성 모달 -->
 <div id="pdfModal-bg">
   <div id="pdfModal">
-    <h2>📄 PDF로 미션 자동 생성</h2>
+    <h2>✨ AI 자동문제 생성</h2>
     <div class="section-hint">학습 자료 PDF를 업로드하면 Qwen3-32B AI가 문제를 자동 생성합니다.</div>
 
     <div id="pdf-form">
@@ -495,7 +501,10 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
       </div>
       <div class="field">
         <label>PDF 파일</label>
-        <input type="file" id="pdf-file" accept=".pdf" style="font-size:13px">
+        <div id="pdf-dropzone">
+          📄 클릭하거나 PDF 파일을 여기로 드래그하세요
+          <input type="file" id="pdf-file" accept=".pdf" style="display:none">
+        </div>
         <div class="section-hint">텍스트 레이어가 있는 PDF만 지원됩니다. (스캔본 불가)</div>
       </div>
       <div class="row2">
@@ -508,7 +517,7 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
           </select>
         </div>
         <div class="field">
-          <label>문제 유형</label>
+          <label>기본 문제 유형 <span style="font-weight:normal;color:#999">(생성 후 개별 변경 가능)</span></label>
           <select id="pdf-type">
             <option value="quiz">객관식 (4지선다)</option>
             <option value="ox_quiz">O/X 퀴즈</option>
@@ -518,15 +527,16 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
       </div>
       <div class="row2">
         <div class="field">
-          <label>시작 페이지</label>
+          <label>AI에 전달할 시작 페이지</label>
           <input type="number" id="pdf-page-start" value="1" min="1">
         </div>
         <div class="field">
-          <label>끝 페이지 <span style="font-weight:normal;color:#999">(4페이지 이하 권장)</span></label>
+          <label>끝 페이지 <span style="font-weight:normal;color:#999">(최대 4페이지 권장)</span></label>
           <input type="number" id="pdf-page-end" value="4" min="1">
         </div>
       </div>
-      <div class="row2">
+      <div class="section-hint" style="margin-top:-6px">💡 지정 범위의 PDF 텍스트만 AI에 전달됩니다. 너무 많은 페이지는 토큰 초과로 오류가 발생할 수 있습니다.</div>
+      <div class="row2" style="margin-top:8px">
         <div class="field">
           <label>추가할 구역</label>
           <select id="pdf-zone"></select>
@@ -1950,8 +1960,8 @@ function switchEditorMap(mapId){
   // 맵이 바뀌면 해당 맵 팔레트로 재빌드
   if(!MAP_PALETTE[__edMapId].includes(__edSelTile)) __edSelTile = MAP_PALETTE[__edMapId][0] || 20;
   __edBuildPalette();
-  __edRender();
   __edBindCanvas();
+  __edRender();
 }
 
 /* ── 캔버스 렌더 ──────────────────────────── */
@@ -2351,22 +2361,60 @@ function __updateTrigInfo(){
   }
 }
 
-/* ===================== PDF 미션 자동 생성 (Groq · Qwen3-32B) ===================== */
+/* ===================== AI 자동문제 생성 (Groq · Qwen3-32B) ===================== */
 const PDF_GROQ_MODEL  = 'qwen/qwen3-32b';
 const PDF_APIKEY_KEY  = 'ssambus_groq_apikey';
 let __pdfMissions = []; // 미리보기 중인 생성 결과
+
+function __pdfInitDropzone(){
+  const dz   = document.getElementById('pdf-dropzone');
+  const inp  = document.getElementById('pdf-file');
+  if(dz.__pdfDzReady) return;
+  dz.__pdfDzReady = true;
+
+  dz.addEventListener('click', () => inp.click());
+  inp.addEventListener('change', () => {
+    const f = inp.files[0];
+    dz.textContent = f ? `📄 ${f.name}` : '📄 클릭하거나 PDF 파일을 여기로 드래그하세요';
+    dz.classList.toggle('has-file', !!f);
+    if(f){ const dt = new DataTransfer(); dt.items.add(f); inp.files = dt.files; }
+  });
+  dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if(!f || f.type !== 'application/pdf'){ alert('PDF 파일만 업로드할 수 있습니다.'); return; }
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    inp.files = dt.files;
+    dz.textContent = `📄 ${f.name}`;
+    dz.classList.add('has-file');
+  });
+}
 
 function openPdfModal(){
   const saved = localStorage.getItem(PDF_APIKEY_KEY);
   if(saved) document.getElementById('pdf-apikey').value = saved;
 
-  // 현재 맵 구역 목록 채우기
+  // 구역 목록: MAPS 고정 구역 + missionsCache에 있는 커스텀 구역 병합
   const map = MAPS.find(m => m.id === currentMap);
+  const mapZones  = map ? map.zones : [];
+  const knownIds  = new Set(mapZones.map(z => z.id));
+  const allZones  = [...mapZones];
+  (missionsCache[currentMap] || []).forEach(m => {
+    if(!knownIds.has(m.zone_id)){
+      knownIds.add(m.zone_id);
+      allZones.push({ id: m.zone_id, label: m.zone_id });
+    }
+  });
   const sel = document.getElementById('pdf-zone');
-  sel.innerHTML = (map ? map.zones : []).map(z =>
+  sel.innerHTML = allZones.map(z =>
     `<option value="${z.id}">${z.label} (${z.id})</option>`
   ).join('');
 
+  __pdfInitDropzone();
   resetPdfPreview();
   document.getElementById('pdfModal-bg').classList.add('show');
 }
@@ -2517,7 +2565,7 @@ async function generatePdfMissions(){
     __pdfStatus('📄 PDF에서 텍스트를 추출하는 중...');
     const pdfText = await __pdfExtract(file, sPage, ePage);
 
-    __pdfStatus(`🤖 Qwen3-32B가 문제를 생성하는 중입니다... (${count}문제)`);
+    __pdfStatus(`🤖 AI가 문제를 생성하는 중입니다... (${count}문제)`);
     const missions = await __pdfCallGroq(apiKey, pdfText, count, type);
 
     __pdfMissions = missions;
@@ -2547,11 +2595,20 @@ function __pdfRenderPreview(missions, type){
     } else if(type === 'short_answer' && m.model_answer){
       detail = `<div style="font-size:12px;color:#16a085;padding-top:4px">예시 답안: ${m.model_answer}</div>`;
     }
-    return `<div class="pdf-qcard">
+    const typeOpts = [
+      ['quiz','객관식 (4지선다)'],
+      ['ox_quiz','O/X 퀴즈'],
+      ['short_answer','주관식']
+    ].map(([v,l]) => `<option value="${v}"${v===type?' selected':''}>${l}</option>`).join('');
+    return `<div class="pdf-qcard" data-q-idx="${i}">
       <div style="font-size:11px;color:#aaa;margin-bottom:3px">문제 ${i + 1}</div>
       <div style="font-weight:600;font-size:13.5px;margin-bottom:5px">${m.title || `문제 ${i+1}`}</div>
       <div style="font-size:13px;color:#333;margin-bottom:4px">${m.question}</div>
       ${detail}
+      <div class="qtype-row">
+        <label>저장 유형:</label>
+        <select class="q-type-sel" data-idx="${i}">${typeOpts}</select>
+      </div>
     </div>`;
   }).join('');
   document.getElementById('pdf-preview').style.display = 'block';
@@ -2562,15 +2619,19 @@ async function savePdfMissions(){
   if(!client){ alert('Supabase 설정을 확인해주세요.'); return; }
   const zoneId   = document.getElementById('pdf-zone').value;
   const required = document.getElementById('pdf-required').checked;
-  const type     = document.getElementById('pdf-type').value;
   const base     = nextOrder(currentMap, zoneId);
 
+  // 각 카드의 개별 유형 선택 읽기
+  const typeSelects = document.querySelectorAll('.q-type-sel');
+
   const rows = __pdfMissions.map((m, i) => {
+    const type = typeSelects[i] ? typeSelects[i].value : document.getElementById('pdf-type').value;
     let quiz = null;
     if(type === 'quiz'){
-      quiz = { question: m.question, options: m.options || [], answer: Number(m.answer) };
+      quiz = { question: m.question, options: m.options || [], answer: Number(m.answer) || 0 };
     } else if(type === 'ox_quiz'){
-      quiz = { question: m.question, answer: String(m.answer) };
+      const ans = String(m.answer);
+      quiz = { question: m.question, answer: (ans === 'O' || ans === 'X') ? ans : 'O' };
     } else {
       quiz = { question: m.question, model_answer: m.model_answer || null };
     }
@@ -2580,7 +2641,7 @@ async function savePdfMissions(){
       map_id:     currentMap,
       zone_id:    zoneId,
       teacher_id: currentUserId,
-      title:      m.title || `PDF 미션 ${i + 1}`,
+      title:      m.title || `AI 미션 ${i + 1}`,
       type,
       content:    null,
       order:      base + i,

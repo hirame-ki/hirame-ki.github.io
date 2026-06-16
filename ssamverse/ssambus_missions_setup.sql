@@ -36,41 +36,60 @@ create policy "missions are readable by anyone"
 insert into missions (id, room_id, map_id, zone_id, title, type, content, "order", required, quiz) values
 -- 일반교실
 ('demo_classroom_1', 'demo', 'classroom', 'zone_A', '수업 안내 영상 시청', 'youtube',
-  'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 1, true, null),
+  'https://www.youtube.com/watch?v=v66yDEGA9nk', 1, true, null),
 ('demo_classroom_2', 'demo', 'classroom', 'zone_B', '퀴즈: 교실 예절', 'quiz', null, 2, true,
   '{"question":"친구가 발표할 때 가장 알맞은 태도는 무엇일까요?","options":["딴짓을 한다","발표자를 바라보며 경청한다","옆 친구와 이야기한다","자리에서 일어나 돌아다닌다"],"answer":1}'),
+('demo_classroom_3', 'demo', 'classroom', 'zone_C', '쌤버스 인스타그램 방문하기', 'link',
+  'https://www.instagram.com/hirame.ki/', 3, true, null),
 
 -- 도서관
 ('demo_library_1', 'demo', 'library', 'zone_A', '도서관 이용 안내 영상', 'youtube',
-  'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 1, true, null),
+  'https://www.youtube.com/watch?v=v66yDEGA9nk', 1, true, null),
 ('demo_library_2', 'demo', 'library', 'zone_B', '퀴즈: 도서관 예절', 'quiz', null, 2, true,
   '{"question":"도서관에서 책을 다 읽은 후 가장 알맞은 행동은?","options":["아무 곳에나 두고 나간다","제자리에 정리한다","다른 칸에 숨겨둔다","바닥에 쌓아둔다"],"answer":1}'),
+('demo_library_3', 'demo', 'library', 'zone_C', '쌤버스 인스타그램 방문하기', 'link',
+  'https://www.instagram.com/hirame.ki/', 3, true, null),
 
 -- 운동장
 ('demo_playground_1', 'demo', 'playground', 'zone_A', '운동장 안전 영상', 'youtube',
-  'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 1, true, null),
+  'https://www.youtube.com/watch?v=v66yDEGA9nk', 1, true, null),
 ('demo_playground_2', 'demo', 'playground', 'zone_B', '퀴즈: 운동장 안전', 'quiz', null, 2, true,
   '{"question":"축구공이 다른 친구 쪽으로 빠르게 날아갈 때 가장 먼저 해야 할 일은?","options":["소리쳐서 알려준다","모른 척한다","더 세게 찬다","뛰어가서 잡는다"],"answer":0}'),
+('demo_playground_3', 'demo', 'playground', 'zone_C', '쌤버스 인스타그램 방문하기', 'link',
+  'https://www.instagram.com/hirame.ki/', 3, true, null),
 
 -- 체육관
 ('demo_gym_1', 'demo', 'gym', 'zone_A', '체육관 이용 안내 영상', 'youtube',
-  'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 1, true, null),
+  'https://www.youtube.com/watch?v=v66yDEGA9nk', 1, true, null),
 ('demo_gym_2', 'demo', 'gym', 'zone_B', '퀴즈: 체육 안전 수칙', 'quiz', null, 2, true,
   '{"question":"체육 활동을 시작하기 전에 가장 먼저 해야 할 일은?","options":["바로 전속력으로 달리기","준비 운동(스트레칭)","물 마시기 생략","신발 벗고 활동하기"],"answer":1}'),
+('demo_gym_3', 'demo', 'gym', 'zone_C', '쌤버스 인스타그램 방문하기', 'link',
+  'https://www.instagram.com/hirame.ki/', 3, true, null),
 
 -- 현대도시
 ('demo_city_1', 'demo', 'city', 'zone_A', '교통안전 영상', 'youtube',
-  'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 1, true, null),
+  'https://www.youtube.com/watch?v=v66yDEGA9nk', 1, true, null),
 ('demo_city_2', 'demo', 'city', 'zone_B', '퀴즈: 횡단보도 안전', 'quiz', null, 2, true,
   '{"question":"횡단보도를 건널 때 가장 알맞은 행동은?","options":["좌우를 살피지 않고 빠르게 건넌다","초록불이 켜지면 좌우를 살피고 건넌다","빨간불에도 차가 없으면 건넌다","휴대폰을 보며 건넌다"],"answer":1}'),
+('demo_city_3', 'demo', 'city', 'zone_C', '쌤버스 인스타그램 방문하기', 'link',
+  'https://www.instagram.com/hirame.ki/', 3, true, null),
 
 -- 자연숲
 ('demo_forest_1', 'demo', 'forest', 'zone_A', '자연 생태 안내 영상', 'youtube',
-  'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 1, true, null),
+  'https://www.youtube.com/watch?v=v66yDEGA9nk', 1, true, null),
 ('demo_forest_2', 'demo', 'forest', 'zone_B', '퀴즈: 자연 보호', 'quiz', null, 2, true,
-  '{"question":"숲에서 가져온 쓰레기는 어떻게 처리해야 할까요?","options":["숲 속에 묻는다","연못에 버린다","집까지 가져가 분리배출한다","나무 위에 걸어둔다"],"answer":2}')
+  '{"question":"숲에서 가져온 쓰레기는 어떻게 처리해야 할까요?","options":["숲 속에 묻는다","연못에 버린다","집까지 가져가 분리배출한다","나무 위에 걸어둔다"],"answer":2}'),
+('demo_forest_3', 'demo', 'forest', 'zone_C', '쌤버스 인스타그램 방문하기', 'link',
+  'https://www.instagram.com/hirame.ki/', 3, true, null)
 
-on conflict (id) do nothing;
+on conflict (id) do update set
+  content  = excluded.content,
+  title    = excluded.title,
+  type     = excluded.type,
+  zone_id  = excluded.zone_id,
+  "order"  = excluded."order",
+  required = excluded.required,
+  quiz     = excluded.quiz;
 
 -- =====================================================================
 -- 4) 새 미션 유형 추가 시 type CHECK 제약 업데이트 (기존 테이블에 적용)
