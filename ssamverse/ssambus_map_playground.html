@@ -63,7 +63,17 @@ var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')=
 if(TEACHER_VIEW){
   document.body.style.padding='0';
   document.body.style.background='transparent';
+  document.body.style.overflow='hidden';
   document.querySelectorAll('h2,.info,.pad,.legend').forEach(function(el){el.style.display='none';});
+  var sw=document.querySelector('.stage-wrap');
+  if(sw){
+    sw.style.width=(COLS*TS)+'px';
+    sw.style.height=(ROWS*TS)+'px';
+    sw.style.overflow='visible';
+    sw.style.border='none';
+    sw.style.borderRadius='0';
+    sw.style.boxShadow='none';
+  }
 }
 
 /* Tile: 1=fence 2=running-track 3=grass(soccer field) 5=exit-gate */

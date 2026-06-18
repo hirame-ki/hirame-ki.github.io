@@ -159,7 +159,11 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 .lm-tabs button.active{background:#2c3e50;color:#fff;border-color:#2c3e50}
 .lm-tabs button:hover:not(.active){background:#eee}
 .lm-stage{position:relative}
-.lm-frame-wrap{position:relative;width:100%;height:60vh;max-height:560px;background:#1a252f;border-radius:8px;overflow:hidden}
+.lm-zoom-bar{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.lm-zoom-bar button{padding:4px 10px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:14px;line-height:1}
+.lm-zoom-bar button:hover{background:#eee}
+.lm-frame-wrap{position:relative;width:100%;height:60vh;max-height:560px;background:#1a252f;border-radius:8px;overflow:hidden;cursor:grab}
+.lm-frame-wrap.lm-dragging{cursor:grabbing}
 .lm-frame-wrap iframe{position:absolute;border:0;transform-origin:top left;pointer-events:none;background:#fff}
 .lm-online{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:12px;z-index:1}
 
@@ -353,6 +357,13 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     <h2>🗺️ 실시간 맵 보기</h2>
     <div class="section-hint">학생들이 맵 위에서 이동하는 모습을 실시간으로 확인할 수 있어요. (이 화면에서는 직접 조작할 수 없습니다)</div>
     <div class="lm-tabs" id="lm_tabs"></div>
+    <div class="lm-zoom-bar">
+      <button onclick="__lmZoom(1.4)" title="확대">＋</button>
+      <button onclick="__lmZoom(1/1.4)" title="축소">－</button>
+      <button onclick="__lmResetZoom()" title="전체 보기">⤢</button>
+      <span id="lm_zoom_pct" style="font-size:12px;color:#888;margin-left:2px">100%</span>
+      <span style="font-size:12px;color:#aaa;margin-left:8px">드래그로 이동</span>
+    </div>
     <div style="display:flex;gap:12px;align-items:flex-start">
       <div class="lm-stage" style="flex:1;min-width:0">
         <div class="lm-frame-wrap" id="lm_frame_wrap">
@@ -705,8 +716,8 @@ const MAP_FILES = {
 const MAP_CANVAS_SIZE = {
   classroom:{ w:720,  h:768  },
   library:  { w:720,  h:1008 },
-  playground:{ w:1536, h:672  },
-  gym:      { w:1344, h:672  },
+  playground:{ w:2688, h:1152 },
+  gym:      { w:2304, h:1152 },
   city:     { w:1344, h:672  },
   forest:   { w:1344, h:672  }
 };
@@ -1073,6 +1084,9 @@ function downloadQr(){
 /* ===================== 실시간 맵 보기 ===================== */
 let __lmCurrentMap = null;
 let __lmChannel = null;
+let __lmZoomLevel = 1.0;
+let __lmPanX = 0, __lmPanY = 0;
+let __lmDragging = false, __lmDragSX = 0, __lmDragSY = 0, __lmDragPX = 0, __lmDragPY = 0;
 
 /* ===================== 맵 참가하기 (교사 참여) ===================== */
 function openJoinMapModal(){
@@ -1098,10 +1112,67 @@ function openLiveMapModal(){
   const tabs = document.getElementById('lm_tabs');
   tabs.innerHTML = MAPS.map(m => `<button onclick="switchLiveMap('${m.id}')" data-map="${m.id}">${m.label}</button>`).join('');
   document.getElementById('liveMapModal-bg').classList.add('show');
+  __lmInitDrag();
   switchLiveMap(currentMap);
 }
 
+function __lmInitDrag(){
+  const wrap = document.getElementById('lm_frame_wrap');
+  if(!wrap || wrap.__lmDragBound) return;
+  wrap.__lmDragBound = true;
+  wrap.addEventListener('mousedown', e => {
+    __lmDragging = true; __lmDragSX = e.clientX; __lmDragSY = e.clientY;
+    __lmDragPX = __lmPanX; __lmDragPY = __lmPanY;
+    wrap.classList.add('lm-dragging');
+  });
+  window.addEventListener('mousemove', e => {
+    if(!__lmDragging) return;
+    __lmPanX = __lmDragPX + (e.clientX - __lmDragSX);
+    __lmPanY = __lmDragPY + (e.clientY - __lmDragSY);
+    __lmApplyTransform();
+  });
+  window.addEventListener('mouseup', () => {
+    __lmDragging = false;
+    wrap.classList.remove('lm-dragging');
+  });
+}
+
+function __lmApplyTransform(){
+  const wrap = document.getElementById('lm_frame_wrap');
+  const iframe = document.getElementById('lm_iframe');
+  if(!wrap || !iframe || !__lmCurrentMap) return;
+  const size = MAP_CANVAS_SIZE[__lmCurrentMap];
+  if(!size) return;
+  const wrapW = wrap.clientWidth, wrapH = wrap.clientHeight;
+  const fitScale = Math.min(wrapW / size.w, wrapH / size.h);
+  const scale = fitScale * __lmZoomLevel;
+  const scaledW = size.w * scale;
+  const scaledH = size.h * scale;
+  const maxPX = Math.max(0, (scaledW - wrapW) / 2);
+  const maxPY = Math.max(0, (scaledH - wrapH) / 2);
+  __lmPanX = Math.max(-maxPX, Math.min(maxPX, __lmPanX));
+  __lmPanY = Math.max(-maxPY, Math.min(maxPY, __lmPanY));
+  const baseX = Math.max(0, (wrapW - scaledW) / 2);
+  const baseY = Math.max(0, (wrapH - scaledH) / 2);
+  iframe.style.left = (baseX + __lmPanX) + 'px';
+  iframe.style.top  = (baseY + __lmPanY) + 'px';
+  iframe.style.transform = `scale(${scale})`;
+  const pctEl = document.getElementById('lm_zoom_pct');
+  if(pctEl) pctEl.textContent = Math.round(__lmZoomLevel * 100) + '%';
+}
+
+function __lmZoom(factor){
+  __lmZoomLevel = Math.max(0.3, Math.min(5, __lmZoomLevel * factor));
+  __lmApplyTransform();
+}
+
+function __lmResetZoom(){
+  __lmZoomLevel = 1.0; __lmPanX = 0; __lmPanY = 0;
+  __lmApplyTransform();
+}
+
 function closeLiveMapModal(){
+  __lmDragging = false;
   document.getElementById('liveMapModal-bg').classList.remove('show');
   document.getElementById('lm_iframe').src = 'about:blank';
   if(__lmChannel){
@@ -1112,20 +1183,16 @@ function closeLiveMapModal(){
 
 function switchLiveMap(mapId){
   __lmCurrentMap = mapId;
+  __lmZoomLevel = 1.0; __lmPanX = 0; __lmPanY = 0;
   document.querySelectorAll('#lm_tabs button').forEach(b => b.classList.toggle('active', b.dataset.map === mapId));
 
   const size = MAP_CANVAS_SIZE[mapId];
-  const wrap = document.getElementById('lm_frame_wrap');
   const iframe = document.getElementById('lm_iframe');
-  const wrapW = wrap.clientWidth, wrapH = wrap.clientHeight;
-  const scale = Math.min(wrapW / size.w, wrapH / size.h);
-  iframe.style.width = size.w + 'px';
+  iframe.style.width  = size.w + 'px';
   iframe.style.height = size.h + 'px';
-  iframe.style.transform = `scale(${scale})`;
-  iframe.style.left = Math.max(0, (wrapW - size.w*scale) / 2) + 'px';
-  iframe.style.top = Math.max(0, (wrapH - size.h*scale) / 2) + 'px';
   iframe.src = MAP_FILES[mapId] + '?room=' + encodeURIComponent(ROOM_ID) + '&teacherView=1';
 
+  setTimeout(__lmApplyTransform, 50);
   __lmConnectPresence();
 }
 
@@ -2102,6 +2169,56 @@ async function toggleChatBan(){
 
 /* ===================== 맵 에디터 ===================== */
 
+function __edMakePlaygroundGrid(){
+  var g=[];
+  for(var r=0;r<24;r++){
+    g[r]=[];
+    for(var c=0;c<56;c++){
+      var iF=(r===0||r===23||c===0||c===55);
+      var iT=!iF&&(r<=2||r>=21||c<=2||c>=53);
+      g[r][c]=iF?1:(iT?2:3);
+    }
+  }
+  g[0][27]=5;g[0][28]=5;
+  return g;
+}
+
+function __edMakeGymGrid(){
+  var g=[];
+  for(var r=0;r<24;r++){
+    g[r]=[];
+    for(var c=0;c<48;c++){
+      var iW=(r===0||r===23||c===0||c===47);
+      var iD=(c===35&&!(r>=10&&r<=11));
+      var inSt=(c>=36&&c<=46);
+      var inCt=(r>=3&&r<=20&&c>=2&&c<=33);
+      var inGy=(c>=1&&c<=34);
+      var isEn=((r<=2||r>=21)&&inGy);
+      if(iW||iD) g[r][c]=1;
+      else if(inSt) g[r][c]=4;
+      else if(inCt) g[r][c]=2;
+      else if(isEn) g[r][c]=6;
+      else g[r][c]=0;
+    }
+  }
+  g[10][35]=4;g[11][35]=4;
+  g[0][10]=7;g[0][11]=7;
+  [[2,37],[2,38],[2,39],[2,40],[2,41],[2,42],[2,43],[2,44],[2,45],[2,46],
+   [3,38],[3,40],[3,42],[3,44],[3,46],
+   [5,41],[5,42],[6,41],[6,42],
+   [5,45],[5,46],[6,46],
+   [8,38],[8,39],[9,38],
+   [8,43],[8,44],[9,44],
+   [13,37],[13,38],[14,37],
+   [13,45],[13,46],[14,46],
+   [16,41],[17,41],[17,42],
+   [19,37],[19,38],[19,39],[19,40],[19,41],[19,42],[19,43],[19,44],[19,45],[19,46],
+   [20,38],[20,40],[20,42],[20,44],
+   [21,37],[21,45],[21,46]
+  ].forEach(function(a){g[a[0]][a[1]]=5;});
+  return g;
+}
+
 /* 6개 맵의 기본 그리드 + 타일 색상 (에디터 캔버스 렌더용) */
 const MAP_EDITOR_GRIDS = {
   classroom: {
@@ -2156,58 +2273,12 @@ const MAP_EDITOR_GRIDS = {
   playground: {
     cols:56, rows:24, ts:48, walkable:new Set([2,3,5]),
     tileColors:{1:'#3a3a4a',2:'#c8401a',3:'#1a8a30',5:'#27ae60'},
-    grid:(function(){
-      var g=[];
-      for(var r=0;r<24;r++){
-        g[r]=[];
-        for(var c=0;c<56;c++){
-          var iF=(r===0||r===23||c===0||c===55);
-          var iT=!iF&&(r<=2||r>=21||c<=2||c>=53);
-          g[r][c]=iF?1:(iT?2:3);
-        }
-      }
-      g[0][27]=5;g[0][28]=5;
-      return g;
-    })()
+    grid:__edMakePlaygroundGrid()
   },
   gym: {
     cols:48, rows:24, ts:48, walkable:new Set([0,2,4,6,7]),
     tileColors:{0:'#c8a050',1:'#2c3e50',2:'#d4aa5a',4:'#7a7a80',5:'#c8a04a',6:'#b8902e',7:'#27ae60'},
-    grid:(function(){
-      var g=[];
-      for(var r=0;r<24;r++){
-        g[r]=[];
-        for(var c=0;c<48;c++){
-          var iW=(r===0||r===23||c===0||c===47);
-          var iD=(c===35&&!(r>=10&&r<=11));
-          var inSt=(c>=36&&c<=46);
-          var inCt=(r>=3&&r<=20&&c>=2&&c<=33);
-          var inGy=(c>=1&&c<=34);
-          var isEn=((r<=2||r>=21)&&inGy);
-          if(iW||iD) g[r][c]=1;
-          else if(inSt) g[r][c]=4;
-          else if(inCt) g[r][c]=2;
-          else if(isEn) g[r][c]=6;
-          else g[r][c]=0;
-        }
-      }
-      g[10][35]=4;g[11][35]=4;
-      g[0][10]=7;g[0][11]=7;
-      [[2,37],[2,38],[2,39],[2,40],[2,41],[2,42],[2,43],[2,44],[2,45],[2,46],
-       [3,38],[3,40],[3,42],[3,44],[3,46],
-       [5,41],[5,42],[6,41],[6,42],
-       [5,45],[5,46],[6,46],
-       [8,38],[8,39],[9,38],
-       [8,43],[8,44],[9,44],
-       [13,37],[13,38],[14,37],
-       [13,45],[13,46],[14,46],
-       [16,41],[17,41],[17,42],
-       [19,37],[19,38],[19,39],[19,40],[19,41],[19,42],[19,43],[19,44],[19,45],[19,46],
-       [20,38],[20,40],[20,42],[20,44],
-       [21,37],[21,45],[21,46]
-      ].forEach(function(a){g[a[0]][a[1]]=5;});
-      return g;
-    })()
+    grid:__edMakeGymGrid()
   },
   city: {
     cols:28, rows:14, ts:48, walkable:new Set([0,2,3,4,9]),
