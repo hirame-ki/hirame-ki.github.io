@@ -62,7 +62,7 @@ var TS=48,COLS=48,ROWS=24,VIEW_W=768,VIEW_H=672;
 var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
 if(TEACHER_VIEW){
   document.body.style.padding='0';
-  document.body.style.background='transparent';
+  document.body.style.background='#fff';
   document.body.style.overflow='hidden';
   document.querySelectorAll('h2,.info,.pad,.legend').forEach(function(el){el.style.display='none';});
   var sw=document.querySelector('.stage-wrap');
@@ -412,8 +412,8 @@ try{placePlayer();}catch(e){console.warn('[gym] placePlayer:',e);}
 try{initRealtime('gym');}catch(e){console.warn('[gym] realtime:',e);}
 if(!TEACHER_VIEW){
   try{initMissionSystem('gym');}catch(e){console.warn('[gym] missions:',e);}
-  try{loadMapOverlays('gym',ctx,TS);}catch(e){console.warn('[gym] overlays:',e);}
 }
+try{loadMapOverlays('gym',ctx,TS);}catch(e){console.warn('[gym] overlays:',e);}
 </script>
 </body>
 </html>

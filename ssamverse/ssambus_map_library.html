@@ -61,7 +61,7 @@ var TS=48,COLS=26,ROWS=36,VIEW_W=768,VIEW_H=672;
 var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
 if(TEACHER_VIEW){
   document.body.style.padding='0';
-  document.body.style.background='transparent';
+  document.body.style.background='#fff';
   document.body.style.overflow='hidden';
   document.querySelectorAll('h2,.info,.pad,.legend').forEach(function(el){el.style.display='none';});
   var sw=document.querySelector('.stage-wrap');
@@ -371,8 +371,8 @@ try{placePlayer();}catch(e){console.warn('[library] placePlayer:',e);}
 try{initRealtime('library');}catch(e){console.warn('[library] realtime:',e);}
 if(!TEACHER_VIEW){
   try{initMissionSystem('library');}catch(e){console.warn('[library] missions:',e);}
-  try{loadMapOverlays('library',ctx,TS);}catch(e){console.warn('[library] overlays:',e);}
 }
+try{loadMapOverlays('library',ctx,TS);}catch(e){console.warn('[library] overlays:',e);}
 </script>
 </body>
 </html>
