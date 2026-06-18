@@ -843,27 +843,53 @@ async function __msRecordProgress(mission, answer = null){
   }
 }
 
-/* 전체 필수 미션 완료 시 소요 시간 기록 */
+/* 전체 필수 미션 완료 시 소요 시간 기록 (맵별 + 세션 누적) */
 async function __msSaveCompletionTime(){
   if(!__msEntryTime) return;
   const client = __msGetClient();
   if(!client) return;
-  const elapsed_ms = Date.now() - __msEntryTime;
+  const now = Date.now();
+  const elapsed_ms = now - __msEntryTime;
   const nickname = __msParam('nickname', null)
     || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('ssambus_nickname'))
     || '익명';
+
+  // 세션 전체 시작 시간 (첫 번째 맵 입장 시각)
+  let sessionStart = __msEntryTime;
   try{
-    await client.from('mission_progress').upsert({
-      room_id: __msRoomId,
-      student_id: __msStudentId,
-      nickname: nickname,
-      map_id: __msMapId,
-      mission_id: '__completion_' + __msMapId,
-      mission_title: '전체 완료 시간',
-      required: false,
-      completed_at: new Date().toISOString(),
-      student_answer: String(elapsed_ms)
-    }, { onConflict: 'room_id,student_id,mission_id' });
+    const _sk = 'ssambus_session_start_' + __msRoomId + '_' + __msStudentId;
+    const saved = sessionStorage.getItem(_sk);
+    if(saved) sessionStart = Number(saved);
+  }catch(e){ /* 무시 */ }
+  const total_elapsed_ms = now - sessionStart;
+
+  try{
+    await Promise.all([
+      // 맵별 소요 시간
+      client.from('mission_progress').upsert({
+        room_id: __msRoomId,
+        student_id: __msStudentId,
+        nickname: nickname,
+        map_id: __msMapId,
+        mission_id: '__completion_' + __msMapId,
+        mission_title: '완료 시간 (' + __msMapId + ')',
+        required: false,
+        completed_at: new Date(now).toISOString(),
+        student_answer: String(elapsed_ms)
+      }, { onConflict: 'room_id,student_id,mission_id' }),
+      // 세션 전체 누적 시간 (맵 이동마다 갱신)
+      client.from('mission_progress').upsert({
+        room_id: __msRoomId,
+        student_id: __msStudentId,
+        nickname: nickname,
+        map_id: __msMapId,
+        mission_id: '__total__',
+        mission_title: '전체 합산 완료 시간',
+        required: false,
+        completed_at: new Date(now).toISOString(),
+        student_answer: String(total_elapsed_ms)
+      }, { onConflict: 'room_id,student_id,mission_id' })
+    ]);
   }catch(e){
     console.warn('[쌤버스] 완료 시간 기록 실패', e);
   }
@@ -894,6 +920,11 @@ async function initMissionSystem(mapId){
 
   __msBuildUI();
   __msEntryTime = Date.now();
+  // 세션 전체 시작 시간 - 첫 번째 맵 입장 시각만 기록, 이후 맵 이동 시 유지
+  try{
+    const _sk = 'ssambus_session_start_' + __msRoomId + '_' + __msStudentId;
+    if(!sessionStorage.getItem(_sk)) sessionStorage.setItem(_sk, String(__msEntryTime));
+  }catch(e){ /* 무시 */ }
   if(__msTimerInterval) clearInterval(__msTimerInterval);
   __msTimerInterval = setInterval(__msUpdateProgress, 1000);
   __msMissions = await __msLoadMissions(mapId);
