@@ -5,346 +5,397 @@
 <title>쌤버스 - 운동장 맵</title>
 <style>
 *{box-sizing:border-box}
-body{font-family:sans-serif;background:#eef2f5;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
-#main-btn{position:fixed;top:12px;left:12px;z-index:999;background:#2c3e50;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);text-decoration:none}
-h2{margin:.3rem 0}
-.info{font-size:13px;color:#777;margin-bottom:12px;text-align:center}
-.stage-wrap{width:768px;max-width:100%;height:672px;overflow:hidden;border:4px solid #4a3728;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+body{font-family:sans-serif;background:#0a1a2e;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
+#main-btn{position:fixed;top:12px;left:12px;z-index:999;background:#f9ca24;color:#000;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none}
+h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
+.info{font-size:12px;color:#aaa;margin-bottom:12px;text-align:center}
+.stage-wrap{width:768px;max-width:100%;height:672px;overflow:hidden;border:3px solid #f9ca24;border-radius:8px;box-shadow:0 0 24px rgba(249,202,36,0.4)}
 .stage{position:relative;line-height:0}
 #map{display:block}
-#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear, top .1s linear;z-index:5}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear,top .1s linear;z-index:5}
 #player svg{display:block;width:100%;height:100%;overflow:visible}
 #player.flip svg{transform:scaleX(-1)}
-.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear, top .15s linear;z-index:4}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear,top .15s linear;z-index:4}
 .remote-player svg{display:block;width:100%;height:100%;overflow:visible}
 .remote-player.flip svg{transform:scaleX(-1)}
-.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.85);padding:1px 4px;border-radius:4px;white-space:nowrap}
-.pad{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:48px 48px 48px;gap:4px;margin-top:16px}
-.pad button{font-size:18px;border-radius:8px;border:1px solid #bbb;background:#fff;cursor:pointer}
-.pad button:active{background:#ddd}
-.legend{margin-top:10px;font-size:12px;color:#888;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.9);padding:1px 5px;border-radius:4px;white-space:nowrap;font-weight:600}
+.pad{display:grid;grid-template-columns:52px 52px 52px;grid-template-rows:52px 52px 52px;gap:4px;margin-top:14px}
+.pad button{font-size:20px;border-radius:10px;border:none;background:#f9ca24;color:#000;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #c09000}
+.pad button:active{transform:translateY(2px);box-shadow:0 1px 0 #c09000}
+.legend{margin-top:10px;font-size:12px;color:#aaa;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .legend span{display:flex;align-items:center;gap:4px}
-.sw{display:inline-block;width:12px;height:12px;border-radius:2px;border:1px solid #999}
+.sw{display:inline-block;width:13px;height:13px;border-radius:3px}
 </style>
 </head>
 <body>
-<a id="main-btn" href="index.html">← 메인</a>
-
-<h2>🏃 운동장</h2>
-<div class="info">방향키(↑↓←→) 또는 아래 버튼으로 캐릭터를 이동하세요<br>가로로 넓은 운동장 - 트랙 + 잔디 운동장, 좌우 양쪽 골대와 농구대, 놀이기구 2곳, 벤치, 국기게양대, 정문 게이트<br>화면 밖으로 이동하면 맵이 캐릭터를 따라 스크롤됩니다</div>
-
+<a id="main-btn" href="index.html">메인</a>
+<h2>쌤버스 - 운동장</h2>
+<div class="info">방향키 또는 버튼으로 이동하세요</div>
 <div class="stage-wrap">
 <div class="stage">
-  <canvas id="map" width="1536" height="672"></canvas>
-  <div id="player"><svg viewBox="0 0 32 48"><g id="cg_p"></g></svg></div>
+  <canvas id="map" width="2688" height="1152"></canvas>
+  <div id="player"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
   <div id="remote-players"></div>
 </div>
 </div>
-
 <div class="pad">
-  <div></div><button onclick="move('up')">▲</button><div></div>
-  <button onclick="move('left')">◀</button><div></div><button onclick="move('right')">▶</button>
-  <div></div><button onclick="move('down')">▼</button><div></div>
+  <div></div><button onclick="move('up')">&#8593;</button><div></div>
+  <button onclick="move('left')">&#8592;</button><div></div><button onclick="move('right')">&#8594;</button>
+  <div></div><button onclick="move('down')">&#8595;</button><div></div>
 </div>
-
 <div class="legend">
-  <span><span class="sw" style="background:#9aa3ad"></span>펜스</span>
-  <span><span class="sw" style="background:#6fae4e"></span>잔디</span>
-  <span><span class="sw" style="background:#c0694a"></span>트랙</span>
-  <span><span class="sw" style="background:#fff"></span>골대</span>
-  <span><span class="sw" style="background:#d9b98c"></span>정문 게이트</span>
-  <span><span class="sw" style="background:#e0832b"></span>농구대</span>
-  <span><span class="sw" style="background:#8B6914"></span>벤치</span>
-  <span><span class="sw" style="background:#e74c3c"></span>놀이기구</span>
+  <span><span class="sw" style="background:#1a8a30"></span>축구장 잔디</span>
+  <span><span class="sw" style="background:#c8401a"></span>육상 트랙</span>
+  <span><span class="sw" style="background:#3a3a4a"></span>펜스</span>
+  <span><span class="sw" style="background:#ffffff;border:1px solid #666"></span>축구장 라인</span>
+  <span><span class="sw" style="background:#27ae60"></span>출입구</span>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="ssambus_supabase_config.js"></script>
 <script src="ssambus_character_render.js"></script>
-<script src="ssambus_realtime.js?v=7"></script>
+<script src="ssambus_realtime.js"></script>
 <script src="ssambus_missions.js"></script>
 <script>
-/* ===================== 맵 정의 (32열 x 14행, 타일 48px) - 가로로 넓은 운동장 ===================== */
-const TS = 48, COLS = 32, ROWS = 14;
+/* === Playground map 56x24 — Soccer field === */
+var TS=48,COLS=56,ROWS=24,VIEW_W=768,VIEW_H=672;
 
-/* 교사 대시보드의 "실시간 맵 보기"에서 ?teacherView=1 로 열리면 자기 캐릭터/조작 UI를 숨기고 전체 맵을 보여줍니다 */
-const TEACHER_VIEW = new URLSearchParams(window.location.search).get('teacherView') === '1';
+var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
 if(TEACHER_VIEW){
-  document.body.style.padding = '0';
-  document.body.style.background = 'transparent';
-  document.querySelectorAll('h2, .info, .pad, .legend').forEach(el => el.style.display = 'none');
+  document.body.style.padding='0';
+  document.body.style.background='transparent';
+  document.querySelectorAll('h2,.info,.pad,.legend').forEach(function(el){el.style.display='none';});
 }
 
-/* 캐릭터를 한 번도 만들지 않은 학생은 캐릭터 선택 화면으로 먼저 이동시킵니다 */
-let __hasCharacter = true;
-try{ __hasCharacter = !!localStorage.getItem('ssambus_player_character'); }catch(e){ /* 무시 */ }
-const __NEEDS_CHAR_SETUP = !TEACHER_VIEW && !__hasCharacter;
-if(__NEEDS_CHAR_SETUP){
-  const __params = new URLSearchParams(window.location.search);
-  __params.set('map', 'ssambus_map_playground.html');
-  location.replace('ssambus_characters.html?' + __params.toString());
+/* Tile: 1=fence 2=running-track 3=grass(soccer field) 5=exit-gate */
+var grid=[];
+for(var r=0;r<ROWS;r++){
+  grid[r]=[];
+  for(var c=0;c<COLS;c++){
+    var isFence=(r===0||r===ROWS-1||c===0||c===COLS-1);
+    var isTrack=(!isFence&&(r<=2||r>=ROWS-3||c<=2||c>=COLS-3));
+    if(isFence) grid[r][c]=1;
+    else if(isTrack) grid[r][c]=2;
+    else grid[r][c]=3;
+  }
 }
-// 1:펜스 2:잔디 3:트랙 4:골대 5:정문게이트 6:농구대 7:벤치 8:놀이기구 9:국기게양대
-const grid = [
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], // 0: 펜스
-  [1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1], // 1: 트랙
-  [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1], // 2: 잔디
-  [1,3,2,6,8,8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,8,8,6,2,3,1], // 3: 농구대 + 놀이기구(좌/우)
-  [1,3,2,2,8,8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,8,8,8,2,2,3,1], // 4: 놀이기구(좌/우)
-  [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1], // 5: 잔디
-  [1,3,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,3,1], // 6: 좌/우 골대
-  [1,3,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,3,1], // 7: 좌/우 골대
-  [1,3,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,3,1], // 8: 좌/우 골대
-  [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1], // 9: 잔디
-  [1,3,2,7,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,7,2,3,1], //10: 좌/우 벤치
-  [1,3,2,7,2,2,2,2,2,2,2,2,2,2,2,9,2,2,2,2,2,2,2,2,2,2,2,2,7,2,3,1], //11: 좌/우 벤치 + 국기게양대
-  [1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,1], //12: 트랙
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]  //13: 펜스 + 정문 게이트
-];
-const WALKABLE = new Set([2,3,5]);
+/* Exit gate at top fence */
+grid[0][27]=5; grid[0][28]=5;
 
-/* ===================== 카메라(화면 스크롤) ===================== */
-const VIEW_W = 768, VIEW_H = 672; // 화면에 보이는 영역 (16열 x 14행)
+var WALK=[2,3,5];
+function isWalk(t){return WALK.indexOf(t)>=0;}
 
-/* ===================== 타일 그리기 ===================== */
-const cv = document.getElementById('map');
-const ctx = cv.getContext('2d');
+var cv=document.getElementById('map');
+var ctx=cv.getContext('2d');
 
+var __savedChar=(function(){
+  try{
+    var _cp=new URLSearchParams(window.location.search).get('c');
+    if(_cp) return JSON.parse(_cp);
+    return JSON.parse(localStorage.getItem('ssambus_player_character'));
+  }catch(e){return null;}
+})();
+var PLAYER=Object.assign({
+  type:'student',skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',
+  ccolor:'#1a3a6b',cloth:'suit',gender:'male',acc:[],dir:'down'
+},__savedChar||{});
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML=renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip',PLAYER.dir==='left'&&!PLAYER._facingRight);
+}
+
+/* Fence: dark metal chain-link */
 function drawFence(x,y){
-  ctx.fillStyle = '#cfe0e8';
+  ctx.fillStyle='#3a3a4a';
   ctx.fillRect(x,y,TS,TS);
-  ctx.strokeStyle = '#9aa3ad';
-  ctx.lineWidth = 2;
-  for(let i=4;i<TS;i+=8){
+  /* vertical steel posts */
+  ctx.fillStyle='#5a5a6a';
+  ctx.fillRect(x+TS/2-2,y,4,TS);
+  /* chain-link diamond pattern */
+  ctx.strokeStyle='rgba(180,180,200,0.45)';
+  ctx.lineWidth=1;
+  for(var i=0;i<4;i++){
     ctx.beginPath();
-    ctx.moveTo(x+i,y); ctx.lineTo(x+i,y+TS);
+    ctx.moveTo(x,y+i*12+6); ctx.lineTo(x+TS,y+i*12+6);
     ctx.stroke();
   }
-  ctx.strokeStyle = '#7d8a93';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(x,y+TS*0.3); ctx.lineTo(x+TS,y+TS*0.3);
-  ctx.moveTo(x,y+TS*0.7); ctx.lineTo(x+TS,y+TS*0.7);
-  ctx.stroke();
-}
-function drawGrass(x,y){
-  ctx.fillStyle = '#6fae4e';
-  ctx.fillRect(x,y,TS,TS);
-  ctx.strokeStyle = 'rgba(60,120,40,0.25)';
-  ctx.lineWidth = 1;
-  for(let i=0;i<4;i++){
-    const gx=x+6+i*11, gy=y+8+(i%2)*18;
+  for(var j=0;j<5;j++){
     ctx.beginPath();
-    ctx.moveTo(gx,gy+8); ctx.lineTo(gx+2,gy); ctx.lineTo(gx+4,gy+8);
+    ctx.moveTo(x+j*12,y); ctx.lineTo(x+j*12,y+TS);
     ctx.stroke();
   }
 }
-function drawTrack(x,y){
-  ctx.fillStyle = '#c0694a';
+
+/* Running track: vivid orange-red clay with white lane lines */
+function drawTrack(x,y,c,r){
+  /* alternating track strips */
+  ctx.fillStyle=((c+r)%2===0)?'#c8401a':'#d94e28';
   ctx.fillRect(x,y,TS,TS);
-  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([4,4]);
-  ctx.beginPath();
-  ctx.moveTo(x,y+TS/2); ctx.lineTo(x+TS,y+TS/2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
-function drawGoal(x,y,col){
-  drawGrass(x,y);
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 3;
-  if(col<=COLS/2){ // 좌측 골대 - 네트가 오른쪽을 향함
-    ctx.strokeRect(x+TS-6,y+2,6,TS-4);
+  /* rubber texture dots */
+  ctx.fillStyle='rgba(0,0,0,0.08)';
+  var seed=c*7+r*11;
+  for(var i=0;i<6;i++){
     ctx.beginPath();
-    for(let i=4;i<TS-4;i+=6){ ctx.moveTo(x+TS-6,y+i); ctx.lineTo(x+TS,y+i); }
+    ctx.arc(x+4+((seed*13+i*23)%38),y+4+((seed*17+i*11)%38),2,0,Math.PI*2);
+    ctx.fill();
+  }
+  /* lane divider line */
+  if(r===1||r===ROWS-3){
+    ctx.strokeStyle='rgba(255,255,255,0.7)';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(x,y+TS-1); ctx.lineTo(x+TS,y+TS-1);
     ctx.stroke();
-  } else { // 우측 골대 - 네트가 왼쪽을 향함
-    ctx.strokeRect(x,y+2,6,TS-4);
+  }
+  if(c===1||c===COLS-4){
+    ctx.strokeStyle='rgba(255,255,255,0.7)';
+    ctx.lineWidth=2;
     ctx.beginPath();
-    for(let i=4;i<TS-4;i+=6){ ctx.moveTo(x,y+i); ctx.lineTo(x+6,y+i); }
+    ctx.moveTo(x+TS-1,y); ctx.lineTo(x+TS-1,y+TS);
     ctx.stroke();
   }
 }
-function drawGate(x,y){
-  ctx.fillStyle = '#d9b98c';
+
+/* Grass: stadium alternating green stripes */
+function drawGrass(x,y,c,r){
+  /* vertical stripes every 4 cols */
+  var stripe=Math.floor((c-3)/4)%2;
+  ctx.fillStyle=stripe===0?'#1a8a30':'#22a03a';
   ctx.fillRect(x,y,TS,TS);
-  ctx.strokeStyle = '#b08a55';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x+2,y+2,TS-4,TS-4);
-  ctx.fillStyle = '#8a6a44';
-  ctx.fillRect(x+4,y,4,10);
-  ctx.fillRect(x+TS-8,y,4,10);
+  /* subtle blade texture */
+  ctx.strokeStyle='rgba(255,255,255,0.04)';
+  ctx.lineWidth=1;
+  for(var i=0;i<3;i++){
+    ctx.beginPath();
+    ctx.moveTo(x+8+i*16,y+TS-6); ctx.lineTo(x+12+i*16,y+TS-14);
+    ctx.stroke();
+  }
 }
-function drawHoop(x,y,col){
-  drawGrass(x,y);
-  const left = col <= COLS/2; // 좌측 농구대는 지지대가 좌측, 우측은 우측
-  const sx = left ? x+TS-8 : x+4;
-  const bx = left ? x+TS-22 : x+8;
-  ctx.fillStyle = '#888';
-  ctx.fillRect(sx,y+6,4,TS-6);
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(bx,y+6,14,12);
-  ctx.strokeStyle = '#999';
-  ctx.strokeRect(bx,y+6,14,12);
-  ctx.strokeStyle = '#e0832b';
-  ctx.lineWidth = 2;
+
+/* Exit gate */
+function drawExitGate(x,y){
+  ctx.fillStyle='#3a3a4a';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#27ae60';
+  ctx.fillRect(x+2,y,9,TS);
+  ctx.fillRect(x+TS-11,y,9,TS);
+  ctx.fillStyle='#2ecc71';
+  ctx.fillRect(x+2,y,TS-4,10);
+  ctx.fillStyle='#ffffff';
+  ctx.font='bold 9px sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('EXIT',x+TS/2,y+TS*0.5);
+  ctx.strokeStyle='#f1c40f';
+  ctx.lineWidth=2;
   ctx.beginPath();
-  ctx.moveTo(bx,y+18); ctx.lineTo(bx+10,y+18);
-  ctx.stroke();
-  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(bx,y+18); ctx.lineTo(bx+3,y+25);
-  ctx.moveTo(bx+10,y+18); ctx.lineTo(bx+7,y+25);
-  ctx.stroke();
-}
-function drawBench(x,y){
-  drawGrass(x,y);
-  ctx.fillStyle = '#8B6914';
-  ctx.fillRect(x+6,y+18,TS-12,6);
-  ctx.fillRect(x+6,y+30,TS-12,6);
-  ctx.fillStyle = '#5a4310';
-  ctx.fillRect(x+8,y+24,4,14);
-  ctx.fillRect(x+TS-12,y+24,4,14);
-}
-function drawPlayStructure(x,y,col,row){
-  drawGrass(x,y);
-  const colors=['#e74c3c','#3498db','#f1c40f'];
-  ctx.fillStyle = colors[(col+row)%colors.length];
-  ctx.fillRect(x+6,y+6,TS-12,TS-12);
-  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x+6,y+6,TS-12,TS-12);
-  // 사다리/막대 느낌
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(x+12,y+10); ctx.lineTo(x+12,y+TS-10);
-  ctx.moveTo(x+TS-12,y+10); ctx.lineTo(x+TS-12,y+TS-10);
+  ctx.moveTo(x+14,y+TS*0.72);
+  ctx.lineTo(x+TS-8,y+TS*0.72);
+  ctx.moveTo(x+TS-15,y+TS*0.62);
+  ctx.lineTo(x+TS-8,y+TS*0.72);
+  ctx.lineTo(x+TS-15,y+TS*0.82);
   ctx.stroke();
 }
-function drawFlagpole(x,y){
-  drawGrass(x,y);
-  ctx.fillStyle = '#bbb';
-  ctx.fillRect(x+TS/2-1,y+2,2,TS-6);
-  ctx.fillStyle = '#e74c3c';
-  ctx.fillRect(x+TS/2+1,y+4,12,8);
+
+/* Soccer field lines drawn as canvas overlay */
+function drawSoccerLines(){
+  /* field canvas bounds (grass area: cols 3-52, rows 3-20) */
+  var fx1=3*TS, fy1=3*TS;
+  var fx2=53*TS, fy2=21*TS;
+  var fw=fx2-fx1, fh=fy2-fy1;
+  var cx=fx1+fw/2, cy=fy1+fh/2;
+
+  ctx.save();
+  ctx.strokeStyle='rgba(255,255,255,0.92)';
+  ctx.fillStyle='rgba(255,255,255,0.92)';
+  ctx.lineWidth=4;
+  ctx.lineCap='square';
+
+  /* Field boundary */
+  ctx.strokeRect(fx1,fy1,fw,fh);
+
+  /* Center line */
+  ctx.beginPath();
+  ctx.moveTo(cx,fy1); ctx.lineTo(cx,fy2);
+  ctx.stroke();
+
+  /* Center circle (r=160px ≈ 3.3 tiles) */
+  ctx.beginPath();
+  ctx.arc(cx,cy,160,0,Math.PI*2);
+  ctx.stroke();
+
+  /* Center spot */
+  ctx.beginPath();
+  ctx.arc(cx,cy,8,0,Math.PI*2);
+  ctx.fill();
+
+  /* Penalty areas (300px wide × 460px tall from goal line) */
+  var paW=300, paH=460;
+  ctx.strokeRect(fx1,cy-paH/2,paW,paH);
+  ctx.strokeRect(fx2-paW,cy-paH/2,paW,paH);
+
+  /* Goal areas / 6-yard boxes (140px wide × 280px tall) */
+  var gaW=140, gaH=280;
+  ctx.strokeRect(fx1,cy-gaH/2,gaW,gaH);
+  ctx.strokeRect(fx2-gaW,cy-gaH/2,gaW,gaH);
+
+  /* Penalty spots (200px from goal line) */
+  ctx.beginPath(); ctx.arc(fx1+200,cy,8,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(fx2-200,cy,8,0,Math.PI*2); ctx.fill();
+
+  /* Penalty arc (D) */
+  ctx.beginPath();
+  ctx.arc(fx1+200,cy,160,Math.PI*1.75,Math.PI*0.25);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(fx2-200,cy,160,Math.PI*0.75,Math.PI*1.25);
+  ctx.stroke();
+
+  /* Corner arcs */
+  ctx.lineWidth=3;
+  ctx.beginPath(); ctx.arc(fx1,fy1,32,0,Math.PI/2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(fx2,fy1,32,Math.PI/2,Math.PI); ctx.stroke();
+  ctx.beginPath(); ctx.arc(fx1,fy2,32,-Math.PI/2,0); ctx.stroke();
+  ctx.beginPath(); ctx.arc(fx2,fy2,32,Math.PI,-Math.PI/2); ctx.stroke();
+
+  ctx.restore();
+}
+
+/* Soccer goals */
+function drawGoals(){
+  var fx1=3*TS, fx2=53*TS;
+  var cy=(3*TS+21*TS)/2; /* vertical center of field */
+  var gd=80; /* goal depth (pixels into track) */
+  var gh=288; /* goal height */
+
+  ctx.save();
+  ctx.lineWidth=5;
+  ctx.strokeStyle='#ffffff';
+  ctx.fillStyle='rgba(255,255,255,0.12)';
+
+  /* Left goal */
+  ctx.beginPath();
+  ctx.moveTo(fx1,cy-gh/2);
+  ctx.lineTo(fx1-gd,cy-gh/2);
+  ctx.lineTo(fx1-gd,cy+gh/2);
+  ctx.lineTo(fx1,cy+gh/2);
+  ctx.stroke();
+  /* net fill */
+  ctx.fillRect(fx1-gd,cy-gh/2,gd,gh);
+  /* net lines */
+  ctx.strokeStyle='rgba(255,255,255,0.35)';
+  ctx.lineWidth=1.5;
+  for(var ny=cy-gh/2;ny<cy+gh/2;ny+=24){
+    ctx.beginPath(); ctx.moveTo(fx1-gd,ny); ctx.lineTo(fx1,ny); ctx.stroke();
+  }
+  for(var nx=fx1-gd;nx<=fx1;nx+=20){
+    ctx.beginPath(); ctx.moveTo(nx,cy-gh/2); ctx.lineTo(nx,cy+gh/2); ctx.stroke();
+  }
+  /* post caps */
+  ctx.fillStyle='#ffffff';
+  ctx.strokeStyle='#ffffff';
+  ctx.lineWidth=5;
+  ctx.beginPath(); ctx.arc(fx1,cy-gh/2,5,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(fx1,cy+gh/2,5,0,Math.PI*2); ctx.fill();
+
+  /* Right goal */
+  ctx.strokeStyle='#ffffff';
+  ctx.fillStyle='rgba(255,255,255,0.12)';
+  ctx.lineWidth=5;
+  ctx.beginPath();
+  ctx.moveTo(fx2,cy-gh/2);
+  ctx.lineTo(fx2+gd,cy-gh/2);
+  ctx.lineTo(fx2+gd,cy+gh/2);
+  ctx.lineTo(fx2,cy+gh/2);
+  ctx.stroke();
+  ctx.fillRect(fx2,cy-gh/2,gd,gh);
+  ctx.strokeStyle='rgba(255,255,255,0.35)';
+  ctx.lineWidth=1.5;
+  for(var ny2=cy-gh/2;ny2<cy+gh/2;ny2+=24){
+    ctx.beginPath(); ctx.moveTo(fx2,ny2); ctx.lineTo(fx2+gd,ny2); ctx.stroke();
+  }
+  for(var nx2=fx2;nx2<=fx2+gd;nx2+=20){
+    ctx.beginPath(); ctx.moveTo(nx2,cy-gh/2); ctx.lineTo(nx2,cy+gh/2); ctx.stroke();
+  }
+  ctx.fillStyle='#ffffff';
+  ctx.beginPath(); ctx.arc(fx2,cy-gh/2,5,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(fx2,cy+gh/2,5,0,Math.PI*2); ctx.fill();
+
+  ctx.restore();
 }
 
 function drawMap(){
-  for(let r=0;r<ROWS;r++){
-    for(let c=0;c<COLS;c++){
-      const x=c*TS, y=r*TS, t=grid[r][c];
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      var x=c*TS,y=r*TS,t=grid[r][c];
       if(t===1) drawFence(x,y);
-      else if(t===2) drawGrass(x,y);
-      else if(t===3) drawTrack(x,y);
-      else if(t===4) drawGoal(x,y,c);
-      else if(t===5) drawGate(x,y);
-      else if(t===6) drawHoop(x,y,c);
-      else if(t===7) drawBench(x,y);
-      else if(t===8) drawPlayStructure(x,y,c,r);
-      else if(t===9) drawFlagpole(x,y);
+      else if(t===5) drawExitGate(x,y);
+      else if(t===2) drawTrack(x,y,c,r);
+      else drawGrass(x,y,c,r);
     }
   }
+  /* Soccer field markings drawn on top of grass tiles */
+  drawSoccerLines();
+  drawGoals();
 }
 drawMap();
 
-/* ===================== 캐릭터 (커스터마이징 연동) ===================== */
-const __savedChar = (function(){
-  try{ return JSON.parse(localStorage.getItem('ssambus_player_character')); }
-  catch(e){ return null; }
-})();
-const PLAYER = Object.assign({
-  type:'student', skin:'#FDEBD0', hcolor:'#1a1008', hair:'short',
-  ccolor:'#1a3a6b', cloth:'suit', gender:'male', acc:[], dir:'down'
-}, __savedChar || {});
-function renderPlayer(){
-  document.getElementById('cg_p').innerHTML = renderCharacterSVG(PLAYER);
-  document.getElementById('player').classList.toggle('flip', PLAYER.dir==='right');
+function updateCamera(){
+  var stage=document.querySelector('.stage');
+  var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
+  var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
+  stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
 }
 
-/* ===================== 이동 + 카메라 처리 ===================== */
-let pos = { r:12, c:15 }; // 정문 게이트 안쪽 트랙에서 시작
-function updateCamera(){
-  const wrap = document.querySelector('.stage-wrap');
-  const stage = wrap.querySelector('.stage');
-  if(TEACHER_VIEW){
-    wrap.style.width = (COLS*TS) + 'px';
-    wrap.style.height = (ROWS*TS) + 'px';
-    wrap.style.overflow = 'visible';
-    stage.style.transform = '';
-    return;
-  }
-  const canvasW = COLS*TS, canvasH = ROWS*TS;
-  const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
-  const offX = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
-  const offY = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
-  stage.style.transform = `translate(${-offX}px,${-offY}px)`;
-}
+var pos={r:11,c:27};
 function placePlayer(){
-  const el = document.getElementById('player');
-  if(TEACHER_VIEW) el.style.display = 'none';
-  el.style.left = (pos.c*TS) + 'px';
-  el.style.top  = (pos.r*TS - 24) + 'px'; // 캐릭터 높이(72)가 타일(48)보다 커서 발 위치 보정
+  var el=document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display='none';
+  el.style.left=(pos.c*TS)+'px';
+  el.style.top=(pos.r*TS-24)+'px';
   updateCamera();
-  broadcastMyPosition();
-  checkZoneOnMove(pos);
+  try{broadcastMyPosition();}catch(e){}
+  try{checkZoneOnMove(pos);}catch(e){}
 }
 function move(dir){
-  let nr=pos.r, nc=pos.c;
+  var nr=pos.r,nc=pos.c;
   if(dir==='up') nr--;
   else if(dir==='down') nr++;
   else if(dir==='left') nc--;
   else if(dir==='right') nc++;
-
-  PLAYER.dir = (dir==='right') ? 'left' : dir; // 오른쪽은 left 모션을 좌우반전
+  PLAYER._facingRight=(dir==='right');
+  PLAYER.dir=(dir==='right')?'left':dir;
   renderPlayer();
-
   if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
-  if(!WALKABLE.has(grid[nr][nc])) return;
-  if(__rtIsOverlayBlocked(nr,nc)) return;
-  if(typeof __msBlockExit === 'function' && __msBlockExit(nr,nc)){ __msShowBlockedNotice(); return; }
+  if(!isWalk(grid[nr][nc])) return;
+  try{if(__rtIsOverlayBlocked(nr,nc)) return;}catch(e){}
+  try{if(typeof __msBlockExit==='function'&&__msBlockExit(nr,nc)){__msShowBlockedNotice();return;}}catch(e){}
   pos.r=nr; pos.c=nc;
   placePlayer();
 }
-window.addEventListener('keydown', e=>{
+window.addEventListener('keydown',function(e){
   if(TEACHER_VIEW) return;
-  const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
-  if(map[e.key]){ e.preventDefault(); move(map[e.key]); }
+  var m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(m[e.key]){e.preventDefault();move(m[e.key]);}
 });
-
-/* ===================== 터치 스와이프 이동 ===================== */
 if(!TEACHER_VIEW){
-  const stage = document.querySelector('.stage-wrap');
-  let touchStartX = 0, touchStartY = 0, touchActive = false;
-  const SWIPE_THRESHOLD = 30; // px
-  stage.addEventListener('touchstart', e=>{
-    if(e.touches.length !== 1) return;
-    touchActive = true;
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-  }, { passive:true });
-  stage.addEventListener('touchmove', e=>{
-    if(touchActive) e.preventDefault(); // 스와이프 중 화면 스크롤 방지
-  }, { passive:false });
-  stage.addEventListener('touchend', e=>{
-    if(!touchActive) return;
-    touchActive = false;
-    const touch = e.changedTouches[0];
-    const dx = touch.clientX - touchStartX;
-    const dy = touch.clientY - touchStartY;
-    if(Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_THRESHOLD) return;
-    if(Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 'right' : 'left');
-    else move(dy > 0 ? 'down' : 'up');
-  }, { passive:true });
+  var sw=document.querySelector('.stage-wrap');
+  var tx=0,ty=0,ta=false;
+  sw.addEventListener('touchstart',function(e){if(e.touches.length!==1)return;ta=true;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  sw.addEventListener('touchmove',function(e){if(ta)e.preventDefault();},{passive:false});
+  sw.addEventListener('touchend',function(e){
+    if(!ta)return;ta=false;
+    var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<30)return;
+    if(Math.abs(dx)>Math.abs(dy))move(dx>0?'right':'left');
+    else move(dy>0?'down':'up');
+  },{passive:true});
 }
-
-if(!__NEEDS_CHAR_SETUP){
-  renderPlayer();
-  placePlayer();
-  initRealtime('playground');
-  if(!TEACHER_VIEW){ initMissionSystem('playground'); loadMapOverlays('playground', ctx, TS); }
+renderPlayer();
+try{placePlayer();}catch(e){console.warn('[playground] placePlayer:',e);}
+try{initRealtime('playground');}catch(e){console.warn('[playground] realtime:',e);}
+if(!TEACHER_VIEW){
+  try{initMissionSystem('playground');}catch(e){console.warn('[playground] missions:',e);}
+  try{loadMapOverlays('playground',ctx,TS);}catch(e){console.warn('[playground] overlays:',e);}
 }
 </script>
 </body>

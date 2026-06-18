@@ -5,337 +5,403 @@
 <title>쌤버스 - 체육관 맵</title>
 <style>
 *{box-sizing:border-box}
-body{font-family:sans-serif;background:#eef2f5;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
-#main-btn{position:fixed;top:12px;left:12px;z-index:999;background:#2c3e50;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);text-decoration:none}
-h2{margin:.3rem 0}
-.info{font-size:13px;color:#777;margin-bottom:12px;text-align:center}
-.stage-wrap{width:768px;max-width:100%;height:672px;overflow:hidden;border:4px solid #4a3728;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+body{font-family:sans-serif;background:#0a1628;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
+#main-btn{position:fixed;top:12px;left:12px;z-index:999;background:#e67e22;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none}
+h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
+.info{font-size:12px;color:#aaa;margin-bottom:12px;text-align:center}
+.stage-wrap{width:768px;max-width:100%;height:672px;overflow:hidden;border:3px solid #e67e22;border-radius:8px;box-shadow:0 0 24px rgba(230,126,34,0.4)}
 .stage{position:relative;line-height:0}
 #map{display:block}
-#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear, top .1s linear;z-index:5}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear,top .1s linear;z-index:5}
 #player svg{display:block;width:100%;height:100%;overflow:visible}
 #player.flip svg{transform:scaleX(-1)}
-.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear, top .15s linear;z-index:4}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear,top .15s linear;z-index:4}
 .remote-player svg{display:block;width:100%;height:100%;overflow:visible}
 .remote-player.flip svg{transform:scaleX(-1)}
-.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.85);padding:1px 4px;border-radius:4px;white-space:nowrap}
-.pad{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:48px 48px 48px;gap:4px;margin-top:16px}
-.pad button{font-size:18px;border-radius:8px;border:1px solid #bbb;background:#fff;cursor:pointer}
-.pad button:active{background:#ddd}
-.legend{margin-top:10px;font-size:12px;color:#888;display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.9);padding:1px 5px;border-radius:4px;white-space:nowrap;font-weight:600}
+.pad{display:grid;grid-template-columns:52px 52px 52px;grid-template-rows:52px 52px 52px;gap:4px;margin-top:14px}
+.pad button{font-size:20px;border-radius:10px;border:none;background:#e67e22;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #a05010}
+.pad button:active{transform:translateY(2px);box-shadow:0 1px 0 #a05010}
+.legend{margin-top:10px;font-size:12px;color:#aaa;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .legend span{display:flex;align-items:center;gap:4px}
-.sw{display:inline-block;width:12px;height:12px;border-radius:2px;border:1px solid #999}
+.sw{display:inline-block;width:13px;height:13px;border-radius:3px}
 </style>
 </head>
 <body>
-<a id="main-btn" href="index.html">← 메인</a>
-
-<h2>🏐 체육관</h2>
-<div class="info">방향키(↑↓←→) 또는 아래 버튼으로 캐릭터를 이동하세요<br>가로로 넓은 체육관 - 양쪽에 농구 골대 2쌍(코트 2면) + 중앙 코트라인/배구네트 / 무대 / 관람석 / 체육용품 보관대 / 좌우 출입문<br>화면 밖으로 이동하면 맵이 캐릭터를 따라 스크롤됩니다</div>
-
+<a id="main-btn" href="index.html">메인</a>
+<h2>쌤버스 - 체육관</h2>
+<div class="info">방향키 또는 버튼으로 이동하세요</div>
 <div class="stage-wrap">
 <div class="stage">
-  <canvas id="map" width="1344" height="672"></canvas>
-  <div id="player"><svg viewBox="0 0 32 48"><g id="cg_p"></g></svg></div>
+  <canvas id="map" width="2304" height="1152"></canvas>
+  <div id="player"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
   <div id="remote-players"></div>
 </div>
 </div>
-
 <div class="pad">
-  <div></div><button onclick="move('up')">▲</button><div></div>
-  <button onclick="move('left')">◀</button><div></div><button onclick="move('right')">▶</button>
-  <div></div><button onclick="move('down')">▼</button><div></div>
+  <div></div><button onclick="move('up')">&#8593;</button><div></div>
+  <button onclick="move('left')">&#8592;</button><div></div><button onclick="move('right')">&#8594;</button>
+  <div></div><button onclick="move('down')">&#8595;</button><div></div>
 </div>
-
 <div class="legend">
-  <span><span class="sw" style="background:#e0832b"></span>농구 골대</span>
-  <span><span class="sw" style="background:#e8c79a"></span>코트 바닥</span>
-  <span><span class="sw" style="background:#c0392b"></span>무대</span>
-  <span><span class="sw" style="background:#a9784f"></span>관람석</span>
-  <span><span class="sw" style="background:#7e8a91"></span>용품 보관대</span>
-  <span><span class="sw" style="background:#7a5230"></span>출입문</span>
+  <span><span class="sw" style="background:#c8a050"></span>마루</span>
+  <span><span class="sw" style="background:#2c3e50"></span>벽</span>
+  <span><span class="sw" style="background:#d4aa5a"></span>농구코트</span>
+  <span><span class="sw" style="background:#7a7a80"></span>창고</span>
+  <span><span class="sw" style="background:#c8a04a"></span>박스(장애물)</span>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="ssambus_supabase_config.js"></script>
 <script src="ssambus_character_render.js"></script>
-<script src="ssambus_realtime.js?v=7"></script>
+<script src="ssambus_realtime.js"></script>
 <script src="ssambus_missions.js"></script>
 <script>
-/* ===================== 맵 정의 (28열 x 14행, 타일 48px) - 가로로 넓은 체육관 ===================== */
-const TS = 48, COLS = 28, ROWS = 14;
+/* === Gym map 48x24 (체육관 3/4 + 창고 1/4) === */
+var TS=48,COLS=48,ROWS=24,VIEW_W=768,VIEW_H=672;
 
-/* 교사 대시보드의 "실시간 맵 보기"에서 ?teacherView=1 로 열리면 자기 캐릭터/조작 UI를 숨기고 전체 맵을 보여줍니다 */
-const TEACHER_VIEW = new URLSearchParams(window.location.search).get('teacherView') === '1';
+var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
 if(TEACHER_VIEW){
-  document.body.style.padding = '0';
-  document.body.style.background = 'transparent';
-  document.querySelectorAll('h2, .info, .pad, .legend').forEach(el => el.style.display = 'none');
+  document.body.style.padding='0';
+  document.body.style.background='transparent';
+  document.querySelectorAll('h2,.info,.pad,.legend').forEach(function(el){el.style.display='none';});
 }
 
-/* 캐릭터를 한 번도 만들지 않은 학생은 캐릭터 선택 화면으로 먼저 이동시킵니다 */
-let __hasCharacter = true;
-try{ __hasCharacter = !!localStorage.getItem('ssambus_player_character'); }catch(e){ /* 무시 */ }
-const __NEEDS_CHAR_SETUP = !TEACHER_VIEW && !__hasCharacter;
-if(__NEEDS_CHAR_SETUP){
-  const __params = new URLSearchParams(window.location.search);
-  __params.set('map', 'ssambus_map_gym.html');
-  location.replace('ssambus_characters.html?' + __params.toString());
+/* Tile: 0=gym-floor 1=wall 2=basketball-court 4=storage-floor 5=storage-box(obstacle) 6=equipment-zone 7=exit-gate */
+/* Layout:
+   cols 1-34: 체육관 (court cols 2-33, equipment rows 1-2/21-22)
+   col 35: 칸막이 벽 (rows 10-11에만 통로)
+   cols 36-46: 창고 (boxes scattered) */
+var grid=[];
+for(var r=0;r<ROWS;r++){
+  grid[r]=[];
+  for(var c=0;c<COLS;c++){
+    var isWall=(r===0||r===ROWS-1||c===0||c===COLS-1);
+    var isDivider=(c===35&&!(r>=10&&r<=11));
+    var inStorage=(c>=36&&c<=46);
+    var inCourt=(r>=3&&r<=20&&c>=2&&c<=33);
+    var inGym=(c>=1&&c<=34);
+    var isEntry=((r<=2||r>=21)&&inGym);
+    if(isWall||isDivider) grid[r][c]=1;
+    else if(inStorage) grid[r][c]=4;
+    else if(inCourt) grid[r][c]=2;
+    else if(isEntry) grid[r][c]=6;
+    else grid[r][c]=0;
+  }
 }
-// 0:코트바닥 1:벽 4:농구골대(벽부착) 5:출입문 7:관람석 8:용품보관대 9:무대
-const grid = [
-  [1,1,1,1,1,1,1,4,4,1,1,1,1,1,1,1,1,1,1,4,4,1,1,1,1,1,1,1], // 0: 상단 벽 + 좌/우 코트 농구골대
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], // 1: 코트
-  [1,7,9,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1], // 2: 관람석 + 무대 + 보관대
-  [1,7,9,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5], // 3: 관람석 + 무대 + 앞문(통로 확보)
-  [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5], // 4: 관람석 + 앞문(통로 확보)
-  [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1], // 5: 관람석
-  [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1], // 6: 관람석 (중앙 코트라인/배구네트)
-  [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1], // 7: 관람석
-  [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1], // 8: 관람석
-  [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5], // 9: 관람석 + 뒷문(통로 확보)
-  [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5], //10: 관람석 + 뒷문(통로 확보)
-  [1,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,1], //11: 관람석
-  [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], //12: 코트
-  [1,1,1,1,1,1,1,4,4,1,1,1,1,1,1,1,1,1,1,4,4,1,1,1,1,1,1,1]  //13: 하단 벽 + 좌/우 코트 농구골대
-];
-const WALKABLE = new Set([0,5]);
-const NET_ROW = 6; // 배구 네트 표시 행 (장식, 통행 가능)
+/* Divider opening at rows 10-11 → 창고 통로 */
+grid[10][35]=4; grid[11][35]=4;
 
-/* ===================== 카메라(화면 스크롤) ===================== */
-const VIEW_W = 768, VIEW_H = 672; // 화면에 보이는 영역 (16열 x 14행)
+/* 창고 박스 장애물 (type 5, 통행 불가) */
+[[2,37],[2,38],[2,39],[2,40],[2,41],[2,42],[2,43],[2,44],[2,45],[2,46],
+ [3,38],[3,40],[3,42],[3,44],[3,46],
+ [5,41],[5,42],[6,41],[6,42],
+ [5,45],[5,46],[6,46],
+ [8,38],[8,39],[9,38],
+ [8,43],[8,44],[9,44],
+ [13,37],[13,38],[14,37],
+ [13,45],[13,46],[14,46],
+ [16,41],[17,41],[17,42],
+ [19,37],[19,38],[19,39],[19,40],[19,41],[19,42],[19,43],[19,44],[19,45],[19,46],
+ [20,38],[20,40],[20,42],[20,44],
+ [21,37],[21,45],[21,46]
+].forEach(function(a){grid[a[0]][a[1]]=5;});
 
-/* ===================== 타일 그리기 ===================== */
-const cv = document.getElementById('map');
-const ctx = cv.getContext('2d');
+/* Exit gate at top wall */
+grid[0][10]=7; grid[0][11]=7;
 
-function drawCourt(x,y){
-  ctx.fillStyle = '#e8c79a';
+var WALK=[0,2,4,6,7];
+function isWalk(t){return WALK.indexOf(t)>=0;}
+
+var cv=document.getElementById('map');
+var ctx=cv.getContext('2d');
+
+var __savedChar=(function(){
+  try{
+    var _cp=new URLSearchParams(window.location.search).get('c');
+    if(_cp) return JSON.parse(_cp);
+    return JSON.parse(localStorage.getItem('ssambus_player_character'));
+  }catch(e){return null;}
+})();
+var PLAYER=Object.assign({
+  type:'student',skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',
+  ccolor:'#1a3a6b',cloth:'suit',gender:'male',acc:[],dir:'down'
+},__savedChar||{});
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML=renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip',PLAYER.dir==='left'&&!PLAYER._facingRight);
+}
+
+/* 체육관 마루: 단풍나무 목재 */
+function drawFloor(x,y,c,r){
+  ctx.fillStyle=((r+c)%2===0)?'#c8a050':'#bc9445';
   ctx.fillRect(x,y,TS,TS);
-  ctx.strokeStyle = 'rgba(150,110,60,0.18)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle='rgba(90,50,0,0.14)';
+  ctx.lineWidth=1;
+  for(var i=0;i<5;i++){
+    ctx.beginPath();
+    ctx.moveTo(x,y+i*10+2); ctx.lineTo(x+TS,y+i*10+2);
+    ctx.stroke();
+  }
+}
+
+/* 벽 */
+function drawWall(x,y){
+  ctx.fillStyle='#2c3e50';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#1a252f';
+  ctx.fillRect(x,y+TS-6,TS,6);
+  ctx.fillStyle='rgba(255,255,255,0.07)';
+  ctx.fillRect(x,y,TS,4);
+  ctx.strokeStyle='rgba(255,255,255,0.05)';
+  ctx.lineWidth=1;
+  ctx.strokeRect(x+3,y+3,TS-6,TS-9);
+}
+
+/* 농구 코트 마루 (밝은 목재) */
+function drawCourt(x,y,c,r){
+  ctx.fillStyle=((r+c)%2===0)?'#d4aa5a':'#c89a40';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(90,50,0,0.10)';
+  ctx.lineWidth=1;
+  for(var i=0;i<5;i++){
+    ctx.beginPath();
+    ctx.moveTo(x,y+i*10+2); ctx.lineTo(x+TS,y+i*10+2);
+    ctx.stroke();
+  }
+}
+
+/* 창고 바닥: 콘크리트 */
+function drawStorageFloor(x,y,c,r){
+  ctx.fillStyle=((r+c)%2===0)?'#7a7a80':'#72727a';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(0,0,0,0.18)';
+  ctx.lineWidth=1;
   ctx.beginPath();
-  ctx.moveTo(x, y+TS); ctx.lineTo(x+TS, y+TS);
-  ctx.moveTo(x, y); ctx.lineTo(x, y+TS);
+  ctx.moveTo(x+TS/2,y); ctx.lineTo(x+TS/2,y+TS);
+  ctx.moveTo(x,y+TS/2); ctx.lineTo(x+TS,y+TS/2);
   ctx.stroke();
 }
-function drawWall(x,y,hasHoop){
-  ctx.fillStyle = '#f3ecdf';
+
+/* 창고 박스: 골판지 상자 */
+function drawStorageBox(x,y){
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.fillRect(x+5,y+TS-5,TS-5,4);
+  ctx.fillStyle='#c8a04a';
+  ctx.fillRect(x+3,y+6,TS-6,TS-10);
+  ctx.fillStyle='#a07830';
+  ctx.fillRect(x+3,y+6,TS-6,8);
+  ctx.fillStyle='#b89040';
+  ctx.fillRect(x+3,y+6,TS/2-4,7);
+  ctx.fillStyle='rgba(200,160,50,0.55)';
+  ctx.fillRect(x+3,y+TS/2-1,TS-6,3);
+  ctx.fillRect(x+TS/2-1,y+6,3,TS-10);
+  ctx.fillStyle='rgba(0,0,0,0.16)';
+  ctx.fillRect(x+TS-8,y+6,5,TS-10);
+}
+
+/* 입구/장비 구역 */
+function drawEquipment(x,y,c,r){
+  ctx.fillStyle=((r+c)%2===0)?'#b8902e':'#a07828';
   ctx.fillRect(x,y,TS,TS);
-  ctx.fillStyle = '#cdbfa6';
-  ctx.fillRect(x,y+TS-4,TS,4);
-  if(hasHoop==='top'){
-    ctx.fillStyle='#fff'; ctx.fillRect(x+TS/2-12,y+TS-22,24,14);
-    ctx.strokeStyle='#999'; ctx.strokeRect(x+TS/2-12,y+TS-22,24,14);
-    ctx.strokeStyle='#e0832b'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(x+TS/2-10,y+TS-4); ctx.lineTo(x+TS/2+10,y+TS-4); ctx.stroke();
-    ctx.strokeStyle='rgba(120,120,120,0.6)'; ctx.lineWidth=1;
+  ctx.strokeStyle='rgba(255,200,0,0.32)';
+  ctx.lineWidth=2;
+  ctx.strokeRect(x+4,y+4,TS-8,TS-8);
+}
+
+/* 출입구 */
+function drawExitGate(x,y){
+  ctx.fillStyle='#b8902e';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#27ae60';
+  ctx.fillRect(x+3,y+2,8,TS-4);
+  ctx.fillRect(x+TS-11,y+2,8,TS-4);
+  ctx.fillStyle='#2ecc71';
+  ctx.fillRect(x+3,y+2,TS-6,10);
+  ctx.fillStyle='#ffffff';
+  ctx.font='bold 9px sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('EXIT',x+TS/2,y+TS*0.42);
+  ctx.strokeStyle='#f1c40f';
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(x+TS*0.25,y+TS*0.7);
+  ctx.lineTo(x+TS*0.75,y+TS*0.7);
+  ctx.moveTo(x+TS*0.6,y+TS*0.6);
+  ctx.lineTo(x+TS*0.75,y+TS*0.7);
+  ctx.lineTo(x+TS*0.6,y+TS*0.8);
+  ctx.stroke();
+}
+
+/* 농구 코트 라인 오버레이 (타일 경계 없이 깨끗한 선) */
+function drawBasketballOverlay(){
+  var cx1=2*TS, cy1=3*TS, cx2=34*TS, cy2=21*TS;
+  var fw=cx2-cx1, fh=cy2-cy1;
+  var mx=(cx1+cx2)/2, my=(cy1+cy2)/2;
+
+  ctx.save();
+  ctx.strokeStyle='rgba(210,100,20,0.92)';
+  ctx.fillStyle='rgba(210,100,20,0.92)';
+  ctx.lineWidth=4; ctx.lineCap='butt';
+
+  /* 외곽선 */
+  ctx.strokeRect(cx1,cy1,fw,fh);
+
+  /* 하프라인 */
+  ctx.beginPath(); ctx.moveTo(mx,cy1); ctx.lineTo(mx,cy2); ctx.stroke();
+
+  /* 센터서클 */
+  ctx.beginPath(); ctx.arc(mx,my,115,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(mx,my,10,0,Math.PI*2); ctx.fill();
+
+  /* 왼쪽 키/자유투 라인 */
+  var kd=240,kh=380;
+  ctx.strokeRect(cx1,my-kh/2,kd,kh);
+  ctx.beginPath(); ctx.arc(cx1+kd,my,90,Math.PI/2,Math.PI*3/2); ctx.stroke();
+  ctx.setLineDash([7,7]);
+  ctx.beginPath(); ctx.arc(cx1+kd,my,90,-Math.PI/2,Math.PI/2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(cx1,my,60,-Math.PI/2,Math.PI/2); ctx.stroke();
+
+  /* 오른쪽 키/자유투 라인 */
+  ctx.strokeRect(cx2-kd,my-kh/2,kd,kh);
+  ctx.beginPath(); ctx.arc(cx2-kd,my,90,-Math.PI/2,Math.PI/2); ctx.stroke();
+  ctx.setLineDash([7,7]);
+  ctx.beginPath(); ctx.arc(cx2-kd,my,90,Math.PI/2,Math.PI*3/2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(cx2,my,60,Math.PI/2,Math.PI*3/2); ctx.stroke();
+
+  /* 3점 라인 */
+  var cd=285, tp3r=355;
+  var hp=Math.sqrt(tp3r*tp3r-cd*cd);
+  var a1=Math.atan2(-cd,hp), a2=Math.atan2(cd,hp);
+  var b2=Math.atan2(cd,-hp), b1=Math.atan2(-cd,-hp);
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.moveTo(cx1,my-cd); ctx.lineTo(cx1+hp,my-cd);
+  ctx.moveTo(cx1,my+cd); ctx.lineTo(cx1+hp,my+cd);
+  ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx1,my,tp3r,a1,a2,false); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx2,my-cd); ctx.lineTo(cx2-hp,my-cd);
+  ctx.moveTo(cx2,my+cd); ctx.lineTo(cx2-hp,my+cd);
+  ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx2,my,tp3r,b2,b1,false); ctx.stroke();
+
+  ctx.restore();
+
+  /* 골대 */
+  drawHoop(cx1,my,false);
+  drawHoop(cx2,my,true);
+}
+
+function drawHoop(bx,by,toLeft){
+  var dx=toLeft?-1:1;
+  ctx.fillStyle='rgba(220,220,220,0.9)';
+  ctx.fillRect(bx-3,by-28,6,56);
+  ctx.strokeStyle='#555'; ctx.lineWidth=2;
+  ctx.strokeRect(bx-3,by-28,6,56);
+  ctx.fillStyle='#999';
+  ctx.fillRect(bx,by-3,dx*22,6);
+  ctx.strokeStyle='#e74c3c'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.arc(bx+dx*28,by,18,0,Math.PI*2); ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1.5;
+  for(var i=0;i<6;i++){
+    var a=i*Math.PI/3;
     ctx.beginPath();
-    ctx.moveTo(x+TS/2-10,y+TS-4); ctx.lineTo(x+TS/2-6,y+TS+4);
-    ctx.moveTo(x+TS/2+10,y+TS-4); ctx.lineTo(x+TS/2+6,y+TS+4);
+    ctx.moveTo(bx+dx*28+18*Math.cos(a),by+18*Math.sin(a));
+    ctx.lineTo(bx+dx*28,by+22);
     ctx.stroke();
-  } else if(hasHoop==='bottom'){
-    ctx.fillStyle='#fff'; ctx.fillRect(x+TS/2-12,y+8,24,14);
-    ctx.strokeStyle='#999'; ctx.strokeRect(x+TS/2-12,y+8,24,14);
-    ctx.strokeStyle='#e0832b'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(x+TS/2-10,y+22); ctx.lineTo(x+TS/2+10,y+22); ctx.stroke();
-    ctx.strokeStyle='rgba(120,120,120,0.6)'; ctx.lineWidth=1;
-    ctx.beginPath();
-    ctx.moveTo(x+TS/2-10,y+22); ctx.lineTo(x+TS/2-6,y+30);
-    ctx.moveTo(x+TS/2+10,y+22); ctx.lineTo(x+TS/2+6,y+30);
-    ctx.stroke();
-  }
-}
-function drawDoor(x,y){
-  ctx.fillStyle = '#f3ecdf';
-  ctx.fillRect(x,y,TS,TS);
-  ctx.fillStyle = '#7a5230';
-  ctx.fillRect(x-2,y+2,TS-2,TS-4);
-  ctx.fillStyle = '#9c6d44';
-  ctx.fillRect(x+3,y+5,TS-12,TS-10);
-  ctx.fillStyle = '#ffd34d';
-  ctx.beginPath();
-  ctx.arc(x+TS-12,y+TS/2,2,0,Math.PI*2);
-  ctx.fill();
-}
-function drawBleacher(x,y){
-  ctx.fillStyle = '#cdbfa6';
-  ctx.fillRect(x,y,TS,TS);
-  ctx.fillStyle = '#a9784f';
-  for(let i=0;i<3;i++){
-    ctx.fillRect(x+2,y+4+i*13,TS-4,9);
-    ctx.fillStyle = i%2===0 ? '#a9784f' : '#bf9166';
-  }
-}
-function drawStorage(x,y){
-  ctx.fillStyle = '#cdbfa6';
-  ctx.fillRect(x,y,TS,TS);
-  ctx.fillStyle = '#7e8a91';
-  ctx.fillRect(x+3,y+3,TS-6,TS-6);
-  // 매트 (둥글게 말린)
-  ctx.fillStyle = '#3498db';
-  ctx.fillRect(x+5,y+6,TS-10,8);
-  // 공 바구니
-  ctx.fillStyle = '#e0832b';
-  ctx.beginPath();
-  ctx.arc(x+TS/2-6,y+TS-12,5,0,Math.PI*2);
-  ctx.fill();
-  ctx.fillStyle = '#2ecc71';
-  ctx.beginPath();
-  ctx.arc(x+TS/2+7,y+TS-10,5,0,Math.PI*2);
-  ctx.fill();
-}
-function drawStage(x,y,col){
-  ctx.fillStyle = '#c0392b';
-  ctx.fillRect(x,y,TS,TS);
-  ctx.fillStyle = '#a93226';
-  ctx.fillRect(x,y,TS,5); // 무대 상단 턱
-  if(col%2===1){
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.fillRect(x,y+8,TS,4);
   }
 }
 
 function drawMap(){
-  for(let r=0;r<ROWS;r++){
-    for(let c=0;c<COLS;c++){
-      const x=c*TS, y=r*TS, t=grid[r][c];
-      if(t===0) drawCourt(x,y);
-      else if(t===1){
-        let hoop=null;
-        if(r===0 && (c===7||c===8||c===19||c===20)) hoop='top';
-        if(r===ROWS-1 && (c===7||c===8||c===19||c===20)) hoop='bottom';
-        drawWall(x,y,hoop);
-      }
-      else if(t===4){
-        const hoop = (r===0)?'top':'bottom';
-        drawWall(x,y,hoop);
-      }
-      else if(t===5) drawDoor(x,y);
-      else if(t===7) drawBleacher(x,y);
-      else if(t===8) drawStorage(x,y);
-      else if(t===9) drawStage(x,y,c);
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      var x=c*TS,y=r*TS,t=grid[r][c];
+      if(t===1) drawWall(x,y);
+      else if(t===7) drawExitGate(x,y);
+      else if(t===2) drawCourt(x,y,c,r);
+      else if(t===4) drawStorageFloor(x,y,c,r);
+      else if(t===5) drawStorageBox(x,y);
+      else if(t===6) drawEquipment(x,y,c,r);
+      else drawFloor(x,y,c,r);
     }
   }
-  // 중앙 코트라인 + 좌/우 코트별 센터서클 + 배구 네트 (장식 오버레이, 통행 가능)
-  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(1*TS, NET_ROW*TS+TS/2); ctx.lineTo((COLS-1)*TS, NET_ROW*TS+TS/2);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(7.5*TS, NET_ROW*TS+TS/2, TS*1.4, 0, Math.PI*2);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(19.5*TS, NET_ROW*TS+TS/2, TS*1.4, 0, Math.PI*2);
-  ctx.stroke();
-  // 배구 네트
-  ctx.strokeStyle = 'rgba(60,60,60,0.6)';
-  ctx.lineWidth = 1;
-  for(let cx=1*TS; cx<=(COLS-1)*TS; cx+=6){
-    ctx.beginPath();
-    ctx.moveTo(cx, NET_ROW*TS+TS/2-6);
-    ctx.lineTo(cx, NET_ROW*TS+TS/2+6);
-    ctx.stroke();
-  }
+  /* 농구 코트 라인 오버레이 */
+  drawBasketballOverlay();
+  /* 창고 표지 */
+  ctx.save();
+  ctx.fillStyle='rgba(241,196,15,0.95)';
+  ctx.font='bold 15px sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('창',35*TS+TS/2,6*TS+TS/2);
+  ctx.fillText('고',35*TS+TS/2,7*TS+TS/2);
+  ctx.fillStyle='rgba(255,255,255,0.75)';
+  ctx.font='18px sans-serif';
+  ctx.fillText('→',35*TS+TS/2,8*TS+TS/2);
+  ctx.restore();
 }
 drawMap();
 
-/* ===================== 캐릭터 (커스터마이징 연동) ===================== */
-const __savedChar = (function(){
-  try{ return JSON.parse(localStorage.getItem('ssambus_player_character')); }
-  catch(e){ return null; }
-})();
-const PLAYER = Object.assign({
-  type:'student', skin:'#FDEBD0', hcolor:'#1a1008', hair:'short',
-  ccolor:'#1a3a6b', cloth:'suit', gender:'male', acc:[], dir:'down'
-}, __savedChar || {});
-function renderPlayer(){
-  document.getElementById('cg_p').innerHTML = renderCharacterSVG(PLAYER);
-  document.getElementById('player').classList.toggle('flip', PLAYER.dir==='right');
+function updateCamera(){
+  var stage=document.querySelector('.stage');
+  var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
+  var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
+  stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
 }
 
-/* ===================== 이동 + 카메라 처리 ===================== */
-let pos = { r:3, c:5 }; // 앞문 근처 코트에서 시작
-function updateCamera(){
-  const wrap = document.querySelector('.stage-wrap');
-  const stage = wrap.querySelector('.stage');
-  if(TEACHER_VIEW){
-    wrap.style.width = (COLS*TS) + 'px';
-    wrap.style.height = (ROWS*TS) + 'px';
-    wrap.style.overflow = 'visible';
-    stage.style.transform = '';
-    return;
-  }
-  const canvasW = COLS*TS, canvasH = ROWS*TS;
-  const px = pos.c*TS + TS/2, py = pos.r*TS + TS/2;
-  const offX = Math.max(0, Math.min(px - VIEW_W/2, canvasW - VIEW_W));
-  const offY = Math.max(0, Math.min(py - VIEW_H/2, canvasH - VIEW_H));
-  stage.style.transform = `translate(${-offX}px,${-offY}px)`;
-}
+var pos={r:12,c:15};
 function placePlayer(){
-  const el = document.getElementById('player');
-  if(TEACHER_VIEW) el.style.display = 'none';
-  el.style.left = (pos.c*TS) + 'px';
-  el.style.top  = (pos.r*TS - 24) + 'px'; // 캐릭터 높이(72)가 타일(48)보다 커서 발 위치 보정
+  var el=document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display='none';
+  el.style.left=(pos.c*TS)+'px';
+  el.style.top=(pos.r*TS-24)+'px';
   updateCamera();
-  broadcastMyPosition();
-  checkZoneOnMove(pos);
+  try{broadcastMyPosition();}catch(e){}
+  try{checkZoneOnMove(pos);}catch(e){}
 }
 function move(dir){
-  let nr=pos.r, nc=pos.c;
+  var nr=pos.r,nc=pos.c;
   if(dir==='up') nr--;
   else if(dir==='down') nr++;
   else if(dir==='left') nc--;
   else if(dir==='right') nc++;
-
-  PLAYER.dir = (dir==='right') ? 'left' : dir; // 오른쪽은 left 모션을 좌우반전
+  PLAYER._facingRight=(dir==='right');
+  PLAYER.dir=(dir==='right')?'left':dir;
   renderPlayer();
-
   if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
-  if(!WALKABLE.has(grid[nr][nc])) return;
-  if(__rtIsOverlayBlocked(nr,nc)) return;
-  if(typeof __msBlockExit === 'function' && __msBlockExit(nr,nc)){ __msShowBlockedNotice(); return; }
+  if(!isWalk(grid[nr][nc])) return;
+  try{if(__rtIsOverlayBlocked(nr,nc)) return;}catch(e){}
+  try{if(typeof __msBlockExit==='function'&&__msBlockExit(nr,nc)){__msShowBlockedNotice();return;}}catch(e){}
   pos.r=nr; pos.c=nc;
   placePlayer();
 }
-window.addEventListener('keydown', e=>{
+window.addEventListener('keydown',function(e){
   if(TEACHER_VIEW) return;
-  const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
-  if(map[e.key]){ e.preventDefault(); move(map[e.key]); }
+  var m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(m[e.key]){e.preventDefault();move(m[e.key]);}
 });
-
-/* ===================== 터치 스와이프 이동 ===================== */
 if(!TEACHER_VIEW){
-  const stage = document.querySelector('.stage-wrap');
-  let touchStartX = 0, touchStartY = 0, touchActive = false;
-  const SWIPE_THRESHOLD = 30; // px
-  stage.addEventListener('touchstart', e=>{
-    if(e.touches.length !== 1) return;
-    touchActive = true;
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-  }, { passive:true });
-  stage.addEventListener('touchmove', e=>{
-    if(touchActive) e.preventDefault(); // 스와이프 중 화면 스크롤 방지
-  }, { passive:false });
-  stage.addEventListener('touchend', e=>{
-    if(!touchActive) return;
-    touchActive = false;
-    const touch = e.changedTouches[0];
-    const dx = touch.clientX - touchStartX;
-    const dy = touch.clientY - touchStartY;
-    if(Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_THRESHOLD) return;
-    if(Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 'right' : 'left');
-    else move(dy > 0 ? 'down' : 'up');
-  }, { passive:true });
+  var sw=document.querySelector('.stage-wrap');
+  var tx=0,ty=0,ta=false;
+  sw.addEventListener('touchstart',function(e){if(e.touches.length!==1)return;ta=true;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  sw.addEventListener('touchmove',function(e){if(ta)e.preventDefault();},{passive:false});
+  sw.addEventListener('touchend',function(e){
+    if(!ta)return;ta=false;
+    var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<30)return;
+    if(Math.abs(dx)>Math.abs(dy))move(dx>0?'right':'left');
+    else move(dy>0?'down':'up');
+  },{passive:true});
 }
-
-if(!__NEEDS_CHAR_SETUP){
-  renderPlayer();
-  placePlayer();
-  initRealtime('gym');
-  if(!TEACHER_VIEW){ initMissionSystem('gym'); loadMapOverlays('gym', ctx, TS); }
+renderPlayer();
+try{placePlayer();}catch(e){console.warn('[gym] placePlayer:',e);}
+try{initRealtime('gym');}catch(e){console.warn('[gym] realtime:',e);}
+if(!TEACHER_VIEW){
+  try{initMissionSystem('gym');}catch(e){console.warn('[gym] missions:',e);}
+  try{loadMapOverlays('gym',ctx,TS);}catch(e){console.warn('[gym] overlays:',e);}
 }
 </script>
 </body>

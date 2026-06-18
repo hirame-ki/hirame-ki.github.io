@@ -13,65 +13,65 @@
 /* ===================== 맵별 미션 구역(zone) 정의 ===================== */
 /* r0~r1, c0~c1 은 그리드 좌표(행/열) 기준의 사각 영역 (포함) */
 const MISSION_ZONES = {
-  classroom: [   // 15열 x 16행 - 2행씩 8개 구역
-    {id:'zone_A', label:'칠판·TV 앞',       r0:0,  c0:0, r1:1,  c1:14},
-    {id:'zone_B', label:'앞쪽 통로·앞문',    r0:2,  c0:0, r1:3,  c1:14},
-    {id:'zone_C', label:'책상 1열',         r0:4,  c0:0, r1:5,  c1:14},
-    {id:'zone_D', label:'책상 2열',         r0:6,  c0:0, r1:7,  c1:14},
-    {id:'zone_E', label:'책상 3열',         r0:8,  c0:0, r1:9,  c1:14},
-    {id:'zone_F', label:'책상 4열',         r0:10, c0:0, r1:11, c1:14},
-    {id:'zone_G', label:'책상 5열·뒷문',     r0:12, c0:0, r1:13, c1:14},
-    {id:'zone_H', label:'뒤쪽 통로·게시판/사물함', r0:14, c0:0, r1:15, c1:14}
+  classroom: [   // 60×60 맵 기준 - 8행 간격으로 8개 구역
+    {id:'zone_A', label:'칠판·TV 앞',            r0:1,  c0:2, r1:5,  c1:57},
+    {id:'zone_B', label:'앞쪽 통로·교사 책상',    r0:7,  c0:2, r1:11, c1:57},
+    {id:'zone_C', label:'책상 1열',              r0:12, c0:2, r1:16, c1:57},
+    {id:'zone_D', label:'책상 2열',              r0:20, c0:2, r1:24, c1:57},
+    {id:'zone_E', label:'책상 3열',              r0:28, c0:2, r1:32, c1:57},
+    {id:'zone_F', label:'책상 4열',              r0:36, c0:2, r1:40, c1:57},
+    {id:'zone_G', label:'책상 5열',              r0:44, c0:2, r1:48, c1:57},
+    {id:'zone_H', label:'뒤쪽 통로·게시판/사물함', r0:52, c0:2, r1:58, c1:57}
   ],
-  library: [   // 15열 x 21행 - 8개 구역
-    {id:'zone_A', label:'입구·대출대',      r0:0,  c0:0, r1:2,  c1:14},
-    {id:'zone_B', label:'서가 1열',         r0:3,  c0:0, r1:4,  c1:14},
-    {id:'zone_C', label:'서가 2열',         r0:5,  c0:0, r1:7,  c1:14},
-    {id:'zone_D', label:'중앙 통로',        r0:8,  c0:0, r1:9,  c1:14},
-    {id:'zone_E', label:'열람석 1열',       r0:10, c0:0, r1:12, c1:14},
-    {id:'zone_F', label:'열람석 2열',       r0:13, c0:0, r1:14, c1:14},
-    {id:'zone_G', label:'열람석 3열',       r0:15, c0:0, r1:16, c1:14},
-    {id:'zone_H', label:'열람석 4·5열',     r0:17, c0:0, r1:20, c1:14}
+  library: [   // 15열 x 21행 - 구역 간 간격 확보
+    {id:'zone_A', label:'입구·대출대',      r0:0,  c0:1, r1:2,  c1:13},
+    {id:'zone_B', label:'서가 1열',         r0:4,  c0:1, r1:5,  c1:13},
+    {id:'zone_C', label:'서가 2열',         r0:7,  c0:1, r1:8,  c1:13},
+    {id:'zone_D', label:'중앙 통로',        r0:10, c0:1, r1:11, c1:13},
+    {id:'zone_E', label:'열람석 1열',       r0:13, c0:1, r1:14, c1:13},
+    {id:'zone_F', label:'열람석 2열',       r0:15, c0:1, r1:16, c1:13},
+    {id:'zone_G', label:'열람석 3열',       r0:17, c0:1, r1:18, c1:13},
+    {id:'zone_H', label:'열람석 4·5열',     r0:19, c0:1, r1:20, c1:13}
   ],
-  playground: [   // 32열 x 14행 - 4열씩 8개 구역
-    {id:'zone_A', label:'서쪽 펜스·골대',    r0:0, c0:0,  r1:13, c1:3},
-    {id:'zone_B', label:'서쪽 놀이기구',     r0:0, c0:4,  r1:13, c1:7},
-    {id:'zone_C', label:'서쪽 잔디',        r0:0, c0:8,  r1:13, c1:11},
-    {id:'zone_D', label:'중앙 광장(좌)',     r0:0, c0:12, r1:13, c1:15},
-    {id:'zone_E', label:'중앙 광장(우)',     r0:0, c0:16, r1:13, c1:19},
-    {id:'zone_F', label:'동쪽 잔디',        r0:0, c0:20, r1:13, c1:23},
-    {id:'zone_G', label:'동쪽 놀이기구',     r0:0, c0:24, r1:13, c1:27},
-    {id:'zone_H', label:'동쪽 펜스·골대',    r0:0, c0:28, r1:13, c1:31}
+  playground: [   // 32열 x 14행 - 열 단위 구역 (4열 간격 + 2열 완충)
+    {id:'zone_A', label:'서쪽 펜스·골대',   r0:2, c0:0,  r1:11, c1:2},
+    {id:'zone_B', label:'서쪽 놀이기구',    r0:2, c0:4,  r1:11, c1:6},
+    {id:'zone_C', label:'서쪽 잔디',        r0:2, c0:8,  r1:11, c1:10},
+    {id:'zone_D', label:'중앙 광장(좌)',    r0:2, c0:12, r1:11, c1:14},
+    {id:'zone_E', label:'중앙 광장(우)',    r0:2, c0:17, r1:11, c1:19},
+    {id:'zone_F', label:'동쪽 잔디',        r0:2, c0:21, r1:11, c1:23},
+    {id:'zone_G', label:'동쪽 놀이기구',    r0:2, c0:25, r1:11, c1:27},
+    {id:'zone_H', label:'동쪽 펜스·골대',   r0:2, c0:29, r1:11, c1:31}
   ],
-  gym: [   // 28열 x 14행 - 8개 구역
-    {id:'zone_A', label:'무대·관람석(좌)',   r0:0, c0:0,  r1:13, c1:3},
-    {id:'zone_B', label:'코트 좌측1',       r0:0, c0:4,  r1:13, c1:7},
-    {id:'zone_C', label:'코트 좌측2',       r0:0, c0:8,  r1:13, c1:10},
-    {id:'zone_D', label:'코트 중앙(좌)',     r0:0, c0:11, r1:13, c1:13},
-    {id:'zone_E', label:'코트 중앙(우)',     r0:0, c0:14, r1:13, c1:16},
-    {id:'zone_F', label:'코트 우측1',       r0:0, c0:17, r1:13, c1:19},
-    {id:'zone_G', label:'코트 우측2',       r0:0, c0:20, r1:13, c1:23},
-    {id:'zone_H', label:'관람석·보관대(우)', r0:0, c0:24, r1:13, c1:27}
+  gym: [   // 28열 x 14행 - 3열 간격 구역
+    {id:'zone_A', label:'무대·관람석(좌)',   r0:2, c0:0,  r1:11, c1:2},
+    {id:'zone_B', label:'코트 좌측1',       r0:2, c0:4,  r1:11, c1:6},
+    {id:'zone_C', label:'코트 좌측2',       r0:2, c0:8,  r1:11, c1:9},
+    {id:'zone_D', label:'코트 중앙(좌)',     r0:2, c0:11, r1:11, c1:12},
+    {id:'zone_E', label:'코트 중앙(우)',     r0:2, c0:15, r1:11, c1:16},
+    {id:'zone_F', label:'코트 우측1',       r0:2, c0:18, r1:11, c1:19},
+    {id:'zone_G', label:'코트 우측2',       r0:2, c0:21, r1:11, c1:22},
+    {id:'zone_H', label:'관람석·보관대(우)', r0:2, c0:25, r1:11, c1:27}
   ],
-  city: [   // 28열 x 14행 - 3개 블록(상/하) + 사거리 2곳 = 8개 구역
-    {id:'zone_A', label:'블록1 상가(북)',    r0:0, c0:0,  r1:5,  c1:7},
-    {id:'zone_B', label:'블록1 상가(남)',    r0:8, c0:0,  r1:13, c1:7},
-    {id:'zone_C', label:'블록2 상가(북)',    r0:0, c0:10, r1:5,  c1:17},
-    {id:'zone_D', label:'블록2 상가(남)',    r0:8, c0:10, r1:13, c1:17},
-    {id:'zone_E', label:'블록3 상가(북)',    r0:0, c0:20, r1:5,  c1:27},
-    {id:'zone_F', label:'블록3 상가(남)',    r0:8, c0:20, r1:13, c1:27},
-    {id:'zone_G', label:'사거리1(횡단보도)', r0:0, c0:8,  r1:13, c1:9},
-    {id:'zone_H', label:'사거리2(횡단보도)', r0:0, c0:18, r1:13, c1:19}
+  city: [   // 48열 x 24행 - 도로/공원 기준
+    {id:'zone_A', label:'블록1 상가(북)',    r0:0, c0:0,  r1:8,  c1:12},
+    {id:'zone_B', label:'블록1 상가(남)',    r0:9, c0:1,  r1:12, c1:6},
+    {id:'zone_C', label:'블록2 상가(북)',    r0:1, c0:11, r1:4,  c1:16},
+    {id:'zone_D', label:'블록2 상가(남)',    r0:9, c0:11, r1:12, c1:16},
+    {id:'zone_E', label:'블록3 상가(북)',    r0:1, c0:21, r1:4,  c1:26},
+    {id:'zone_F', label:'블록3 상가(남)',    r0:9, c0:21, r1:12, c1:26},
+    {id:'zone_G', label:'사거리1(횡단보도)', r0:5, c0:8,  r1:8,  c1:9},
+    {id:'zone_H', label:'사거리2(횡단보도)', r0:5, c0:18, r1:8,  c1:19}
   ],
-  forest: [   // 28열 x 14행 - 4x2 격자 8개 구역
-    {id:'zone_A', label:'입구·서북쪽 숲',    r0:0, c0:0,  r1:6,  c1:6},
-    {id:'zone_B', label:'북쪽 연못가',       r0:0, c0:7,  r1:6,  c1:13},
-    {id:'zone_C', label:'북동쪽 숲',        r0:0, c0:14, r1:6,  c1:20},
-    {id:'zone_D', label:'동쪽 깊은 숲',      r0:0, c0:21, r1:6,  c1:27},
-    {id:'zone_E', label:'서남쪽 숲',        r0:7, c0:0,  r1:13, c1:6},
-    {id:'zone_F', label:'남쪽 연못가',       r0:7, c0:7,  r1:13, c1:13},
-    {id:'zone_G', label:'남동쪽 숲',        r0:7, c0:14, r1:13, c1:20},
-    {id:'zone_H', label:'동남쪽 깊은 숲',    r0:7, c0:21, r1:13, c1:27}
+  forest: [   // 28열 x 14행 - 구역 중심부만 (테두리 제외)
+    {id:'zone_A', label:'입구·서북쪽 숲',   r0:1, c0:1,  r1:5,  c1:5},
+    {id:'zone_B', label:'북쪽 연못가',      r0:1, c0:8,  r1:5,  c1:12},
+    {id:'zone_C', label:'북동쪽 숲',        r0:1, c0:15, r1:5,  c1:19},
+    {id:'zone_D', label:'동쪽 깊은 숲',     r0:1, c0:22, r1:5,  c1:26},
+    {id:'zone_E', label:'서남쪽 숲',        r0:8, c0:1,  r1:12, c1:5},
+    {id:'zone_F', label:'남쪽 연못가',      r0:8, c0:8,  r1:12, c1:12},
+    {id:'zone_G', label:'남동쪽 숲',        r0:8, c0:15, r1:12, c1:19},
+    {id:'zone_H', label:'동남쪽 깊은 숲',   r0:8, c0:22, r1:12, c1:26}
   ]
 };
 
@@ -79,27 +79,29 @@ const MISSION_ZONES = {
 /* 맵별 출입구(문/게이트) 칸 - 미션 완료 후 이 칸에 들어가면 다음 맵으로 자동 이동 */
 const EXIT_ZONES = {
   classroom: [
-    {r0:3,  c0:14, r1:3,  c1:14},  // 앞문
-    {r0:13, c0:14, r1:13, c1:14}   // 뒷문
+    {r0:10, c0:58, r1:10, c1:59},  // 앞문 (60x60)
+    {r0:48, c0:58, r1:48, c1:59}   // 뒷문 (60x60)
   ],
   library: [
-    {r0:0, c0:6, r1:0, c1:8}       // 입구
+    {r0:0, c0:11, r1:0, c1:14}     // 입구 (26x36)
   ],
   playground: [
-    {r0:13, c0:15, r1:13, c1:16}   // 정문 게이트
+    {r0:0, c0:27, r1:1, c1:28}     // 정문 게이트 (56x24)
   ],
   gym: [
-    {r0:3, c0:27, r1:4,  c1:27},   // 앞문
-    {r0:9, c0:27, r1:10, c1:27}    // 뒷문
+    {r0:0, c0:10, r1:1, c1:11}     // 출입구 (48x24)
   ],
   city: [
-    {r0:0,  c0:8,  r1:0,  c1:9},   // 상단 도로 입구
-    {r0:0,  c0:18, r1:0,  c1:19},
-    {r0:13, c0:8,  r1:13, c1:9},   // 하단 도로 입구
-    {r0:13, c0:18, r1:13, c1:19}
+    {r0:0, c0:14, r1:1, c1:17},    // 북쪽 1번 도로 (48x24)
+    {r0:0, c0:30, r1:1, c1:34},    // 북쪽 2번 도로
+    {r0:22, c0:14, r1:23, c1:17},  // 남쪽 1번 도로
+    {r0:22, c0:30, r1:23, c1:34}   // 남쪽 2번 도로
   ],
   forest: [
-    {r0:1, c0:0, r1:1, c1:0}       // 좌측 입구(흙길)
+    {r0:0, c0:23, r1:1, c1:24},    // 북쪽 출구 (48x24)
+    {r0:22, c0:23, r1:23, c1:24},  // 남쪽 출구
+    {r0:11, c0:0, r1:12, c1:1},    // 서쪽 출구
+    {r0:11, c0:46, r1:12, c1:47}   // 동쪽 출구
   ]
 };
 
@@ -194,6 +196,8 @@ let __msMapOrder = null;        // 교사가 설정한(또는 기본) 맵 순서
 let __msMapsWithMissions = null; // 이 수업(room)에 미션이 등록된 맵 id 집합
 let __msTransitioning = false;   // 다음 맵으로 이동 처리 중 중복 방지
 let __msAllDoneShown = false;    // 이 맵의 "전체 완료" 축하 팝업을 이미 보여줬는지
+let __msEntryTime = null;        // 맵 입장 시각 (ms)
+let __msTimerInterval = null;    // 경과 시간 표시용 인터벌 ID
 
 function __msEscHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -533,12 +537,24 @@ function __msBuildUI(){
   }
 }
 
+function __msFormatElapsed(){
+  if(!__msEntryTime) return '';
+  const s = Math.floor((Date.now() - __msEntryTime) / 1000);
+  const m = Math.floor(s / 60);
+  const ss = String(s % 60).padStart(2, '0');
+  if(m >= 60){
+    const h = Math.floor(m / 60), mm = String(m % 60).padStart(2, '0');
+    return ` | ⏱ ${h}:${mm}:${ss}`;
+  }
+  return ` | ⏱ ${m}:${ss}`;
+}
+
 function __msUpdateProgress(){
   const bar = document.getElementById('ms-progress');
   if(!bar || !__msMissions) return;
   const total = __msMissions.length;
   const done = __msMissions.filter(m => __msDone.has(m.id)).length;
-  bar.textContent = `🎯 미션 진행률 ${done} / ${total}`;
+  bar.textContent = `🎯 미션 진행률 ${done} / ${total}${__msFormatElapsed()}`;
 }
 
 function __msYoutubeId(url){
@@ -798,6 +814,8 @@ function __msComplete(id, answer = null){
 
   if(__msMissions.length && __msAllRequiredDone() && !__msAllDoneShown){
     __msAllDoneShown = true;
+    if(__msTimerInterval){ clearInterval(__msTimerInterval); __msTimerInterval = null; }
+    __msSaveCompletionTime();
     try{ localStorage.setItem(__msAllDoneKey(), '1'); }catch(e){ /* 무시 */ }
     setTimeout(__msShowAllDoneCelebration, __msQueue.length ? 0 : 300);
   }
@@ -825,6 +843,32 @@ async function __msRecordProgress(mission, answer = null){
   }
 }
 
+/* 전체 필수 미션 완료 시 소요 시간 기록 */
+async function __msSaveCompletionTime(){
+  if(!__msEntryTime) return;
+  const client = __msGetClient();
+  if(!client) return;
+  const elapsed_ms = Date.now() - __msEntryTime;
+  const nickname = __msParam('nickname', null)
+    || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('ssambus_nickname'))
+    || '익명';
+  try{
+    await client.from('mission_progress').upsert({
+      room_id: __msRoomId,
+      student_id: __msStudentId,
+      nickname: nickname,
+      map_id: __msMapId,
+      mission_id: '__completion_' + __msMapId,
+      mission_title: '전체 완료 시간',
+      required: false,
+      completed_at: new Date().toISOString(),
+      student_answer: String(elapsed_ms)
+    }, { onConflict: 'room_id,student_id,mission_id' });
+  }catch(e){
+    console.warn('[쌤버스] 완료 시간 기록 실패', e);
+  }
+}
+
 /* ===================== 초기화 ===================== */
 async function initMissionSystem(mapId){
   __msMapId = mapId;
@@ -849,6 +893,9 @@ async function initMissionSystem(mapId){
   }
 
   __msBuildUI();
+  __msEntryTime = Date.now();
+  if(__msTimerInterval) clearInterval(__msTimerInterval);
+  __msTimerInterval = setInterval(__msUpdateProgress, 1000);
   __msMissions = await __msLoadMissions(mapId);
   __msMapOrder = await __msLoadMapOrder();
   __msMapsWithMissions = await __msLoadMapsWithMissions();

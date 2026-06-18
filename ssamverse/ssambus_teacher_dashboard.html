@@ -220,12 +220,29 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 /* ===== 트리거 타일 선택기 ===== */
 #trigSection{margin-top:12px;padding:12px;background:#f0f7ff;border:1px solid #c5d8f5;border-radius:8px;display:none}
 #trigSection.show{display:block}
-.trig-mode-row{display:flex;gap:16px;margin-bottom:8px;font-size:13px}
+.trig-mode-row{display:flex;gap:16px;margin-bottom:6px;font-size:13px}
 .trig-mode-row label{display:flex;align-items:center;gap:5px;cursor:pointer}
+.trig-mode-desc{font-size:11.5px;color:#888;margin-bottom:6px;line-height:1.4}
+#trig-zone-info{font-size:12px;color:#1565c0;background:#e3f2fd;border-radius:6px;padding:6px 10px;margin-bottom:6px}
 #trig-canvas-wrap{overflow:auto;max-height:280px;border:1px solid #ccc;border-radius:6px;cursor:crosshair;margin-top:8px}
 #trig-canvas{display:block}
 #trig-info{font-size:11.5px;color:#555;margin-top:6px}
 .trig-hint{font-size:11.5px;color:#7a9abf;margin-bottom:6px}
+/* 타일 지정 배지 */
+.tile-trig{background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600}
+/* 완료 순위 모달 */
+#rankModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:20px;overflow-y:auto}
+#rankModal-bg.show{display:flex}
+#rankModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:620px;margin:auto}
+#rankModal h2{margin:0 0 .6rem;font-size:16px}
+.rank-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.rank-table th{background:#37474F;color:#fff;padding:8px 10px;text-align:center;white-space:nowrap}
+.rank-table td{padding:7px 10px;text-align:center;border-bottom:1px solid #eee;white-space:nowrap}
+.rank-table tr:hover td{background:#f5f5f5}
+.rank-table td:nth-child(2){text-align:left;font-weight:500}
+.rank-medal-1{color:#f1c40f;font-weight:700;font-size:16px}
+.rank-medal-2{color:#aaa;font-weight:700}
+.rank-medal-3{color:#cd7f32;font-weight:700}
 </style>
 </head>
 <body>
@@ -275,6 +292,7 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
       <button class="primary" onclick="openJoinMapModal()">🧑‍🏫 맵 참가하기</button>
       <button class="primary" id="chatModeBtn" onclick="toggleChatMode()">💬 채팅: 전체</button>
       <button class="ghost" id="chatBanBtn" onclick="toggleChatBan()">🚫 채팅 금지</button>
+      <button class="primary" onclick="openRankingModal()">🏆 완료 순위</button>
       <button class="primary" onclick="downloadProgressExcel()">📊 진행현황 다운로드</button>
       <button class="ghost" onclick="newClass()">수업 변경</button>
       <button class="ghost" onclick="logout()">로그아웃</button>
@@ -362,6 +380,24 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     <div id="discAnsBody" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px"></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeDiscAnsModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 완료 순위 모달 -->
+<div id="rankModal-bg">
+  <div id="rankModal">
+    <h2>🏆 미션 완료 순위</h2>
+    <div class="section-hint">각 맵에서 모든 필수 미션을 완료한 학생들의 소요 시간 순위입니다. (입장~전체 완료 기준)</div>
+    <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <label style="font-size:13px;display:flex;align-items:center;gap:6px">맵 선택:
+        <select id="rank-map-sel" onchange="renderRankingTable()" style="padding:5px 8px;border-radius:6px;border:1px solid #ccc;font-size:13px"></select>
+      </label>
+      <span id="rank-loading" style="font-size:13px;color:#888"></span>
+    </div>
+    <div id="rank-table-wrap"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeRankingModal()">닫기</button>
     </div>
   </div>
 </div>
@@ -472,13 +508,16 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 
     <!-- 트리거 타일 직접 지정 -->
     <div id="trigSection">
-      <div style="font-size:13px;font-weight:600;margin-bottom:6px">📍 미션 발동 위치</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">📍 미션 발동 위치</div>
       <div class="trig-mode-row">
-        <label><input type="radio" name="trig_mode" value="zone" onchange="onTriggerModeChange()" checked> 구역(zone)으로 발동 <span style="color:#aaa;font-size:11px">(기본)</span></label>
+        <label><input type="radio" name="trig_mode" value="zone" onchange="onTriggerModeChange()" checked> 구역으로 발동 <span style="color:#aaa;font-size:11px">(기본)</span></label>
         <label><input type="radio" name="trig_mode" value="tile" onchange="onTriggerModeChange()"> 타일 직접 지정</label>
       </div>
+      <div id="trig-zone-info" style="display:none"></div>
+      <div id="trig-mode-zone-desc" class="trig-mode-desc">학생이 이 미션의 구역(zone) 안에 들어오면 자동 발동됩니다. AI 자동 생성 미션의 기본 방식입니다.</div>
+      <div id="trig-mode-tile-desc" class="trig-mode-desc" style="display:none">아래 맵에서 발동할 타일을 직접 클릭해 지정합니다. <strong>구역은 분류 목적으로만 사용</strong>되며 실제 발동은 선택한 타일에서만 일어납니다.</div>
       <div id="trigTileArea" style="display:none">
-        <div class="trig-hint">맵에서 미션이 발동할 위치(타일)를 클릭해 선택하세요. 클릭하면 📌 표시가 됩니다. 다시 클릭하면 취소됩니다.</div>
+        <div class="trig-hint" style="margin-top:6px">발동할 위치(타일)를 클릭하세요. 오렌지 표시 = 선택됨. 다시 클릭하면 취소.</div>
         <div id="trig-canvas-wrap"><canvas id="trig-canvas"></canvas></div>
         <div id="trig-info">선택된 위치: 없음</div>
       </div>
@@ -1332,6 +1371,7 @@ function renderZones(mapId){
           metaExtra = `<span>${escapeHtml(m.content)}</span>`;
         }
         const isOwner = !!currentUserId && m.teacher_id === currentUserId;
+        const hasTiles = Array.isArray(m.trigger_tiles) && m.trigger_tiles.length > 0;
         card.innerHTML = `
           <div class="info">
             <div class="title">${escapeHtml(m.title)}</div>
@@ -1339,6 +1379,7 @@ function renderZones(mapId){
               <span class="mtype ${m.type}">${typeLabel}</span>
               <span>순서 ${m.order}</span>
               ${m.required ? '<span class="req">필수</span>' : '<span>선택</span>'}
+              ${hasTiles ? '<span class="tile-trig">📍 타일 지정</span>' : ''}
               ${metaExtra}
               ${!isOwner ? '<span>🔒 다른 기기에서 작성 (이 기기에서 수정/삭제 불가)</span>' : ''}
             </div>
@@ -1558,15 +1599,17 @@ async function downloadProgressExcel(){
   }
   showToast('진행현황을 불러오는 중...');
   try{
-    const [missionsRes, progressRes] = await Promise.all([
+    const [missionsRes, progressRes, completionRes] = await Promise.all([
       client.from('missions').select('*').eq('room_id', ROOM_ID),
-      client.from('mission_progress').select('*').eq('room_id', ROOM_ID)
+      client.from('mission_progress').select('*').eq('room_id', ROOM_ID),
+      client.from('mission_progress').select('*').eq('room_id', ROOM_ID).like('mission_id', '__completion_%')
     ]);
     if(missionsRes.error) throw missionsRes.error;
     if(progressRes.error) throw progressRes.error;
 
     const missions = missionsRes.data || [];
-    const progress = progressRes.data || [];
+    const progress = (progressRes.data || []).filter(p => !p.mission_id.startsWith('__completion_'));
+    const completionData = completionRes.data || [];
 
     if(!missions.length){
       showToast('등록된 미션이 없습니다.');
@@ -1576,14 +1619,14 @@ async function downloadProgressExcel(){
       showToast('아직 미션을 완료한 학생이 없습니다.');
       return;
     }
-    buildAndDownloadExcel(missions, progress);
+    buildAndDownloadExcel(missions, progress, completionData);
   }catch(e){
     console.error(e);
     alert('진행현황을 불러오지 못했습니다: ' + e.message);
   }
 }
 
-function buildAndDownloadExcel(missions, progress){
+function buildAndDownloadExcel(missions, progress, completionData){
   const mapIndex = {};
   MAPS.forEach((m, i) => { mapIndex[m.id] = i; });
 
@@ -1702,8 +1745,169 @@ function buildAndDownloadExcel(missions, progress){
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '미션 진행현황');
 
+  // 완료 순위 시트
+  if(completionData && completionData.length){
+    const rankLabel = {};
+    MAPS.forEach(m => { rankLabel[m.id] = m.label; });
+
+    // 맵별 그룹, 각 그룹 내 소요시간 오름차순 정렬
+    const rankRows = [['맵', '순위', '닉네임', '소요 시간', '완료 시각']];
+    MAPS.forEach(mapMeta => {
+      const mapRows = completionData
+        .filter(r => r.map_id === mapMeta.id)
+        .sort((a, b) => (Number(a.student_answer)||Infinity) - (Number(b.student_answer)||Infinity));
+      mapRows.forEach((r, i) => {
+        const ms = Number(r.student_answer) || 0;
+        const totalSec = Math.floor(ms / 1000);
+        const min = Math.floor(totalSec / 60), sec = totalSec % 60;
+        const timeStr = min >= 60
+          ? `${Math.floor(min/60)}시간 ${String(min%60).padStart(2,'0')}분 ${String(sec).padStart(2,'0')}초`
+          : `${min}분 ${String(sec).padStart(2,'0')}초`;
+        const doneAt = r.completed_at ? new Date(r.completed_at).toLocaleString('ko-KR', {hour12:false}) : '-';
+        rankRows.push([rankLabel[mapMeta.id] || mapMeta.id, i+1, r.nickname || r.student_id || '익명', timeStr, doneAt]);
+      });
+    });
+
+    const ws2 = XLSX.utils.aoa_to_sheet(rankRows);
+    ws2['!cols'] = [{wch:10},{wch:6},{wch:14},{wch:18},{wch:22}];
+
+    // 헤더 스타일
+    ['A1','B1','C1','D1','E1'].forEach(addr => {
+      if(!ws2[addr]) ws2[addr] = {t:'s',v:''};
+      ws2[addr].s = {font:{bold:true,color:{rgb:'FFFFFF'},sz:11},fill:{fgColor:{rgb:'37474F'}},
+        alignment:{horizontal:'center',vertical:'center'},border:THIN_BORDER};
+    });
+    // 데이터 행 스타일
+    for(let r2 = 1; r2 < rankRows.length; r2++){
+      const row2 = rankRows[r2];
+      const mapId2 = MAPS.find(m => (rankLabel[m.id]||m.id) === row2[0])?.id;
+      const bg = mapId2 ? (MAP_COLORS[mapId2] || '455A64') : '455A64';
+      ['A','B','C','D','E'].forEach((col, ci) => {
+        const addr2 = col + (r2+1);
+        if(!ws2[addr2]) ws2[addr2] = {t:'s',v:''};
+        ws2[addr2].s = {
+          font:{sz:11, bold:(ci===2), color: ci===0 ? {rgb:'FFFFFF'} : {rgb:'222222'}},
+          fill:{fgColor:{rgb: ci===0 ? bg : (row2[1]===1?'FFF9C4':'FFFFFF')}},
+          alignment:{horizontal:'center',vertical:'center'},
+          border:THIN_BORDER
+        };
+      });
+    }
+    XLSX.utils.book_append_sheet(wb, ws2, '완료 순위');
+  }
+
   const today = new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb, `쌤버스_미션진행현황_${ROOM_ID}_${today}.xlsx`);
+}
+
+/* ===================== 완료 순위 모달 ===================== */
+let __rankData = [];
+
+async function openRankingModal(){
+  const modal = document.getElementById('rankModal-bg');
+  if(!modal) return;
+  modal.classList.add('show');
+
+  const sel = document.getElementById('rank-map-sel');
+  sel.innerHTML = '<option value="">전체 맵</option>' + MAPS.map(m =>
+    `<option value="${m.id}">${m.label}</option>`
+  ).join('');
+
+  const loadingEl = document.getElementById('rank-loading');
+  loadingEl.textContent = '불러오는 중...';
+  document.getElementById('rank-table-wrap').innerHTML = '';
+
+  try{
+    const { data, error } = await client
+      .from('mission_progress')
+      .select('*')
+      .eq('room_id', ROOM_ID)
+      .like('mission_id', '__completion_%');
+    if(error) throw error;
+    __rankData = data || [];
+    loadingEl.textContent = '';
+    renderRankingTable();
+  }catch(e){
+    loadingEl.textContent = '데이터를 불러오지 못했습니다: ' + e.message;
+  }
+}
+
+function closeRankingModal(){
+  document.getElementById('rankModal-bg').classList.remove('show');
+}
+
+function __rankFormatTime(ms){
+  const totalSec = Math.floor(ms / 1000);
+  const min = Math.floor(totalSec / 60), sec = totalSec % 60;
+  if(min >= 60){
+    const h = Math.floor(min / 60), m2 = min % 60;
+    return `${h}시간 ${String(m2).padStart(2,'0')}분 ${String(sec).padStart(2,'0')}초`;
+  }
+  return `${min}분 ${String(sec).padStart(2,'0')}초`;
+}
+
+function renderRankingTable(){
+  const mapSel = document.getElementById('rank-map-sel').value;
+  const wrap = document.getElementById('rank-table-wrap');
+  const mapLbl = {};
+  MAPS.forEach(m => { mapLbl[m.id] = m.label; });
+
+  let rows = __rankData.slice();
+  if(mapSel) rows = rows.filter(r => r.map_id === mapSel);
+
+  rows.sort((a, b) => {
+    if(!mapSel){
+      const ai = MAPS.findIndex(m => m.id === a.map_id), bi = MAPS.findIndex(m => m.id === b.map_id);
+      if(ai !== bi) return ai - bi;
+    }
+    return (Number(a.student_answer)||Infinity) - (Number(b.student_answer)||Infinity);
+  });
+
+  if(!rows.length){
+    wrap.innerHTML = '<div style="color:#aaa;font-size:13px;text-align:center;padding:20px">아직 완료한 학생이 없습니다.</div>';
+    return;
+  }
+
+  const medal = (i) => {
+    if(i === 0) return '<span class="rank-medal-1">🥇</span>';
+    if(i === 1) return '<span class="rank-medal-2">🥈</span>';
+    if(i === 2) return '<span class="rank-medal-3">🥉</span>';
+    return `<span style="color:#555">${i+1}</span>`;
+  };
+
+  // 맵별 rank 번호 부여 (전체 보기 시 각 맵 내 순위, 맵 필터 시 전체 순위)
+  let rankCounters = {};
+  const rowsWithRank = rows.map(r => {
+    const key = mapSel ? '__all__' : r.map_id;
+    rankCounters[key] = (rankCounters[key] || 0);
+    const rankIdx = rankCounters[key]++;
+    return { ...r, rankIdx };
+  });
+
+  wrap.innerHTML = `<table class="rank-table">
+    <thead><tr>
+      <th style="width:50px">순위</th>
+      <th>닉네임</th>
+      ${!mapSel ? '<th>맵</th>' : ''}
+      <th>소요 시간</th>
+      <th>완료 시각</th>
+    </tr></thead>
+    <tbody>
+      ${rowsWithRank.map(r => {
+        const elapsed = Number(r.student_answer) || 0;
+        const doneAt = r.completed_at
+          ? new Date(r.completed_at).toLocaleString('ko-KR', {hour12:false,month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})
+          : '-';
+        return `<tr>
+          <td>${medal(r.rankIdx)}</td>
+          <td>${escapeHtml(r.nickname || r.student_id || '익명')}</td>
+          ${!mapSel ? `<td style="font-size:12px;color:#666">${escapeHtml(mapLbl[r.map_id]||r.map_id)}</td>` : ''}
+          <td style="font-family:monospace">${__rankFormatTime(elapsed)}</td>
+          <td style="font-size:12px;color:#888">${doneAt}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
 }
 
 /* ===================== 채팅 모드 설정 ===================== */
@@ -2345,19 +2549,51 @@ function __initTriggerSection(mapId, mission){
     r.checked = (r.value === 'tile') === hasCustomTiles;
   });
 
+  // 설명/구역 정보 표시 초기화
+  const zoneId = mission ? mission.zone_id : (editingZoneId || null);
+  __updateTriggerZoneInfo(mapId, zoneId, hasCustomTiles);
+
+  const zoneDesc = document.getElementById('trig-mode-zone-desc');
+  const tileDesc = document.getElementById('trig-mode-tile-desc');
+  if(zoneDesc) zoneDesc.style.display = hasCustomTiles ? 'none' : '';
+  if(tileDesc) tileDesc.style.display = hasCustomTiles ? '' : 'none';
+
   document.getElementById('trigTileArea').style.display = hasCustomTiles ? 'block' : 'none';
   if(hasCustomTiles){ __bindTriggerCanvas(); __renderTriggerMap(); }
+}
+
+function __updateTriggerZoneInfo(mapId, zoneId, isTileMode){
+  const infoEl = document.getElementById('trig-zone-info');
+  if(!infoEl) return;
+  if(!zoneId || isTileMode){
+    infoEl.style.display = 'none';
+    return;
+  }
+  const map = MAPS.find(m => m.id === mapId);
+  const zone = map ? map.zones.find(z => z.id === zoneId) : null;
+  if(zone){
+    infoEl.textContent = `현재 구역: ${zone.label} (${zone.id}) — 이 구역에 들어오면 발동됩니다`;
+    infoEl.style.display = '';
+  } else {
+    infoEl.style.display = 'none';
+  }
 }
 
 function onTriggerModeChange(){
   const mode = document.querySelector('input[name=trig_mode]:checked')?.value;
   const area = document.getElementById('trigTileArea');
-  area.style.display = (mode === 'tile') ? 'block' : 'none';
-  if(mode === 'tile'){
+  const zoneDesc = document.getElementById('trig-mode-zone-desc');
+  const tileDesc = document.getElementById('trig-mode-tile-desc');
+  const isTile = (mode === 'tile');
+
+  area.style.display = isTile ? 'block' : 'none';
+  if(zoneDesc) zoneDesc.style.display = isTile ? 'none' : '';
+  if(tileDesc) tileDesc.style.display = isTile ? '' : 'none';
+
+  if(isTile){
     if(!__triggerTiles) __triggerTiles = [];
     __bindTriggerCanvas();
     __renderTriggerMap();
-    // 캔버스가 모달 아래 숨겨져 있을 수 있으므로 스크롤
     setTimeout(() => {
       const wrap = document.getElementById('trig-canvas-wrap');
       if(wrap) wrap.scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -2365,6 +2601,9 @@ function onTriggerModeChange(){
   } else {
     __triggerTiles = [];
     __updateTrigInfo();
+    // 구역 모드로 돌아가면 zone info 다시 표시
+    const zoneId = editingZoneId || null;
+    __updateTriggerZoneInfo(__trigPickMap, zoneId, false);
   }
 }
 

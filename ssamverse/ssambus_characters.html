@@ -62,7 +62,7 @@ body{font-family:sans-serif;padding:20px;background:#fff}
 <div class="section on" id="S_student">
 <div class="wrap">
   <div class="preview">
-    <svg width="96" height="144" viewBox="0 0 32 48"><g id="cg_s"></g></svg>
+    <svg width="120" height="152" viewBox="0 0 60 76"><g id="cg_s"></g></svg>
     <div class="dr">
       <button class="sb on" data-d="down" onclick="setDir('s',this)">앞</button>
       <button class="sb" data-d="left" onclick="setDir('s',this)">옆</button>
@@ -145,7 +145,7 @@ body{font-family:sans-serif;padding:20px;background:#fff}
 <div class="section" id="S_teacher">
 <div class="wrap">
   <div class="preview">
-    <svg width="96" height="144" viewBox="0 0 32 48"><g id="cg_t"></g></svg>
+    <svg width="120" height="152" viewBox="0 0 60 76"><g id="cg_t"></g></svg>
     <div class="dr">
       <button class="sb on" data-d="down" onclick="setDir('t',this)">앞</button>
       <button class="sb" data-d="left" onclick="setDir('t',this)">옆</button>
@@ -238,7 +238,7 @@ body{font-family:sans-serif;padding:20px;background:#fff}
 <div class="section" id="S_fantasy">
 <div class="wrap">
   <div class="preview">
-    <svg width="96" height="144" viewBox="0 0 32 48"><g id="cg_f"></g></svg>
+    <svg width="120" height="152" viewBox="0 0 60 76"><g id="cg_f"></g></svg>
     <div class="dr">
       <button class="sb on" data-d="down" onclick="setDir('f',this)">앞</button>
       <button class="sb" data-d="left" onclick="setDir('f',this)">옆</button>
@@ -336,20 +336,23 @@ function switchTab(id,el){document.querySelectorAll('.tab').forEach(function(e){
 function pickS(c,k,gid,el){ST[c][k]=el.dataset.v;document.querySelectorAll('#'+gid+' .sw').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
 function pickB(c,k,gid,el){ST[c][k]=el.dataset.v;document.querySelectorAll('#'+gid+' .sb').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
 function togAcc(c,el){var v=el.dataset.v,i=ST[c].acc.indexOf(v);if(i>-1){ST[c].acc.splice(i,1);el.classList.remove('on');}else{ST[c].acc.push(v);el.classList.add('on');}render(c);}
-function setDir(c,el){ST[c].dir=el.dataset.d;document.querySelectorAll('#S_'+(c==='s'?'student':'teacher')+' .dr .sb').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
+function setDir(c,el){ST[c].dir=el.dataset.d;var sid=c==='s'?'student':(c==='t'?'teacher':'fantasy');document.querySelectorAll('#S_'+sid+' .dr .sb').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
 function enterMap(){
   var nickname = (document.getElementById('nicknameInput').value || '').trim();
   if(!nickname){ alert('이름을 입력해주세요.'); document.getElementById('nicknameInput').focus(); return; }
-  sessionStorage.setItem('ssambus_nickname', nickname);
 
   var type = currentChar==='s'?'student':(currentChar==='t'?'teacher':'fantasy');
   var data = Object.assign({type:type}, ST[currentChar]);
-  localStorage.setItem('ssambus_player_character', JSON.stringify(data));
+  var charJson = JSON.stringify(data);
+
+  try { sessionStorage.setItem('ssambus_nickname', nickname); } catch(e) {}
+  try { localStorage.setItem('ssambus_player_character', charJson); } catch(e) {}
 
   var target = document.getElementById('mapSelect').value;
   var params = new URLSearchParams(window.location.search);
   params.delete('map');
   params.set('nickname', nickname);
+  params.set('c', charJson);
   window.location.href = target + '?' + params.toString();
 }
 

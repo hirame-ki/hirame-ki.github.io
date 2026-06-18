@@ -219,7 +219,7 @@ function renderRemotePlayers(presenceState){
       el = document.createElement('div');
       el.className = 'remote-player';
       el.dataset.student = key;
-      el.innerHTML = '<svg viewBox="0 0 32 48"><g></g></svg><span class="nick"></span>';
+      el.innerHTML = '<svg viewBox="0 0 60 76"><g></g></svg><span class="nick"></span>';
       container.appendChild(el);
     }
 
