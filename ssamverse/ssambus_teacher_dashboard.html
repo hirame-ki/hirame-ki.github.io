@@ -162,9 +162,10 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 .lm-zoom-bar{display:flex;gap:6px;align-items:center;margin-bottom:8px}
 .lm-zoom-bar button{padding:4px 10px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:14px;line-height:1}
 .lm-zoom-bar button:hover{background:#eee}
-.lm-frame-wrap{position:relative;width:100%;height:60vh;max-height:560px;background:#1a252f;border-radius:8px;overflow:hidden;cursor:grab}
-.lm-frame-wrap.lm-dragging{cursor:grabbing}
-.lm-frame-wrap iframe{position:absolute;border:0;transform-origin:top left;pointer-events:none;background:#fff}
+.lm-frame-wrap{position:relative;width:100%;height:60vh;max-height:560px;background:#1a252f;border-radius:8px;overflow:auto}
+.lm-iframe-scaler{position:relative;overflow:hidden;flex-shrink:0}
+.lm-frame-wrap iframe{position:absolute;top:0;left:0;border:0;transform-origin:top left;pointer-events:none;background:#fff}
+.lm-online{position:sticky;bottom:6px;left:6px;display:inline-block}
 .lm-online{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:4px 10px;border-radius:12px;z-index:1}
 
 /* ===== 맵 참가 모달 ===== */
@@ -367,7 +368,9 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     <div style="display:flex;gap:12px;align-items:flex-start">
       <div class="lm-stage" style="flex:1;min-width:0">
         <div class="lm-frame-wrap" id="lm_frame_wrap">
-          <iframe id="lm_iframe" frameborder="0" title="실시간 맵 보기"></iframe>
+          <div class="lm-iframe-scaler" id="lm_iframe_scaler">
+            <iframe id="lm_iframe" frameborder="0" title="실시간 맵 보기"></iframe>
+          </div>
           <div class="lm-online" id="lm_online">접속 인원: -</div>
         </div>
       </div>
@@ -714,12 +717,12 @@ const MAP_FILES = {
 
 /* 각 맵의 실제 캔버스 픽셀 크기 (실시간 맵 보기에서 축소 표시용) */
 const MAP_CANVAS_SIZE = {
-  classroom:{ w:720,  h:768  },
-  library:  { w:720,  h:1008 },
+  classroom:{ w:2880, h:2880 },
+  library:  { w:1248, h:1728 },
   playground:{ w:2688, h:1152 },
   gym:      { w:2304, h:1152 },
-  city:     { w:1344, h:672  },
-  forest:   { w:1344, h:672  }
+  city:     { w:2304, h:1152 },
+  forest:   { w:2304, h:1152 }
 };
 
 const MAPS = [
@@ -1085,8 +1088,6 @@ function downloadQr(){
 let __lmCurrentMap = null;
 let __lmChannel = null;
 let __lmZoomLevel = 1.0;
-let __lmPanX = 0, __lmPanY = 0;
-let __lmDragging = false, __lmDragSX = 0, __lmDragSY = 0, __lmDragPX = 0, __lmDragPY = 0;
 
 /* ===================== 맵 참가하기 (교사 참여) ===================== */
 function openJoinMapModal(){
@@ -1116,47 +1117,32 @@ function openLiveMapModal(){
   switchLiveMap(currentMap);
 }
 
-function __lmInitDrag(){
-  const wrap = document.getElementById('lm_frame_wrap');
-  if(!wrap || wrap.__lmDragBound) return;
-  wrap.__lmDragBound = true;
-  wrap.addEventListener('mousedown', e => {
-    __lmDragging = true; __lmDragSX = e.clientX; __lmDragSY = e.clientY;
-    __lmDragPX = __lmPanX; __lmDragPY = __lmPanY;
-    wrap.classList.add('lm-dragging');
-  });
-  window.addEventListener('mousemove', e => {
-    if(!__lmDragging) return;
-    __lmPanX = __lmDragPX + (e.clientX - __lmDragSX);
-    __lmPanY = __lmDragPY + (e.clientY - __lmDragSY);
-    __lmApplyTransform();
-  });
-  window.addEventListener('mouseup', () => {
-    __lmDragging = false;
-    wrap.classList.remove('lm-dragging');
-  });
-}
+function __lmInitDrag(){ /* reserved – scrolling via overflow:auto */ }
 
 function __lmApplyTransform(){
-  const wrap = document.getElementById('lm_frame_wrap');
+  const wrap   = document.getElementById('lm_frame_wrap');
+  const scaler = document.getElementById('lm_iframe_scaler');
   const iframe = document.getElementById('lm_iframe');
-  if(!wrap || !iframe || !__lmCurrentMap) return;
+  if(!wrap || !scaler || !iframe || !__lmCurrentMap) return;
   const size = MAP_CANVAS_SIZE[__lmCurrentMap];
   if(!size) return;
+  /* fitScale = zoom level 1.0 → full map fits the container */
   const wrapW = wrap.clientWidth, wrapH = wrap.clientHeight;
   const fitScale = Math.min(wrapW / size.w, wrapH / size.h);
   const scale = fitScale * __lmZoomLevel;
-  const scaledW = size.w * scale;
-  const scaledH = size.h * scale;
-  const maxPX = Math.max(0, (scaledW - wrapW) / 2);
-  const maxPY = Math.max(0, (scaledH - wrapH) / 2);
-  __lmPanX = Math.max(-maxPX, Math.min(maxPX, __lmPanX));
-  __lmPanY = Math.max(-maxPY, Math.min(maxPY, __lmPanY));
-  const baseX = Math.max(0, (wrapW - scaledW) / 2);
-  const baseY = Math.max(0, (wrapH - scaledH) / 2);
-  iframe.style.left = (baseX + __lmPanX) + 'px';
-  iframe.style.top  = (baseY + __lmPanY) + 'px';
+  const visW = Math.round(size.w * scale);
+  const visH = Math.round(size.h * scale);
+  /* scaler 크기 = 실제 시각적 크기 (스크롤 영역 결정) */
+  scaler.style.width  = visW + 'px';
+  scaler.style.height = visH + 'px';
+  /* iframe 은 원본 크기, CSS transform 으로 축소/확대 */
+  iframe.style.width  = size.w + 'px';
+  iframe.style.height = size.h + 'px';
   iframe.style.transform = `scale(${scale})`;
+  /* zoom 1.0 일 때 맵을 가운데 정렬 */
+  const padX = Math.max(0, Math.floor((wrapW - visW) / 2));
+  const padY = Math.max(0, Math.floor((wrapH - visH) / 2));
+  scaler.style.margin = padY + 'px ' + padX + 'px';
   const pctEl = document.getElementById('lm_zoom_pct');
   if(pctEl) pctEl.textContent = Math.round(__lmZoomLevel * 100) + '%';
 }
@@ -1167,12 +1153,13 @@ function __lmZoom(factor){
 }
 
 function __lmResetZoom(){
-  __lmZoomLevel = 1.0; __lmPanX = 0; __lmPanY = 0;
+  __lmZoomLevel = 1.0;
+  const wrap = document.getElementById('lm_frame_wrap');
+  if(wrap){ wrap.scrollLeft = 0; wrap.scrollTop = 0; }
   __lmApplyTransform();
 }
 
 function closeLiveMapModal(){
-  __lmDragging = false;
   document.getElementById('liveMapModal-bg').classList.remove('show');
   document.getElementById('lm_iframe').src = 'about:blank';
   if(__lmChannel){
@@ -1183,7 +1170,9 @@ function closeLiveMapModal(){
 
 function switchLiveMap(mapId){
   __lmCurrentMap = mapId;
-  __lmZoomLevel = 1.0; __lmPanX = 0; __lmPanY = 0;
+  __lmZoomLevel = 1.0;
+  const wrap = document.getElementById('lm_frame_wrap');
+  if(wrap){ wrap.scrollLeft = 0; wrap.scrollTop = 0; }
   document.querySelectorAll('#lm_tabs button').forEach(b => b.classList.toggle('active', b.dataset.map === mapId));
 
   const size = MAP_CANVAS_SIZE[mapId];
@@ -2169,6 +2158,97 @@ async function toggleChatBan(){
 
 /* ===================== 맵 에디터 ===================== */
 
+function __edMakeClassroomGrid(){
+  var g=[];
+  for(var r=0;r<60;r++){g[r]=[];for(var c=0;c<60;c++)g[r][c]=(r===0||r===59||c===0||c===59)?1:0;}
+  g[0][0]=8;g[0][1]=8;g[0][2]=8;
+  for(var c=3;c<=48;c++)g[0][c]=2;
+  for(var c=24;c<=35;c++)g[2][c]=3;
+  var dC=[8,16,24,32,40,48],dR=[12,20,28,36,44];
+  for(var di=0;di<dR.length;di++)for(var dj=0;dj<dC.length;dj++)g[dR[di]][dC[dj]]=4;
+  g[10][59]=5;g[48][59]=5;
+  for(var c=1;c<=58;c++)g[58][c]=7;
+  g[4][4]=9;g[4][55]=9;g[54][4]=9;g[54][55]=9;
+  return g;
+}
+
+function __edMakeLibraryGrid(){
+  var sRS=[2,6,10,14,18,22,26];
+  var sCG=[[2,4],[7,9],[12,14],[17,19],[22,23]];
+  var g=[];
+  for(var r=0;r<36;r++){
+    g[r]=[];
+    for(var c=0;c<26;c++){
+      var wall=(r===0||r===35||c===0||c===25);
+      var door=(r===0&&c>=11&&c<=14);
+      if(door){g[r][c]=5;continue;}
+      if(wall){g[r][c]=1;continue;}
+      var inSR=false;for(var i=0;i<sRS.length;i++){if(r===sRS[i]||r===sRS[i]+1){inSR=true;break;}}
+      var inSC=false;for(var j=0;j<sCG.length;j++){if(c>=sCG[j][0]&&c<=sCG[j][1]){inSC=true;break;}}
+      var rr=(r>=29&&r<=34&&c>=3&&c<=22);
+      var desk=(r>=2&&r<=3&&c>=11&&c<=14);
+      var plant=(r===2&&(c===2||c===24));
+      if(plant){g[r][c]=11;continue;}
+      if(desk){g[r][c]=10;continue;}
+      if(inSR&&inSC&&r<=27){g[r][c]=9;continue;}
+      if(rr&&(r%2===1)){g[r][c]=10;continue;}
+      g[r][c]=0;
+    }
+  }
+  return g;
+}
+
+function __edMakeCityGrid(){
+  var g=[];
+  for(var r=0;r<24;r++){
+    g[r]=[];
+    for(var c=0;c<48;c++){
+      var vrd=(c>=13&&c<=17)||(c>=30&&c<=34);
+      var hrd=(r===8||r===9||r===13||r===14);
+      var park=(r>=10&&r<=12);
+      var edge=(c===0||c===47||r===0||r===23);
+      if(edge) g[r][c]=0;
+      else if(vrd&&hrd) g[r][c]=3;
+      else if(vrd||hrd) g[r][c]=2;
+      else if(park) g[r][c]=0;
+      else if((r>=1&&r<=7)||(r>=15&&r<=22)) g[r][c]=1;
+      else g[r][c]=0;
+    }
+  }
+  [[10,5],[10,6],[11,5],[11,6],[12,5],[12,6],
+   [10,23],[10,24],[11,23],[11,24],[12,23],[12,24],
+   [10,41],[10,42],[11,41],[11,42],[12,41],[12,42]
+  ].forEach(function(a){g[a[0]][a[1]]=9;});
+  g[0][15]=5;g[0][32]=5;g[23][15]=5;g[23][32]=5;
+  return g;
+}
+
+function __edMakeForestGrid(){
+  var g=[];
+  for(var r=0;r<24;r++){
+    g[r]=[];
+    for(var c=0;c<48;c++){
+      var hpath=(r>=11&&r<=12);
+      var vpath=(c>=23&&c<=24);
+      var edge=(r===0||r===23||c===0||c===47);
+      var p1=(r>=4&&r<=6&&c>=4&&c<=7);
+      var p2=(r>=4&&r<=6&&c>=40&&c<=43);
+      var p3=(r>=17&&r<=19&&c>=21&&c<=26);
+      if(p1||p2||p3) g[r][c]=9;
+      else if(edge||hpath||vpath) g[r][c]=2;
+      else{
+        var ts=(r*7+c*11+r*c)%17;
+        var pc=(r>=3&&r<=7&&c>=3&&c<=8)||(r>=3&&r<=7&&c>=39&&c<=44)||(r>=16&&r<=20&&c>=20&&c<=27);
+        g[r][c]=(ts<2&&!pc)?1:0;
+      }
+    }
+  }
+  [[5,23],[5,24],[6,23],[6,24],[18,23],[18,24]].forEach(function(a){g[a[0]][a[1]]=2;});
+  g[0][23]=5;g[0][24]=5;g[23][23]=5;g[23][24]=5;
+  g[11][0]=5;g[12][0]=5;g[11][47]=5;g[12][47]=5;
+  return g;
+}
+
 function __edMakePlaygroundGrid(){
   var g=[];
   for(var r=0;r<24;r++){
@@ -2222,53 +2302,14 @@ function __edMakeGymGrid(){
 /* 6개 맵의 기본 그리드 + 타일 색상 (에디터 캔버스 렌더용) */
 const MAP_EDITOR_GRIDS = {
   classroom: {
-    cols:15, rows:16, ts:48, walkable:new Set([0,5]),
-    tileColors:{0:'#ecdcc0',1:'#f3ecdf',2:'#2d4a3a',3:'#8B6914',4:'#c8a06e',5:'#7a5230',7:'#d9c19a',8:'#222'},
-    grid:[
-      [1,8,2,2,2,2,2,2,2,2,2,2,2,1,1],
-      [1,0,0,0,0,0,3,3,3,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
-      [1,0,0,4,0,4,0,4,0,4,0,4,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,4,0,4,0,4,0,4,0,4,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,4,0,4,0,4,0,4,0,4,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,4,0,4,0,4,0,4,0,4,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,4,0,4,0,4,0,4,0,4,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,5],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,7,7,7,7,7,7,7,7,7,7,7,7,7,1]
-    ]
+    cols:60, rows:60, ts:48, walkable:new Set([0,5]),
+    tileColors:{0:'#d4a96a',1:'#d5c8b8',2:'#2d4a3a',3:'#8B6914',4:'#c8a06e',5:'#7a5230',7:'#d9c19a',8:'#222',9:'#27ae60'},
+    grid:__edMakeClassroomGrid()
   },
   library: {
-    cols:15, rows:21, ts:48, walkable:new Set([0,5]),
-    tileColors:{0:'#dde6ee',1:'#f3ecdf',5:'#7a5230',9:'#5a3a1a',10:'#8B6914',11:'#c8a06e'},
-    grid:[
-      [1,1,1,1,1,1,5,5,5,1,1,1,1,1,1],
-      [1,0,0,0,0,0,10,0,10,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1],
-      [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1],
-      [1,0,9,0,9,0,9,0,9,0,9,0,9,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,0,0,11,0,11,0,11,0,11,0,11,0,0,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-    ]
+    cols:26, rows:36, ts:48, walkable:new Set([0,5]),
+    tileColors:{0:'#d4b896',1:'#d5c8b8',5:'#7a5230',9:'#5a3a1a',10:'#8B6914',11:'#27ae60'},
+    grid:__edMakeLibraryGrid()
   },
   playground: {
     cols:56, rows:24, ts:48, walkable:new Set([2,3,5]),
@@ -2281,44 +2322,14 @@ const MAP_EDITOR_GRIDS = {
     grid:__edMakeGymGrid()
   },
   city: {
-    cols:28, rows:14, ts:48, walkable:new Set([0,2,3,4,9]),
-    tileColors:{0:'#d5d8dc',1:'#8e9eaa',2:'#a0a0c0',3:'#f0f0a0',4:'#55aa55',9:'#4a9af0'},
-    grid:[
-      [0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0],
-      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
-      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
-      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
-      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
-      [0,0,0,0,0,0,0,4,3,3,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0],
-      [2,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,2],
-      [2,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,3,9,9,3,2,2,2,2,2,2,2],
-      [0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,4,0,0],
-      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
-      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
-      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
-      [0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0,2,2,0,1,1,1,1,1,1,0],
-      [0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0]
-    ]
+    cols:48, rows:24, ts:48, walkable:new Set([0,2,3,5]),
+    tileColors:{0:'#f0e6cc',1:'#555',2:'#888',3:'#bbb',5:'#27ae60',9:'#3a8a22'},
+    grid:__edMakeCityGrid()
   },
   forest: {
-    cols:28, rows:14, ts:48, walkable:new Set([0,5,6,7]),
-    tileColors:{0:'#7cc06a',1:'#2d6a1e',2:'#888',3:'#4a90d9',4:'#558830',5:'#c8a06e',6:'#8B6914',7:'#f0a040',8:'#2d4a1e'},
-    grid:[
-      [8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8],
-      [5,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,8],
-      [8,0,1,2,0,0,0,0,0,0,0,1,0,0,0,0,4,0,0,0,0,2,0,0,4,0,0,8],
-      [8,0,0,0,0,7,7,0,0,0,4,0,0,0,0,0,0,0,0,7,7,0,0,1,0,0,0,8],
-      [8,0,1,0,0,0,0,0,0,0,0,0,2,3,3,3,3,0,0,0,0,1,0,0,2,0,0,8],
-      [8,0,0,4,0,0,0,0,0,0,0,0,0,3,6,6,3,0,0,0,4,0,0,0,0,7,0,8],
-      [8,0,0,0,0,0,2,0,0,0,0,0,0,3,6,6,3,0,0,0,0,0,1,0,0,0,0,8],
-      [8,0,4,0,0,0,0,0,0,2,0,0,0,3,6,6,3,0,7,0,0,0,0,1,0,0,0,8],
-      [8,0,0,0,0,1,0,0,0,0,0,0,0,3,3,3,3,0,0,0,2,0,0,0,0,4,0,8],
-      [8,0,0,7,7,0,0,0,0,0,0,1,0,0,0,0,0,4,0,0,0,0,0,2,0,0,0,8],
-      [8,0,2,0,0,0,0,0,1,0,0,0,0,0,0,7,7,0,0,0,0,4,0,0,0,0,0,8],
-      [8,0,0,0,1,0,0,0,0,4,0,0,0,2,0,0,0,0,0,1,0,0,0,0,4,0,0,8],
-      [8,0,4,0,0,0,1,0,0,0,0,0,4,0,0,0,0,2,0,0,0,0,1,0,0,4,0,8],
-      [8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8]
-    ]
+    cols:48, rows:24, ts:48, walkable:new Set([0,2,5]),
+    tileColors:{0:'#4a9c3a',1:'#2d6a1e',2:'#c8a06e',5:'#f9ca24',9:'#4a9af0'},
+    grid:__edMakeForestGrid()
   }
 };
 
