@@ -77,7 +77,8 @@ if(TEACHER_VIEW){
 }
 
 /* Tile: 0=sidewalk 1=building 2=road 3=intersection 9=park/tree */
-/* Layout: vroad cols 13-17 and 30-34; hroad rows 8-9 and 13-14; park rows 10-12 */
+/* Main roads: vcols 13-17,30-34; hrows 8-9,13-14; park rows 10-12 */
+/* Cross roads: vcols 6-7,23-24,40-41 & hrows 4,19 within building blocks */
 var grid=[];
 for(var r=0;r<ROWS;r++){
   grid[r]=[];
@@ -86,12 +87,16 @@ for(var r=0;r<ROWS;r++){
     var hrd=(r===8||r===9||r===13||r===14);
     var park=(r>=10&&r<=12);
     var edge=(c===0||c===COLS-1||r===0||r===ROWS-1);
+    var inBlock=(r>=1&&r<=7)||(r>=15&&r<=22);
+    var crossV=inBlock&&((c===6||c===7)||(c===23||c===24)||(c===40||c===41));
+    var blockCols=(c>=1&&c<=12)||(c>=18&&c<=29)||(c>=35&&c<=46);
+    var crossH=blockCols&&(r===4||r===19);
+    var isV=vrd||crossV, isH=hrd||crossH;
     if(edge) grid[r][c]=0;
-    else if(vrd&&hrd) grid[r][c]=3;
-    else if(vrd) grid[r][c]=2;
-    else if(hrd) grid[r][c]=2;
+    else if(isV&&isH) grid[r][c]=3;
+    else if(isV||isH) grid[r][c]=2;
     else if(park) grid[r][c]=0;
-    else if((r>=1&&r<=7)||(r>=15&&r<=22)) grid[r][c]=1;
+    else if(inBlock) grid[r][c]=1;
     else grid[r][c]=0;
   }
 }
@@ -337,6 +342,7 @@ drawMap();
 /* === Camera === */
 function updateCamera(){
   var stage=document.querySelector('.stage');
+  if(TEACHER_VIEW){ stage.style.transform='translate(0,0)'; return; }
   var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
   var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
   stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';

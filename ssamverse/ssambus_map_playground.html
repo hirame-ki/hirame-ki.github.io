@@ -351,6 +351,7 @@ drawMap();
 
 function updateCamera(){
   var stage=document.querySelector('.stage');
+  if(TEACHER_VIEW){ stage.style.transform='translate(0,0)'; return; }
   var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
   var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
   stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
