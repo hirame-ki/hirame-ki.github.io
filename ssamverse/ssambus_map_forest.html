@@ -7,6 +7,7 @@
 *{box-sizing:border-box}
 body{font-family:sans-serif;background:#0d2818;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
 #main-btn{position:fixed;top:12px;left:12px;z-index:999;background:#27ae60;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none}
+#char-btn{position:fixed;top:12px;left:12px;z-index:999;background:#2980b9;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:none}
 h2{margin:.3rem 0;color:#eafff0;font-size:1.1rem}
 .info{font-size:12px;color:#8dbfa0;margin-bottom:12px;text-align:center}
 .stage-wrap{width:768px;max-width:100%;height:672px;overflow:hidden;border:3px solid #27ae60;border-radius:8px;box-shadow:0 0 24px rgba(39,174,96,0.5)}
@@ -29,6 +30,7 @@ h2{margin:.3rem 0;color:#eafff0;font-size:1.1rem}
 </head>
 <body>
 <a id="main-btn" href="index.html">메인</a>
+<a id="char-btn" href="#">캐릭터 변경</a>
 <h2>쌤버스 - 숲</h2>
 <div class="info">방향키 또는 버튼으로 이동하세요</div>
 <div class="stage-wrap">
@@ -74,6 +76,20 @@ if(TEACHER_VIEW){
     sw.style.boxShadow='none';
   }
 }
+(function(){
+  var _p=new URLSearchParams(window.location.search);
+  var _room=_p.get('room');
+  if(_room&&!TEACHER_VIEW){
+    document.getElementById('main-btn').style.display='none';
+    var _cb=document.getElementById('char-btn');
+    _cb.style.display='';
+    var _nick=_p.get('nickname')||sessionStorage.getItem('ssambus_nickname')||'';
+    var _map=window.location.pathname.split('/').pop();
+    var _cp=new URLSearchParams({room:_room,map:_map});
+    if(_nick)_cp.set('nickname',_nick);
+    _cb.href='ssambus_characters.html?'+_cp.toString();
+  }
+})();
 
 /* Tile: 0=grass 1=tree 2=dirt-path 5=exit-gate 9=pond */
 /* Paths: horizontal row 11-12 (center), vertical col 23-24 (center)
@@ -297,6 +313,7 @@ function move(dir){
   if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
   if(!isWalk(grid[nr][nc])) return;
   try{if(__rtIsOverlayBlocked(nr,nc)) return;}catch(e){}
+  try{if(__rtIsTileOccupied(nr,nc)) return;}catch(e){}
   try{if(typeof __msBlockExit==='function'&&__msBlockExit(nr,nc)){__msShowBlockedNotice();return;}}catch(e){}
   pos.r=nr; pos.c=nc;
   placePlayer();

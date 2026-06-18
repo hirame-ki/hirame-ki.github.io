@@ -342,6 +342,20 @@ function __rtShowBubble(id, text){
   bubble.__rtTimer = setTimeout(() => bubble.remove(), 4000);
 }
 
+/* 해당 타일에 다른 학생이 이미 있는지 확인 */
+function __rtIsTileOccupied(r, c){
+  if(!__rtChannel) return false;
+  const state = __rtChannel.presenceState();
+  return Object.keys(state).some(key => {
+    if(key === __rtStudentId) return false;
+    const presences = state[key];
+    if(!presences || !presences.length) return false;
+    const s = presences[presences.length - 1];
+    if(s.map && __rtMapId && s.map !== __rtMapId) return false;
+    return s.r === r && s.c === c;
+  });
+}
+
 /* 발신자가 나와 근접 타일 안에 있는지 확인 */
 function __rtIsNearby(senderId){
   if(!__rtChannel) return true;
