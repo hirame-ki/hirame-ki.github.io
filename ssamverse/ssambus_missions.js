@@ -240,10 +240,11 @@ async function __msLoadMissions(mapId){
         .order('order', { ascending: true });
       if(!error && data && data.length) return data;
     }catch(e){
-      console.warn('[쌤버스] 미션 로드 실패 - 데모 미션을 사용합니다.', e);
+      console.warn('[쌤버스] 미션 로드 실패', e);
     }
   }
-  return (DEMO_MISSIONS[mapId] || []).map(m => Object.assign({}, m));
+  if(__msRoomId === 'demo') return (DEMO_MISSIONS[mapId] || []).map(m => Object.assign({}, m));
+  return [];
 }
 
 /* 교사가 대시보드에서 설정한 맵 이동 순서 (없으면 기본 순서) */
