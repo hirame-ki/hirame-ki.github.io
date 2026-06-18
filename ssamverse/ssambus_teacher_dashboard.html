@@ -114,15 +114,24 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 /* ===== 학생 초대 링크 모달 ===== */
 #linkModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
 #linkModal-bg.show{display:flex}
-#linkModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
-#linkModal h2{margin:0 0 1rem;font-size:16px}
-.roomcode-box{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f8f9fa;border-radius:8px;padding:10px 12px;margin-bottom:14px}
-.roomcode-box b{font-size:18px;letter-spacing:3px;font-family:monospace}
-.linkrow{display:flex;gap:6px;align-items:center;margin-bottom:8px}
-.linkrow .lbl{width:64px;font-size:12px;color:#666;flex-shrink:0}
-.linkrow input{flex:1;padding:7px 8px;border:1px solid #ccc;border-radius:6px;font-size:11.5px;background:#f8f9fa;font-family:monospace}
+#linkModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;text-align:center}
+#linkModal h2{margin:0 0 1rem;font-size:16px;text-align:left}
+.linkrow{display:flex;gap:6px;align-items:center;margin-bottom:12px}
+.linkrow input{flex:1;padding:7px 8px;border:1px solid #ccc;border-radius:6px;font-size:11px;background:#f8f9fa;font-family:monospace;text-align:left}
 .linkrow button{padding:7px 10px;font-size:12px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;flex-shrink:0}
 .linkrow button:hover{background:#eee}
+#lm_qr_wrap{margin:4px 0 8px}
+#lm_qr_wrap canvas,#lm_qr_wrap img{border:1px solid #eee;border-radius:8px;max-width:100%}
+#lm_qr_label{font-size:11px;color:#aaa;margin-bottom:8px;font-family:monospace;word-break:break-all;text-align:left}
+#lm_expand_btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:6px;border:1px solid #bbb;background:#f8f9fa;font-size:13px;cursor:pointer;margin-bottom:4px}
+#lm_expand_btn:hover{background:#e8e8e8}
+/* ===== QR 전체화면 오버레이 ===== */
+#qrFullscreen{position:fixed;inset:0;background:#fff;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+#qrFullscreen.show{display:flex}
+#qrFullscreen canvas,#qrFullscreen img{border:1px solid #eee;border-radius:12px}
+#qrFullscreen .qrfs-label{font-size:13px;color:#888;font-family:monospace;max-width:90vw;word-break:break-all;text-align:center}
+#qrFullscreen .qrfs-close{position:absolute;top:20px;right:20px;padding:8px 18px;border-radius:8px;border:1px solid #ccc;background:#fff;font-size:14px;cursor:pointer}
+#qrFullscreen .qrfs-close:hover{background:#eee}
 
 /* ===== 맵 이동 순서 모달 ===== */
 #orderModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
@@ -141,13 +150,6 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 .orderrow .om-arrows button:hover{background:#eee}
 .orderrow .om-arrows button:disabled{opacity:.35;cursor:not-allowed}
 
-/* ===== QR 코드 모달 ===== */
-#qrModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:60;padding:16px}
-#qrModal-bg.show{display:flex}
-#qrModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:320px;text-align:center}
-#qrModal h2{margin:0 0 1rem;font-size:15px}
-#qrModal canvas{max-width:100%;border:1px solid #eee;border-radius:8px}
-#qrModal .qr-url{font-size:11px;color:#999;word-break:break-all;margin:10px 0;font-family:monospace}
 
 /* ===== 실시간 맵 보기 모달 ===== */
 #liveMapModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:55;padding:16px}
@@ -285,6 +287,7 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     <div class="left">
       <h1>🎓 쌤버스 교사 대시보드</h1>
       <span class="room" id="roomBadge">수업 코드: -</span>
+      <button id="roomCopyBtn" class="ghost" style="display:none;font-size:11px;padding:4px 9px;margin-left:4px" onclick="copyText(ROOM_ID, this)">복사</button>
     </div>
     <div class="right">
       <button class="primary" onclick="openMapEditor()">🪑 맵 에디터</button>
@@ -310,31 +313,30 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 <!-- 학생 초대 링크 모달 -->
 <div id="linkModal-bg">
   <div id="linkModal">
-    <h2>학생 초대 링크</h2>
-    <div class="roomcode-box">
-      <span>수업 코드: <b id="lm_roomcode"></b></span>
-      <button onclick="copyText(document.getElementById('lm_roomcode').textContent, this)">코드 복사</button>
+    <h2>🔗 학생 초대 링크</h2>
+    <div class="linkrow">
+      <input type="text" id="lm_first_url" readonly>
+      <button onclick="copyText(document.getElementById('lm_first_url').value, this)">복사</button>
     </div>
-    <div class="section-hint">아래 링크를 학생들에게 안내하면, 해당 맵에서 이 수업의 미션을 받게 됩니다. (링크를 QR코드로 만들어 공유해도 좋습니다)</div>
-    <div id="lm_links"></div>
-    <div class="modal-btns">
+    <div id="lm_qr_wrap">
+      <canvas id="lm_qr_canvas"></canvas>
+      <img id="lm_qr_img" alt="QR 코드" style="display:none;max-width:240px">
+    </div>
+    <div id="lm_qr_label"></div>
+    <button id="lm_expand_btn" onclick="openQrFullscreen()">⛶ 전체화면으로 보기</button>
+    <div class="modal-btns" style="margin-top:12px">
       <button class="btn-cancel" onclick="closeLinkModal()">닫기</button>
+      <button class="btn-save" onclick="downloadLinkQr()">PNG 다운로드</button>
     </div>
   </div>
 </div>
 
-<!-- QR 코드 모달 -->
-<div id="qrModal-bg">
-  <div id="qrModal">
-    <h2 id="qr_title">QR 코드</h2>
-    <canvas id="qr_canvas"></canvas>
-    <img id="qr_img" alt="QR 코드" style="display:none;max-width:100%;border:1px solid #eee;border-radius:8px">
-    <div class="qr-url" id="qr_url"></div>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeQrModal()">닫기</button>
-      <button class="btn-save" onclick="downloadQr()">PNG 다운로드</button>
-    </div>
-  </div>
+<!-- QR 전체화면 오버레이 -->
+<div id="qrFullscreen">
+  <button class="qrfs-close" onclick="closeQrFullscreen()">✕ 닫기</button>
+  <canvas id="qrfs_canvas"></canvas>
+  <img id="qrfs_img" alt="QR 코드" style="display:none">
+  <div class="qrfs-label" id="qrfs_label"></div>
 </div>
 
 <!-- 맵 이동 순서 모달 -->
@@ -589,7 +591,7 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
           </select>
         </div>
         <div class="field">
-          <label>기본 문제 유형 <span style="font-weight:normal;color:#999">(생성 후 개별 변경 가능)</span></label>
+          <label>AI가 생성할 문제 형식</label>
           <select id="pdf-type">
             <option value="quiz">객관식 (4지선다)</option>
             <option value="ox_quiz">O/X 퀴즈</option>
@@ -609,14 +611,8 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
         </div>
       </div>
       <div class="section-hint" style="margin-top:-6px">💡 지정 범위의 PDF 텍스트만 AI에 전달됩니다. 너무 많은 페이지는 토큰 초과로 오류가 발생할 수 있습니다.</div>
-      <div class="row2" style="margin-top:8px">
-        <div class="field">
-          <label>추가할 구역</label>
-          <select id="pdf-zone"></select>
-        </div>
-        <div class="field" style="display:flex;align-items:flex-end;padding-bottom:4px">
-          <label class="checkrow"><input type="checkbox" id="pdf-required" checked> 필수 미션</label>
-        </div>
+      <div style="margin-top:8px">
+        <label class="checkrow"><input type="checkbox" id="pdf-required" checked> 필수 미션으로 추가</label>
       </div>
       <div class="modal-btns">
         <button class="btn-cancel" onclick="closePdfModal()">닫기</button>
@@ -936,6 +932,7 @@ async function showDash(){
   document.getElementById('roomGate').classList.add('hidden');
   document.getElementById('dash').classList.add('show');
   document.getElementById('roomBadge').textContent = '수업 코드: ' + ROOM_ID;
+  document.getElementById('roomCopyBtn').style.display = '';
   if(!client){
     document.getElementById('content').innerHTML =
       '<div class="zone"><div class="empty">⚠ Supabase 설정을 확인할 수 없습니다. (ssambus_supabase_config.js)</div></div>';
@@ -952,40 +949,97 @@ async function showDash(){
 }
 
 /* ===================== 학생 초대 링크 ===================== */
+let __lmCurrentQrUrl = '';
+
 async function openLinkModal(){
-  document.getElementById('lm_roomcode').textContent = ROOM_ID;
-  const wrap = document.getElementById('lm_links');
-  wrap.innerHTML = '<div style="text-align:center;padding:12px;color:#999;font-size:13px">불러오는 중...</div>';
+  document.getElementById('lm_first_url').value = '불러오는 중...';
+  document.getElementById('lm_qr_label').textContent = '';
   document.getElementById('linkModal-bg').classList.add('show');
 
   const order = await loadMapOrder();
   const firstMapId = order[0];
+  const firstMap = MAPS.find(m => m.id === firstMapId);
+  if(!firstMap) return;
 
-  wrap.innerHTML = '';
-  // 맵 순서대로 표시
-  const orderedMaps = order.map(id => MAPS.find(m => m.id === id)).filter(Boolean);
-  orderedMaps.forEach(m => {
-    const url = new URL(MAP_FILES[m.id], window.location.href).href + '?room=' + encodeURIComponent(ROOM_ID);
-    const isFirst = m.id === firstMapId;
-    const row = document.createElement('div');
-    row.className = 'linkrow';
-    const badge = isFirst
-      ? '<span style="color:#27ae60;font-size:11px;font-weight:600">시작</span>'
-      : '<span style="color:#aaa;font-size:11px">자동이동</span>';
-    row.innerHTML = `
-      <span class="lbl">${m.label} ${badge}</span>
-      <input type="text" readonly value="${url}">
-      ${isFirst ? '<button class="qr-btn">QR</button>' : ''}
-      <button class="copy-btn">복사</button>`;
-    if(isFirst) row.querySelector('.qr-btn').onclick = () => showQr(url, m.label);
-    row.querySelector('.copy-btn').onclick = (e) => copyText(url, e.target);
-    wrap.appendChild(row);
-  });
+  const url = new URL(MAP_FILES[firstMap.id], window.location.href).href + '?room=' + encodeURIComponent(ROOM_ID);
+  __lmCurrentQrUrl = url;
+  document.getElementById('lm_first_url').value = url;
+  document.getElementById('lm_qr_label').textContent = url;
+
+  const canvas = document.getElementById('lm_qr_canvas');
+  const img = document.getElementById('lm_qr_img');
+  canvas.style.display = '';
+  img.style.display = 'none';
+  try{
+    if(typeof QRCode === 'undefined' || !QRCode.toCanvas) throw new Error();
+    QRCode.toCanvas(canvas, url, { width: 240, margin: 2 }, (err) => {
+      if(err){ canvas.style.display='none'; __lmQrFallback(img, url); }
+    });
+  }catch(e){
+    canvas.style.display = 'none';
+    __lmQrFallback(img, url);
+  }
+}
+
+function __lmQrFallback(img, url){
+  img.style.display = '';
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data=' + encodeURIComponent(url);
 }
 
 function closeLinkModal(){
   document.getElementById('linkModal-bg').classList.remove('show');
 }
+
+function downloadLinkQr(){
+  const canvas = document.getElementById('lm_qr_canvas');
+  const img = document.getElementById('lm_qr_img');
+  const filename = 'student_invite_qr.png';
+  if(canvas.style.display !== 'none'){
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } else {
+    fetch(img.src).then(r => r.blob()).then(blob => {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }).catch(() => showToast('PNG 다운로드에 실패했습니다.'));
+  }
+}
+
+function openQrFullscreen(){
+  const url = __lmCurrentQrUrl;
+  if(!url) return;
+  const canvas = document.getElementById('qrfs_canvas');
+  const img = document.getElementById('qrfs_img');
+  canvas.style.display = '';
+  img.style.display = 'none';
+  document.getElementById('qrfs_label').textContent = url;
+  const size = Math.min(window.innerWidth, window.innerHeight) * 0.75;
+  try{
+    if(typeof QRCode === 'undefined' || !QRCode.toCanvas) throw new Error();
+    QRCode.toCanvas(canvas, url, { width: Math.round(size), margin: 2 }, (err) => {
+      if(err){ canvas.style.display='none'; img.style.display=''; img.src='https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=10&data='+encodeURIComponent(url); }
+    });
+  }catch(e){
+    canvas.style.display = 'none';
+    img.style.display = '';
+    img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=10&data=' + encodeURIComponent(url);
+    img.style.width = size + 'px';
+    img.style.height = size + 'px';
+  }
+  document.getElementById('qrFullscreen').classList.add('show');
+}
+
+function closeQrFullscreen(){
+  document.getElementById('qrFullscreen').classList.remove('show');
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeQrFullscreen();
+});
 
 /* ===================== 토의토론 학생 답변 보기 ===================== */
 async function viewDiscussionAnswers(missionId, title){
@@ -1029,57 +1083,6 @@ function closeDiscAnsModal(){
   document.getElementById('discAnsModal-bg').style.display = 'none';
 }
 
-/* ===================== QR 코드 ===================== */
-function showQr(url, label){
-  document.getElementById('qr_title').textContent = `📱 ${label} QR 코드`;
-  document.getElementById('qr_url').textContent = url;
-  const canvas = document.getElementById('qr_canvas');
-  const img = document.getElementById('qr_img');
-  canvas.style.display = '';
-  img.style.display = 'none';
-  try{
-    if(typeof QRCode === 'undefined' || !QRCode.toCanvas) throw new Error('QRCode 라이브러리를 불러오지 못했습니다.');
-    QRCode.toCanvas(canvas, url, { width: 240, margin: 2 }, (err) => {
-      if(err){
-        canvas.style.display = 'none';
-        __qrShowFallback(img, url);
-      }
-    });
-  }catch(e){
-    canvas.style.display = 'none';
-    __qrShowFallback(img, url);
-  }
-  document.getElementById('qrModal-bg').classList.add('show');
-}
-
-function __qrShowFallback(img, url){
-  img.style.display = '';
-  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data=' + encodeURIComponent(url);
-}
-
-function closeQrModal(){
-  document.getElementById('qrModal-bg').classList.remove('show');
-}
-
-function downloadQr(){
-  const canvas = document.getElementById('qr_canvas');
-  const img = document.getElementById('qr_img');
-  const filename = (document.getElementById('qr_title').textContent.replace(/[^\w가-힣]+/g, '_')) + '.png';
-  if(canvas.style.display !== 'none'){
-    const link = document.createElement('a');
-    link.download = filename;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  } else {
-    fetch(img.src).then(r => r.blob()).then(blob => {
-      const link = document.createElement('a');
-      link.download = filename;
-      link.href = URL.createObjectURL(blob);
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-    }).catch(() => showToast('PNG 다운로드에 실패했습니다. QR 이미지를 길게 눌러 저장해주세요.'));
-  }
-}
 
 /* ===================== 실시간 맵 보기 ===================== */
 let __lmCurrentMap = null;
@@ -2935,22 +2938,6 @@ function openPdfModal(){
   const saved = localStorage.getItem(PDF_APIKEY_KEY);
   if(saved) document.getElementById('pdf-apikey').value = saved;
 
-  // 구역 목록: MAPS 고정 구역 + missionsCache에 있는 커스텀 구역 병합
-  const map = MAPS.find(m => m.id === currentMap);
-  const mapZones  = map ? map.zones : [];
-  const knownIds  = new Set(mapZones.map(z => z.id));
-  const allZones  = [...mapZones];
-  (missionsCache[currentMap] || []).forEach(m => {
-    if(!knownIds.has(m.zone_id)){
-      knownIds.add(m.zone_id);
-      allZones.push({ id: m.zone_id, label: m.zone_id });
-    }
-  });
-  const sel = document.getElementById('pdf-zone');
-  sel.innerHTML = allZones.map(z =>
-    `<option value="${z.id}">${z.label} (${z.id})</option>`
-  ).join('');
-
   __pdfInitDropzone();
   resetPdfPreview();
   document.getElementById('pdfModal-bg').classList.add('show');
@@ -3186,9 +3173,8 @@ function __pdfRenderPreview(missions, type){
 /* Supabase에 저장 */
 async function savePdfMissions(){
   if(!client){ alert('Supabase 설정을 확인해주세요.'); return; }
-  const defaultZoneId = document.getElementById('pdf-zone').value;
-  const required      = document.getElementById('pdf-required').checked;
-  const defaultType   = document.getElementById('pdf-type').value;
+  const required    = document.getElementById('pdf-required').checked;
+  const defaultType = document.getElementById('pdf-type').value;
 
   const typeSelects = document.querySelectorAll('.q-type-sel');
   const zoneSelects = document.querySelectorAll('.q-zone-sel');
@@ -3202,7 +3188,7 @@ async function savePdfMissions(){
 
   const rows = __pdfMissions.map((m, i) => {
     const type   = typeSelects[i] ? typeSelects[i].value : defaultType;
-    const zoneId = zoneSelects[i] ? zoneSelects[i].value : defaultZoneId;
+    const zoneId = zoneSelects[i] ? zoneSelects[i].value : 'zone_A';
     let quiz = null;
     if(type === 'quiz'){
       quiz = { question: m.question, options: m.options || [], answer: Number(m.answer) || 0 };
