@@ -83,7 +83,7 @@ if(TEACHER_VIEW){
   if(_room&&!TEACHER_VIEW){
     document.getElementById('main-btn').style.display='none';
     var _cb=document.getElementById('char-btn');
-    _cb.style.display='';
+    _cb.style.display='inline';
     var _nick=_p.get('nickname')||sessionStorage.getItem('ssambus_nickname')||'';
     var _map=window.location.pathname.split('/').pop();
     var _cp=new URLSearchParams({room:_room,map:_map});
