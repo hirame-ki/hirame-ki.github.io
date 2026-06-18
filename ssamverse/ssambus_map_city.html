@@ -78,17 +78,19 @@ if(TEACHER_VIEW){
   }
 }
 (function(){
-  var _p=new URLSearchParams(window.location.search);
-  var _room=_p.get('room');
-  if(_room&&!TEACHER_VIEW){
-    document.getElementById('main-btn').style.display='none';
+  var _s=window.location.search;
+  var _rm=(_s.match(/[?&]room=([^&]+)/)||[])[1];
+  if(_rm&&!TEACHER_VIEW){
+    var _mb=document.getElementById('main-btn');
     var _cb=document.getElementById('char-btn');
-    _cb.style.display='inline';
-    var _nick=_p.get('nickname')||sessionStorage.getItem('ssambus_nickname')||'';
-    var _map=window.location.pathname.split('/').pop();
-    var _cp=new URLSearchParams({room:_room,map:_map});
-    if(_nick)_cp.set('nickname',_nick);
-    _cb.href='ssambus_characters.html?'+_cp.toString();
+    if(_mb)_mb.style.display='none';
+    if(_cb){
+      _cb.style.cssText='position:fixed;top:12px;left:12px;z-index:999;background:#2980b9;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:inline';
+      var _nk=((_s.match(/[?&]nickname=([^&]*)/)||[])[1])||'';
+      try{_nk=_nk||sessionStorage.getItem('ssambus_nickname')||'';}catch(e){}
+      var _mf=window.location.pathname.split('/').pop()||'ssambus_map_city.html';
+      _cb.href='ssambus_characters.html?room='+_rm+'&map='+_mf+(_nk?'&nickname='+_nk:'');
+    }
   }
 })();
 
