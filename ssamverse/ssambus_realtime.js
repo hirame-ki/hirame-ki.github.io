@@ -105,10 +105,28 @@ function __rtConnect(){
 
 let __rtTeacherParticipant = false; // 교사가 맵 참가하기로 입장 시 채팅 금지 면제
 
+/* 이동 쿨다운 패치: 키 입력 속도를 CSS 트랜지션과 동기화해 부드러운 슬라이드 보장 */
+function __rtPatchMoveWithCooldown(){
+  if(window.__rtMovePatchApplied) return;
+  const _orig = window.move;
+  if(typeof _orig !== 'function') return;
+  window.__rtMovePatchApplied = true;
+  let _lock = false;
+  window.move = function(dir){
+    if(_lock) return;
+    _lock = true;
+    setTimeout(function(){ _lock = false; }, 125); // 120ms 트랜지션보다 약간 길게
+    _orig(dir);
+  };
+}
+
 function initRealtime(mapId){
   __rtMapId = mapId || null;
   __rtTeacherView = __rtGetParam('teacherView', '') === '1';
   __rtTeacherParticipant = __rtGetParam('teacherMode', '') === '1';
+
+  // Supabase 연결 여부와 무관하게 이동 부드럽기 적용
+  if(!__rtTeacherView) __rtPatchMoveWithCooldown();
 
   if(!__rtIsConfigured()){
     console.info('[쌤버스] Supabase가 설정되지 않아 멀티플레이어가 비활성화됩니다. ssambus_supabase_config.js를 확인하세요.');
@@ -160,6 +178,9 @@ function __rtInjectNickStyle(){
       color:#222 !important;
       box-shadow:0 1px 3px rgba(0,0,0,.18) !important;
     }
+    .stage { transition: transform .12s linear !important; }
+    #player { transition: left .12s linear, top .12s linear !important; }
+    .remote-player { transition: left .22s ease-out, top .22s ease-out !important; }
   `;
   document.head.appendChild(s);
 }
@@ -178,7 +199,7 @@ function __rtInjectLocalNick(){
 
 let __rtLastSendAt = 0;
 let __rtPendingTimer = null;
-const __rtSendInterval = 150; // 최소 전송 간격(ms) - 너무 자주 보내면 Realtime 전송 제한에 걸려 연결이 끊김
+const __rtSendInterval = 100; // 최소 전송 간격(ms) - 이동 쿨다운(125ms)과 맞춰 모든 이동이 전송되도록
 
 function __rtTrackNow(){
   if(!__rtChannel) return;
@@ -215,11 +236,14 @@ function renderRemotePlayers(presenceState){
     seen.add(key);
 
     let el = container.querySelector('[data-student="' + key + '"]');
-    if(!el){
+    const isNew = !el;
+    if(isNew){
       el = document.createElement('div');
       el.className = 'remote-player';
       el.dataset.student = key;
       el.innerHTML = '<svg viewBox="0 0 60 76"><g></g></svg><span class="nick"></span>';
+      // 최초 등장 시 트랜지션 없이 즉시 배치 (코너에서 슬라이드 인 방지)
+      el.style.transition = 'none';
       container.appendChild(el);
     }
 
@@ -230,6 +254,9 @@ function renderRemotePlayers(presenceState){
     el.style.left = (s.c * TS) + 'px';
     el.style.top  = (s.r * TS - 24) + 'px';
     el.querySelector('.nick').textContent = s.nickname || '';
+
+    // 최초 배치 후 다음 프레임부터 트랜지션 복원
+    if(isNew) requestAnimationFrame(() => { el.style.transition = ''; });
   });
 
   // 더 이상 존재하지 않는 학생의 캐릭터 제거

@@ -14,8 +14,8 @@
 /* r0~r1, c0~c1 은 그리드 좌표(행/열) 기준의 사각 영역 (포함) */
 const MISSION_ZONES = {
   classroom: [   // 60×60 맵 기준 - 8행 간격으로 8개 구역
-    {id:'zone_A', label:'칠판·TV 앞',            r0:1,  c0:2, r1:5,  c1:57},
-    {id:'zone_B', label:'앞쪽 통로·교사 책상',    r0:7,  c0:2, r1:11, c1:57},
+    {id:'zone_A', label:'칠판·TV 앞·교사 책상',  r0:1,  c0:2, r1:5,  c1:57},
+    {id:'zone_B', label:'앞쪽 통로·앞문',         r0:7,  c0:2, r1:11, c1:57},
     {id:'zone_C', label:'책상 1열',              r0:12, c0:2, r1:16, c1:57},
     {id:'zone_D', label:'책상 2열',              r0:20, c0:2, r1:24, c1:57},
     {id:'zone_E', label:'책상 3열',              r0:28, c0:2, r1:32, c1:57},
@@ -67,7 +67,7 @@ const MISSION_ZONES = {
     {id:'zone_A', label:'입구·서북쪽 숲',   r0:1, c0:1,  r1:5,  c1:5},
     {id:'zone_B', label:'북쪽 연못가',      r0:1, c0:8,  r1:5,  c1:12},
     {id:'zone_C', label:'북동쪽 숲',        r0:1, c0:15, r1:5,  c1:19},
-    {id:'zone_D', label:'동쪽 깊은 숲',     r0:1, c0:22, r1:5,  c1:26},
+    {id:'zone_D', label:'북동쪽 깊은 숲',    r0:1, c0:22, r1:5,  c1:26},
     {id:'zone_E', label:'서남쪽 숲',        r0:8, c0:1,  r1:12, c1:5},
     {id:'zone_F', label:'남쪽 연못가',      r0:8, c0:8,  r1:12, c1:12},
     {id:'zone_G', label:'남동쪽 숲',        r0:8, c0:15, r1:12, c1:19},
@@ -445,8 +445,23 @@ function __msShowAllDoneCelebration(){
 
   const hasNext = !!__msNextMap();
   const message = hasNext
-    ? '이 맵의 모든 미션을 완료했어요!<br>출입구(문/게이트)를 찾아 다음 장소로 이동해보세요.'
+    ? '이 맵의 모든 미션을 완료했어요!<br>출입구(문/게이지)를 찾아 다음 장소로 이동해보세요.'
     : '모든 미션을 완료했어요!<br>오늘 활동 수고 많았어요 👏';
+
+  const reflectionHtml = !hasNext ? `
+    <div style="margin:4px 0 10px;text-align:left">
+      <label style="font-size:13px;font-weight:600;color:#4a3728">✏️ 오늘 수업 소감을 남겨보세요 <span style="font-weight:400;color:#aaa">(선택)</span></label>
+      <textarea id="ms-reflection-input" placeholder="오늘 배운 것, 느낀 점을 자유롭게 써보세요"
+        style="display:block;width:100%;min-height:76px;margin-top:6px;padding:8px 10px;
+        border:1.5px solid #d9c19a;border-radius:8px;font-size:13px;font-family:inherit;
+        resize:vertical;box-sizing:border-box;background:#fffdf6;color:#333;line-height:1.5"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button id="ms-celebrate-skip" style="padding:9px 16px;border:1px solid #ccc;border-radius:8px;
+        background:#fff;color:#888;font-size:13px;font-weight:500;cursor:pointer">건너뛰기</button>
+      <button id="ms-celebrate-close">제출하고 닫기</button>
+    </div>
+  ` : `<button id="ms-celebrate-close">확인</button>`;
 
   const bg = document.createElement('div');
   bg.id = 'ms-celebrate-bg';
@@ -455,11 +470,21 @@ function __msShowAllDoneCelebration(){
       <div class="ms-emoji">🎉</div>
       <h3>미션 완료!</h3>
       <p>${message}</p>
-      <button id="ms-celebrate-close">확인</button>
+      ${reflectionHtml}
     </div>
   `;
   document.body.appendChild(bg);
-  bg.querySelector('#ms-celebrate-close').addEventListener('click', () => bg.remove());
+
+  if(!hasNext){
+    bg.querySelector('#ms-celebrate-close').addEventListener('click', () => {
+      const text = (bg.querySelector('#ms-reflection-input')?.value || '').trim();
+      if(text) __msSaveReflection(text);
+      bg.remove();
+    });
+    bg.querySelector('#ms-celebrate-skip').addEventListener('click', () => bg.remove());
+  } else {
+    bg.querySelector('#ms-celebrate-close').addEventListener('click', () => bg.remove());
+  }
 }
 
 /* ===================== UI: 진행률 바 / 미션 모달 ===================== */
@@ -505,13 +530,13 @@ function __msInjectStyle(){
     #ms-celebrate-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;
       align-items:center;justify-content:center;z-index:120;padding:16px;font-family:sans-serif}
     #ms-celebrate{background:#fff;border-radius:16px;padding:28px 24px;text-align:center;
-      max-width:340px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.3);animation:ms-pop .35s ease}
+      max-width:440px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.3);animation:ms-pop .35s ease}
     #ms-celebrate .ms-emoji{font-size:54px;display:inline-block;animation:ms-bounce 1s ease infinite}
     #ms-celebrate h3{margin:10px 0 6px;color:#2c3e50;font-size:18px}
-    #ms-celebrate p{margin:0 0 18px;font-size:13.5px;color:#666;line-height:1.6}
-    #ms-celebrate button{padding:10px 22px;border:none;border-radius:8px;background:#2c3e50;
+    #ms-celebrate p{margin:0 0 14px;font-size:13.5px;color:#666;line-height:1.6}
+    #ms-celebrate button#ms-celebrate-close{padding:10px 22px;border:none;border-radius:8px;background:#2c3e50;
       color:#fff;font-size:14px;font-weight:600;cursor:pointer}
-    #ms-celebrate button:hover{background:#1a252f}
+    #ms-celebrate button#ms-celebrate-close:hover{background:#1a252f}
     #ms-confetti{position:fixed;inset:0;pointer-events:none;z-index:121;overflow:hidden}
     .ms-confetti-piece{position:absolute;top:-20px;width:8px;height:14px;opacity:.9;
       animation:ms-fall linear forwards}
@@ -896,6 +921,29 @@ async function __msSaveCompletionTime(){
   }
 }
 
+async function __msSaveReflection(text){
+  const client = __msGetClient();
+  if(!client) return;
+  const nickname = __msParam('nickname', null)
+    || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('ssambus_nickname'))
+    || '익명';
+  try{
+    await client.from('mission_progress').upsert({
+      room_id:        __msRoomId,
+      student_id:     __msStudentId,
+      nickname:       nickname,
+      map_id:         __msMapId,
+      mission_id:     '__reflection__',
+      mission_title:  '소감',
+      required:       false,
+      completed_at:   new Date().toISOString(),
+      student_answer: text
+    }, { onConflict: 'room_id,student_id,mission_id' });
+  }catch(e){
+    console.warn('[쌤버스] 소감 저장 실패', e);
+  }
+}
+
 /* ===================== 초기화 ===================== */
 async function initMissionSystem(mapId){
   __msMapId = mapId;
@@ -987,7 +1035,376 @@ function __msCTile(ctx, x, y, ts, type){
     case 35: __msCT35(ctx,x,y,ts); break; // 운동기구(덤벨)
     case 36: __msCT36(ctx,x,y,ts); break; // 쓰레기통
     case 37: __msCT37(ctx,x,y,ts); break; // 버섯
+    case 38: __msCT38(ctx,x,y,ts); break; // 소파
+    case 39: __msCT39(ctx,x,y,ts); break; // TV
+    case 40: __msCT40(ctx,x,y,ts); break; // 사물함
+    case 41: __msCT41(ctx,x,y,ts); break; // 게시판
+    case 42: __msCT42(ctx,x,y,ts); break; // 선풍기
+    case 43: __msCT43(ctx,x,y,ts); break; // 독서램프
+    case 44: __msCT44(ctx,x,y,ts); break; // 복사기
+    case 45: __msCT45(ctx,x,y,ts); break; // 잡지꽂이
+    case 46: __msCT46(ctx,x,y,ts); break; // 수조
+    case 47: __msCT47(ctx,x,y,ts); break; // 방석
+    case 48: __msCT48(ctx,x,y,ts); break; // 미끄럼틀
+    case 49: __msCT49(ctx,x,y,ts); break; // 그네
+    case 50: __msCT50(ctx,x,y,ts); break; // 모래놀이
+    case 51: __msCT51(ctx,x,y,ts); break; // 음수대
+    case 52: __msCT52(ctx,x,y,ts); break; // 철봉
+    case 53: __msCT53(ctx,x,y,ts); break; // 탁구대
+    case 54: __msCT54(ctx,x,y,ts); break; // 훌라후프
+    case 55: __msCT55(ctx,x,y,ts); break; // 체중계
+    case 56: __msCT56(ctx,x,y,ts); break; // 거울
+    case 57: __msCT57(ctx,x,y,ts); break; // 배드민턴네트
+    case 58: __msCT58(ctx,x,y,ts); break; // 버스정류장
+    case 59: __msCT59(ctx,x,y,ts); break; // 자전거거치대
+    case 60: __msCT60(ctx,x,y,ts); break; // 가로등
+    case 61: __msCT61(ctx,x,y,ts); break; // 자판기
+    case 62: __msCT62(ctx,x,y,ts); break; // 분수대
+    case 63: __msCT63(ctx,x,y,ts); break; // 텐트
+    case 64: __msCT64(ctx,x,y,ts); break; // 모닥불
+    case 65: __msCT65(ctx,x,y,ts); break; // 새집
+    case 66: __msCT66(ctx,x,y,ts); break; // 덤불
+    case 67: __msCT67(ctx,x,y,ts); break; // 통나무
   }
+}
+/* 38 – 소파 */
+function __msCT38(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#6b3a1f'; ctx.fillRect(x+r(.05),y+r(.25),r(.1),r(.6));
+  ctx.fillRect(x+r(.85),y+r(.25),r(.1),r(.6));
+  ctx.fillRect(x+r(.15),y+r(.2),r(.7),r(.28));
+  ctx.fillStyle='#a06030'; ctx.fillRect(x+r(.05),y+r(.52),r(.9),r(.33));
+  ctx.fillStyle='#c88050'; ctx.fillRect(x+r(.05),y+r(.52),r(.9),r(.06));
+  ctx.fillStyle='#3a1f0a';
+  ctx.fillRect(x+r(.12),y+r(.83),r(.08),r(.1)); ctx.fillRect(x+r(.8),y+r(.83),r(.08),r(.1));
+}
+/* 39 – TV/모니터 */
+function __msCT39(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#444'; ctx.fillRect(x+r(.06),y+r(.05),r(.88),r(.7));
+  ctx.fillStyle='#111'; ctx.fillRect(x+r(.1),y+r(.09),r(.8),r(.62));
+  ctx.fillStyle='rgba(80,150,220,.25)'; ctx.fillRect(x+r(.12),y+r(.11),r(.25),r(.12));
+  ctx.fillStyle='#555'; ctx.fillRect(x+r(.4),y+r(.73),r(.2),r(.12));
+  ctx.fillStyle='#333'; ctx.fillRect(x+r(.22),y+r(.84),r(.56),r(.1));
+}
+/* 40 – 사물함 */
+function __msCT40(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#7888a0'; ctx.fillRect(x+r(.08),y+r(.04),r(.84),r(.92));
+  ctx.fillStyle='#5a6a7a'; ctx.fillRect(x+r(.08),y+r(.5),r(.84),r(.02));
+  ctx.fillStyle='#c0c8d0'; ctx.fillRect(x+r(.68),y+r(.22),r(.08),r(.05));
+  ctx.fillRect(x+r(.68),y+r(.66),r(.08),r(.05));
+  ctx.fillStyle='#3a4a5a';
+  for(let i=0;i<4;i++) ctx.fillRect(x+r(.1),y+r(.18)+i*r(.08),r(.4),r(.01));
+}
+/* 41 – 게시판 */
+function __msCT41(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#5a3a1f'; ctx.fillRect(x+r(.04),y+r(.06),r(.92),r(.88));
+  ctx.fillStyle='#c8a46e'; ctx.fillRect(x+r(.08),y+r(.1),r(.84),r(.8));
+  ctx.fillStyle='#fff'; ctx.fillRect(x+r(.12),y+r(.14),r(.32),r(.22));
+  ctx.fillRect(x+r(.52),y+r(.14),r(.32),r(.28));
+  ctx.fillRect(x+r(.12),y+r(.5),r(.32),r(.3));
+  ctx.fillStyle='#fffdd0'; ctx.fillRect(x+r(.52),y+r(.54),r(.32),r(.26));
+  ctx.fillStyle='#e74c3c'; ctx.fillRect(x+r(.14),y+r(.13),r(.04),r(.04));
+  ctx.fillRect(x+r(.54),y+r(.13),r(.04),r(.04));
+  ctx.fillRect(x+r(.14),y+r(.49),r(.04),r(.04));
+}
+/* 42 – 선풍기 */
+function __msCT42(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v); const cx=x+r(.5);
+  ctx.fillStyle='#666'; ctx.fillRect(cx-r(.06),y+r(.55),r(.12),r(.34));
+  ctx.fillStyle='#555'; ctx.fillRect(cx-r(.18),y+r(.86),r(.36),r(.08));
+  ctx.fillStyle='#8a9096';
+  ctx.beginPath(); ctx.arc(cx,y+r(.35),r(.3),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#b0b8bc';
+  ctx.beginPath(); ctx.arc(cx,y+r(.35),r(.22),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#444';
+  ctx.beginPath(); ctx.arc(cx,y+r(.35),r(.07),0,Math.PI*2); ctx.fill();
+}
+/* 43 – 독서 램프 */
+function __msCT43(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#888'; ctx.fillRect(x+r(.28),y+r(.88),r(.44),r(.08));
+  ctx.fillRect(x+r(.44),y+r(.42),r(.1),r(.48));
+  ctx.fillStyle='#f4c430';
+  ctx.beginPath();
+  ctx.moveTo(x+r(.06),y+r(.5)); ctx.lineTo(x+r(.88),y+r(.5));
+  ctx.lineTo(x+r(.7),y+r(.2)); ctx.lineTo(x+r(.24),y+r(.2)); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#e8a820';
+  ctx.beginPath();
+  ctx.moveTo(x+r(.18),y+r(.46)); ctx.lineTo(x+r(.82),y+r(.46));
+  ctx.lineTo(x+r(.66),y+r(.22)); ctx.lineTo(x+r(.28),y+r(.22)); ctx.closePath(); ctx.fill();
+}
+/* 44 – 복사기 */
+function __msCT44(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#909090'; ctx.fillRect(x+r(.06),y+r(.24),r(.88),r(.7));
+  ctx.fillStyle='#b8c8d8'; ctx.fillRect(x+r(.08),y+r(.1),r(.84),r(.16));
+  ctx.fillStyle='#a0a0a0'; ctx.fillRect(x+r(.52),y+r(.34),r(.38),r(.22));
+  ctx.fillStyle='#3498db'; ctx.fillRect(x+r(.56),y+r(.38),r(.06),r(.06));
+  ctx.fillStyle='#e74c3c'; ctx.fillRect(x+r(.64),y+r(.38),r(.06),r(.06));
+  ctx.fillStyle='#2ecc71'; ctx.fillRect(x+r(.72),y+r(.38),r(.06),r(.06));
+  ctx.fillStyle='#f0f0f0'; ctx.fillRect(x+r(.1),y+r(.56),r(.34),r(.18));
+  ctx.fillRect(x+r(.1),y+r(.84),r(.34),r(.06));
+}
+/* 45 – 잡지 꽂이 */
+function __msCT45(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#8B6914'; ctx.fillRect(x+r(.06),y+r(.14),r(.08),r(.76));
+  ctx.fillRect(x+r(.86),y+r(.14),r(.08),r(.76));
+  ctx.fillRect(x+r(.06),y+r(.82),r(.88),r(.08));
+  const cols=['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6'];
+  const bw=r(.13);
+  for(let i=0;i<5;i++){
+    ctx.fillStyle=cols[i];
+    ctx.fillRect(x+r(.14)+i*(bw+r(.02)),y+r(.18),bw,r(.64));
+  }
+}
+/* 46 – 수조 */
+function __msCT46(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#2c3e50'; ctx.fillRect(x+r(.04),y+r(.08),r(.92),r(.84));
+  ctx.fillStyle='#2980b9'; ctx.fillRect(x+r(.08),y+r(.12),r(.84),r(.76));
+  ctx.fillStyle='#1f6698'; ctx.fillRect(x+r(.08),y+r(.74),r(.84),r(.14));
+  ctx.fillStyle='#c8a06e'; ctx.fillRect(x+r(.08),y+r(.82),r(.84),r(.06));
+  ctx.fillStyle='#27ae60'; ctx.fillRect(x+r(.12),y+r(.6),r(.06),r(.18));
+  ctx.fillRect(x+r(.76),y+r(.54),r(.06),r(.24));
+  ctx.fillStyle='#e67e22'; ctx.fillRect(x+r(.3),y+r(.4),r(.1),r(.06));
+  ctx.fillRect(x+r(.58),y+r(.52),r(.08),r(.05));
+}
+/* 47 – 방석 */
+function __msCT47(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v); const cx=x+r(.5),cy=y+r(.52);
+  ctx.fillStyle='#d080a8';
+  ctx.beginPath(); ctx.ellipse(cx,cy,r(.4),r(.32),0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#e8a0c0';
+  ctx.beginPath(); ctx.ellipse(cx,cy,r(.34),r(.26),0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#c06080';
+  ctx.fillRect(cx-r(.02),cy-r(.26),r(.04),r(.52));
+  ctx.fillRect(cx-r(.34),cy-r(.02),r(.68),r(.04));
+}
+/* 48 – 미끄럼틀 */
+function __msCT48(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#888'; ctx.fillRect(x+r(.06),y+r(.08),r(.06),r(.86));
+  ctx.fillRect(x+r(.7),y+r(.08),r(.06),r(.4));
+  ctx.fillStyle='#e74c3c'; ctx.fillRect(x+r(.62),y+r(.06),r(.3),r(.2));
+  ctx.fillStyle='#f1c40f';
+  ctx.beginPath();
+  ctx.moveTo(x+r(.62),y+r(.26)); ctx.lineTo(x+r(.92),y+r(.26));
+  ctx.lineTo(x+r(.2),y+r(.88)); ctx.lineTo(x+r(.08),y+r(.82)); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#888'; ctx.fillRect(x+r(.06),y+r(.88),r(.9),r(.06));
+}
+/* 49 – 그네 */
+function __msCT49(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#888'; ctx.fillRect(x+r(.06),y+r(.06),r(.08),r(.88));
+  ctx.fillRect(x+r(.86),y+r(.06),r(.08),r(.88));
+  ctx.fillRect(x+r(.06),y+r(.06),r(.88),r(.07));
+  ctx.fillStyle='#aaa';
+  ctx.fillRect(x+r(.26),y+r(.14),r(.04),r(.58));
+  ctx.fillRect(x+r(.7),y+r(.14),r(.04),r(.58));
+  ctx.fillStyle='#a07830'; ctx.fillRect(x+r(.22),y+r(.7),r(.56),r(.1));
+}
+/* 50 – 모래놀이 */
+function __msCT50(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#8B6914'; ctx.fillRect(x+r(.06),y+r(.2),r(.88),r(.64));
+  ctx.fillStyle='#F5DEB3'; ctx.fillRect(x+r(.1),y+r(.24),r(.8),r(.56));
+  ctx.fillStyle='#DEB887'; ctx.fillRect(x+r(.18),y+r(.5),r(.22),r(.2));
+  ctx.fillStyle='#e74c3c'; ctx.fillRect(x+r(.52),y+r(.36),r(.06),r(.14));
+  ctx.fillRect(x+r(.46),y+r(.36),r(.18),r(.05));
+}
+/* 51 – 음수대 */
+function __msCT51(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v); const cx=x+r(.5);
+  ctx.fillStyle='#4a5a8a'; ctx.fillRect(cx-r(.14),y+r(.46),r(.28),r(.46));
+  ctx.fillStyle='#6678aa'; ctx.fillRect(cx-r(.22),y+r(.34),r(.44),r(.14));
+  ctx.fillRect(cx-r(.18),y+r(.3),r(.36),r(.08));
+  ctx.fillStyle='#aab8cc'; ctx.fillRect(cx+r(.08),y+r(.32),r(.08),r(.04));
+  ctx.fillStyle='#87ceeb'; ctx.fillRect(cx+r(.1),y+r(.36),r(.02),r(.06));
+  ctx.fillStyle='#333'; ctx.fillRect(cx-r(.1),y+r(.88),r(.2),r(.08));
+}
+/* 52 – 철봉 */
+function __msCT52(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#6a7480'; ctx.fillRect(x+r(.06),y+r(.18),r(.1),r(.74));
+  ctx.fillRect(x+r(.84),y+r(.18),r(.1),r(.74));
+  ctx.fillStyle='#8a9096'; ctx.fillRect(x+r(.06),y+r(.18),r(.88),r(.1));
+  ctx.fillStyle='#555'; ctx.fillRect(x+r(.04),y+r(.86),r(.14),r(.08));
+  ctx.fillRect(x+r(.82),y+r(.86),r(.14),r(.08));
+}
+/* 53 – 탁구대 */
+function __msCT53(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#1a6b2e'; ctx.fillRect(x+r(.06),y+r(.14),r(.88),r(.64));
+  ctx.fillStyle='#fff'; ctx.fillRect(x+r(.06),y+r(.44),r(.88),r(.02));
+  ctx.fillRect(x+r(.06),y+r(.14),r(.88),r(.03));
+  ctx.fillStyle='#555';
+  ctx.fillRect(x+r(.1),y+r(.76),r(.06),r(.16)); ctx.fillRect(x+r(.84),y+r(.76),r(.06),r(.16));
+  ctx.fillRect(x+r(.26),y+r(.76),r(.06),r(.14)); ctx.fillRect(x+r(.68),y+r(.76),r(.06),r(.14));
+  ctx.fillStyle='#fff'; ctx.fillRect(x+r(.49),y+r(.22),r(.02),r(.24));
+}
+/* 54 – 훌라후프 */
+function __msCT54(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v); const cx=x+r(.5),cy=y+r(.5);
+  ctx.strokeStyle='#e74c3c'; ctx.lineWidth=r(.14);
+  ctx.beginPath(); ctx.arc(cx,cy,r(.36),0,Math.PI*2); ctx.stroke();
+  ctx.strokeStyle='#c0392b'; ctx.lineWidth=r(.04);
+  ctx.beginPath(); ctx.arc(cx,cy,r(.36),0,Math.PI*2); ctx.stroke();
+  ctx.lineWidth=1;
+}
+/* 55 – 체중계 */
+function __msCT55(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v); const cx=x+r(.5);
+  ctx.fillStyle='#ccc'; ctx.fillRect(x+r(.1),y+r(.1),r(.8),r(.55));
+  ctx.fillStyle='#e8e8e8';
+  ctx.beginPath(); ctx.ellipse(cx,y+r(.36),r(.3),r(.22),0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#888';
+  ctx.beginPath(); ctx.arc(cx,y+r(.36),r(.04),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#e74c3c'; ctx.fillRect(cx-r(.02),y+r(.16),r(.04),r(.18));
+  ctx.fillStyle='#3a3a3a'; ctx.fillRect(x+r(.08),y+r(.62),r(.84),r(.28));
+}
+/* 56 – 거울 */
+function __msCT56(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#a08030'; ctx.fillRect(x+r(.08),y+r(.04),r(.84),r(.92));
+  ctx.fillStyle='#c8dff0'; ctx.fillRect(x+r(.14),y+r(.08),r(.72),r(.84));
+  ctx.fillStyle='rgba(255,255,255,.35)'; ctx.fillRect(x+r(.16),y+r(.1),r(.2),r(.6));
+  ctx.fillStyle='rgba(255,255,255,.15)'; ctx.fillRect(x+r(.38),y+r(.1),r(.08),r(.25));
+}
+/* 57 – 배드민턴 네트 */
+function __msCT57(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#666'; ctx.fillRect(x+r(.04),y+r(.08),r(.08),r(.84));
+  ctx.fillRect(x+r(.88),y+r(.08),r(.08),r(.84));
+  ctx.fillRect(x+r(.04),y+r(.86),r(.92),r(.06));
+  ctx.fillStyle='#ddd'; ctx.fillRect(x+r(.12),y+r(.2),r(.76),r(.02));
+  ctx.fillRect(x+r(.12),y+r(.34),r(.76),r(.02));
+  ctx.fillRect(x+r(.12),y+r(.48),r(.76),r(.02));
+  ctx.fillRect(x+r(.12),y+r(.62),r(.76),r(.02));
+  for(let i=0;i<7;i++) ctx.fillRect(x+r(.12)+i*r(.12),y+r(.2),r(.02),r(.46));
+}
+/* 58 – 버스정류장 */
+function __msCT58(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v); const cx=x+r(.5);
+  ctx.fillStyle='#2c5fab'; ctx.fillRect(x+r(.04),y+r(.04),r(.92),r(.12));
+  ctx.fillStyle='#444'; ctx.fillRect(cx-r(.04),y+r(.14),r(.08),r(.8));
+  ctx.fillStyle='#f1c40f'; ctx.fillRect(cx-r(.24),y+r(.2),r(.48),r(.24));
+  ctx.fillStyle='#1a3a7a'; ctx.fillRect(cx-r(.2),y+r(.22),r(.4),r(.2));
+  ctx.fillStyle='#333'; ctx.fillRect(cx-r(.04),y+r(.9),r(.08),r(.06));
+}
+/* 59 – 자전거 거치대 */
+function __msCT59(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#8a9096';
+  ctx.fillRect(x+r(.12),y+r(.3),r(.1),r(.6));
+  ctx.fillRect(x+r(.78),y+r(.3),r(.1),r(.6));
+  ctx.fillRect(x+r(.12),y+r(.3),r(.76),r(.08));
+  ctx.fillRect(x+r(.44),y+r(.3),r(.12),r(.08));
+  ctx.fillRect(x+r(.12),y+r(.84),r(.76),r(.06));
+}
+/* 60 – 가로등 */
+function __msCT60(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v); const cx=x+r(.5);
+  ctx.fillStyle='#2c3e50'; ctx.fillRect(cx-r(.04),y+r(.18),r(.08),r(.76));
+  ctx.fillRect(cx-r(.04),y+r(.12),r(.3),r(.06));
+  ctx.fillRect(cx+r(.22),y+r(.06),r(.1),r(.12));
+  ctx.fillStyle='#f9e06e'; ctx.fillRect(cx+r(.18),y+r(.04),r(.18),r(.1));
+  ctx.fillStyle='#f1c40f'; ctx.fillRect(cx+r(.2),y+r(.05),r(.14),r(.06));
+  ctx.fillStyle='#444'; ctx.fillRect(cx-r(.1),y+r(.9),r(.2),r(.08));
+}
+/* 61 – 자판기 */
+function __msCT61(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#2c3e50'; ctx.fillRect(x+r(.08),y+r(.04),r(.84),r(.92));
+  ctx.fillStyle='#1a252f'; ctx.fillRect(x+r(.12),y+r(.08),r(.76),r(.48));
+  const pc=['#e74c3c','#3498db','#f1c40f','#2ecc71','#e67e22','#9b59b6'];
+  const bw=r(.22),ph=r(.14);
+  for(let row=0;row<2;row++) for(let col=0;col<3;col++){
+    ctx.fillStyle=pc[row*3+col];
+    ctx.fillRect(x+r(.14)+col*(bw+r(.02)),y+r(.1)+row*(ph+r(.02)),bw,ph);
+  }
+  ctx.fillStyle='#555'; ctx.fillRect(x+r(.14),y+r(.6),r(.72),r(.16));
+  ctx.fillStyle='#222'; ctx.fillRect(x+r(.18),y+r(.8),r(.64),r(.1));
+}
+/* 62 – 분수대 */
+function __msCT62(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v); const cx=x+r(.5);
+  ctx.fillStyle='#778899'; ctx.fillRect(x+r(.08),y+r(.54),r(.84),r(.34));
+  ctx.fillStyle='#2980b9'; ctx.fillRect(x+r(.12),y+r(.58),r(.76),r(.26));
+  ctx.fillStyle='#5566aa'; ctx.fillRect(cx-r(.06),y+r(.34),r(.12),r(.22));
+  ctx.fillStyle='#87ceeb';
+  ctx.fillRect(cx-r(.02),y+r(.1),r(.04),r(.26));
+  ctx.fillRect(cx-r(.12),y+r(.16),r(.06),r(.06));
+  ctx.fillRect(cx+r(.06),y+r(.16),r(.06),r(.06));
+}
+/* 63 – 텐트 */
+function __msCT63(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#e67e22';
+  ctx.beginPath();
+  ctx.moveTo(x+r(.5),y+r(.06)); ctx.lineTo(x+r(.96),y+r(.88));
+  ctx.lineTo(x+r(.04),y+r(.88)); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#c0602a'; ctx.fillRect(x+r(.04),y+r(.88),r(.92),r(.06));
+  ctx.fillStyle='#2c1a06';
+  ctx.beginPath();
+  ctx.moveTo(x+r(.5),y+r(.3)); ctx.lineTo(x+r(.62),y+r(.88));
+  ctx.lineTo(x+r(.38),y+r(.88)); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='rgba(255,200,80,.2)'; ctx.fillRect(x+r(.1),y+r(.5),r(.3),r(.3));
+}
+/* 64 – 모닥불 */
+function __msCT64(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v); const cx=x+r(.5);
+  ctx.fillStyle='#6b3a1f'; ctx.fillRect(cx-r(.3),y+r(.7),r(.6),r(.08));
+  ctx.fillRect(cx-r(.1),y+r(.58),r(.2),r(.2));
+  ctx.fillStyle='#ffd700'; ctx.fillRect(cx-r(.18),y+r(.52),r(.36),r(.2));
+  ctx.fillStyle='#f39c12';
+  ctx.beginPath();
+  ctx.moveTo(cx,y+r(.2)); ctx.lineTo(cx+r(.2),y+r(.56)); ctx.lineTo(cx-r(.2),y+r(.56)); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#e74c3c';
+  ctx.beginPath();
+  ctx.moveTo(cx,y+r(.3)); ctx.lineTo(cx+r(.14),y+r(.56)); ctx.lineTo(cx-r(.14),y+r(.56)); ctx.closePath(); ctx.fill();
+}
+/* 65 – 새집 */
+function __msCT65(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v); const cx=x+r(.5);
+  ctx.fillStyle='#8B6914'; ctx.fillRect(cx-r(.04),y+r(.56),r(.08),r(.38));
+  ctx.fillStyle='#c8a06e'; ctx.fillRect(cx-r(.26),y+r(.38),r(.52),r(.22));
+  ctx.fillStyle='#6b4914';
+  ctx.beginPath();
+  ctx.moveTo(cx,y+r(.18)); ctx.lineTo(cx+r(.3),y+r(.4)); ctx.lineTo(cx-r(.3),y+r(.4)); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#1a1a1a';
+  ctx.beginPath(); ctx.arc(cx,y+r(.48),r(.07),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#8B6914'; ctx.fillRect(cx-r(.06),y+r(.54),r(.12),r(.03));
+}
+/* 66 – 덤불 */
+function __msCT66(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#1a7a38';
+  ctx.beginPath(); ctx.arc(x+r(.3),y+r(.55),r(.28),0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+r(.7),y+r(.55),r(.28),0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+r(.5),y+r(.38),r(.28),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#27ae60';
+  ctx.beginPath(); ctx.arc(x+r(.3),y+r(.52),r(.2),0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+r(.7),y+r(.52),r(.2),0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+r(.5),y+r(.36),r(.2),0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#2ecc71';
+  ctx.beginPath(); ctx.arc(x+r(.34),y+r(.48),r(.1),0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+r(.64),y+r(.5),r(.1),0,Math.PI*2); ctx.fill();
+}
+/* 67 – 통나무 */
+function __msCT67(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#8B4513'; ctx.fillRect(x+r(.14),y+r(.32),r(.72),r(.36));
+  ctx.fillStyle='#654321';
+  ctx.beginPath(); ctx.ellipse(x+r(.18),y+r(.5),r(.08),r(.18),0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x+r(.82),y+r(.5),r(.08),r(.18),0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#a05020';
+  for(let i=1;i<4;i++) ctx.fillRect(x+r(.14),y+r(.32)+i*r(.09),r(.72),r(.02));
+  ctx.fillStyle='#5a2e0a'; ctx.fillRect(x+r(.14),y+r(.32),r(.02),r(.36));
+  ctx.fillRect(x+r(.84),y+r(.32),r(.02),r(.36));
 }
 
 /* 20 – 추가 책상 */
