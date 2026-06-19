@@ -591,7 +591,7 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
           </select>
         </div>
         <div class="field">
-          <label>AI가 생성할 문제 형식</label>
+          <label>AI가 생성할 문제 형식 <span style="font-weight:normal;color:#999">(형식마다 AI 출력 구조가 다릅니다)</span></label>
           <select id="pdf-type">
             <option value="quiz">객관식 (4지선다)</option>
             <option value="ox_quiz">O/X 퀴즈</option>
@@ -625,6 +625,7 @@ body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
     <div id="pdf-preview" style="display:none">
       <hr style="border:none;border-top:1px solid #eee;margin:14px 0">
       <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:#333">생성된 문제 미리보기</div>
+      <div class="section-hint" style="margin-bottom:10px">💡 문제 형식을 바꾸려면 <strong>↩ 다시 생성</strong>을 눌러 형식을 새로 선택한 후 재생성하세요. 구역은 각 문제 카드에서 개별 변경할 수 있습니다.</div>
       <div id="pdf-preview-list"></div>
       <div class="modal-btns">
         <button class="btn-cancel" onclick="resetPdfPreview()">↩ 다시 생성</button>
@@ -3141,12 +3142,7 @@ function __pdfRenderPreview(missions, type){
       detail = `<div style="font-size:12.5px;color:#2980b9;font-weight:600;padding-top:4px">💬 토론 주제: ${m.topic || ''}</div>`
         + (guides.length ? `<ul style="margin:4px 0 0 16px;padding:0;font-size:12px;color:#555">${guides.map(g=>`<li>${g}</li>`).join('')}</ul>` : '');
     }
-    const typeOpts = [
-      ['quiz','객관식 (4지선다)'],
-      ['ox_quiz','O/X 퀴즈'],
-      ['short_answer','주관식'],
-      ['discussion','토론/토의']
-    ].map(([v,l]) => `<option value="${v}"${v===type?' selected':''}>${l}</option>`).join('');
+    const typeLabel = {'quiz':'객관식','ox_quiz':'O/X 퀴즈','short_answer':'주관식','discussion':'토론/토의'}[type] || type;
 
     // 순환 배정: 문제 0→구역A, 1→구역B, 2→구역C, 3→구역A ...
     const assignedZoneId = _allZones[i % _allZones.length].id;
@@ -3161,7 +3157,7 @@ function __pdfRenderPreview(missions, type){
       <div style="font-size:13px;color:#333;margin-bottom:4px">${bodyText}</div>
       ${detail}
       <div class="qmeta-row">
-        <label>유형: <select class="q-type-sel" data-idx="${i}">${typeOpts}</select></label>
+        <label>유형: <span style="font-size:12px;padding:2px 8px;border-radius:4px;background:#eef2ff;color:#3d5a99;font-weight:600">${typeLabel}</span></label>
         <label>구역: <select class="q-zone-sel" data-idx="${i}">${zoneOpts}</select></label>
       </div>
       <div style="font-size:11px;color:#aaa;margin-top:4px">💡 저장 후 각 미션 수정 → <strong>타일 직접 지정</strong>으로 맵 에디터에서 만든 특정 위치를 정확히 설정할 수 있습니다.</div>
@@ -3173,10 +3169,9 @@ function __pdfRenderPreview(missions, type){
 /* Supabase에 저장 */
 async function savePdfMissions(){
   if(!client){ alert('Supabase 설정을 확인해주세요.'); return; }
-  const required    = document.getElementById('pdf-required').checked;
-  const defaultType = document.getElementById('pdf-type').value;
+  const required = document.getElementById('pdf-required').checked;
+  const type     = document.getElementById('pdf-type').value;
 
-  const typeSelects = document.querySelectorAll('.q-type-sel');
   const zoneSelects = document.querySelectorAll('.q-zone-sel');
 
   // 구역별 현재 최대 순서 캐시
@@ -3187,7 +3182,6 @@ async function savePdfMissions(){
   };
 
   const rows = __pdfMissions.map((m, i) => {
-    const type   = typeSelects[i] ? typeSelects[i].value : defaultType;
     const zoneId = zoneSelects[i] ? zoneSelects[i].value : 'zone_A';
     let quiz = null;
     if(type === 'quiz'){
