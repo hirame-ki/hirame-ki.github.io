@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>쌤버스 - 음악실 맵</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:sans-serif;background:#1a2535;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
+#main-btn{position:fixed;top:12px;left:12px;z-index:999;background:#2c3e50;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none}
+#char-btn{position:fixed;top:12px;left:12px;z-index:999;background:#7d5fa5;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:none}
+h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
+.info{font-size:12px;color:#aaa;margin-bottom:12px;text-align:center}
+.stage-wrap{width:720px;max-width:100%;height:672px;overflow:hidden;border:3px solid #7d5fa5;border-radius:8px;box-shadow:0 0 24px rgba(125,95,165,0.5)}
+.stage{position:relative;line-height:0}
+#map{display:block}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear,top .1s linear;z-index:5}
+#player svg{display:block;width:100%;height:100%;overflow:visible}
+#player.flip svg{transform:scaleX(-1)}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear,top .15s linear;z-index:4}
+.remote-player svg{display:block;width:100%;height:100%;overflow:visible}
+.remote-player.flip svg{transform:scaleX(-1)}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.9);padding:1px 5px;border-radius:4px;white-space:nowrap;font-weight:600}
+.pad{display:grid;grid-template-columns:52px 52px 52px;grid-template-rows:52px 52px 52px;gap:4px;margin-top:14px}
+.pad button{font-size:20px;border-radius:10px;border:none;background:#7d5fa5;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #5a3a80}
+.pad button:active{transform:translateY(2px);box-shadow:0 1px 0 #5a3a80}
+.legend{margin-top:10px;font-size:12px;color:#aaa;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.legend span{display:flex;align-items:center;gap:4px}
+.sw{display:inline-block;width:13px;height:13px;border-radius:3px}
+</style>
+</head>
+<body>
+<a id="main-btn" href="index.html">메인</a>
+<a id="char-btn" href="#">캐릭터 변경</a>
+<h2>쌤버스 - 음악실</h2>
+<div class="info">방향키 또는 버튼으로 이동하세요</div>
+<div class="stage-wrap">
+<div class="stage">
+  <canvas id="map" width="2880" height="2640"></canvas>
+  <div id="player"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
+  <div id="remote-players"></div>
+</div>
+</div>
+<div class="pad">
+  <div></div><button onclick="move('up')">&#8593;</button><div></div>
+  <button onclick="move('left')">&#8592;</button><div></div><button onclick="move('right')">&#8594;</button>
+  <div></div><button onclick="move('down')">&#8595;</button><div></div>
+</div>
+<div class="legend">
+  <span><span class="sw" style="background:#d4c090"></span>바닥</span>
+  <span><span class="sw" style="background:#4a2080"></span>무대</span>
+  <span><span class="sw" style="background:#1a1a1a"></span>피아노</span>
+  <span><span class="sw" style="background:#c0392b"></span>드럼</span>
+  <span><span class="sw" style="background:#27ae60"></span>출입구</span>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="ssambus_supabase_config.js"></script>
+<script src="ssambus_character_render.js"></script>
+<script src="ssambus_realtime.js"></script>
+<script src="ssambus_missions.js"></script>
+<script>
+/* === Music Room 60x55 === */
+var TS=48,COLS=60,ROWS=55,VIEW_W=720,VIEW_H=672;
+
+var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
+if(TEACHER_VIEW){
+  document.body.style.padding='0';document.body.style.background='transparent';
+  document.querySelectorAll('h2,.info,.pad,.legend').forEach(function(el){el.style.display='none';});
+}
+(function(){
+  var _s=window.location.search,_rm=(_s.match(/[?&]room=([^&]+)/)||[])[1];
+  if(_rm&&!TEACHER_VIEW){
+    var _mb=document.getElementById('main-btn'),_cb=document.getElementById('char-btn');
+    if(_mb)_mb.style.display='none';
+    if(_cb){
+      _cb.style.cssText='position:fixed;top:12px;left:12px;z-index:999;background:#7d5fa5;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:inline';
+      var _nk=((_s.match(/[?&]nickname=([^&]*)/)||[])[1])||'';
+      try{_nk=_nk||sessionStorage.getItem('ssambus_nickname')||'';}catch(e){}
+      _cb.href='ssambus_characters.html?room='+_rm+'&map=ssambus_map_music.html'+(_nk?'&nickname='+_nk:'');
+    }
+  }
+})();
+
+/* Tile: 0=floor 1=wall 2=stage 3=piano-block 4=stand+chair 5=door 6=storage 7=drum-block 8=display 10=podium */
+var grid=[];
+for(var r=0;r<ROWS;r++){
+  grid[r]=[];
+  for(var c=0;c<COLS;c++) grid[r][c]=(r===0||r===ROWS-1||c===0||c===COLS-1)?1:0;
+}
+/* Stage rows 1-7 */
+for(var r=1;r<=7;r++) for(var c=1;c<=COLS-2;c++) grid[r][c]=2;
+/* Large piano block: 6wide × 3tall at rows 2-4, cols 3-8 */
+var PR=2,PC=3,PW=6,PH=3;
+for(var r=PR;r<PR+PH;r++) for(var c=PC;c<PC+PW;c++) grid[r][c]=3;
+/* Teacher podium: 3wide × 2tall */
+for(var r=2;r<=3;r++) for(var c=27;c<=29;c++) grid[r][c]=10;
+/* Instrument display: rows 2-4, cols 54-58 */
+for(var r=2;r<=4;r++) for(var c=54;c<=58;c++) grid[r][c]=8;
+/* Music stands: 7 stands × 3 rows (2×2 each) with chairs */
+var sCols=[7,15,23,31,39,47,55];
+var STAND_ANCHORS=[];
+[10,18,26].forEach(function(sr){
+  sCols.forEach(function(sc){
+    grid[sr][sc]=4;grid[sr][sc+1]=4;
+    grid[sr+1][sc]=4;grid[sr+1][sc+1]=4;
+    grid[sr][sc-1]=11;
+    STAND_ANCHORS.push({r:sr,c:sc});
+  });
+});
+/* Large drum block: 7wide × 4tall at rows 33-36, cols 51-57 */
+var DR=33,DC=51,DW=7,DH=4;
+for(var r=DR;r<DR+DH;r++) for(var c=DC;c<DC+DW;c++) grid[r][c]=7;
+/* Storage room */
+for(var c=1;c<=COLS-2;c++) grid[46][c]=1;
+for(var r=47;r<=ROWS-2;r++) for(var c=1;c<=COLS-2;c++) grid[r][c]=6;
+grid[46][28]=0;grid[46][29]=0;
+/* Exits */
+grid[6][COLS-1]=5;grid[45][COLS-1]=5;
+
+var WIN_ROWS=[9,17,25,33,41];
+var WALK=[0,2,5,6,11];
+function isWalk(t){return WALK.indexOf(t)>=0;}
+
+var cv=document.getElementById('map'),ctx=cv.getContext('2d');
+var __savedChar=(function(){
+  try{var _cp=new URLSearchParams(window.location.search).get('c');if(_cp)return JSON.parse(_cp);return JSON.parse(localStorage.getItem('ssambus_player_character'));}catch(e){return null;}
+})();
+var PLAYER=Object.assign({type:'student',skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',ccolor:'#5a2080',cloth:'suit',gender:'male',acc:[],dir:'down'},__savedChar||{});
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML=renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip',PLAYER.dir==='left'&&!PLAYER._facingRight);
+}
+
+function drawFloor(x,y,c,r){
+  ctx.fillStyle=((c+r)%2===0)?'#d4c090':'#cbb882';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(100,70,20,0.12)';ctx.lineWidth=1;
+  for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(x,y+i*13+4);ctx.lineTo(x+TS,y+i*13+4);ctx.stroke();}
+  ctx.strokeStyle='rgba(120,80,20,0.15)';ctx.lineWidth=0.5;ctx.strokeRect(x+.5,y+.5,TS-1,TS-1);
+}
+function drawWall(x,y){
+  var g=ctx.createLinearGradient(x,y,x,y+TS);
+  g.addColorStop(0,'#e0d4f0');g.addColorStop(1,'#ccc0e0');
+  ctx.fillStyle=g;ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(80,40,120,0.1)';ctx.lineWidth=1;ctx.strokeRect(x+4,y+4,TS-8,TS-8);
+}
+function drawWindow(x,y){
+  drawWall(x,y);
+  ctx.fillStyle='#aee0f5';ctx.fillRect(x+5,y+6,TS-10,TS-14);
+  ctx.strokeStyle='#7d5fa5';ctx.lineWidth=2;ctx.strokeRect(x+5,y+6,TS-10,TS-14);
+  ctx.beginPath();ctx.moveTo(x+TS/2,y+6);ctx.lineTo(x+TS/2,y+TS-8);
+  ctx.moveTo(x+5,y+(TS-14)/2+6);ctx.lineTo(x+TS-5,y+(TS-14)/2+6);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(x+7,y+8,TS/2-10,8);
+}
+function drawStage(x,y){
+  ctx.fillStyle='#3a1070';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#4a2080';ctx.fillRect(x+1,y+1,TS-2,TS-2);
+  ctx.strokeStyle='rgba(200,160,255,0.2)';ctx.lineWidth=1;ctx.strokeRect(x+4,y+4,TS-8,TS-8);
+  ctx.fillStyle='rgba(255,220,255,0.06)';ctx.fillRect(x,y,TS,TS/2);
+}
+function drawMusicStand(x,y){
+  ctx.fillStyle='#c8b882';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#888';
+  ctx.fillRect(x+TS/2-2,y+TS*0.5,4,TS*0.4);
+  ctx.fillRect(x+TS*0.15,y+TS*0.86,TS*0.7,5);
+  ctx.fillStyle='#ccc';ctx.fillRect(x+TS*0.1,y+TS*0.48,TS*0.8,5);
+  ctx.fillStyle='#ddd';ctx.fillRect(x+TS*0.1,y+TS*0.18,TS*0.8,TS*0.32);
+  ctx.fillStyle='#444';for(var i=0;i<4;i++) ctx.fillRect(x+TS*0.12,y+TS*0.22+i*TS*0.055,TS*0.76,1);
+  /* Chair below stand */
+  ctx.fillStyle='#8b6a30';ctx.fillRect(x+TS*0.15,y+TS*0.72,TS*0.7,TS*0.22);
+  ctx.fillStyle='#7a5820';ctx.fillRect(x+TS*0.15,y+TS*0.9,4,TS*0.08);
+  ctx.fillRect(x+TS*0.72,y+TS*0.9,4,TS*0.08);
+}
+function drawLargeMusicStand(ax,ay){
+  var W=2*TS,H=2*TS;
+  ctx.fillStyle='#c8b882';ctx.fillRect(ax,ay,W,H);
+  /* Pole */
+  ctx.fillStyle='#999';ctx.fillRect(ax+W*0.46,ay+H*0.52,W*0.08,H*0.38);
+  /* Base */
+  ctx.fillStyle='#888';
+  ctx.fillRect(ax+W*0.08,ay+H*0.88,W*0.84,H*0.06);
+  ctx.fillRect(ax+W*0.08,ay+H*0.86,W*0.16,H*0.1);
+  ctx.fillRect(ax+W*0.76,ay+H*0.86,W*0.16,H*0.1);
+  /* Sheet holder ledge */
+  ctx.fillStyle='#aaa';ctx.fillRect(ax+W*0.07,ay+H*0.46,W*0.86,H*0.06);
+  /* Sheet paper */
+  ctx.fillStyle='#f0ede0';ctx.fillRect(ax+W*0.07,ay+H*0.06,W*0.86,H*0.42);
+  ctx.strokeStyle='#d0cdc0';ctx.lineWidth=1;ctx.strokeRect(ax+W*0.07,ay+H*0.06,W*0.86,H*0.42);
+  /* Staff lines */
+  ctx.fillStyle='#555';
+  for(var i=0;i<5;i++) ctx.fillRect(ax+W*0.1,ay+H*(0.1+i*0.06),W*0.8,1.5);
+  for(var i=0;i<5;i++) ctx.fillRect(ax+W*0.1,ay+H*(0.35+i*0.025),W*0.8,1);
+  /* Notes */
+  ctx.fillStyle='#222';
+  [[0.14,0.11],[0.24,0.09],[0.34,0.13],[0.46,0.1],[0.58,0.14],[0.7,0.1],[0.82,0.12]].forEach(function(p){
+    ctx.beginPath();ctx.ellipse(ax+W*p[0],ay+H*p[1],4,3,-0.3,0,Math.PI*2);ctx.fill();
+    ctx.fillRect(ax+W*p[0]+3,ay+H*p[1]-12,1.5,12);
+  });
+  /* Treble clef */
+  ctx.fillStyle='rgba(40,40,40,.5)';ctx.font='bold 22px serif';ctx.textAlign='left';ctx.textBaseline='top';
+  ctx.fillText('♪',ax+W*0.08,ay+H*0.07);
+}
+function drawMusicChair(x,y){
+  ctx.fillStyle='#c8b882';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#7d5fa5';ctx.fillRect(x+TS*0.18,y+TS*0.18,TS*0.64,TS*0.64);
+  ctx.fillStyle='#9070b8';ctx.fillRect(x+TS*0.22,y+TS*0.22,TS*0.56,TS*0.56);
+  ctx.fillStyle='#5a3a80';
+  ctx.fillRect(x+TS*0.1,y+TS*0.1,TS*0.12,TS*0.12);
+  ctx.fillRect(x+TS*0.78,y+TS*0.1,TS*0.12,TS*0.12);
+  ctx.fillRect(x+TS*0.1,y+TS*0.78,TS*0.12,TS*0.12);
+  ctx.fillRect(x+TS*0.78,y+TS*0.78,TS*0.12,TS*0.12);
+}
+function drawDisplay(x,y,c){
+  ctx.fillStyle='#2c1a50';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#3d2a68';ctx.fillRect(x+3,y+3,TS-6,TS-6);
+  ctx.fillStyle='#c8a060';
+  ctx.beginPath();ctx.ellipse(x+TS/2,y+TS*0.7,TS*0.18,TS*0.16,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+TS/2,y+TS*0.48,TS*0.13,TS*0.13,0,0,Math.PI*2);ctx.fill();
+  ctx.fillRect(x+TS/2-3,y+TS*0.04,6,TS*0.44);
+}
+function drawStorage(x,y){
+  ctx.fillStyle='#1e1430';ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(150,100,200,.15)';ctx.lineWidth=1;ctx.strokeRect(x+2,y+2,TS-4,TS-4);
+}
+function drawPodium(x,y){
+  ctx.fillStyle='#2c1050';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#3d1870';ctx.fillRect(x+3,y+3,TS-6,TS-6);
+  ctx.fillStyle='rgba(255,240,100,.6)';ctx.fillRect(x+TS*0.2,y+TS*0.12,TS*0.6,TS*0.55);
+  ctx.fillStyle='rgba(0,0,0,.3)';
+  for(var i=0;i<3;i++) ctx.fillRect(x+TS*0.22,y+TS*0.2+i*TS*0.13,TS*0.56,2);
+}
+function drawDoor(x,y){
+  ctx.fillStyle='#e67e22';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#27ae60';ctx.fillRect(x+5,y+3,TS-10,TS-6);
+  ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('EXIT',x+TS/2,y+TS*0.38);
+  ctx.strokeStyle='#fff';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(x+12,y+TS*0.62);ctx.lineTo(x+TS-8,y+TS*0.62);
+  ctx.moveTo(x+TS-14,y+TS*0.62-6);ctx.lineTo(x+TS-8,y+TS*0.62);ctx.lineTo(x+TS-14,y+TS*0.62+6);ctx.stroke();
+  ctx.fillStyle='#f1c40f';ctx.beginPath();ctx.arc(x+10,y+TS*0.5,3.5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#f1c40f';ctx.lineWidth=2;ctx.strokeRect(x+5,y+3,TS-10,TS-6);
+}
+
+/* Large piano: 6 tiles wide × 3 tiles tall */
+function drawLargePiano(ax,ay){
+  var W=PW*TS,H=PH*TS;
+  /* Body */
+  ctx.fillStyle='#0d0d0d';ctx.fillRect(ax,ay,W,H);
+  ctx.fillStyle='#1a1a1a';ctx.fillRect(ax+4,ay+4,W-8,H-8);
+  /* Lid curve hint */
+  ctx.fillStyle='#222';
+  ctx.beginPath();ctx.ellipse(ax+W*0.7,ay+H*0.3,W*0.4,H*0.28,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#1a1a1a';ctx.fillRect(ax+4,ay+4,W-8,H-8);
+  /* Lid gloss */
+  ctx.fillStyle='rgba(255,255,255,.07)';ctx.fillRect(ax+6,ay+6,W*0.5,H*0.3);
+  /* Fallboard (keyboard cover, dark) */
+  ctx.fillStyle='#111';ctx.fillRect(ax+6,ay+H*0.52,W-12,H*0.08);
+  /* Keyboard area */
+  var keyboardY=ay+H*0.6;
+  var keyboardH=H*0.34;
+  ctx.fillStyle='#f8f8f8';ctx.fillRect(ax+6,keyboardY,W-12,keyboardH);
+  /* White key dividers */
+  var numWhite=28;
+  var kw=(W-14)/numWhite;
+  ctx.strokeStyle='#bbb';ctx.lineWidth=1;
+  for(var i=1;i<numWhite;i++) {
+    ctx.beginPath();ctx.moveTo(ax+7+i*kw,keyboardY);ctx.lineTo(ax+7+i*kw,keyboardY+keyboardH);ctx.stroke();
+  }
+  /* Black keys */
+  var blackPattern=[1,1,0,1,1,1,0]; // 1=has black key after white key
+  ctx.fillStyle='#111';
+  for(var i=0;i<numWhite-1;i++){
+    if(blackPattern[i%7]){
+      ctx.fillRect(ax+7+i*kw+kw*0.65,keyboardY,kw*0.55,keyboardH*0.6);
+    }
+  }
+  /* Music sheet on piano */
+  ctx.fillStyle='#e8e8e8';ctx.fillRect(ax+W*0.28,ay+H*0.08,W*0.44,H*0.36);
+  ctx.strokeStyle='#bbb';ctx.lineWidth=1;ctx.strokeRect(ax+W*0.28,ay+H*0.08,W*0.44,H*0.36);
+  ctx.fillStyle='#555';
+  for(var i=0;i<5;i++) ctx.fillRect(ax+W*0.3,ay+H*0.13+i*H*0.05,W*0.4,1);
+  /* Notes */
+  ctx.fillStyle='#333';
+  [[0.32,0.15],[0.38,0.13],[0.44,0.16],[0.5,0.14],[0.56,0.17]].forEach(function(p){
+    ctx.beginPath();ctx.ellipse(ax+W*p[0],ay+H*p[1],3,2.5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillRect(ax+W*p[0]+2,ay+H*p[1]-8,1,8);
+  });
+  /* Pedals */
+  ctx.fillStyle='#c8a020';
+  ctx.fillRect(ax+W*0.42,ay+H*0.92,W*0.04,H*0.06);
+  ctx.fillRect(ax+W*0.49,ay+H*0.92,W*0.04,H*0.06);
+  ctx.fillRect(ax+W*0.56,ay+H*0.92,W*0.04,H*0.06);
+  /* Legs */
+  ctx.fillStyle='#0d0d0d';
+  ctx.fillRect(ax+8,ay+H-8,8,8);ctx.fillRect(ax+W-16,ay+H-8,8,8);ctx.fillRect(ax+W*0.5-4,ay+H-6,8,6);
+}
+
+/* Large drums: 7 tiles wide × 4 tiles tall */
+function drawLargeDrums(ax,ay){
+  var W=DW*TS,H=DH*TS;
+  ctx.fillStyle='#1a0c04';ctx.fillRect(ax,ay,W,H);
+  /* Bass drum center */
+  var bx=ax+W*0.42,by=ay+H*0.68;
+  ctx.fillStyle='#8b1010';ctx.beginPath();ctx.ellipse(bx,by,W*0.16,H*0.13,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#c0392b';ctx.beginPath();ctx.ellipse(bx,by,W*0.13,H*0.105,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#e74c3c';ctx.beginPath();ctx.ellipse(bx,by,W*0.09,H*0.07,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#888';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(bx,by,W*0.16,H*0.13,0,0,Math.PI*2);ctx.stroke();
+  /* Bass drum logo */
+  ctx.fillStyle='rgba(255,255,255,.25)';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('♪',bx,by);
+  /* Snare (small, front-left) */
+  var sx=ax+W*0.2,sy=ay+H*0.78;
+  ctx.fillStyle='#c8c8c8';ctx.beginPath();ctx.ellipse(sx,sy,W*0.09,H*0.065,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ddd';ctx.beginPath();ctx.ellipse(sx,sy,W*0.07,H*0.05,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#aaa';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(sx,sy,W*0.09,H*0.065,0,0,Math.PI*2);ctx.stroke();
+  /* Hi-hat (left) */
+  ctx.fillStyle='#c8a800';
+  ctx.beginPath();ctx.ellipse(ax+W*0.14,ay+H*0.28,W*0.09,H*0.03,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(ax+W*0.14,ay+H*0.31,W*0.09,H*0.03,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#8a7000';ctx.lineWidth=1;
+  ctx.beginPath();ctx.ellipse(ax+W*0.14,ay+H*0.28,W*0.09,H*0.03,0,0,Math.PI*2);ctx.stroke();
+  /* Hi-hat stand */
+  ctx.strokeStyle='#666';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(ax+W*0.14,ay+H*0.31);ctx.lineTo(ax+W*0.14,ay+H*0.88);ctx.stroke();
+  /* Ride cymbal (right) */
+  ctx.fillStyle='#c8a800';ctx.beginPath();ctx.ellipse(ax+W*0.78,ay+H*0.22,W*0.12,H*0.04,-0.15,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#8a7000';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(ax+W*0.78,ay+H*0.22,W*0.12,H*0.04,-0.15,0,Math.PI*2);ctx.stroke();
+  /* Crash cymbal */
+  ctx.fillStyle='#d4b010';ctx.beginPath();ctx.ellipse(ax+W*0.62,ay+H*0.14,W*0.08,H*0.03,0.2,0,Math.PI*2);ctx.fill();
+  /* Tom 1 (small, upper) */
+  var t1x=ax+W*0.32,t1y=ay+H*0.42;
+  ctx.fillStyle='#1a4080';ctx.beginPath();ctx.ellipse(t1x,t1y,W*0.075,H*0.06,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#2060c0';ctx.beginPath();ctx.ellipse(t1x,t1y,W*0.06,H*0.045,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#5588dd';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(t1x,t1y,W*0.075,H*0.06,0,0,Math.PI*2);ctx.stroke();
+  /* Tom 2 (medium) */
+  var t2x=ax+W*0.54,t2y=ay+H*0.4;
+  ctx.fillStyle='#1a4080';ctx.beginPath();ctx.ellipse(t2x,t2y,W*0.09,H*0.07,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#2060c0';ctx.beginPath();ctx.ellipse(t2x,t2y,W*0.073,H*0.055,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#5588dd';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(t2x,t2y,W*0.09,H*0.07,0,0,Math.PI*2);ctx.stroke();
+  /* Floor tom (right) */
+  var ftx=ax+W*0.74,fty=ay+H*0.68;
+  ctx.fillStyle='#1a4080';ctx.beginPath();ctx.ellipse(ftx,fty,W*0.1,H*0.08,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#2060c0';ctx.beginPath();ctx.ellipse(ftx,fty,W*0.08,H*0.062,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#5588dd';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(ftx,fty,W*0.1,H*0.08,0,0,Math.PI*2);ctx.stroke();
+  /* Drum throne (seat) */
+  ctx.fillStyle='#222';ctx.beginPath();ctx.ellipse(ax+W*0.42,ay+H*0.91,W*0.06,H*0.04,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#555';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(ax+W*0.38,ay+H*0.91);ctx.lineTo(ax+W*0.36,ay+H*0.98);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ax+W*0.46,ay+H*0.91);ctx.lineTo(ax+W*0.48,ay+H*0.98);ctx.stroke();
+  /* Drumsticks */
+  ctx.strokeStyle='#c8a060';ctx.lineWidth=3.5;
+  ctx.beginPath();ctx.moveTo(ax+W*0.44,ay+H*0.54);ctx.lineTo(ax+W*0.24,ay+H*0.12);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ax+W*0.5,ay+H*0.5);ctx.lineTo(ax+W*0.66,ay+H*0.1);ctx.stroke();
+  /* Stick tips */
+  ctx.fillStyle='#c8a060';
+  ctx.beginPath();ctx.arc(ax+W*0.24,ay+H*0.12,5,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(ax+W*0.66,ay+H*0.1,5,0,Math.PI*2);ctx.fill();
+}
+
+/* Stage stairs: 3-step cascade at front-center of stage */
+function drawStageFrontStairs(){
+  var cx=COLS*TS/2,sy=7*TS;
+  /* Step 3: bottom (widest, lowest) */
+  ctx.fillStyle='#3a1060';ctx.fillRect(cx-5*TS,sy,10*TS,TS);
+  ctx.strokeStyle='rgba(180,130,255,0.35)';ctx.lineWidth=2;ctx.strokeRect(cx-5*TS,sy,10*TS,TS);
+  /* Step 2: middle */
+  ctx.fillStyle='#4a2080';ctx.fillRect(cx-3.5*TS,sy-TS*0.28,7*TS,TS*0.72);
+  ctx.strokeStyle='rgba(200,160,255,0.45)';ctx.lineWidth=2;ctx.strokeRect(cx-3.5*TS,sy-TS*0.28,7*TS,TS*0.72);
+  /* Step 1: top (narrowest, highest) */
+  ctx.fillStyle='#5a3090';ctx.fillRect(cx-2*TS,sy-TS*0.52,4*TS,TS*0.52);
+  ctx.strokeStyle='rgba(220,180,255,0.55)';ctx.lineWidth=2;ctx.strokeRect(cx-2*TS,sy-TS*0.52,4*TS,TS*0.52);
+  /* Railing dots */
+  ctx.fillStyle='rgba(255,200,255,0.5)';
+  [-4.5,-3.5,-2.5,2.5,3.5,4.5].forEach(function(dx){
+    ctx.beginPath();ctx.arc(cx+dx*TS,sy+4,4,0,Math.PI*2);ctx.fill();
+  });
+}
+
+function drawMap(){
+  /* Pass 1: draw all tiles (floor under large-object blocks) */
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      var x=c*TS,y=r*TS,t=grid[r][c];
+      if(t===3||t===7) drawFloor(x,y,c,r); // floor under piano/drum blocks
+      else if(t===1){ if(c===0&&WIN_ROWS.indexOf(r)>=0) drawWindow(x,y); else drawWall(x,y); }
+      else if(t===2) drawStage(x,y);
+      else if(t===4) drawFloor(x,y,c,r);
+      else if(t===5) drawDoor(x,y);
+      else if(t===6) drawStorage(x,y);
+      else if(t===8) drawDisplay(x,y,c);
+      else if(t===10) drawPodium(x,y);
+      else if(t===11) drawMusicChair(x,y);
+      else drawFloor(x,y,c,r);
+    }
+  }
+  /* Pass 2: large objects on top */
+  drawLargePiano(PC*TS,PR*TS);
+  drawLargeDrums(DC*TS,DR*TS);
+  /* Stage front stairs */
+  drawStageFrontStairs();
+  /* Pass 3: large music stands */
+  STAND_ANCHORS.forEach(function(p){drawLargeMusicStand(p.c*TS,p.r*TS);});
+  /* Stage lighting glow */
+  var sg=ctx.createRadialGradient(COLS*TS/2,4*TS,TS*0.5,COLS*TS/2,4*TS,TS*6);
+  sg.addColorStop(0,'rgba(200,150,255,0.2)');sg.addColorStop(1,'rgba(200,150,255,0)');
+  ctx.fillStyle=sg;ctx.fillRect(0,0,COLS*TS,9*TS);
+  /* Storage room content */
+  var stY=47*TS;
+  /* Instrument cases (left side) */
+  for(var i=0;i<4;i++){
+    var ix=(1+i*11)*TS,iy=stY+TS*0.8;
+    ctx.fillStyle='#2a1a0a';ctx.fillRect(ix,iy,3.5*TS,1.6*TS);
+    ctx.fillStyle='#3d2b10';ctx.fillRect(ix+4,iy+4,3.5*TS-8,1.6*TS-8);
+    ctx.fillStyle='rgba(200,160,80,.5)';ctx.fillRect(ix+TS*1.3,iy+TS*0.7,TS*0.9,4);
+    ctx.fillStyle='#c8a020';
+    ctx.fillRect(ix+TS*0.4,iy+TS*0.6,TS*0.25,TS*0.25);
+    ctx.fillRect(ix+TS*2.7,iy+TS*0.6,TS*0.25,TS*0.25);
+  }
+  /* Sheet music shelves (right side) */
+  ctx.fillStyle='#3a1a08';
+  ctx.fillRect(36*TS,stY+TS*0.6,17*TS,TS*0.2);
+  ctx.fillRect(36*TS,stY+TS*2.4,17*TS,TS*0.2);
+  ctx.fillRect(36*TS,stY+TS*0.6,TS*0.2,TS*2);
+  ctx.fillRect(53*TS,stY+TS*0.6,TS*0.2,TS*2);
+  ['#e74c3c','#3498db','#f1c40f','#2ecc71','#9b59b6','#e67e22','#1abc9c','#c0392b','#2980b9','#f39c12'].forEach(function(mc,i){
+    ctx.fillStyle=mc;ctx.fillRect(36*TS+i*1.6*TS+TS*0.1,stY+TS*0.7,TS*1.4,TS*1.6);
+    ctx.fillStyle='rgba(255,255,255,.15)';ctx.fillRect(36*TS+i*1.6*TS+TS*0.1,stY+TS*0.7,TS*0.35,TS*1.6);
+  });
+  /* Microphone stands */
+  for(var i=0;i<4;i++){
+    var mx=(4+i*9)*TS,my=stY+3.1*TS;
+    ctx.fillStyle='#666';ctx.fillRect(mx+TS*0.44,my,TS*0.12,TS*0.85);
+    ctx.fillStyle='#888';ctx.beginPath();ctx.ellipse(mx+TS*0.5,my,TS*0.26,TS*0.1,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#555';ctx.fillRect(mx,my+TS*0.82,TS,TS*0.12);
+    ctx.fillStyle='#444';ctx.beginPath();ctx.arc(mx+TS*0.5,my,TS*0.12,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#999';ctx.beginPath();ctx.arc(mx+TS*0.5,my,TS*0.07,0,Math.PI*2);ctx.fill();
+  }
+  /* Amplifier */
+  ctx.fillStyle='#1a1a1a';ctx.fillRect(TS,stY+3*TS,3.5*TS,2.5*TS);
+  ctx.fillStyle='#2a2a2a';ctx.fillRect(TS+4,stY+3*TS+4,3.5*TS-8,2.5*TS-8);
+  ctx.strokeStyle='rgba(80,200,80,.35)';ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(TS*2.75,stY+4.25*TS,TS*0.8,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.arc(TS*2.75,stY+4.25*TS,TS*0.4,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='#00ff44';ctx.fillRect(TS+6,stY+3*TS+7,10,5);
+  ctx.fillStyle='#ff4400';ctx.fillRect(TS+20,stY+3*TS+7,6,5);
+}
+drawMap();
+
+function updateCamera(){
+  if(TEACHER_VIEW){var wrap=document.querySelector('.stage-wrap');wrap.style.width=(COLS*TS)+'px';wrap.style.height=(ROWS*TS)+'px';wrap.style.overflow='visible';return;}
+  var stage=document.querySelector('.stage');
+  var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
+  var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
+  stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
+}
+var pos={r:9,c:30};
+function placePlayer(){
+  var el=document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display='none';
+  el.style.left=(pos.c*TS)+'px';el.style.top=(pos.r*TS-24)+'px';
+  updateCamera();
+  try{broadcastMyPosition();}catch(e){}
+  try{checkZoneOnMove(pos);}catch(e){}
+}
+function move(dir){
+  var nr=pos.r,nc=pos.c;
+  if(dir==='up') nr--;else if(dir==='down') nr++;else if(dir==='left') nc--;else if(dir==='right') nc++;
+  PLAYER._facingRight=(dir==='right');PLAYER.dir=(dir==='right')?'left':dir;renderPlayer();
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+  if(!isWalk(grid[nr][nc])) return;
+  try{if(__rtIsOverlayBlocked(nr,nc)) return;}catch(e){}
+  try{if(__rtIsTileOccupied(nr,nc)) return;}catch(e){}
+  try{if(typeof __msBlockExit==='function'&&__msBlockExit(nr,nc)){__msShowBlockedNotice();return;}}catch(e){}
+  pos.r=nr;pos.c=nc;placePlayer();
+}
+window.addEventListener('keydown',function(e){
+  if(TEACHER_VIEW) return;
+  var m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(m[e.key]){e.preventDefault();move(m[e.key]);}
+});
+if(!TEACHER_VIEW){
+  var sw=document.querySelector('.stage-wrap');var tx=0,ty=0,ta=false;
+  sw.addEventListener('touchstart',function(e){if(e.touches.length!==1)return;ta=true;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  sw.addEventListener('touchmove',function(e){if(ta)e.preventDefault();},{passive:false});
+  sw.addEventListener('touchend',function(e){
+    if(!ta)return;ta=false;var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<30)return;
+    if(Math.abs(dx)>Math.abs(dy))move(dx>0?'right':'left');else move(dy>0?'down':'up');
+  },{passive:true});
+}
+renderPlayer();
+try{placePlayer();}catch(e){console.warn('[music] placePlayer:',e);}
+try{initRealtime('music');}catch(e){console.warn('[music] realtime:',e);}
+if(!TEACHER_VIEW){
+  try{initMissionSystem('music');}catch(e){console.warn('[music] missions:',e);}
+  try{loadMapOverlays('music',ctx,TS);}catch(e){console.warn('[music] overlays:',e);}
+}
+</script>
+</body>
+</html>

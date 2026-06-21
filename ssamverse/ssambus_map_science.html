@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>쌤버스 - 과학실 맵</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:sans-serif;background:#1a2535;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
+#main-btn{position:fixed;top:12px;left:12px;z-index:999;background:#2c3e50;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none}
+#char-btn{position:fixed;top:12px;left:12px;z-index:999;background:#8e44ad;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:none}
+h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
+.info{font-size:12px;color:#aaa;margin-bottom:12px;text-align:center}
+.stage-wrap{width:720px;max-width:100%;height:672px;overflow:hidden;border:3px solid #8e44ad;border-radius:8px;box-shadow:0 0 24px rgba(142,68,173,0.4)}
+.stage{position:relative;line-height:0}
+#map{display:block}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear,top .1s linear;z-index:5}
+#player svg{display:block;width:100%;height:100%;overflow:visible}
+#player.flip svg{transform:scaleX(-1)}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear,top .15s linear;z-index:4}
+.remote-player svg{display:block;width:100%;height:100%;overflow:visible}
+.remote-player.flip svg{transform:scaleX(-1)}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.9);padding:1px 5px;border-radius:4px;white-space:nowrap;font-weight:600}
+.pad{display:grid;grid-template-columns:52px 52px 52px;grid-template-rows:52px 52px 52px;gap:4px;margin-top:14px}
+.pad button{font-size:20px;border-radius:10px;border:none;background:#8e44ad;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #5b2c6f}
+.pad button:active{transform:translateY(2px);box-shadow:0 1px 0 #5b2c6f}
+.legend{margin-top:10px;font-size:12px;color:#aaa;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.legend span{display:flex;align-items:center;gap:4px}
+.sw{display:inline-block;width:13px;height:13px;border-radius:3px}
+</style>
+</head>
+<body>
+<a id="main-btn" href="index.html">메인</a>
+<a id="char-btn" href="#">캐릭터 변경</a>
+<h2>쌤버스 - 과학실</h2>
+<div class="info">방향키 또는 버튼으로 이동하세요</div>
+<div class="stage-wrap">
+<div class="stage">
+  <canvas id="map" width="2880" height="2880"></canvas>
+  <div id="player"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
+  <div id="remote-players"></div>
+</div>
+</div>
+<div class="pad">
+  <div></div><button onclick="move('up')">&#8593;</button><div></div>
+  <button onclick="move('left')">&#8592;</button><div></div><button onclick="move('right')">&#8594;</button>
+  <div></div><button onclick="move('down')">&#8595;</button><div></div>
+</div>
+<div class="legend">
+  <span><span class="sw" style="background:#e8f0e8"></span>바닥</span>
+  <span><span class="sw" style="background:#2980b9"></span>실험대</span>
+  <span><span class="sw" style="background:#5b2c6f"></span>약장</span>
+  <span><span class="sw" style="background:#1c2e30"></span>준비실</span>
+  <span><span class="sw" style="background:#27ae60"></span>출입구</span>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="ssambus_supabase_config.js"></script>
+<script src="ssambus_character_render.js"></script>
+<script src="ssambus_missions.js"></script>
+<script src="ssambus_realtime.js"></script>
+<script>
+/* === Science Lab 60x60 ===
+   준비실: cols 40-58, rows 38-58 (출입가능)
+   출구: rows 5,36 at col 59 (prep room 벽 바깥 영역) */
+var TS=48,COLS=60,ROWS=60,VIEW_W=720,VIEW_H=672;
+
+var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
+if(TEACHER_VIEW){
+  document.body.style.padding='0';document.body.style.background='transparent';
+  document.querySelectorAll('h2,.info,.pad,.legend').forEach(function(el){el.style.display='none';});
+}
+(function(){
+  var _s=window.location.search,_rm=(_s.match(/[?&]room=([^&]+)/)||[])[1];
+  if(_rm&&!TEACHER_VIEW){
+    var _mb=document.getElementById('main-btn'),_cb=document.getElementById('char-btn');
+    if(_mb)_mb.style.display='none';
+    if(_cb){
+      _cb.style.cssText='position:fixed;top:12px;left:12px;z-index:999;background:#8e44ad;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:inline';
+      var _nk=((_s.match(/[?&]nickname=([^&]*)/)||[])[1])||'';
+      try{_nk=_nk||sessionStorage.getItem('ssambus_nickname')||'';}catch(e){}
+      _cb.href='ssambus_characters.html?room='+_rm+'&map=ssambus_map_science.html'+(_nk?'&nickname='+_nk:'');
+    }
+  }
+})();
+
+/* Tile: 0=floor 1=wall 2=teacher-bench 3=chem-cabinet 4=lab-bench 5=door 6=telescope 7=sink 8=prep-floor 9=display */
+var grid=[];
+for(var r=0;r<ROWS;r++){
+  grid[r]=[];
+  for(var c=0;c<COLS;c++) grid[r][c]=(r===0||r===ROWS-1||c===0||c===COLS-1)?1:0;
+}
+/* Blackboard top */
+for(var c=4;c<=55;c++) grid[0][c]=9;
+/* Teacher demo bench */
+for(var c=12;c<=38;c++) grid[2][c]=2;
+/* Chemical cabinets left wall */
+for(var r=5;r<=14;r++) for(var c=2;c<=5;c++) grid[r][c]=3;
+/* Sinks on left wall */
+for(var r=16;r<=37;r+=7) {grid[r][1]=7;grid[r+1][1]=7;}
+
+/* Lab bench pairs (4 pairs × full width to col 38) */
+[[8,9],[16,17],[24,25],[32,33]].forEach(function(rr){
+  for(var c=8;c<=38;c++){grid[rr[0]][c]=4;grid[rr[1]][c]=4;}
+});
+
+/* Telescope: 3×3 block at rows 4-6, cols 48-50 */
+for(var r=4;r<=6;r++) for(var c=48;c<=50;c++) grid[r][c]=6;
+
+/* Chairs (type 10) scattered beside lab benches */
+[[11,10],[11,18],[11,26],[11,34],
+ [19,12],[19,20],[19,28],[19,36],
+ [27,10],[27,18],[27,26],[27,34],
+ [35,12],[35,20],[35,28]].forEach(function(p){grid[p[0]][p[1]]=10;});
+
+/* Prep room: cols 40-58, rows 38-58 (WALKABLE floor inside) */
+/* Vertical wall at col 39, rows 38-58 */
+for(var r=38;r<=ROWS-1;r++) grid[r][39]=1;
+/* Horizontal wall at row 37, cols 39-58 */
+for(var c=39;c<=COLS-1;c++) grid[37][c]=1;
+/* Fill prep room interior as walkable floor (type 8) */
+for(var r=38;r<=ROWS-2;r++) for(var c=40;c<=COLS-2;c++) grid[r][c]=8;
+/* Prep room open passage on the divider wall */
+grid[37][50]=0;grid[37][51]=0;
+/* Inside prep room: storage shelves (type 3) along top/right walls */
+for(var c=40;c<=57;c++) grid[38][c]=3; /* top shelf row */
+/* Clear shelf at passage entry cols so player can actually step into prep room */
+grid[38][50]=8;grid[38][51]=8;
+for(var r=40;r<=57;r++) grid[r][58]=3; /* right shelf col */
+/* Some chem cabinets inside */
+for(var r=40;r<=45;r++) grid[r][57]=3;
+
+/* Main exits – both reachable from main room (cols 1-38, rows 1-36) */
+grid[5][COLS-1]=5;   /* top-right (main room is wide enough to reach) */
+grid[36][COLS-1]=5;  /* mid-right – now accessible since prep wall is at col 39 */
+
+var WALK=[0,5,8,10];
+function isWalk(t){return WALK.indexOf(t)>=0;}
+
+var cv=document.getElementById('map'),ctx=cv.getContext('2d');
+var __savedChar=(function(){
+  try{var _cp=new URLSearchParams(window.location.search).get('c');if(_cp)return JSON.parse(_cp);return JSON.parse(localStorage.getItem('ssambus_player_character'));}catch(e){return null;}
+})();
+var PLAYER=Object.assign({type:'student',skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',ccolor:'#8e44ad',cloth:'suit',gender:'male',acc:[],dir:'down'},__savedChar||{});
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML=renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip',PLAYER.dir==='left'&&!PLAYER._facingRight);
+}
+
+function drawFloor(x,y,c,r){
+  ctx.fillStyle=((c+r)%2===0)?'#e8f0e8':'#e0e8e0';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(80,120,80,0.1)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,TS-1,TS-1);
+}
+function drawPrepFloor(x,y,c,r){
+  ctx.fillStyle=((c+r)%2===0)?'#1c2e30':'#182628';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(40,100,80,0.12)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,TS-1,TS-1);
+}
+function drawWall(x,y){
+  ctx.fillStyle='#f0f4f0';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='rgba(100,140,100,.1)';ctx.fillRect(x+4,y+4,TS-8,TS-8);
+}
+function drawDisplay(x,y,c){
+  ctx.fillStyle='#1a2a1a';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#2d8a3a';ctx.fillRect(x+(c===4?4:0),y+6,TS-(c===4?4:0)-(c===55?4:0),TS-12);
+  ctx.fillStyle='rgba(200,255,200,.15)';ctx.fillRect(x+2,y+10,TS-6,3);
+  ctx.fillStyle='rgba(200,255,200,.1)';ctx.fillRect(x+2,y+17,TS-6,3);ctx.fillRect(x+2,y+24,TS-6,3);
+}
+function drawTeacherBench(x,y){
+  ctx.fillStyle='#2c3e50';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#34495e';ctx.fillRect(x+2,y+4,TS-4,TS*0.5);
+  ctx.fillStyle='#85c1e9';ctx.fillRect(x+TS/2-4,y+8,8,12);
+  ctx.fillStyle='rgba(100,180,255,.4)';ctx.fillRect(x+TS/2-3,y+9,6,7);
+  ctx.fillStyle='#555';ctx.fillRect(x+8,y+10,6,10);
+  ctx.fillStyle='#ff6600';ctx.beginPath();ctx.arc(x+11,y+8,4,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ffcc00';ctx.beginPath();ctx.arc(x+11,y+8,2,0,Math.PI*2);ctx.fill();
+}
+function drawChemCabinet(x,y){
+  ctx.fillStyle='#5b2c6f';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#7d3c98';ctx.fillRect(x+3,y+3,TS-6,TS-6);
+  var cols=['#e74c3c','#f39c12','#2ecc71','#3498db'];
+  for(var i=0;i<4;i++){ctx.fillStyle=cols[i];ctx.fillRect(x+5+i*10,y+8,7,16);ctx.fillStyle='#888';ctx.fillRect(x+6+i*10,y+6,5,4);}
+  ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(x+3,y+TS/2,TS-6,1);
+  for(var i=0;i<4;i++){ctx.fillStyle=cols[(i+2)%4];ctx.fillRect(x+5+i*10,y+TS/2+6,7,14);ctx.fillStyle='#888';ctx.fillRect(x+6+i*10,y+TS/2+4,5,4);}
+}
+function drawLabBench(x,y,r,c){
+  var isTop=(grid[r+1]&&grid[r+1][c]===4);
+  ctx.fillStyle='#d6eaf8';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#2980b9';ctx.fillRect(x,isTop?y+TS-5:y,TS,5);
+  /* random items */
+  if((c+r)%5===0){ctx.fillStyle='#85c1e9';ctx.fillRect(x+TS/2-3,y+TS*0.2,6,10);ctx.fillStyle='rgba(100,180,255,.4)';ctx.fillRect(x+TS/2-2,y+TS*0.22,4,6);ctx.fillStyle='#5d6d7e';ctx.fillRect(x+TS/2-3,y+TS*0.18,6,3);}
+  if((c+r)%7===0){ctx.fillStyle='#2c3e50';ctx.fillRect(x+TS*0.58,y+TS*0.15,TS*0.3,TS*0.55);ctx.fillStyle='#5d6d7e';ctx.fillRect(x+TS*0.6,y+TS*0.12,TS*0.26,TS*0.1);}
+  if((c+r)%4===0){for(var i=0;i<3;i++){ctx.fillStyle=['#e74c3c','#f39c12','#2ecc71'][i];ctx.fillRect(x+4+i*8,y+TS*0.3,5,12);ctx.fillStyle='#888';ctx.fillRect(x+4+i*8,y+TS*0.28,5,3);}}
+}
+function drawSink(x,y){
+  ctx.fillStyle='#bdc3c7';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#ecf0f1';ctx.fillRect(x+5,y+8,TS-10,TS-16);
+  ctx.strokeStyle='#95a5a6';ctx.lineWidth=1;ctx.strokeRect(x+5,y+8,TS-10,TS-16);
+  ctx.fillStyle='#7f8c8d';ctx.fillRect(x+TS/2-2,y+3,4,10);
+  ctx.fillStyle='#3498db';ctx.beginPath();ctx.arc(x+TS/2,y+20,3,0,Math.PI*2);ctx.fill();
+}
+function drawTelescopeBlock(ax,ay){
+  /* 3×3 large telescope graphic */
+  var W=3*TS,H=3*TS;
+  ctx.fillStyle='#1a2030';ctx.fillRect(ax,ay,W,H);
+  /* tripod legs */
+  ctx.strokeStyle='#7f8c8d';ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(ax+W*0.5,ay+H*0.55);ctx.lineTo(ax+W*0.15,ay+H*0.95);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ax+W*0.5,ay+H*0.55);ctx.lineTo(ax+W*0.85,ay+H*0.95);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ax+W*0.5,ay+H*0.55);ctx.lineTo(ax+W*0.5,ay+H*0.95);ctx.stroke();
+  /* foot platform */
+  ctx.strokeStyle='#6a7480';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(ax+W*0.08,ay+H*0.95);ctx.lineTo(ax+W*0.92,ay+H*0.95);ctx.stroke();
+  /* mount */
+  ctx.fillStyle='#95a5a6';ctx.beginPath();ctx.ellipse(ax+W*0.5,ay+H*0.55,W*0.06,H*0.04,0,0,Math.PI*2);ctx.fill();
+  /* tube */
+  ctx.save();
+  ctx.translate(ax+W*0.5,ay+H*0.5);ctx.rotate(-Math.PI/5);
+  ctx.fillStyle='#8a9a9a';ctx.fillRect(-W*0.07,(-H*0.55),W*0.14,H*0.55);
+  ctx.fillStyle='#6a8080';ctx.fillRect(-W*0.07,-H*0.55,W*0.14,H*0.06);
+  ctx.fillStyle='#9ab0b0';ctx.beginPath();ctx.ellipse(0,-H*0.52,W*0.1,H*0.045,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(180,220,255,.4)';ctx.beginPath();ctx.ellipse(0,-H*0.52,W*0.07,H*0.03,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+  /* eyepiece */
+  ctx.fillStyle='#555';ctx.fillRect(ax+W*0.55,ay+H*0.38,W*0.08,W*0.04);
+  /* label */
+  ctx.fillStyle='rgba(180,220,255,.25)';ctx.beginPath();ctx.arc(ax+W*0.5,ay+H*0.28,W*0.15,0,Math.PI*2);ctx.fill();
+}
+function drawChair(x,y){
+  ctx.fillStyle='#d4e8d0';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#6a9a60';ctx.fillRect(x+TS*0.18,y+TS*0.18,TS*0.64,TS*0.64);
+  ctx.fillStyle='#5a8a50';ctx.fillRect(x+TS*0.22,y+TS*0.22,TS*0.56,TS*0.56);
+  ctx.fillStyle='#4a7040';
+  ctx.fillRect(x+TS*0.1,y+TS*0.1,TS*0.12,TS*0.12);
+  ctx.fillRect(x+TS*0.78,y+TS*0.1,TS*0.12,TS*0.12);
+  ctx.fillRect(x+TS*0.1,y+TS*0.78,TS*0.12,TS*0.12);
+  ctx.fillRect(x+TS*0.78,y+TS*0.78,TS*0.12,TS*0.12);
+}
+function drawDoor(x,y){
+  ctx.fillStyle='#e67e22';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#27ae60';ctx.fillRect(x+5,y+3,TS-10,TS-6);
+  ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('EXIT',x+TS/2,y+TS*0.38);
+  ctx.strokeStyle='#fff';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(x+12,y+TS*0.62);ctx.lineTo(x+TS-8,y+TS*0.62);
+  ctx.moveTo(x+TS-14,y+TS*0.62-6);ctx.lineTo(x+TS-8,y+TS*0.62);ctx.lineTo(x+TS-14,y+TS*0.62+6);ctx.stroke();
+  ctx.fillStyle='#f1c40f';ctx.beginPath();ctx.arc(x+10,y+TS*0.5,3.5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#f1c40f';ctx.lineWidth=2;ctx.strokeRect(x+5,y+3,TS-10,TS-6);
+}
+
+function drawMap(){
+  /* Pass 1 */
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      var x=c*TS,y=r*TS,t=grid[r][c];
+      if(t===6) drawFloor(x,y,c,r); /* telescope block = floor behind */
+      else if(t===1) drawWall(x,y);
+      else if(t===9) drawDisplay(x,y,c);
+      else if(t===2) drawTeacherBench(x,y);
+      else if(t===3) drawChemCabinet(x,y);
+      else if(t===4) drawLabBench(x,y,r,c);
+      else if(t===5) drawDoor(x,y);
+      else if(t===7) drawSink(x,y);
+      else if(t===8) drawPrepFloor(x,y,c,r);
+      else if(t===10) drawChair(x,y);
+      else drawFloor(x,y,c,r);
+    }
+  }
+  /* Pass 2: telescope */
+  drawTelescopeBlock(48*TS,4*TS);
+  /* Prep room label */
+  ctx.fillStyle='rgba(100,200,160,.18)';ctx.font='bold 44px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('준비실',49*TS,48*TS);
+  /* Chemical hazard marker */
+  ctx.fillStyle='rgba(255,200,0,.06)';ctx.fillRect(TS,4*TS,5*TS,12*TS);
+}
+drawMap();
+
+function updateCamera(){
+  if(TEACHER_VIEW){var wrap=document.querySelector('.stage-wrap');wrap.style.width=(COLS*TS)+'px';wrap.style.height=(ROWS*TS)+'px';wrap.style.overflow='visible';return;}
+  var stage=document.querySelector('.stage');
+  var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
+  var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
+  stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
+}
+var pos={r:5,c:20};
+function placePlayer(){
+  var el=document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display='none';
+  el.style.left=(pos.c*TS)+'px';el.style.top=(pos.r*TS-24)+'px';
+  updateCamera();
+  try{broadcastMyPosition();}catch(e){}
+  try{checkZoneOnMove(pos);}catch(e){}
+}
+function move(dir){
+  var nr=pos.r,nc=pos.c;
+  if(dir==='up') nr--;else if(dir==='down') nr++;else if(dir==='left') nc--;else if(dir==='right') nc++;
+  PLAYER._facingRight=(dir==='right');PLAYER.dir=(dir==='right')?'left':dir;renderPlayer();
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+  if(!isWalk(grid[nr][nc])) return;
+  try{if(__rtIsOverlayBlocked(nr,nc)) return;}catch(e){}
+  try{if(__rtIsTileOccupied(nr,nc)) return;}catch(e){}
+  try{if(typeof __msBlockExit==='function'&&__msBlockExit(nr,nc)){__msShowBlockedNotice();return;}}catch(e){}
+  pos.r=nr;pos.c=nc;placePlayer();
+}
+window.addEventListener('keydown',function(e){
+  if(TEACHER_VIEW) return;
+  var m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(m[e.key]){e.preventDefault();move(m[e.key]);}
+});
+if(!TEACHER_VIEW){
+  var sw2=document.querySelector('.stage-wrap');var tx=0,ty=0,ta=false;
+  sw2.addEventListener('touchstart',function(e){if(e.touches.length!==1)return;ta=true;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  sw2.addEventListener('touchmove',function(e){if(ta)e.preventDefault();},{passive:false});
+  sw2.addEventListener('touchend',function(e){
+    if(!ta)return;ta=false;var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<30)return;
+    if(Math.abs(dx)>Math.abs(dy))move(dx>0?'right':'left');else move(dy>0?'down':'up');
+  },{passive:true});
+}
+renderPlayer();
+try{placePlayer();}catch(e){console.warn('[science] placePlayer:',e);}
+try{initRealtime('science');}catch(e){console.warn('[science] realtime:',e);}
+if(!TEACHER_VIEW){
+  try{initMissionSystem('science');}catch(e){console.warn('[science] missions:',e);}
+  try{loadMapOverlays('science',ctx,TS);}catch(e){console.warn('[science] overlays:',e);}
+}
+</script>
+</body>
+</html>

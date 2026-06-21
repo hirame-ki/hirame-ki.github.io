@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>쌤버스 - 미술실 맵</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:sans-serif;background:#1a2535;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
+#main-btn{position:fixed;top:12px;left:12px;z-index:999;background:#2c3e50;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none}
+#char-btn{position:fixed;top:12px;left:12px;z-index:999;background:#2980b9;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:none}
+h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
+.info{font-size:12px;color:#aaa;margin-bottom:12px;text-align:center}
+.stage-wrap{width:720px;max-width:100%;height:672px;overflow:hidden;border:3px solid #e67e22;border-radius:8px;box-shadow:0 0 24px rgba(230,126,34,0.4)}
+.stage{position:relative;line-height:0}
+#map{display:block}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear,top .1s linear;z-index:5}
+#player svg{display:block;width:100%;height:100%;overflow:visible}
+#player.flip svg{transform:scaleX(-1)}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear,top .15s linear;z-index:4}
+.remote-player svg{display:block;width:100%;height:100%;overflow:visible}
+.remote-player.flip svg{transform:scaleX(-1)}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.9);padding:1px 5px;border-radius:4px;white-space:nowrap;font-weight:600}
+.pad{display:grid;grid-template-columns:52px 52px 52px;grid-template-rows:52px 52px 52px;gap:4px;margin-top:14px}
+.pad button{font-size:20px;border-radius:10px;border:none;background:#e67e22;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #c05a00}
+.pad button:active{transform:translateY(2px);box-shadow:0 1px 0 #c05a00}
+.legend{margin-top:10px;font-size:12px;color:#aaa;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.legend span{display:flex;align-items:center;gap:4px}
+.sw{display:inline-block;width:13px;height:13px;border-radius:3px}
+</style>
+</head>
+<body>
+<a id="main-btn" href="index.html">메인</a>
+<a id="char-btn" href="#">캐릭터 변경</a>
+<h2>쌤버스 - 미술실</h2>
+<div class="info">방향키 또는 버튼으로 이동하세요</div>
+<div class="stage-wrap">
+<div class="stage">
+  <canvas id="map" width="2880" height="2880"></canvas>
+  <div id="player"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
+  <div id="remote-players"></div>
+</div>
+</div>
+<div class="pad">
+  <div></div><button onclick="move('up')">&#8593;</button><div></div>
+  <button onclick="move('left')">&#8592;</button><div></div><button onclick="move('right')">&#8594;</button>
+  <div></div><button onclick="move('down')">&#8595;</button><div></div>
+</div>
+<div class="legend">
+  <span><span class="sw" style="background:#f0ece0"></span>바닥</span>
+  <span><span class="sw" style="background:#2c3e50"></span>전시대</span>
+  <span><span class="sw" style="background:#8B6914"></span>이젤</span>
+  <span><span class="sw" style="background:#c8a06e"></span>작업테이블</span>
+  <span><span class="sw" style="background:#27ae60"></span>출입구</span>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="ssambus_supabase_config.js"></script>
+<script src="ssambus_character_render.js"></script>
+<script src="ssambus_realtime.js"></script>
+<script src="ssambus_missions.js"></script>
+<script>
+/* === Art Room 60x60 === */
+var TS=48,COLS=60,ROWS=60,VIEW_W=720,VIEW_H=672;
+
+var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
+if(TEACHER_VIEW){
+  document.body.style.padding='0';document.body.style.background='transparent';
+  document.querySelectorAll('h2,.info,.pad,.legend').forEach(function(el){el.style.display='none';});
+}
+(function(){
+  var _s=window.location.search,_rm=(_s.match(/[?&]room=([^&]+)/)||[])[1];
+  if(_rm&&!TEACHER_VIEW){
+    var _mb=document.getElementById('main-btn'),_cb=document.getElementById('char-btn');
+    if(_mb)_mb.style.display='none';
+    if(_cb){
+      _cb.style.cssText='position:fixed;top:12px;left:12px;z-index:999;background:#2980b9;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:inline';
+      var _nk=((_s.match(/[?&]nickname=([^&]*)/)||[])[1])||'';
+      try{_nk=_nk||sessionStorage.getItem('ssambus_nickname')||'';}catch(e){}
+      _cb.href='ssambus_characters.html?room='+_rm+'&map=ssambus_map_artroom.html'+(_nk?'&nickname='+_nk:'');
+    }
+  }
+})();
+
+/* Tile: 0=floor 1=wall 2=display-wall 3=teacher-desk 4=easel 5=door 6=worktable 7=sculpture 8=storage 9=bulletin */
+var grid=[];
+for(var r=0;r<ROWS;r++){
+  grid[r]=[];
+  for(var c=0;c<COLS;c++) grid[r][c]=(r===0||r===ROWS-1||c===0||c===COLS-1)?1:0;
+}
+/* Display wall top */
+for(var c=2;c<=COLS-3;c++) grid[0][c]=2;
+/* Teacher desk row 2, cols 24-35 */
+for(var c=24;c<=35;c++) grid[2][c]=3;
+/* Bulletin boards on left wall (col 0) */
+for(var r=1;r<=ROWS-2;r++) if(r%8===2) grid[r][0]=9;
+
+/* Easel rows: 3 rows × 7 easels (2×2 blocks) */
+var easelCols=[6,14,22,30,38,46,54];
+var EASEL_ANCHORS=[];
+[8,18,28].forEach(function(r){
+  easelCols.forEach(function(c){
+    grid[r][c]=4;grid[r][c+1]=4;
+    grid[r+1][c]=4;grid[r+1][c+1]=4;
+    grid[r+1][c+2]=10;
+    EASEL_ANCHORS.push({r:r,c:c});
+  });
+});
+
+/* Long work tables: rows 38 and 44, scattered chairs at rows 39-41, 45-47 */
+for(var c=5;c<=55;c++) if(c%8!==0) grid[38][c]=6;
+for(var c=5;c<=55;c++) if(c%8!==0) grid[44][c]=6;
+/* Chairs alongside tables (type 10) at scattered positions */
+[6,10,14,18,22,26,30,34,38,42,46,50,54].forEach(function(cc){grid[41][cc]=10;grid[47][cc]=10;});
+
+/* Sculpture / pottery area: rows 48-56, cols 3-18 */
+for(var r=48;r<=56;r++) for(var c=3;c<=18;c++) grid[r][c]=7;
+
+/* Storage wall row 57 */
+for(var c=1;c<=COLS-2;c++) grid[57][c]=1;
+for(var r=58;r<=ROWS-2;r++) for(var c=1;c<=COLS-2;c++) grid[r][c]=8;
+grid[57][28]=5; grid[57][29]=5;
+
+/* Exits */
+grid[5][COLS-1]=5; grid[55][COLS-1]=5;
+
+var WALK=[0,5,10];
+function isWalk(t){return WALK.indexOf(t)>=0;}
+
+var cv=document.getElementById('map'),ctx=cv.getContext('2d');
+var __savedChar=(function(){
+  try{var _cp=new URLSearchParams(window.location.search).get('c');if(_cp)return JSON.parse(_cp);return JSON.parse(localStorage.getItem('ssambus_player_character'));}catch(e){return null;}
+})();
+var PLAYER=Object.assign({type:'student',skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',ccolor:'#e67e22',cloth:'suit',gender:'male',acc:[],dir:'down'},__savedChar||{});
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML=renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip',PLAYER.dir==='left'&&!PLAYER._facingRight);
+}
+
+/* Floor: light cream art studio tile */
+function drawFloor(x,y,c,r){
+  ctx.fillStyle=((c+r)%2===0)?'#f0ece0':'#e8e4d8';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(150,130,100,0.1)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,TS-1,TS-1);
+  if((c+r)%6===0){ctx.fillStyle='rgba(200,160,100,.07)';ctx.fillRect(x+4,y+4,TS-8,TS-8);}
+}
+function drawWall(x,y){
+  ctx.fillStyle='#f0ece8';ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(150,120,80,0.12)';ctx.lineWidth=1;ctx.strokeRect(x+4,y+4,TS-8,TS-8);
+}
+/* Display wall: colorful artworks */
+function drawDisplayWall(x,y,c){
+  ctx.fillStyle='#3a3a3a';ctx.fillRect(x,y,TS,TS);
+  var pc=['#e74c3c','#3498db','#f1c40f','#2ecc71','#e67e22','#9b59b6'];
+  ctx.fillStyle=pc[c%6];ctx.fillRect(x+4,y+4,TS-8,TS-8);
+  ctx.fillStyle='rgba(255,255,255,.6)';ctx.fillRect(x+8,y+8,TS-16,TS*0.55);
+  ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillRect(x+4,y+4,TS-8,4);
+}
+function drawTeacherDesk(x,y){
+  ctx.fillStyle='#5a3010';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#8b5e3c';ctx.fillRect(x+2,y+5,TS-4,TS*0.5);
+  ctx.fillStyle='rgba(255,255,240,.85)';ctx.fillRect(x+5,y+8,14,11);ctx.fillRect(x+TS-19,y+8,14,11);
+  ctx.fillStyle='#e74c3c';ctx.fillRect(x+TS/2-3,y+9,6,10);
+}
+/* Easel */
+function drawEasel(x,y){
+  ctx.fillStyle='#e8e4d8';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#d4a06e';ctx.fillRect(x+TS*0.14,y+TS*0.06,TS*0.72,TS*0.56);
+  ctx.fillStyle='#87ceeb';ctx.fillRect(x+TS*0.18,y+TS*0.1,TS*0.64,TS*0.2);
+  ctx.fillStyle='#228b22';ctx.fillRect(x+TS*0.18,y+TS*0.3,TS*0.64,TS*0.28);
+  ctx.fillStyle='#8B6914';
+  ctx.fillRect(x+TS*0.28,y+TS*0.6,TS*0.06,TS*0.38);
+  ctx.fillRect(x+TS*0.66,y+TS*0.6,TS*0.06,TS*0.38);
+  ctx.fillRect(x+TS*0.28,y+TS*0.72,TS*0.44,TS*0.04);
+}
+function drawLargeEasel(ax,ay){
+  var W=2*TS,H=2*TS;
+  ctx.fillStyle='#e8e4d8';ctx.fillRect(ax,ay,W,H);
+  ctx.fillStyle='#8B6914';ctx.fillRect(ax+W*0.12,ay+H*0.05,W*0.72,H*0.52);
+  ctx.fillStyle='#f8f6f0';ctx.fillRect(ax+W*0.15,ay+H*0.08,W*0.66,H*0.46);
+  ctx.fillStyle='#87ceeb';ctx.fillRect(ax+W*0.15,ay+H*0.08,W*0.66,H*0.22);
+  ctx.fillStyle='#228b22';ctx.fillRect(ax+W*0.15,ay+H*0.3,W*0.66,H*0.24);
+  ctx.fillStyle='rgba(231,76,60,.55)';ctx.fillRect(ax+W*0.18,ay+H*0.1,W*0.14,H*0.09);
+  ctx.fillStyle='rgba(241,196,15,.55)';ctx.fillRect(ax+W*0.44,ay+H*0.12,W*0.18,H*0.07);
+  ctx.fillStyle='rgba(52,152,219,.6)';ctx.fillRect(ax+W*0.62,ay+H*0.09,W*0.11,H*0.1);
+  /* Easel legs */
+  ctx.strokeStyle='#8B6914';ctx.lineWidth=5;
+  ctx.beginPath();ctx.moveTo(ax+W*0.25,ay+H*0.57);ctx.lineTo(ax+W*0.16,ay+H*0.97);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ax+W*0.75,ay+H*0.57);ctx.lineTo(ax+W*0.84,ay+H*0.97);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ax+W*0.5,ay+H*0.57);ctx.lineTo(ax+W*0.5,ay+H*0.97);ctx.stroke();
+  ctx.strokeStyle='#8B6914';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(ax+W*0.18,ay+H*0.76);ctx.lineTo(ax+W*0.82,ay+H*0.76);ctx.stroke();
+  /* Palette */
+  ctx.fillStyle='#fff8f0';
+  ctx.beginPath();ctx.ellipse(ax+W*0.83,ay+H*0.66,W*0.11,H*0.09,0.3,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#ddd';ctx.lineWidth=1;ctx.stroke();
+  var pcs=['#e74c3c','#3498db','#f1c40f','#2ecc71'];
+  pcs.forEach(function(pc,i){ctx.fillStyle=pc;ctx.beginPath();ctx.arc(ax+W*(0.76+i*0.06),ay+H*0.66,3.5,0,Math.PI*2);ctx.fill();});
+  ctx.strokeStyle='#8b6914';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(ax+W*0.89,ay+H*0.53);ctx.lineTo(ax+W*0.86,ay+H*0.63);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ax+W*0.92,ay+H*0.52);ctx.lineTo(ax+W*0.9,ay+H*0.62);ctx.stroke();
+}
+/* Work table */
+function drawWorkTable(x,y){
+  ctx.fillStyle='#5a3010';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#c8a06e';ctx.fillRect(x+2,y+5,TS-4,TS*0.45);
+  ctx.fillStyle='#dfc09a';ctx.fillRect(x+2,y+5,TS-4,6);
+  ctx.fillStyle='rgba(180,100,50,.2)';ctx.fillRect(x+5,y+8,20,12);
+  ctx.fillStyle='rgba(50,100,200,.2)';ctx.fillRect(x+TS-25,y+8,20,12);
+}
+/* Sculpture area */
+function drawSculpture(x,y,c,r){
+  ctx.fillStyle='#d8d0c0';ctx.fillRect(x,y,TS,TS);
+  if((c+r)%3===0){
+    ctx.fillStyle='#c8a06e';
+    ctx.beginPath();ctx.ellipse(x+TS/2,y+TS*0.45,TS*0.22,TS*0.28,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#888';ctx.fillRect(x+TS*0.35,y+TS*0.7,TS*0.3,TS*0.22);
+  } else {
+    ctx.strokeStyle='rgba(150,130,100,0.1)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,TS-1,TS-1);
+  }
+}
+function drawStorage(x,y){
+  ctx.fillStyle='#d0c8b8';ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(150,120,80,.12)';ctx.lineWidth=1;ctx.strokeRect(x+2,y+2,TS-4,TS-4);
+}
+function drawChair(x,y){
+  /* Simple stool/chair top-view */
+  ctx.fillStyle='#c8b882';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#8b6930';ctx.fillRect(x+TS*0.18,y+TS*0.18,TS*0.64,TS*0.64);
+  ctx.fillStyle='#a07840';ctx.fillRect(x+TS*0.22,y+TS*0.22,TS*0.56,TS*0.56);
+  ctx.fillStyle='#8b6930';
+  ctx.fillRect(x+TS*0.1,y+TS*0.1,TS*0.12,TS*0.12);
+  ctx.fillRect(x+TS*0.78,y+TS*0.1,TS*0.12,TS*0.12);
+  ctx.fillRect(x+TS*0.1,y+TS*0.78,TS*0.12,TS*0.12);
+  ctx.fillRect(x+TS*0.78,y+TS*0.78,TS*0.12,TS*0.12);
+}
+function drawBulletin(x,y,r){
+  drawWall(x,y);
+  ctx.fillStyle=['#e74c3c','#3498db','#f1c40f'][r%3];
+  ctx.fillRect(x+4,y+5,TS-8,TS*0.6);
+  ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x+7,y+11);ctx.lineTo(x+TS-7,y+11);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+7,y+17);ctx.lineTo(x+TS-9,y+17);ctx.stroke();
+}
+function drawDoor(x,y){
+  ctx.fillStyle='#e67e22';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#27ae60';ctx.fillRect(x+5,y+3,TS-10,TS-6);
+  ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('EXIT',x+TS/2,y+TS*0.38);
+  ctx.strokeStyle='#fff';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(x+12,y+TS*0.62);ctx.lineTo(x+TS-8,y+TS*0.62);
+  ctx.moveTo(x+TS-14,y+TS*0.62-6);ctx.lineTo(x+TS-8,y+TS*0.62);ctx.lineTo(x+TS-14,y+TS*0.62+6);ctx.stroke();
+  ctx.fillStyle='#f1c40f';ctx.beginPath();ctx.arc(x+10,y+TS*0.5,3.5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#f1c40f';ctx.lineWidth=2;ctx.strokeRect(x+5,y+3,TS-10,TS-6);
+}
+
+function drawMap(){
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      var x=c*TS,y=r*TS,t=grid[r][c];
+      if(t===1) drawWall(x,y);
+      else if(t===2) drawDisplayWall(x,y,c);
+      else if(t===3) drawTeacherDesk(x,y);
+      else if(t===4) drawFloor(x,y,c,r);
+      else if(t===5) drawDoor(x,y);
+      else if(t===6) drawWorkTable(x,y);
+      else if(t===7) drawSculpture(x,y,c,r);
+      else if(t===8) drawStorage(x,y);
+      else if(t===9) drawBulletin(x,y,r);
+      else if(t===10) drawChair(x,y);
+      else drawFloor(x,y,c,r);
+    }
+  }
+  /* Pass 2: large easels */
+  EASEL_ANCHORS.forEach(function(p){drawLargeEasel(p.c*TS,p.r*TS);});
+  /* Splashes of color on floor near work tables */
+  [[40,20],[41,35],[43,50],[39,8]].forEach(function(p){
+    ctx.fillStyle='rgba(200,80,30,.15)';
+    ctx.beginPath();ctx.arc(p[0]*TS+24,p[1]*TS+24,18,0,Math.PI*2);ctx.fill();
+  });
+}
+drawMap();
+
+function updateCamera(){
+  if(TEACHER_VIEW){var wrap=document.querySelector('.stage-wrap');wrap.style.width=(COLS*TS)+'px';wrap.style.height=(ROWS*TS)+'px';wrap.style.overflow='visible';return;}
+  var stage=document.querySelector('.stage');
+  var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
+  var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
+  stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
+}
+var pos={r:5,c:30};
+function placePlayer(){
+  var el=document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display='none';
+  el.style.left=(pos.c*TS)+'px';el.style.top=(pos.r*TS-24)+'px';
+  updateCamera();
+  try{broadcastMyPosition();}catch(e){}
+  try{checkZoneOnMove(pos);}catch(e){}
+}
+function move(dir){
+  var nr=pos.r,nc=pos.c;
+  if(dir==='up') nr--;else if(dir==='down') nr++;else if(dir==='left') nc--;else if(dir==='right') nc++;
+  PLAYER._facingRight=(dir==='right');PLAYER.dir=(dir==='right')?'left':dir;renderPlayer();
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+  if(!isWalk(grid[nr][nc])) return;
+  try{if(__rtIsOverlayBlocked(nr,nc)) return;}catch(e){}
+  try{if(__rtIsTileOccupied(nr,nc)) return;}catch(e){}
+  try{if(typeof __msBlockExit==='function'&&__msBlockExit(nr,nc)){__msShowBlockedNotice();return;}}catch(e){}
+  pos.r=nr;pos.c=nc;placePlayer();
+}
+window.addEventListener('keydown',function(e){
+  if(TEACHER_VIEW) return;
+  var m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(m[e.key]){e.preventDefault();move(m[e.key]);}
+});
+if(!TEACHER_VIEW){
+  var sw2=document.querySelector('.stage-wrap');var tx=0,ty=0,ta=false;
+  sw2.addEventListener('touchstart',function(e){if(e.touches.length!==1)return;ta=true;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  sw2.addEventListener('touchmove',function(e){if(ta)e.preventDefault();},{passive:false});
+  sw2.addEventListener('touchend',function(e){
+    if(!ta)return;ta=false;var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<30)return;
+    if(Math.abs(dx)>Math.abs(dy))move(dx>0?'right':'left');else move(dy>0?'down':'up');
+  },{passive:true});
+}
+renderPlayer();
+try{placePlayer();}catch(e){console.warn('[artroom] placePlayer:',e);}
+try{initRealtime('artroom');}catch(e){console.warn('[artroom] realtime:',e);}
+if(!TEACHER_VIEW){
+  try{initMissionSystem('artroom');}catch(e){console.warn('[artroom] missions:',e);}
+  try{loadMapOverlays('artroom',ctx,TS);}catch(e){console.warn('[artroom] overlays:',e);}
+}
+</script>
+</body>
+</html>

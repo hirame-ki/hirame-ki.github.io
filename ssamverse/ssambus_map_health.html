@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>쌤버스 - 보건실 맵</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:sans-serif;background:#1a2535;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
+#main-btn{position:fixed;top:12px;left:12px;z-index:999;background:#2c3e50;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none}
+#char-btn{position:fixed;top:12px;left:12px;z-index:999;background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:none}
+h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
+.info{font-size:12px;color:#aaa;margin-bottom:12px;text-align:center}
+.stage-wrap{width:720px;max-width:100%;height:672px;overflow:hidden;border:3px solid #e74c3c;border-radius:8px;box-shadow:0 0 24px rgba(231,76,60,0.4)}
+.stage{position:relative;line-height:0}
+#map{display:block}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear,top .1s linear;z-index:5}
+#player svg{display:block;width:100%;height:100%;overflow:visible}
+#player.flip svg{transform:scaleX(-1)}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear,top .15s linear;z-index:4}
+.remote-player svg{display:block;width:100%;height:100%;overflow:visible}
+.remote-player.flip svg{transform:scaleX(-1)}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.9);padding:1px 5px;border-radius:4px;white-space:nowrap;font-weight:600}
+.pad{display:grid;grid-template-columns:52px 52px 52px;grid-template-rows:52px 52px 52px;gap:4px;margin-top:14px}
+.pad button{font-size:20px;border-radius:10px;border:none;background:#e74c3c;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #922b21}
+.pad button:active{transform:translateY(2px);box-shadow:0 1px 0 #922b21}
+.legend{margin-top:10px;font-size:12px;color:#aaa;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.legend span{display:flex;align-items:center;gap:4px}
+.sw{display:inline-block;width:13px;height:13px;border-radius:3px}
+</style>
+</head>
+<body>
+<a id="main-btn" href="index.html">메인</a>
+<a id="char-btn" href="#">캐릭터 변경</a>
+<h2>쌤버스 - 보건실</h2>
+<div class="info">방향키 또는 버튼으로 이동하세요</div>
+<div class="stage-wrap">
+<div class="stage">
+  <canvas id="map" width="1920" height="1920"></canvas>
+  <div id="player"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
+  <div id="remote-players"></div>
+</div>
+</div>
+<div class="pad">
+  <div></div><button onclick="move('up')">&#8593;</button><div></div>
+  <button onclick="move('left')">&#8592;</button><div></div><button onclick="move('right')">&#8594;</button>
+  <div></div><button onclick="move('down')">&#8595;</button><div></div>
+</div>
+<div class="legend">
+  <span><span class="sw" style="background:#fef9f9"></span>보건실 바닥</span>
+  <span><span class="sw" style="background:#fff"></span>침대</span>
+  <span><span class="sw" style="background:#e74c3c"></span>약장</span>
+  <span><span class="sw" style="background:#27ae60"></span>출입구</span>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="ssambus_supabase_config.js"></script>
+<script src="ssambus_character_render.js"></script>
+<script src="ssambus_realtime.js"></script>
+<script src="ssambus_missions.js"></script>
+<script>
+/* === Health Room / Infirmary 40×40 (2/3 of original 60×60) ===
+   Left zone cols 1-12: 보건교사 영역
+   Divider wall col 13 (doors at rows 8, 25)
+   Right zone cols 14-38: 침대 구역 (4-tile beds: 2wide × 2tall, with curtains)
+   Each bed bay: curtain(1) + bed(2wide × 2tall) + curtain(1) = 4 cols per bay
+   3 bays across → 3 × 4 = 12 cols → cols 14-25 (+ aisle + more bays)
+   5 bed columns × 3 bays across at row groups: 4 bed rows top-to-bottom */
+var TS=48,COLS=40,ROWS=40,VIEW_W=720,VIEW_H=672;
+
+var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
+if(TEACHER_VIEW){
+  document.body.style.padding='0';document.body.style.background='transparent';
+  document.querySelectorAll('h2,.info,.pad,.legend').forEach(function(el){el.style.display='none';});
+}
+(function(){
+  var _s=window.location.search,_rm=(_s.match(/[?&]room=([^&]+)/)||[])[1];
+  if(_rm&&!TEACHER_VIEW){
+    var _mb=document.getElementById('main-btn'),_cb=document.getElementById('char-btn');
+    if(_mb)_mb.style.display='none';
+    if(_cb){
+      _cb.style.cssText='position:fixed;top:12px;left:12px;z-index:999;background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:inline';
+      var _nk=((_s.match(/[?&]nickname=([^&]*)/)||[])[1])||'';
+      try{_nk=_nk||sessionStorage.getItem('ssambus_nickname')||'';}catch(e){}
+      _cb.href='ssambus_characters.html?room='+_rm+'&map=ssambus_map_health.html'+(_nk?'&nickname='+_nk:'');
+    }
+  }
+})();
+
+/* Tile: 0=floor 1=wall 2=nurse-desk 3=med-cabinet 4=bed-block 5=door 6=curtain-rail 7=sink 8=scale-bp 9=exam-table */
+var grid=[];
+for(var r=0;r<ROWS;r++){
+  grid[r]=[];
+  for(var c=0;c<COLS;c++) grid[r][c]=(r===0||r===ROWS-1||c===0||c===COLS-1)?1:0;
+}
+
+/* === NURSE STATION (cols 1-12) === */
+/* Divider wall */
+for(var r=1;r<=ROWS-2;r++) grid[r][13]=1;
+grid[8][13]=0;grid[25][13]=0; /* open passages */
+/* Nurse desk (2×2) */
+for(var r=2;r<=3;r++) for(var c=3;c<=8;c++) grid[r][c]=2;
+/* Red cross sign on top wall */
+grid[0][7]=3;
+/* Med cabinets left wall interior */
+for(var r=6;r<=10;r++) grid[r][1]=3;
+for(var r=6;r<=10;r++) grid[r][2]=3;
+/* Scale / BP corner */
+for(var c=4;c<=7;c++) grid[12][c]=8;
+/* Sink */
+grid[15][1]=7;grid[15][2]=7;
+/* Exam table (2×3) */
+for(var r=18;r<=20;r++) for(var c=5;c<=10;c++) grid[r][c]=9;
+
+/* === BED ZONE (cols 14-38) ===
+   Bed = 2wide × 2tall anchor at top-left corner
+   Layout: curtain(1) + bed(2) + curtain(1) = 4 cols per bay
+   Bays at col anchors: 15, 21, 27, 33 (beds at 15-16, 21-22, 27-28, 33-34)
+   Curtains at: 14,17,18,20,23,24,26,29,30,32,35,36
+   Row groups: rows 2-3, 7-8, 12-13, 17-18, 22-23, 27-28, 32-33 */
+var BED_ANCHORS_INFO=[];
+var bedColAnchors=[15,21,27,33];
+var bedRowAnchors=[2,7,12,17,22,27,32];
+bedRowAnchors.forEach(function(br){
+  bedColAnchors.forEach(function(bc){
+    /* curtain before */
+    grid[br][bc-1]=6;grid[br+1][bc-1]=6;
+    /* bed block: 2×2 */
+    grid[br][bc]=4;grid[br][bc+1]=4;
+    grid[br+1][bc]=4;grid[br+1][bc+1]=4;
+    /* curtain after */
+    grid[br][bc+2]=6;grid[br+1][bc+2]=6;
+    BED_ANCHORS_INFO.push({r:br,c:bc});
+  });
+  /* aisle row separator: already floor between row groups */
+});
+/* Nurse-side curtain rail along divider wall top */
+for(var c=14;c<=38;c++) grid[1][c]=6;
+
+/* Exits: only above/below nurse station (col 7) */
+grid[ROWS-1][7]=5;
+grid[0][7]=5;
+
+var WALK=[0,5,6];
+function isWalk(t){return WALK.indexOf(t)>=0;}
+
+var cv=document.getElementById('map'),ctx=cv.getContext('2d');
+var __savedChar=(function(){
+  try{var _cp=new URLSearchParams(window.location.search).get('c');if(_cp)return JSON.parse(_cp);return JSON.parse(localStorage.getItem('ssambus_player_character'));}catch(e){return null;}
+})();
+var PLAYER=Object.assign({type:'student',skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',ccolor:'#e74c3c',cloth:'suit',gender:'male',acc:[],dir:'down'},__savedChar||{});
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML=renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip',PLAYER.dir==='left'&&!PLAYER._facingRight);
+}
+
+function drawFloor(x,y,c,r){
+  ctx.fillStyle=((c+r)%2===0)?'#fef9f9':'#fdf5f5';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(200,150,150,0.07)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,TS-1,TS-1);
+}
+function drawWall(x,y){
+  ctx.fillStyle='#f0f0f0';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='rgba(150,150,150,.12)';ctx.fillRect(x+3,y+3,TS-6,TS-6);
+}
+function drawWindow(x,y){
+  drawWall(x,y);
+  ctx.fillStyle='#aee4f8';ctx.fillRect(x+4,y+6,TS-8,TS-14);
+  ctx.strokeStyle='#90c8e0';ctx.lineWidth=2;ctx.strokeRect(x+4,y+6,TS-8,TS-14);
+  ctx.strokeStyle='rgba(180,220,240,0.8)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x+TS/2,y+6);ctx.lineTo(x+TS/2,y+TS-8);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+4,y+(TS-14)/2+6);ctx.lineTo(x+TS-4,y+(TS-14)/2+6);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(x+6,y+8,TS/2-8,7);
+}
+function drawNurseDesk(x,y){
+  ctx.fillStyle='#2c3e50';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#34495e';ctx.fillRect(x+2,y+4,TS-4,TS*0.5);
+  ctx.fillStyle='#1a252f';ctx.fillRect(x+TS*0.5,y+6,TS*0.42,TS*0.32);
+  ctx.fillStyle='#3498db';ctx.fillRect(x+TS*0.52,y+8,TS*0.38,TS*0.26);
+  ctx.strokeStyle='#222';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(x+12,y+15,6,Math.PI*0.3,Math.PI*1.8);ctx.stroke();
+  ctx.fillStyle='#e74c3c';ctx.beginPath();ctx.arc(x+12,y+15,4,0,Math.PI*2);ctx.fill();
+}
+function drawMedCabinet(x,y){
+  ctx.fillStyle='#c0392b';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#fff';ctx.fillRect(x+3,y+3,TS-6,TS-6);
+  ctx.fillStyle='#e74c3c';
+  ctx.fillRect(x+TS/2-4,y+8,8,TS-16);
+  ctx.fillRect(x+8,y+TS/2-4,TS-16,8);
+  ctx.fillStyle='#f39c12';ctx.fillRect(x+4,y+TS-18,7,12);
+  ctx.fillStyle='#2ecc71';ctx.fillRect(x+14,y+TS-16,7,10);
+  ctx.fillStyle='#3498db';ctx.fillRect(x+24,y+TS-14,7,8);
+}
+/* Curtain rail: single tile with hanging curtain fabric */
+function drawCurtain(x,y){
+  /* Rail bar at top */
+  ctx.fillStyle='#bdc3c7';ctx.fillRect(x,y,TS,4);
+  /* Curtain hooks */
+  ctx.fillStyle='#95a5a6';
+  for(var i=0;i<4;i++){
+    ctx.fillRect(x+i*13+3,y,3,5);
+    ctx.beginPath();ctx.arc(x+i*13+4+1,y+5,3,0,Math.PI);ctx.fill();
+  }
+  /* Curtain fabric folds */
+  var foldColors=['rgba(200,230,250,0.9)','rgba(180,215,240,0.9)','rgba(210,235,255,0.9)'];
+  for(var f=0;f<3;f++){
+    ctx.fillStyle=foldColors[f];
+    ctx.fillRect(x+f*16+2,y+8,14,TS-12);
+  }
+  ctx.strokeStyle='rgba(160,200,230,.5)';ctx.lineWidth=0.5;
+  for(var i=0;i<3;i++) ctx.beginPath(),ctx.moveTo(x+i*16+8,y+8),ctx.lineTo(x+i*16+8,y+TS-4),ctx.stroke();
+}
+function drawSink(x,y){
+  ctx.fillStyle='#bdc3c7';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#ecf0f1';ctx.fillRect(x+5,y+8,TS-10,TS-16);
+  ctx.strokeStyle='#95a5a6';ctx.lineWidth=1;ctx.strokeRect(x+5,y+8,TS-10,TS-16);
+  ctx.fillStyle='#7f8c8d';ctx.fillRect(x+TS/2-2,y+3,4,10);
+  ctx.fillStyle='#3498db';ctx.beginPath();ctx.arc(x+TS/2,y+20,3,0,Math.PI*2);ctx.fill();
+}
+function drawScaleBP(x,y){
+  ctx.fillStyle='#ecf0f1';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#bdc3c7';ctx.fillRect(x+4,y+TS*0.55,TS-8,TS*0.38);
+  ctx.fillStyle='#2c3e50';ctx.fillRect(x+TS/2-8,y+8,16,12);
+  ctx.fillStyle='#00ff88';ctx.font='bold 7px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('체중',x+TS/2,y+15);
+  ctx.strokeStyle='#e74c3c';ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(x+TS*0.82,y+TS*0.28,8,0,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='#e74c3c';ctx.font='bold 7px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('BP',x+TS*0.82,y+TS*0.28);
+}
+function drawExamTable(x,y){
+  ctx.fillStyle='#bdc3c7';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#dfe6e9';ctx.fillRect(x+1,y+1,TS-2,TS-2);
+  ctx.fillStyle='#fff';ctx.fillRect(x+3,y+10,TS-6,TS-14);
+  ctx.strokeStyle='#ccc';ctx.lineWidth=0.5;
+  for(var i=0;i<5;i++) ctx.beginPath(),ctx.moveTo(x+3,y+12+i*6),ctx.lineTo(x+TS-3,y+12+i*6),ctx.stroke();
+}
+function drawDoor(x,y){
+  ctx.fillStyle='#e67e22';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#27ae60';ctx.fillRect(x+5,y+3,TS-10,TS-6);
+  ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('EXIT',x+TS/2,y+TS*0.38);
+  ctx.strokeStyle='#fff';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(x+12,y+TS*0.62);ctx.lineTo(x+TS-8,y+TS*0.62);
+  ctx.moveTo(x+TS-14,y+TS*0.62-6);ctx.lineTo(x+TS-8,y+TS*0.62);ctx.lineTo(x+TS-14,y+TS*0.62+6);ctx.stroke();
+  ctx.fillStyle='#f1c40f';ctx.beginPath();ctx.arc(x+10,y+TS*0.5,3.5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#f1c40f';ctx.lineWidth=2;ctx.strokeRect(x+5,y+3,TS-10,TS-6);
+}
+
+/* Large bed: 2 tiles wide × 2 tiles tall */
+function drawLargeBed(ax,ay,bedNum){
+  var W=2*TS,H=2*TS;
+  var bedColors=['#ffeef0','#f0f4ff','#f0fff4','#fff8ee'];
+  var blanketColors=['#aed6f1','#abebc6','#f9e79f','#f1948a'];
+  var bc=bedColors[bedNum%4],bl=blanketColors[bedNum%4];
+  /* Bed frame */
+  ctx.strokeStyle='#b0b8c0';ctx.lineWidth=3;ctx.strokeRect(ax+2,ay+2,W-4,H-4);
+  ctx.fillStyle='#dde4ea';ctx.fillRect(ax+2,ay+2,W-4,H-4);
+  /* Headboard */
+  ctx.fillStyle='#8090a0';ctx.fillRect(ax+2,ay+2,W-4,H*0.1);
+  /* Pillow */
+  ctx.fillStyle=bc;ctx.fillRect(ax+6,ay+H*0.12,W-12,H*0.22);
+  ctx.strokeStyle='#d0d8e0';ctx.lineWidth=1;ctx.strokeRect(ax+6,ay+H*0.12,W-12,H*0.22);
+  /* Pillow shadow */
+  ctx.fillStyle='rgba(150,160,170,.12)';ctx.fillRect(ax+6,ay+H*0.3,W-12,3);
+  /* Blanket fold */
+  ctx.fillStyle=bl;ctx.fillRect(ax+4,ay+H*0.34,W-8,H*0.62);
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(ax+4,ay+H*0.34,W-8,H*0.08);
+  /* Blanket texture */
+  ctx.strokeStyle='rgba(0,0,0,.06)';ctx.lineWidth=0.5;
+  for(var i=1;i<4;i++) ctx.beginPath(),ctx.moveTo(ax+4,ay+H*0.34+i*H*0.14),ctx.lineTo(ax+W-4,ay+H*0.34+i*H*0.14),ctx.stroke();
+  /* Footboard */
+  ctx.fillStyle='#8090a0';ctx.fillRect(ax+2,ay+H-H*0.07,W-4,H*0.06);
+  /* Bed number label */
+  ctx.fillStyle='rgba(80,80,100,.5)';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText((bedNum+1)+'번',ax+W/2,ay+H*0.9);
+}
+
+function drawMap(){
+  /* Pass 1: base */
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      var x=c*TS,y=r*TS,t=grid[r][c];
+      if(t===4) drawFloor(x,y,c,r); /* floor under bed blocks */
+      else if(t===1){
+        if(c===COLS-1&&r%5===0&&r>0&&r<ROWS-1) drawWindow(x,y);
+        else drawWall(x,y);
+      }
+      else if(t===2) drawNurseDesk(x,y);
+      else if(t===3) drawMedCabinet(x,y);
+      else if(t===5) drawDoor(x,y);
+      else if(t===6) drawCurtain(x,y);
+      else if(t===7) drawSink(x,y);
+      else if(t===8) drawScaleBP(x,y);
+      else if(t===9) drawExamTable(x,y);
+      else drawFloor(x,y,c,r);
+    }
+  }
+  /* Pass 2: large beds */
+  var bedIdx=0;
+  BED_ANCHORS_INFO.forEach(function(p){
+    drawLargeBed(p.c*TS,p.r*TS,bedIdx);
+    bedIdx++;
+  });
+  /* Zone labels */
+  ctx.fillStyle='rgba(200,50,50,.12)';ctx.font='bold 22px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('보건교사',7*TS,22*TS);
+  /* Bed zone soft blue tint */
+  ctx.fillStyle='rgba(100,180,220,.04)';ctx.fillRect(14*TS,0,26*TS,ROWS*TS);
+  /* Zone label for bed area */
+  ctx.fillStyle='rgba(100,150,200,.15)';ctx.font='bold 22px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('침대 구역',26*TS,35*TS);
+  /* Red cross on nurse side wall */
+  ctx.fillStyle='rgba(231,76,60,.55)';
+  ctx.fillRect(0*TS,5*TS,TS,TS);
+  ctx.fillStyle='#fff';
+  ctx.fillRect(0*TS+TS/2-5,5*TS+5,10,TS-10);
+  ctx.fillRect(0*TS+5,5*TS+TS/2-5,TS-10,10);
+  /* Divider wall label */
+  ctx.fillStyle='rgba(100,100,120,.3)';ctx.font='12px sans-serif';ctx.textAlign='center';
+  ctx.fillText('커튼',13*TS+TS/2,38*TS);
+}
+drawMap();
+
+function updateCamera(){
+  if(TEACHER_VIEW){var wrap=document.querySelector('.stage-wrap');wrap.style.width=(COLS*TS)+'px';wrap.style.height=(ROWS*TS)+'px';wrap.style.overflow='visible';return;}
+  var stage=document.querySelector('.stage');
+  var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
+  var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
+  stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
+}
+var pos={r:5,c:7};
+function placePlayer(){
+  var el=document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display='none';
+  el.style.left=(pos.c*TS)+'px';el.style.top=(pos.r*TS-24)+'px';
+  updateCamera();
+  try{broadcastMyPosition();}catch(e){}
+  try{checkZoneOnMove(pos);}catch(e){}
+}
+function move(dir){
+  var nr=pos.r,nc=pos.c;
+  if(dir==='up') nr--;else if(dir==='down') nr++;else if(dir==='left') nc--;else if(dir==='right') nc++;
+  PLAYER._facingRight=(dir==='right');PLAYER.dir=(dir==='right')?'left':dir;renderPlayer();
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+  if(!isWalk(grid[nr][nc])) return;
+  try{if(__rtIsOverlayBlocked(nr,nc)) return;}catch(e){}
+  try{if(__rtIsTileOccupied(nr,nc)) return;}catch(e){}
+  try{if(typeof __msBlockExit==='function'&&__msBlockExit(nr,nc)){__msShowBlockedNotice();return;}}catch(e){}
+  pos.r=nr;pos.c=nc;placePlayer();
+}
+window.addEventListener('keydown',function(e){
+  if(TEACHER_VIEW) return;
+  var m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(m[e.key]){e.preventDefault();move(m[e.key]);}
+});
+if(!TEACHER_VIEW){
+  var sw2=document.querySelector('.stage-wrap');var tx=0,ty=0,ta=false;
+  sw2.addEventListener('touchstart',function(e){if(e.touches.length!==1)return;ta=true;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  sw2.addEventListener('touchmove',function(e){if(ta)e.preventDefault();},{passive:false});
+  sw2.addEventListener('touchend',function(e){
+    if(!ta)return;ta=false;var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<30)return;
+    if(Math.abs(dx)>Math.abs(dy))move(dx>0?'right':'left');else move(dy>0?'down':'up');
+  },{passive:true});
+}
+renderPlayer();
+try{placePlayer();}catch(e){console.warn('[health] placePlayer:',e);}
+try{initRealtime('health');}catch(e){console.warn('[health] realtime:',e);}
+if(!TEACHER_VIEW){
+  try{initMissionSystem('health');}catch(e){console.warn('[health] missions:',e);}
+  try{loadMapOverlays('health',ctx,TS);}catch(e){console.warn('[health] overlays:',e);}
+}
+</script>
+</body>
+</html>

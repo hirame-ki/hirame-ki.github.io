@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>쌤버스 - 컴퓨터실 맵</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:sans-serif;background:#1a2535;display:flex;flex-direction:column;align-items:center;padding:20px;margin:0}
+#main-btn{position:fixed;top:12px;left:12px;z-index:999;background:#2c3e50;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none}
+#char-btn{position:fixed;top:12px;left:12px;z-index:999;background:#27ae60;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:none}
+h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
+.info{font-size:12px;color:#aaa;margin-bottom:12px;text-align:center}
+.stage-wrap{width:720px;max-width:100%;height:672px;overflow:hidden;border:3px solid #27ae60;border-radius:8px;box-shadow:0 0 24px rgba(39,174,96,0.4)}
+.stage{position:relative;line-height:0}
+#map{display:block}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear,top .1s linear;z-index:5}
+#player svg{display:block;width:100%;height:100%;overflow:visible}
+#player.flip svg{transform:scaleX(-1)}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear,top .15s linear;z-index:4}
+.remote-player svg{display:block;width:100%;height:100%;overflow:visible}
+.remote-player.flip svg{transform:scaleX(-1)}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.9);padding:1px 5px;border-radius:4px;white-space:nowrap;font-weight:600}
+.pad{display:grid;grid-template-columns:52px 52px 52px;grid-template-rows:52px 52px 52px;gap:4px;margin-top:14px}
+.pad button{font-size:20px;border-radius:10px;border:none;background:#27ae60;color:#fff;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #1a7a42}
+.pad button:active{transform:translateY(2px);box-shadow:0 1px 0 #1a7a42}
+.legend{margin-top:10px;font-size:12px;color:#aaa;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.legend span{display:flex;align-items:center;gap:4px}
+.sw{display:inline-block;width:13px;height:13px;border-radius:3px}
+</style>
+</head>
+<body>
+<a id="main-btn" href="index.html">메인</a>
+<a id="char-btn" href="#">캐릭터 변경</a>
+<h2>쌤버스 - 컴퓨터실</h2>
+<div class="info">방향키 또는 버튼으로 이동하세요</div>
+<div class="stage-wrap">
+<div class="stage">
+  <canvas id="map" width="2880" height="2880"></canvas>
+  <div id="player"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
+  <div id="remote-players"></div>
+</div>
+</div>
+<div class="pad">
+  <div></div><button onclick="move('up')">&#8593;</button><div></div>
+  <button onclick="move('left')">&#8592;</button><div></div><button onclick="move('right')">&#8594;</button>
+  <div></div><button onclick="move('down')">&#8595;</button><div></div>
+</div>
+<div class="legend">
+  <span><span class="sw" style="background:#d0d8e0"></span>바닥</span>
+  <span><span class="sw" style="background:#1a3a80"></span>PC 스테이션</span>
+  <span><span class="sw" style="background:#111"></span>서버랙</span>
+  <span><span class="sw" style="background:#27ae60"></span>출입구</span>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="ssambus_supabase_config.js"></script>
+<script src="ssambus_character_render.js"></script>
+<script src="ssambus_realtime.js"></script>
+<script src="ssambus_missions.js"></script>
+<script>
+/* === Computer Lab 60x60 ===
+   PC station = 2 tiles wide × 2 tiles tall (desk/monitor top, chair bottom)
+   5 row groups × 8 stations = 40 stations total */
+var TS=48,COLS=60,ROWS=60,VIEW_W=720,VIEW_H=672;
+
+var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
+if(TEACHER_VIEW){
+  document.body.style.padding='0';document.body.style.background='transparent';
+  document.querySelectorAll('h2,.info,.pad,.legend').forEach(function(el){el.style.display='none';});
+}
+(function(){
+  var _s=window.location.search,_rm=(_s.match(/[?&]room=([^&]+)/)||[])[1];
+  if(_rm&&!TEACHER_VIEW){
+    var _mb=document.getElementById('main-btn'),_cb=document.getElementById('char-btn');
+    if(_mb)_mb.style.display='none';
+    if(_cb){
+      _cb.style.cssText='position:fixed;top:12px;left:12px;z-index:999;background:#27ae60;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:inline';
+      var _nk=((_s.match(/[?&]nickname=([^&]*)/)||[])[1])||'';
+      try{_nk=_nk||sessionStorage.getItem('ssambus_nickname')||'';}catch(e){}
+      _cb.href='ssambus_characters.html?room='+_rm+'&map=ssambus_map_computer.html'+(_nk?'&nickname='+_nk:'');
+    }
+  }
+})();
+
+/* Tile: 0=floor 1=wall 2=projector 3=teacher-desk 4=pc-block 5=door 6=server-floor 7=server-rack 8=chair 9=printer */
+var grid=[];
+for(var r=0;r<ROWS;r++){
+  grid[r]=[];
+  for(var c=0;c<COLS;c++) grid[r][c]=(r===0||r===ROWS-1||c===0||c===COLS-1)?1:0;
+}
+/* Projector screen */
+for(var c=4;c<=55;c++) grid[0][c]=2;
+/* Teacher desk */
+for(var c=22;c<=37;c++) grid[2][c]=3;
+/* Printer area */
+for(var c=48;c<=57;c++) grid[2][c]=9;
+for(var c=48;c<=57;c++) grid[3][c]=9;
+
+/* PC stations: anchor cols [4,10,16,22,28,34,40,46], desk rows [7,16,25,34,43] */
+var PC_DESK_ROWS=[7,16,25,34,43];
+var PC_ANC=[4,10,16,22,28,34,40,46];
+var PC_ANCHORS_INFO=[];
+PC_DESK_ROWS.forEach(function(dr){
+  PC_ANC.forEach(function(ac){
+    grid[dr][ac]=4;grid[dr][ac+1]=4;
+    grid[dr+1][ac]=8;grid[dr+1][ac+1]=8;
+    PC_ANCHORS_INFO.push({r:dr,c:ac});
+  });
+});
+
+/* Server room: cols 44-58, rows 48-58, wall at row 47 */
+for(var c=44;c<=COLS-2;c++) grid[47][c]=1;
+for(var r=48;r<=ROWS-2;r++) for(var c=44;c<=COLS-2;c++) grid[r][c]=6;
+var SR_ANCHORS_INFO=[];
+[[49,46],[49,52],[53,46],[53,52]].forEach(function(p){
+  for(var dr=0;dr<3;dr++) for(var dc=0;dc<2;dc++) grid[p[0]+dr][p[1]+dc]=7;
+  SR_ANCHORS_INFO.push({r:p[0],c:p[1]});
+});
+grid[47][51]=0;grid[47][52]=0;
+
+/* Exits */
+grid[5][COLS-1]=5;grid[44][COLS-1]=5;
+
+var WALK=[0,5,6,8];
+function isWalk(t){return WALK.indexOf(t)>=0;}
+
+var cv=document.getElementById('map'),ctx=cv.getContext('2d');
+var __savedChar=(function(){
+  try{var _cp=new URLSearchParams(window.location.search).get('c');if(_cp)return JSON.parse(_cp);return JSON.parse(localStorage.getItem('ssambus_player_character'));}catch(e){return null;}
+})();
+var PLAYER=Object.assign({type:'student',skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',ccolor:'#27ae60',cloth:'suit',gender:'male',acc:[],dir:'down'},__savedChar||{});
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML=renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip',PLAYER.dir==='left'&&!PLAYER._facingRight);
+}
+
+function drawFloor(x,y,c,r){
+  ctx.fillStyle=((c+r)%2===0)?'#d0d8e0':'#c8d0d8';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(100,120,140,0.1)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,TS-1,TS-1);
+}
+function drawWall(x,y){
+  ctx.fillStyle='#e0e8f0';ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(80,100,120,.12)';ctx.lineWidth=1;ctx.strokeRect(x+4,y+4,TS-8,TS-8);
+}
+function drawProjectorScreen(x,y,c){
+  ctx.fillStyle='#0d1a2a';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#1040a0';ctx.fillRect(x+(c===4?4:0),y+4,TS-(c===4?4:0)-(c===55?4:0),TS-8);
+  ctx.fillStyle='rgba(140,210,255,.5)';ctx.fillRect(x+(c===4?6:2),y+8,TS-10,4);
+  ctx.fillStyle='rgba(140,210,255,.25)';ctx.fillRect(x+2,y+16,TS-8,3);ctx.fillRect(x+2,y+23,TS-10,3);
+  if(c===29){ctx.fillStyle='rgba(255,255,255,.9)';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('SMART',x+TS/2,y+TS/2);}
+}
+function drawTeacherDesk(x,y){
+  ctx.fillStyle='#2c3e50';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#3d5460';ctx.fillRect(x+2,y+5,TS-4,TS*0.5);
+  ctx.fillStyle='rgba(255,255,240,.7)';ctx.fillRect(x+5,y+8,14,11);ctx.fillRect(x+TS-19,y+8,14,11);
+  ctx.fillStyle='#27ae60';ctx.fillRect(x+TS/2-3,y+9,6,10);
+}
+function drawPrinter(x,y){
+  ctx.fillStyle='#bbb';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#d0d0d0';ctx.fillRect(x+4,y+TS*0.2,TS-8,TS*0.6);
+  ctx.fillStyle='#f0f0f0';ctx.fillRect(x+8,y+TS*0.08,TS-16,TS*0.1);
+  ctx.fillStyle='#2ecc71';ctx.fillRect(x+TS-14,y+TS*0.28,6,6);
+}
+function drawServerFloor(x,y){
+  ctx.fillStyle='#141a24';ctx.fillRect(x,y,TS,TS);
+  ctx.strokeStyle='rgba(0,200,100,.07)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,TS-1,TS-1);
+}
+function drawDoor(x,y){
+  ctx.fillStyle='#e67e22';ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#27ae60';ctx.fillRect(x+5,y+3,TS-10,TS-6);
+  ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('EXIT',x+TS/2,y+TS*0.38);
+  ctx.strokeStyle='#fff';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(x+12,y+TS*0.62);ctx.lineTo(x+TS-8,y+TS*0.62);
+  ctx.moveTo(x+TS-14,y+TS*0.62-6);ctx.lineTo(x+TS-8,y+TS*0.62);ctx.lineTo(x+TS-14,y+TS*0.62+6);ctx.stroke();
+  ctx.fillStyle='#f1c40f';ctx.beginPath();ctx.arc(x+10,y+TS*0.5,3.5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#f1c40f';ctx.lineWidth=2;ctx.strokeRect(x+5,y+3,TS-10,TS-6);
+}
+
+/* Large PC station: 2 tiles wide × 2 tiles tall */
+function drawLargePCStation(ax,ay){
+  var W=2*TS,H=2*TS;
+  /* Desk surface (top half) */
+  ctx.fillStyle='#2a3a4a';ctx.fillRect(ax,ay,W,H*0.52);
+  ctx.fillStyle='#34495e';ctx.fillRect(ax+2,ay+2,W-4,H*0.48);
+  /* Dual monitors */
+  ctx.fillStyle='#111';ctx.fillRect(ax+4,ay+4,W*0.42,H*0.3);
+  ctx.fillStyle='#1a3a8a';ctx.fillRect(ax+6,ay+6,W*0.38,H*0.22);
+  ctx.fillStyle='rgba(100,180,255,.12)';ctx.fillRect(ax+7,ay+8,W*0.14,H*0.08);
+  ctx.fillStyle='#111';ctx.fillRect(ax+W*0.52,ay+4,W*0.42,H*0.3);
+  ctx.fillStyle='#1a3a8a';ctx.fillRect(ax+W*0.54,ay+6,W*0.38,H*0.22);
+  ctx.fillStyle='rgba(100,180,255,.12)';ctx.fillRect(ax+W*0.55,ay+8,W*0.14,H*0.08);
+  /* Monitor stands */
+  ctx.fillStyle='#555';
+  ctx.fillRect(ax+W*0.21,ay+H*0.31,4,H*0.08);ctx.fillRect(ax+W*0.19,ay+H*0.37,8,3);
+  ctx.fillRect(ax+W*0.71,ay+H*0.31,4,H*0.08);ctx.fillRect(ax+W*0.69,ay+H*0.37,8,3);
+  /* Keyboard */
+  ctx.fillStyle='#3a3a3a';ctx.fillRect(ax+W*0.1,ay+H*0.41,W*0.8,H*0.08);
+  for(var row=0;row<2;row++) for(var col=0;col<12;col++)
+    ctx.fillRect(ax+W*0.11+col*(W*0.065),ay+H*0.425+row*H*0.025,(W*0.058),(H*0.02));
+  /* Mouse */
+  ctx.fillStyle='#222';ctx.beginPath();ctx.ellipse(ax+W*0.88,ay+H*0.44,W*0.04,H*0.05,0,0,Math.PI*2);ctx.fill();
+  /* CPU tower */
+  ctx.fillStyle='#3a3a3a';ctx.fillRect(ax+W*0.88,ay+H*0.06,W*0.1,H*0.3);
+  ctx.fillStyle='#00ff44';ctx.fillRect(ax+W*0.9,ay+H*0.32,4,4);
+  /* Power LED */
+  ctx.fillStyle='#00ff88';ctx.beginPath();ctx.arc(ax+W*0.94,ay+H*0.47,3,0,Math.PI*2);ctx.fill();
+  /* Chair area (bottom half) */
+  ctx.fillStyle='#b8c4cc';ctx.fillRect(ax,ay+H*0.52,W,H*0.48);
+  /* Rolling office chair (top view) */
+  ctx.fillStyle='#1a2a38';ctx.beginPath();ctx.ellipse(ax+W/2,ay+H*0.76,W*0.3,H*0.19,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#243444';ctx.beginPath();ctx.ellipse(ax+W/2,ay+H*0.76,W*0.23,H*0.145,0,0,Math.PI*2);ctx.fill();
+  /* Chair armrests */
+  ctx.fillStyle='#2c3e50';
+  ctx.fillRect(ax+W*0.12,ay+H*0.7,W*0.08,H*0.12);
+  ctx.fillRect(ax+W*0.8,ay+H*0.7,W*0.08,H*0.12);
+  /* Chair wheels (5-star base) */
+  ctx.fillStyle='#333';
+  var wpts=[[0.5,0.57],[0.26,0.64],[0.74,0.64],[0.32,0.9],[0.68,0.9]];
+  wpts.forEach(function(p){ctx.beginPath();ctx.arc(ax+p[0]*W,ay+p[1]*H,3.5,0,Math.PI*2);ctx.fill();});
+  /* Chair back */
+  ctx.fillStyle='#1a2a38';ctx.fillRect(ax+W*0.28,ay+H*0.53,W*0.44,H*0.07);
+}
+
+/* Large server rack: 2 wide × 3 tall */
+function drawLargeServerRack(ax,ay){
+  var W=2*TS,H=3*TS;
+  ctx.fillStyle='#080808';ctx.fillRect(ax,ay,W,H);
+  ctx.fillStyle='#151515';ctx.fillRect(ax+3,ay+3,W-6,H-6);
+  for(var u=0;u<11;u++){
+    var uy=ay+5+u*(H-10)/11,uh=(H-10)/11-2;
+    ctx.fillStyle=u%2===0?'#1e1e1e':'#242424';
+    ctx.fillRect(ax+5,uy,W-10,uh);
+    ctx.fillStyle='#00ff44';ctx.fillRect(ax+7,uy+2,4,3);
+    ctx.fillStyle='#ff8800';ctx.fillRect(ax+13,uy+2,4,3);
+    ctx.fillStyle='#444';
+    for(var d=0;d<3;d++) ctx.fillRect(ax+20+d*((W-32)/3),uy+1,(W-32)/3-2,uh-2);
+  }
+  ctx.strokeStyle='rgba(0,200,80,.25)';ctx.lineWidth=2;
+  for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(ax+W-5,ay+H*0.08+i*H*0.22);ctx.lineTo(ax+W-5,ay+H*0.2+i*H*0.22);ctx.stroke();}
+}
+
+function drawMap(){
+  /* Pass 1: base */
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      var x=c*TS,y=r*TS,t=grid[r][c];
+      if(t===4||t===7||t===8) drawFloor(x,y,c,r);
+      else if(t===1) drawWall(x,y);
+      else if(t===2) drawProjectorScreen(x,y,c);
+      else if(t===3) drawTeacherDesk(x,y);
+      else if(t===5) drawDoor(x,y);
+      else if(t===6) drawServerFloor(x,y);
+      else if(t===9) drawPrinter(x,y);
+      else drawFloor(x,y,c,r);
+    }
+  }
+  /* Pass 2: large objects */
+  PC_ANCHORS_INFO.forEach(function(p){drawLargePCStation(p.c*TS,p.r*TS);});
+  SR_ANCHORS_INFO.forEach(function(p){drawLargeServerRack(p.c*TS,p.r*TS);});
+  /* Projector glow */
+  var pg=ctx.createRadialGradient(COLS*TS/2,TS,TS,COLS*TS/2,TS,TS*4);
+  pg.addColorStop(0,'rgba(80,160,255,.12)');pg.addColorStop(1,'rgba(80,160,255,0)');
+  ctx.fillStyle=pg;ctx.fillRect(0,0,COLS*TS,5*TS);
+  /* Server room glow */
+  var sg=ctx.createRadialGradient(51*TS,53*TS,TS,51*TS,53*TS,5*TS);
+  sg.addColorStop(0,'rgba(0,255,80,.06)');sg.addColorStop(1,'rgba(0,255,80,0)');
+  ctx.fillStyle=sg;ctx.fillRect(44*TS,47*TS,16*TS,13*TS);
+}
+drawMap();
+
+function updateCamera(){
+  if(TEACHER_VIEW){var wrap=document.querySelector('.stage-wrap');wrap.style.width=(COLS*TS)+'px';wrap.style.height=(ROWS*TS)+'px';wrap.style.overflow='visible';return;}
+  var stage=document.querySelector('.stage');
+  var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
+  var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
+  stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
+}
+var pos={r:5,c:30};
+function placePlayer(){
+  var el=document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display='none';
+  el.style.left=(pos.c*TS)+'px';el.style.top=(pos.r*TS-24)+'px';
+  updateCamera();
+  try{broadcastMyPosition();}catch(e){}
+  try{checkZoneOnMove(pos);}catch(e){}
+}
+function move(dir){
+  var nr=pos.r,nc=pos.c;
+  if(dir==='up') nr--;else if(dir==='down') nr++;else if(dir==='left') nc--;else if(dir==='right') nc++;
+  PLAYER._facingRight=(dir==='right');PLAYER.dir=(dir==='right')?'left':dir;renderPlayer();
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+  if(!isWalk(grid[nr][nc])) return;
+  try{if(__rtIsOverlayBlocked(nr,nc)) return;}catch(e){}
+  try{if(__rtIsTileOccupied(nr,nc)) return;}catch(e){}
+  try{if(typeof __msBlockExit==='function'&&__msBlockExit(nr,nc)){__msShowBlockedNotice();return;}}catch(e){}
+  pos.r=nr;pos.c=nc;placePlayer();
+}
+window.addEventListener('keydown',function(e){
+  if(TEACHER_VIEW) return;
+  var m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(m[e.key]){e.preventDefault();move(m[e.key]);}
+});
+if(!TEACHER_VIEW){
+  var sw2=document.querySelector('.stage-wrap');var tx=0,ty=0,ta=false;
+  sw2.addEventListener('touchstart',function(e){if(e.touches.length!==1)return;ta=true;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  sw2.addEventListener('touchmove',function(e){if(ta)e.preventDefault();},{passive:false});
+  sw2.addEventListener('touchend',function(e){
+    if(!ta)return;ta=false;var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<30)return;
+    if(Math.abs(dx)>Math.abs(dy))move(dx>0?'right':'left');else move(dy>0?'down':'up');
+  },{passive:true});
+}
+renderPlayer();
+try{placePlayer();}catch(e){console.warn('[computer] placePlayer:',e);}
+try{initRealtime('computer');}catch(e){console.warn('[computer] realtime:',e);}
+if(!TEACHER_VIEW){
+  try{initMissionSystem('computer');}catch(e){console.warn('[computer] missions:',e);}
+  try{loadMapOverlays('computer',ctx,TS);}catch(e){console.warn('[computer] overlays:',e);}
+}
+</script>
+</body>
+</html>
