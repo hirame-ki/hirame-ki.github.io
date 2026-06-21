@@ -72,6 +72,66 @@ const MISSION_ZONES = {
     {id:'zone_F', label:'남쪽 연못가',      r0:8, c0:8,  r1:12, c1:12},
     {id:'zone_G', label:'남동쪽 숲',        r0:8, c0:15, r1:12, c1:19},
     {id:'zone_H', label:'동남쪽 깊은 숲',   r0:8, c0:22, r1:12, c1:26}
+  ],
+  music: [   // 60×55 - 무대+악기+악보대+창고
+    {id:'zone_A', label:'무대',             r0:1,  c0:2, r1:6,  c1:57},
+    {id:'zone_B', label:'대형악기 구역',     r0:8,  c0:2, r1:14, c1:57},
+    {id:'zone_C', label:'악보대 1열',       r0:15, c0:2, r1:23, c1:57},
+    {id:'zone_D', label:'악보대 2열',       r0:24, c0:2, r1:32, c1:57},
+    {id:'zone_E', label:'악보대 3열',       r0:33, c0:2, r1:41, c1:57},
+    {id:'zone_F', label:'뒷자리',           r0:42, c0:2, r1:44, c1:57},
+    {id:'zone_G', label:'창고 앞쪽',        r0:47, c0:2, r1:50, c1:57},
+    {id:'zone_H', label:'창고 안쪽',        r0:51, c0:2, r1:53, c1:57}
+  ],
+  artroom: [   // 60×60 - 이젤+선반+작업대
+    {id:'zone_A', label:'앞쪽 이젤 구역',   r0:1,  c0:2, r1:10, c1:57},
+    {id:'zone_B', label:'이젤 2구역',       r0:11, c0:2, r1:21, c1:57},
+    {id:'zone_C', label:'이젤 3구역',       r0:22, c0:2, r1:31, c1:57},
+    {id:'zone_D', label:'이젤 4구역',       r0:32, c0:2, r1:36, c1:57},
+    {id:'zone_E', label:'선반 구역',        r0:37, c0:2, r1:42, c1:57},
+    {id:'zone_F', label:'의자·작업대',      r0:43, c0:2, r1:47, c1:57},
+    {id:'zone_G', label:'하단 통로',        r0:48, c0:19, r1:56, c1:57},
+    {id:'zone_H', label:'준비실',           r0:57, c0:2,  r1:59, c1:57}
+  ],
+  computer: [   // 60×60 - PC열+전산실
+    {id:'zone_A', label:'교탁·칠판 앞',     r0:1,  c0:2, r1:6,  c1:43},
+    {id:'zone_B', label:'PC 1열',          r0:7,  c0:2, r1:15, c1:43},
+    {id:'zone_C', label:'PC 2열',          r0:16, c0:2, r1:24, c1:43},
+    {id:'zone_D', label:'PC 3열',          r0:25, c0:2, r1:33, c1:43},
+    {id:'zone_E', label:'PC 4열',          r0:34, c0:2, r1:42, c1:43},
+    {id:'zone_F', label:'PC 5열',          r0:43, c0:2, r1:46, c1:43},
+    {id:'zone_G', label:'전산실 앞',        r0:1,  c0:44, r1:46, c1:57},
+    {id:'zone_H', label:'전산실 내부',      r0:47, c0:44, r1:58, c1:57}
+  ],
+  science: [   // 60×60 - 실험대+준비실
+    {id:'zone_A', label:'교사 책상·전시대', r0:1,  c0:2, r1:4,  c1:38},
+    {id:'zone_B', label:'실험대 1열',       r0:5,  c0:2, r1:14, c1:38},
+    {id:'zone_C', label:'실험대 2열',       r0:15, c0:2, r1:24, c1:38},
+    {id:'zone_D', label:'실험대 3열',       r0:25, c0:2, r1:36, c1:38},
+    {id:'zone_E', label:'관찰·시약 구역',   r0:1,  c0:39, r1:36, c1:57},
+    {id:'zone_F', label:'준비실 입구',      r0:37, c0:39, r1:39, c1:57},
+    {id:'zone_G', label:'준비실 앞쪽',      r0:40, c0:39, r1:49, c1:57},
+    {id:'zone_H', label:'준비실 안쪽',      r0:50, c0:39, r1:58, c1:57}
+  ],
+  cafeteria: [   // 60×60 - 주방+배식창구+식탁
+    {id:'zone_A', label:'주방',             r0:1,  c0:2, r1:18, c1:57},
+    {id:'zone_B', label:'배식 창구',        r0:19, c0:2, r1:23, c1:57},
+    {id:'zone_C', label:'식탁 앞줄',        r0:24, c0:2, r1:33, c1:57},
+    {id:'zone_D', label:'식탁 중간',        r0:34, c0:2, r1:43, c1:57},
+    {id:'zone_E', label:'식탁 뒷줄',        r0:44, c0:2, r1:53, c1:57},
+    {id:'zone_F', label:'출구 앞',          r0:54, c0:2, r1:58, c1:57},
+    {id:'zone_G', label:'주방 좌측',        r0:4,  c0:2, r1:10, c1:19},
+    {id:'zone_H', label:'주방 우측',        r0:4,  c0:38, r1:10, c1:57}
+  ],
+  health: [   // 40×40 - 보건교사구역+침대구역
+    {id:'zone_A', label:'보건교사 구역(상)', r0:1,  c0:2,  r1:7,  c1:12},
+    {id:'zone_B', label:'보건교사 구역(중)', r0:9,  c0:2,  r1:24, c1:12},
+    {id:'zone_C', label:'침대 구역(상)',    r0:2,  c0:14, r1:12, c1:38},
+    {id:'zone_D', label:'침대 구역(중)',    r0:13, c0:14, r1:24, c1:38},
+    {id:'zone_E', label:'침대 구역(하)',    r0:25, c0:14, r1:38, c1:38},
+    {id:'zone_F', label:'보건교사 구역(하)', r0:26, c0:2,  r1:37, c1:12},
+    {id:'zone_G', label:'상단 출구',        r0:0,  c0:5,  r1:1,  c1:9},
+    {id:'zone_H', label:'하단 출구',        r0:38, c0:5,  r1:39, c1:9}
   ]
 };
 
@@ -102,6 +162,35 @@ const EXIT_ZONES = {
     {r0:22, c0:23, r1:23, c1:24},  // 남쪽 출구
     {r0:11, c0:0, r1:12, c1:1},    // 서쪽 출구
     {r0:11, c0:46, r1:12, c1:47}   // 동쪽 출구
+  ],
+  music: [
+    {r0:6,  c0:59, r1:6,  c1:59},   // 우측 출구 (무대 옆)
+    {r0:45, c0:59, r1:45, c1:59}    // 우측 출구 (본실 뒤)
+  ],
+  artroom: [
+    {r0:5,  c0:59, r1:5,  c1:59},   // 우측 출구 (상단)
+    {r0:55, c0:59, r1:55, c1:59},   // 우측 출구 (하단)
+    {r0:57, c0:28, r1:57, c1:29}    // 하단 문
+  ],
+  computer: [
+    {r0:5,  c0:59, r1:5,  c1:59},   // 우측 출구 (상단)
+    {r0:44, c0:59, r1:44, c1:59}    // 우측 출구 (하단)
+  ],
+  science: [
+    {r0:5,  c0:59, r1:5,  c1:59},   // 우측 출구 (주실 상단)
+    {r0:36, c0:59, r1:36, c1:59}    // 우측 출구 (준비실 앞)
+  ],
+  cafeteria: [
+    {r0:0,  c0:10, r1:0,  c1:10},   // 주방 상단 출구 1
+    {r0:0,  c0:30, r1:0,  c1:30},   // 주방 상단 출구 2
+    {r0:0,  c0:50, r1:0,  c1:50},   // 주방 상단 출구 3
+    {r0:59, c0:10, r1:59, c1:10},   // 하단 출구 1
+    {r0:59, c0:30, r1:59, c1:30},   // 하단 출구 2
+    {r0:59, c0:50, r1:59, c1:50}    // 하단 출구 3
+  ],
+  health: [
+    {r0:0,  c0:7, r1:0,  c1:7},     // 상단 출구
+    {r0:39, c0:7, r1:39, c1:7}      // 하단 출구
   ]
 };
 
@@ -128,7 +217,7 @@ const MAP_LABELS = {
 };
 
 /* 교사가 순서를 설정하지 않았을 때 사용할 기본 맵 순서 */
-const MAP_ORDER_DEFAULT = ['classroom','library','playground','gym','city','forest'];
+const MAP_ORDER_DEFAULT = ['classroom','library','playground','gym','city','forest','music','artroom','computer','science','cafeteria','health'];
 
 /* ===================== 데모 미션 (Supabase 미설정/데이터 없을 때 대체) ===================== */
 const __MS_DEMO_VIDEO = 'https://www.youtube.com/watch?v=v66yDEGA9nk';
@@ -188,6 +277,60 @@ const DEMO_MISSIONS = {
       type:'quiz', quiz:{question:'숲에서 가져온 쓰레기는 어떻게 처리해야 할까요?',
         options:['숲 속에 묻는다','연못에 버린다','집까지 가져가 분리배출한다','나무 위에 걸어둔다'], answer:2}},
     {id:'demo_forest_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+  ],
+  music: [
+    {id:'demo_music_1', zone_id:'zone_A', order:1, required:true, title:'음악실 소개 영상',
+      type:'youtube', content:__MS_DEMO_VIDEO},
+    {id:'demo_music_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 악기 예절',
+      type:'quiz', quiz:{question:'음악 시간에 악기를 연주하기 전 가장 먼저 해야 할 일은?',
+        options:['바로 힘껏 두드린다','선생님의 지도를 듣고 조용히 기다린다','친구의 악기를 먼저 빌린다','큰 소리로 자유롭게 연주한다'], answer:1}},
+    {id:'demo_music_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+  ],
+  artroom: [
+    {id:'demo_artroom_1', zone_id:'zone_A', order:1, required:true, title:'미술실 이용 안내 영상',
+      type:'youtube', content:__MS_DEMO_VIDEO},
+    {id:'demo_artroom_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 미술 재료 정리',
+      type:'quiz', quiz:{question:'미술 시간이 끝난 후 팔레트를 정리하는 올바른 방법은?',
+        options:['물감이 묻은 채로 그냥 둔다','물로 깨끗이 씻어 건조시킨다','다른 사람 자리에 밀어 놓는다','바닥에 내려놓는다'], answer:1}},
+    {id:'demo_artroom_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+  ],
+  computer: [
+    {id:'demo_computer_1', zone_id:'zone_A', order:1, required:true, title:'컴퓨터실 이용 안내 영상',
+      type:'youtube', content:__MS_DEMO_VIDEO},
+    {id:'demo_computer_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 인터넷 예절',
+      type:'quiz', quiz:{question:'인터넷에서 타인의 개인 정보를 발견했을 때 가장 알맞은 행동은?',
+        options:['친구에게 공유한다','그냥 지나친다','SNS에 올린다','관계 기관에 신고한다'], answer:3}},
+    {id:'demo_computer_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+  ],
+  science: [
+    {id:'demo_science_1', zone_id:'zone_A', order:1, required:true, title:'과학 실험 안전 영상',
+      type:'youtube', content:__MS_DEMO_VIDEO},
+    {id:'demo_science_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 실험 안전 수칙',
+      type:'quiz', quiz:{question:'과학 실험 중 화학 약품이 눈에 들어갔을 때 가장 먼저 해야 할 일은?',
+        options:['손으로 비빈다','깨끗한 물로 즉시 세척하고 선생님께 알린다','그냥 참는다','친구에게 물어본다'], answer:1}},
+    {id:'demo_science_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+  ],
+  cafeteria: [
+    {id:'demo_cafeteria_1', zone_id:'zone_A', order:1, required:true, title:'급식 예절 영상',
+      type:'youtube', content:__MS_DEMO_VIDEO},
+    {id:'demo_cafeteria_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 급식 예절',
+      type:'quiz', quiz:{question:'급식 줄에서 친구가 새치기를 했을 때 가장 알맞은 행동은?',
+        options:['함께 새치기한다','아무말도 안 한다','정중하게 줄을 서달라고 말한다','줄에서 나와버린다'], answer:2}},
+    {id:'demo_cafeteria_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
+      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+  ],
+  health: [
+    {id:'demo_health_1', zone_id:'zone_A', order:1, required:true, title:'보건실 이용 안내 영상',
+      type:'youtube', content:__MS_DEMO_VIDEO},
+    {id:'demo_health_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 응급 처치',
+      type:'quiz', quiz:{question:'친구가 갑자기 코피를 흘릴 때 가장 먼저 해야 할 일은?',
+        options:['고개를 뒤로 젖히게 한다','고개를 앞으로 숙이고 코를 살짝 막는다','바닥에 눕힌다','코를 세게 풀게 한다'], answer:1}},
+    {id:'demo_health_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
       type:'link', content:'https://www.instagram.com/hirame.ki/'}
   ]
 };

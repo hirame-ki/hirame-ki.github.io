@@ -355,6 +355,7 @@ function __rtShowBubble(id, text){
   } else {
     const container = document.getElementById('remote-players');
     target = container && container.querySelector('[data-student="' + id + '"]');
+    if(target && container) container.appendChild(target); // 가장 최근 발화자를 DOM 끝으로 이동 → 위에 표시
   }
   if(!target) return;
 
