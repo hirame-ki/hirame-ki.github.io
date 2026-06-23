@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>쌤버스 - 보건실 맵</title>
 <style>
 *{box-sizing:border-box}
@@ -26,13 +29,25 @@ h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
 .legend{margin-top:10px;font-size:12px;color:#aaa;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .legend span{display:flex;align-items:center;gap:4px}
 .sw{display:inline-block;width:13px;height:13px;border-radius:3px}
+
+/* --- fullscreen + classroom design overrides --- */
+html{height:100%}
+body{height:100%;align-items:stretch;padding:0;overflow:hidden;font-family:'Noto Sans KR',sans-serif;background:linear-gradient(to bottom,#0A1628,#0E1E34)}
+#main-btn{background:rgba(26,53,88,.85);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.4);backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
+#main-btn:hover{background:rgba(17,36,64,.9)}
+#char-btn{background:rgba(52,112,212,.85);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.4);backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s}
+#char-btn:hover{background:rgba(41,90,172,.9)}
+h2{text-align:center;padding-top:18px;color:rgba(255,255,255,.85);font-size:.95rem;font-weight:600;letter-spacing:-.01em}
+.info{text-align:center;color:rgba(255,255,255,.4);font-weight:400}
+.stage-wrap{flex:1;min-height:0;width:100%}
+.legend{justify-content:center;padding-bottom:10px;font-size:11.5px;color:rgba(255,255,255,.45)}
 </style>
 </head>
 <body>
 <a id="main-btn" href="index.html">메인</a>
 <a id="char-btn" href="#">캐릭터 변경</a>
 <h2>쌤버스 - 보건실</h2>
-<div class="info">방향키 또는 버튼으로 이동하세요</div>
+<div class="info">방향키 · 화면 스와이프로 이동</div>
 <div class="stage-wrap">
 <div class="stage">
   <canvas id="map" width="1920" height="1920"></canvas>
@@ -40,11 +55,7 @@ h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
   <div id="remote-players"></div>
 </div>
 </div>
-<div class="pad">
-  <div></div><button onclick="move('up')">&#8593;</button><div></div>
-  <button onclick="move('left')">&#8592;</button><div></div><button onclick="move('right')">&#8594;</button>
-  <div></div><button onclick="move('down')">&#8595;</button><div></div>
-</div>
+
 <div class="legend">
   <span><span class="sw" style="background:#fef9f9"></span>보건실 바닥</span>
   <span><span class="sw" style="background:#fff"></span>침대</span>
@@ -171,6 +182,7 @@ function drawWindow(x,y){
   ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(x+6,y+8,TS/2-8,7);
 }
 function drawNurseDesk(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#2c3e50';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#34495e';ctx.fillRect(x+2,y+4,TS-4,TS*0.5);
   ctx.fillStyle='#1a252f';ctx.fillRect(x+TS*0.5,y+6,TS*0.42,TS*0.32);
@@ -178,8 +190,10 @@ function drawNurseDesk(x,y){
   ctx.strokeStyle='#222';ctx.lineWidth=2;
   ctx.beginPath();ctx.arc(x+12,y+15,6,Math.PI*0.3,Math.PI*1.8);ctx.stroke();
   ctx.fillStyle='#e74c3c';ctx.beginPath();ctx.arc(x+12,y+15,4,0,Math.PI*2);ctx.fill();
+  ctx.shadowColor='transparent';
 }
 function drawMedCabinet(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#c0392b';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#fff';ctx.fillRect(x+3,y+3,TS-6,TS-6);
   ctx.fillStyle='#e74c3c';
@@ -188,9 +202,11 @@ function drawMedCabinet(x,y){
   ctx.fillStyle='#f39c12';ctx.fillRect(x+4,y+TS-18,7,12);
   ctx.fillStyle='#2ecc71';ctx.fillRect(x+14,y+TS-16,7,10);
   ctx.fillStyle='#3498db';ctx.fillRect(x+24,y+TS-14,7,8);
+  ctx.shadowColor='transparent';
 }
 /* Curtain rail: single tile with hanging curtain fabric */
 function drawCurtain(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   /* Rail bar at top */
   ctx.fillStyle='#bdc3c7';ctx.fillRect(x,y,TS,4);
   /* Curtain hooks */
@@ -207,15 +223,19 @@ function drawCurtain(x,y){
   }
   ctx.strokeStyle='rgba(160,200,230,.5)';ctx.lineWidth=0.5;
   for(var i=0;i<3;i++) ctx.beginPath(),ctx.moveTo(x+i*16+8,y+8),ctx.lineTo(x+i*16+8,y+TS-4),ctx.stroke();
+  ctx.shadowColor='transparent';
 }
 function drawSink(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#bdc3c7';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#ecf0f1';ctx.fillRect(x+5,y+8,TS-10,TS-16);
   ctx.strokeStyle='#95a5a6';ctx.lineWidth=1;ctx.strokeRect(x+5,y+8,TS-10,TS-16);
   ctx.fillStyle='#7f8c8d';ctx.fillRect(x+TS/2-2,y+3,4,10);
   ctx.fillStyle='#3498db';ctx.beginPath();ctx.arc(x+TS/2,y+20,3,0,Math.PI*2);ctx.fill();
+  ctx.shadowColor='transparent';
 }
 function drawScaleBP(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#ecf0f1';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#bdc3c7';ctx.fillRect(x+4,y+TS*0.55,TS-8,TS*0.38);
   ctx.fillStyle='#2c3e50';ctx.fillRect(x+TS/2-8,y+8,16,12);
@@ -225,15 +245,19 @@ function drawScaleBP(x,y){
   ctx.beginPath();ctx.arc(x+TS*0.82,y+TS*0.28,8,0,Math.PI*2);ctx.stroke();
   ctx.fillStyle='#e74c3c';ctx.font='bold 7px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText('BP',x+TS*0.82,y+TS*0.28);
+  ctx.shadowColor='transparent';
 }
 function drawExamTable(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#bdc3c7';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#dfe6e9';ctx.fillRect(x+1,y+1,TS-2,TS-2);
   ctx.fillStyle='#fff';ctx.fillRect(x+3,y+10,TS-6,TS-14);
   ctx.strokeStyle='#ccc';ctx.lineWidth=0.5;
   for(var i=0;i<5;i++) ctx.beginPath(),ctx.moveTo(x+3,y+12+i*6),ctx.lineTo(x+TS-3,y+12+i*6),ctx.stroke();
+  ctx.shadowColor='transparent';
 }
 function drawDoor(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#e67e22';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#27ae60';ctx.fillRect(x+5,y+3,TS-10,TS-6);
   ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -243,10 +267,12 @@ function drawDoor(x,y){
   ctx.moveTo(x+TS-14,y+TS*0.62-6);ctx.lineTo(x+TS-8,y+TS*0.62);ctx.lineTo(x+TS-14,y+TS*0.62+6);ctx.stroke();
   ctx.fillStyle='#f1c40f';ctx.beginPath();ctx.arc(x+10,y+TS*0.5,3.5,0,Math.PI*2);ctx.fill();
   ctx.strokeStyle='#f1c40f';ctx.lineWidth=2;ctx.strokeRect(x+5,y+3,TS-10,TS-6);
+  ctx.shadowColor='transparent';
 }
 
 /* Large bed: 2 tiles wide × 2 tiles tall */
 function drawLargeBed(ax,ay,bedNum){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   var W=2*TS,H=2*TS;
   var bedColors=['#ffeef0','#f0f4ff','#f0fff4','#fff8ee'];
   var blanketColors=['#aed6f1','#abebc6','#f9e79f','#f1948a'];
@@ -272,6 +298,7 @@ function drawLargeBed(ax,ay,bedNum){
   /* Bed number label */
   ctx.fillStyle='rgba(80,80,100,.5)';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText((bedNum+1)+'번',ax+W/2,ay+H*0.9);
+  ctx.shadowColor='transparent';
 }
 
 function drawMap(){
@@ -317,14 +344,22 @@ function drawMap(){
   /* Divider wall label */
   ctx.fillStyle='rgba(100,100,120,.3)';ctx.font='12px sans-serif';ctx.textAlign='center';
   ctx.fillText('커튼',13*TS+TS/2,38*TS);
+  /* 45-degree drop shadows */
+  ctx.fillStyle='rgba(0,0,0,0.30)';
+  for(var __r=0;__r<ROWS;__r++){for(var __c=0;__c<COLS;__c++){
+    if(isWalk(grid[__r][__c])) continue;
+    var __x=__c*TS,__y=__r*TS;
+    if((__c+1<COLS)&&isWalk(grid[__r][__c+1])&&grid[__r][__c+1]!==5) ctx.fillRect(__x+TS,__y+5,6,TS);
+    if((__r+1<ROWS)&&isWalk(grid[__r+1][__c])&&grid[__r+1][__c]!==5) ctx.fillRect(__x+5,__y+TS,TS,6);
+  }}
 }
 drawMap();
 
-function updateCamera(){
+function updateCamera(){var _sw=document.querySelector('.stage-wrap');var _vw=_sw.clientWidth||VIEW_W;var _vh=_sw.clientHeight||VIEW_H;
   if(TEACHER_VIEW){var wrap=document.querySelector('.stage-wrap');wrap.style.width=(COLS*TS)+'px';wrap.style.height=(ROWS*TS)+'px';wrap.style.overflow='visible';return;}
   var stage=document.querySelector('.stage');
-  var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
-  var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
+  var offX=Math.max(0,Math.min(pos.c*TS-_vw/2+TS/2,COLS*TS-_vw));
+  var offY=Math.max(0,Math.min(pos.r*TS-_vh/2+TS/2,ROWS*TS-_vh));
   stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
 }
 var pos={r:5,c:7};
@@ -369,6 +404,7 @@ if(!TEACHER_VIEW){
   try{initMissionSystem('health');}catch(e){console.warn('[health] missions:',e);}
   try{loadMapOverlays('health',ctx,TS);}catch(e){console.warn('[health] overlays:',e);}
 }
+window.addEventListener('resize',updateCamera);
 </script>
 </body>
 </html>

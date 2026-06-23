@@ -4,103 +4,175 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>쌤버스 Ssamverse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}
-body{font-family:sans-serif;margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#2c3e50;color:#222;padding:2.5rem 1rem}
-
-/* ── 메인 카드 ── */
-.box{background:#fff;padding:2.5rem 2.5rem;border-radius:14px;text-align:center;width:360px;max-width:100%}
-.box h1{margin:0 0 .3rem;font-size:1.6rem;color:#2c3e50}
-.box p{margin:0 0 1.6rem;font-size:13px;color:#888}
-.box a{display:block;width:100%;padding:14px;font-size:15px;border-radius:8px;text-decoration:none;font-weight:600;margin-bottom:.8rem}
-.box a.teacher{background:#2c3e50;color:#fff}
-.box a.teacher:hover{background:#1a252f}
-.box a.student{background:#eee;color:#444}
-.box a.student:hover{background:#ddd}
-.box .hint{margin-top:1.2rem;font-size:11px;color:#aaa;line-height:1.6}
-.man-btn{display:block;width:100%;padding:12px;font-size:14px;font-weight:600;border-radius:8px;border:2px solid #2c3e50;background:#fff;color:#2c3e50;cursor:pointer;margin-bottom:.8rem;transition:background .15s}
-.man-btn:hover{background:#f0f4f8}
-
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0C1B2E;
+  --surface:#fff;
+  --primary:#1A3558;
+  --primary-d:#112340;
+  --accent:#3470D4;
+  --accent-l:#EAF0FF;
+  --border:#D5DDED;
+  --text:#0F1E30;
+  --muted:#627490;
+}
+body{
+  font-family:'Noto Sans KR',sans-serif;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#0A1628 0%,#1A3558 100%);
+  padding:2.5rem 1rem;
+  position:relative;overflow:hidden;
+}
+body::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+body::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(52,112,212,.18) 0%,transparent 70%);
+}
+.box{
+  background:var(--surface);
+  padding:2.4rem 2.5rem 2rem;
+  border-radius:20px;
+  text-align:center;
+  width:390px;max-width:100%;
+  box-shadow:0 24px 64px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.07);
+  position:relative;z-index:1;
+}
+/* Brand */
+.brand{display:flex;align-items:center;justify-content:center;gap:11px;margin-bottom:.4rem}
+.brand-mark{
+  width:46px;height:46px;
+  background:linear-gradient(140deg,#1A3558,#2A5FA8);
+  border-radius:13px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 4px 12px rgba(26,53,88,.35);
+}
+.brand h1{font-size:1.8rem;font-weight:700;color:var(--primary);letter-spacing:-.04em;line-height:1}
+.tagline{font-size:12.5px;color:var(--muted);margin-bottom:2rem;font-weight:400;letter-spacing:.01em}
+/* Buttons */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px 18px;
+  font-size:14.5px;border-radius:12px;text-decoration:none;
+  font-weight:600;margin-bottom:.7rem;border:none;cursor:pointer;
+  transition:all .15s;font-family:'Noto Sans KR',sans-serif;
+}
+.btn-primary{background:linear-gradient(135deg,#1A3558,#2A5FA8);color:#fff}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 6px 16px rgba(26,53,88,.35)}
+.btn-secondary{background:#F2F5FC;color:var(--primary);border:1.5px solid var(--border)}
+.btn-secondary:hover{background:#E8EEFB;border-color:#BBC9E0;transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);font-weight:500;font-size:13.5px}
+.btn-ghost:hover{background:#F7F9FD;color:var(--primary)}
+.hint{margin-top:1.2rem;font-size:11.5px;color:var(--muted);line-height:1.65}
 /* ── 사용설명서 모달 ── */
-#man-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem 1rem}
+#man-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem 1rem}
 #man-bg.show{display:flex}
-#man-modal{background:#fff;border-radius:14px;width:100%;max-width:720px;margin:auto;display:flex;flex-direction:column;max-height:88vh;box-shadow:0 8px 40px rgba(0,0,0,.3)}
-#man-head{position:sticky;top:0;background:#2c3e50;color:#fff;padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;border-radius:14px 14px 0 0;z-index:10}
-#man-head strong{font-size:1rem}
-#man-head button{background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center}
+#man-modal{background:#fff;border-radius:18px;width:100%;max-width:720px;margin:auto;display:flex;flex-direction:column;max-height:88vh;box-shadow:0 24px 64px rgba(0,0,0,.35)}
+#man-head{position:sticky;top:0;background:linear-gradient(135deg,#112340,#1A3558);color:#fff;padding:1rem 1.4rem;display:flex;align-items:center;justify-content:space-between;border-radius:18px 18px 0 0;z-index:10}
+#man-head strong{font-size:.95rem;font-weight:600;display:flex;align-items:center;gap:9px}
+#man-head button{background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s;font-family:inherit}
 #man-head button:hover{background:rgba(255,255,255,.28)}
-#man-body{overflow-y:auto;padding:1.2rem 1.4rem;flex:1}
-
-/* ── Groq 설정 카드 ── */
-.groq-card{background:#f0f7ff;border:1px solid #bcd6f0;border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.2rem}
-.groq-card h3{margin:0 0 .5rem;font-size:.95rem;color:#1a5c99;display:flex;align-items:center;gap:6px}
-.groq-card ol,.groq-card ul{margin:.4rem 0;padding-left:1.3rem;font-size:13px;color:#334;line-height:1.7}
+#man-body{overflow-y:auto;padding:1.3rem 1.5rem;flex:1}
+/* Groq 카드 */
+.groq-card{background:#EEF4FF;border:1px solid #BCCFE8;border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem}
+.groq-card h3{margin:0 0 .5rem;font-size:.9rem;color:#1A3558;display:flex;align-items:center;gap:7px;font-weight:700}
+.groq-card ol,.groq-card ul{margin:.4rem 0;padding-left:1.3rem;font-size:13px;color:#334;line-height:1.75}
 .groq-key-row{display:flex;gap:8px;margin-top:.7rem}
-.groq-key-row input{flex:1;min-width:0;padding:8px 10px;border:1px solid #c0cfe0;border-radius:6px;font-size:13px;font-family:monospace}
-.groq-key-row button{padding:8px 16px;background:#1a5c99;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;white-space:nowrap;font-weight:600}
-.groq-key-row button:hover{background:#154a80}
-#groq-ok{background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:.7rem 1rem;font-size:13px;color:#2e7d32;margin-bottom:1.2rem;display:none}
-
-/* ── 아코디언 섹션 ── */
-.man-section{border:1px solid #e8e8e8;border-radius:8px;margin-bottom:.45rem;overflow:hidden}
-.man-section summary{font-weight:700;font-size:13.5px;color:#2c3e50;cursor:pointer;padding:.75rem 1rem;list-style:none;display:flex;align-items:center;gap:6px;user-select:none}
+.groq-key-row input{flex:1;min-width:0;padding:9px 11px;border:1.5px solid #B0C4DC;border-radius:9px;font-size:13px;font-family:monospace;outline:none;transition:border-color .15s}
+.groq-key-row input:focus{border-color:var(--accent)}
+.groq-key-row button{padding:9px 16px;background:var(--primary);color:#fff;border:none;border-radius:9px;cursor:pointer;font-size:13px;white-space:nowrap;font-weight:600;font-family:inherit;transition:background .15s}
+.groq-key-row button:hover{background:var(--primary-d)}
+#groq-ok{background:#E8F5E9;border:1px solid #A5D6A7;border-radius:10px;padding:.75rem 1rem;font-size:13px;color:#2E7D32;margin-bottom:1.2rem;display:none;align-items:center;gap:8px}
+/* 아코디언 */
+.man-cat{font-size:11px;font-weight:700;color:#9AACBF;letter-spacing:.08em;text-transform:uppercase;margin:.9rem 0 .5rem .1rem}
+.man-section{border:1px solid #E5EBF5;border-radius:10px;margin-bottom:.45rem;overflow:hidden}
+.man-section summary{font-weight:600;font-size:13.5px;color:var(--text);cursor:pointer;padding:.75rem 1rem;list-style:none;display:flex;align-items:center;gap:6px;user-select:none}
 .man-section summary::-webkit-details-marker{display:none}
-.man-section[open]>summary{background:#f8f9fa;border-bottom:1px solid #eee}
-.man-section summary::after{content:'›';margin-left:auto;font-size:16px;transition:transform .2s;color:#aaa}
+.man-section[open]>summary{background:#F5F8FF;border-bottom:1px solid #E5EBF5}
+.man-section summary::after{content:'›';margin-left:auto;font-size:16px;transition:transform .2s;color:#9AACBF}
 .man-section[open]>summary::after{transform:rotate(90deg)}
 .sec-body{padding:.8rem 1rem 1rem}
-.sec-body ol,.sec-body ul{margin:.4rem 0 .2rem;padding-left:1.3rem;font-size:13px;color:#444;line-height:1.75}
+.sec-body ol,.sec-body ul{margin:.4rem 0 .2rem;padding-left:1.3rem;font-size:13px;color:#444;line-height:1.8}
 .sec-body p{font-size:13px;color:#555;margin:.4rem 0}
 .sec-body li{margin-bottom:.3rem}
-.sec-body b{color:#2c3e50}
-.note{font-size:12px;color:#666;background:#f8f9fa;border-left:3px solid #ddd;border-radius:0 6px 6px 0;padding:.6rem .9rem;margin-top:.6rem}
-.note.green{border-left-color:#4caf50;background:#f0f9f0}
-.note.blue{border-left-color:#2196f3;background:#e8f4fd}
-.note.orange{border-left-color:#ff9800;background:#fff8e1}
-.man-divider{border:none;border-top:2px solid #f0f0f0;margin:1rem 0 .8rem}
-.man-cat{font-size:11px;font-weight:700;color:#aaa;letter-spacing:.08em;text-transform:uppercase;margin:.9rem 0 .5rem .1rem}
-
-/* ── 미션 타입 테이블 ── */
+.sec-body b{color:var(--primary)}
+.note{font-size:12px;color:#4A5568;background:#F7F9FC;border-left:3px solid #C5D4E8;border-radius:0 7px 7px 0;padding:.65rem 1rem;margin-top:.6rem;line-height:1.65}
+.note.green{border-left-color:#48BB78;background:#F0FFF4;color:#276749}
+.note.blue{border-left-color:var(--accent);background:#EEF4FF;color:#1A3558}
+.note.orange{border-left-color:#E07C1A;background:#FFFAF0;color:#7A4000}
+.man-divider{border:none;border-top:2px solid #F0F4FA;margin:1rem 0 .8rem}
+/* 미션 타입 테이블 */
 .mtype-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:.5rem 0}
-.mtype-table th{background:#f0f4f8;color:#2c3e50;padding:6px 8px;text-align:left;font-weight:700}
-.mtype-table td{padding:6px 8px;border-bottom:1px solid #f0f0f0;vertical-align:top}
+.mtype-table th{background:#F0F4FA;color:var(--primary);padding:7px 9px;text-align:left;font-weight:700}
+.mtype-table td{padding:7px 9px;border-bottom:1px solid #F0F4FA;vertical-align:top}
 .mtype-table tr:last-child td{border-bottom:none}
-.mtype-badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap}
-.mb-y{background:#fff3e0;color:#e65100}
-.mb-q{background:#e8f5e9;color:#2e7d32}
-.mb-ox{background:#fce4ec;color:#c62828}
-.mb-iq{background:#ede7f6;color:#4527a0}
-.mb-sa{background:#e3f2fd;color:#1565c0}
-.mb-di{background:#f3e5f5;color:#6a1b9a}
-.mb-gf{background:#e8f5e9;color:#1b5e20}
-.mb-lk{background:#fff8e1;color:#f57f17}
+.mtype-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700;white-space:nowrap}
+.mb-y{background:#FFF3E0;color:#E65100}
+.mb-q{background:#E8F5E9;color:#2E7D32}
+.mb-ox{background:#FCE4EC;color:#C62828}
+.mb-iq{background:#EDE7F6;color:#4527A0}
+.mb-sa{background:#E3F2FD;color:#1565C0}
+.mb-di{background:#F3E5F5;color:#6A1B9A}
+.mb-gf{background:#E8F5E9;color:#1B5E20}
+.mb-lk{background:#FFF8E1;color:#F57F17}
 </style>
 </head>
 <body>
 
 <div class="box">
-  <h1>🏫 쌤버스</h1>
-  <p>2D 메타버스 교실 플랫폼</p>
-  <a class="teacher" href="ssambus_teacher_dashboard.html">👩‍🏫 교사용 대시보드</a>
-  <a class="student" href="ssambus_characters.html">🧑‍🎓 캐릭터 만들기 / 체험하기</a>
-  <button class="man-btn" onclick="openManual()">📘 사용설명서</button>
-  <div class="hint">학생은 보통 선생님이 보내준 초대 링크(QR)로 바로 입장합니다.<br>이 페이지는 직접 체험·확인용입니다.</div>
+  <div class="brand">
+    <div class="brand-mark">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10L12 3l9 7v9a1 1 0 01-1 1H4a1 1 0 01-1-1v-9z"/><path d="M9 22V13h6v9"/></svg>
+    </div>
+    <h1>쌤버스</h1>
+  </div>
+  <p class="tagline">2D 메타버스 교실 플랫폼</p>
+
+  <a class="btn btn-primary" href="ssambus_teacher_dashboard.html">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7"/><path d="M9 4.5l-.5-2M14.5 4.5l.5-2M12 3V1.5"/></svg>
+    교사용 대시보드
+  </a>
+  <a class="btn btn-secondary" href="ssambus_characters.html">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 4 2 10l10 6 10-6z"/><path d="M6 12.5v5a6 6 0 0012 0v-5"/></svg>
+    캐릭터 만들기 / 체험하기
+  </a>
+  <button class="btn btn-ghost" onclick="openManual()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    사용설명서
+  </button>
+
+  <p class="hint">학생은 보통 선생님이 보내준 초대 링크(QR)로 바로 입장합니다.<br>이 페이지는 직접 체험·확인용입니다.</p>
 </div>
 
-<!-- ==================== 사용설명서 모달 ==================== -->
+<!-- 사용설명서 모달 -->
 <div id="man-bg" onclick="if(event.target===this)closeManual()">
 <div id="man-modal">
-
   <div id="man-head">
-    <strong>📘 쌤버스 사용설명서</strong>
+    <strong>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      쌤버스 사용설명서
+    </strong>
     <button onclick="closeManual()">✕</button>
   </div>
 
   <div id="man-body">
 
-    <!-- ★ Groq API 최초 설정 (저장 후 자동 숨김) -->
     <div id="groq-card" class="groq-card">
-      <h3>🔑 Groq API 키 설정 <span style="font-size:11px;font-weight:400;color:#7aabcc">(PDF 미션 자동 생성 기능 · 최초 1회)</span></h3>
+      <h3>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+        Groq API 키 설정
+        <span style="font-size:11px;font-weight:400;color:#7AABCC">(PDF 미션 자동 생성 · 최초 1회)</span>
+      </h3>
       <p style="font-size:12.5px;color:#446;margin:.3rem 0 .6rem">PDF 수업 자료를 AI가 미션으로 자동 변환해주는 기능입니다. 무료 Groq 계정을 만들고 API 키를 아래에 한 번만 입력하면 이후 계속 사용할 수 있습니다.</p>
       <ol>
         <li><b>groq.com</b> 접속 → 우측 상단 <b>Sign Up</b></li>
@@ -116,10 +188,11 @@ body{font-family:sans-serif;margin:0;min-height:100vh;display:flex;flex-directio
       </div>
     </div>
 
-    <!-- 저장 완료 배지 (저장 후 표시) -->
-    <div id="groq-ok">✅ Groq API 키가 저장되었습니다. 교사 대시보드의 <b>"📄 PDF로 미션 생성"</b> 버튼을 바로 사용할 수 있습니다.</div>
+    <div id="groq-ok">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Groq API 키가 저장되었습니다. 교사 대시보드의 <b style="margin-left:3px">"AI 자동문제 생성"</b> 버튼을 바로 사용할 수 있습니다.
+    </div>
 
-    <!-- ── 기본 사용법 ── -->
     <div class="man-cat">기본 사용법</div>
 
     <details class="man-section" open>
@@ -127,10 +200,10 @@ body{font-family:sans-serif;margin:0;min-height:100vh;display:flex;flex-directio
       <div class="sec-body">
         <ol>
           <li>교사가 <b>교사용 대시보드</b>에서 수업 코드를 만들고, 맵·구역별로 미션을 설정합니다.</li>
-          <li>대시보드의 <b>"🔗 학생 초대 링크"</b> 버튼으로 맵별 링크와 QR 코드를 학생에게 공유합니다.</li>
+          <li>대시보드의 <b>"학생 초대 링크"</b> 버튼으로 맵별 링크와 QR 코드를 학생에게 공유합니다.</li>
           <li>학생은 링크 접속 또는 QR 스캔 → 캐릭터를 만들고 닉네임 입력 후 맵에 입장합니다.</li>
           <li>캐릭터를 이동하다 구역(zone)에 진입하거나 특정 가구 위치를 밟으면 미션이 자동으로 열립니다.</li>
-          <li>미션을 완료할수록 우상단 진행률 배지(🎯 미션 진행률 N / 전체)가 올라갑니다.</li>
+          <li>미션을 완료할수록 우상단 진행률 배지(미션 진행률 N / 전체)가 올라갑니다.</li>
           <li>필수 미션을 모두 마치면 출입구를 통해 다음 맵으로 자동 이동합니다.</li>
         </ol>
       </div>
@@ -141,25 +214,25 @@ body{font-family:sans-serif;margin:0;min-height:100vh;display:flex;flex-directio
       <div class="sec-body">
         <ol>
           <li>접속 코드 입력 → "수업 선택" 화면. 이전 수업 목록(최대 10개)에서 <b>"이 수업 계속하기"</b>로 바로 이어서 관리. <b>"+ 새 수업 만들기"</b>로 새 수업 생성.</li>
-          <li>각 수업 항목에서 ✏️ 버튼으로 수업 이름(예: "3학년 2반") 추가 가능. ✕ 버튼은 목록에서만 제거(실제 미션 데이터는 유지).</li>
+          <li>각 수업 항목에서 ✏️ 버튼으로 수업 이름(예: "3학년 2반") 추가 가능.</li>
           <li>상단 맵 탭(일반교실/도서관/운동장/체육관/현대도시/자연숲)으로 맵 전환.</li>
-          <li>각 맵의 구역(zone_A~H)별로 미션 추가·수정·삭제. 미션 타입은 8가지 중 선택 (아래 7번 항목 참고).</li>
+          <li>각 맵의 구역(zone_A~H)별로 미션 추가·수정·삭제. 미션 타입은 8가지 중 선택.</li>
           <li>미션 등록 전에는 데모 미션이 학생에게 표시됩니다.</li>
-          <li>상단 도구 버튼: <b>🪑 맵 에디터</b> · <b>✨ AI 자동문제 생성</b> · <b>🔗 학생 초대 링크</b> · <b>💬 채팅 모드</b> · <b>🚫 채팅 금지</b> · <b>🏆 완료 순위</b> · <b>📊 진행현황 다운로드</b> · <b>🚪 맵 이동 순서</b> · <b>🗺️ 실시간 맵 보기</b> · <b>🧑‍🏫 맵 참가하기</b></li>
+          <li>상단 도구 버튼: <b>맵 에디터</b> · <b>AI 자동문제 생성</b> · <b>학생 초대 링크</b> · <b>채팅 모드</b> · <b>완료 순위</b> · <b>진행현황 다운로드</b> · <b>맵 이동 순서</b> · <b>실시간 맵 보기</b> · <b>맵 참가하기</b></li>
         </ol>
       </div>
     </details>
 
     <details class="man-section">
-      <summary>3. 학생 초대 링크 & QR 코드 공유</summary>
+      <summary>3. 학생 초대 링크 &amp; QR 코드 공유</summary>
       <div class="sec-body">
         <ol>
-          <li>대시보드 상단 <b>"🔗 학생 초대 링크"</b> 버튼 → 팝업이 열리면서 <b>시작 맵의 QR 코드가 즉시 표시</b>됩니다.</li>
-          <li><b>"⛶ 전체화면으로 보기"</b> 버튼으로 빔프로젝터·모니터에 QR을 크게 띄울 수 있습니다. ESC 키로 닫기.</li>
+          <li>대시보드 상단 <b>"학생 초대 링크"</b> 버튼 → 팝업이 열리면서 <b>시작 맵의 QR 코드가 즉시 표시</b>됩니다.</li>
+          <li><b>"전체화면으로 보기"</b> 버튼으로 빔프로젝터·모니터에 QR을 크게 띄울 수 있습니다. ESC 키로 닫기.</li>
           <li><b>"PNG 다운로드"</b>로 QR 이미지 저장 → 원격 수업 시 학습 플랫폼에 첨부 가능.</li>
           <li>상단 헤더의 수업코드 옆 <b>"복사" 버튼</b>으로 수업코드를 클립보드에 복사할 수 있습니다.</li>
         </ol>
-        <div class="note">💡 학생은 QR 스캔 또는 공유된 링크로 바로 입장합니다. 코드 입력 방식은 지원하지 않습니다.</div>
+        <div class="note">학생은 QR 스캔 또는 공유된 링크로 바로 입장합니다. 코드 입력 방식은 지원하지 않습니다.</div>
       </div>
     </details>
 
@@ -173,7 +246,7 @@ body{font-family:sans-serif;margin:0;min-height:100vh;display:flex;flex-directio
           <li>PC/크롬북은 방향키, 모바일/태블릿은 화면 버튼 또는 스와이프로 이동.</li>
           <li>같은 수업 코드로 입장한 다른 학생 캐릭터가 실시간으로 함께 표시됩니다.</li>
         </ul>
-        <div class="note">💡 캐릭터를 다시 꾸미고 싶으면 <b>캐릭터 만들기 / 체험하기</b> 페이지에서 새로 설정하면 그 기기의 캐릭터가 바뀝니다.</div>
+        <div class="note">캐릭터를 다시 꾸미고 싶으면 <b>캐릭터 만들기 / 체험하기</b> 페이지에서 새로 설정하면 그 기기의 캐릭터가 바뀝니다.</div>
       </div>
     </details>
 
@@ -183,210 +256,157 @@ body{font-family:sans-serif;margin:0;min-height:100vh;display:flex;flex-directio
         <p>각 맵은 8개 구역(zone_A~H)으로 나뉩니다. 캐릭터가 구역에 진입하거나, 교사가 지정한 특정 타일을 밟으면 미션이 자동으로 열립니다.</p>
         <ul>
           <li>미완료 미션만 표시됩니다. 이미 완료한 구역은 다시 진입해도 열리지 않습니다.</li>
-          <li>완료 시 우상단 진행률(🎯 N / 전체) 업데이트.</li>
+          <li>완료 시 우상단 진행률(N / 전체) 업데이트.</li>
           <li>맵의 필수 미션 전체 완료 → 색종이 효과 + 완료 팝업. <b>마지막 맵이면 소감 입력란</b>도 함께 표시됩니다.</li>
           <li>필수 미션을 모두 마쳐야 출입구를 통해 다음 맵으로 이동할 수 있습니다.</li>
         </ul>
-        <div class="note">💡 진행 상황은 학생 기기의 localStorage에 저장되므로 같은 기기·브라우저로 다시 접속하면 이어서 진행됩니다.</div>
+        <div class="note">진행 상황은 학생 기기의 localStorage에 저장되므로 같은 기기·브라우저로 다시 접속하면 이어서 진행됩니다.</div>
       </div>
     </details>
 
-    <!-- ── 교사 도구 ── -->
     <hr class="man-divider">
     <div class="man-cat">교사 도구</div>
 
     <details class="man-section">
-      <summary>6. 🪑 맵 에디터 — 가구 배치 & 미션 발동 위치</summary>
+      <summary>6. 맵 에디터 — 가구 배치 &amp; 미션 발동 위치</summary>
       <div class="sec-body">
-        <p>대시보드 상단 <b>"🪑 맵 에디터"</b> 버튼을 누르면 맵별로 가구를 자유롭게 배치할 수 있는 에디터가 열립니다.</p>
+        <p>대시보드 상단 <b>"맵 에디터"</b> 버튼을 누르면 맵별로 가구를 자유롭게 배치할 수 있는 에디터가 열립니다.</p>
         <ul>
           <li>상단 탭으로 맵 전환 (일반교실/도서관/운동장/체육관/현대도시/자연숲).</li>
-          <li>맵마다 어울리는 가구 팔레트가 자동으로 바뀝니다:</li>
-        </ul>
-        <table class="mtype-table" style="margin:.4rem 0 .6rem">
-          <tr><th>맵</th><th>배치 가능 가구</th></tr>
-          <tr><td>교실 / 도서관</td><td>책상, 화분, 책장, 칸막이</td></tr>
-          <tr><td>운동장</td><td>화분/나무, 벤치, 바위, 꽃밭</td></tr>
-          <tr><td>체육관</td><td>책상, 칸막이, 운동매트, 운동기구</td></tr>
-          <tr><td>현대도시</td><td>칸막이, 벤치, 가로수, 쓰레기통</td></tr>
-          <tr><td>자연숲</td><td>화분, 나무, 바위, 꽃밭, 버섯</td></tr>
-        </table>
-        <ul>
           <li><b>배치</b>: 팔레트에서 가구 선택 후 캔버스에서 좌클릭·드래그로 배치 (보행 가능 타일에만 허용).</li>
           <li><b>삭제</b>: 지우개 선택 또는 우클릭으로 제거.</li>
           <li>배치된 가구는 학생이 지나갈 수 없는 장애물로 자동 처리됩니다.</li>
-          <li><b>💾 저장</b> 버튼 클릭 시 현재 수업에 저장. 학생 맵에 픽셀 아트 스타일로 표시됩니다.</li>
-          <li><b>📂 이전 수업 불러오기</b>: 이전에 만든 다른 수업의 가구 배치를 현재 수업에 그대로 가져올 수 있습니다. 불러온 후 💾 저장 버튼을 눌러야 반영됩니다.</li>
+          <li><b>저장</b> 버튼 클릭 시 현재 수업에 저장됩니다.</li>
+          <li><b>이전 수업 불러오기</b>: 이전에 만든 다른 수업의 가구 배치를 그대로 가져올 수 있습니다.</li>
         </ul>
-        <div class="note blue">📍 <b>미션 발동 위치 지정</b>: 미션 편집 모달 아래쪽 "미션 발동 위치" 섹션에서 <b>"타일 직접 지정"</b>을 선택하면 맵 미리보기가 열립니다. 학생이 밟으면 미션이 열릴 타일을 클릭으로 선택하세요. 배치한 가구 위치를 활용하면 "책상 앞에 서면 미션 열림" 같은 구성이 가능합니다.</div>
-        <div class="note" style="background:#fff8e1;border-left:4px solid #f9a825;padding:.6rem .8rem;border-radius:6px;margin-top:.5rem;font-size:13.5px">
-          ⚠️ <b>구역(zone) vs 타일 직접 지정 — 발동 조건 차이</b>
+        <div class="note blue">미션 발동 위치 지정: 미션 편집 모달 아래쪽 "미션 발동 위치" 섹션에서 <b>"타일 직접 지정"</b>을 선택하면 맵 미리보기가 열립니다. 학생이 밟으면 미션이 열릴 타일을 클릭으로 선택하세요.</div>
+        <div class="note orange" style="margin-top:.5rem">
+          <b>구역(zone) vs 타일 직접 지정 — 발동 조건 차이</b>
           <ul style="margin:.4rem 0 0;padding-left:1.2rem">
             <li><b>구역(zone_A~H)</b>: 해당 구역 범위 안으로 들어오면 미션이 열립니다.</li>
             <li><b>타일 직접 지정</b>: 지정한 타일 칸을 <b>정확히 밟아야만</b> 미션이 열립니다. 구역은 완전히 무시됩니다.</li>
           </ul>
-          <b>예시</b>: 처음에 미션을 "칠판 앞(zone_A)"에 배정했더라도, 나중에 수정 버튼 → 타일 직접 지정으로 교실 뒤 특정 타일을 선택하면, 그 이후로는 칠판 앞에 가도 미션이 열리지 않고 <b>교실 뒤 그 타일을 밟아야만 미션이 열립니다.</b>
         </div>
       </div>
     </details>
 
     <details class="man-section">
-      <summary>7. 📋 미션 타입 8가지</summary>
+      <summary>7. 미션 타입 8가지</summary>
       <div class="sec-body">
         <table class="mtype-table">
           <tr><th>타입</th><th>설명</th><th>완료 조건</th></tr>
-          <tr>
-            <td><span class="mtype-badge mb-y">유튜브 영상</span></td>
-            <td>YouTube URL 입력 → 영상 임베드 재생</td>
-            <td>"시청 완료" 버튼 클릭</td>
-          </tr>
-          <tr>
-            <td><span class="mtype-badge mb-q">객관식 퀴즈</span></td>
-            <td>질문 + 4지선다 + 정답 설정</td>
-            <td>정답 선택 시에만 완료</td>
-          </tr>
-          <tr>
-            <td><span class="mtype-badge mb-ox">O/X 퀴즈</span></td>
-            <td>질문 + O 또는 X 중 정답 선택 (이미지 첨부 가능)</td>
-            <td>정답 선택 시에만 완료</td>
-          </tr>
-          <tr>
-            <td><span class="mtype-badge mb-iq">이미지 퀴즈</span></td>
-            <td>이미지 URL + 질문 + 4지선다. 시각 자료 활용 퀴즈</td>
-            <td>정답 선택 시에만 완료</td>
-          </tr>
-          <tr>
-            <td><span class="mtype-badge mb-sa">주관식 단답</span></td>
-            <td>질문 + 정답(텍스트). 대소문자 무시 비교</td>
-            <td>정답 텍스트 입력 시 완료</td>
-          </tr>
-          <tr>
-            <td><span class="mtype-badge mb-di">토론/의견</span></td>
-            <td>자유 서술 미션. 정답 없이 의견 작성</td>
-            <td>100자 이상 입력 시 완료</td>
-          </tr>
-          <tr>
-            <td><span class="mtype-badge mb-gf">구글 설문</span></td>
-            <td>Google Forms URL → iframe 임베드 표시</td>
-            <td>"제출 완료" 버튼 클릭</td>
-          </tr>
-          <tr>
-            <td><span class="mtype-badge mb-lk">외부 링크</span></td>
-            <td>URL → 새 탭으로 열기 (웹사이트·자료 방문)</td>
-            <td>"완료" 버튼 클릭</td>
-          </tr>
+          <tr><td><span class="mtype-badge mb-y">유튜브 영상</span></td><td>YouTube URL 입력 → 영상 임베드 재생</td><td>"시청 완료" 버튼 클릭</td></tr>
+          <tr><td><span class="mtype-badge mb-q">객관식 퀴즈</span></td><td>질문 + 4지선다 + 정답 설정</td><td>정답 선택 시에만 완료</td></tr>
+          <tr><td><span class="mtype-badge mb-ox">O/X 퀴즈</span></td><td>질문 + O 또는 X 중 정답 선택 (이미지 첨부 가능)</td><td>정답 선택 시에만 완료</td></tr>
+          <tr><td><span class="mtype-badge mb-iq">이미지 퀴즈</span></td><td>이미지 URL + 질문 + 4지선다. 시각 자료 활용 퀴즈</td><td>정답 선택 시에만 완료</td></tr>
+          <tr><td><span class="mtype-badge mb-sa">주관식 단답</span></td><td>질문 + 정답(텍스트). 대소문자 무시 비교</td><td>정답 텍스트 입력 시 완료</td></tr>
+          <tr><td><span class="mtype-badge mb-di">토론/의견</span></td><td>자유 서술 미션. 정답 없이 의견 작성</td><td>100자 이상 입력 시 완료</td></tr>
+          <tr><td><span class="mtype-badge mb-gf">구글 설문</span></td><td>Google Forms URL → iframe 임베드 표시</td><td>"제출 완료" 버튼 클릭</td></tr>
+          <tr><td><span class="mtype-badge mb-lk">외부 링크</span></td><td>URL → 새 탭으로 열기 (웹사이트·자료 방문)</td><td>"완료" 버튼 클릭</td></tr>
         </table>
-        <div class="note">💡 <b>필수 여부</b>: 미션 편집 시 "필수" 체크를 해제하면 학생이 "나중에" 버튼으로 건너뛸 수 있습니다. 비필수 미션은 맵 이동 조건(출입구 잠금)에 포함되지 않습니다.</div>
+        <div class="note">필수 여부: 미션 편집 시 "필수" 체크를 해제하면 학생이 "나중에" 버튼으로 건너뛸 수 있습니다.</div>
       </div>
     </details>
 
     <details class="man-section">
-      <summary>8. 📄 PDF로 미션 자동 생성 (AI)</summary>
+      <summary>8. PDF로 미션 자동 생성 (AI)</summary>
       <div class="sec-body">
         <p>수업 자료 PDF를 업로드하면 AI(Groq · Qwen3-32B)가 자동으로 미션을 생성해줍니다.</p>
         <ol>
-          <li>대시보드 상단 <b>"📄 PDF로 미션 생성"</b> 버튼 클릭.</li>
+          <li>대시보드 상단 <b>"AI 자동문제 생성"</b> 버튼 클릭.</li>
           <li>PDF 파일 선택, 추출 페이지 범위와 생성할 미션 수(5~10개) 설정.</li>
-          <li>미션 타입(객관식 퀴즈 / 주관식 단답 / 토론 등)을 선택하고 <b>"미션 생성"</b> 클릭.</li>
-          <li>AI가 수초~수십초 내에 미션 초안을 카드 형태로 표시합니다. 각 카드의 <b>✕ 버튼</b>으로 맘에 들지 않는 문제를 제외할 수 있습니다.</li>
+          <li>미션 타입을 선택하고 <b>"미션 생성"</b> 클릭.</li>
+          <li>AI가 수초~수십초 내에 미션 초안을 카드 형태로 표시합니다.</li>
           <li>남은 카드를 검토한 뒤 구역을 선택하고 <b>"저장"</b>을 누르면 현재 맵·구역에 등록됩니다.</li>
         </ol>
-        <div class="note orange">⚠️ Groq API 키가 필요합니다. 이 페이지 상단 <b>"🔑 Groq API 키 설정"</b> 섹션에서 최초 1회만 입력하면 이후 자동으로 사용됩니다. Groq 무료 플랜은 분당 30회 요청, 월 1,000회 호출이 가능합니다.</div>
+        <div class="note orange">Groq API 키가 필요합니다. 이 페이지 상단 <b>"Groq API 키 설정"</b> 섹션에서 최초 1회만 입력하면 이후 자동으로 사용됩니다. Groq 무료 플랜은 분당 30회 요청, 월 1,000회 호출이 가능합니다.</div>
       </div>
     </details>
 
     <details class="man-section">
-      <summary>9. 💬 채팅 설정 (전체 / 근접 / 금지)</summary>
+      <summary>9. 채팅 설정 (전체 / 근접 / 금지)</summary>
       <div class="sec-body">
         <p>대시보드 상단 채팅 모드 버튼을 클릭할 때마다 모드가 순환 전환되며, 변경 즉시 모든 학생에게 실시간 반영됩니다.</p>
         <table class="mtype-table">
           <tr><th>모드</th><th>설명</th></tr>
-          <tr><td><b>💬 전체 공개</b></td><td>같은 맵에 있는 모든 학생에게 채팅 메시지가 보입니다.</td></tr>
-          <tr><td><b>📍 근접만</b></td><td>나와 5타일 이내에 있는 학생에게만 메시지가 보입니다. 소그룹 활동 시 유용합니다.</td></tr>
-          <tr><td><b>🚫 채팅 금지</b></td><td>학생 채팅 입력창이 비활성화되고, 화면 하단에 금지 안내 배너가 표시됩니다.</td></tr>
+          <tr><td><b>전체 공개</b></td><td>같은 맵에 있는 모든 학생에게 채팅 메시지가 보입니다.</td></tr>
+          <tr><td><b>근접만</b></td><td>나와 5타일 이내에 있는 학생에게만 메시지가 보입니다. 소그룹 활동 시 유용합니다.</td></tr>
+          <tr><td><b>채팅 금지</b></td><td>학생 채팅 입력창이 비활성화되고, 화면 하단에 금지 안내 배너가 표시됩니다.</td></tr>
         </table>
-        <div class="note">💡 교사가 직접 맵에 참가한 경우에도 채팅 말풍선이 다른 학생에게 표시됩니다. "🗺️ 실시간 맵 보기" 창에서도 학생들의 말풍선을 확인할 수 있습니다.</div>
       </div>
     </details>
 
     <details class="man-section">
-      <summary>10. 🚪 맵 이동 순서 & 출입구 자동 이동</summary>
+      <summary>10. 맵 이동 순서 &amp; 출입구 자동 이동</summary>
       <div class="sec-body">
-        <p>대시보드 상단 <b>"🚪 맵 이동 순서"</b> 버튼 → 6개 맵의 진행 순서를 ▲▼로 정렬해 저장할 수 있습니다. 각 맵 옆에 "✅ 미션 있음 / ⚪ 미션 없음"이 표시됩니다.</p>
+        <p>대시보드 상단 <b>"맵 이동 순서"</b> 버튼 → 6개 맵의 진행 순서를 ▲▼로 정렬해 저장할 수 있습니다.</p>
         <ol>
-          <li>학생이 현재 맵의 <b>필수 미션을 모두 완료</b>하고 출입구(문/게이트) 칸으로 이동하면 → 설정 순서상 다음 미션이 있는 맵으로 자동 이동합니다.</li>
+          <li>학생이 현재 맵의 <b>필수 미션을 모두 완료</b>하고 출입구 칸으로 이동하면 → 다음 미션이 있는 맵으로 자동 이동합니다.</li>
           <li>미션이 없는 맵(데모 미션만)은 자동 이동 대상에서 제외됩니다.</li>
-          <li>필수 미션이 남아있는 상태에서 출입구를 통과하려 하면 "🔒 미션을 모두 완료해야 출입구를 통과할 수 있어요!" 안내가 표시됩니다.</li>
+          <li>필수 미션이 남아있는 상태에서 출입구를 통과하려 하면 잠금 안내가 표시됩니다.</li>
         </ol>
-        <div class="note green">🎉 맵의 필수 미션을 모두 완료하면 색종이(컨페티) 효과와 함께 완료 팝업이 표시됩니다. <b>마지막 맵 완료 시</b>에는 "수고했어요" 메시지와 함께 <b>수업 소감 입력란</b>이 나타납니다. 학생이 소감을 입력하면 교사의 진행현황 엑셀에서 확인할 수 있습니다.</div>
+        <div class="note green">맵의 필수 미션을 모두 완료하면 색종이(컨페티) 효과와 함께 완료 팝업이 표시됩니다. 마지막 맵 완료 시에는 수업 소감 입력란이 나타납니다.</div>
       </div>
     </details>
 
-    <!-- ── 모니터링 ── -->
     <hr class="man-divider">
     <div class="man-cat">모니터링</div>
 
     <details class="man-section">
-      <summary>11. 🗺️ 실시간 맵 보기 (학생 이동 모니터링)</summary>
+      <summary>11. 실시간 맵 보기 (학생 이동 모니터링)</summary>
       <div class="sec-body">
-        <p>대시보드 상단 <b>"🗺️ 실시간 맵 보기"</b> 버튼 → 선택한 맵 전체를 한 화면에서 볼 수 있는 관전 창이 열립니다.</p>
+        <p>대시보드 상단 <b>"실시간 맵 보기"</b> 버튼 → 선택한 맵 전체를 한 화면에서 볼 수 있는 관전 창이 열립니다.</p>
         <ul>
-          <li>상단 탭으로 보고 싶은 맵 전환.</li>
-          <li>입장한 학생들의 캐릭터가 실시간으로 이동하는 모습이 표시됩니다. (직접 조작 불가, 관전 전용)</li>
-          <li>우상단에 현재 맵 접속 인원("접속 인원: N명") 표시.</li>
+          <li>입장한 학생들의 캐릭터가 실시간으로 이동하는 모습이 표시됩니다. (직접 조작 불가)</li>
+          <li>우상단에 현재 맵 접속 인원 표시.</li>
           <li>학생들의 말풍선 채팅도 이 창에서 실시간으로 확인할 수 있습니다.</li>
         </ul>
       </div>
     </details>
 
     <details class="man-section">
-      <summary>12. 🧑‍🏫 교사가 맵에 직접 참가하기</summary>
+      <summary>12. 교사가 맵에 직접 참가하기</summary>
       <div class="sec-body">
-        <p>대시보드 상단 <b>"🧑‍🏫 맵 참가하기"</b> 버튼 → 맵 선택 → 새 탭에서 해당 맵 열림.</p>
+        <p>대시보드 상단 <b>"맵 참가하기"</b> 버튼 → 맵 선택 → 새 탭에서 해당 맵 열림.</p>
         <ul>
           <li>처음 입장 시 캐릭터 선택 화면에서 <b>"교사" 탭</b>으로 교사용 캐릭터 선택.</li>
           <li>학생들과 동일하게 이동·채팅하며 함께 활동 가능.</li>
-          <li>"🗺️ 실시간 맵 보기"(관전)와 달리 직접 조작 가능한 참가자 모드입니다.</li>
         </ul>
       </div>
     </details>
 
     <details class="man-section">
-      <summary>13. 📊 학생 미션 진행현황 다운로드</summary>
+      <summary>13. 학생 미션 진행현황 다운로드</summary>
       <div class="sec-body">
-        <p>대시보드 상단 <b>"📊 진행현황 다운로드"</b> 버튼 → 학생별·미션별 완료 여부를 정리한 엑셀 파일(.xlsx)이 다운로드됩니다.</p>
-        <p>다운로드 파일에는 최대 4개 시트가 포함됩니다:</p>
+        <p>대시보드 상단 <b>"진행현황 다운로드"</b> 버튼 → 학생별·미션별 완료 여부를 정리한 엑셀 파일(.xlsx)이 다운로드됩니다.</p>
         <table class="mtype-table">
           <tr><th>시트</th><th>내용</th></tr>
-          <tr><td><b>미션 진행현황</b></td><td>학생별·미션별 완료(✅) 여부, 맵별 색구분 헤더, 완료 수·진행률</td></tr>
+          <tr><td><b>미션 진행현황</b></td><td>학생별·미션별 완료 여부, 맵별 색구분 헤더, 완료 수·진행률</td></tr>
           <tr><td><b>완료 순위 (맵별)</b></td><td>각 맵에서 필수 미션을 완료한 학생의 소요 시간 순위</td></tr>
           <tr><td><b>전체 합산 순위</b></td><td>모든 맵의 총 소요 시간 기준 전체 순위</td></tr>
-          <tr><td><b>소감 모음</b></td><td>마지막 맵 완료 시 학생이 입력한 수업 소감 (닉네임·소감·제출시각). 소감 입력 학생이 있을 때만 생성</td></tr>
+          <tr><td><b>소감 모음</b></td><td>마지막 맵 완료 시 학생이 입력한 수업 소감</td></tr>
         </table>
-        <div class="note">💡 MS Excel / 한컴 한셀 모두 지원. 완료한 학생이 없거나 미션이 없으면 안내 메시지 표시.</div>
       </div>
     </details>
 
-    <!-- ── 캐릭터 & 이동 ── -->
     <hr class="man-divider">
-    <div class="man-cat">캐릭터 & 이동</div>
+    <div class="man-cat">캐릭터 &amp; 이동</div>
 
     <details class="man-section">
-      <summary>14. 🧑‍🎓 캐릭터 커스터마이징</summary>
+      <summary>14. 캐릭터 커스터마이징</summary>
       <div class="sec-body">
-        <p>캐릭터 만들기 페이지에서 3종류의 캐릭터를 꾸밀 수 있습니다.</p>
         <table class="mtype-table">
           <tr><th>종류</th><th>옵션</th></tr>
           <tr><td><b>교복 (학생용)</b></td><td>피부색 8종, 머리 스타일 10종, 머리색 14종, 교복 색상 12종, 액세서리 8종 중복 선택</td></tr>
           <tr><td><b>교사</b></td><td>피부색 8종, 머리 스타일 10종, 머리색 12종, 의상 6종, 의상 색상 12종, 액세서리 12종 중복 선택</td></tr>
           <tr><td><b>판타지</b></td><td>피부색 8종 + 교복/교사와 동일한 풀옵션 (마법사/기사/궁수 등)</td></tr>
         </table>
-        <div class="note">💡 맵 안에서 <b>캐릭터 변경</b> 버튼(QR 접속 학생 전용)을 누르면 같은 방·맵으로 복귀하면서 캐릭터를 바꿀 수 있습니다.</div>
+        <div class="note">맵 안에서 <b>캐릭터 변경</b> 버튼(QR 접속 학생 전용)을 누르면 같은 방·맵으로 복귀하면서 캐릭터를 바꿀 수 있습니다.</div>
       </div>
     </details>
 
     <details class="man-section">
-      <summary>15. 🕹️ 캐릭터 이동 조작법</summary>
+      <summary>15. 캐릭터 이동 조작법</summary>
       <div class="sec-body">
         <ul>
           <li><b>PC / 크롬북</b>: 키보드 방향키(↑↓←→)</li>
@@ -395,44 +415,38 @@ body{font-family:sans-serif;margin:0;min-height:100vh;display:flex;flex-directio
           <li>다른 학생이 점유한 타일로는 이동할 수 없습니다. (충돌 방지)</li>
           <li>가구가 배치된 타일도 이동 불가 장애물로 처리됩니다.</li>
         </ul>
-        <div class="note">💡 같은 맵에 있는 다른 학생 캐릭터는 실시간으로 부드럽게 이동하는 모습이 표시됩니다. 채팅 말풍선도 캐릭터 위에 4초간 표시됩니다.</div>
+        <div class="note">같은 맵에 있는 다른 학생 캐릭터는 실시간으로 부드럽게 이동하는 모습이 표시됩니다. 채팅 말풍선도 캐릭터 위에 4초간 표시됩니다.</div>
       </div>
     </details>
 
-  </div><!-- /man-body -->
-</div><!-- /man-modal -->
-</div><!-- /man-bg -->
+  </div>
+</div>
+</div>
 
 <script>
 function openManual(){
   document.getElementById('man-bg').classList.add('show');
-  document.body.style.overflow = 'hidden';
-  // 첫 번째 섹션 열기
+  document.body.style.overflow='hidden';
 }
 function closeManual(){
   document.getElementById('man-bg').classList.remove('show');
-  document.body.style.overflow = '';
+  document.body.style.overflow='';
 }
-
-/* Groq API 키 저장 */
 function saveGroqKey(){
-  const key = document.getElementById('groq-key-input').value.trim();
-  if(!key){ alert('API 키를 입력해주세요.'); return; }
+  var key=document.getElementById('groq-key-input').value.trim();
+  if(!key){alert('API 키를 입력해주세요.');return;}
   if(!key.startsWith('gsk_')){
     if(!confirm('입력한 값이 gsk_로 시작하지 않습니다. 그래도 저장할까요?')) return;
   }
-  localStorage.setItem('ssambus_groq_apikey', key);
+  localStorage.setItem('ssambus_groq_apikey',key);
   hideGroqSetup();
 }
-
 function hideGroqSetup(){
-  const card = document.getElementById('groq-card');
-  const ok   = document.getElementById('groq-ok');
-  if(card){ card.style.display = 'none'; }
-  if(ok)  { ok.style.display  = '';    }
+  var card=document.getElementById('groq-card');
+  var ok=document.getElementById('groq-ok');
+  if(card){card.style.display='none';}
+  if(ok){ok.style.display='';}
 }
-
-/* 페이지 로드 시 이미 키가 있으면 설정 섹션 숨김 */
 (function(){
   if(localStorage.getItem('ssambus_groq_apikey')) hideGroqSetup();
 })();

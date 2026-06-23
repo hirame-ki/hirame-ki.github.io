@@ -2,178 +2,60 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>쌤버스 캐릭터 시스템</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --primary:#1A3558;
-  --primary-d:#112340;
-  --accent:#3470D4;
-  --accent-l:#EAF0FF;
-  --border:#D5DDED;
-  --bg:#EEF2F9;
-  --surface:#fff;
-  --text:#0F1E30;
-  --muted:#627490;
-}
-body{
-  font-family:'Noto Sans KR',sans-serif;
-  padding:0;background:var(--bg);min-height:100vh;color:var(--text);
-}
-/* 입장 바 */
-.enter-bar{
-  display:flex;align-items:center;gap:10px;
-  padding:13px 20px;background:var(--surface);
-  border-bottom:1px solid var(--border);flex-wrap:wrap;
-  box-shadow:0 1px 6px rgba(0,0,0,.07);
-  position:sticky;top:0;z-index:10;
-}
-.enter-bar select{
-  padding:8px 12px;border-radius:9px;border:1.5px solid var(--border);
-  font-size:13px;font-family:'Noto Sans KR',sans-serif;
-  background:var(--surface);color:var(--text);outline:none;
-  cursor:pointer;transition:border-color .15s;
-}
-.enter-bar select:focus{border-color:var(--accent)}
-.enter-bar button{
-  padding:9px 18px;border-radius:10px;border:none;
-  background:linear-gradient(135deg,#1A3558,#2A5FA8);color:#fff;
-  font-size:13.5px;font-weight:600;cursor:pointer;
-  font-family:'Noto Sans KR',sans-serif;transition:all .15s;
-  display:flex;align-items:center;gap:7px;
-}
-.enter-bar button:hover{filter:brightness(1.1);transform:translateY(-1px)}
-#nicknameInput{
-  padding:9px 13px;border-radius:9px;
-  border:2px solid var(--accent);font-size:13px;width:155px;
-  outline:none;font-family:'Noto Sans KR',sans-serif;transition:border-color .15s;
-  color:var(--text);
-}
-#nicknameInput:focus{border-color:var(--primary)}
-.nick-label{font-size:13px;color:var(--text);font-weight:600;white-space:nowrap}
-/* Welcome banner */
-#welcomeBanner{
-  background:var(--accent-l);border:1px solid #BCCFE8;
-  border-radius:10px;padding:10px 14px;margin:12px 20px 0;
-  font-size:13px;color:var(--primary);display:none;
-  align-items:center;gap:8px;
-}
-/* Tabs */
-.tabs{display:flex;gap:6px;margin:14px 20px 0;flex-wrap:wrap}
-.tab{
-  padding:8px 20px;font-size:13.5px;border-radius:10px;
-  cursor:pointer;border:1.5px solid var(--border);background:var(--surface);
-  font-family:'Noto Sans KR',sans-serif;font-weight:500;color:var(--muted);
-  transition:all .15s;
-}
-.tab:hover{border-color:var(--accent);color:var(--primary)}
-.tab.on{
-  background:var(--primary);color:#fff;
-  border-color:var(--primary);font-weight:600;
-}
-/* Section */
-.section{display:none;padding:16px 20px 24px}
+body{font-family:sans-serif;padding:20px;background:#fff}
+.wrap{display:flex;gap:1.5rem;padding:1rem 0;flex-wrap:wrap}
+.preview{display:flex;flex-direction:column;align-items:center;gap:.8rem;min-width:180px}
+.opts{flex:1;min-width:260px}
+.og{margin-bottom:1rem}
+.ol{font-size:12px;color:#666;margin-bottom:6px;display:block}
+.sr{display:flex;gap:5px;flex-wrap:wrap}
+.sw{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;flex-shrink:0}
+.sw.on{border-color:#000}
+.sb{padding:3px 9px;font-size:11px;border-radius:6px;cursor:pointer;border:1px solid #ccc;background:#fff;margin-bottom:3px}
+.sb.on{background:#eee;border-color:#999}
+.ab{padding:3px 9px;font-size:11px;border-radius:6px;cursor:pointer;border:1px solid #ccc;background:#fff;margin-bottom:3px}
+.ab.on{background:#eee;border-color:#999;font-weight:500}
+.dr{display:flex;gap:6px;margin-top:6px}
+.tabs{display:flex;gap:8px;margin-bottom:1rem}
+.tab{padding:5px 16px;font-size:13px;border-radius:6px;cursor:pointer;border:1px solid #ccc;background:#fff}
+.tab.on{background:#eee;border-color:#999;font-weight:500}
+.section{display:none}
 .section.on{display:block}
-/* Wrap */
-.wrap{display:flex;gap:16px;padding:.5rem 0;flex-wrap:wrap;align-items:flex-start}
-/* Preview */
-.preview{
-  display:flex;flex-direction:column;align-items:center;gap:.9rem;
-  min-width:180px;background:var(--surface);border-radius:14px;
-  padding:22px 18px 18px;border:1px solid var(--border);
-  box-shadow:0 2px 8px rgba(0,0,0,.05);
-}
-/* Options */
-.opts{
-  flex:1;min-width:260px;background:var(--surface);border-radius:14px;
-  padding:18px 20px;border:1px solid var(--border);
-  box-shadow:0 2px 8px rgba(0,0,0,.05);
-}
-/* Option groups */
-.og{margin-bottom:1.1rem}
-.ol{
-  font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;
-  text-transform:uppercase;margin-bottom:8px;display:block;
-}
-/* Swatches */
-.sr{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
-.sw{
-  width:24px;height:24px;border-radius:50%;cursor:pointer;
-  border:2.5px solid transparent;flex-shrink:0;transition:all .12s;
-}
-.sw:hover{transform:scale(1.15)}
-.sw.on{border-color:var(--primary);box-shadow:0 0 0 2px rgba(26,53,88,.2)}
-/* Style buttons */
-.sb{
-  padding:5px 12px;font-size:12px;border-radius:8px;
-  cursor:pointer;border:1.5px solid var(--border);background:var(--surface);
-  margin-bottom:3px;font-family:'Noto Sans KR',sans-serif;
-  font-weight:500;color:var(--text);transition:all .12s;
-}
-.sb:hover{border-color:var(--accent);color:var(--primary)}
-.sb.on{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600}
-/* Accessory buttons */
-.ab{
-  padding:5px 12px;font-size:12px;border-radius:8px;
-  cursor:pointer;border:1.5px solid var(--border);background:var(--surface);
-  margin-bottom:3px;font-family:'Noto Sans KR',sans-serif;
-  font-weight:500;color:var(--text);transition:all .12s;
-}
-.ab:hover{border-color:var(--accent);color:var(--primary)}
-.ab.on{
-  background:var(--accent-l);border-color:var(--accent);
-  color:var(--accent);font-weight:600;
-}
-/* Direction buttons */
-.dr{display:flex;gap:5px}
-/* 애니 캐릭터 카드 */
-.anime-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:12px;padding:.5rem 0}
-.anime-card{
-  background:var(--surface);border-radius:14px;border:2px solid var(--border);
-  cursor:pointer;display:flex;flex-direction:column;align-items:center;
-  padding:14px 10px 10px;transition:all .15s;box-shadow:0 2px 8px rgba(0,0,0,.05);
-}
-.anime-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 16px rgba(52,112,212,.15)}
-.anime-card.on{border-color:var(--accent);background:var(--accent-l);box-shadow:0 4px 16px rgba(52,112,212,.18)}
-.anime-name{font-size:13px;font-weight:700;color:var(--text);margin-top:8px;letter-spacing:-.01em}
-.anime-series{font-size:11px;color:var(--muted);margin-top:2px}
+.enter-bar{display:flex;align-items:center;gap:8px;margin-bottom:1rem;padding:10px 12px;background:#f5f5f5;border-radius:8px;flex-wrap:wrap}
+.enter-bar select{padding:5px 8px;border-radius:6px;border:1px solid #ccc;font-size:13px}
+.enter-bar button{padding:7px 16px;border-radius:6px;border:none;background:#2c3e50;color:#fff;font-size:13px;font-weight:500;cursor:pointer}
+.enter-bar button:hover{background:#1a252f}
+#nicknameInput{padding:6px 10px;border-radius:6px;border:2px solid #3498db;font-size:13px;width:140px;outline:none}
+#nicknameInput:focus{border-color:#1a5276}
+.nick-label{font-size:13px;color:#444;font-weight:500;white-space:nowrap}
 </style>
 </head>
 <body>
 
-<div id="welcomeBanner">
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="8" r="3"/><path d="M6.3 20C7.2 17.5 9.4 16 12 16s4.8 1.5 5.7 4"/></svg>
-  나만의 캐릭터를 자유롭게 꾸민 뒤, <b style="margin:0 3px">"이 캐릭터로 입장하기"</b> 버튼을 눌러 교실로 입장하세요!
+<div id="welcomeBanner" style="display:none;background:#eaf4ff;border:1px solid #b8dcff;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:#1a5276">
+  🎨 나만의 캐릭터를 자유롭게 꾸민 뒤, <b>"이 캐릭터로 입장하기"</b> 버튼을 눌러 교실로 입장하세요!
 </div>
 
 <div class="enter-bar">
   <span class="nick-label">이름:</span>
   <input type="text" id="nicknameInput" placeholder="이름을 입력하세요" maxlength="10" autocomplete="off">
-  <label style="font-size:13px;color:var(--text);font-weight:500;display:flex;align-items:center;gap:6px">교실:
-    <select id="mapSelect">
-      <option value="ssambus_map_classroom.html">일반 교실</option>
-      <option value="ssambus_map_library.html">도서관</option>
-      <option value="ssambus_map_playground.html">운동장</option>
-      <option value="ssambus_map_gym.html">체육관</option>
-      <option value="ssambus_map_city.html">현대 도시</option>
-      <option value="ssambus_map_forest.html">자연 숲</option>
-    </select>
-  </label>
-  <button onclick="enterMap()">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-    이 캐릭터로 입장하기
-  </button>
+  <label>교실: <select id="mapSelect">
+    <option value="ssambus_map_classroom.html">일반 교실</option>
+    <option value="ssambus_map_library.html">도서관</option>
+    <option value="ssambus_map_playground.html">운동장</option>
+    <option value="ssambus_map_gym.html">체육관</option>
+    <option value="ssambus_map_city.html">현대 도시</option>
+    <option value="ssambus_map_forest.html">자연 숲</option>
+  </select></label>
+  <button onclick="enterMap()">이 캐릭터로 입장하기</button>
 </div>
 
 <div class="tabs">
   <button class="tab on" onclick="switchTab('student',this)">교복 캐릭터</button>
   <button class="tab" onclick="switchTab('teacher',this)">교사 캐릭터</button>
   <button class="tab" onclick="switchTab('fantasy',this)">판타지 캐릭터</button>
-  <button class="tab" onclick="switchTab('anime',this)">애니 캐릭터</button>
 </div>
 
 <!-- 교복 -->
@@ -186,7 +68,7 @@ body{
       <button class="sb" data-d="left" onclick="setDir('s',this)">옆</button>
       <button class="sb" data-d="up" onclick="setDir('s',this)">뒤</button>
     </div>
-    <span style="font-size:11.5px;color:var(--muted);font-weight:500">교복 캐릭터</span>
+    <span style="font-size:12px;color:#666">교복 캐릭터</span>
   </div>
   <div class="opts">
     <div class="og"><span class="ol">성별</span><div class="sr" id="G_s_gender">
@@ -229,7 +111,7 @@ body{
       <div class="sw" style="background:#C41E3A" data-v="#C41E3A" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
       <div class="sw" style="background:#2E7A4A" data-v="#2E7A4A" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
       <div class="sw" style="background:#708090" data-v="#708090" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
-      <div class="sw" style="background:#E8E8E8;border:1.5px solid #ccc" data-v="#E8E8E8" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
+      <div class="sw" style="background:#E8E8E8;border:1px solid #ccc" data-v="#E8E8E8" onclick="pickS('s','hcolor','G_s_hcolor',this)"></div>
     </div></div>
     <div class="og"><span class="ol">교복 색상</span><div class="sr" id="G_s_ccolor">
       <div class="sw on" style="background:#1a3a6b" data-v="#1a3a6b" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
@@ -243,14 +125,7 @@ body{
       <div class="sw" style="background:#8B6914" data-v="#8B6914" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
       <div class="sw" style="background:#6E2F8C" data-v="#6E2F8C" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
       <div class="sw" style="background:#D4AC0D" data-v="#D4AC0D" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
-      <div class="sw" style="background:#FDFEFE;border:1.5px solid #ccc" data-v="#FDFEFE" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
-    </div></div>
-    <div class="og"><span class="ol">눈 모양</span><div class="sr" id="G_s_eye">
-      <button class="sb on" data-v="normal" onclick="pickB('s','eye','G_s_eye',this)">기본</button>
-      <button class="sb" data-v="small" onclick="pickB('s','eye','G_s_eye',this)">작은 눈</button>
-      <button class="sb" data-v="large" onclick="pickB('s','eye','G_s_eye',this)">큰 눈</button>
-      <button class="sb" data-v="round" onclick="pickB('s','eye','G_s_eye',this)">동그란 눈</button>
-      <button class="sb" data-v="sharp" onclick="pickB('s','eye','G_s_eye',this)">날카로운 눈</button>
+      <div class="sw" style="background:#FDFEFE;border:1px solid #ccc" data-v="#FDFEFE" onclick="pickS('s','ccolor','G_s_ccolor',this)"></div>
     </div></div>
     <div class="og"><span class="ol">액세서리 (중복 선택)</span><div class="sr" id="G_s_acc">
       <button class="ab" data-v="glasses" onclick="togAcc('s',this)">안경</button>
@@ -276,7 +151,7 @@ body{
       <button class="sb" data-d="left" onclick="setDir('t',this)">옆</button>
       <button class="sb" data-d="up" onclick="setDir('t',this)">뒤</button>
     </div>
-    <span style="font-size:11.5px;color:var(--muted);font-weight:500">교사 캐릭터</span>
+    <span style="font-size:12px;color:#666">교사 캐릭터</span>
   </div>
   <div class="opts">
     <div class="og"><span class="ol">성별</span><div class="sr" id="G_t_gender">
@@ -314,7 +189,7 @@ body{
       <div class="sw" style="background:#E8D5A3" data-v="#E8D5A3" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
       <div class="sw" style="background:#708090" data-v="#708090" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
       <div class="sw" style="background:#C0C0C0" data-v="#C0C0C0" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
-      <div class="sw" style="background:#E8E8E8;border:1.5px solid #ccc" data-v="#E8E8E8" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
+      <div class="sw" style="background:#E8E8E8;border:1px solid #ccc" data-v="#E8E8E8" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
       <div class="sw" style="background:#1a1a2e" data-v="#1a1a2e" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
       <div class="sw" style="background:#8B0000" data-v="#8B0000" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
       <div class="sw" style="background:#C41E3A" data-v="#C41E3A" onclick="pickS('t','hcolor','G_t_hcolor',this)"></div>
@@ -336,17 +211,10 @@ body{
       <div class="sw" style="background:#1E8449" data-v="#1E8449" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
       <div class="sw" style="background:#8B6914" data-v="#8B6914" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
       <div class="sw" style="background:#A04000" data-v="#A04000" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
-      <div class="sw" style="background:#FDFEFE;border:1.5px solid #ccc" data-v="#FDFEFE" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
+      <div class="sw" style="background:#FDFEFE;border:1px solid #ccc" data-v="#FDFEFE" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
       <div class="sw" style="background:#AED6F1" data-v="#AED6F1" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
       <div class="sw" style="background:#A9DFBF" data-v="#A9DFBF" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
       <div class="sw" style="background:#F5CBA7" data-v="#F5CBA7" onclick="pickS('t','ccolor','G_t_ccolor',this)"></div>
-    </div></div>
-    <div class="og"><span class="ol">눈 모양</span><div class="sr" id="G_t_eye">
-      <button class="sb on" data-v="normal" onclick="pickB('t','eye','G_t_eye',this)">기본</button>
-      <button class="sb" data-v="small" onclick="pickB('t','eye','G_t_eye',this)">작은 눈</button>
-      <button class="sb" data-v="large" onclick="pickB('t','eye','G_t_eye',this)">큰 눈</button>
-      <button class="sb" data-v="round" onclick="pickB('t','eye','G_t_eye',this)">동그란 눈</button>
-      <button class="sb" data-v="sharp" onclick="pickB('t','eye','G_t_eye',this)">날카로운 눈</button>
     </div></div>
     <div class="og"><span class="ol">액세서리 (중복 선택)</span><div class="sr" id="G_t_acc">
       <button class="ab" data-v="glasses" onclick="togAcc('t',this)">안경</button>
@@ -376,7 +244,7 @@ body{
       <button class="sb" data-d="left" onclick="setDir('f',this)">옆</button>
       <button class="sb" data-d="up" onclick="setDir('f',this)">뒤</button>
     </div>
-    <span style="font-size:11.5px;color:var(--muted);font-weight:500">판타지 캐릭터</span>
+    <span style="font-size:12px;color:#666">판타지 캐릭터</span>
   </div>
   <div class="opts">
     <div class="og"><span class="ol">성별</span><div class="sr" id="G_f_gender">
@@ -412,7 +280,7 @@ body{
       <div class="sw" style="background:#8B5E3C" data-v="#8B5E3C" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
       <div class="sw" style="background:#c8a96e" data-v="#c8a96e" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
       <div class="sw" style="background:#E8D5A3" data-v="#E8D5A3" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
-      <div class="sw" style="background:#E8E8E8;border:1.5px solid #ccc" data-v="#E8E8E8" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
+      <div class="sw" style="background:#E8E8E8;border:1px solid #ccc" data-v="#E8E8E8" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
       <div class="sw" style="background:#2E4A7A" data-v="#2E4A7A" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
       <div class="sw" style="background:#4A2E7A" data-v="#4A2E7A" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
       <div class="sw" style="background:#7A2E4A" data-v="#7A2E4A" onclick="pickS('f','hcolor','G_f_hcolor',this)"></div>
@@ -439,14 +307,7 @@ body{
       <div class="sw" style="background:#922B21" data-v="#922B21" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
       <div class="sw" style="background:#4a4a4a" data-v="#4a4a4a" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
       <div class="sw" style="background:#C0C0C0" data-v="#C0C0C0" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
-      <div class="sw" style="background:#FDFEFE;border:1.5px solid #ccc" data-v="#FDFEFE" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
-    </div></div>
-    <div class="og"><span class="ol">눈 모양</span><div class="sr" id="G_f_eye">
-      <button class="sb on" data-v="normal" onclick="pickB('f','eye','G_f_eye',this)">기본</button>
-      <button class="sb" data-v="small" onclick="pickB('f','eye','G_f_eye',this)">작은 눈</button>
-      <button class="sb" data-v="large" onclick="pickB('f','eye','G_f_eye',this)">큰 눈</button>
-      <button class="sb" data-v="round" onclick="pickB('f','eye','G_f_eye',this)">동그란 눈</button>
-      <button class="sb" data-v="sharp" onclick="pickB('f','eye','G_f_eye',this)">날카로운 눈</button>
+      <div class="sw" style="background:#FDFEFE;border:1px solid #ccc" data-v="#FDFEFE" onclick="pickS('f','ccolor','G_f_ccolor',this)"></div>
     </div></div>
     <div class="og"><span class="ol">액세서리 (중복 선택)</span><div class="sr" id="G_f_acc">
       <button class="ab" data-v="fstaff" onclick="togAcc('f',this)">마법봉</button>
@@ -462,197 +323,57 @@ body{
 </div>
 </div>
 
-<!-- 애니 캐릭터 -->
-<div class="section" id="S_anime">
-<div style="padding:.5rem 0">
-  <p style="font-size:12px;color:var(--muted);margin-bottom:14px">캐릭터를 클릭하면 바로 선택됩니다. 세부 설정 없이 바로 입장할 수 있어요.</p>
-  <div class="anime-grid">
-    <div class="anime-card on" id="ac_tanjiro" onclick="selectAnime('tanjiro',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_tanjiro"></g></svg>
-      <span class="anime-name">탄지로</span>
-      <span class="anime-series">귀멸의 칼날</span>
-    </div>
-    <div class="anime-card" id="ac_nezuko" onclick="selectAnime('nezuko',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_nezuko"></g></svg>
-      <span class="anime-name">네즈코</span>
-      <span class="anime-series">귀멸의 칼날</span>
-    </div>
-    <div class="anime-card" id="ac_inosuke" onclick="selectAnime('inosuke',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_inosuke"></g></svg>
-      <span class="anime-name">이노스케</span>
-      <span class="anime-series">귀멸의 칼날</span>
-    </div>
-    <div class="anime-card" id="ac_zenitsu" onclick="selectAnime('zenitsu',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_zenitsu"></g></svg>
-      <span class="anime-name">젠이츠</span>
-      <span class="anime-series">귀멸의 칼날</span>
-    </div>
-    <div class="anime-card" id="ac_hinata" onclick="selectAnime('hinata',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_hinata"></g></svg>
-      <span class="anime-name">히나타</span>
-      <span class="anime-series">하이큐!!</span>
-    </div>
-    <div class="anime-card" id="ac_luffy" onclick="selectAnime('luffy',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_luffy"></g></svg>
-      <span class="anime-name">루피</span>
-      <span class="anime-series">원피스</span>
-    </div>
-    <div class="anime-card" id="ac_zoro" onclick="selectAnime('zoro',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_zoro"></g></svg>
-      <span class="anime-name">조로</span>
-      <span class="anime-series">원피스</span>
-    </div>
-    <div class="anime-card" id="ac_naruto" onclick="selectAnime('naruto',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_naruto"></g></svg>
-      <span class="anime-name">나루토</span>
-      <span class="anime-series">나루토</span>
-    </div>
-    <div class="anime-card" id="ac_goku" onclick="selectAnime('goku',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_goku"></g></svg>
-      <span class="anime-name">손오공</span>
-      <span class="anime-series">드래곤볼</span>
-    </div>
-    <div class="anime-card" id="ac_ichigo" onclick="selectAnime('ichigo',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_ichigo"></g></svg>
-      <span class="anime-name">이치고</span>
-      <span class="anime-series">블리치</span>
-    </div>
-    <div class="anime-card" id="ac_sailormoon" onclick="selectAnime('sailormoon',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_sailormoon"></g></svg>
-      <span class="anime-name">세일러문</span>
-      <span class="anime-series">미소녀전사 세일러문</span>
-    </div>
-    <div class="anime-card" id="ac_gojo" onclick="selectAnime('gojo',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_gojo"></g></svg>
-      <span class="anime-name">고죠 사토루</span>
-      <span class="anime-series">주술회전</span>
-    </div>
-    <div class="anime-card" id="ac_itadori" onclick="selectAnime('itadori',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_itadori"></g></svg>
-      <span class="anime-name">이타도리</span>
-      <span class="anime-series">주술회전</span>
-    </div>
-    <div class="anime-card" id="ac_deku" onclick="selectAnime('deku',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_deku"></g></svg>
-      <span class="anime-name">데쿠</span>
-      <span class="anime-series">나의 히어로 아카데미아</span>
-    </div>
-    <div class="anime-card" id="ac_eren" onclick="selectAnime('eren',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_eren"></g></svg>
-      <span class="anime-name">에렌</span>
-      <span class="anime-series">진격의 거인</span>
-    </div>
-    <div class="anime-card" id="ac_levi" onclick="selectAnime('levi',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_levi"></g></svg>
-      <span class="anime-name">레비</span>
-      <span class="anime-series">진격의 거인</span>
-    </div>
-    <div class="anime-card" id="ac_kirito" onclick="selectAnime('kirito',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_kirito"></g></svg>
-      <span class="anime-name">키리토</span>
-      <span class="anime-series">소드 아트 온라인</span>
-    </div>
-    <div class="anime-card" id="ac_asuna" onclick="selectAnime('asuna',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_asuna"></g></svg>
-      <span class="anime-name">아스나</span>
-      <span class="anime-series">소드 아트 온라인</span>
-    </div>
-    <div class="anime-card" id="ac_conan" onclick="selectAnime('conan',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_conan"></g></svg>
-      <span class="anime-name">코난</span>
-      <span class="anime-series">명탐정 코난</span>
-    </div>
-    <div class="anime-card" id="ac_shinchan" onclick="selectAnime('shinchan',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_shinchan"></g></svg>
-      <span class="anime-name">짱구</span>
-      <span class="anime-series">짱구는 못말려</span>
-    </div>
-    <div class="anime-card" id="ac_elsa" onclick="selectAnime('elsa',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_elsa"></g></svg>
-      <span class="anime-name">엘사</span>
-      <span class="anime-series">겨울왕국</span>
-    </div>
-    <div class="anime-card" id="ac_moana" onclick="selectAnime('moana',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_moana"></g></svg>
-      <span class="anime-name">모아나</span>
-      <span class="anime-series">모아나</span>
-    </div>
-    <div class="anime-card" id="ac_snowwhite" onclick="selectAnime('snowwhite',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_snowwhite"></g></svg>
-      <span class="anime-name">백설공주</span>
-      <span class="anime-series">백설공주</span>
-    </div>
-    <div class="anime-card" id="ac_rapunzel" onclick="selectAnime('rapunzel',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_rapunzel"></g></svg>
-      <span class="anime-name">라푼젤</span>
-      <span class="anime-series">라푼젤</span>
-    </div>
-    <div class="anime-card" id="ac_cinderella" onclick="selectAnime('cinderella',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_cinderella"></g></svg>
-      <span class="anime-name">신데렐라</span>
-      <span class="anime-series">신데렐라</span>
-    </div>
-    <div class="anime-card" id="ac_mulan" onclick="selectAnime('mulan',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_mulan"></g></svg>
-      <span class="anime-name">뮬란</span>
-      <span class="anime-series">뮬란</span>
-    </div>
-  </div>
-</div>
-</div>
-
 <script src="ssambus_character_render.js"></script>
 <script>
 var ST={
-  s:{skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',ccolor:'#1a3a6b',acc:[],dir:'down',gender:'male',eye:'normal'},
-  t:{skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',cloth:'suit',ccolor:'#2C3E50',acc:[],dir:'down',gender:'male',eye:'normal'},
-  f:{skin:'#FDEBD0',hcolor:'#4A2E7A',hair:'short',cloth:'mage',ccolor:'#4A235A',acc:[],dir:'down',gender:'male',eye:'normal'}
+  s:{skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',ccolor:'#1a3a6b',acc:[],dir:'down',gender:'male'},
+  t:{skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',cloth:'suit',ccolor:'#2C3E50',acc:[],dir:'down',gender:'male'},
+  f:{skin:'#FDEBD0',hcolor:'#4A2E7A',hair:'short',cloth:'mage',ccolor:'#4A235A',acc:[],dir:'down',gender:'male'}
 };
-var TAB_MAP={student:'s',teacher:'t',fantasy:'f',anime:'a'};
+var TAB_MAP={student:'s',teacher:'t',fantasy:'f'};
 var currentChar='s';
-var selectedAnime='tanjiro';
 function switchTab(id,el){document.querySelectorAll('.tab').forEach(function(e){e.classList.remove('on')});document.querySelectorAll('.section').forEach(function(e){e.classList.remove('on')});el.classList.add('on');document.getElementById('S_'+id).classList.add('on');currentChar=TAB_MAP[id];}
-function selectAnime(preset,el){selectedAnime=preset;document.querySelectorAll('.anime-card').forEach(function(e){e.classList.remove('on')});el.classList.add('on');}
 function pickS(c,k,gid,el){ST[c][k]=el.dataset.v;document.querySelectorAll('#'+gid+' .sw').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
 function pickB(c,k,gid,el){ST[c][k]=el.dataset.v;document.querySelectorAll('#'+gid+' .sb').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
 function togAcc(c,el){var v=el.dataset.v,i=ST[c].acc.indexOf(v);if(i>-1){ST[c].acc.splice(i,1);el.classList.remove('on');}else{ST[c].acc.push(v);el.classList.add('on');}render(c);}
 function setDir(c,el){ST[c].dir=el.dataset.d;var sid=c==='s'?'student':(c==='t'?'teacher':'fantasy');document.querySelectorAll('#S_'+sid+' .dr .sb').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
 function enterMap(){
-  var nickname=(document.getElementById('nicknameInput').value||'').trim();
-  if(!nickname){alert('이름을 입력해주세요.');document.getElementById('nicknameInput').focus();return;}
-  var data;
-  if(currentChar==='a'){
-    data={type:'anime',preset:selectedAnime,dir:'down'};
-  } else {
-    var type=currentChar==='s'?'student':(currentChar==='t'?'teacher':'fantasy');
-    data=Object.assign({type:type},ST[currentChar]);
-  }
-  var charJson=JSON.stringify(data);
-  try{sessionStorage.setItem('ssambus_nickname',nickname);}catch(e){}
-  try{localStorage.setItem('ssambus_player_character',charJson);}catch(e){}
-  var target=document.getElementById('mapSelect').value;
-  var params=new URLSearchParams(window.location.search);
+  var nickname = (document.getElementById('nicknameInput').value || '').trim();
+  if(!nickname){ alert('이름을 입력해주세요.'); document.getElementById('nicknameInput').focus(); return; }
+
+  var type = currentChar==='s'?'student':(currentChar==='t'?'teacher':'fantasy');
+  var data = Object.assign({type:type}, ST[currentChar]);
+  var charJson = JSON.stringify(data);
+
+  try { sessionStorage.setItem('ssambus_nickname', nickname); } catch(e) {}
+  try { localStorage.setItem('ssambus_player_character', charJson); } catch(e) {}
+
+  var target = document.getElementById('mapSelect').value;
+  var params = new URLSearchParams(window.location.search);
   params.delete('map');
-  params.set('nickname',nickname);
-  params.set('c',charJson);
-  window.location.href=target+'?'+params.toString();
+  params.set('nickname', nickname);
+  params.set('c', charJson);
+  window.location.href = target + '?' + params.toString();
 }
+
+/* 학생 초대 링크로 들어온 경우, 원래 가려던 맵을 자동으로 선택하고 안내 문구를 보여줍니다 */
 (function(){
-  var params=new URLSearchParams(window.location.search);
-  var targetMap=params.get('map');
+  var params = new URLSearchParams(window.location.search);
+  var targetMap = params.get('map');
   if(params.get('room')){
-    var wb=document.getElementById('welcomeBanner');
-    wb.style.display='flex';
+    document.getElementById('welcomeBanner').style.display = '';
   }
   if(targetMap){
-    var select=document.getElementById('mapSelect');
-    for(var i=0;i<select.options.length;i++){
-      if(select.options[i].value===targetMap){select.value=targetMap;break;}
+    var select = document.getElementById('mapSelect');
+    for(var i=0; i<select.options.length; i++){
+      if(select.options[i].value === targetMap){ select.value = targetMap; break; }
     }
   }
-  var savedNick=params.get('nickname')||sessionStorage.getItem('ssambus_nickname')||'';
-  if(savedNick) document.getElementById('nicknameInput').value=savedNick;
+  // URL 또는 sessionStorage에서 이름 복원
+  var savedNick = params.get('nickname') || sessionStorage.getItem('ssambus_nickname') || '';
+  if(savedNick) document.getElementById('nicknameInput').value = savedNick;
 })();
+
 function render(c){
   var s=ST[c];
   var type=c==='s'?'student':(c==='t'?'teacher':'fantasy');
@@ -661,16 +382,6 @@ function render(c){
 render('s');
 render('t');
 render('f');
-(function(){
-  var presets=['tanjiro','nezuko','inosuke','zenitsu','hinata','luffy',
-    'zoro','naruto','goku','ichigo','sailormoon','gojo','itadori',
-    'deku','eren','levi','kirito','asuna','conan','shinchan',
-    'elsa','moana','snowwhite','rapunzel','cinderella','mulan'];
-  presets.forEach(function(p){
-    var g=document.getElementById('ag_'+p);
-    if(g) g.innerHTML=_animeChar(p,'down','_ap_'+p);
-  });
-})();
 </script>
 </body>
 </html>

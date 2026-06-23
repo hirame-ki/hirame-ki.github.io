@@ -16,7 +16,7 @@ let __rtRoomId = null;
 let __rtMapId = null;
 let __rtTeacherView = false;
 let __rtChatMode = 'all'; // 'all' | 'proximity' | 'disabled'  (교사 대시보드에서 broadcast로 업데이트됨)
-const __rtProximityThreshold = 5; // 근접 판정 타일 거리 (유클리드)
+const __rtProximityThreshold = 7; // 근접 판정 타일 거리 (유클리드)
 
 function __rtIsConfigured(){
   return typeof SUPABASE_URL === 'string'
@@ -39,6 +39,7 @@ function __rtMyState(){
     c: pos.c,
     dir: PLAYER.dir,
     type: PLAYER.type,
+    preset: PLAYER.preset,
     skin: PLAYER.skin,
     hcolor: PLAYER.hcolor,
     hair: PLAYER.hair,
@@ -464,6 +465,7 @@ async function loadMapOverlays(mapId, ctx, ts){
 }
 
 function __rtDrawOverlayTile(ctx, x, y, ts, type){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   switch(type){
     case 20: __rtCT20(ctx,x,y,ts); break;
     case 21: __rtCT21(ctx,x,y,ts); break;
@@ -478,6 +480,7 @@ function __rtDrawOverlayTile(ctx, x, y, ts, type){
     case 36: __rtCT36(ctx,x,y,ts); break;
     case 37: __rtCT37(ctx,x,y,ts); break;
   }
+  ctx.shadowColor='transparent';
 }
 
 function __rtCT20(ctx,x,y,ts){

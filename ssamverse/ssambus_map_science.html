@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>쌤버스 - 과학실 맵</title>
 <style>
 *{box-sizing:border-box}
@@ -26,13 +29,25 @@ h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
 .legend{margin-top:10px;font-size:12px;color:#aaa;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .legend span{display:flex;align-items:center;gap:4px}
 .sw{display:inline-block;width:13px;height:13px;border-radius:3px}
+
+/* --- fullscreen + classroom design overrides --- */
+html{height:100%}
+body{height:100%;align-items:stretch;padding:0;overflow:hidden;font-family:'Noto Sans KR',sans-serif;background:linear-gradient(to bottom,#0A1628,#0E1E34)}
+#main-btn{background:rgba(26,53,88,.85);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.4);backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
+#main-btn:hover{background:rgba(17,36,64,.9)}
+#char-btn{background:rgba(52,112,212,.85);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.4);backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s}
+#char-btn:hover{background:rgba(41,90,172,.9)}
+h2{text-align:center;padding-top:18px;color:rgba(255,255,255,.85);font-size:.95rem;font-weight:600;letter-spacing:-.01em}
+.info{text-align:center;color:rgba(255,255,255,.4);font-weight:400}
+.stage-wrap{flex:1;min-height:0;width:100%}
+.legend{justify-content:center;padding-bottom:10px;font-size:11.5px;color:rgba(255,255,255,.45)}
 </style>
 </head>
 <body>
 <a id="main-btn" href="index.html">메인</a>
 <a id="char-btn" href="#">캐릭터 변경</a>
 <h2>쌤버스 - 과학실</h2>
-<div class="info">방향키 또는 버튼으로 이동하세요</div>
+<div class="info">방향키 · 화면 스와이프로 이동</div>
 <div class="stage-wrap">
 <div class="stage">
   <canvas id="map" width="2880" height="2880"></canvas>
@@ -40,11 +55,7 @@ h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
   <div id="remote-players"></div>
 </div>
 </div>
-<div class="pad">
-  <div></div><button onclick="move('up')">&#8593;</button><div></div>
-  <button onclick="move('left')">&#8592;</button><div></div><button onclick="move('right')">&#8594;</button>
-  <div></div><button onclick="move('down')">&#8595;</button><div></div>
-</div>
+
 <div class="legend">
   <span><span class="sw" style="background:#e8f0e8"></span>바닥</span>
   <span><span class="sw" style="background:#2980b9"></span>실험대</span>
@@ -166,6 +177,7 @@ function drawDisplay(x,y,c){
   ctx.fillStyle='rgba(200,255,200,.1)';ctx.fillRect(x+2,y+17,TS-6,3);ctx.fillRect(x+2,y+24,TS-6,3);
 }
 function drawTeacherBench(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#2c3e50';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#34495e';ctx.fillRect(x+2,y+4,TS-4,TS*0.5);
   ctx.fillStyle='#85c1e9';ctx.fillRect(x+TS/2-4,y+8,8,12);
@@ -173,34 +185,42 @@ function drawTeacherBench(x,y){
   ctx.fillStyle='#555';ctx.fillRect(x+8,y+10,6,10);
   ctx.fillStyle='#ff6600';ctx.beginPath();ctx.arc(x+11,y+8,4,0,Math.PI*2);ctx.fill();
   ctx.fillStyle='#ffcc00';ctx.beginPath();ctx.arc(x+11,y+8,2,0,Math.PI*2);ctx.fill();
+  ctx.shadowColor='transparent';
 }
 function drawChemCabinet(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#5b2c6f';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#7d3c98';ctx.fillRect(x+3,y+3,TS-6,TS-6);
   var cols=['#e74c3c','#f39c12','#2ecc71','#3498db'];
   for(var i=0;i<4;i++){ctx.fillStyle=cols[i];ctx.fillRect(x+5+i*10,y+8,7,16);ctx.fillStyle='#888';ctx.fillRect(x+6+i*10,y+6,5,4);}
   ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(x+3,y+TS/2,TS-6,1);
   for(var i=0;i<4;i++){ctx.fillStyle=cols[(i+2)%4];ctx.fillRect(x+5+i*10,y+TS/2+6,7,14);ctx.fillStyle='#888';ctx.fillRect(x+6+i*10,y+TS/2+4,5,4);}
+  ctx.shadowColor='transparent';
 }
 function drawLabBench(x,y,r,c){
   var isTop=(grid[r+1]&&grid[r+1][c]===4);
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#d6eaf8';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#2980b9';ctx.fillRect(x,isTop?y+TS-5:y,TS,5);
   /* random items */
   if((c+r)%5===0){ctx.fillStyle='#85c1e9';ctx.fillRect(x+TS/2-3,y+TS*0.2,6,10);ctx.fillStyle='rgba(100,180,255,.4)';ctx.fillRect(x+TS/2-2,y+TS*0.22,4,6);ctx.fillStyle='#5d6d7e';ctx.fillRect(x+TS/2-3,y+TS*0.18,6,3);}
   if((c+r)%7===0){ctx.fillStyle='#2c3e50';ctx.fillRect(x+TS*0.58,y+TS*0.15,TS*0.3,TS*0.55);ctx.fillStyle='#5d6d7e';ctx.fillRect(x+TS*0.6,y+TS*0.12,TS*0.26,TS*0.1);}
   if((c+r)%4===0){for(var i=0;i<3;i++){ctx.fillStyle=['#e74c3c','#f39c12','#2ecc71'][i];ctx.fillRect(x+4+i*8,y+TS*0.3,5,12);ctx.fillStyle='#888';ctx.fillRect(x+4+i*8,y+TS*0.28,5,3);}}
+  ctx.shadowColor='transparent';
 }
 function drawSink(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#bdc3c7';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#ecf0f1';ctx.fillRect(x+5,y+8,TS-10,TS-16);
   ctx.strokeStyle='#95a5a6';ctx.lineWidth=1;ctx.strokeRect(x+5,y+8,TS-10,TS-16);
   ctx.fillStyle='#7f8c8d';ctx.fillRect(x+TS/2-2,y+3,4,10);
   ctx.fillStyle='#3498db';ctx.beginPath();ctx.arc(x+TS/2,y+20,3,0,Math.PI*2);ctx.fill();
+  ctx.shadowColor='transparent';
 }
 function drawTelescopeBlock(ax,ay){
   /* 3×3 large telescope graphic */
   var W=3*TS,H=3*TS;
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#1a2030';ctx.fillRect(ax,ay,W,H);
   /* tripod legs */
   ctx.strokeStyle='#7f8c8d';ctx.lineWidth=4;
@@ -224,9 +244,11 @@ function drawTelescopeBlock(ax,ay){
   ctx.fillStyle='#555';ctx.fillRect(ax+W*0.55,ay+H*0.38,W*0.08,W*0.04);
   /* label */
   ctx.fillStyle='rgba(180,220,255,.25)';ctx.beginPath();ctx.arc(ax+W*0.5,ay+H*0.28,W*0.15,0,Math.PI*2);ctx.fill();
+  ctx.shadowColor='transparent';
 }
 function drawChair(x,y){
   ctx.fillStyle='#d4e8d0';ctx.fillRect(x,y,TS,TS);
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#6a9a60';ctx.fillRect(x+TS*0.18,y+TS*0.18,TS*0.64,TS*0.64);
   ctx.fillStyle='#5a8a50';ctx.fillRect(x+TS*0.22,y+TS*0.22,TS*0.56,TS*0.56);
   ctx.fillStyle='#4a7040';
@@ -234,8 +256,10 @@ function drawChair(x,y){
   ctx.fillRect(x+TS*0.78,y+TS*0.1,TS*0.12,TS*0.12);
   ctx.fillRect(x+TS*0.1,y+TS*0.78,TS*0.12,TS*0.12);
   ctx.fillRect(x+TS*0.78,y+TS*0.78,TS*0.12,TS*0.12);
+  ctx.shadowColor='transparent';
 }
 function drawDoor(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#e67e22';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#27ae60';ctx.fillRect(x+5,y+3,TS-10,TS-6);
   ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -245,6 +269,7 @@ function drawDoor(x,y){
   ctx.moveTo(x+TS-14,y+TS*0.62-6);ctx.lineTo(x+TS-8,y+TS*0.62);ctx.lineTo(x+TS-14,y+TS*0.62+6);ctx.stroke();
   ctx.fillStyle='#f1c40f';ctx.beginPath();ctx.arc(x+10,y+TS*0.5,3.5,0,Math.PI*2);ctx.fill();
   ctx.strokeStyle='#f1c40f';ctx.lineWidth=2;ctx.strokeRect(x+5,y+3,TS-10,TS-6);
+  ctx.shadowColor='transparent';
 }
 
 function drawMap(){
@@ -272,14 +297,22 @@ function drawMap(){
   ctx.fillText('준비실',49*TS,48*TS);
   /* Chemical hazard marker */
   ctx.fillStyle='rgba(255,200,0,.06)';ctx.fillRect(TS,4*TS,5*TS,12*TS);
+  /* 45-degree drop shadows */
+  ctx.fillStyle='rgba(0,0,0,0.30)';
+  for(var __r=0;__r<ROWS;__r++){for(var __c=0;__c<COLS;__c++){
+    if(isWalk(grid[__r][__c])) continue;
+    var __x=__c*TS,__y=__r*TS;
+    if((__c+1<COLS)&&isWalk(grid[__r][__c+1])&&grid[__r][__c+1]!==5) ctx.fillRect(__x+TS,__y+5,6,TS);
+    if((__r+1<ROWS)&&isWalk(grid[__r+1][__c])&&grid[__r+1][__c]!==5) ctx.fillRect(__x+5,__y+TS,TS,6);
+  }}
 }
 drawMap();
 
-function updateCamera(){
+function updateCamera(){var _sw=document.querySelector('.stage-wrap');var _vw=_sw.clientWidth||VIEW_W;var _vh=_sw.clientHeight||VIEW_H;
   if(TEACHER_VIEW){var wrap=document.querySelector('.stage-wrap');wrap.style.width=(COLS*TS)+'px';wrap.style.height=(ROWS*TS)+'px';wrap.style.overflow='visible';return;}
   var stage=document.querySelector('.stage');
-  var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
-  var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
+  var offX=Math.max(0,Math.min(pos.c*TS-_vw/2+TS/2,COLS*TS-_vw));
+  var offY=Math.max(0,Math.min(pos.r*TS-_vh/2+TS/2,ROWS*TS-_vh));
   stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
 }
 var pos={r:5,c:20};
@@ -324,6 +357,7 @@ if(!TEACHER_VIEW){
   try{initMissionSystem('science');}catch(e){console.warn('[science] missions:',e);}
   try{loadMapOverlays('science',ctx,TS);}catch(e){console.warn('[science] overlays:',e);}
 }
+window.addEventListener('resize',updateCamera);
 </script>
 </body>
 </html>

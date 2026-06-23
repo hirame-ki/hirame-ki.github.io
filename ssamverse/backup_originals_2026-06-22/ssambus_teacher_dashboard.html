@@ -1,163 +1,154 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>쌤버스 교사 대시보드</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#EEF2F9;--surface:#fff;--primary:#1A3558;--primary-d:#112340;
-  --accent:#3470D4;--accent-l:#EAF0FF;--border:#D5DDED;
-  --text:#0F1E30;--muted:#627490;--success:#1B6B45;--danger:#C0392B;--warn:#C87B1A;
-}
-body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--bg);color:var(--text)}
+*{box-sizing:border-box}
+body{font-family:sans-serif;padding:0;margin:0;background:#f5f6f8;color:#222}
 
-/* ===== Gate screens ===== */
-#gate,#roomGate{position:fixed;inset:0;background:linear-gradient(145deg,#0A1628,#1A3558);display:flex;align-items:flex-start;justify-content:center;z-index:100;overflow-y:auto;padding:24px 0;background-image:linear-gradient(145deg,#0A1628,#1A3558),linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:100%,40px 40px,40px 40px}
-#gate.hidden,#roomGate.hidden{display:none}
-#gate .gate-box,#roomGate .gate-box{margin:auto}
-.gate-box{background:var(--surface);padding:2.2rem 2.5rem;border-radius:18px;text-align:center;width:340px;box-shadow:0 24px 64px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.06)}
-.gate-box.wide{width:410px}
-.gate-box h1{margin:0 0 .3rem;font-size:1.25rem;font-weight:700;color:var(--primary);display:flex;align-items:center;justify-content:center;gap:9px}
-.gate-box p{margin:0 0 1.4rem;font-size:13px;color:var(--muted)}
-.gate-box input{width:100%;padding:11px 14px;font-size:15px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:.8rem;text-align:center;font-family:'Noto Sans KR',sans-serif;outline:none;transition:border-color .15s}
-.gate-box input:focus{border-color:var(--accent)}
-.gate-box button{width:100%;padding:12px;font-size:14.5px;border:none;border-radius:10px;background:linear-gradient(135deg,#1A3558,#2A5FA8);color:#fff;cursor:pointer;font-weight:600;font-family:'Noto Sans KR',sans-serif;transition:all .15s}
-.gate-box button:hover{filter:brightness(1.08);transform:translateY(-1px)}
-.gate-box button.secondary{background:#F2F5FC;color:var(--primary);border:1.5px solid var(--border);margin-top:.5rem;transform:none;filter:none}
-.gate-box button.secondary:hover{background:#E8EEFB;transform:none;filter:none}
-.gate-err{color:var(--danger);font-size:12px;margin-top:.5rem;min-height:16px}
-.gate-divider{display:flex;align-items:center;gap:8px;margin:1rem 0;color:#C0CCDB;font-size:11px;font-weight:500}
-.gate-divider::before,.gate-divider::after{content:'';flex:1;height:1px;background:#E8EEF5}
-.recent-room{background:#F7F9FC;border-radius:10px;padding:.9rem;margin-bottom:.4rem}
+/* ===== 접속 코드 / 수업 선택 화면 ===== */
+#gate, #roomGate{position:fixed;inset:0;background:#2c3e50;display:flex;align-items:flex-start;justify-content:center;z-index:100;overflow-y:auto;padding:24px 0}
+#gate.hidden, #roomGate.hidden{display:none}
+#gate .gate-box, #roomGate .gate-box{margin:auto}
+.gate-box{background:#fff;padding:2rem 2.5rem;border-radius:12px;text-align:center;width:320px}
+.gate-box.wide{width:380px}
+.gate-box h1{margin:0 0 .3rem;font-size:1.3rem}
+.gate-box p{margin:0 0 1.2rem;font-size:13px;color:#777}
+.gate-box input{width:100%;padding:10px;font-size:15px;border:1px solid #ccc;border-radius:8px;margin-bottom:.8rem;text-align:center}
+.gate-box button{width:100%;padding:10px;font-size:15px;border:none;border-radius:8px;background:#2c3e50;color:#fff;cursor:pointer;font-weight:500}
+.gate-box button:hover{background:#1a252f}
+.gate-box button.secondary{background:#eee;color:#444}
+.gate-box button.secondary:hover{background:#ddd}
+.gate-err{color:#e74c3c;font-size:12px;margin-top:.5rem;min-height:16px}
+.gate-divider{display:flex;align-items:center;gap:8px;margin:1.2rem 0;color:#bbb;font-size:11px}
+.gate-divider::before,.gate-divider::after{content:'';flex:1;height:1px;background:#eee}
+.recent-room{background:#f8f9fa;border-radius:8px;padding:.9rem;margin-bottom:.4rem}
 .recent-room.hidden{display:none}
-.recent-room p{margin:0 0 .5rem;font-size:12px;color:var(--muted);font-weight:600}
-.recent-room-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:.55rem .7rem;margin-bottom:.4rem}
+.recent-room p{margin:0 0 .4rem;font-size:12px;color:#888}
+.recent-room-row{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:#fff;border:1px solid #eee;border-radius:8px;padding:.55rem .7rem;margin-bottom:.4rem}
 .recent-room-row:last-child{margin-bottom:0}
 .recent-room-info{text-align:left;min-width:0}
 .recent-room-info .recent-name{font-size:12.5px;font-weight:600;color:#444;margin-bottom:1px}
-.recent-room-info .recent-code{font-size:14px;letter-spacing:2px;font-family:monospace;font-weight:700;color:var(--primary)}
+.recent-room-info .recent-code{font-size:14px;letter-spacing:2px;font-family:monospace;font-weight:600;color:#2c3e50}
 .recent-room-btns{display:flex;gap:4px;flex-shrink:0}
-.recent-room-btns button{width:auto;padding:7px 10px;font-size:12px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all .15s}
-.recent-room-btns button:hover{background:var(--primary-d)}
-.recent-room-btns button.ghost-sm{background:#F2F5FC;color:var(--muted);padding:7px 8px;border:1px solid var(--border)}
-.recent-room-btns button.ghost-sm:hover{background:#E8EEFB;color:var(--text)}
-.recent-room-btns button.ghost-sm.del{color:var(--danger)}
+.recent-room-btns button{width:auto;padding:7px 10px;font-size:12px;background:#2c3e50;color:#fff}
+.recent-room-btns button:hover{background:#1a252f}
+.recent-room-btns button.ghost-sm{background:#eee;color:#666;padding:7px 8px}
+.recent-room-btns button.ghost-sm:hover{background:#ddd}
+.recent-room-btns button.ghost-sm.del{color:#e74c3c}
 
-/* ===== Layout ===== */
+/* ===== 레이아웃 ===== */
 #dash{display:none}
 #dash.show{display:block}
-.topbar{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to right,#112340,#1A3558);color:#fff;padding:10px 20px;box-shadow:0 2px 8px rgba(0,0,0,.2);gap:12px}
-.topbar h1{font-size:.95rem;margin:0;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:7px;white-space:nowrap}
-.topbar .room{font-size:11.5px;background:rgba(255,255,255,.12);padding:4px 10px;border-radius:20px;margin-left:8px;font-family:monospace;font-weight:700;letter-spacing:1.5px;white-space:nowrap}
-.topbar button{padding:6px 12px;border-radius:8px;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
-.topbar .left{display:flex;align-items:center;gap:0;flex-shrink:0}
+.topbar{display:flex;align-items:center;justify-content:space-between;background:#2c3e50;color:#fff;padding:12px 20px}
+.topbar h1{font-size:1.1rem;margin:0;font-weight:600}
+.topbar .room{font-size:12px;background:#1a252f;padding:4px 10px;border-radius:6px;margin-left:10px}
+.topbar button{padding:6px 14px;border-radius:6px;border:none;background:#fff;color:#2c3e50;font-size:12px;font-weight:500;cursor:pointer}
+.topbar .left{display:flex;align-items:center;gap:0}
 
-.maptabs{display:flex;gap:6px;flex-wrap:wrap;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border)}
-.maptab{padding:7px 16px;font-size:13px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;color:var(--muted);transition:all .15s}
-.maptab:hover{border-color:var(--accent);color:var(--primary)}
-.maptab.on{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:600}
+.maptabs{display:flex;gap:8px;flex-wrap:wrap;padding:14px 20px;background:#fff;border-bottom:1px solid #e2e2e2}
+.maptab{padding:8px 18px;font-size:13px;border-radius:20px;border:1px solid #ccc;background:#fff;cursor:pointer}
+.maptab.on{background:#2c3e50;color:#fff;border-color:#2c3e50;font-weight:500}
+
 .content{padding:20px;max-width:1000px;margin:0 auto}
-.zone{background:var(--surface);border-radius:14px;padding:16px 18px;margin-bottom:14px;border:1px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.04)}
-.zone-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.zone-head h2{font-size:14.5px;margin:0;font-weight:700;color:var(--primary)}
-.zone-head .badge{font-size:11px;color:var(--muted);font-weight:normal;margin-left:6px}
-.addbtn{padding:6px 14px;font-size:12px;border-radius:8px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;font-weight:600;font-family:'Noto Sans KR',sans-serif;transition:all .15s}
-.addbtn:hover{background:var(--accent);color:#fff}
+.zone{background:#fff;border-radius:10px;padding:16px 18px;margin-bottom:16px;border:1px solid #e6e6e6}
+.zone-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.zone-head h2{font-size:15px;margin:0}
+.zone-head .badge{font-size:11px;color:#888;font-weight:normal;margin-left:6px}
+.addbtn{padding:6px 12px;font-size:12px;border-radius:6px;border:1px solid #2c3e50;background:#fff;color:#2c3e50;cursor:pointer;font-weight:500}
+.addbtn:hover{background:#2c3e50;color:#fff}
 
 .mlist{display:flex;flex-direction:column;gap:8px}
-.mcard{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;background:#F8FAFC;border-radius:10px;border:1px solid #E8EEF5;transition:box-shadow .15s}
-.mcard:hover{box-shadow:0 2px 8px rgba(0,0,0,.06);border-color:var(--border)}
+.mcard{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:#f8f9fa;border-radius:8px;border:1px solid #ececec}
 .mcard .info{flex:1;min-width:0}
-.mcard .title{font-size:13.5px;font-weight:600;margin-bottom:3px;color:var(--text)}
-.mcard .meta{font-size:11px;color:var(--muted)}
+.mcard .title{font-size:13.5px;font-weight:500;margin-bottom:3px}
+.mcard .meta{font-size:11px;color:#888}
 .mcard .meta span{margin-right:8px}
-.mtype{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:700;color:#fff;letter-spacing:.02em}
-.mtype.youtube{background:#E53935}
-.mtype.quiz{background:#7B1FA2}
-.mtype.google_form{background:#1E7E34}
-.mtype.link{background:#1565C0}
-.mtype.image_quiz{background:#E65100}
-.mtype.short_answer{background:#00695C}
-.mtype.discussion{background:#1565C0}
-.mtype.ox_quiz{background:#6A1B9A}
-.req{color:var(--warn);font-weight:700;font-size:11px}
-.mcard .btns{display:flex;gap:5px;flex-shrink:0}
-.mcard .btns button{padding:5px 10px;font-size:11.5px;border-radius:7px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;color:var(--text);font-weight:500}
-.mcard .btns button:hover{background:#F0F4FA;border-color:#C0CCDB}
-.mcard .btns button.del{color:var(--danger);border-color:#F5B7B1}
-.mcard .btns button.del:hover{background:#FDE8E8}
-.mcard .btns button:disabled{color:#C0CCDB;border-color:#E8EEF5;cursor:not-allowed;background:#FAFBFC}
-.mcard .btns button:disabled:hover{background:#FAFBFC}
-.empty{font-size:12.5px;color:#A0B0C0;padding:10px 0;text-align:center}
+.mtype{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10.5px;font-weight:600;color:#fff}
+.mtype.youtube{background:#e74c3c}
+.mtype.quiz{background:#9b59b6}
+.mtype.google_form{background:#27ae60}
+.mtype.link{background:#3498db}
+.mtype.image_quiz{background:#e67e22}
+.mtype.short_answer{background:#16a085}
+.mtype.discussion{background:#2980b9}
+.mtype.ox_quiz{background:#8e44ad}
+.req{color:#e67e22;font-weight:600}
+.mcard .btns{display:flex;gap:6px;flex-shrink:0}
+.mcard .btns button{padding:5px 10px;font-size:11.5px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer}
+.mcard .btns button.del{color:#e74c3c;border-color:#f5b7b1}
+.mcard .btns button:hover{background:#eee}
+.mcard .btns button:disabled{color:#ccc;border-color:#eee;cursor:not-allowed;background:#fafafa}
+.mcard .btns button:disabled:hover{background:#fafafa}
+.empty{font-size:12.5px;color:#aaa;padding:8px 0;text-align:center}
 
-/* ===== Modals ===== */
-#modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+/* ===== 모달 ===== */
+#modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
 #modal-bg.show{display:flex}
-#modal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.25)}
-#modal h2{margin:0 0 1.2rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
+#modal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+#modal h2{margin:0 0 1rem;font-size:16px}
 .field{margin-bottom:.9rem}
-.field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:4px;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
-.field input[type=text],.field input[type=number],.field input[type=url],.field select,.field textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;transition:border-color .15s;color:var(--text)}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.field label{display:block;font-size:12.5px;color:#555;margin-bottom:4px;font-weight:500}
+.field input[type=text],.field input[type=number],.field input[type=url],.field select,.field textarea{
+  width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:13px;font-family:inherit}
 .field textarea{resize:vertical;min-height:54px}
 .row2{display:flex;gap:10px}
 .row2 .field{flex:1}
-.checkrow{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500}
+.checkrow{display:flex;align-items:center;gap:6px;font-size:13px}
 .checkrow input{width:auto}
 .opt-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
 .opt-row input[type=text]{flex:1}
 .opt-row input[type=radio]{width:auto;flex-shrink:0}
 .modal-btns{display:flex;gap:8px;margin-top:1.2rem}
-.modal-btns button{flex:1;padding:11px;border-radius:10px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s}
-.btn-save{background:linear-gradient(135deg,#1A3558,#2A5FA8);color:#fff}
-.btn-save:hover{filter:brightness(1.08)}
-.btn-cancel{background:#F2F5FC;color:var(--muted);border:1.5px solid var(--border)}
-.btn-cancel:hover{background:#E8EEFB}
-.section-hint{font-size:12px;color:var(--muted);margin:-4px 0 12px;line-height:1.6}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:10px 22px;border-radius:10px;font-size:13px;display:none;z-index:60;box-shadow:0 4px 16px rgba(0,0,0,.2);font-family:'Noto Sans KR',sans-serif}
+.modal-btns button{flex:1;padding:10px;border-radius:8px;border:none;font-size:14px;font-weight:500;cursor:pointer}
+.btn-save{background:#2c3e50;color:#fff}
+.btn-save:hover{background:#1a252f}
+.btn-cancel{background:#eee;color:#444}
+.btn-cancel:hover{background:#ddd}
+.section-hint{font-size:11.5px;color:#999;margin:-4px 0 10px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2c3e50;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;display:none;z-index:60}
 
-/* ===== Link modal ===== */
-#linkModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+/* ===== 학생 초대 링크 모달 ===== */
+#linkModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
 #linkModal-bg.show{display:flex}
-#linkModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,.25)}
-#linkModal h2{margin:0 0 1rem;font-size:16px;text-align:left;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
+#linkModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;text-align:center}
+#linkModal h2{margin:0 0 1rem;font-size:16px;text-align:left}
 .linkrow{display:flex;gap:6px;align-items:center;margin-bottom:12px}
-.linkrow input{flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:11px;background:#F7F9FC;font-family:monospace;text-align:left;color:var(--text);outline:none}
-.linkrow button{padding:7px 12px;font-size:12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;flex-shrink:0;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all .15s}
-.linkrow button:hover{background:#F0F4FA}
+.linkrow input{flex:1;padding:7px 8px;border:1px solid #ccc;border-radius:6px;font-size:11px;background:#f8f9fa;font-family:monospace;text-align:left}
+.linkrow button{padding:7px 10px;font-size:12px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer;flex-shrink:0}
+.linkrow button:hover{background:#eee}
 #lm_qr_wrap{margin:4px 0 8px}
-#lm_qr_wrap canvas,#lm_qr_wrap img{border:1px solid var(--border);border-radius:10px;max-width:100%}
-#lm_qr_label{font-size:11px;color:var(--muted);margin-bottom:8px;font-family:monospace;word-break:break-all;text-align:left}
-#lm_expand_btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:8px;border:1.5px solid var(--border);background:#F7F9FC;font-size:13px;cursor:pointer;margin-bottom:4px;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all .15s}
-#lm_expand_btn:hover{background:#E8EEFB;border-color:var(--accent)}
-/* ===== QR Fullscreen ===== */
+#lm_qr_wrap canvas,#lm_qr_wrap img{border:1px solid #eee;border-radius:8px;max-width:100%}
+#lm_qr_label{font-size:11px;color:#aaa;margin-bottom:8px;font-family:monospace;word-break:break-all;text-align:left}
+#lm_expand_btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:6px;border:1px solid #bbb;background:#f8f9fa;font-size:13px;cursor:pointer;margin-bottom:4px}
+#lm_expand_btn:hover{background:#e8e8e8}
+/* ===== QR 전체화면 오버레이 ===== */
 #qrFullscreen{position:fixed;inset:0;background:#fff;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px}
 #qrFullscreen.show{display:flex}
-#qrFullscreen canvas,#qrFullscreen img{border:1px solid var(--border);border-radius:12px}
-#qrFullscreen .qrfs-label{font-size:13px;color:var(--muted);font-family:monospace;max-width:90vw;word-break:break-all;text-align:center}
-#qrFullscreen .qrfs-close{position:absolute;top:20px;right:20px;padding:8px 18px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface);font-size:14px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all .15s}
-#qrFullscreen .qrfs-close:hover{background:#F0F4FA}
+#qrFullscreen canvas,#qrFullscreen img{border:1px solid #eee;border-radius:12px}
+#qrFullscreen .qrfs-label{font-size:13px;color:#888;font-family:monospace;max-width:90vw;word-break:break-all;text-align:center}
+#qrFullscreen .qrfs-close{position:absolute;top:20px;right:20px;padding:8px 18px;border-radius:8px;border:1px solid #ccc;background:#fff;font-size:14px;cursor:pointer}
+#qrFullscreen .qrfs-close:hover{background:#eee}
 
-/* ===== Order modal ===== */
-#orderModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+/* ===== 맵 이동 순서 모달 ===== */
+#orderModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
 #orderModal-bg.show{display:flex}
-#orderModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.25)}
-#orderModal h2{margin:0 0 1rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
-.orderrow{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;background:#FAFBFC}
-.orderrow .om-idx{width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700}
-.orderrow .om-label{flex:1;font-size:13.5px;font-weight:500;color:var(--text)}
-.orderrow .om-badge{font-size:11px;padding:3px 9px;border-radius:10px;flex-shrink:0;font-weight:600}
-.orderrow .om-badge.ok{background:#E8F5E9;color:var(--success)}
-.orderrow .om-badge.none{background:#F2F5FC;color:var(--muted)}
+#orderModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+#orderModal h2{margin:0 0 1rem;font-size:16px}
+.orderrow{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #eee;border-radius:8px;margin-bottom:6px}
+.orderrow .om-idx{width:22px;height:22px;border-radius:50%;background:#2c3e50;color:#fff;font-size:12px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.orderrow .om-label{flex:1;font-size:13.5px;font-weight:500}
+.orderrow .om-badge{font-size:11.5px;padding:3px 8px;border-radius:10px;flex-shrink:0}
+.orderrow .om-badge.ok{background:#e8f5e9;color:#2e7d32}
+.orderrow .om-badge.none{background:#f5f5f5;color:#999}
 .orderrow .om-arrows{display:flex;gap:4px;flex-shrink:0}
-.orderrow .om-arrows button{padding:4px 8px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:all .15s}
-.orderrow .om-arrows button:hover{background:#F0F4FA}
-.orderrow .om-arrows button:disabled{opacity:.3;cursor:not-allowed}
+.orderrow .om-arrows button{padding:4px 8px;font-size:12px;border-radius:6px;border:1px solid #ccc;background:#fff;cursor:pointer}
+.orderrow .om-arrows button:hover{background:#eee}
+.orderrow .om-arrows button:disabled{opacity:.35;cursor:not-allowed}
 
 
 /* ===== 실시간 맵 보기 모달 ===== */
@@ -177,89 +168,88 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 .lm-iframe-scaler{position:relative;overflow:hidden;flex-shrink:0}
 .lm-frame-wrap iframe{position:absolute;top:0;left:0;border:0;transform-origin:top left;pointer-events:none;background:#fff}
 
-/* ===== Join map modal ===== */
+/* ===== 맵 참가 모달 ===== */
 #joinMapModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:55;padding:16px}
 #joinMapModal-bg.show{display:flex}
-#joinMapModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:420px;box-shadow:0 16px 48px rgba(0,0,0,.3)}
-#joinMapModal h2{margin:0 0 .6rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
+#joinMapModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:420px}
+#joinMapModal h2{margin:0 0 .6rem;font-size:16px}
 .jm-tabs{display:flex;flex-direction:column;gap:6px;margin:10px 0}
-.jm-tabs button{padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-size:13.5px;cursor:pointer;text-align:left;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all .15s;color:var(--text)}
-.jm-tabs button:hover{background:#EEF2F9;border-color:var(--accent)}
+.jm-tabs button{padding:10px 14px;border-radius:8px;border:1px solid #ccc;background:#fff;font-size:13.5px;cursor:pointer;text-align:left}
+.jm-tabs button:hover{background:#eee}
 
-/* ===== PDF/AI modal ===== */
-#pdfModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+/* ===== AI 자동문제 생성 모달 ===== */
+#pdfModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
 #pdfModal-bg.show{display:flex}
-#pdfModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.25)}
-#pdfModal h2{margin:0 0 .3rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
-#pdf-status{margin:10px 0;font-size:13px;padding:10px 14px;background:var(--accent-l);border-radius:9px;border-left:3px solid var(--accent);line-height:1.5;color:var(--primary)}
-#pdf-status.err{background:#FDE8E8;border-left-color:var(--danger);color:#8B0000}
-#pdf-dropzone{border:2px dashed #B0C4DE;border-radius:10px;padding:18px 12px;text-align:center;cursor:pointer;transition:all .15s;font-size:13px;color:var(--muted)}
-#pdf-dropzone:hover,#pdf-dropzone.drag-over{background:#EEF4FF;border-color:var(--accent)}
-#pdf-dropzone.has-file{border-color:var(--success);background:#F0FFF4;color:var(--success);font-weight:600}
-#pdf-preview-list .pdf-qcard{background:#F8FAFC;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;position:relative}
-.pdf-qcard-del{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;border:none;background:#E8EEF5;color:var(--muted);font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.pdf-qcard-del:hover{background:var(--danger);color:#fff}
-#pdf-preview-list .pdf-qcard .qmeta-row{display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);flex-wrap:wrap}
-#pdf-preview-list .pdf-qcard .qmeta-row label{font-size:11.5px;color:var(--muted);white-space:nowrap}
-#pdf-preview-list .pdf-qcard .qmeta-row select{font-size:12px;padding:2px 6px;border:1px solid var(--border);border-radius:5px}
+#pdfModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto}
+#pdfModal h2{margin:0 0 .3rem;font-size:16px}
+#pdf-status{margin:10px 0;font-size:13px;padding:10px 12px;background:#f0f4ff;border-radius:6px;border-left:3px solid #3498db;line-height:1.5}
+#pdf-status.err{background:#fff0f0;border-left-color:#e74c3c;color:#c0392b}
+#pdf-dropzone{border:2px dashed #b0c4de;border-radius:8px;padding:18px 12px;text-align:center;cursor:pointer;transition:background .15s,border-color .15s;font-size:13px;color:#555}
+#pdf-dropzone:hover,#pdf-dropzone.drag-over{background:#f0f6ff;border-color:#3498db}
+#pdf-dropzone.has-file{border-color:#27ae60;background:#f0fff4;color:#1a7a40;font-weight:600}
+#pdf-preview-list .pdf-qcard{background:#f8f9fa;border:1px solid #e6e6e6;border-radius:8px;padding:12px;margin-bottom:8px;position:relative}
+.pdf-qcard-del{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;border:none;background:#e0e0e0;color:#888;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pdf-qcard-del:hover{background:#e74c3c;color:#fff}
+#pdf-preview-list .pdf-qcard .qmeta-row{display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid #e6e6e6;flex-wrap:wrap}
+#pdf-preview-list .pdf-qcard .qmeta-row label{font-size:11.5px;color:#888;white-space:nowrap}
+#pdf-preview-list .pdf-qcard .qmeta-row select{font-size:12px;padding:2px 6px;border:1px solid #ccc;border-radius:4px}
 
-/* ===== Topbar button group ===== */
-.topbar .right{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
-.topbar .right::-webkit-scrollbar{height:3px}
-.topbar .right::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}
-.topbar .right button{padding:6px 12px;border-radius:8px;border:none;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px}
-.topbar .right .primary{background:rgba(255,255,255,.14);color:#fff}
-.topbar .right .primary:hover{background:rgba(255,255,255,.24)}
-.topbar .right .ghost{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8)}
-.topbar .right .ghost:hover{background:rgba(255,255,255,.15)}
-.topbar .right .chat-prox{background:#C87B1A;color:#fff}
-.topbar .right .chat-prox:hover{background:#A86510}
-.topbar .right .chat-ban{background:var(--danger);color:#fff}
-.topbar .right .chat-ban:hover{background:#A93226}
+/* ===== 상단바 버튼 그룹 ===== */
+.topbar .right{display:flex;gap:8px}
+.topbar .right button{padding:6px 14px;border-radius:6px;border:none;font-size:12px;font-weight:500;cursor:pointer}
+.topbar .right .primary{background:#fff;color:#2c3e50}
+.topbar .right .primary:hover{background:#eee}
+.topbar .right .ghost{background:#3d5166;color:#fff}
+.topbar .right .ghost:hover{background:#4a6178}
+.topbar .right .chat-prox{background:#f39c12;color:#fff}
+.topbar .right .chat-prox:hover{background:#e67e22}
+.topbar .right .chat-ban{background:#e74c3c;color:#fff}
+.topbar .right .chat-ban:hover{background:#c0392b}
 
-/* ===== Map editor modal ===== */
+/* ===== 맵 에디터 모달 ===== */
 #edModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:12px;overflow-y:auto}
 #edModal-bg.show{display:flex}
-#edModal{background:var(--surface);border-radius:16px;padding:1.4rem;width:100%;max-width:min(96vw,1040px);margin:auto;box-shadow:0 16px 48px rgba(0,0,0,.3)}
-#edModal h2{margin:0 0 .5rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
+#edModal{background:#fff;border-radius:12px;padding:1.4rem;width:100%;max-width:min(96vw,1040px);margin:auto}
+#edModal h2{margin:0 0 .5rem;font-size:16px}
 .ed-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.ed-tabs button{padding:5px 13px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:12.5px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all .15s}
-.ed-tabs button.on{background:var(--primary);color:#fff;border-color:var(--primary)}
-.ed-palette{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding:8px 10px;background:#F7F9FC;border-radius:10px;border:1px solid var(--border)}
-.ed-palette .ptile{padding:5px 8px;border-radius:8px;border:2px solid var(--border);background:var(--surface);font-size:13px;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:52px;transition:all .15s}
-.ed-palette .ptile.on{border-color:var(--primary);background:var(--accent-l)}
-.ed-palette .ptile:hover{background:#EEF2F9}
-.ed-palette .ptile.erase{border-color:var(--danger)}
-.ed-palette .ptile.erase.on{border-color:var(--danger);background:#FDE8E8}
-#ed-canvas-wrap{overflow:auto;max-height:65vh;border:1px solid var(--border);border-radius:8px;cursor:crosshair;margin-bottom:10px}
+.ed-tabs button{padding:5px 12px;border-radius:6px;border:1px solid #ccc;background:#fff;font-size:12.5px;cursor:pointer}
+.ed-tabs button.on{background:#2c3e50;color:#fff;border-color:#2c3e50}
+.ed-palette{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding:8px 10px;background:#f8f9fa;border-radius:8px;border:1px solid #e6e6e6}
+.ed-palette .ptile{padding:5px 8px;border-radius:6px;border:2px solid #ccc;background:#fff;font-size:13px;cursor:pointer;user-select:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:52px}
+.ed-palette .ptile.on{border-color:#2c3e50;background:#e8f0fe}
+.ed-palette .ptile:hover{background:#eee}
+.ed-palette .ptile.erase{border-color:#e74c3c}
+.ed-palette .ptile.erase.on{border-color:#e74c3c;background:#fdecea}
+#ed-canvas-wrap{overflow:auto;max-height:65vh;border:1px solid #ddd;border-radius:6px;cursor:crosshair;margin-bottom:10px}
 #ed-canvas{display:block}
-.ed-hint{font-size:11.5px;color:var(--muted);margin-bottom:10px}
+.ed-hint{font-size:11.5px;color:#888;margin-bottom:10px}
 
-/* ===== Trigger tile picker ===== */
-#trigSection{margin-top:12px;padding:12px 14px;background:var(--accent-l);border:1px solid #BCCFE8;border-radius:10px;display:none}
+/* ===== 트리거 타일 선택기 ===== */
+#trigSection{margin-top:12px;padding:12px;background:#f0f7ff;border:1px solid #c5d8f5;border-radius:8px;display:none}
 #trigSection.show{display:block}
 .trig-mode-row{display:flex;gap:16px;margin-bottom:6px;font-size:13px}
-.trig-mode-row label{display:flex;align-items:center;gap:5px;cursor:pointer;font-weight:500}
-.trig-mode-desc{font-size:11.5px;color:var(--muted);margin-bottom:6px;line-height:1.4}
-#trig-zone-info{font-size:12px;color:var(--accent);background:rgba(52,112,212,.08);border-radius:7px;padding:6px 10px;margin-bottom:6px}
-#trig-canvas-wrap{overflow:auto;max-height:280px;border:1px solid var(--border);border-radius:7px;cursor:crosshair;margin-top:8px}
+.trig-mode-row label{display:flex;align-items:center;gap:5px;cursor:pointer}
+.trig-mode-desc{font-size:11.5px;color:#888;margin-bottom:6px;line-height:1.4}
+#trig-zone-info{font-size:12px;color:#1565c0;background:#e3f2fd;border-radius:6px;padding:6px 10px;margin-bottom:6px}
+#trig-canvas-wrap{overflow:auto;max-height:280px;border:1px solid #ccc;border-radius:6px;cursor:crosshair;margin-top:8px}
 #trig-canvas{display:block}
-#trig-info{font-size:11.5px;color:var(--muted);margin-top:6px}
-.trig-hint{font-size:11.5px;color:var(--muted);margin-bottom:6px}
-.tile-trig{background:#FFF3E0;color:var(--warn);border:1px solid #FFCC80;border-radius:5px;padding:1px 7px;font-size:11px;font-weight:700}
-/* ===== Rank modal ===== */
+#trig-info{font-size:11.5px;color:#555;margin-top:6px}
+.trig-hint{font-size:11.5px;color:#7a9abf;margin-bottom:6px}
+/* 타일 지정 배지 */
+.tile-trig{background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600}
+/* 완료 순위 모달 */
 #rankModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:20px;overflow-y:auto}
 #rankModal-bg.show{display:flex}
-#rankModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:620px;margin:auto;box-shadow:0 16px 48px rgba(0,0,0,.3)}
-#rankModal h2{margin:0 0 .6rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
+#rankModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:620px;margin:auto}
+#rankModal h2{margin:0 0 .6rem;font-size:16px}
 .rank-table{width:100%;border-collapse:collapse;font-size:13.5px}
-.rank-table th{background:var(--primary);color:#fff;padding:9px 10px;text-align:center;white-space:nowrap;font-weight:600}
-.rank-table td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap}
-.rank-table tr:hover td{background:#F7F9FC}
+.rank-table th{background:#37474F;color:#fff;padding:8px 10px;text-align:center;white-space:nowrap}
+.rank-table td{padding:7px 10px;text-align:center;border-bottom:1px solid #eee;white-space:nowrap}
+.rank-table tr:hover td{background:#f5f5f5}
 .rank-table td:nth-child(2){text-align:left;font-weight:500}
-.rank-medal-1{color:#F1C40F;font-weight:700;font-size:16px}
-.rank-medal-2{color:#9AACBF;font-weight:700}
-.rank-medal-3{color:#CD7F32;font-weight:700}
+.rank-medal-1{color:#f1c40f;font-weight:700;font-size:16px}
+.rank-medal-2{color:#aaa;font-weight:700}
+.rank-medal-3{color:#cd7f32;font-weight:700}
 </style>
 </head>
 <body>
@@ -267,7 +257,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <!-- 접속 코드 화면 -->
 <div id="gate">
   <div class="gate-box">
-    <h1><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 4 2 10l10 6 10-6z"/><path d="M6 12.5v5a6 6 0 0012 0v-5"/></svg> 쌤버스 대시보드</h1>
+    <h1>🎓 쌤버스 교사 대시보드</h1>
     <p>교사 접속 코드를 입력하세요</p>
     <input type="password" id="gateCode" placeholder="접속 코드" autocomplete="off">
     <button onclick="checkGate()">입장</button>
@@ -278,7 +268,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <!-- 수업 만들기 / 불러오기 화면 -->
 <div id="roomGate" class="hidden">
   <div class="gate-box wide">
-    <h1><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10L12 3l9 7v9a1 1 0 01-1 1H4a1 1 0 01-1-1v-9z"/><path d="M9 22V13h6v9"/></svg> 수업 선택</h1>
+    <h1>🏫 수업 선택</h1>
     <p>새 수업을 만들거나, 기존 수업 코드를 입력해 이어서 관리하세요</p>
     <div id="recentRoom" class="recent-room hidden">
       <p>최근에 사용한 수업 코드</p>
@@ -297,21 +287,21 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <div id="dash">
   <div class="topbar">
     <div class="left">
-      <h1><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 4 2 10l10 6 10-6z"/><path d="M6 12.5v5a6 6 0 0012 0v-5"/></svg> 쌤버스 대시보드</h1>
+      <h1>🎓 쌤버스 교사 대시보드</h1>
       <span class="room" id="roomBadge">수업 코드: -</span>
       <button id="roomCopyBtn" class="ghost" style="display:none;font-size:11px;padding:4px 9px;margin-left:4px" onclick="copyText(ROOM_ID, this)">복사</button>
     </div>
     <div class="right">
-      <button class="primary" onclick="openMapEditor()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="12" rx="2"/><path d="M6 15v4M18 15v4M9 19h6"/></svg> 맵 에디터</button>
-      <button class="primary" onclick="openPdfModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z"/><path d="M20 14l.5 1.5 1.5.5-1.5.5L20 18l-.5-1.5L18 16l1.5-.5L20 14z"/></svg> AI 자동문제 생성</button>
-      <button class="primary" onclick="openLinkModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> 학생 초대 링크</button>
-      <button class="primary" onclick="openOrderModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> 맵 이동 순서</button>
-      <button class="primary" onclick="openLiveMapModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg> 실시간 맵 보기</button>
-      <button class="primary" onclick="openJoinMapModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> 맵 참가하기</button>
-      <button class="primary" id="chatModeBtn" onclick="toggleChatMode()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 채팅: 전체</button>
-      <button class="ghost" id="chatBanBtn" onclick="toggleChatBan()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> 채팅 금지</button>
-      <button class="primary" onclick="openRankingModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v10a6 6 0 01-12 0V2z"/><path d="M6 6H3v4a4 4 0 004 4"/><path d="M18 6h3v4a4 4 0 01-4 4"/><path d="M12 18v3M9 21h6"/></svg> 완료 순위</button>
-      <button class="primary" onclick="downloadProgressExcel()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg> 진행현황 다운로드</button>
+      <button class="primary" onclick="openMapEditor()">🪑 맵 에디터</button>
+      <button class="primary" onclick="openPdfModal()">✨ AI 자동문제 생성</button>
+      <button class="primary" onclick="openLinkModal()">🔗 학생 초대 링크</button>
+      <button class="primary" onclick="openOrderModal()">🚪 맵 이동 순서</button>
+      <button class="primary" onclick="openLiveMapModal()">🗺️ 실시간 맵 보기</button>
+      <button class="primary" onclick="openJoinMapModal()">🧑‍🏫 맵 참가하기</button>
+      <button class="primary" id="chatModeBtn" onclick="toggleChatMode()">💬 채팅: 전체</button>
+      <button class="ghost" id="chatBanBtn" onclick="toggleChatBan()">🚫 채팅 금지</button>
+      <button class="primary" onclick="openRankingModal()">🏆 완료 순위</button>
+      <button class="primary" onclick="downloadProgressExcel()">📊 진행현황 다운로드</button>
       <button class="ghost" onclick="newClass()">수업 변경</button>
       <button class="ghost" onclick="logout()">로그아웃</button>
     </div>
@@ -325,7 +315,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <!-- 학생 초대 링크 모달 -->
 <div id="linkModal-bg">
   <div id="linkModal">
-    <h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> 학생 초대 링크</h2>
+    <h2>🔗 학생 초대 링크</h2>
     <div class="linkrow">
       <input type="text" id="lm_first_url" readonly>
       <button onclick="copyText(document.getElementById('lm_first_url').value, this)">복사</button>
@@ -354,7 +344,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <!-- 맵 이동 순서 모달 -->
 <div id="orderModal-bg">
   <div id="orderModal">
-    <h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> 맵 이동 순서</h2>
+    <h2>🚪 맵 이동 순서</h2>
     <div class="section-hint">학생이 한 맵의 필수 미션을 모두 마치고 출입구(문/게이트)를 통과하면, 아래 순서에서 다음에 오는 맵 중 "미션이 등록된" 맵으로 자동 이동합니다. 미션이 없는 맵은 자동 이동 대상에서 제외됩니다. 화살표로 순서를 바꾼 뒤 저장하세요.</div>
     <div id="om_list"></div>
     <div class="modal-btns">
@@ -367,7 +357,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <!-- 실시간 맵 보기 모달 -->
 <div id="liveMapModal-bg">
   <div id="liveMapModal">
-    <h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg> 실시간 맵 보기</h2>
+    <h2>🗺️ 실시간 맵 보기</h2>
     <div class="section-hint">학생들이 맵 위에서 이동하는 모습을 실시간으로 확인할 수 있어요. (이 화면에서는 직접 조작할 수 없습니다)</div>
     <div class="lm-tabs" id="lm_tabs"></div>
     <div class="lm-zoom-bar">
@@ -386,7 +376,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
         </div>
       </div>
       <div id="lm_student_panel" style="min-width:150px;max-width:180px;background:#f8f9fa;border:1px solid #e0e0e0;border-radius:8px;padding:10px;font-size:13px">
-        <div style="font-weight:700;margin-bottom:8px;color:var(--primary);font-size:13px;display:flex;align-items:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> 이 맵의 학생</div>
+        <div style="font-weight:600;margin-bottom:8px;color:#333">👥 이 맵의 학생</div>
         <div id="lm_student_list" style="display:flex;flex-direction:column;gap:4px;max-height:380px;overflow-y:auto">
           <div style="color:#aaa;font-size:12px">접속자 없음</div>
         </div>
@@ -412,7 +402,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <!-- 완료 순위 모달 -->
 <div id="rankModal-bg">
   <div id="rankModal">
-    <h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v10a6 6 0 01-12 0V2z"/><path d="M6 6H3v4a4 4 0 004 4"/><path d="M18 6h3v4a4 4 0 01-4 4"/><path d="M12 18v3M9 21h6"/></svg> 미션 완료 순위</h2>
+    <h2>🏆 미션 완료 순위</h2>
     <div class="section-hint">각 맵에서 모든 필수 미션을 완료한 학생들의 소요 시간 순위입니다. (입장~전체 완료 기준)</div>
     <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <label style="font-size:13px;display:flex;align-items:center;gap:6px">맵 선택:
@@ -430,7 +420,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <!-- 맵 참가 모달 (교사 참여) -->
 <div id="joinMapModal-bg">
   <div id="joinMapModal">
-    <h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> 학생들과 함께 맵 입장하기</h2>
+    <h2>🧑‍🏫 학생들과 함께 맵 입장하기</h2>
     <div class="section-hint">선생님 캐릭터로 직접 맵에 들어가 학생들과 함께 이동하고 채팅할 수 있어요. 새 탭에서 열리며, 처음 입장 시 캐릭터를 선택할 수 있습니다(교사 캐릭터 탭 추천).</div>
     <div class="jm-tabs" id="jm_tabs"></div>
     <div class="modal-btns">
@@ -537,7 +527,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 
     <!-- 트리거 타일 직접 지정 -->
     <div id="trigSection">
-      <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--primary)">미션 발동 위치</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">📍 미션 발동 위치</div>
       <div class="trig-mode-row">
         <label><input type="radio" name="trig_mode" value="zone" onchange="onTriggerModeChange()" checked> 구역으로 발동 <span style="color:#aaa;font-size:11px">(기본)</span></label>
         <label><input type="radio" name="trig_mode" value="tile" onchange="onTriggerModeChange()"> 타일 직접 지정</label>

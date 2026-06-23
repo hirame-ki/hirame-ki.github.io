@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>쌤버스 - 컴퓨터실 맵</title>
 <style>
 *{box-sizing:border-box}
@@ -26,13 +29,25 @@ h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
 .legend{margin-top:10px;font-size:12px;color:#aaa;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .legend span{display:flex;align-items:center;gap:4px}
 .sw{display:inline-block;width:13px;height:13px;border-radius:3px}
+
+/* --- fullscreen + classroom design overrides --- */
+html{height:100%}
+body{height:100%;align-items:stretch;padding:0;overflow:hidden;font-family:'Noto Sans KR',sans-serif;background:linear-gradient(to bottom,#0A1628,#0E1E34)}
+#main-btn{background:rgba(26,53,88,.85);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.4);backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
+#main-btn:hover{background:rgba(17,36,64,.9)}
+#char-btn{background:rgba(52,112,212,.85);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.4);backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s}
+#char-btn:hover{background:rgba(41,90,172,.9)}
+h2{text-align:center;padding-top:18px;color:rgba(255,255,255,.85);font-size:.95rem;font-weight:600;letter-spacing:-.01em}
+.info{text-align:center;color:rgba(255,255,255,.4);font-weight:400}
+.stage-wrap{flex:1;min-height:0;width:100%}
+.legend{justify-content:center;padding-bottom:10px;font-size:11.5px;color:rgba(255,255,255,.45)}
 </style>
 </head>
 <body>
 <a id="main-btn" href="index.html">메인</a>
 <a id="char-btn" href="#">캐릭터 변경</a>
 <h2>쌤버스 - 컴퓨터실</h2>
-<div class="info">방향키 또는 버튼으로 이동하세요</div>
+<div class="info">방향키 · 화면 스와이프로 이동</div>
 <div class="stage-wrap">
 <div class="stage">
   <canvas id="map" width="2880" height="2880"></canvas>
@@ -40,11 +55,7 @@ h2{margin:.3rem 0;color:#fff;font-size:1.1rem}
   <div id="remote-players"></div>
 </div>
 </div>
-<div class="pad">
-  <div></div><button onclick="move('up')">&#8593;</button><div></div>
-  <button onclick="move('left')">&#8592;</button><div></div><button onclick="move('right')">&#8594;</button>
-  <div></div><button onclick="move('down')">&#8595;</button><div></div>
-</div>
+
 <div class="legend">
   <span><span class="sw" style="background:#d0d8e0"></span>바닥</span>
   <span><span class="sw" style="background:#1a3a80"></span>PC 스테이션</span>
@@ -150,22 +161,27 @@ function drawProjectorScreen(x,y,c){
   if(c===29){ctx.fillStyle='rgba(255,255,255,.9)';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('SMART',x+TS/2,y+TS/2);}
 }
 function drawTeacherDesk(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#2c3e50';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#3d5460';ctx.fillRect(x+2,y+5,TS-4,TS*0.5);
   ctx.fillStyle='rgba(255,255,240,.7)';ctx.fillRect(x+5,y+8,14,11);ctx.fillRect(x+TS-19,y+8,14,11);
   ctx.fillStyle='#27ae60';ctx.fillRect(x+TS/2-3,y+9,6,10);
+  ctx.shadowColor='transparent';
 }
 function drawPrinter(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#bbb';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#d0d0d0';ctx.fillRect(x+4,y+TS*0.2,TS-8,TS*0.6);
   ctx.fillStyle='#f0f0f0';ctx.fillRect(x+8,y+TS*0.08,TS-16,TS*0.1);
   ctx.fillStyle='#2ecc71';ctx.fillRect(x+TS-14,y+TS*0.28,6,6);
+  ctx.shadowColor='transparent';
 }
 function drawServerFloor(x,y){
   ctx.fillStyle='#141a24';ctx.fillRect(x,y,TS,TS);
   ctx.strokeStyle='rgba(0,200,100,.07)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,TS-1,TS-1);
 }
 function drawDoor(x,y){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   ctx.fillStyle='#e67e22';ctx.fillRect(x,y,TS,TS);
   ctx.fillStyle='#27ae60';ctx.fillRect(x+5,y+3,TS-10,TS-6);
   ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -175,10 +191,12 @@ function drawDoor(x,y){
   ctx.moveTo(x+TS-14,y+TS*0.62-6);ctx.lineTo(x+TS-8,y+TS*0.62);ctx.lineTo(x+TS-14,y+TS*0.62+6);ctx.stroke();
   ctx.fillStyle='#f1c40f';ctx.beginPath();ctx.arc(x+10,y+TS*0.5,3.5,0,Math.PI*2);ctx.fill();
   ctx.strokeStyle='#f1c40f';ctx.lineWidth=2;ctx.strokeRect(x+5,y+3,TS-10,TS-6);
+  ctx.shadowColor='transparent';
 }
 
 /* Large PC station: 2 tiles wide × 2 tiles tall */
 function drawLargePCStation(ax,ay){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   var W=2*TS,H=2*TS;
   /* Desk surface (top half) */
   ctx.fillStyle='#2a3a4a';ctx.fillRect(ax,ay,W,H*0.52);
@@ -220,10 +238,12 @@ function drawLargePCStation(ax,ay){
   wpts.forEach(function(p){ctx.beginPath();ctx.arc(ax+p[0]*W,ay+p[1]*H,3.5,0,Math.PI*2);ctx.fill();});
   /* Chair back */
   ctx.fillStyle='#1a2a38';ctx.fillRect(ax+W*0.28,ay+H*0.53,W*0.44,H*0.07);
+  ctx.shadowColor='transparent';
 }
 
 /* Large server rack: 2 wide × 3 tall */
 function drawLargeServerRack(ax,ay){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   var W=2*TS,H=3*TS;
   ctx.fillStyle='#080808';ctx.fillRect(ax,ay,W,H);
   ctx.fillStyle='#151515';ctx.fillRect(ax+3,ay+3,W-6,H-6);
@@ -238,6 +258,7 @@ function drawLargeServerRack(ax,ay){
   }
   ctx.strokeStyle='rgba(0,200,80,.25)';ctx.lineWidth=2;
   for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(ax+W-5,ay+H*0.08+i*H*0.22);ctx.lineTo(ax+W-5,ay+H*0.2+i*H*0.22);ctx.stroke();}
+  ctx.shadowColor='transparent';
 }
 
 function drawMap(){
@@ -266,14 +287,22 @@ function drawMap(){
   var sg=ctx.createRadialGradient(51*TS,53*TS,TS,51*TS,53*TS,5*TS);
   sg.addColorStop(0,'rgba(0,255,80,.06)');sg.addColorStop(1,'rgba(0,255,80,0)');
   ctx.fillStyle=sg;ctx.fillRect(44*TS,47*TS,16*TS,13*TS);
+  /* 45-degree drop shadows */
+  ctx.fillStyle='rgba(0,0,0,0.30)';
+  for(var __r=0;__r<ROWS;__r++){for(var __c=0;__c<COLS;__c++){
+    if(isWalk(grid[__r][__c])) continue;
+    var __x=__c*TS,__y=__r*TS;
+    if((__c+1<COLS)&&isWalk(grid[__r][__c+1])&&grid[__r][__c+1]!==5) ctx.fillRect(__x+TS,__y+5,6,TS);
+    if((__r+1<ROWS)&&isWalk(grid[__r+1][__c])&&grid[__r+1][__c]!==5) ctx.fillRect(__x+5,__y+TS,TS,6);
+  }}
 }
 drawMap();
 
-function updateCamera(){
+function updateCamera(){var _sw=document.querySelector('.stage-wrap');var _vw=_sw.clientWidth||VIEW_W;var _vh=_sw.clientHeight||VIEW_H;
   if(TEACHER_VIEW){var wrap=document.querySelector('.stage-wrap');wrap.style.width=(COLS*TS)+'px';wrap.style.height=(ROWS*TS)+'px';wrap.style.overflow='visible';return;}
   var stage=document.querySelector('.stage');
-  var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
-  var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
+  var offX=Math.max(0,Math.min(pos.c*TS-_vw/2+TS/2,COLS*TS-_vw));
+  var offY=Math.max(0,Math.min(pos.r*TS-_vh/2+TS/2,ROWS*TS-_vh));
   stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
 }
 var pos={r:5,c:30};
@@ -318,6 +347,7 @@ if(!TEACHER_VIEW){
   try{initMissionSystem('computer');}catch(e){console.warn('[computer] missions:',e);}
   try{loadMapOverlays('computer',ctx,TS);}catch(e){console.warn('[computer] overlays:',e);}
 }
+window.addEventListener('resize',updateCamera);
 </script>
 </body>
 </html>

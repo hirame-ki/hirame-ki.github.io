@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>쌤버스 - 숲 맵</title>
 <style>
 *{box-sizing:border-box}
@@ -26,13 +29,25 @@ h2{margin:.3rem 0;color:#eafff0;font-size:1.1rem}
 .legend{margin-top:10px;font-size:12px;color:#8dbfa0;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .legend span{display:flex;align-items:center;gap:4px}
 .sw{display:inline-block;width:13px;height:13px;border-radius:3px}
+
+/* --- fullscreen + classroom design overrides --- */
+html{height:100%}
+body{height:100%;align-items:stretch;padding:0;overflow:hidden;font-family:'Noto Sans KR',sans-serif;background:linear-gradient(to bottom,#0A1628,#0E1E34)}
+#main-btn{background:rgba(26,53,88,.85);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.4);backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
+#main-btn:hover{background:rgba(17,36,64,.9)}
+#char-btn{background:rgba(52,112,212,.85);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.4);backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s}
+#char-btn:hover{background:rgba(41,90,172,.9)}
+h2{text-align:center;padding-top:18px;color:rgba(255,255,255,.85);font-size:.95rem;font-weight:600;letter-spacing:-.01em}
+.info{text-align:center;color:rgba(255,255,255,.4);font-weight:400}
+.stage-wrap{flex:1;min-height:0;width:100%}
+.legend{justify-content:center;padding-bottom:10px;font-size:11.5px;color:rgba(255,255,255,.45)}
 </style>
 </head>
 <body>
 <a id="main-btn" href="index.html">메인</a>
 <a id="char-btn" href="#">캐릭터 변경</a>
 <h2>쌤버스 - 숲</h2>
-<div class="info">방향키 또는 버튼으로 이동하세요</div>
+<div class="info">방향키 · 화면 스와이프로 이동</div>
 <div class="stage-wrap">
 <div class="stage">
   <canvas id="map" width="2304" height="1152"></canvas>
@@ -40,11 +55,7 @@ h2{margin:.3rem 0;color:#eafff0;font-size:1.1rem}
   <div id="remote-players"></div>
 </div>
 </div>
-<div class="pad">
-  <div></div><button onclick="move('up')">&#8593;</button><div></div>
-  <button onclick="move('left')">&#8592;</button><div></div><button onclick="move('right')">&#8594;</button>
-  <div></div><button onclick="move('down')">&#8595;</button><div></div>
-</div>
+
 <div class="legend">
   <span><span class="sw" style="background:#5a8c3c"></span>잔디</span>
   <span><span class="sw" style="background:#2ecc71"></span>나무</span>
@@ -166,6 +177,7 @@ function drawGrass(x,y,c,r){
 
 /* Tree: detailed multi-layer canopy */
 function drawTree(x,y,c,r){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   var shade=['#1a6e35','#1d7a3c','#22873f'];
   ctx.fillStyle=shade[(c+r)%3];
   ctx.fillRect(x,y,TS,TS);
@@ -194,6 +206,7 @@ function drawTree(x,y,c,r){
   ctx.beginPath();
   ctx.ellipse(x+TS/2+4,y+TS*0.72,10,5,0.3,0,Math.PI*2);
   ctx.fill();
+  ctx.shadowColor='transparent';
 }
 
 /* Dirt path */
@@ -218,6 +231,7 @@ function drawPath(x,y,c,r){
 
 /* Pond: vivid blue water */
 function drawPond(x,y,c,r){
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   /* water */
   ctx.fillStyle='#1a8cbf';
   ctx.fillRect(x,y,TS,TS);
@@ -240,12 +254,14 @@ function drawPond(x,y,c,r){
   ctx.beginPath();
   ctx.arc(x+TS*0.7,y+TS*0.65,5,0,Math.PI*2);
   ctx.fill();
+  ctx.shadowColor='transparent';
 }
 
 /* Exit gate: vivid green archway */
 function drawExitGate(x,y){
   ctx.fillStyle='#c8a86b';
   ctx.fillRect(x,y,TS,TS);
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
   /* arch posts */
   ctx.fillStyle='#27ae60';
   ctx.fillRect(x+4,y+4,8,TS-8);
@@ -269,6 +285,7 @@ function drawExitGate(x,y){
   ctx.lineTo(x+TS*0.75,y+TS*0.65);
   ctx.lineTo(x+TS*0.6,y+TS*0.75);
   ctx.stroke();
+  ctx.shadowColor='transparent';
 }
 
 function drawMap(){
@@ -282,14 +299,22 @@ function drawMap(){
       else drawGrass(x,y,c,r);
     }
   }
+  /* 45-degree drop shadows */
+  ctx.fillStyle='rgba(0,0,0,0.30)';
+  for(var __r=0;__r<ROWS;__r++){for(var __c=0;__c<COLS;__c++){
+    if(isWalk(grid[__r][__c])) continue;
+    var __x=__c*TS,__y=__r*TS;
+    if((__c+1<COLS)&&isWalk(grid[__r][__c+1])&&grid[__r][__c+1]!==5) ctx.fillRect(__x+TS,__y+5,6,TS);
+    if((__r+1<ROWS)&&isWalk(grid[__r+1][__c])&&grid[__r+1][__c]!==5) ctx.fillRect(__x+5,__y+TS,TS,6);
+  }}
 }
 drawMap();
 
-function updateCamera(){
+function updateCamera(){var _sw=document.querySelector('.stage-wrap');var _vw=_sw.clientWidth||VIEW_W;var _vh=_sw.clientHeight||VIEW_H;
   var stage=document.querySelector('.stage');
   if(TEACHER_VIEW){ stage.style.transform='translate(0,0)'; return; }
-  var offX=Math.max(0,Math.min(pos.c*TS-VIEW_W/2+TS/2,COLS*TS-VIEW_W));
-  var offY=Math.max(0,Math.min(pos.r*TS-VIEW_H/2+TS/2,ROWS*TS-VIEW_H));
+  var offX=Math.max(0,Math.min(pos.c*TS-_vw/2+TS/2,COLS*TS-_vw));
+  var offY=Math.max(0,Math.min(pos.r*TS-_vh/2+TS/2,ROWS*TS-_vh));
   stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
 }
 
@@ -345,6 +370,7 @@ if(!TEACHER_VIEW){
   try{initMissionSystem('forest');}catch(e){console.warn('[forest] missions:',e);}
 }
 try{loadMapOverlays('forest',ctx,TS);}catch(e){console.warn('[forest] overlays:',e);}
+window.addEventListener('resize',updateCamera);
 </script>
 </body>
 </html>
