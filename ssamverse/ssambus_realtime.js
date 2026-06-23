@@ -1,4 +1,4 @@
-/* =====================================================================
+﻿/* =====================================================================
    쌤버스 - Supabase Realtime 멀티플레이어 공용 모듈
    각 맵 페이지(ssambus_map_*.html)에서 캐릭터 렌더링 함수(drawHair/drawFace/
    drawNeck/drawBody/dk/li)와 이동 상태(pos, PLAYER, TS)를 정의한 뒤
@@ -733,7 +733,17 @@ function __rtCT37(ctx,x,y,ts){
   ctx.fillRect(cx-Math.round(ts*.12),y+Math.round(ts*.48),Math.round(ts*.04),Math.round(ts*.04));
 }
 
-/* 39 ??TV/紐⑤땲??*/
+function __rtCT38(ctx,x,y,ts){
+  const r=v=>Math.round(ts*v);
+  ctx.fillStyle='#6b3a1f'; ctx.fillRect(x+r(.05),y+r(.25),r(.1),r(.6));
+  ctx.fillRect(x+r(.85),y+r(.25),r(.1),r(.6));
+  ctx.fillRect(x+r(.15),y+r(.2),r(.7),r(.28));
+  ctx.fillStyle='#a06030'; ctx.fillRect(x+r(.05),y+r(.52),r(.9),r(.33));
+  ctx.fillStyle='#c88050'; ctx.fillRect(x+r(.05),y+r(.52),r(.9),r(.06));
+  ctx.fillStyle='#3a1f0a';
+  ctx.fillRect(x+r(.12),y+r(.83),r(.08),r(.1)); ctx.fillRect(x+r(.8),y+r(.83),r(.08),r(.1));
+}
+/* 39 – TV/모니터 */
 function __rtCT39(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#444'; ctx.fillRect(x+r(.06),y+r(.05),r(.88),r(.7));
@@ -742,7 +752,7 @@ function __rtCT39(ctx,x,y,ts){
   ctx.fillStyle='#555'; ctx.fillRect(x+r(.4),y+r(.73),r(.2),r(.12));
   ctx.fillStyle='#333'; ctx.fillRect(x+r(.22),y+r(.84),r(.56),r(.1));
 }
-/* 40 ???щЪ??*/
+/* 40 – 사물함 */
 function __rtCT40(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#7888a0'; ctx.fillRect(x+r(.08),y+r(.04),r(.84),r(.92));
@@ -752,7 +762,7 @@ function __rtCT40(ctx,x,y,ts){
   ctx.fillStyle='#3a4a5a';
   for(let i=0;i<4;i++) ctx.fillRect(x+r(.1),y+r(.18)+i*r(.08),r(.4),r(.01));
 }
-/* 41 ??寃뚯떆??*/
+/* 41 – 게시판 */
 function __rtCT41(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#5a3a1f'; ctx.fillRect(x+r(.04),y+r(.06),r(.92),r(.88));
@@ -765,7 +775,7 @@ function __rtCT41(ctx,x,y,ts){
   ctx.fillRect(x+r(.54),y+r(.13),r(.04),r(.04));
   ctx.fillRect(x+r(.14),y+r(.49),r(.04),r(.04));
 }
-/* 42 ???좏뭾湲?*/
+/* 42 – 선풍기 */
 function __rtCT42(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5);
   ctx.fillStyle='#666'; ctx.fillRect(cx-r(.06),y+r(.55),r(.12),r(.34));
@@ -777,7 +787,7 @@ function __rtCT42(ctx,x,y,ts){
   ctx.fillStyle='#444';
   ctx.beginPath(); ctx.arc(cx,y+r(.35),r(.07),0,Math.PI*2); ctx.fill();
 }
-/* 43 ???낆꽌 ?⑦봽 */
+/* 43 – 독서 램프 */
 function __rtCT43(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.28),y+r(.88),r(.44),r(.08));
@@ -791,7 +801,7 @@ function __rtCT43(ctx,x,y,ts){
   ctx.moveTo(x+r(.18),y+r(.46)); ctx.lineTo(x+r(.82),y+r(.46));
   ctx.lineTo(x+r(.66),y+r(.22)); ctx.lineTo(x+r(.28),y+r(.22)); ctx.closePath(); ctx.fill();
 }
-/* 44 ??蹂듭궗湲?*/
+/* 44 – 복사기 */
 function __rtCT44(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#909090'; ctx.fillRect(x+r(.06),y+r(.24),r(.88),r(.7));
@@ -803,7 +813,7 @@ function __rtCT44(ctx,x,y,ts){
   ctx.fillStyle='#f0f0f0'; ctx.fillRect(x+r(.1),y+r(.56),r(.34),r(.18));
   ctx.fillRect(x+r(.1),y+r(.84),r(.34),r(.06));
 }
-/* 45 ???≪? 苑귥씠 */
+/* 45 – 잡지 꽂이 */
 function __rtCT45(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#8B6914'; ctx.fillRect(x+r(.06),y+r(.14),r(.08),r(.76));
@@ -816,7 +826,7 @@ function __rtCT45(ctx,x,y,ts){
     ctx.fillRect(x+r(.14)+i*(bw+r(.02)),y+r(.18),bw,r(.64));
   }
 }
-/* 46 ???섏“ */
+/* 46 – 수조 */
 function __rtCT46(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#2c3e50'; ctx.fillRect(x+r(.04),y+r(.08),r(.92),r(.84));
@@ -828,7 +838,7 @@ function __rtCT46(ctx,x,y,ts){
   ctx.fillStyle='#e67e22'; ctx.fillRect(x+r(.3),y+r(.4),r(.1),r(.06));
   ctx.fillRect(x+r(.58),y+r(.52),r(.08),r(.05));
 }
-/* 47 ??諛⑹꽍 */
+/* 47 – 방석 */
 function __rtCT47(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5),cy=y+r(.52);
   ctx.fillStyle='#d080a8';
@@ -840,7 +850,7 @@ function __rtCT47(ctx,x,y,ts){
   ctx.fillRect(cx-r(.34),cy-r(.02),r(.68),r(.04));
 }
 
-/* 48 ??誘몃걚?쇳? */
+/* 48 – 미끄럼틀 */
 function __rtCT48(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.06),y+r(.08),r(.06),r(.86));
@@ -852,7 +862,7 @@ function __rtCT48(ctx,x,y,ts){
   ctx.lineTo(x+r(.2),y+r(.88)); ctx.lineTo(x+r(.08),y+r(.82)); ctx.closePath(); ctx.fill();
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.06),y+r(.88),r(.9),r(.06));
 }
-/* 49 ??洹몃꽕 */
+/* 49 – 그네 */
 function __rtCT49(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.06),y+r(.06),r(.08),r(.88));
@@ -863,7 +873,7 @@ function __rtCT49(ctx,x,y,ts){
   ctx.fillRect(x+r(.7),y+r(.14),r(.04),r(.58));
   ctx.fillStyle='#a07830'; ctx.fillRect(x+r(.22),y+r(.7),r(.56),r(.1));
 }
-/* 50 ??紐⑤옒???*/
+/* 50 – 모래놀이 */
 function __rtCT50(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#8B6914'; ctx.fillRect(x+r(.06),y+r(.2),r(.88),r(.64));
@@ -872,7 +882,7 @@ function __rtCT50(ctx,x,y,ts){
   ctx.fillStyle='#e74c3c'; ctx.fillRect(x+r(.52),y+r(.36),r(.06),r(.14));
   ctx.fillRect(x+r(.46),y+r(.36),r(.18),r(.05));
 }
-/* 51 ???뚯닔? */
+/* 51 – 음수대 */
 function __rtCT51(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5);
   ctx.fillStyle='#4a5a8a'; ctx.fillRect(cx-r(.14),y+r(.46),r(.28),r(.46));
@@ -882,7 +892,7 @@ function __rtCT51(ctx,x,y,ts){
   ctx.fillStyle='#87ceeb'; ctx.fillRect(cx+r(.1),y+r(.36),r(.02),r(.06));
   ctx.fillStyle='#333'; ctx.fillRect(cx-r(.1),y+r(.88),r(.2),r(.08));
 }
-/* 52 ??泥좊큺 */
+/* 52 – 철봉 */
 function __rtCT52(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#6a7480'; ctx.fillRect(x+r(.06),y+r(.18),r(.1),r(.74));
@@ -891,7 +901,7 @@ function __rtCT52(ctx,x,y,ts){
   ctx.fillStyle='#555'; ctx.fillRect(x+r(.04),y+r(.86),r(.14),r(.08));
   ctx.fillRect(x+r(.82),y+r(.86),r(.14),r(.08));
 }
-/* 53 ???곴뎄? */
+/* 53 – 탁구대 */
 function __rtCT53(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#1a6b2e'; ctx.fillRect(x+r(.06),y+r(.14),r(.88),r(.64));
@@ -902,7 +912,7 @@ function __rtCT53(ctx,x,y,ts){
   ctx.fillRect(x+r(.26),y+r(.76),r(.06),r(.14)); ctx.fillRect(x+r(.68),y+r(.76),r(.06),r(.14));
   ctx.fillStyle='#fff'; ctx.fillRect(x+r(.49),y+r(.22),r(.02),r(.24));
 }
-/* 54 ???뚮씪?꾪봽 */
+/* 54 – 훌라후프 */
 function __rtCT54(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5),cy=y+r(.5);
   ctx.strokeStyle='#e74c3c'; ctx.lineWidth=r(.14);
@@ -911,7 +921,7 @@ function __rtCT54(ctx,x,y,ts){
   ctx.beginPath(); ctx.arc(cx,cy,r(.36),0,Math.PI*2); ctx.stroke();
   ctx.lineWidth=1;
 }
-/* 55 ??泥댁쨷怨?*/
+/* 55 – 체중계 */
 function __rtCT55(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5);
   ctx.fillStyle='#ccc'; ctx.fillRect(x+r(.1),y+r(.1),r(.8),r(.55));
@@ -922,7 +932,7 @@ function __rtCT55(ctx,x,y,ts){
   ctx.fillStyle='#e74c3c'; ctx.fillRect(cx-r(.02),y+r(.16),r(.04),r(.18));
   ctx.fillStyle='#3a3a3a'; ctx.fillRect(x+r(.08),y+r(.62),r(.84),r(.28));
 }
-/* 56 ??嫄곗슱 */
+/* 56 – 거울 */
 function __rtCT56(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#a08030'; ctx.fillRect(x+r(.08),y+r(.04),r(.84),r(.92));
@@ -930,7 +940,7 @@ function __rtCT56(ctx,x,y,ts){
   ctx.fillStyle='rgba(255,255,255,.35)'; ctx.fillRect(x+r(.16),y+r(.1),r(.2),r(.6));
   ctx.fillStyle='rgba(255,255,255,.15)'; ctx.fillRect(x+r(.38),y+r(.1),r(.08),r(.25));
 }
-/* 57 ??諛곕뱶誘쇳꽩 ?ㅽ듃 */
+/* 57 – 배드민턴 네트 */
 function __rtCT57(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#666'; ctx.fillRect(x+r(.04),y+r(.08),r(.08),r(.84));
@@ -942,7 +952,7 @@ function __rtCT57(ctx,x,y,ts){
   ctx.fillRect(x+r(.12),y+r(.62),r(.76),r(.02));
   for(let i=0;i<7;i++) ctx.fillRect(x+r(.12)+i*r(.12),y+r(.2),r(.02),r(.46));
 }
-/* 58 ??踰꾩뒪?뺣쪟??*/
+/* 58 – 버스정류장 */
 function __rtCT58(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5);
   ctx.fillStyle='#2c5fab'; ctx.fillRect(x+r(.04),y+r(.04),r(.92),r(.12));
@@ -951,7 +961,7 @@ function __rtCT58(ctx,x,y,ts){
   ctx.fillStyle='#1a3a7a'; ctx.fillRect(cx-r(.2),y+r(.22),r(.4),r(.2));
   ctx.fillStyle='#333'; ctx.fillRect(cx-r(.04),y+r(.9),r(.08),r(.06));
 }
-/* 59 ???먯쟾嫄?嫄곗튂? */
+/* 59 – 자전거 거치대 */
 function __rtCT59(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#8a9096';
@@ -961,7 +971,7 @@ function __rtCT59(ctx,x,y,ts){
   ctx.fillRect(x+r(.44),y+r(.3),r(.12),r(.08));
   ctx.fillRect(x+r(.12),y+r(.84),r(.76),r(.06));
 }
-/* 60 ??媛濡쒕벑 */
+/* 60 – 가로등 */
 function __rtCT60(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5);
   ctx.fillStyle='#2c3e50'; ctx.fillRect(cx-r(.04),y+r(.18),r(.08),r(.76));
@@ -971,7 +981,7 @@ function __rtCT60(ctx,x,y,ts){
   ctx.fillStyle='#f1c40f'; ctx.fillRect(cx+r(.2),y+r(.05),r(.14),r(.06));
   ctx.fillStyle='#444'; ctx.fillRect(cx-r(.1),y+r(.9),r(.2),r(.08));
 }
-/* 61 ???먰뙋湲?*/
+/* 61 – 자판기 */
 function __rtCT61(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#2c3e50'; ctx.fillRect(x+r(.08),y+r(.04),r(.84),r(.92));
@@ -985,7 +995,7 @@ function __rtCT61(ctx,x,y,ts){
   ctx.fillStyle='#555'; ctx.fillRect(x+r(.14),y+r(.6),r(.72),r(.16));
   ctx.fillStyle='#222'; ctx.fillRect(x+r(.18),y+r(.8),r(.64),r(.1));
 }
-/* 62 ??遺꾩닔? */
+/* 62 – 분수대 */
 function __rtCT62(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5);
   ctx.fillStyle='#778899'; ctx.fillRect(x+r(.08),y+r(.54),r(.84),r(.34));
@@ -996,7 +1006,7 @@ function __rtCT62(ctx,x,y,ts){
   ctx.fillRect(cx-r(.12),y+r(.16),r(.06),r(.06));
   ctx.fillRect(cx+r(.06),y+r(.16),r(.06),r(.06));
 }
-/* 63 ???먰듃 */
+/* 63 – 텐트 */
 function __rtCT63(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#e67e22';
@@ -1010,7 +1020,7 @@ function __rtCT63(ctx,x,y,ts){
   ctx.lineTo(x+r(.38),y+r(.88)); ctx.closePath(); ctx.fill();
   ctx.fillStyle='rgba(255,200,80,.2)'; ctx.fillRect(x+r(.1),y+r(.5),r(.3),r(.3));
 }
-/* 64 ??紐⑤떏遺?*/
+/* 64 – 모닥불 */
 function __rtCT64(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5);
   ctx.fillStyle='#6b3a1f'; ctx.fillRect(cx-r(.3),y+r(.7),r(.6),r(.08));
@@ -1023,7 +1033,7 @@ function __rtCT64(ctx,x,y,ts){
   ctx.beginPath();
   ctx.moveTo(cx,y+r(.3)); ctx.lineTo(cx+r(.14),y+r(.56)); ctx.lineTo(cx-r(.14),y+r(.56)); ctx.closePath(); ctx.fill();
 }
-/* 65 ???덉쭛 */
+/* 65 – 새집 */
 function __rtCT65(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5);
   ctx.fillStyle='#8B6914'; ctx.fillRect(cx-r(.04),y+r(.56),r(.08),r(.38));
@@ -1035,7 +1045,7 @@ function __rtCT65(ctx,x,y,ts){
   ctx.beginPath(); ctx.arc(cx,y+r(.48),r(.07),0,Math.PI*2); ctx.fill();
   ctx.fillStyle='#8B6914'; ctx.fillRect(cx-r(.06),y+r(.54),r(.12),r(.03));
 }
-/* 66 ???ㅻ텋 */
+/* 66 – 덤불 */
 function __rtCT66(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#1a7a38';
@@ -1050,7 +1060,7 @@ function __rtCT66(ctx,x,y,ts){
   ctx.beginPath(); ctx.arc(x+r(.34),y+r(.48),r(.1),0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(x+r(.64),y+r(.5),r(.1),0,Math.PI*2); ctx.fill();
 }
-/* 67 ???듬굹臾?*/
+/* 67 – 통나무 */
 function __rtCT67(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#8B4513'; ctx.fillRect(x+r(.14),y+r(.32),r(.72),r(.36));
@@ -1063,7 +1073,7 @@ function __rtCT67(ctx,x,y,ts){
   ctx.fillRect(x+r(.84),y+r(.32),r(.02),r(.36));
 }
 
-/* 68 ???쇱븘??*/
+/* 68 – 피아노 */
 function __rtCT68(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#1a1a1a'; ctx.fillRect(x+r(.06),y+r(.04),r(.88),r(.88));
@@ -1076,7 +1086,7 @@ function __rtCT68(ctx,x,y,ts){
   ctx.fillStyle='#aaa';
   for(var i=0;i<5;i++) ctx.fillRect(x+r(.2),y+r(.2)+i*r(.04),r(.6),r(.01));
 }
-/* 69 ???낅낫? */
+/* 69 – 악보대 */
 function __rtCT69(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.45),y+r(.52),r(.1),r(.4));
@@ -1086,7 +1096,7 @@ function __rtCT69(ctx,x,y,ts){
   ctx.fillStyle='#333';
   for(var i=0;i<5;i++) ctx.fillRect(x+r(.13),y+r(.22)+i*r(.05),r(.74),r(.01));
 }
-/* 70 ???쒕읆 */
+/* 70 – 드럼 */
 function __rtCT70(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5),cy=y+r(.6);
   ctx.fillStyle='#a0291a';
@@ -1101,7 +1111,7 @@ function __rtCT70(ctx,x,y,ts){
   ctx.beginPath(); ctx.ellipse(cx,y+r(.32),r(.14),r(.09),0,0,Math.PI*2); ctx.fill();
   ctx.fillStyle='#c8a060'; ctx.fillRect(cx-r(.02),y+r(.16),r(.06),r(.26));
 }
-/* 71 ??湲고? */
+/* 71 – 기타 */
 function __rtCT71(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5);
   ctx.fillStyle='#8B4010';
@@ -1114,7 +1124,7 @@ function __rtCT71(ctx,x,y,ts){
   ctx.fillStyle='rgba(200,200,200,.7)';
   for(var i=0;i<3;i++) ctx.fillRect(cx-r(.02)+i*r(.02),y+r(.04),r(.01),r(.88));
 }
-/* 72 ???좎떆?ъ씠? */
+/* 72 – 신시사이저 */
 function __rtCT72(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#222'; ctx.fillRect(x+r(.04),y+r(.28),r(.92),r(.64));
@@ -1128,7 +1138,7 @@ function __rtCT72(ctx,x,y,ts){
   ctx.fillStyle='#555';
   ctx.fillRect(x+r(.1),y+r(.88),r(.08),r(.1)); ctx.fillRect(x+r(.82),y+r(.88),r(.08),r(.1));
 }
-/* 73 ???댁젮 */
+/* 73 – 이젤 */
 function __rtCT73(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#d4a06e'; ctx.fillRect(x+r(.14),y+r(.06),r(.72),r(.56));
@@ -1140,7 +1150,7 @@ function __rtCT73(ctx,x,y,ts){
   ctx.fillRect(x+r(.16),y+r(.88),r(.18),r(.06)); ctx.fillRect(x+r(.66),y+r(.88),r(.18),r(.06));
   ctx.fillRect(x+r(.28),y+r(.72),r(.44),r(.04));
 }
-/* 74 ??議곌컖? */
+/* 74 – 조각대 */
 function __rtCT74(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5);
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.3),y+r(.7),r(.4),r(.24));
@@ -1150,7 +1160,7 @@ function __rtCT74(ctx,x,y,ts){
   ctx.fillStyle='#deb887';
   ctx.beginPath(); ctx.ellipse(cx-r(.06),y+r(.22),r(.12),r(.1),0,0,Math.PI*2); ctx.fill();
 }
-/* 75 ??臾쇨컧 ?붾젅??*/
+/* 75 – 물감 팔레트 */
 function __rtCT75(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5),cy=y+r(.55);
   ctx.fillStyle='#d4a06e';
@@ -1168,7 +1178,7 @@ function __rtCT75(ctx,x,y,ts){
   ctx.beginPath();
   ctx.moveTo(x+r(.08),y+r(.44)); ctx.lineTo(x+r(.14),y+r(.44)); ctx.lineTo(x+r(.11),y+r(.5)); ctx.closePath(); ctx.fill();
 }
-/* 76 ???꾩떆? */
+/* 76 – 전시대 */
 function __rtCT76(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#2c3e50'; ctx.fillRect(x+r(.06),y+r(.04),r(.88),r(.72));
@@ -1179,7 +1189,7 @@ function __rtCT76(ctx,x,y,ts){
   ctx.fillStyle='#555'; ctx.fillRect(x+r(.42),y+r(.74),r(.16),r(.14));
   ctx.fillRect(x+r(.3),y+r(.86),r(.4),r(.06));
 }
-/* 77 ??湲??묒뾽 ?뚯씠釉?*/
+/* 77 – 긴 작업 테이블 */
 function __rtCT77(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#5a3010'; ctx.fillRect(x+r(.04),y+r(.14),r(.92),r(.48));
@@ -1192,7 +1202,7 @@ function __rtCT77(ctx,x,y,ts){
   ctx.fillRect(x+r(.08),y+r(.58),r(.08),r(.34)); ctx.fillRect(x+r(.84),y+r(.58),r(.08),r(.34));
   ctx.fillRect(x+r(.3),y+r(.58),r(.06),r(.3)); ctx.fillRect(x+r(.64),y+r(.58),r(.06),r(.3));
 }
-/* 78 ??PC ?곗뒪?ы깙 */
+/* 78 – PC 데스크탑 */
 function __rtCT78(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#333'; ctx.fillRect(x+r(.08),y+r(.04),r(.64),r(.5));
@@ -1207,7 +1217,7 @@ function __rtCT78(ctx,x,y,ts){
   ctx.fillStyle='#555';
   for(var i=0;i<9;i++) ctx.fillRect(x+r(.08)+i*r(.06),y+r(.66),r(.045),r(.05));
 }
-/* 79 ???명듃遺?*/
+/* 79 – 노트북 */
 function __rtCT79(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#2a2a2a';
@@ -1224,7 +1234,7 @@ function __rtCT79(ctx,x,y,ts){
   for(var i=0;i<9;i++) ctx.fillRect(x+r(.1)+i*r(.085),y+r(.54),r(.07),r(.07));
   ctx.fillStyle='#444'; ctx.fillRect(x+r(.28),y+r(.72),r(.44),r(.1));
 }
-/* 80 ???쒕쾭??*/
+/* 80 – 서버랙 */
 function __rtCT80(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#1a1a1a'; ctx.fillRect(x+r(.1),y+r(.04),r(.8),r(.92));
@@ -1238,7 +1248,7 @@ function __rtCT80(ctx,x,y,ts){
     for(var j=0;j<4;j++) ctx.fillRect(x+r(.3)+j*r(.1),y+r(.1)+i*r(.12),r(.08),r(.08));
   }
 }
-/* 81 ???꾨┛??*/
+/* 81 – 프린터 */
 function __rtCT81(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#c8c8c8'; ctx.fillRect(x+r(.08),y+r(.24),r(.84),r(.6));
@@ -1250,7 +1260,7 @@ function __rtCT81(ctx,x,y,ts){
   ctx.fillStyle='#e74c3c'; ctx.fillRect(x+r(.74),y+r(.42),r(.06),r(.06));
   ctx.fillStyle='#e0e0e0'; ctx.fillRect(x+r(.14),y+r(.3),r(.48),r(.1));
 }
-/* 82 ??怨듭쑀湲?*/
+/* 82 – 공유기 */
 function __rtCT82(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#f0f0f0'; ctx.fillRect(x+r(.06),y+r(.4),r(.88),r(.28));
@@ -1263,7 +1273,7 @@ function __rtCT82(ctx,x,y,ts){
   for(var i=0;i<5;i++) ctx.fillRect(x+r(.12)+i*r(.14),y+r(.6),r(.08),r(.05));
   ctx.fillStyle='#ccc'; ctx.fillRect(x+r(.28),y+r(.46),r(.44),r(.06));
 }
-/* 83 ???ㅽ뿕? */
+/* 83 – 실험대 */
 function __rtCT83(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#2c3333'; ctx.fillRect(x+r(.04),y+r(.14),r(.92),r(.48));
@@ -1279,7 +1289,7 @@ function __rtCT83(ctx,x,y,ts){
   ctx.fillRect(x+r(.08),y+r(.58),r(.08),r(.38)); ctx.fillRect(x+r(.84),y+r(.58),r(.08),r(.38));
   ctx.fillRect(x+r(.3),y+r(.58),r(.06),r(.34)); ctx.fillRect(x+r(.64),y+r(.58),r(.06),r(.34));
 }
-/* 84 ??鍮꾩빱 ?명듃 */
+/* 84 – 비커 세트 */
 function __rtCT84(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='rgba(180,220,255,.8)';
@@ -1296,7 +1306,7 @@ function __rtCT84(ctx,x,y,ts){
   ctx.fillStyle='#fff'; ctx.fillRect(x+r(.64),y+r(.36),r(.14),r(.08));
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.04),y+r(.14),r(.02),r(.72));
 }
-/* 85 ???꾨?寃?*/
+/* 85 – 현미경 */
 function __rtCT85(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#2c3e50'; ctx.fillRect(x+r(.2),y+r(.82),r(.6),r(.12));
@@ -1314,7 +1324,7 @@ function __rtCT85(ctx,x,y,ts){
   ctx.beginPath(); ctx.arc(x+r(.4),y+r(.38),r(.06),0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(x+r(.4),y+r(.5),r(.06),0,Math.PI*2); ctx.fill();
 }
-/* 86 ???쒖빟??*/
+/* 86 – 시약장 */
 function __rtCT86(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#2c3e50'; ctx.fillRect(x+r(.06),y+r(.04),r(.88),r(.92));
@@ -1335,7 +1345,7 @@ function __rtCT86(ctx,x,y,ts){
   ctx.fillStyle='#aaa';
   ctx.fillRect(x+r(.44),y+r(.44),r(.02),r(.08)); ctx.fillRect(x+r(.54),y+r(.44),r(.02),r(.08));
 }
-/* 87 ??泥쒖껜留앹썝寃?*/
+/* 87 – 천체망원경 */
 function __rtCT87(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5),cy=y+r(.58);
   ctx.fillStyle='#555';
@@ -1352,7 +1362,7 @@ function __rtCT87(ctx,x,y,ts){
   ctx.fillStyle='#444'; ctx.fillRect(-r(.04),r(.02),r(.08),r(.08));
   ctx.restore();
 }
-/* 88 ???앺뙋 ?뚯씠釉?*/
+/* 88 – 식판 테이블 */
 function __rtCT88(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#6b4914'; ctx.fillRect(x+r(.04),y+r(.18),r(.92),r(.5));
@@ -1368,7 +1378,7 @@ function __rtCT88(ctx,x,y,ts){
   ctx.fillRect(x+r(.1),y+r(.68),r(.08),r(.28)); ctx.fillRect(x+r(.82),y+r(.68),r(.08),r(.28));
   ctx.fillRect(x+r(.3),y+r(.68),r(.06),r(.24)); ctx.fillRect(x+r(.64),y+r(.68),r(.06),r(.24));
 }
-/* 89 ??諛곗떇? */
+/* 89 – 배식대 */
 function __rtCT89(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.04),y+r(.26),r(.92),r(.66));
@@ -1385,7 +1395,7 @@ function __rtCT89(ctx,x,y,ts){
   ctx.fillStyle='#aaa';
   ctx.beginPath(); ctx.arc(x+r(.12),y+r(.76),r(.07),0,Math.PI*2); ctx.fill();
 }
-/* 90 ??媛?ㅻ젅?몄? */
+/* 90 – 가스레인지 */
 function __rtCT90(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#444'; ctx.fillRect(x+r(.06),y+r(.22),r(.88),r(.7));
@@ -1402,7 +1412,7 @@ function __rtCT90(ctx,x,y,ts){
   ctx.fillStyle='#888';
   for(var i=0;i<4;i++) ctx.beginPath(),ctx.arc(x+r(.14)+i*r(.2),y+r(.8),r(.05),0,Math.PI*2),ctx.fill();
 }
-/* 91 ???됱옣怨?*/
+/* 91 – 냉장고 */
 function __rtCT91(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#c8c8c8'; ctx.fillRect(x+r(.1),y+r(.04),r(.8),r(.92));
@@ -1416,7 +1426,7 @@ function __rtCT91(ctx,x,y,ts){
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.22),y+r(.1),r(.5),r(.06));
   ctx.fillStyle='#00ff88'; ctx.fillRect(x+r(.22),y+r(.2),r(.14),r(.04));
 }
-/* 92 ???앷린 ?좊컲 */
+/* 92 – 식기 선반 */
 function __rtCT92(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#c0c0c0'; ctx.fillRect(x+r(.04),y+r(.36),r(.92),r(.08));
@@ -1430,7 +1440,7 @@ function __rtCT92(ctx,x,y,ts){
   ctx.moveTo(x+r(.84),y+r(.3)); ctx.lineTo(x+r(.92),y+r(.38)); ctx.lineTo(x+r(.84),y+r(.46)); ctx.closePath(); ctx.fill();
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.54),y+r(.36),r(.3),r(.04));
 }
-/* 93 ??移⑤? */
+/* 93 – 침대 */
 function __rtCT93(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#9090a0'; ctx.fillRect(x+r(.04),y+r(.12),r(.92),r(.08));
@@ -1443,7 +1453,7 @@ function __rtCT93(ctx,x,y,ts){
   ctx.fillStyle='#666';
   ctx.fillRect(x+r(.08),y+r(.9),r(.06),r(.06)); ctx.fillRect(x+r(.86),y+r(.9),r(.06),r(.06));
 }
-/* 94 ???몃㈃? */
+/* 94 – 세면대 */
 function __rtCT94(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.12),y+r(.02),r(.76),r(.22));
@@ -1457,7 +1467,7 @@ function __rtCT94(ctx,x,y,ts){
   ctx.fillRect(x+r(.4),y+r(.26),r(.2),r(.06));
   ctx.fillRect(x+r(.34),y+r(.28),r(.08),r(.05)); ctx.fillRect(x+r(.58),y+r(.28),r(.08),r(.05));
 }
-/* 95 ???덉븬痢≪젙湲?*/
+/* 95 – 혈압측정기 */
 function __rtCT95(ctx,x,y,ts){
   const r=v=>Math.round(ts*v); const cx=x+r(.5);
   ctx.fillStyle='#d0d0d0'; ctx.fillRect(x+r(.12),y+r(.1),r(.76),r(.26));
@@ -1471,7 +1481,7 @@ function __rtCT95(ctx,x,y,ts){
   ctx.fillStyle='#00cc33'; ctx.fillRect(x+r(.5),y+r(.5),r(.2),r(.16));
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.28),y+r(.84),r(.44),r(.08));
 }
-/* 96 ??而ㅽ듉 移몃쭑??*/
+/* 96 – 커튼 칸막이 */
 function __rtCT96(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#888'; ctx.fillRect(x+r(.06),y+r(.06),r(.88),r(.06));
@@ -1485,7 +1495,7 @@ function __rtCT96(ctx,x,y,ts){
   for(var i=0;i<4;i++) ctx.fillRect(x+r(.56)+i*r(.08),y+r(.12),r(.02),r(.82));
   ctx.fillStyle='rgba(0,0,0,.12)'; ctx.fillRect(x+r(.46),y+r(.12),r(.08),r(.82));
 }
-/* 97 ??援ш툒??*/
+/* 97 – 구급함 */
 function __rtCT97(ctx,x,y,ts){
   const r=v=>Math.round(ts*v);
   ctx.fillStyle='#e8e8e8'; ctx.fillRect(x+r(.12),y+r(.18),r(.76),r(.64));
@@ -1500,13 +1510,3 @@ function __rtCT97(ctx,x,y,ts){
   ctx.fillRect(x+r(.12),y+r(.14),r(.06),r(.06)); ctx.fillRect(x+r(.82),y+r(.14),r(.06),r(.06));
   ctx.fillRect(x+r(.12),y+r(.76),r(.06),r(.06)); ctx.fillRect(x+r(.82),y+r(.76),r(.06),r(.06));
 }
-
-/* ?? ?????????????????????????????????????? */
-async function saveMapEditor(){
-  if(!client){ alert('Supabase ?ㅼ젙???뺤씤?댁＜?몄슂.'); return; }
-
-  // 鍮?留????뺣━
-  const toSave = {};
-  Object.keys(__edOverlays).forEach(mapId => {
-    if(__edOverlays[mapId] && Object.keys(__edOverlays[mapId]).length > 0){
-      toSave[mapId] = __edOverlays[mapId];
