@@ -2656,7 +2656,7 @@ const ALL_EDIT_TILES = {
   41: { label:'게시판',   color:'#c8a06e', w:3, h:1 },
   42: { label:'선풍기',   color:'#7a8085' },
   43: { label:'독서램프', color:'#f4c430' },
-  44: { label:'복사기',   color:'#909090', w:2, h:2 },
+  44: { label:'복사기',   color:'#909090', w:2, h:1 },
   45: { label:'잡지꽂이', color:'#8B6914', w:1, h:2 },
   46: { label:'수조',     color:'#2980b9', w:2, h:1 },
   47: { label:'방석',     color:'#e8a0c0' },
@@ -2885,6 +2885,8 @@ function __edPaintTile(r, c, isErase){
   const info = MAP_EDITOR_GRIDS[__edMapId];
   if(!info || r < 0 || r >= info.rows || c < 0 || c >= info.cols) return;
   const ov = __edOverlays[__edMapId] || {};
+  // 팔레트에서 지우개(type 0) 선택 후 좌클릭도 지우기로 처리
+  if(__edSelTile === 0) isErase = true;
 
   if(isErase){
     // 앵커 직접 클릭 또는 확장 영역 클릭 모두 처리

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -423,8 +423,8 @@ try{placePlayer();}catch(e){console.warn('[modum_classroom] placePlayer:',e);}
 try{initRealtime('modum_classroom');}catch(e){console.warn('[modum_classroom] realtime:',e);}
 if(!TEACHER_VIEW){
   try{initMissionSystem('modum_classroom');}catch(e){console.warn('[modum_classroom] missions:',e);}
-  try{loadMapOverlays('modum_classroom',ctx,TS);}catch(e){console.warn('[modum_classroom] overlays:',e);}
 }
+try{loadMapOverlays('modum_classroom',ctx,TS);}catch(e){console.warn('[modum_classroom] overlays:',e);}
 </script>
 </body>
 </html>

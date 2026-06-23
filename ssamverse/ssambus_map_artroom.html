@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -363,8 +363,8 @@ try{placePlayer();}catch(e){console.warn('[artroom] placePlayer:',e);}
 try{initRealtime('artroom');}catch(e){console.warn('[artroom] realtime:',e);}
 if(!TEACHER_VIEW){
   try{initMissionSystem('artroom');}catch(e){console.warn('[artroom] missions:',e);}
-  try{loadMapOverlays('artroom',ctx,TS);}catch(e){console.warn('[artroom] overlays:',e);}
 }
+try{loadMapOverlays('artroom',ctx,TS);}catch(e){console.warn('[artroom] overlays:',e);}
 window.addEventListener('resize',updateCamera);
 </script>
 </body>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -402,8 +402,8 @@ try{placePlayer();}catch(e){console.warn('[health] placePlayer:',e);}
 try{initRealtime('health');}catch(e){console.warn('[health] realtime:',e);}
 if(!TEACHER_VIEW){
   try{initMissionSystem('health');}catch(e){console.warn('[health] missions:',e);}
-  try{loadMapOverlays('health',ctx,TS);}catch(e){console.warn('[health] overlays:',e);}
 }
+try{loadMapOverlays('health',ctx,TS);}catch(e){console.warn('[health] overlays:',e);}
 window.addEventListener('resize',updateCamera);
 </script>
 </body>

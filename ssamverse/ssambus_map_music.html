@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -528,8 +528,8 @@ try{placePlayer();}catch(e){console.warn('[music] placePlayer:',e);}
 try{initRealtime('music');}catch(e){console.warn('[music] realtime:',e);}
 if(!TEACHER_VIEW){
   try{initMissionSystem('music');}catch(e){console.warn('[music] missions:',e);}
-  try{loadMapOverlays('music',ctx,TS);}catch(e){console.warn('[music] overlays:',e);}
 }
+try{loadMapOverlays('music',ctx,TS);}catch(e){console.warn('[music] overlays:',e);}
 window.addEventListener('resize',updateCamera);
 </script>
 </body>
