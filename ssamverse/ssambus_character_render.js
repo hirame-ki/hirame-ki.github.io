@@ -209,9 +209,9 @@ function _face(id, dir, skin, hc, eye) {
 
 /* ---- 목 ---- */
 function _neck(dir, skin) {
-  if(dir==='down') return '<rect x="26" y="33" width="8" height="7" rx="2.5" fill="'+skin+'"/>';
-  if(dir==='left') return '<rect x="27" y="33" width="7" height="7" rx="2.5" fill="'+skin+'"/>';
-  if(dir==='up')   return '<rect x="26" y="33" width="8" height="7" rx="2.5" fill="'+dk(skin,20)+'"/>';
+  if(dir==='down') return '<rect x="26" y="33" width="8" height="3" rx="1.5" fill="'+skin+'"/>';
+  if(dir==='left') return '<rect x="27" y="33" width="7" height="3" rx="1.5" fill="'+skin+'"/>';
+  if(dir==='up')   return '<rect x="26" y="33" width="8" height="3" rx="1.5" fill="'+dk(skin,20)+'"/>';
   return '';
 }
 

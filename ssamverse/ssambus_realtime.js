@@ -438,11 +438,39 @@ function __rtApplyChatMode(){
 }
 
 /* ── 맵 오버레이 (가구/장애물) ─────────────────────────────────── */
-let __rtMapOverlays = {}; // { 'r,c': tileType }
+let __rtMapOverlays = {}; // { 'r,c': tileType } — 앵커 셀만 저장
+
+// 타일별 w×h 풋프린트 (기본 1×1, ALL_EDIT_TILES와 동기화)
+const __RT_TILE_SPANS = {
+  20:{w:2,h:1}, 22:{w:3,h:1}, 23:{w:1,h:2}, 30:{w:2,h:1}, 32:{w:2,h:2},
+  34:{w:3,h:2}, 35:{w:2,h:2}, 38:{w:3,h:1}, 39:{w:2,h:1}, 40:{w:2,h:1},
+  41:{w:3,h:1}, 44:{w:2,h:2}, 45:{w:1,h:2}, 46:{w:2,h:1}, 48:{w:2,h:3},
+  49:{w:2,h:3}, 50:{w:3,h:3}, 52:{w:3,h:1}, 53:{w:4,h:2}, 56:{w:2,h:1},
+  57:{w:5,h:1}, 58:{w:2,h:1}, 59:{w:3,h:1}, 61:{w:2,h:1}, 62:{w:3,h:3},
+  63:{w:3,h:3}, 66:{w:2,h:2}, 67:{w:3,h:1}, 68:{w:3,h:2}, 69:{w:1,h:2},
+  70:{w:2,h:2}, 71:{w:1,h:2}, 72:{w:3,h:1}, 73:{w:1,h:2}, 74:{w:2,h:2},
+  76:{w:2,h:1}, 77:{w:3,h:2}, 78:{w:2,h:2}, 80:{w:2,h:2}, 81:{w:2,h:1},
+  83:{w:3,h:2}, 86:{w:2,h:1}, 87:{w:2,h:2}, 88:{w:4,h:2}, 89:{w:4,h:1},
+  90:{w:2,h:2}, 91:{w:2,h:2}, 92:{w:2,h:1}, 93:{w:2,h:4}, 96:{w:3,h:1}
+};
+function __tsW(t){ return (__RT_TILE_SPANS[t]||{}).w||1; }
+function __tsH(t){ return (__RT_TILE_SPANS[t]||{}).h||1; }
 
 function __rtIsOverlayBlocked(r, c){
-  const v = __rtMapOverlays[`${r},${c}`];
-  return !!(v && v !== 0);
+  const direct = __rtMapOverlays[`${r},${c}`];
+  if(direct && direct !== 0) return true;
+  // 멀티타일 앵커의 확장 영역인지 확인
+  for(let dr = -5; dr <= 0; dr++){
+    for(let dc = -5; dc <= 0; dc++){
+      if(dr===0 && dc===0) continue;
+      const ak = `${r+dr},${c+dc}`;
+      const av = __rtMapOverlays[ak];
+      if(!av || av===0) continue;
+      const aw=__tsW(av), ah=__tsH(av);
+      if((r+dr)+ah>r && (r+dr)<=r && (c+dc)+aw>c && (c+dc)<=c) return true;
+    }
+  }
+  return false;
 }
 
 async function loadMapOverlays(mapId, ctx, ts){
@@ -465,7 +493,20 @@ async function loadMapOverlays(mapId, ctx, ts){
 }
 
 function __rtDrawOverlayTile(ctx, x, y, ts, type){
-  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
+  const tw=__tsW(type), th=__tsH(type);
+  if(tw===1 && th===1){
+    __rtDrawOverlayRaw(ctx,x,y,ts,type);
+  } else {
+    const off=document.createElement('canvas');
+    off.width=ts; off.height=ts;
+    __rtDrawOverlayRaw(off.getContext('2d'),0,0,ts,type,true);
+    ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
+    ctx.drawImage(off,x,y,tw*ts,th*ts);
+    ctx.shadowColor='transparent';
+  }
+}
+function __rtDrawOverlayRaw(ctx, x, y, ts, type, noShadow){
+  if(!noShadow){ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;}
   switch(type){
     case 20: __rtCT20(ctx,x,y,ts); break;
     case 21: __rtCT21(ctx,x,y,ts); break;
@@ -480,7 +521,7 @@ function __rtDrawOverlayTile(ctx, x, y, ts, type){
     case 36: __rtCT36(ctx,x,y,ts); break;
     case 37: __rtCT37(ctx,x,y,ts); break;
   }
-  ctx.shadowColor='transparent';
+  if(!noShadow) ctx.shadowColor='transparent';
 }
 
 function __rtCT20(ctx,x,y,ts){
