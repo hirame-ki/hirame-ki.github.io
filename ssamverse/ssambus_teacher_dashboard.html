@@ -3953,6 +3953,16 @@ async function saveMapEditor(){
     });
     if(error) throw error;
     showToast('✅ 맵 편집 내용이 저장되었습니다!');
+    // 접속 중인 맵 페이지에 즉시 갱신 신호 전송
+    try{
+      const bCh = client.channel('room:' + ROOM_ID);
+      bCh.subscribe((st) => {
+        if(st === 'SUBSCRIBED'){
+          bCh.send({ type:'broadcast', event:'map_reload', payload:{} });
+          setTimeout(() => client.removeChannel(bCh), 2000);
+        }
+      });
+    }catch(_){}
     closeMapEditor();
   }catch(e){
     alert('저장 실패: ' + e.message);
