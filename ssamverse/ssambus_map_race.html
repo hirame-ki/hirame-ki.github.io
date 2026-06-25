@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>쌤버스 - 경주 트랙</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:linear-gradient(to bottom,#0A1628,#0E1E34);display:flex;flex-direction:column;align-items:center;margin:0;min-height:100vh}
+#main-btn{position:fixed;top:14px;left:14px;z-index:999;background:rgba(26,53,88,.85);color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.4);text-decoration:none;backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
+#main-btn:hover{background:rgba(17,36,64,.9)}
+#char-btn{position:fixed;top:14px;left:14px;z-index:999;background:rgba(52,112,212,.85);color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.4);text-decoration:none;backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:none;align-items:center;gap:6px}
+#char-btn:hover{background:rgba(41,90,172,.9)}
+h2{margin:.3rem 0;color:rgba(255,255,255,.85);font-size:.95rem;font-weight:600;letter-spacing:-.01em;text-align:center;padding-top:18px}
+.info{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px;text-align:center;font-weight:400}
+.stage-wrap{width:720px;max-width:100%;height:672px;overflow:hidden;border:2px solid rgba(255,200,0,.25);border-radius:12px;box-shadow:0 0 40px rgba(200,150,0,.2),0 0 0 1px rgba(255,255,255,.04)}
+.stage{position:relative;line-height:0}
+#map{display:block}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear,top .1s linear;z-index:5}
+#player svg{display:block;width:100%;height:100%;overflow:visible}
+#player.flip svg{transform:scaleX(-1)}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear,top .15s linear;z-index:4}
+.remote-player svg{display:block;width:100%;height:100%;overflow:visible}
+.remote-player.flip svg{transform:scaleX(-1)}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.9);padding:1px 5px;border-radius:4px;white-space:nowrap;font-weight:600}
+html,body{height:100%;align-items:stretch;padding:0;overflow:hidden}
+#main-btn{display:flex}
+.stage-wrap{flex:1;min-height:0;width:100%}
+#race-ranking{position:fixed;right:0;top:0;bottom:56px;width:158px;background:rgba(8,18,36,.9);backdrop-filter:blur(6px);color:#fff;font-family:'Noto Sans KR',sans-serif;z-index:50;display:flex;flex-direction:column;border-left:1px solid rgba(255,255,255,.12)}
+.rk-title{padding:10px 12px 7px;font-size:13px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.15);flex-shrink:0}
+#rk-list{overflow-y:auto;flex:1}
+.rk-row{padding:7px 10px 5px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:3px}
+.rk-row.rk-me{background:rgba(255,255,255,.09)}
+.rk-rank-name{display:flex;align-items:center;gap:5px}
+.rk-medal{font-size:13px;flex-shrink:0}
+.rk-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:12px;flex:1;min-width:0}
+.rk-gates{display:flex;gap:2px;flex-wrap:wrap;margin-top:1px}
+.rk-dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28)}
+.rk-dot.rk-done{background:#f1c40f;border-color:#d4a017}
+.rk-finish{font-size:11px;color:#f1c40f;font-weight:700;margin-top:1px}
+#race-quiz-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+#race-quiz-bg.hidden{display:none}
+#race-quiz-card{background:#fff;border-radius:14px;padding:22px 20px;max-width:400px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.45);font-family:'Noto Sans KR',sans-serif;max-height:90vh;overflow-y:auto}
+#rq-gate-label{font-size:12px;font-weight:700;color:#c0392b;margin-bottom:10px}
+#rq-question{font-size:15px;font-weight:600;color:#222;margin-bottom:14px;line-height:1.55}
+.rq-choice{display:block;width:100%;padding:10px 14px;background:#f5f5f5;border:2px solid #e0e0e0;border-radius:8px;margin-bottom:8px;cursor:pointer;text-align:left;font-size:14px;font-family:'Noto Sans KR',sans-serif;transition:background .1s,border-color .1s;line-height:1.45}
+.rq-choice:hover{background:#eaf2ff;border-color:#3498db}
+.rq-choice.selected{background:#daeeff;border-color:#2980b9;font-weight:600}
+#rq-feedback{min-height:1.4em;font-size:13px;font-weight:600;margin:8px 0}
+#rq-feedback.ok{color:#27ae60}
+#rq-feedback.bad{color:#e74c3c}
+#rq-submit{width:100%;padding:12px;background:#e74c3c;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;margin-top:4px;transition:background .1s}
+#rq-submit:hover{background:#c0392b}
+@keyframes rf-pop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+<a id="main-btn" href="index.html">메인</a>
+<a id="char-btn" href="#">캐릭터 변경</a>
+<h2>쌤버스 - 경주 트랙</h2>
+<div class="info">🏁 S자 코스를 따라 게이트를 돌파하라! · 방향키 또는 스와이프로 이동</div>
+<div class="stage-wrap">
+  <div class="stage">
+    <canvas id="map" width="1920" height="5760"></canvas>
+    <div id="player"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
+    <div id="remote-players"></div>
+  </div>
+</div>
+<div id="race-ranking">
+  <div class="rk-title">🏆 실시간 순위</div>
+  <div id="rk-list"></div>
+</div>
+<div id="race-quiz-bg" class="hidden">
+  <div id="race-quiz-card">
+    <div id="rq-gate-label"></div>
+    <div id="rq-question"></div>
+    <div id="rq-choices"></div>
+    <div id="rq-feedback"></div>
+    <button id="rq-submit" onclick="submitGateQuiz()">제출</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="ssambus_supabase_config.js"></script>
+<script src="ssambus_character_render.js"></script>
+<script src="ssambus_realtime.js"></script>
+<script>
+/* ============================================================
+   경주 트랙 맵  40col × 120row  TS=48
+   Canvas: 1920 × 5760 px
+   ─────────────────────────────────────────────────────────
+   경로 구조 (아래→위, S자 사행):
+   START(중앙) → Gate1 → Turn→우 → Gate2 → Turn←좌(전폭)
+   → Gate3 → Turn→중 → Gate4 → Turn←좌
+   → Gate5 → Turn→우(전폭) → Gate6 → Turn←중
+   → Gate7 → Turn→우 → Gate8 → FINISH(우측 상단)
+   ============================================================ */
+var TS=48,COLS=40,ROWS=120,VIEW_W=720,VIEW_H=672;
+
+var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
+if(TEACHER_VIEW){
+  document.body.style.padding='0';
+  document.body.style.background='transparent';
+  document.querySelectorAll('h2,.info').forEach(function(el){el.style.display='none';});
+  document.getElementById('race-ranking').style.display='none';
+}
+(function(){
+  var _s=window.location.search,_rm=(_s.match(/[?&]room=([^&]+)/)||[])[1];
+  if(_rm&&!TEACHER_VIEW){
+    var _mb=document.getElementById('main-btn'),_cb=document.getElementById('char-btn');
+    if(_mb)_mb.style.display='none';
+    if(_cb){
+      _cb.style.cssText='position:fixed;top:12px;left:12px;z-index:999;background:#2980b9;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:inline';
+      var _nk=((_s.match(/[?&]nickname=([^&]*)/)||[])[1])||'';
+      try{_nk=_nk||sessionStorage.getItem('ssambus_nickname')||'';}catch(e){}
+      var _mf=window.location.pathname.split('/').pop()||'ssambus_map_race.html';
+      _cb.href='ssambus_characters.html?room='+_rm+'&map='+_mf+(_nk?'&nickname='+_nk:'');
+    }
+  }
+})();
+
+/* ============================================================
+   게임 상태
+   ============================================================ */
+var __raceStage=0,OPEN_GATES=new Set(),__quizActive=false;
+var __currentGateIdx=0,__currentQuizAnswer=-1,__selectedAnswer=-1;
+var __finishShown=false,__raceMissions=null;
+
+/* ============================================================
+   트랙 세그먼트 [r0,r1,c0,c1]
+   경로: 중앙→우→좌→중→좌→우→중→우  (S자 반복)
+   ============================================================ */
+var GRID=[];
+/* 경로 구조: 중앙(4칸)→우측(4칸)→좌측(4칸)→중앙→좌측→우측→중앙→우측 (S자 반복)
+   우측 세그먼트(cols 32-35): 실시간 순위창(우측 158px 고정) 겹침 방지를 위해
+   카메라 최대 오프셋(1200px) 기준 col35 화면 X ≈ 480px < 562px(순위창 시작) */
+var TRACK_SEGS=[
+  /* Seg1  중앙 직선  */ [106,117,18,21],
+  /* Turn1 →우측     */ [103,105,18,35],
+  /* Seg2  우측 직선  */ [91,102,32,35],
+  /* Turn2 ←좌(전폭) */ [88,90,3,35],
+  /* Seg3  좌측 직선  */ [76,87,3,6],
+  /* Turn3 →중앙     */ [73,75,3,21],
+  /* Seg4  중앙 직선  */ [61,72,18,21],
+  /* Turn4 ←좌측     */ [58,60,3,21],
+  /* Seg5  좌측 직선  */ [46,57,3,6],
+  /* Turn5 →우(전폭) */ [43,45,3,35],
+  /* Seg6  우측 직선  */ [31,42,32,35],
+  /* Turn6 ←중앙     */ [28,30,18,35],
+  /* Seg7  중앙 직선  */ [16,27,18,21],
+  /* Turn7 →우측     */ [13,15,18,35],
+  /* Seg8  우측 직선  */ [4,12,32,35]
+];
+
+/* 게이트: 각 직선 구간 상단 (전폭 4칸 차단 → 우회 불가) */
+var GATE_INFO_LIST=[
+  {idx:1,row:106,cs:18,ce:21,zone:'zone_A'},
+  {idx:2,row:91, cs:32,ce:35,zone:'zone_B'},
+  {idx:3,row:76, cs:3, ce:6, zone:'zone_C'},
+  {idx:4,row:61, cs:18,ce:21,zone:'zone_D'},
+  {idx:5,row:46, cs:3, ce:6, zone:'zone_E'},
+  {idx:6,row:31, cs:32,ce:35,zone:'zone_F'},
+  {idx:7,row:16, cs:18,ce:21,zone:'zone_G'},
+  {idx:8,row:4,  cs:32,ce:35,zone:'zone_H'}
+];
+var TILE_TO_GATE={};
+
+/* 장애물: 각 직선 구간에 2칸 배리어 교차 배치 (지그재그 강제 이동) */
+var OBSTACLE_ENABLED=true;
+var OBSTACLE_LIST=[
+  /* Seg1(cols 18-21): A=우측 차단, B=좌측 차단 */
+  {r:109,cs:20,ce:21},{r:111,cs:18,ce:19},{r:113,cs:20,ce:21},{r:115,cs:18,ce:19},
+  /* Seg2(cols 32-35) */
+  {r:93,cs:34,ce:35},{r:95,cs:32,ce:33},{r:97,cs:34,ce:35},{r:99,cs:32,ce:33},
+  /* Seg3(cols 3-6) */
+  {r:78,cs:5,ce:6},{r:80,cs:3,ce:4},{r:82,cs:5,ce:6},{r:84,cs:3,ce:4},
+  /* Seg4(cols 18-21) */
+  {r:63,cs:20,ce:21},{r:65,cs:18,ce:19},{r:67,cs:20,ce:21},{r:69,cs:18,ce:19},
+  /* Seg5(cols 3-6) */
+  {r:48,cs:5,ce:6},{r:50,cs:3,ce:4},{r:52,cs:5,ce:6},{r:54,cs:3,ce:4},
+  /* Seg6(cols 32-35) */
+  {r:33,cs:34,ce:35},{r:35,cs:32,ce:33},{r:37,cs:34,ce:35},{r:39,cs:32,ce:33},
+  /* Seg7(cols 18-21) */
+  {r:18,cs:20,ce:21},{r:20,cs:18,ce:19},{r:22,cs:20,ce:21},{r:24,cs:18,ce:19},
+  /* Seg8(cols 32-35) */
+  {r:6,cs:34,ce:35},{r:8,cs:32,ce:33},{r:10,cs:34,ce:35}
+];
+
+function buildGrid(){
+  var r,c;
+  TILE_TO_GATE={};
+  for(r=0;r<ROWS;r++){GRID[r]=[];for(c=0;c<COLS;c++)GRID[r][c]=0;}
+  TRACK_SEGS.forEach(function(s){for(r=s[0];r<=s[1];r++) for(c=s[2];c<=s[3];c++) GRID[r][c]=1;});
+  for(r=118;r<=119;r++) for(c=18;c<=21;c++) GRID[r][c]=3; /* START */
+  for(r=0;r<=3;r++) for(c=32;c<=35;c++) GRID[r][c]=4;    /* FINISH */
+  GATE_INFO_LIST.forEach(function(g){
+    for(c=g.cs;c<=g.ce;c++){GRID[g.row][c]=2;TILE_TO_GATE[g.row+','+c]=g.idx;}
+  });
+  if(OBSTACLE_ENABLED){
+    OBSTACLE_LIST.forEach(function(ob){
+      for(c=ob.cs;c<=ob.ce;c++) GRID[ob.r][c]=5;
+    });
+  }
+}
+
+function isWalkable(r,c){
+  if(r<0||r>=ROWS||c<0||c>=COLS) return false;
+  var t=GRID[r][c];
+  if(t===1||t===3||t===4) return true;
+  if(t===2) return OPEN_GATES.has(TILE_TO_GATE[r+','+c]);
+  return false; /* t===0(잔디) or t===5(장애물) → 통행 불가 */
+}
+function isTrackLike(r,c){
+  if(r<0||r>=ROWS||c<0||c>=COLS) return false;
+  return GRID[r][c]!==0; /* 장애물(5) 포함, 경계선 그리기용 */
+}
+
+/* ============================================================
+   캔버스 드로잉
+   ============================================================ */
+var cv=document.getElementById('map'),ctx=cv.getContext('2d');
+
+function drawAll(){
+  var ts=TS,r,c,x,y;
+
+  /* 1. 잔디 배경 */
+  ctx.fillStyle='#3a7040';ctx.fillRect(0,0,COLS*ts,ROWS*ts);
+  ctx.fillStyle='rgba(0,0,0,0.04)';
+  for(r=0;r<ROWS;r++) for(c=0;c<COLS;c++){
+    if(GRID[r][c]===0&&(r*3+c*7)%5===0) ctx.fillRect(c*ts+5,r*ts+5,ts-10,ts-10);
+  }
+
+  /* 2. 아스팔트 */
+  ctx.fillStyle='#2c2c2c';
+  TRACK_SEGS.forEach(function(s){ctx.fillRect(s[2]*ts,s[0]*ts,(s[3]-s[2]+1)*ts,(s[1]-s[0]+1)*ts);});
+  ctx.fillRect(18*ts,118*ts,4*ts,2*ts);
+  ctx.fillRect(32*ts,0,4*ts,4*ts);
+  ctx.fillStyle='rgba(255,255,255,0.012)';
+  for(r=0;r<ROWS;r++) for(c=0;c<COLS;c++){
+    var _t=GRID[r][c];if(_t>=1&&_t<=4&&(r*5+c*11)%9===0) ctx.fillRect(c*ts+1,r*ts+1,ts-2,ts-2);
+  }
+
+  /* 3. 코너 표시: 턴 구역은 살짝 다른 명도 */
+  ctx.fillStyle='rgba(255,200,50,0.05)';
+  [[103,105,18,35],[88,90,3,35],[73,75,3,21],[58,60,3,21],
+   [43,45,3,35],[28,30,18,35],[13,15,18,35]].forEach(function(s){
+    ctx.fillRect(s[2]*ts,s[0]*ts,(s[3]-s[2]+1)*ts,(s[1]-s[0]+1)*ts);
+  });
+
+  /* 4. START 구역 */
+  ctx.fillStyle='#27ae60';ctx.fillRect(18*ts,118*ts,4*ts,2*ts);
+  for(c=18;c<=21;c++){ctx.fillStyle=(c%2===0)?'#fff':'#1e8048';ctx.fillRect(c*ts,118*ts,ts,14);}
+  ctx.fillStyle='#fff';ctx.font='bold 15px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=5;
+  ctx.fillText('🏎 START',19.5*ts,118.6*ts);ctx.shadowBlur=0;
+
+  /* 5. FINISH 구역 */
+  for(r=0;r<4;r++) for(c=32;c<=35;c++){
+    ctx.fillStyle=((r+c)%2===0)?'#fff':'#111';ctx.fillRect(c*ts,r*ts,ts,ts);
+  }
+  ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.font='bold 13px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=6;ctx.fillStyle='#e74c3c';
+  ctx.strokeText('🏁FINISH',33.5*ts,2*ts);ctx.fillText('🏁FINISH',33.5*ts,2*ts);ctx.shadowBlur=0;
+
+  /* 6. 트랙 경계선 */
+  ctx.strokeStyle='rgba(255,255,255,0.88)';ctx.lineWidth=2.5;ctx.beginPath();
+  for(r=0;r<ROWS;r++) for(c=0;c<COLS;c++){
+    if(!isTrackLike(r,c)) continue;
+    x=c*ts;y=r*ts;
+    if(!isTrackLike(r-1,c)){ctx.moveTo(x,y);ctx.lineTo(x+ts,y);}
+    if(!isTrackLike(r+1,c)){ctx.moveTo(x,y+ts);ctx.lineTo(x+ts,y+ts);}
+    if(!isTrackLike(r,c-1)){ctx.moveTo(x,y);ctx.lineTo(x,y+ts);}
+    if(!isTrackLike(r,c+1)){ctx.moveTo(x+ts,y);ctx.lineTo(x+ts,y+ts);}
+  }
+  ctx.stroke();
+
+  /* 7. 직선 구간 중앙 점선 */
+  ctx.setLineDash([ts*0.35,ts*0.2]);ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=2;
+  [[106,117,19.5],[91,102,33.5],[76,87,4.5],[61,72,19.5],
+   [46,57,4.5],[31,42,33.5],[16,27,19.5],[4,12,33.5]].forEach(function(v){
+    ctx.beginPath();ctx.moveTo(v[2]*ts,v[0]*ts);ctx.lineTo(v[2]*ts,(v[1]+1)*ts);ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  /* 8. 방향 화살표 */
+  ctx.font='bold '+Math.floor(ts*0.44)+'px sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(255,255,255,0.22)';
+
+  /* 위쪽 화살표 (직선 구간, 게이트 행 제외) */
+  var segInfo=[
+    {r0:107,r1:117,cc:19,gr:106},
+    {r0:92, r1:102,cc:33,gr:91},
+    {r0:77, r1:87, cc:4, gr:76},
+    {r0:62, r1:72, cc:19,gr:61},
+    {r0:47, r1:57, cc:4, gr:46},
+    {r0:32, r1:42, cc:33,gr:31},
+    {r0:17, r1:27, cc:19,gr:16},
+    {r0:5,  r1:12, cc:33,gr:4}
+  ];
+  segInfo.forEach(function(s){
+    for(var ar=s.r1;ar>=s.r0;ar-=3){
+      if(ar!==s.gr) ctx.fillText('▲',(s.cc+0.5)*ts,(ar+0.5)*ts);
+    }
+  });
+
+  /* 턴 화살표 */
+  var turnInfo=[
+    {r0:103,r1:105,c0:18,c1:35,dir:'r'},
+    {r0:88, r1:90, c0:3, c1:35,dir:'l'},
+    {r0:73, r1:75, c0:3, c1:21,dir:'r'},
+    {r0:58, r1:60, c0:3, c1:21,dir:'l'},
+    {r0:43, r1:45, c0:3, c1:35,dir:'r'},
+    {r0:28, r1:30, c0:18,c1:35,dir:'l'},
+    {r0:13, r1:15, c0:18,c1:35,dir:'r'}
+  ];
+  var sym;
+  turnInfo.forEach(function(t){
+    sym=t.dir==='r'?'▶':'◀';
+    var mr=Math.floor((t.r0+t.r1)/2);
+    for(var ac=t.c0;ac<=t.c1;ac+=3){
+      if(GRID[mr]&&GRID[mr][ac]===1) ctx.fillText(sym,(ac+0.5)*ts,(mr+0.5)*ts);
+    }
+  });
+
+  /* 9. 게이트 */
+  drawGates();
+  /* 10. 장애물 */
+  drawObstacles();
+}
+
+function drawGates(){
+  var ts=TS;
+  GATE_INFO_LIST.forEach(function(g){
+    var opened=OPEN_GATES.has(g.idx),y=g.row*ts,midC=Math.floor((g.cs+g.ce)/2);
+    for(var c=g.cs;c<=g.ce;c++){
+      var x=c*ts;
+      if(opened){
+        ctx.fillStyle='#2c2c2c';ctx.fillRect(x,y,ts,ts);
+        ctx.fillStyle='rgba(39,174,96,0.22)';ctx.fillRect(x+1,y+1,ts-2,ts-2);
+        if(c===midC){ctx.fillStyle='rgba(39,174,96,.9)';ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('✓',x+ts/2,y+ts/2);}
+      } else {
+        ctx.fillStyle='#3a3a3a';ctx.fillRect(x,y,ts,ts);
+        ctx.fillStyle='#e74c3c';ctx.fillRect(x+2,y+7,ts-4,ts-14);
+        ctx.save();ctx.beginPath();ctx.rect(x+2,y+7,ts-4,ts-14);ctx.clip();
+        ctx.strokeStyle='rgba(0,0,0,.22)';ctx.lineWidth=5;
+        for(var d=-ts;d<ts*2;d+=12){ctx.beginPath();ctx.moveTo(x+d,y+7);ctx.lineTo(x+d+ts,y+ts);ctx.stroke();}
+        ctx.restore();
+        ctx.strokeStyle='#c0392b';ctx.lineWidth=2;ctx.strokeRect(x+2,y+7,ts-4,ts-14);
+        if(c===midC){ctx.fillStyle='#fff';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(g.idx,x+ts/2,y+ts/2);}
+      }
+    }
+  });
+}
+
+function drawObstacles(){
+  if(!OBSTACLE_ENABLED) return;
+  var ts=TS;
+  OBSTACLE_LIST.forEach(function(ob){
+    if(GRID[ob.r]&&GRID[ob.r][ob.cs]!==5) return;
+    var y=ob.r*ts;
+    for(var c=ob.cs;c<=ob.ce;c++){
+      var x=c*ts;
+      ctx.fillStyle='#c0392b';ctx.fillRect(x+2,y+5,ts-4,ts-10);
+      ctx.save();ctx.beginPath();ctx.rect(x+2,y+5,ts-4,ts-10);ctx.clip();
+      ctx.strokeStyle='rgba(255,255,255,.4)';ctx.lineWidth=6;
+      for(var d=-ts;d<ts*2;d+=12){ctx.beginPath();ctx.moveTo(x+d,y+5);ctx.lineTo(x+d+ts,y+ts);ctx.stroke();}
+      ctx.restore();
+      ctx.strokeStyle='#922b21';ctx.lineWidth=2;ctx.strokeRect(x+2,y+5,ts-4,ts-10);
+    }
+  });
+}
+
+/* ============================================================
+   카메라 & 플레이어
+   ============================================================ */
+var pos={r:118,c:19};
+var __savedChar=(function(){try{var _cp=new URLSearchParams(window.location.search).get('c');if(_cp)return JSON.parse(_cp);return JSON.parse(localStorage.getItem('ssambus_player_character'));}catch(e){return null;}})();
+var PLAYER=Object.assign({type:'student',skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',ccolor:'#1a3a6b',cloth:'suit',gender:'male',acc:[],dir:'down'},__savedChar||{});
+
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML=renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip',PLAYER.dir==='left'&&!PLAYER._facingRight);
+}
+function updateCamera(){
+  var _sw=document.querySelector('.stage-wrap'),_vw=_sw.clientWidth||VIEW_W,_vh=_sw.clientHeight||VIEW_H;
+  if(TEACHER_VIEW){_sw.style.width=(COLS*TS)+'px';_sw.style.height=(ROWS*TS)+'px';_sw.style.overflow='visible';return;}
+  var stage=document.querySelector('.stage');
+  var offX=Math.max(0,Math.min(pos.c*TS-_vw/2+TS/2,COLS*TS-_vw));
+  var offY=Math.max(0,Math.min(pos.r*TS-_vh/2+TS/2,ROWS*TS-_vh));
+  stage.style.transform='translate(-'+Math.round(offX)+'px,-'+Math.round(offY)+'px)';
+}
+function placePlayer(){
+  var el=document.getElementById('player');
+  if(TEACHER_VIEW){el.style.display='none';return;}
+  el.style.left=(pos.c*TS)+'px';el.style.top=(pos.r*TS-24)+'px';
+  updateCamera();try{broadcastMyPosition();}catch(e){}checkFinish();
+}
+
+/* ============================================================
+   이동
+   ============================================================ */
+function move(dir){
+  if(__quizActive) return;
+  var nr=pos.r,nc=pos.c;
+  if(dir==='up')nr--;else if(dir==='down')nr++;
+  else if(dir==='left')nc--;else if(dir==='right')nc++;
+  PLAYER._facingRight=(dir==='right');
+  PLAYER.dir=(dir==='right')?'left':dir;
+  renderPlayer();
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+  var t=GRID[nr][nc];
+  if(t===2){
+    var gIdx=TILE_TO_GATE[nr+','+nc];
+    if(OPEN_GATES.has(gIdx)){pos.r=nr;pos.c=nc;placePlayer();}
+    else showGateQuiz(gIdx);
+    return;
+  }
+  if(!isWalkable(nr,nc)) return;
+  try{if(__rtIsOverlayBlocked(nr,nc)) return;}catch(e){}
+  pos.r=nr;pos.c=nc;placePlayer();
+}
+
+/* ============================================================
+   결승선 감지
+   ============================================================ */
+function checkFinish(){
+  if(__finishShown) return;
+  if(GRID[pos.r]&&GRID[pos.r][pos.c]===4){
+    __finishShown=true;__raceStage=9;
+    try{broadcastMyPosition();}catch(e){}
+    updateRaceRanking(null);setTimeout(showFinishCelebration,400);
+  }
+}
+function showFinishCelebration(){
+  var myRank=1;
+  if(window.__rtChannel){try{var ps=__rtChannel.presenceState();Object.keys(ps).forEach(function(k){if(typeof __rtStudentId!=='undefined'&&k===__rtStudentId)return;var arr=ps[k];if(!arr||!arr.length)return;if((arr[arr.length-1].stage||0)>=9)myRank++;});}catch(e){}}
+  var medals=['🥇','🥈','🥉'],rankStr=(myRank<=3?medals[myRank-1]:myRank+'위')+' 완주!';
+  var bg=document.createElement('div');
+  bg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:250;padding:16px';
+  bg.innerHTML='<div style="background:#fff;border-radius:16px;padding:32px 24px;text-align:center;max-width:320px;width:100%;font-family:\'Noto Sans KR\',sans-serif;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:rf-pop .35s ease"><div style="font-size:54px">🏁</div><h3 style="font-size:20px;margin:10px 0 6px;color:#222">결승선 도착!</h3><div style="font-size:34px;margin:8px 0">'+rankStr+'</div><p style="font-size:13px;color:#888;margin-bottom:18px">S자 코스 완주!</p><button onclick="this.parentElement.parentElement.remove()" style="padding:10px 28px;background:#e74c3c;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif">확인</button></div>';
+  document.body.appendChild(bg);spawnConfetti();
+}
+function spawnConfetti(){
+  var cols=['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#e67e22','#fff'];
+  var el=document.createElement('div');el.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:260;overflow:hidden';
+  for(var i=0;i<50;i++){var p=document.createElement('div');p.style.cssText='position:absolute;width:8px;height:8px;border-radius:2px;left:'+(Math.random()*100)+'%;top:-12px;background:'+cols[i%cols.length]+';animation:rcf '+(2+Math.random()*2)+'s '+(Math.random()*.5)+'s linear forwards';el.appendChild(p);}
+  var st=document.createElement('style');st.textContent='@keyframes rcf{to{transform:translateY(100vh) rotate(720deg);opacity:0}}';
+  document.head.appendChild(st);document.body.appendChild(el);setTimeout(function(){el.remove();},5000);
+}
+
+/* ============================================================
+   퀴즈 시스템
+   ============================================================ */
+var RACE_DEMO_MISSIONS=[
+  {zone_id:'zone_A',type:'quiz',quiz:{question:'달리기 경주에서 출발 신호에 사용되는 색깔은?',options:['빨간 불','노란 불','초록 불','파란 불'],answer:2}},
+  {zone_id:'zone_B',type:'quiz',quiz:{question:'마라톤의 공식 거리는?',options:['32km','40km','42.195km','45km'],answer:2}},
+  {zone_id:'zone_C',type:'quiz',quiz:{question:'육상 100m 세계 최고 기록 보유자는?',options:['타이슨 게이','아사파 파월','우사인 볼트','저스틴 게이틀린'],answer:2}},
+  {zone_id:'zone_D',type:'quiz',quiz:{question:'계주(릴레이) 경기에서 선수끼리 주고받는 것은?',options:['공','바통','깃발','모자'],answer:1}},
+  {zone_id:'zone_E',type:'quiz',quiz:{question:'달리기 출발 자세를 돕는 보조 기구는?',options:['도움판','스타트 블록','점프 매트','발판'],answer:1}},
+  {zone_id:'zone_F',type:'quiz',quiz:{question:'장거리 달리기에서 가장 중요한 것은?',options:['빠른 출발','꾸준한 페이스 유지','팔을 크게 흔들기','발을 높이 올리기'],answer:1}},
+  {zone_id:'zone_G',type:'quiz',quiz:{question:'허들 경기에 대한 올바른 설명은?',options:['모든 선수가 같은 허들 높이 사용','장애물을 발로 차서 넘는다','허들을 넘으며 달리는 경기','허들은 고정되어 움직이지 않는다'],answer:2}},
+  {zone_id:'zone_H',type:'quiz',quiz:{question:'결승선 통과 시 공식 기록이 인정되는 신체 부위는?',options:['발','손','머리','가슴(상체)'],answer:3}}
+];
+async function loadRaceMissions(){
+  if(typeof __rtClient==='undefined'||!__rtClient){__raceMissions=RACE_DEMO_MISSIONS;return;}
+  var roomId=(new URLSearchParams(window.location.search)).get('room')||'demo';
+  if(roomId==='demo'){__raceMissions=RACE_DEMO_MISSIONS;return;}
+  try{
+    var r=await __rtClient.from('missions').select('*').eq('room_id',roomId).eq('map_id','race').order('order',{ascending:true});
+    if(!r.error&&r.data&&r.data.length){
+      var quizRows=r.data.filter(function(m){return m.type!=='obstacle_config';});
+      if(quizRows.length) __raceMissions=quizRows; else __raceMissions=RACE_DEMO_MISSIONS;
+      var obsEntry=r.data.find(function(m){return m.type==='obstacle_config';});
+      if(obsEntry&&obsEntry.quiz){
+        var newEnabled=(obsEntry.quiz.enabled!==false);
+        if(newEnabled!==OBSTACLE_ENABLED){OBSTACLE_ENABLED=newEnabled;buildGrid();drawAll();}
+      }
+    } else {__raceMissions=RACE_DEMO_MISSIONS;}
+  }catch(e){__raceMissions=RACE_DEMO_MISSIONS;}
+}
+function showGateQuiz(gateIdx){
+  if(__quizActive) return;
+  __quizActive=true;__currentGateIdx=gateIdx;
+  var gInfo=GATE_INFO_LIST.find(function(g){return g.idx===gateIdx;});
+  var pool=(__raceMissions||RACE_DEMO_MISSIONS).filter(function(m){return m.zone_id===gInfo.zone&&m.type==='quiz'&&m.quiz;});
+  if(!pool.length) pool=RACE_DEMO_MISSIONS.filter(function(m){return m.zone_id===gInfo.zone;});
+  var mission=pool[Math.floor(Math.random()*pool.length)]||null;
+  if(!mission||!mission.quiz){__quizActive=false;onGateOpen(gateIdx);return;}
+  var q=mission.quiz;
+  document.getElementById('rq-gate-label').innerHTML='🚧 게이트 '+gateIdx+' / 8&nbsp;&nbsp;<span style="font-weight:400;color:#999;font-size:11px">문제를 풀어야 통과할 수 있어요</span>';
+  document.getElementById('rq-question').textContent=q.question;
+  document.getElementById('rq-feedback').textContent='';document.getElementById('rq-feedback').className='';
+  var ch=document.getElementById('rq-choices');ch.innerHTML='';__selectedAnswer=-1;__currentQuizAnswer=q.answer;
+  ['①','②','③','④'].forEach(function(n,i){
+    var btn=document.createElement('button');btn.className='rq-choice';btn.textContent=n+' '+q.options[i];btn.dataset.idx=i;
+    btn.addEventListener('click',function(){document.querySelectorAll('.rq-choice').forEach(function(b){b.classList.remove('selected');});btn.classList.add('selected');__selectedAnswer=i;});
+    ch.appendChild(btn);
+  });
+  document.getElementById('race-quiz-bg').classList.remove('hidden');
+}
+function submitGateQuiz(){
+  var fb=document.getElementById('rq-feedback');
+  if(__selectedAnswer===-1){fb.textContent='답을 선택해주세요.';fb.className='bad';return;}
+  if(__selectedAnswer===__currentQuizAnswer){
+    fb.textContent='🎉 정답! 게이트가 열립니다!';fb.className='ok';
+    setTimeout(function(){document.getElementById('race-quiz-bg').classList.add('hidden');__quizActive=false;onGateOpen(__currentGateIdx);},700);
+  } else {
+    fb.textContent='❌ 틀렸습니다. 다시 시도해보세요!';fb.className='bad';
+    document.querySelectorAll('.rq-choice').forEach(function(b){b.classList.remove('selected');});__selectedAnswer=-1;
+  }
+}
+function onGateOpen(gateIdx){
+  OPEN_GATES.add(gateIdx);__raceStage=Math.max(__raceStage,gateIdx);
+  drawGates();try{broadcastMyPosition();}catch(e){}updateRaceRanking(null);
+}
+
+/* ============================================================
+   순위판
+   ============================================================ */
+function _escH(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function updateRaceRanking(presenceState){
+  var players=[{nickname:(typeof __rtNickname!=='undefined'?__rtNickname:'나'),stage:__raceStage,isMe:true}];
+  var ps=presenceState||(window.__rtChannel?__rtChannel.presenceState():null);
+  if(ps) Object.keys(ps).forEach(function(k){
+    if(typeof __rtStudentId!=='undefined'&&k===__rtStudentId) return;
+    var arr=ps[k];if(!arr||!arr.length)return;var s=arr[arr.length-1];
+    if(s.map&&s.map!=='race') return;
+    players.push({nickname:s.nickname||'?',stage:s.stage||0,isMe:false});
+  });
+  players.sort(function(a,b){return b.stage-a.stage||(a.nickname<b.nickname?-1:1);});
+  var medals=['🥇','🥈','🥉'],html='';
+  players.forEach(function(p,i){
+    var inner='<div class="rk-rank-name"><span class="rk-medal">'+(medals[i]||(i+1)+'위')+'</span><span class="rk-name">'+_escH(p.nickname)+'</span></div>';
+    if(p.stage>=9){inner+='<div class="rk-finish">🏁 완주!</div>';}
+    else{var dots='';for(var g=1;g<=8;g++) dots+='<span class="rk-dot'+(g<=p.stage?' rk-done':'')+'"></span>';inner+='<div class="rk-gates">'+dots+'</div>';}
+    html+='<div class="rk-row'+(p.isMe?' rk-me':'')+'">'+inner+'</div>';
+  });
+  var list=document.getElementById('rk-list');if(list) list.innerHTML=html;
+}
+
+/* ============================================================
+   입력
+   ============================================================ */
+window.addEventListener('keydown',function(e){
+  if(TEACHER_VIEW) return;
+  var m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(m[e.key]){e.preventDefault();move(m[e.key]);}
+});
+if(!TEACHER_VIEW){
+  var _sw2=document.querySelector('.stage-wrap'),_tx=0,_ty=0,_ta=false;
+  _sw2.addEventListener('touchstart',function(e){if(e.touches.length!==1)return;_ta=true;_tx=e.touches[0].clientX;_ty=e.touches[0].clientY;},{passive:true});
+  _sw2.addEventListener('touchmove',function(e){if(_ta)e.preventDefault();},{passive:false});
+  _sw2.addEventListener('touchend',function(e){
+    if(!_ta)return;_ta=false;var t=e.changedTouches[0],dx=t.clientX-_tx,dy=t.clientY-_ty;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<30)return;
+    if(Math.abs(dx)>Math.abs(dy))move(dx>0?'right':'left');else move(dy>0?'down':'up');
+  },{passive:true});
+}
+
+/* ============================================================
+   초기화
+   ============================================================ */
+buildGrid();drawAll();renderPlayer();
+try{placePlayer();}catch(e){console.warn('[race] placePlayer:',e);}
+try{
+  initRealtime('race');
+  if(typeof __rtMyState==='function'){var _oMS=__rtMyState;window.__rtMyState=function(){var st=_oMS();st.stage=window.__raceStage||0;return st;};}
+  if(typeof renderRemotePlayers==='function'){var _oRRP=renderRemotePlayers;window.renderRemotePlayers=function(ps){_oRRP(ps);updateRaceRanking(ps);};}
+}catch(e){console.warn('[race] realtime:',e);}
+try{loadMapOverlays('race',ctx,TS);}catch(e){console.warn('[race] overlays:',e);}
+loadRaceMissions();updateRaceRanking(null);window.addEventListener('resize',updateCamera);
+</script>
+<div id="creator-credit" style="position:fixed;bottom:56px;right:170px;z-index:9999;font-family:'Noto Sans KR',sans-serif;opacity:.5;transition:opacity .2s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.5'"><a href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;font-size:11px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.4);padding:3px 8px;border-radius:6px;backdrop-filter:blur(4px)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>황성재 · @hirame.ki</a></div>
+</body>
+</html>

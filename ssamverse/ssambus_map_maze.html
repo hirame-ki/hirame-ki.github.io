@@ -1,0 +1,397 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>쌤버스 - 미로</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:linear-gradient(to bottom,#0A1628,#0E1E34);display:flex;flex-direction:column;align-items:center;padding:20px;margin:0;min-height:100vh}
+#main-btn{position:fixed;top:14px;left:14px;z-index:999;background:rgba(26,53,88,.85);color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.4);text-decoration:none;backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:flex;align-items:center;gap:6px}
+#main-btn:hover{background:rgba(17,36,64,.9)}
+#char-btn{position:fixed;top:14px;left:14px;z-index:999;background:rgba(52,112,212,.85);color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.4);text-decoration:none;backdrop-filter:blur(8px);font-family:'Noto Sans KR',sans-serif;transition:all .15s;display:none;align-items:center;gap:6px}
+#char-btn:hover{background:rgba(41,90,172,.9)}
+h2{margin:.3rem 0;color:rgba(255,255,255,.85);font-size:.95rem;font-weight:600;letter-spacing:-.01em}
+.info{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:12px;text-align:center;font-weight:400}
+.stage-wrap{width:720px;max-width:100%;height:672px;overflow:hidden;border:2px solid rgba(100,70,40,.5);border-radius:12px;box-shadow:0 0 40px rgba(80,50,20,.3),0 0 0 1px rgba(255,255,255,.04)}
+.stage{position:relative;line-height:0}
+#map{display:block}
+#player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .1s linear,top .1s linear;z-index:5}
+#player svg{display:block;width:100%;height:100%;overflow:visible}
+#player.flip svg{transform:scaleX(-1)}
+.remote-player{position:absolute;width:48px;height:72px;pointer-events:none;transition:left .15s linear,top .15s linear;z-index:4}
+.remote-player svg{display:block;width:100%;height:100%;overflow:visible}
+.remote-player.flip svg{transform:scaleX(-1)}
+.remote-player .nick{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:10px;background:rgba(255,255,255,.9);padding:1px 5px;border-radius:4px;white-space:nowrap;font-weight:600}
+.legend{margin-top:10px;font-size:11.5px;color:rgba(255,255,255,.45);display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.legend span{display:flex;align-items:center;gap:4px}
+.sw{display:inline-block;width:13px;height:13px;border-radius:3px}
+html{height:100%}
+body{height:100%;align-items:stretch;padding:0;overflow:hidden}
+#main-btn{display:flex}
+h2{text-align:center;padding-top:18px}
+.info{text-align:center}
+.stage-wrap{flex:1;min-height:0;width:100%}
+.legend{justify-content:center;padding-bottom:10px}
+</style>
+</head>
+<body>
+<a id="main-btn" href="index.html">메인</a>
+<a id="char-btn" href="#">캐릭터 변경</a>
+<h2>쌤버스 - 미로</h2>
+<div class="info">입구(START)에서 출구(EXIT)까지 단 하나의 길을 찾아라! · 방향키·스와이프로 이동</div>
+<div class="stage-wrap">
+<div class="stage">
+  <canvas id="map" width="2880" height="2880"></canvas>
+  <div id="player"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
+  <div id="remote-players"></div>
+</div>
+</div>
+<div class="legend">
+  <span><span class="sw" style="background:#3a2010"></span>돌벽</span>
+  <span><span class="sw" style="background:#7a6648"></span>돌바닥</span>
+  <span><span class="sw" style="background:#27ae60"></span>출구</span>
+  <span><span class="sw" style="background:#2ecc71"></span>입구</span>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="ssambus_supabase_config.js"></script>
+<script src="ssambus_character_render.js"></script>
+<script src="ssambus_realtime.js"></script>
+<script src="ssambus_missions.js"></script>
+<script>
+/* === Maze map 60×60 === */
+var TS=48,COLS=60,ROWS=60,VIEW_W=720,VIEW_H=672;
+
+var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
+if(TEACHER_VIEW){
+  document.body.style.padding='0';
+  document.body.style.background='transparent';
+  document.querySelectorAll('h2,.info,.pad,.legend').forEach(function(el){el.style.display='none';});
+}
+(function(){
+  var _s=window.location.search;
+  var _rm=(_s.match(/[?&]room=([^&]+)/)||[])[1];
+  if(_rm&&!TEACHER_VIEW){
+    var _mb=document.getElementById('main-btn');
+    var _cb=document.getElementById('char-btn');
+    if(_mb)_mb.style.display='none';
+    if(_cb){
+      _cb.style.cssText='position:fixed;top:12px;left:12px;z-index:999;background:#2980b9;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:inline';
+      var _nk=((_s.match(/[?&]nickname=([^&]*)/)||[])[1])||'';
+      try{_nk=_nk||sessionStorage.getItem('ssambus_nickname')||'';}catch(e){}
+      var _mf=window.location.pathname.split('/').pop()||'ssambus_map_maze.html';
+      _cb.href='ssambus_characters.html?room='+_rm+'&map='+_mf+(_nk?'&nickname='+_nk:'');
+    }
+  }
+})();
+
+/* =====================================================================
+   미로 그리드 생성
+   - 19×19 셀(NC=19), 각 셀 2타일 + 벽 1타일 → pitch=3
+   - 셀(ci,cj) → 타일 rows[1+3ci, 2+3ci], cols[1+3cj, 2+3cj]
+   - Iterative Recursive Backtracker → Perfect Maze (단 하나의 해)
+   - 시드 고정(777) → 항상 동일한 미로
+   ===================================================================== */
+var grid=[];
+(function(){
+  for(var r=0;r<ROWS;r++){grid[r]=[];for(var c=0;c<COLS;c++) grid[r][c]=1;}
+
+  /* 시드 기반 Xorshift32 난수 */
+  var _s=777;
+  function rng(){_s^=_s<<13;_s^=_s>>17;_s^=_s<<5;return(_s>>>0)/4294967296;}
+  function rngI(n){return Math.floor(rng()*n);}
+
+  var NC=19;
+  var vis=[],hw=[],vw=[];  // hw[ci][cj]=true: 셀(ci,cj)와 (ci+1,cj) 사이 벽 존재
+  for(var i=0;i<NC;i++){
+    vis[i]=[];hw[i]=[];vw[i]=[];
+    for(var j=0;j<NC;j++){vis[i][j]=false;hw[i][j]=true;vw[i][j]=true;}
+  }
+
+  /* Iterative DFS Backtracker */
+  var stk=[{r:0,c:0}];
+  vis[0][0]=true;
+  while(stk.length>0){
+    var cur=stk[stk.length-1],r=cur.r,c=cur.c;
+    var nb=[];
+    if(r>0   &&!vis[r-1][c]) nb.push(0);
+    if(r<NC-1&&!vis[r+1][c]) nb.push(1);
+    if(c>0   &&!vis[r][c-1]) nb.push(2);
+    if(c<NC-1&&!vis[r][c+1]) nb.push(3);
+    if(!nb.length){stk.pop();continue;}
+    var d=nb[rngI(nb.length)],nr=r,nc=c;
+    if(d===0){nr=r-1;hw[nr][c]=false;}
+    else if(d===1){nr=r+1;hw[r][c]=false;}
+    else if(d===2){nc=c-1;vw[r][nc]=false;}
+    else{nc=c+1;vw[r][c]=false;}
+    vis[nr][nc]=true;
+    stk.push({r:nr,c:nc});
+  }
+
+  /* 셀·통로 타일 조각 */
+  for(var ci=0;ci<NC;ci++){
+    for(var cj=0;cj<NC;cj++){
+      var r0=1+ci*3,c0=1+cj*3;
+      grid[r0][c0]=0;grid[r0][c0+1]=0;
+      grid[r0+1][c0]=0;grid[r0+1][c0+1]=0;
+      if(!vw[ci][cj]&&cj<NC-1){grid[r0][c0+2]=0;grid[r0+1][c0+2]=0;}
+      if(!hw[ci][cj]&&ci<NC-1){grid[r0+2][c0]=0;grid[r0+2][c0+1]=0;}
+    }
+  }
+
+  /* 입구: 왼쪽 중앙 — 셀(9,0) → rows 28-29 */
+  grid[28][0]=5;grid[29][0]=5;
+  /* 출구: 오른쪽 중앙 — 셀(9,18) → rows 28-29, col57=오른쪽 경계 */
+  grid[28][57]=5;grid[29][57]=5;
+})();
+
+var WALK=[0,5];
+function isWalk(t){return WALK.indexOf(t)>=0;}
+
+var cv=document.getElementById('map');
+var ctx=cv.getContext('2d');
+
+/* ── 캐릭터 로드 ── */
+var __savedChar=(function(){
+  try{
+    var _cp=new URLSearchParams(window.location.search).get('c');
+    if(_cp) return JSON.parse(_cp);
+    return JSON.parse(localStorage.getItem('ssambus_player_character'));
+  }catch(e){return null;}
+})();
+var PLAYER=Object.assign({
+  type:'student',skin:'#FDEBD0',hcolor:'#1a1008',hair:'short',
+  ccolor:'#1a3a6b',cloth:'suit',gender:'male',acc:[],dir:'down'
+},__savedChar||{});
+function renderPlayer(){
+  document.getElementById('cg_p').innerHTML=renderCharacterSVG(PLAYER);
+  document.getElementById('player').classList.toggle('flip',PLAYER.dir==='left'&&!PLAYER._facingRight);
+}
+
+/* ── 타일 드로우 ── */
+function drawFloor(x,y,c,r){
+  /* 교대 음영 돌바닥 */
+  var base=((c+r)%2===0)?'#7a6648':'#6e5c40';
+  ctx.fillStyle=base;
+  ctx.fillRect(x,y,TS,TS);
+  /* 줄눈 */
+  ctx.strokeStyle='rgba(20,12,5,0.4)';
+  ctx.lineWidth=1;
+  ctx.strokeRect(x+0.5,y+0.5,TS-1,TS-1);
+  /* 미세 텍스처 */
+  var tx=(c*5+r*7)%4;
+  ctx.fillStyle='rgba(255,220,150,0.04)';
+  ctx.fillRect(x+tx*4,y+tx*3,TS/3,TS/4);
+  /* 균열 */
+  if((c*11+r*7)%17===0){
+    ctx.strokeStyle='rgba(0,0,0,0.15)';
+    ctx.lineWidth=0.7;
+    ctx.beginPath();
+    ctx.moveTo(x+6,y+14);ctx.lineTo(x+18,y+28);
+    ctx.stroke();
+  }
+}
+
+/* 벽돌 색상 팔레트 (위치마다 살짝 다른 색) */
+var WALL_COLS=['#2e1a0e','#351e10','#3a2010','#2a1808','#422410'];
+function drawWall(x,y,r,c){
+  ctx.fillStyle=WALL_COLS[(r*3+c*7)%WALL_COLS.length];
+  ctx.fillRect(x,y,TS,TS);
+  /* 벽돌 3단 */
+  var bh=Math.floor(TS/3);
+  ctx.fillStyle='rgba(0,0,0,0.28)';
+  for(var row=0;row<3;row++){
+    var ox=(row%2===0)?0:TS/2;
+    ctx.fillRect(x+ox,y+row*bh,TS/2-1,bh-1);
+    ctx.fillRect(x+(ox+TS/2)%TS,y+row*bh,TS/2-1,bh-1);
+  }
+  /* 상단 하이라이트 */
+  ctx.fillStyle='rgba(255,200,120,0.05)';
+  ctx.fillRect(x,y,TS,4);
+  /* 이끼/습기 */
+  if((r*2+c*5)%13<3){
+    ctx.fillStyle='rgba(20,60,10,0.25)';
+    ctx.fillRect(x+1,y+bh*2+2,TS-2,bh-2);
+  }
+}
+
+function drawExit(x,y){
+  ctx.fillStyle='#1a5030';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#27ae60';
+  ctx.fillRect(x+4,y+3,TS-8,TS-6);
+  ctx.fillStyle='#fff';
+  ctx.font='bold 8px sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('EXIT',x+TS/2,y+TS*0.35);
+  ctx.strokeStyle='#fff';
+  ctx.lineWidth=2.5;
+  ctx.beginPath();
+  ctx.moveTo(x+10,y+TS*0.62);
+  ctx.lineTo(x+TS-6,y+TS*0.62);
+  ctx.moveTo(x+TS-13,y+TS*0.62-5);
+  ctx.lineTo(x+TS-6,y+TS*0.62);
+  ctx.lineTo(x+TS-13,y+TS*0.62+5);
+  ctx.stroke();
+  ctx.fillStyle='#f1c40f';
+  ctx.beginPath();ctx.arc(x+9,y+TS/2,3,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#f1c40f';ctx.lineWidth=1.5;
+  ctx.strokeRect(x+4,y+3,TS-8,TS-6);
+}
+
+function drawEnter(x,y){
+  ctx.fillStyle='#104020';
+  ctx.fillRect(x,y,TS,TS);
+  ctx.fillStyle='#2ecc71';
+  ctx.fillRect(x+4,y+3,TS-8,TS-6);
+  ctx.fillStyle='#fff';
+  ctx.font='bold 7px sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('START',x+TS/2,y+TS*0.35);
+  ctx.strokeStyle='#fff';
+  ctx.lineWidth=2.5;
+  ctx.beginPath();
+  ctx.moveTo(x+TS-10,y+TS*0.62);
+  ctx.lineTo(x+6,y+TS*0.62);
+  ctx.moveTo(x+13,y+TS*0.62-5);
+  ctx.lineTo(x+6,y+TS*0.62);
+  ctx.lineTo(x+13,y+TS*0.62+5);
+  ctx.stroke();
+  ctx.fillStyle='#f1c40f';
+  ctx.beginPath();ctx.arc(x+TS-9,y+TS/2,3,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#f1c40f';ctx.lineWidth=1.5;
+  ctx.strokeRect(x+4,y+3,TS-8,TS-6);
+}
+
+function drawMap(){
+  for(var r=0;r<ROWS;r++){
+    for(var c=0;c<COLS;c++){
+      var x=c*TS,y=r*TS,t=grid[r][c];
+      if(t===1) drawWall(x,y,r,c);
+      else if(t===5){
+        if(c===0) drawEnter(x,y);
+        else drawExit(x,y);
+      }
+      else drawFloor(x,y,c,r);
+    }
+  }
+  /* 벽 드롭 그림자 */
+  ctx.fillStyle='rgba(0,0,0,0.38)';
+  for(var __r=0;__r<ROWS;__r++){for(var __c=0;__c<COLS;__c++){
+    if(isWalk(grid[__r][__c])) continue;
+    var __x=__c*TS,__y=__r*TS;
+    if((__c+1<COLS)&&isWalk(grid[__r][__c+1])&&grid[__r][__c+1]!==5)
+      ctx.fillRect(__x+TS,__y+4,7,TS);
+    if((__r+1<ROWS)&&isWalk(grid[__r+1][__c])&&grid[__r+1][__c]!==5)
+      ctx.fillRect(__x+4,__y+TS,TS,7);
+  }}
+  /* 횃불 — 특정 벽 타일에 불꽃 장식 */
+  for(var tr=0;tr<ROWS;tr++){for(var tc=0;tc<COLS;tc++){
+    if(grid[tr][tc]!==1) continue;
+    if((tr*7+tc*13)%61!==0) continue;
+    var tx=tc*TS,ty=tr*TS;
+    /* 횃불 막대 */
+    ctx.fillStyle='#8B4513';
+    ctx.fillRect(tx+TS/2-2,ty+TS*0.4,4,TS*0.45);
+    /* 불꽃 */
+    ctx.fillStyle='rgba(255,160,0,0.85)';
+    ctx.beginPath();
+    ctx.ellipse(tx+TS/2,ty+TS*0.32,5,9,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle='rgba(255,240,0,0.7)';
+    ctx.beginPath();
+    ctx.ellipse(tx+TS/2,ty+TS*0.28,3,5,0,0,Math.PI*2);
+    ctx.fill();
+    /* 후광 */
+    var grd=ctx.createRadialGradient(tx+TS/2,ty+TS*0.32,0,tx+TS/2,ty+TS*0.32,18);
+    grd.addColorStop(0,'rgba(255,180,0,0.18)');
+    grd.addColorStop(1,'rgba(255,180,0,0)');
+    ctx.fillStyle=grd;
+    ctx.beginPath();ctx.arc(tx+TS/2,ty+TS*0.32,18,0,Math.PI*2);ctx.fill();
+  }}
+}
+drawMap();
+
+function updateCamera(){
+  var _sw=document.querySelector('.stage-wrap');
+  var _vw=_sw.clientWidth||VIEW_W;
+  var _vh=_sw.clientHeight||VIEW_H;
+  if(TEACHER_VIEW){
+    var wrap=document.querySelector('.stage-wrap');
+    wrap.style.width=(COLS*TS)+'px';
+    wrap.style.height=(ROWS*TS)+'px';
+    wrap.style.overflow='visible';
+    return;
+  }
+  var stage=document.querySelector('.stage');
+  var offX=Math.max(0,Math.min(pos.c*TS-_vw/2+TS/2,COLS*TS-_vw));
+  var offY=Math.max(0,Math.min(pos.r*TS-_vh/2+TS/2,ROWS*TS-_vh));
+  stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
+}
+
+/* 플레이어 시작: 입구 셀(9,0) 안쪽 */
+var pos={r:28,c:1};
+
+function placePlayer(){
+  var el=document.getElementById('player');
+  if(TEACHER_VIEW) el.style.display='none';
+  el.style.left=(pos.c*TS)+'px';
+  el.style.top=(pos.r*TS-24)+'px';
+  updateCamera();
+  try{broadcastMyPosition();}catch(e){}
+  try{checkZoneOnMove(pos);}catch(e){}
+}
+
+function move(dir){
+  var nr=pos.r,nc=pos.c;
+  if(dir==='up') nr--;
+  else if(dir==='down') nr++;
+  else if(dir==='left') nc--;
+  else if(dir==='right') nc++;
+  PLAYER._facingRight=(dir==='right');
+  PLAYER.dir=(dir==='right')?'left':dir;
+  renderPlayer();
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS) return;
+  if(!isWalk(grid[nr][nc])) return;
+  try{if(__rtIsOverlayBlocked(nr,nc)) return;}catch(e){}
+  /* 미로 맵: 타일 겹침 허용 — __rtIsTileOccupied 체크 없음 */
+  try{if(typeof __msBlockExit==='function'&&__msBlockExit(nr,nc)){__msShowBlockedNotice();return;}}catch(e){}
+  pos.r=nr;pos.c=nc;
+  placePlayer();
+}
+
+window.addEventListener('keydown',function(e){
+  if(TEACHER_VIEW) return;
+  var m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+  if(m[e.key]){e.preventDefault();move(m[e.key]);}
+});
+if(!TEACHER_VIEW){
+  var sw=document.querySelector('.stage-wrap');
+  var tx=0,ty=0,ta=false;
+  sw.addEventListener('touchstart',function(e){if(e.touches.length!==1)return;ta=true;tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+  sw.addEventListener('touchmove',function(e){if(ta)e.preventDefault();},{passive:false});
+  sw.addEventListener('touchend',function(e){
+    if(!ta)return;ta=false;
+    var t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<30)return;
+    if(Math.abs(dx)>Math.abs(dy))move(dx>0?'right':'left');
+    else move(dy>0?'down':'up');
+  },{passive:true});
+}
+
+renderPlayer();
+try{placePlayer();}catch(e){console.warn('[maze] placePlayer:',e);}
+try{initRealtime('maze');}catch(e){console.warn('[maze] realtime:',e);}
+if(!TEACHER_VIEW){
+  try{initMissionSystem('maze');}catch(e){console.warn('[maze] missions:',e);}
+}
+try{loadMapOverlays('maze',ctx,TS);}catch(e){console.warn('[maze] overlays:',e);}
+window.addEventListener('resize',updateCamera);
+</script>
+<div id="creator-credit" style="position:fixed;bottom:56px;right:10px;z-index:9999;font-family:'Noto Sans KR',sans-serif;opacity:.5;transition:opacity .2s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.5'"><a href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;font-size:11px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.4);padding:3px 8px;border-radius:6px;backdrop-filter:blur(4px)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>황성재 · @hirame.ki</a></div>
+</body>
+</html>

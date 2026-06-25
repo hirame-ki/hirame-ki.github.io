@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -146,9 +146,11 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 /* ===== Order modal ===== */
 #orderModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
 #orderModal-bg.show{display:flex}
-#orderModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.25)}
-#orderModal h2{margin:0 0 1rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
-.orderrow{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;background:#FAFBFC}
+#orderModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:480px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 16px 48px rgba(0,0,0,.25)}
+#orderModal h2{margin:0 0 1rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px;flex-shrink:0}
+#om_list{overflow-y:auto;flex:1;min-height:0}
+#orderModal .modal-btns{flex-shrink:0;border-top:1px solid var(--border);padding-top:12px;margin-top:8px}
+.orderrow{display:flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:6px;background:#FAFBFC}
 .orderrow .om-idx{width:24px;height:24px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700}
 .orderrow .om-label{flex:1;font-size:13.5px;font-weight:500;color:var(--text)}
 .orderrow .om-badge{font-size:11px;padding:3px 9px;border-radius:10px;flex-shrink:0;font-weight:600}
@@ -180,23 +182,23 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 /* ===== Join map modal ===== */
 #joinMapModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:55;padding:16px}
 #joinMapModal-bg.show{display:flex}
-#joinMapModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:420px;box-shadow:0 16px 48px rgba(0,0,0,.3)}
-#joinMapModal h2{margin:0 0 .6rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
-.jm-tabs{display:flex;flex-direction:column;gap:6px;margin:10px 0}
-.jm-tabs button{padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-size:13.5px;cursor:pointer;text-align:left;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all .15s;color:var(--text)}
+#joinMapModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:500px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 16px 48px rgba(0,0,0,.3)}
+#joinMapModal h2{margin:0 0 .6rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.jm-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0;overflow-y:auto}
+.jm-tabs button{padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;cursor:pointer;text-align:left;font-family:'Noto Sans KR',sans-serif;font-weight:500;transition:all .15s;color:var(--text)}
 .jm-tabs button:hover{background:#EEF2F9;border-color:var(--accent)}
 
 /* ===== PDF/AI modal ===== */
 #pdfModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
 #pdfModal-bg.show{display:flex}
-#pdfModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.25)}
+#pdfModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.25)}
 #pdfModal h2{margin:0 0 .3rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
 #pdf-status{margin:10px 0;font-size:13px;padding:10px 14px;background:var(--accent-l);border-radius:9px;border-left:3px solid var(--accent);line-height:1.5;color:var(--primary)}
 #pdf-status.err{background:#FDE8E8;border-left-color:var(--danger);color:#8B0000}
 #pdf-dropzone{border:2px dashed #B0C4DE;border-radius:10px;padding:18px 12px;text-align:center;cursor:pointer;transition:all .15s;font-size:13px;color:var(--muted)}
 #pdf-dropzone:hover,#pdf-dropzone.drag-over{background:#EEF4FF;border-color:var(--accent)}
 #pdf-dropzone.has-file{border-color:var(--success);background:#F0FFF4;color:var(--success);font-weight:600}
-#pdf-preview-list .pdf-qcard{background:#F8FAFC;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;position:relative}
+#pdf-preview-list .pdf-qcard{background:#fff;border:1px solid #dbe4f0;border-radius:12px;padding:14px 16px;margin-bottom:10px;position:relative;border-left:4px solid var(--accent)}
 .pdf-qcard-del{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;border:none;background:#E8EEF5;color:var(--muted);font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .pdf-qcard-del:hover{background:var(--danger);color:#fff}
 #pdf-preview-list .pdf-qcard .qmeta-row{display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);flex-wrap:wrap}
@@ -611,7 +613,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
         <div class="section-hint">텍스트 레이어가 있는 PDF만 지원됩니다. (스캔본 불가)</div>
       </div>
       <div class="row2">
-        <div class="field">
+        <div class="field" style="flex:0 0 100px">
           <label>문제 수</label>
           <select id="pdf-count">
             <option value="3">3문제</option>
@@ -620,13 +622,14 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
           </select>
         </div>
         <div class="field">
-          <label>AI가 생성할 문제 형식 <span style="font-weight:normal;color:#999">(형식마다 AI 출력 구조가 다릅니다)</span></label>
+          <label>문제 형식</label>
           <select id="pdf-type">
             <option value="quiz">객관식 (4지선다)</option>
             <option value="ox_quiz">O/X 퀴즈</option>
             <option value="short_answer">주관식</option>
             <option value="discussion">토론/토의</option>
           </select>
+          <div class="section-hint" style="margin-top:4px">형식마다 AI 출력 구조가 다릅니다</div>
         </div>
       </div>
       <div class="row2">
@@ -673,7 +676,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <script src="ssambus_supabase_config.js"></script>
 <script>
 /* ===================== 설정 ===================== */
-const ACCESS_CODE = 'ssambus2026';   // 교사 접속 코드 (필요시 이 값을 변경하세요)
+const ACCESS_CODE = 'ssam';   // 교사 접속 코드 (필요시 이 값을 변경하세요)
 const ROOM_KEY = 'ssambus_teacher_room';        // (이전 버전과의 호환용) 마지막으로 사용한 수업 코드
 const ROOM_LIST_KEY = 'ssambus_teacher_rooms';  // 최근 사용한 수업 코드 목록 (최신순)
 let ROOM_ID = localStorage.getItem(ROOM_KEY) || null;
@@ -741,7 +744,9 @@ const MAP_FILES = {
   computer:'ssambus_map_computer.html',
   science:'ssambus_map_science.html',
   cafeteria:'ssambus_map_cafeteria.html',
-  health:'ssambus_map_health.html'
+  health:'ssambus_map_health.html',
+  maze:'ssambus_map_maze.html',
+  race:'ssambus_map_race.html'
 };
 
 /* 각 맵의 실제 캔버스 픽셀 크기 (실시간 맵 보기에서 축소 표시용) */
@@ -757,7 +762,9 @@ const MAP_CANVAS_SIZE = {
   computer:  { w:2880, h:2880 },
   science:   { w:2880, h:2880 },
   cafeteria: { w:2880, h:2880 },
-  health:    { w:1920, h:1920 }
+  health:    { w:1920, h:1920 },
+  maze:      { w:2880, h:2880 },
+  race:      { w:1920, h:5760 }
 };
 
 const MAPS = [
@@ -880,6 +887,26 @@ const MAPS = [
     {id:'zone_F', label:'3번 침대'},
     {id:'zone_G', label:'4번 침대'},
     {id:'zone_H', label:'출입구·대기 공간'}
+  ]},
+  { id:'maze', label:'미로', zones:[
+    {id:'zone_A', label:'막다른 길 A (왼쪽 상단)'},
+    {id:'zone_B', label:'막다른 길 B (북쪽 통로)'},
+    {id:'zone_C', label:'막다른 길 C (중앙 상단)'},
+    {id:'zone_D', label:'막다른 길 D (중앙 오른쪽)'},
+    {id:'zone_E', label:'막다른 길 E (오른쪽 상단)'},
+    {id:'zone_F', label:'막다른 길 F (오른쪽 하단)'},
+    {id:'zone_G', label:'막다른 길 G (왼쪽 하단)'},
+    {id:'zone_H', label:'막다른 길 H (입구 아래)'}
+  ]},
+  { id:'race', label:'경주 트랙', zones:[
+    {id:'zone_A', label:'게이트 1 (출발 직후)'},
+    {id:'zone_B', label:'게이트 2'},
+    {id:'zone_C', label:'게이트 3 (첫 번째 코너 전)'},
+    {id:'zone_D', label:'게이트 4 (첫 번째 코너 후)'},
+    {id:'zone_E', label:'게이트 5'},
+    {id:'zone_F', label:'게이트 6 (두 번째 코너 전)'},
+    {id:'zone_G', label:'게이트 7 (두 번째 코너 후)'},
+    {id:'zone_H', label:'게이트 8 (결승선 직전)'}
   ]}
 ];
 
@@ -1487,6 +1514,28 @@ function renderZones(mapId){
   const content = document.getElementById('content');
   content.innerHTML = '';
 
+  /* 경주 트랙 전용: 장애물 설정 섹션 */
+  if(mapId === 'race'){
+    const obsEntry = missions.find(m => m.type === 'obstacle_config');
+    const obsEnabled = obsEntry && obsEntry.quiz ? obsEntry.quiz.enabled !== false : true;
+    const obsEl = document.createElement('div');
+    obsEl.className = 'zone';
+    obsEl.style.cssText = 'margin-bottom:10px;border:1px solid rgba(231,76,60,.35);';
+    obsEl.innerHTML = `
+      <div class="zone-head" style="background:rgba(231,76,60,.1)">
+        <h2>🚧 장애물 설정 <span class="badge" style="background:#e74c3c">race</span></h2>
+      </div>
+      <div class="mlist" style="padding:14px 16px">
+        <div style="margin-bottom:10px;font-size:13px;color:#aaa">각 직선 구간에 지그재그 배리어 장애물을 활성화합니다. 장애물은 경로 폭 절반을 번갈아 막아 S자 회피 이동을 유도합니다.</div>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:600">
+          <input type="checkbox" id="obs-toggle" ${obsEnabled ? 'checked' : ''} style="width:18px;height:18px;accent-color:#e74c3c;cursor:pointer">
+          기본 장애물 활성화
+        </label>
+        <button onclick="saveObstacleConfig()" style="margin-top:12px;padding:8px 20px;background:#e74c3c;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">저장</button>
+      </div>`;
+    content.appendChild(obsEl);
+  }
+
   map.zones.forEach(zone=>{
     const zoneMissions = missions.filter(m => m.zone_id === zone.id);
     const zoneEl = document.createElement('div');
@@ -1559,6 +1608,32 @@ function renderZones(mapId){
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function saveObstacleConfig(){
+  const toggle = document.getElementById('obs-toggle');
+  if(!toggle) return;
+  const enabled = toggle.checked;
+  if(!client || !ROOM_ID){ showToast('수업 코드가 없습니다.'); return; }
+  try{
+    await ensureAuth();
+    const {data:existing} = await client.from('missions').select('id')
+      .eq('room_id', ROOM_ID).eq('map_id','race').eq('type','obstacle_config').maybeSingle();
+    if(existing && existing.id){
+      await client.from('missions').update({ quiz:{enabled}, teacher_id:currentUserId }).eq('id', existing.id);
+    } else {
+      await client.from('missions').insert({
+        room_id:ROOM_ID, map_id:'race', zone_id:'system', type:'obstacle_config',
+        title:'장애물 설정', order:999, quiz:{enabled}, teacher_id:currentUserId
+      });
+    }
+    await loadMissions('race');
+    renderZones('race');
+    showToast(enabled ? '장애물이 활성화되었습니다.' : '장애물이 비활성화되었습니다.');
+  }catch(e){
+    console.error(e);
+    showToast('저장 실패: ' + e.message);
+  }
 }
 
 /* ===================== 모달 (추가/수정) ===================== */
@@ -4439,10 +4514,16 @@ function __pdfRenderPreview(missions, type){
   list.innerHTML = missions.map((m, i) => {
     let detail = '';
     if(type === 'quiz'){
-      detail = (m.options || []).map((opt, j) =>
-        `<div style="padding:2px 0;font-size:12.5px;${j === Number(m.answer) ? 'color:#2e7d32;font-weight:600' : 'color:#555'}">` +
-        `${j === Number(m.answer) ? '✅' : '　'} ${opt}</div>`
-      ).join('');
+      const _nums = ['①','②','③','④'];
+      detail = '<div style="display:flex;flex-direction:column;gap:4px;margin:4px 0">' +
+        (m.options || []).map((opt, j) => {
+          const _ans = j === Number(m.answer);
+          return `<div style="display:flex;align-items:center;gap:7px;padding:5px 9px;border-radius:7px;font-size:12.5px;${_ans ? 'background:#e8f5e9;border:1.5px solid #a5d6a7;color:#1b5e20;font-weight:600' : 'background:#f8fafc;border:1px solid #e9edf2;color:#444'}">
+            <span style="font-weight:700;min-width:16px;flex-shrink:0;color:${_ans ? '#2e7d32' : '#bbb'}">${_nums[j]||j+1}</span>
+            <span style="flex:1">${opt}</span>
+            ${_ans ? '<span style="font-size:11px;color:#2e7d32;white-space:nowrap;margin-left:4px">✓ 정답</span>' : ''}
+          </div>`;
+        }).join('') + '</div>';
     } else if(type === 'ox_quiz'){
       detail = `<div style="font-size:12.5px;color:#2e7d32;font-weight:600;padding-top:4px">` +
         `정답: ${m.answer === 'O' ? '⭕ O (맞다)' : '❌ X (틀리다)'}</div>`;
@@ -4464,9 +4545,11 @@ function __pdfRenderPreview(missions, type){
     const bodyText = type === 'discussion' ? (m.topic || '') : (m.question || '');
     return `<div class="pdf-qcard" data-q-idx="${i}">
       <button class="pdf-qcard-del" title="이 문제 제외" onclick="this.closest('.pdf-qcard').remove()">✕</button>
-      <div style="font-size:11px;color:#aaa;margin-bottom:3px">${type === 'discussion' ? '토론' : '문제'} ${i + 1}</div>
-      <div style="font-weight:600;font-size:13.5px;margin-bottom:5px;padding-right:28px">${m.title || `미션 ${i+1}`}</div>
-      <div style="font-size:13px;color:#333;margin-bottom:4px">${bodyText}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:#fff;background:var(--accent);padding:1px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0">${type === 'discussion' ? '토론' : '문제'} ${i + 1}</span>
+        <span style="font-weight:700;font-size:13.5px;color:var(--primary);padding-right:28px;line-height:1.4">${m.title || `미션 ${i+1}`}</span>
+      </div>
+      <div style="font-size:13.5px;color:#333;margin-bottom:6px;line-height:1.5">${bodyText}</div>
       ${detail}
       <div class="qmeta-row">
         <label>유형: <span style="font-size:12px;padding:2px 8px;border-radius:4px;background:#eef2ff;color:#3d5a99;font-weight:600">${typeLabel}</span></label>
@@ -4546,5 +4629,6 @@ function showToast(msg){
   toastTimer = setTimeout(()=> el.style.display = 'none', 2000);
 }
 </script>
+<div id="creator-credit" style="position:fixed;bottom:8px;right:10px;z-index:9999;font-family:'Noto Sans KR',sans-serif;opacity:.5;transition:opacity .2s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.5'"><a href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;font-size:11px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.4);padding:3px 8px;border-radius:6px;backdrop-filter:blur(4px)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>황성재 · @hirame.ki</a></div>
 </body>
 </html>

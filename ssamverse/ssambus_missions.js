@@ -1,4 +1,4 @@
-/* =====================================================================
+﻿/* =====================================================================
    쌤버스 - 미션 시스템 공용 모듈
    각 맵 페이지(ssambus_map_*.html)에서 pos/TS/PLAYER 등을 정의한 뒤
    이 스크립트를 로드하고, 다음 2곳에서 호출합니다.
@@ -132,6 +132,26 @@ const MISSION_ZONES = {
     {id:'zone_F', label:'보건교사 구역(하)', r0:26, c0:2,  r1:37, c1:12},
     {id:'zone_G', label:'상단 출구',        r0:0,  c0:5,  r1:1,  c1:9},
     {id:'zone_H', label:'하단 출구',        r0:38, c0:5,  r1:39, c1:9}
+  ],
+  maze: [   // 60×60 - 미로 전체를 8구역으로 균등 분할
+    {id:'zone_A', label:'미로 구역 A (왼쪽 상단)',   r0:1,  c0:1,  r1:19, c1:19},
+    {id:'zone_B', label:'미로 구역 B (중앙 상단)',   r0:1,  c0:20, r1:19, c1:38},
+    {id:'zone_C', label:'미로 구역 C (오른쪽 상단)', r0:1,  c0:39, r1:19, c1:57},
+    {id:'zone_D', label:'미로 구역 D (왼쪽 중앙)',   r0:20, c0:1,  r1:37, c1:19},
+    {id:'zone_E', label:'미로 구역 E (중앙)',        r0:20, c0:20, r1:37, c1:38},
+    {id:'zone_F', label:'미로 구역 F (오른쪽 중앙)', r0:20, c0:39, r1:37, c1:57},
+    {id:'zone_G', label:'미로 구역 G (왼쪽 하단)',   r0:38, c0:1,  r1:57, c1:28},
+    {id:'zone_H', label:'미로 구역 H (오른쪽 하단)', r0:38, c0:29, r1:57, c1:57}
+  ],
+  race: [   // 40×120 경주 트랙 (S자 사행 코스, 4칸 폭) - 게이트 8개 각각 1구역
+    {id:'zone_A', label:'게이트 1 (중앙 직선)',   r0:105,c0:18, r1:107,c1:21},
+    {id:'zone_B', label:'게이트 2 (우측 직선)',   r0:90, c0:32, r1:92, c1:35},
+    {id:'zone_C', label:'게이트 3 (좌측 직선)',   r0:75, c0:3,  r1:77, c1:6},
+    {id:'zone_D', label:'게이트 4 (중앙 직선)',   r0:60, c0:18, r1:62, c1:21},
+    {id:'zone_E', label:'게이트 5 (좌측 직선)',   r0:45, c0:3,  r1:47, c1:6},
+    {id:'zone_F', label:'게이트 6 (우측 직선)',   r0:30, c0:32, r1:32, c1:35},
+    {id:'zone_G', label:'게이트 7 (중앙 직선)',   r0:15, c0:18, r1:17, c1:21},
+    {id:'zone_H', label:'게이트 8 (결승선 직전)', r0:3,  c0:32, r1:5,  c1:35}
   ]
 };
 
@@ -191,6 +211,12 @@ const EXIT_ZONES = {
   health: [
     {r0:0,  c0:7, r1:0,  c1:7},     // 상단 출구
     {r0:39, c0:7, r1:39, c1:7}      // 하단 출구
+  ],
+  maze: [
+    {r0:28, c0:57, r1:29, c1:57}    // 오른쪽 출구 (col57 EXIT 타일)
+  ],
+  race: [
+    {r0:0, c0:32, r1:3, c1:35}      // 결승선 구역 (40×120 S자 코스, 4칸 폭)
   ]
 };
 
@@ -207,13 +233,15 @@ const MAP_FILES = {
   computer:'ssambus_map_computer.html',
   science:'ssambus_map_science.html',
   cafeteria:'ssambus_map_cafeteria.html',
-  health:'ssambus_map_health.html'
+  health:'ssambus_map_health.html',
+  maze:'ssambus_map_maze.html',
+  race:'ssambus_map_race.html'
 };
 const MAP_LABELS = {
   classroom:'일반교실', library:'도서관', playground:'운동장',
   gym:'체육관', city:'현대도시', forest:'자연숲',
   music:'음악실', artroom:'미술실', computer:'컴퓨터실',
-  science:'과학실', cafeteria:'급식실', health:'보건실'
+  science:'과학실', cafeteria:'급식실', health:'보건실', maze:'미로', race:'경주 트랙'
 };
 
 /* 교사가 순서를 설정하지 않았을 때 사용할 기본 맵 순서 */
