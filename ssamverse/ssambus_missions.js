@@ -1011,6 +1011,10 @@ function __msComplete(id, answer = null){
   try{ localStorage.setItem(__msStorageKey(), JSON.stringify(Array.from(__msDone))); }
   catch(e){ /* 저장 실패 시 진행은 계속 가능 */ }
   __msUpdateProgress();
+  // 교사 진행현황 패널에 즉시 반영되도록 presence 상태 재전송
+  if(typeof __rtChannel !== 'undefined' && __rtChannel && typeof __rtMyState === 'function'){
+    try{ __rtChannel.track(__rtMyState()); }catch(e){ /* 무시 */ }
+  }
   const mission = __msMissions.find(m => m.id === id);
   if(mission) __msRecordProgress(mission, answer);
   __msQueue.shift();
@@ -1274,6 +1278,12 @@ function __msCTile(ctx, x, y, ts, type){
     case 95: __msCT95(ctx,x,y,ts); break; // 혈압측정기
     case 96: __msCT96(ctx,x,y,ts); break; // 커튼칸막이
     case 97: __msCT97(ctx,x,y,ts); break; // 구급함
+    case 98: // 장애물 (미로/경주 트랙 맵 에디터 배치)
+      ctx.fillStyle='#c0392b';ctx.fillRect(x+2,y+2,ts-4,ts-4);
+      ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(2,Math.round(ts*0.08));ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(x+6,y+6);ctx.lineTo(x+ts-6,y+ts-6);
+      ctx.moveTo(x+ts-6,y+6);ctx.lineTo(x+6,y+ts-6);ctx.stroke();
+      break;
   }
 }
 /* 68-97: 음악실·미술실·컴퓨터실·과학실·급식실·보건실 가구 */

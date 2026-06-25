@@ -48,7 +48,10 @@ function __rtMyState(){
     gender: PLAYER.gender,
     acc: PLAYER.acc,
     nickname: __rtNickname,
-    map: __rtMapId
+    map: __rtMapId,
+    mDone: (typeof __msDone !== 'undefined') ? __msDone.size : 0,
+    mTotal: (typeof __msMissions !== 'undefined' && __msMissions)
+      ? __msMissions.filter(function(m){ return m.required; }).length : 0
   };
 }
 
@@ -69,6 +72,10 @@ function __rtConnect(){
     __rtChannel.on('presence', { event: 'sync' }, () => {
       try{ renderRemotePlayers(__rtChannel.presenceState()); }
       catch(e){ console.warn('[쌤버스] 원격 캐릭터 렌더링 실패', e); }
+    });
+
+    __rtChannel.on('broadcast', { event: 'bad_words_update' }, ({ payload }) => {
+      if(payload && Array.isArray(payload.words)) __rtApplyCustomBadWords(payload.words);
     });
 
     __rtChannel.on('broadcast', { event: 'chat_setting' }, ({ payload }) => {
@@ -152,6 +159,7 @@ function initRealtime(mapId){
   __rtClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   __rtConnect();
   __rtLoadChatMode();
+  __rtLoadCustomBadWords();
 
   if(!__rtTeacherView){
     __rtBuildChatUI();
@@ -287,7 +295,7 @@ function __rtInjectChatStyle(){
     @keyframes rt-bubble-in{from{opacity:0;transform:translate(-50%,4px)}to{opacity:1;transform:translateX(-50%)}}
     #rt-chat-bar{position:fixed;left:0;right:0;bottom:0;display:flex;gap:6px;padding:8px;
       background:rgba(255,255,255,.95);border-top:1px solid #ddd;z-index:60;font-family:sans-serif}
-    #rt-chat-bar input{flex:1;min-width:0;padding:8px 10px;border:1px solid #ccc;border-radius:20px;font-size:14px}
+    #rt-chat-bar input{flex:1;min-width:0;padding:8px 10px;border:1px solid #ccc;border-radius:20px;font-size:16px}
     #rt-chat-bar button{padding:8px 16px;border:none;border-radius:20px;background:#2c3e50;color:#fff;font-size:14px;cursor:pointer}
     #rt-chat-bar button:hover{background:#1a252f}
   `;
@@ -308,6 +316,50 @@ function __rtBuildChatUI(){
   document.body.style.paddingBottom = (parseFloat(cs.paddingBottom) || 0) + 54 + 'px';
 
   const input = bar.querySelector('#rt-chat-input');
+
+  /* ── 모바일 키보드 표시 시 레이아웃 고정 ──────────────────────
+     iOS : font-size≥16px 설정으로 자동 줌 방지됨(위 CSS 참조)
+     Android : 키보드 등장 시 viewport 높이 축소 → stage-wrap 수축
+               → 카메라 재계산 오류 → focus 시 높이 픽셀로 고정,
+                  blur 후 복원 + resize 이벤트로 카메라 재정렬     */
+  // 레이아웃 안정 후 초기 높이 저장 (키보드 등장 전 기준값)
+  setTimeout(() => {
+    const sw = document.querySelector('.stage-wrap');
+    if(sw) window.__rtStableH = Math.round(sw.getBoundingClientRect().height);
+  }, 300);
+
+  function __rtLockStageH(){
+    const sw = document.querySelector('.stage-wrap');
+    if(!sw) return;
+    const h = window.__rtStableH || Math.round(sw.getBoundingClientRect().height);
+    window.__rtStableH = h;
+    sw.style.height = h + 'px';
+    sw.style.minHeight = h + 'px';
+  }
+  function __rtUnlockStageH(){
+    const sw = document.querySelector('.stage-wrap');
+    if(!sw) return;
+    sw.style.height = '';
+    sw.style.minHeight = '';
+    // 키보드 완전 사라진 뒤 카메라 재정렬
+    setTimeout(() => {
+      const h = Math.round(sw.getBoundingClientRect().height);
+      if(h > 50) window.__rtStableH = h;
+      if(typeof updateCamera === 'function') updateCamera();
+    }, 350);
+  }
+  input.addEventListener('focus', __rtLockStageH);
+  input.addEventListener('blur',  __rtUnlockStageH);
+  // 화면 회전 시 안정 높이 갱신
+  window.addEventListener('orientationchange', () => {
+    const sw = document.querySelector('.stage-wrap');
+    if(sw) { sw.style.height = ''; sw.style.minHeight = ''; }
+    setTimeout(() => {
+      if(sw) window.__rtStableH = Math.round(sw.getBoundingClientRect().height);
+      if(typeof updateCamera === 'function') updateCamera();
+    }, 500);
+  });
+
   const send = () => {
     const text = input.value.trim();
     if(!text) return;
@@ -338,8 +390,40 @@ function __rtBuildChatUI(){
   });
 }
 
+/* ── 욕설 필터 ── */
+const __rtBadWords = [
+  // 한국어
+  '씨발','씨팔','씨바','쉬발','ㅅㅂ','개새끼','새끼','병신','ㅂㅅ','미친놈','미친년',
+  '지랄','ㅈㄹ','꺼져','죽어라','보지','자지','창녀','잡년','개년','개놈','개같은',
+  '좆','존나','ㅈㄴ','빠구리','섹스','강간','성폭행',
+  // 영어
+  'fuck','shit','bitch','bastard','cunt','asshole','dick','pussy','cock',
+  'faggot','nigger','nigga','retard','whore','slut','motherfucker'
+];
+function __rtContainsBadWord(text){
+  const norm = text.toLowerCase().replace(/\s+/g, '');
+  return __rtBadWords.some(function(w){ return norm.includes(w.replace(/\s+/g, '')); });
+}
+function __rtShowFilterWarn(){
+  let w = document.getElementById('rt-filter-warn');
+  if(!w){
+    w = document.createElement('div');
+    w.id = 'rt-filter-warn';
+    w.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);' +
+      'background:rgba(192,57,43,.95);color:#fff;font-size:13px;padding:10px 18px;' +
+      'border-radius:10px;z-index:70;max-width:300px;text-align:center;' +
+      'box-shadow:0 2px 6px rgba(0,0,0,.25);font-family:sans-serif;display:none';
+    document.body.appendChild(w);
+  }
+  w.textContent = '🚫 부적절한 표현이 포함된 메시지는 전송할 수 없어요.';
+  w.style.display = 'block';
+  clearTimeout(w._t);
+  w._t = setTimeout(function(){ w.style.display = 'none'; }, 2500);
+}
+
 function __rtSendChat(text){
   if(__rtChatMode === 'disabled' && !__rtTeacherParticipant) return; // 교사가 채팅 금지 중 (교사 참가자는 면제)
+  if(!__rtTeacherParticipant && __rtContainsBadWord(text)){ __rtShowFilterWarn(); return; }
   __rtShowBubble(__rtStudentId, text);
   if(!__rtChannel) return;
   try{
@@ -416,6 +500,24 @@ async function __rtLoadChatMode(){
   __rtApplyChatMode();
 }
 
+/* 커스텀 금지 단어 로드 */
+async function __rtLoadCustomBadWords(){
+  try{
+    const cl = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data } = await cl
+      .from('room_settings')
+      .select('custom_bad_words')
+      .eq('room_id', __rtRoomId)
+      .maybeSingle();
+    if(data && Array.isArray(data.custom_bad_words)) __rtApplyCustomBadWords(data.custom_bad_words);
+  }catch(e){ /* 설정 미존재 시 기본 필터만 사용 */ }
+}
+function __rtApplyCustomBadWords(words){
+  words.forEach(function(w){
+    if(w && !__rtBadWords.includes(w.toLowerCase())) __rtBadWords.push(w.toLowerCase());
+  });
+}
+
 /* 채팅 모드에 따라 채팅바 UI 적용 */
 function __rtApplyChatMode(){
   const bar = document.getElementById('rt-chat-bar');
@@ -489,11 +591,24 @@ async function loadMapOverlays(mapId, ctx, ts){
       .maybeSingle();
     if(data && data.map_tiles && data.map_tiles[mapId]){
       __rtMapOverlays = data.map_tiles[mapId];
+      // type 98 = 장애물: 이동 차단 목록 저장 + 맵 렌더루프 후크 등록
+      window.__rtCustomBlockers = {};
       Object.entries(__rtMapOverlays).forEach(([key, type]) => {
         if(!type || type === 0) return;
         const [r, c] = key.split(',').map(Number);
-        __rtDrawOverlayTile(ctx, c*ts, r*ts, ts, type);
+        if(type === 98){
+          window.__rtCustomBlockers[key] = true;
+        } else {
+          __rtDrawOverlayTile(ctx, c*ts, r*ts, ts, type);
+        }
       });
+      // 애니메이션 맵(race)용 사후 렌더 훅
+      window.__rtPostDrawHook = function(){
+        Object.keys(window.__rtCustomBlockers||{}).forEach(function(key){
+          const [r,c]=key.split(',').map(Number);
+          __rtDrawOverlayTile(ctx,c*ts,r*ts,ts,98);
+        });
+      };
     }
   }catch(e){ console.warn('[쌤버스] 맵 오버레이 로드 실패:', e); }
 }
@@ -506,10 +621,12 @@ async function __rtReloadOverlays(){
     const { data } = await __rtClient.from('room_settings').select('map_tiles').eq('room_id',__rtRoomId).maybeSingle();
     if(data && data.map_tiles && data.map_tiles[__rtOvMapId]){
       __rtMapOverlays = data.map_tiles[__rtOvMapId];
+      window.__rtCustomBlockers = {};
       Object.entries(__rtMapOverlays).forEach(([key, type]) => {
         if(!type || type === 0) return;
         const [r, c] = key.split(',').map(Number);
-        __rtDrawOverlayTile(__rtOvCtx, c*__rtOvTs, r*__rtOvTs, __rtOvTs, type);
+        if(type === 98){ window.__rtCustomBlockers[key] = true; }
+        else { __rtDrawOverlayTile(__rtOvCtx, c*__rtOvTs, r*__rtOvTs, __rtOvTs, type); }
       });
     }
   }catch(e){ console.warn('[쌤버스] 맵 오버레이 리로드 실패:', e); }
@@ -603,8 +720,21 @@ function __rtDrawOverlayRaw(ctx, x, y, ts, type, noShadow){
     case 95: __rtCT95(ctx,x,y,ts); break;
     case 96: __rtCT96(ctx,x,y,ts); break;
     case 97: __rtCT97(ctx,x,y,ts); break;
+    case 98: __rtCT98(ctx,x,y,ts); break;
   }
   if(!noShadow) ctx.shadowColor='transparent';
+}
+function __rtCT98(ctx,x,y,ts){
+  ctx.fillStyle='#c0392b';
+  ctx.fillRect(x+2,y+2,ts-4,ts-4);
+  ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(2,Math.round(ts*0.08));
+  ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(x+6,y+6);ctx.lineTo(x+ts-6,y+ts-6);
+  ctx.moveTo(x+ts-6,y+6);ctx.lineTo(x+6,y+ts-6);
+  ctx.stroke();
+  ctx.strokeStyle='rgba(0,0,0,0.2)';ctx.lineWidth=1;
+  ctx.strokeRect(x+1,y+1,ts-2,ts-2);
 }
 
 function __rtCT20(ctx,x,y,ts){

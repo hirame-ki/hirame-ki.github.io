@@ -162,6 +162,31 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 .orderrow .om-arrows button:disabled{opacity:.3;cursor:not-allowed}
 
 
+/* ===== 실시간 진행현황 모달 ===== */
+#spModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:55;padding:16px}
+#spModal-bg.show{display:flex}
+#spModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:720px;max-height:92vh;overflow-y:auto}
+#spModal h2{margin:0 0 .5rem;font-size:16px}
+#sp-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+#sp-table th{background:#f5f7fa;padding:7px 10px;text-align:left;font-weight:600;color:#555;border-bottom:2px solid #e0e0e0}
+#sp-table td{padding:7px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+#sp-table tr:hover td{background:#fafcff}
+.sp-bar-wrap{width:120px;background:#e9ecef;border-radius:6px;height:9px;overflow:hidden;display:inline-block;vertical-align:middle}
+.sp-bar-fill{height:9px;border-radius:6px;background:#2ecc71;transition:width .4s}
+.sp-done-all{color:#27ae60;font-weight:700}
+#sp-empty{text-align:center;color:#aaa;font-size:13px;padding:20px 0}
+
+/* ===== 욕설 필터 모달 ===== */
+#bwModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:56;padding:16px}
+#bwModal-bg.show{display:flex}
+#bwModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+#bwModal h2{margin:0 0 .5rem;font-size:16px}
+#bw-tag-list{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;min-height:36px}
+.bw-tag{background:#fde8e8;border:1px solid #e74c3c;color:#c0392b;border-radius:12px;padding:3px 8px 3px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px}
+.bw-tag button{background:none;border:none;cursor:pointer;font-size:13px;color:#c0392b;line-height:1;padding:0}
+#bw-input-row{display:flex;gap:6px;margin-bottom:8px}
+#bw-new-word{flex:1;padding:7px 10px;border:1px solid #ccc;border-radius:6px;font-size:13px}
+
 /* ===== 실시간 맵 보기 모달 ===== */
 #liveMapModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:55;padding:16px}
 #liveMapModal-bg.show{display:flex}
@@ -312,6 +337,8 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
       <button class="primary" onclick="openJoinMapModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> 맵 참가하기</button>
       <button class="primary" id="chatModeBtn" onclick="toggleChatMode()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 채팅: 전체</button>
       <button class="ghost" id="chatBanBtn" onclick="toggleChatBan()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> 채팅 금지</button>
+      <button class="ghost" onclick="openBadWordsModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> 욕설 필터</button>
+      <button class="primary" onclick="openProgressModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="23 21 23 19 19 19"/><line x1="19" y1="15" x2="23" y2="15"/></svg> 실시간 진행현황</button>
       <button class="primary" onclick="openRankingModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v10a6 6 0 01-12 0V2z"/><path d="M6 6H3v4a4 4 0 004 4"/><path d="M18 6h3v4a4 4 0 01-4 4"/><path d="M12 18v3M9 21h6"/></svg> 완료 순위</button>
       <button class="primary" onclick="downloadProgressExcel()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg> 진행현황 다운로드</button>
       <button class="ghost" onclick="newClass()">수업 변경</button>
@@ -362,6 +389,39 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeOrderModal()">닫기</button>
       <button class="btn-save" onclick="saveMapOrder()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 욕설 필터 관리 모달 -->
+<div id="bwModal-bg">
+  <div id="bwModal">
+    <h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> 욕설 필터 단어 관리</h2>
+    <div class="section-hint">수업 코드 전용 추가 금지 단어를 설정합니다. 저장하면 접속 중인 학생에게도 즉시 적용됩니다. (기본 필터 단어는 별도로 내장되어 있습니다)</div>
+    <div id="bw-input-row">
+      <input type="text" id="bw-new-word" placeholder="추가할 단어 입력" maxlength="20" onkeydown="if(event.key==='Enter') addBadWord()">
+      <button class="btn-save" onclick="addBadWord()">추가</button>
+    </div>
+    <div id="bw-tag-list"></div>
+    <div class="modal-btns" style="margin-top:14px">
+      <button class="btn-cancel" onclick="closeBadWordsModal()">닫기</button>
+      <button class="btn-save" onclick="saveBadWords()">저장 및 적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- 실시간 진행현황 모달 -->
+<div id="spModal-bg">
+  <div id="spModal">
+    <h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="23 21 23 19 19 19"/><line x1="19" y1="15" x2="23" y2="15"/></svg> 실시간 진행현황</h2>
+    <div class="section-hint">현재 접속 중인 학생의 미션 완료 현황을 실시간으로 확인합니다. 학생이 미션을 완료하면 자동으로 갱신됩니다.</div>
+    <div id="sp-empty" style="display:none">접속 중인 학생이 없습니다.</div>
+    <table id="sp-table" style="display:none">
+      <thead><tr><th>학생 이름</th><th>현재 맵</th><th>완료</th><th>진행률</th></tr></thead>
+      <tbody id="sp-tbody"></tbody>
+    </table>
+    <div class="modal-btns" style="margin-top:14px">
+      <button class="btn-cancel" onclick="closeProgressModal()">닫기</button>
     </div>
   </div>
 </div>
@@ -565,7 +625,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <div id="edModal-bg">
   <div id="edModal">
     <h2>🪑 맵 에디터</h2>
-    <div class="section-hint">가구를 배치할 맵을 선택한 후, 팔레트에서 가구를 선택하고 타일을 클릭/드래그해 배치하세요. 저장하면 학생 맵에도 반영됩니다.</div>
+    <div class="section-hint">맵을 선택한 후, 팔레트에서 가구(또는 장애물)를 선택하고 타일을 클릭/드래그해 배치하세요. 저장하면 학생 맵에도 반영됩니다. (미로·경주 트랙은 장애물 배치만 가능)</div>
     <div class="ed-tabs" id="ed-tabs"></div>
     <div class="ed-palette" id="ed-palette"></div>
     <div class="ed-hint">💡 바닥(보행 가능)타일에만 배치 가능합니다. 우클릭 또는 지우개로 제거할 수 있습니다.</div>
@@ -1212,6 +1272,135 @@ function closeDiscAnsModal(){
   document.getElementById('discAnsModal-bg').style.display = 'none';
 }
 
+
+/* ===================== 욕설 필터 관리 ===================== */
+let __bwList = [];
+
+async function openBadWordsModal(){
+  document.getElementById('bwModal-bg').classList.add('show');
+  __bwList = [];
+  if(client){
+    try{
+      const { data } = await client.from('room_settings').select('custom_bad_words').eq('room_id', ROOM_ID).maybeSingle();
+      if(data && Array.isArray(data.custom_bad_words)) __bwList = data.custom_bad_words.slice();
+    }catch(e){ /* 없으면 빈 목록 */ }
+  }
+  __bwRender();
+}
+function closeBadWordsModal(){
+  document.getElementById('bwModal-bg').classList.remove('show');
+}
+function __bwRender(){
+  const el = document.getElementById('bw-tag-list');
+  if(!el) return;
+  el.innerHTML = __bwList.length
+    ? __bwList.map((w, i) => `<span class="bw-tag">${escapeHtml(w)}<button onclick="__bwRemove(${i})" title="삭제">✕</button></span>`).join('')
+    : '<span style="color:#aaa;font-size:12px">추가된 단어 없음</span>';
+}
+function __bwRemove(i){
+  __bwList.splice(i, 1);
+  __bwRender();
+}
+function addBadWord(){
+  const inp = document.getElementById('bw-new-word');
+  const w = (inp.value||'').trim().toLowerCase();
+  if(!w){ inp.focus(); return; }
+  if(!__bwList.includes(w)) __bwList.push(w);
+  inp.value = '';
+  inp.focus();
+  __bwRender();
+}
+async function saveBadWords(){
+  if(!client) return;
+  try{
+    await client.from('room_settings').upsert(
+      { room_id: ROOM_ID, custom_bad_words: __bwList },
+      { onConflict: 'room_id', ignoreDuplicates: false }
+    );
+    // 접속 중인 학생에게 즉시 브로드캐스트
+    const bCh = client.channel('room:' + ROOM_ID);
+    bCh.subscribe(st => {
+      if(st === 'SUBSCRIBED'){
+        bCh.send({ type:'broadcast', event:'bad_words_update', payload:{ words: __bwList } });
+        setTimeout(() => { try{ client.removeChannel(bCh); }catch(e){} }, 1500);
+      }
+    });
+    showToast('욕설 필터가 저장 및 적용되었습니다.');
+  }catch(e){
+    console.error(e);
+    showToast('저장 실패: ' + (e.message||e));
+  }
+}
+
+/* ===================== 실시간 진행현황 ===================== */
+let __spChannel = null;
+
+function openProgressModal(){
+  document.getElementById('spModal-bg').classList.add('show');
+  __spConnect();
+}
+function closeProgressModal(){
+  document.getElementById('spModal-bg').classList.remove('show');
+  if(__spChannel){ try{ client.removeChannel(__spChannel); }catch(e){} __spChannel = null; }
+}
+function __spConnect(){
+  if(!client) return;
+  if(__spChannel){ try{ client.removeChannel(__spChannel); }catch(e){} }
+  __spChannel = client.channel('room:' + ROOM_ID, {
+    config: { presence: { key: 'dash_sp_' + Math.random().toString(36).slice(2, 8) } }
+  });
+  __spChannel.on('presence', { event: 'sync' }, function(){
+    __spRender(__spChannel.presenceState());
+  });
+  __spChannel.subscribe();
+}
+function __spRender(state){
+  const tbody = document.getElementById('sp-tbody');
+  const empty = document.getElementById('sp-empty');
+  const table = document.getElementById('sp-table');
+  if(!tbody) return;
+
+  const rows = [];
+  Object.keys(state).forEach(function(key){
+    if(key.startsWith('dash_')) return;
+    const presences = state[key];
+    if(!presences || !presences.length) return;
+    const s = presences[presences.length - 1];
+    rows.push({
+      nickname: s.nickname || '이름 없음',
+      map: s.map || '',
+      mDone: s.mDone || 0,
+      mTotal: s.mTotal || 0
+    });
+  });
+
+  rows.sort(function(a, b){
+    if(b.mDone !== a.mDone) return b.mDone - a.mDone;
+    return (a.nickname||'').localeCompare(b.nickname||'');
+  });
+
+  if(!rows.length){
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  table.style.display = 'table';
+
+  tbody.innerHTML = rows.map(function(r){
+    const pct = r.mTotal > 0 ? Math.round(r.mDone / r.mTotal * 100) : 0;
+    const mapLabel = (typeof MAPS !== 'undefined')
+      ? (MAPS.find(function(m){ return m.id === r.map; }) || {}).label || r.map
+      : r.map;
+    const allDone = r.mTotal > 0 && r.mDone >= r.mTotal;
+    return '<tr>' +
+      '<td><strong>' + escapeHtml(r.nickname) + '</strong></td>' +
+      '<td>' + escapeHtml(mapLabel) + '</td>' +
+      '<td class="' + (allDone ? 'sp-done-all' : '') + '">' + r.mDone + ' / ' + r.mTotal + '</td>' +
+      '<td><span class="sp-bar-wrap"><span class="sp-bar-fill" style="width:' + pct + '%"></span></span> <span style="font-size:12px;color:#888;margin-left:4px">' + pct + '%</span></td>' +
+      '</tr>';
+  }).join('');
+}
 
 /* ===================== 실시간 맵 보기 ===================== */
 let __lmCurrentMap = null;
@@ -2648,6 +2837,50 @@ function __edMakeHealthGrid(){
   return g;
 }
 
+function __edMakeMazeGrid(){
+  var ROWS=60,COLS=60,NC=19,g=[];
+  for(var r=0;r<ROWS;r++){g[r]=[];for(var c=0;c<COLS;c++)g[r][c]=1;}
+  var _s=777;
+  function rng(){_s^=_s<<13;_s^=_s>>17;_s^=_s<<5;return(_s>>>0)/4294967296;}
+  function rngI(n){return Math.floor(rng()*n);}
+  var vis=[],hw=[],vw=[];
+  for(var i=0;i<NC;i++){vis[i]=[];hw[i]=[];vw[i]=[];for(var j=0;j<NC;j++){vis[i][j]=false;hw[i][j]=true;vw[i][j]=true;}}
+  var stk=[{r:0,c:0}];vis[0][0]=true;
+  while(stk.length>0){
+    var cur=stk[stk.length-1],cr=cur.r,cc=cur.c,nb=[];
+    if(cr>0&&!vis[cr-1][cc])nb.push(0);if(cr<NC-1&&!vis[cr+1][cc])nb.push(1);
+    if(cc>0&&!vis[cr][cc-1])nb.push(2);if(cc<NC-1&&!vis[cr][cc+1])nb.push(3);
+    if(!nb.length){stk.pop();continue;}
+    var d=nb[rngI(nb.length)],nr=cr,nc=cc;
+    if(d===0){nr=cr-1;hw[nr][cc]=false;}else if(d===1){nr=cr+1;hw[cr][cc]=false;}
+    else if(d===2){nc=cc-1;vw[cr][nc]=false;}else{nc=cc+1;vw[cr][cc]=false;}
+    vis[nr][nc]=true;stk.push({r:nr,c:nc});
+  }
+  for(var ci=0;ci<NC;ci++){for(var cj=0;cj<NC;cj++){
+    var r0=1+ci*3,c0=1+cj*3;
+    g[r0][c0]=0;g[r0][c0+1]=0;g[r0+1][c0]=0;g[r0+1][c0+1]=0;
+    if(!vw[ci][cj]&&cj<NC-1){g[r0][c0+2]=0;g[r0+1][c0+2]=0;}
+    if(!hw[ci][cj]&&ci<NC-1){g[r0+2][c0]=0;g[r0+2][c0+1]=0;}
+  }}
+  g[28][0]=5;g[29][0]=5;g[28][57]=5;g[29][57]=5;
+  return g;
+}
+function __edMakeRaceGrid(){
+  var ROWS=120,COLS=40,g=[];
+  var TRACK_SEGS=[[106,117,18,21],[103,105,18,35],[91,102,32,35],[88,90,3,35],
+    [76,87,3,6],[73,75,3,21],[61,72,18,21],[58,60,3,21],[46,57,3,6],
+    [43,45,3,35],[31,42,32,35],[28,30,18,35],[16,27,18,21],[13,15,18,35],[4,12,32,35]];
+  var GATE_INFO_LIST=[
+    {row:106,cs:18,ce:21},{row:91,cs:32,ce:35},{row:76,cs:3,ce:6},{row:61,cs:18,ce:21},
+    {row:46,cs:3,ce:6},{row:31,cs:32,ce:35},{row:16,cs:18,ce:21},{row:4,cs:32,ce:35}];
+  for(var r=0;r<ROWS;r++){g[r]=[];for(var c=0;c<COLS;c++)g[r][c]=0;}
+  TRACK_SEGS.forEach(function(s){for(var r2=s[0];r2<=s[1];r2++) for(var c2=s[2];c2<=s[3];c2++) g[r2][c2]=1;});
+  for(var r3=118;r3<=119;r3++) for(var c3=18;c3<=21;c3++) g[r3][c3]=3;
+  for(var r4=0;r4<=3;r4++) for(var c4=32;c4<=35;c4++) g[r4][c4]=4;
+  GATE_INFO_LIST.forEach(function(gi){for(var c5=gi.cs;c5<=gi.ce;c5++) g[gi.row][c5]=2;});
+  return g;
+}
+
 const MAP_EDITOR_GRIDS = {
   classroom: {
     cols:60, rows:60, ts:48, walkable:new Set([0,5]),
@@ -2708,6 +2941,16 @@ const MAP_EDITOR_GRIDS = {
     cols:40, rows:40, ts:48, walkable:new Set([0,5,6]),
     tileColors:{0:'#f8eeee',1:'#c08080',2:'#d08080',3:'#c03030',4:'#b8d0f0',5:'#7a5230',6:'#e8d8e8',7:'#7090a0',8:'#808080',9:'#d0a080'},
     grid:__edMakeHealthGrid()
+  },
+  maze: {
+    cols:60, rows:60, walkable:new Set([0,5]),
+    tileColors:{0:'#8b7355',1:'#2c1a0e',5:'#27ae60'},
+    grid:__edMakeMazeGrid()
+  },
+  race: {
+    cols:40, rows:120, walkable:new Set([1,2,3,4]),
+    tileColors:{0:'#3a7040',1:'#555555',2:'#e67e22',3:'#27ae60',4:'#e74c3c'},
+    grid:__edMakeRaceGrid()
   }
 };
 
@@ -2785,6 +3028,7 @@ const ALL_EDIT_TILES = {
   95: { label:'혈압측정기',color:'#2c3e50' },
   96: { label:'커튼칸막이',color:'#e8d8f8', w:3, h:1 },
   97: { label:'구급함',   color:'#e8e8e8' },
+  98: { label:'장애물',   color:'#c0392b' },
    0: { label:'지우개',   color:null      }
 };
 
@@ -2801,7 +3045,9 @@ const MAP_PALETTE = {
   computer:   [20, 23, 40, 41, 42, 78, 79, 80, 81, 82, 0],
   science:    [21, 41, 42, 46, 77, 83, 84, 85, 86, 87, 0],
   cafeteria:  [21, 36, 39, 42, 51, 88, 89, 90, 91, 92, 0],
-  health:     [21, 38, 41, 42, 55, 93, 94, 95, 96, 97, 0]
+  health:     [21, 38, 41, 42, 55, 93, 94, 95, 96, 97, 0],
+  maze:       [98, 0],
+  race:       [98, 0]
 };
 
 /* ── 에디터 상태 ───────────────────────────── */
@@ -3103,7 +3349,18 @@ function __edCTileRaw(ctx, x, y, ts, type){
     case 95: __edCT95(ctx,x,y,ts); break;
     case 96: __edCT96(ctx,x,y,ts); break;
     case 97: __edCT97(ctx,x,y,ts); break;
+    case 98: __edCT98(ctx,x,y,ts); break;
   }
+}
+function __edCT98(ctx,x,y,ts){
+  ctx.fillStyle='#c0392b'; ctx.fillRect(x+2,y+2,ts-4,ts-4);
+  ctx.strokeStyle='#fff'; ctx.lineWidth=Math.max(2,Math.round(ts*0.1)); ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(x+6,y+6); ctx.lineTo(x+ts-6,y+ts-6);
+  ctx.moveTo(x+ts-6,y+6); ctx.lineTo(x+6,y+ts-6);
+  ctx.stroke();
+  ctx.strokeStyle='rgba(0,0,0,0.2)'; ctx.lineWidth=1;
+  ctx.strokeRect(x+1,y+1,ts-2,ts-2);
 }
 function __edCT20(ctx,x,y,ts){
   ctx.fillStyle='#7a8a96'; ctx.fillRect(x+Math.round(ts*.19),y+Math.round(ts*.13),Math.round(ts*.62),Math.round(ts*.19));
@@ -4450,9 +4707,26 @@ async function __pdfCallGroq(apiKey, pdfText, count, type){
   // Qwen3 thinking 블록 제거 (혹시 /no_think 가 무시된 경우 대비)
   content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
-  const match = content.match(/\[[\s\S]*\]/);
-  if(!match) throw new Error('AI 응답에서 문제를 파싱할 수 없습니다. 다시 시도해주세요.');
-  const parsed = JSON.parse(match[0]);
+  // 괄호 균형 추적으로 정확한 JSON 배열 추출 (greedy 정규식 오류 방지)
+  let jsonStr = null;
+  const startIdx = content.indexOf('[');
+  if(startIdx !== -1){
+    let depth=0, inStr=false, esc=false;
+    for(let i=startIdx; i<content.length; i++){
+      const ch=content[i];
+      if(esc){ esc=false; continue; }
+      if(ch==='\\'&&inStr){ esc=true; continue; }
+      if(ch==='"'){ inStr=!inStr; continue; }
+      if(inStr) continue;
+      if(ch==='['||ch==='{') depth++;
+      else if(ch===']'||ch==='}'){
+        depth--;
+        if(depth===0){ jsonStr=content.slice(startIdx,i+1); break; }
+      }
+    }
+  }
+  if(!jsonStr) throw new Error('AI 응답에서 문제를 파싱할 수 없습니다. 다시 시도해주세요.');
+  const parsed = JSON.parse(jsonStr);
   if(!Array.isArray(parsed) || !parsed.length)
     throw new Error('생성된 문제가 없습니다. PDF 내용을 확인 후 다시 시도해주세요.');
   return parsed;

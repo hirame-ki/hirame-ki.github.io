@@ -208,6 +208,7 @@ function buildGrid(){
 
 function isWalkable(r,c){
   if(r<0||r>=ROWS||c<0||c>=COLS) return false;
+  if(window.__rtCustomBlockers&&window.__rtCustomBlockers[r+','+c]) return false;
   var t=GRID[r][c];
   if(t===1||t===3||t===4) return true;
   if(t===2) return OPEN_GATES.has(TILE_TO_GATE[r+','+c]);
@@ -332,6 +333,8 @@ function drawAll(){
   drawGates();
   /* 10. 장애물 */
   drawObstacles();
+  /* 11. 커스텀 장애물 (맵 에디터 배치) */
+  if(typeof window.__rtPostDrawHook==='function') window.__rtPostDrawHook();
 }
 
 function drawGates(){

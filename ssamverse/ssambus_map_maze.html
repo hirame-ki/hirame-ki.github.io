@@ -276,6 +276,17 @@ function drawMap(){
         if(c===0) drawEnter(x,y);
         else drawExit(x,y);
       }
+      else if(t===99){
+        drawFloor(x,y,c,r);
+        ctx.fillStyle='#c0392b';
+        ctx.fillRect(x+3,y+3,TS-6,TS-6);
+        ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(2,Math.round(TS*0.1));
+        ctx.lineCap='round';
+        ctx.beginPath();
+        ctx.moveTo(x+8,y+8);ctx.lineTo(x+TS-8,y+TS-8);
+        ctx.moveTo(x+TS-8,y+8);ctx.lineTo(x+8,y+TS-8);
+        ctx.stroke();
+      }
       else drawFloor(x,y,c,r);
     }
   }
