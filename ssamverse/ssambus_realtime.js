@@ -72,8 +72,9 @@ let __rtReconnectTimer = null;
 function __rtConnect(){
   try{
     if(__rtChannel){
-      __rtClient.removeChannel(__rtChannel);
-      __rtChannel = null;
+      const _oldCh = __rtChannel;
+      __rtChannel = null; // removeChannel이 CLOSED를 동기 발생시키기 전에 null로 설정
+      __rtClient.removeChannel(_oldCh);
     }
 
     __rtChannel = __rtClient.channel('room:' + __rtRoomId, {
