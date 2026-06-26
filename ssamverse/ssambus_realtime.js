@@ -90,6 +90,25 @@ function __rtConnect(){
       try{ __rtUpdateProgressPanel(__rtChannel.presenceState()); }catch(e){}
     });
 
+    // 누군가 입장하면 내 위치를 즉시 broadcast — 신규 입장자가 내 위치를 알 수 있도록
+    _thisChannel.on('presence', { event: 'join' }, () => {
+      if(!__rtTeacherView) __rtTrackNow();
+    });
+
+    // 위치 broadcast 수신 — presence sync 없이 실시간 위치 반영
+    _thisChannel.on('broadcast', { event: 'pos' }, ({ payload }) => {
+      if(!payload || !payload.id || payload.id === __rtStudentId) return;
+      __rtRemotePos[payload.id] = payload;
+      const container = document.getElementById('remote-players');
+      if(!container) return;
+      const el = container.querySelector('[data-student="' + payload.id + '"]');
+      if(!el) return;
+      if(payload.map && __rtMapId && payload.map !== __rtMapId) return;
+      el.classList.toggle('flip', payload.dir === 'left' && !payload.facingRight);
+      el.style.left = (payload.c * TS) + 'px';
+      el.style.top  = (payload.r * TS - 24) + 'px';
+    });
+
     _thisChannel.on('broadcast', { event: 'bad_words_update' }, ({ payload }) => {
       if(payload && Array.isArray(payload.words)) __rtApplyCustomBadWords(payload.words);
     });
@@ -127,7 +146,7 @@ function __rtConnect(){
       // 무한 재연결 루프가 생기는 것을 방지
       if(_thisChannel !== __rtChannel) return;
       if(status === 'SUBSCRIBED'){
-        if(!__rtTeacherView) __rtChannel.track(__rtMyState());
+        __rtTrackPresence(); // 외관 1회 등록 (위치는 broadcastMyPosition으로 별도 전송)
       } else if(status === 'CLOSED' || status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
         console.warn('[쌤버스] Realtime 연결 끊김 - 재연결 시도:', status, err || '');
         if(!__rtReconnectTimer){
@@ -242,13 +261,26 @@ function __rtInjectLocalNick(){
 
 let __rtLastSendAt = 0;
 let __rtPendingTimer = null;
-const __rtSendInterval = 100; // 최소 전송 간격(ms) - 이동 쿨다운(125ms)과 맞춰 모든 이동이 전송되도록
+const __rtSendInterval = 100; // 최소 전송 간격(ms)
 
+// 위치는 broadcast(rate limit 여유) — presence rate limit 초과 방지
 function __rtTrackNow(){
   if(!__rtChannel) return;
   __rtLastSendAt = Date.now();
-  try{ __rtChannel.track(__rtMyState()); }
-  catch(e){ /* 연결이 끊긴 경우 조용히 무시 */ }
+  try{
+    __rtChannel.send({
+      type: 'broadcast',
+      event: 'pos',
+      payload: { id: __rtStudentId, r: pos.r, c: pos.c,
+                 dir: PLAYER.dir, facingRight: PLAYER._facingRight, map: __rtMapId }
+    });
+  }catch(e){}
+}
+
+// 외관·진행도는 presence로 track (접속 1회 + 미션 완료 시만 호출)
+function __rtTrackPresence(){
+  if(!__rtChannel || __rtTeacherView) return;
+  try{ __rtChannel.track(__rtMyState()); }catch(e){}
 }
 
 function broadcastMyPosition(){
@@ -265,6 +297,7 @@ function broadcastMyPosition(){
 }
 
 const __rtAvatarState = {}; // 캐릭터 외관 캐시 — 외관 변경 시에만 innerHTML 갱신해 깜빡임 방지
+const __rtRemotePos = {};   // 위치 캐시 — broadcast 'pos'로 수신한 최신 위치 저장
 
 function __rtAvatarChanged(key, s){
   const o = __rtAvatarState[key];
@@ -302,19 +335,30 @@ function renderRemotePlayers(presenceState){
       container.appendChild(el);
     }
 
+    // 위치: broadcast 'pos' 캐시 우선, 없으면 presence 값 사용 (초기 등장 시)
+    const rp = __rtRemotePos[key];
+    const renderDir = rp ? rp.dir : s.dir;
+    const renderFacingRight = rp ? rp.facingRight : s.facingRight;
+
     // 외관이 바뀐 경우에만 SVG 재생성 (깜빡임 방지)
-    if(__rtAvatarChanged(key, s)){
+    const mergedS = rp ? Object.assign({}, s, { dir: rp.dir, facingRight: rp.facingRight }) : s;
+    if(__rtAvatarChanged(key, mergedS)){
       __rtAvatarState[key] = {
-        type:s.type, preset:s.preset, skin:s.skin, hcolor:s.hcolor,
-        hair:s.hair, ccolor:s.ccolor, cloth:s.cloth, gender:s.gender,
-        dir:s.dir, facingRight:s.facingRight, acc:[...(s.acc||[])]
+        type:mergedS.type, preset:mergedS.preset, skin:mergedS.skin, hcolor:mergedS.hcolor,
+        hair:mergedS.hair, ccolor:mergedS.ccolor, cloth:mergedS.cloth, gender:mergedS.gender,
+        dir:mergedS.dir, facingRight:mergedS.facingRight, acc:[...(mergedS.acc||[])]
       };
-      el.querySelector('g').innerHTML = renderCharacterSVG(s);
+      el.querySelector('g').innerHTML = renderCharacterSVG(mergedS);
     }
 
-    el.classList.toggle('flip', s.dir === 'left' && !s.facingRight);
-    el.style.left = (s.c * TS) + 'px';
-    el.style.top  = (s.r * TS - 24) + 'px';
+    el.classList.toggle('flip', renderDir === 'left' && !renderFacingRight);
+    // 신규 등장 시에만 presence의 위치 사용 (이후 위치는 broadcast 'pos'가 담당)
+    if(isNew){
+      const initR = rp ? rp.r : (s.r || 0);
+      const initC = rp ? rp.c : (s.c || 0);
+      el.style.left = (initC * TS) + 'px';
+      el.style.top  = (initR * TS - 24) + 'px';
+    }
     el.querySelector('.nick').textContent = s.nickname || '';
 
     // 최초 배치 후 다음 프레임부터 트랜지션 복원
@@ -325,6 +369,7 @@ function renderRemotePlayers(presenceState){
   container.querySelectorAll('[data-student]').forEach(el => {
     if(!seen.has(el.dataset.student)){
       delete __rtAvatarState[el.dataset.student];
+      delete __rtRemotePos[el.dataset.student];
       el.remove();
     }
   });
