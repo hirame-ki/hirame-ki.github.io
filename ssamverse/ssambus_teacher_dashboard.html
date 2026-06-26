@@ -187,7 +187,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 #bw-input-row{display:flex;gap:6px;margin-bottom:8px}
 #bw-new-word{flex:1;padding:7px 10px;border:1px solid #ccc;border-radius:6px;font-size:13px}
 
-/* ===== 캐릭터 해금 기준 모달 ===== */
+/* ===== 애니 캐릭터 해금 기준 모달 ===== */
 #ulModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:57;padding:16px}
 #ulModal-bg.show{display:flex}
 #ulModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:420px}
@@ -358,7 +358,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
       <button class="primary" onclick="openOrderModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> 맵 이동 순서</button>
       <button class="primary" onclick="openLiveMapModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg> 실시간 맵 보기</button>
       <button class="primary" onclick="openJoinMapModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> 맵 참가하기</button>
-      <button class="ghost" onclick="openUnlockModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> 캐릭터 해금 기준</button>
+      <button class="ghost" onclick="openUnlockModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> 애니 캐릭터 해금 기준</button>
     </div>
     <!-- 드롭다운 패널: AI -->
     <div class="cat-panel" id="cat-ai">
@@ -588,6 +588,12 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
       <label>내용 (URL)</label>
       <input type="url" id="f_content" placeholder="https://...">
     </div>
+    <!-- 이미지 퀴즈: 이미지 URL -->
+    <div class="field" id="imageField" style="display:none">
+      <label>이미지 URL</label>
+      <input type="url" id="f_image_url" placeholder="https://...">
+      <div class="section-hint">이미지의 직접 링크를 입력하세요. (구글 드라이브 공유 링크, Imgur 등)</div>
+    </div>
     <div class="field" id="quizField" style="display:none">
       <label>퀴즈 질문</label>
       <textarea id="q_question" placeholder="질문을 입력하세요"></textarea>
@@ -596,12 +602,6 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
       <div class="opt-row"><input type="radio" name="q_answer" value="1"><input type="text" id="q_opt1" placeholder="보기 2"></div>
       <div class="opt-row"><input type="radio" name="q_answer" value="2"><input type="text" id="q_opt2" placeholder="보기 3"></div>
       <div class="opt-row"><input type="radio" name="q_answer" value="3"><input type="text" id="q_opt3" placeholder="보기 4"></div>
-    </div>
-    <!-- 이미지 퀴즈: 이미지 URL -->
-    <div class="field" id="imageField" style="display:none">
-      <label>이미지 URL</label>
-      <input type="url" id="f_image_url" placeholder="https://...">
-      <div class="section-hint">이미지의 직접 링크를 입력하세요. (구글 드라이브 공유 링크, Imgur 등)</div>
     </div>
 
     <!-- 주관식 -->
@@ -621,12 +621,13 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
       <div class="field">
         <label>토론 주제</label>
         <textarea id="di_topic" placeholder="학생들이 함께 이야기할 주제를 입력하세요"></textarea>
+        <div class="section-hint">예시: "인공지능이 인간의 일자리를 대체하는 것은 긍정적인가?" / "동물원은 동물 보호에 도움이 되는가, 해가 되는가?" / "학교에서 스마트폰 사용을 허용해야 하는가?"</div>
       </div>
       <div class="field">
         <label>안내 질문 <span style="font-weight:normal;color:#999">(선택 – 최대 3개)</span></label>
-        <input type="text" id="di_q1" placeholder="안내 질문 1" style="margin-bottom:6px">
-        <input type="text" id="di_q2" placeholder="안내 질문 2" style="margin-bottom:6px">
-        <input type="text" id="di_q3" placeholder="안내 질문 3">
+        <input type="text" id="di_q1" placeholder="예: 이 주제에 대해 어떻게 생각하나요? 근거를 들어 설명해보세요." style="margin-bottom:6px">
+        <input type="text" id="di_q2" placeholder="예: 반대 입장에서는 어떤 주장을 할 수 있을까요?" style="margin-bottom:6px">
+        <input type="text" id="di_q3" placeholder="예: 이 문제를 해결하기 위한 현실적인 방안은 무엇일까요?">
       </div>
     </div>
 
@@ -999,6 +1000,16 @@ const MAPS = [
     {id:'zone_F', label:'3번 침대'},
     {id:'zone_G', label:'4번 침대'},
     {id:'zone_H', label:'출입구·대기 공간'}
+  ]},
+  { id:'modum_classroom', label:'모둠교실', zones:[
+    {id:'zone_A', label:'칠판·교사 책상'},
+    {id:'zone_B', label:'앞줄 모둠 테이블 1-2'},
+    {id:'zone_C', label:'앞줄 모둠 테이블 3-4'},
+    {id:'zone_D', label:'중간 통로(앞→중)'},
+    {id:'zone_E', label:'중간줄 모둠 테이블 5-8'},
+    {id:'zone_F', label:'중간 통로(중→뒤)'},
+    {id:'zone_G', label:'뒷줄 모둠 테이블 9-12'},
+    {id:'zone_H', label:'뒤쪽 공간·출입구'}
   ]},
   { id:'maze', label:'미로', zones:[
     {id:'zone_A', label:'막다른 길 A (왼쪽 상단)'},
@@ -1398,7 +1409,7 @@ async function saveBadWords(){
   }
 }
 
-/* ===================== 캐릭터 해금 기준 ===================== */
+/* ===================== 애니 캐릭터 해금 기준 ===================== */
 let __ulThreshold = 0;
 
 async function openUnlockModal(){
@@ -2994,11 +3005,38 @@ function __edMakeRaceGrid(){
   var GATE_INFO_LIST=[
     {row:106,cs:18,ce:21},{row:91,cs:32,ce:35},{row:76,cs:3,ce:6},{row:61,cs:18,ce:21},
     {row:46,cs:3,ce:6},{row:31,cs:32,ce:35},{row:16,cs:18,ce:21},{row:4,cs:32,ce:35}];
+  var OBSTACLE_LIST=[
+    {r:109,cs:20,ce:21},{r:111,cs:18,ce:19},{r:113,cs:20,ce:21},{r:115,cs:18,ce:19},
+    {r:93,cs:34,ce:35},{r:95,cs:32,ce:33},{r:97,cs:34,ce:35},{r:99,cs:32,ce:33},
+    {r:78,cs:5,ce:6},{r:80,cs:3,ce:4},{r:82,cs:5,ce:6},{r:84,cs:3,ce:4},
+    {r:63,cs:20,ce:21},{r:65,cs:18,ce:19},{r:67,cs:20,ce:21},{r:69,cs:18,ce:19},
+    {r:48,cs:5,ce:6},{r:50,cs:3,ce:4},{r:52,cs:5,ce:6},{r:54,cs:3,ce:4},
+    {r:33,cs:34,ce:35},{r:35,cs:32,ce:33},{r:37,cs:34,ce:35},{r:39,cs:32,ce:33},
+    {r:18,cs:20,ce:21},{r:20,cs:18,ce:19},{r:22,cs:20,ce:21},{r:24,cs:18,ce:19},
+    {r:6,cs:34,ce:35},{r:8,cs:32,ce:33},{r:10,cs:34,ce:35}];
   for(var r=0;r<ROWS;r++){g[r]=[];for(var c=0;c<COLS;c++)g[r][c]=0;}
   TRACK_SEGS.forEach(function(s){for(var r2=s[0];r2<=s[1];r2++) for(var c2=s[2];c2<=s[3];c2++) g[r2][c2]=1;});
   for(var r3=118;r3<=119;r3++) for(var c3=18;c3<=21;c3++) g[r3][c3]=3;
   for(var r4=0;r4<=3;r4++) for(var c4=32;c4<=35;c4++) g[r4][c4]=4;
   GATE_INFO_LIST.forEach(function(gi){for(var c5=gi.cs;c5<=gi.ce;c5++) g[gi.row][c5]=2;});
+  OBSTACLE_LIST.forEach(function(ob){for(var c6=ob.cs;c6<=ob.ce;c6++) g[ob.r][c6]=5;});
+  return g;
+}
+function __edMakeModumClassroomGrid(){
+  var ROWS=44,COLS=40,g=[];
+  for(var r=0;r<ROWS;r++){g[r]=[];for(var c=0;c<COLS;c++)g[r][c]=(r===0||r===ROWS-1||c===0||c===COLS-1)?1:0;}
+  for(var c=3;c<=36;c++) g[0][c]=2;
+  for(var c=18;c<=21;c++){g[1][c]=3;g[2][c]=3;}
+  g[22][COLS-1]=5;
+  g[3][1]=9; g[3][COLS-2]=9;
+  g[41][1]=9; g[41][COLS-2]=9;
+  var TABLE_COLS=[3,14,25,36],TABLE_ROW_STARTS=[5,20,35];
+  for(var tri=0;tri<TABLE_ROW_STARTS.length;tri++){
+    for(var tci=0;tci<TABLE_COLS.length;tci++){
+      var rS=TABLE_ROW_STARTS[tri],cS=TABLE_COLS[tci];
+      for(var dr=0;dr<6;dr++) for(var dc=0;dc<2;dc++) g[rS+dr][cS+dc]=4;
+    }
+  }
   return g;
 }
 
@@ -3070,8 +3108,13 @@ const MAP_EDITOR_GRIDS = {
   },
   race: {
     cols:40, rows:120, walkable:new Set([1,2,3,4]),
-    tileColors:{0:'#3a7040',1:'#555555',2:'#e67e22',3:'#27ae60',4:'#e74c3c'},
+    tileColors:{0:'#3a7040',1:'#555555',2:'#e67e22',3:'#27ae60',4:'#e74c3c',5:'#c0392b'},
     grid:__edMakeRaceGrid()
+  },
+  modum_classroom: {
+    cols:40, rows:44, ts:48, walkable:new Set([0,5]),
+    tileColors:{0:'#d4a96a',1:'#d5c8b8',2:'#2d6a2a',3:'#8B6914',4:'#c8a06e',5:'#27ae60',9:'#4a9c3a'},
+    grid:__edMakeModumClassroomGrid()
   }
 };
 
@@ -3167,6 +3210,7 @@ const MAP_PALETTE = {
   science:    [21, 41, 42, 46, 77, 83, 84, 85, 86, 87, 0],
   cafeteria:  [21, 36, 39, 42, 51, 88, 89, 90, 91, 92, 0],
   health:     [21, 38, 41, 42, 55, 93, 94, 95, 96, 97, 0],
+  modum_classroom: [20, 21, 22, 23, 38, 39, 40, 41, 42, 43, 0],
   maze:       [98, 0],
   race:       [98, 0]
 };
@@ -4819,6 +4863,8 @@ async function __pdfCallGroq(apiKey, pdfText, count, type){
       throw new Error('API 키가 올바르지 않습니다. Groq 콘솔에서 키를 확인해주세요.');
     if(msg.includes('rate_limit'))
       throw new Error('요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.');
+    if(msg.includes('Request too large') || msg.includes('tokens per minute') || msg.includes('TPM') || msg.includes('reduce your message size'))
+      throw new Error('PDF 텍스트 양이 너무 많아 AI 처리 한도를 초과했습니다.\n\n해결 방법:\n• 문제 수를 줄여보세요 (예: 8문제 → 5문제)\n• 페이지 범위를 좁혀보세요 (예: 4페이지 → 2페이지)\n• 두 가지를 함께 적용하면 더 효과적입니다.');
     throw new Error(msg);
   }
 

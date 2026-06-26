@@ -110,7 +110,10 @@ function __rtConnect(){
     __rtChannel.on('broadcast', { event: 'chat' }, ({ payload }) => {
       if(!payload || payload.id === __rtStudentId) return;
       // 교사 뷰(모니터링)는 항상 전체 채팅 표시
-      if(!__rtTeacherView && __rtChatMode === 'proximity' && !__rtIsNearby(payload.id)) return;
+      if(!__rtTeacherView && __rtChatMode === 'proximity'){
+        // payload에 위치가 있으면 payload 우선 사용 (presence sync 지연 무관)
+        if(!__rtIsNearbyPayload(payload)) return;
+      }
       __rtShowBubble(payload.id, payload.text);
     });
 
@@ -464,7 +467,7 @@ function __rtSendChat(text){
     __rtChannel.send({
       type: 'broadcast',
       event: 'chat',
-      payload: { id: __rtStudentId, nickname: __rtNickname, text: text }
+      payload: { id: __rtStudentId, nickname: __rtNickname, text: text, r: pos.r, c: pos.c, map: __rtMapId }
     });
   }catch(e){ /* 연결이 끊긴 경우 조용히 무시 */ }
 }
@@ -507,14 +510,28 @@ function __rtIsTileOccupied(r, c){
   });
 }
 
-/* 발신자가 나와 근접 타일 안에 있는지 확인 */
+/* 발신자가 나와 근접 타일 안에 있는지 확인 (payload 위치 우선, presence fallback) */
+function __rtIsNearbyPayload(payload){
+  // 다른 맵이면 근접 아님
+  if(payload.map && __rtMapId && payload.map !== __rtMapId) return false;
+  // payload에 위치가 포함되어 있으면 직접 계산 (presence 동기화 지연 무관)
+  if(payload.r !== undefined && payload.c !== undefined){
+    const dr = payload.r - pos.r;
+    const dc = payload.c - pos.c;
+    return Math.sqrt(dr * dr + dc * dc) <= __rtProximityThreshold;
+  }
+  // payload 위치 없으면 presence fallback (이전 방식)
+  return __rtIsNearby(payload.id);
+}
+
+/* presence 기반 근접 확인 (fallback용) */
 function __rtIsNearby(senderId){
-  if(!__rtChannel) return true;
+  if(!__rtChannel) return false;
   const state = __rtChannel.presenceState();
   const presences = state[senderId];
-  if(!presences || !presences.length) return true; // 위치 미확인 시 표시
+  if(!presences || !presences.length) return false; // 위치 미확인 시 표시 안 함
   const s = presences[presences.length - 1];
-  if(s.r === undefined || s.c === undefined) return true;
+  if(s.r === undefined || s.c === undefined) return false;
   const dr = s.r - pos.r;
   const dc = s.c - pos.c;
   return Math.sqrt(dr * dr + dc * dc) <= __rtProximityThreshold;
