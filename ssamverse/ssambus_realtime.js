@@ -350,12 +350,21 @@ function __rtBuildChatUI(){
     if(!sw) return;
     sw.style.height = '';
     sw.style.minHeight = '';
-    // 키보드 완전 사라진 뒤 카메라 재정렬
-    setTimeout(() => {
+    // 키보드 닫힘 속도가 기기마다 달라 3단계로 재시도
+    const reCenter = () => {
       const h = Math.round(sw.getBoundingClientRect().height);
       if(h > 50) window.__rtStableH = h;
       if(typeof updateCamera === 'function') updateCamera();
-    }, 350);
+    };
+    setTimeout(reCenter, 150);
+    setTimeout(reCenter, 400);
+    setTimeout(reCenter, 800);
+  }
+  // visualViewport: 키보드 완전 닫힐 때 정확히 감지 (iOS 13+, Android Chrome)
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', () => {
+      if(typeof updateCamera === 'function') updateCamera();
+    });
   }
   input.addEventListener('focus', __rtLockStageH);
   input.addEventListener('blur',  __rtUnlockStageH);

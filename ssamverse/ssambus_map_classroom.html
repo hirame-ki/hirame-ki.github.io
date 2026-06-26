@@ -98,7 +98,7 @@ if(TEACHER_VIEW){
   }
 })();
 
-/* Tile: 0=floor 1=wall 2=blackboard 3=teacher-desk 4=student-desk 5=door(EXIT) 7=bulletin 8=TV 9=plant */
+/* Tile: 0=floor 1=wall 2=blackboard 3=teacher-desk 4=student-desk(anchor) 5=door(EXIT) 7=bulletin 8=TV 9=plant 41=desk-continuation */
 var grid=[];
 for(var r=0;r<ROWS;r++){
   grid[r]=[];
@@ -111,12 +111,16 @@ grid[0][0]=8; grid[0][1]=8; grid[0][2]=8;
 for(var c=3;c<=48;c++) grid[0][c]=2;
 /* Teacher desk: row 2, cols 24-35 */
 for(var c=24;c<=35;c++) grid[2][c]=3;
-/* Student desks: 6 cols x 5 rows = 30 desks */
+/* Student desks: 6 cols x 5 rows = 30 desks, each 2×2 tiles (type4=anchor, type41=continuation) */
 var deskCols=[8,16,24,32,40,48];
 var deskRows=[12,20,28,36,44];
 for(var di=0;di<deskRows.length;di++){
   for(var dj=0;dj<deskCols.length;dj++){
-    grid[deskRows[di]][deskCols[dj]]=4;
+    var _dr=deskRows[di],_dc=deskCols[dj];
+    grid[_dr][_dc]=4;      // anchor (top-left, 여기서 그림)
+    grid[_dr][_dc+1]=41;   // 오른쪽
+    grid[_dr+1][_dc]=41;   // 아래
+    grid[_dr+1][_dc+1]=41; // 아래오른쪽
   }
 }
 /* Doors on right wall (EXIT) */
@@ -287,28 +291,39 @@ function drawTeacherDesk(x,y){
   ctx.shadowColor='transparent';
 }
 
-/* Student desk: warm wood */
+/* Student desk: warm wood, 2×2 tiles */
 function drawStudentDesk(x,y){
-  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=5;ctx.shadowOffsetY=5;
+  var W=TS*2,H=TS*2;
+  ctx.shadowColor='rgba(0,0,0,0.45)';ctx.shadowBlur=0;ctx.shadowOffsetX=7;ctx.shadowOffsetY=7;
+  /* 책상 본체 */
   ctx.fillStyle='#8a5520';
-  ctx.fillRect(x,y,TS,TS);
+  ctx.fillRect(x,y,W,H);
+  /* 상판 밝은 면 */
   ctx.fillStyle='#c8a06e';
-  ctx.fillRect(x+2,y+5,TS-4,TS*0.5);
-  ctx.strokeStyle='rgba(80,50,10,0.22)';
-  ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(x+4,y+11); ctx.lineTo(x+TS-4,y+11); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(x+4,y+19); ctx.lineTo(x+TS-4,y+19); ctx.stroke();
-  /* book */
+  ctx.fillRect(x+3,y+8,W-6,H*0.42);
+  /* 나무결 */
+  ctx.strokeStyle='rgba(80,50,10,0.2)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x+6,y+18); ctx.lineTo(x+W-6,y+18); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x+6,y+30); ctx.lineTo(x+W-6,y+30); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x+6,y+42); ctx.lineTo(x+W-6,y+42); ctx.stroke();
+  /* 책 */
   ctx.fillStyle='#e74c3c';
-  ctx.fillRect(x+7,y+8,10,14);
+  ctx.fillRect(x+12,y+14,20,26);
   ctx.fillStyle='#c0392b';
-  ctx.fillRect(x+7,y+8,2,14);
-  /* pencil */
+  ctx.fillRect(x+12,y+14,4,26);
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.fillRect(x+17,y+15,12,3);
+  /* 필통 */
+  ctx.fillStyle='#2980b9';
+  ctx.fillRect(x+W-38,y+14,16,22);
+  ctx.fillStyle='#1a5276';
+  ctx.fillRect(x+W-38,y+14,16,4);
+  /* 연필 */
   ctx.fillStyle='#f1c40f';
-  ctx.fillRect(x+TS-15,y+9,3,12);
+  ctx.fillRect(x+W-18,y+14,5,22);
   ctx.fillStyle='#e67e22';
   ctx.beginPath();
-  ctx.moveTo(x+TS-15,y+21); ctx.lineTo(x+TS-12,y+21); ctx.lineTo(x+TS-13.5,y+25);
+  ctx.moveTo(x+W-18,y+36); ctx.lineTo(x+W-13,y+36); ctx.lineTo(x+W-15.5,y+42);
   ctx.closePath(); ctx.fill();
   ctx.shadowColor='transparent';
 }
@@ -415,6 +430,7 @@ function drawMap(){
       else if(t===2) drawBlackboard(x,y);
       else if(t===3) drawTeacherDesk(x,y);
       else if(t===4) drawStudentDesk(x,y);
+      else if(t===41){ /* 책상 연속 타일 – anchor에서 이미 그림 */ }
       else if(t===5) drawDoor(x,y);
       else if(t===7) drawBulletin(x,y,c);
       else if(t===8) drawTV(x,y,c);
