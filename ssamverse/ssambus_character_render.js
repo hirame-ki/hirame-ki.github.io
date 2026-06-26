@@ -1942,7 +1942,11 @@ function _animeChar(preset,dir,id){
   face=(preset==='inosuke')?_boarMask(dir):_face(id,dir,skin,hc);
   neck=_neck(dir,skin);
   if(dir==='up') return defs+shadow+body+neck+hBack+hFront+extra;
-  return defs+shadow+body+hBack+face+neck+hFront+extra;
+  // 옆모습에서 손을 마지막에 그려 바지/치마에 덮이지 않게 함
+  var sideHand = dir==='left'
+    ? '<ellipse cx="29.3" cy="47.5" rx="3.2" ry="2.6" fill="'+skin+'"/>'
+    : '';
+  return defs+shadow+body+hBack+face+neck+hFront+extra+sideHand;
 }
 
 /* ---- 메인 렌더 ---- */

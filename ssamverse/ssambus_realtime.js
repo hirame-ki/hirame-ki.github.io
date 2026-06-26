@@ -48,6 +48,7 @@ function __rtMyState(){
     r: pos.r,
     c: pos.c,
     dir: PLAYER.dir,
+    facingRight: PLAYER._facingRight,
     type: PLAYER.type,
     preset: PLAYER.preset,
     skin: PLAYER.skin,
@@ -256,6 +257,18 @@ function broadcastMyPosition(){
   }
 }
 
+const __rtAvatarState = {}; // 캐릭터 외관 캐시 — 외관 변경 시에만 innerHTML 갱신해 깜빡임 방지
+
+function __rtAvatarChanged(key, s){
+  const o = __rtAvatarState[key];
+  if(!o) return true;
+  return o.type !== s.type || o.preset !== s.preset ||
+    o.skin !== s.skin || o.hcolor !== s.hcolor || o.hair !== s.hair ||
+    o.ccolor !== s.ccolor || o.cloth !== s.cloth || o.gender !== s.gender ||
+    o.dir !== s.dir || o.facingRight !== s.facingRight ||
+    JSON.stringify(o.acc) !== JSON.stringify(s.acc);
+}
+
 function renderRemotePlayers(presenceState){
   const container = document.getElementById('remote-players');
   if(!container) return;
@@ -282,10 +295,17 @@ function renderRemotePlayers(presenceState){
       container.appendChild(el);
     }
 
-    const g = el.querySelector('g');
-    g.innerHTML = renderCharacterSVG(s);
+    // 외관이 바뀐 경우에만 SVG 재생성 (깜빡임 방지)
+    if(__rtAvatarChanged(key, s)){
+      __rtAvatarState[key] = {
+        type:s.type, preset:s.preset, skin:s.skin, hcolor:s.hcolor,
+        hair:s.hair, ccolor:s.ccolor, cloth:s.cloth, gender:s.gender,
+        dir:s.dir, facingRight:s.facingRight, acc:[...(s.acc||[])]
+      };
+      el.querySelector('g').innerHTML = renderCharacterSVG(s);
+    }
 
-    el.classList.toggle('flip', s.dir === 'right');
+    el.classList.toggle('flip', s.dir === 'left' && !s.facingRight);
     el.style.left = (s.c * TS) + 'px';
     el.style.top  = (s.r * TS - 24) + 'px';
     el.querySelector('.nick').textContent = s.nickname || '';
@@ -296,7 +316,10 @@ function renderRemotePlayers(presenceState){
 
   // 더 이상 존재하지 않는 학생의 캐릭터 제거
   container.querySelectorAll('[data-student]').forEach(el => {
-    if(!seen.has(el.dataset.student)) el.remove();
+    if(!seen.has(el.dataset.student)){
+      delete __rtAvatarState[el.dataset.student];
+      el.remove();
+    }
   });
 }
 
