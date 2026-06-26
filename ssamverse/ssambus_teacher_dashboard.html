@@ -2682,7 +2682,10 @@ function __edMakeClassroomGrid(){
   for(var c=3;c<=48;c++)g[0][c]=2;
   for(var c=24;c<=35;c++)g[2][c]=3;
   var dC=[8,16,24,32,40,48],dR=[12,20,28,36,44];
-  for(var di=0;di<dR.length;di++)for(var dj=0;dj<dC.length;dj++)g[dR[di]][dC[dj]]=4;
+  for(var di=0;di<dR.length;di++)for(var dj=0;dj<dC.length;dj++){
+    g[dR[di]][dC[dj]]=4;g[dR[di]][dC[dj]+1]=4;
+    g[dR[di]+1][dC[dj]]=4;g[dR[di]+1][dC[dj]+1]=4;
+  }
   g[10][59]=5;g[48][59]=5;
   for(var c=1;c<=58;c++)g[58][c]=7;
   g[4][4]=9;g[4][55]=9;g[54][4]=9;g[54][55]=9;

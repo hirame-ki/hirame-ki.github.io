@@ -666,6 +666,12 @@ function setDir(c,el){ST[c].dir=el.dataset.d;var sid=c==='s'?'student':(c==='t'?
 function enterMap(){
   var nickname=(document.getElementById('nicknameInput').value||'').trim();
   if(!nickname){alert('이름을 입력해주세요.');document.getElementById('nicknameInput').focus();return;}
+  if(currentChar==='a'&&__animeLocked()){
+    var room=new URLSearchParams(location.search).get('room')||'';
+    var thr=Number(localStorage.getItem('ssambus_anime_threshold_'+room)||0);
+    alert('🔒 애니 캐릭터는 잠금 중입니다.\n미션을 '+thr+'개 완료하면 해금됩니다!');
+    return;
+  }
   var data;
   if(currentChar==='a'){
     data={type:'anime',preset:selectedAnime,dir:'down'};

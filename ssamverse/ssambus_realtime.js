@@ -9,6 +9,16 @@
      - 페이지 로드 마지막에 initRealtime() 호출
    ===================================================================== */
 
+// 모바일 뷰포트 메타 태그가 없으면 자동 주입 (맵 페이지들에 누락된 경우)
+(function(){
+  if(!document.querySelector('meta[name="viewport"]')){
+    var vm=document.createElement('meta');
+    vm.name='viewport';
+    vm.content='width=device-width, initial-scale=1.0';
+    document.head.appendChild(vm);
+  }
+})();
+
 let __rtChannel = null;
 let __rtStudentId = null;
 let __rtNickname = null;
@@ -350,9 +360,15 @@ function __rtBuildChatUI(){
     if(!sw) return;
     sw.style.height = '';
     sw.style.minHeight = '';
+    // 키보드 닫힘 후 body 스크롤이 남아있으면 카메라 계산이 어긋남
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     // 키보드 닫힘 속도가 기기마다 달라 3단계로 재시도
     const reCenter = () => {
-      const h = Math.round(sw.getBoundingClientRect().height);
+      // visualViewport가 있으면 더 정확한 높이 사용
+      const vph = window.visualViewport ? window.visualViewport.height : 0;
+      const h = vph > 100 ? Math.round(vph - 54) : Math.round(sw.getBoundingClientRect().height);
       if(h > 50) window.__rtStableH = h;
       if(typeof updateCamera === 'function') updateCamera();
     };
