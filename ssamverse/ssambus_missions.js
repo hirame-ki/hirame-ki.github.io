@@ -369,6 +369,7 @@ let __msRoomId = null;
 let __msStudentId = null;
 let __msMissions = null;  // null = 아직 로드 전
 let __msDone = new Set();
+let __msCharUnlockThreshold = 0;
 let __msCurrentZone;       // undefined = 아직 판정 전
 let __msQueue = [];
 let __msMapOrder = null;        // 교사가 설정한(또는 기본) 맵 순서
@@ -1021,6 +1022,8 @@ function __msComplete(id, answer = null){
   __msShowNext();
   if(!__msQueue.length) checkZoneOnMove(pos); // 마지막 미션 완료 시 출입구 위치라면 즉시 이동 판정
 
+  __msCheckAnimeUnlock();
+
   if(__msMissions.length && __msAllRequiredDone() && !__msAllDoneShown){
     __msAllDoneShown = true;
     if(__msTimerInterval){ clearInterval(__msTimerInterval); __msTimerInterval = null; }
@@ -1132,10 +1135,10 @@ async function initMissionSystem(mapId){
   __msMapId = mapId;
   __msRoomId = __msParam('room', 'demo');
 
-  __msStudentId = sessionStorage.getItem('ssambus_student_id');
+  __msStudentId = localStorage.getItem('ssambus_student_id');
   if(!__msStudentId){
     __msStudentId = 'stu_' + Math.random().toString(36).slice(2, 10);
-    sessionStorage.setItem('ssambus_student_id', __msStudentId);
+    localStorage.setItem('ssambus_student_id', __msStudentId);
   }
 
   try{
@@ -1162,6 +1165,8 @@ async function initMissionSystem(mapId){
   __msMissions = await __msLoadMissions(mapId);
   __msMapOrder = await __msLoadMapOrder();
   __msMapsWithMissions = await __msLoadMapsWithMissions();
+  await __msLoadCharUnlockThreshold();
+  __msCheckAnimeUnlock(); // 이미 충분한 미션을 완료한 상태라면 즉시 해금
   __msUpdateProgress();
   await __msLoadAndApplyOverlays(mapId);
   checkZoneOnMove(pos);
@@ -1796,6 +1801,62 @@ function __msCT35(ctx,x,y,ts){
   ctx.fillStyle='#555'; ctx.fillRect(cx-15,cy-6,4,12); ctx.fillRect(cx+11,cy-6,4,12);
   ctx.fillStyle='#444'; ctx.fillRect(cx-18,cy-7,3,14); ctx.fillRect(cx+15,cy-7,3,14);
   ctx.fillStyle='#aaa'; ctx.fillRect(cx-8,cy-1,16,2);
+}
+
+/* ===================== Q4: 애니 캐릭터 해금 시스템 ===================== */
+
+async function __msLoadCharUnlockThreshold(){
+  if(__msRoomId === 'demo') return;
+  const client = __msGetClient();
+  if(!client) return;
+  try{
+    const { data } = await client
+      .from('room_settings')
+      .select('char_unlock_threshold')
+      .eq('room_id', __msRoomId)
+      .maybeSingle();
+    const t = (data && data.char_unlock_threshold != null) ? Number(data.char_unlock_threshold) : 0;
+    __msCharUnlockThreshold = t;
+    try{ localStorage.setItem('ssambus_anime_threshold_' + __msRoomId, String(t)); }catch(e){}
+  }catch(e){ /* 컬럼 미존재 시 항상 해금 상태로 유지 */ }
+}
+
+function __msCheckAnimeUnlock(threshold){
+  if(threshold === undefined) threshold = __msCharUnlockThreshold;
+  if(threshold <= 0) return;
+  const unlockKey = 'ssambus_anime_unlocked_' + __msRoomId;
+  try{
+    if(localStorage.getItem(unlockKey)) return;
+    if(__msDone.size >= threshold){
+      localStorage.setItem(unlockKey, '1');
+      setTimeout(__msShowAnimeUnlockNotification, 400);
+    }
+  }catch(e){}
+}
+
+function __msShowAnimeUnlockNotification(){
+  if(!document.getElementById('ms-anime-unlock-style')){
+    const s = document.createElement('style');
+    s.id = 'ms-anime-unlock-style';
+    s.textContent = '@keyframes msPopIn{from{transform:scale(.65);opacity:0}to{transform:scale(1);opacity:1}}';
+    document.head.appendChild(s);
+  }
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:10001;'
+    + 'display:flex;align-items:center;justify-content:center;font-family:"Noto Sans KR",sans-serif';
+  overlay.innerHTML = '<div style="background:#fff;border-radius:22px;padding:36px 32px;text-align:center;'
+    + 'max-width:300px;box-shadow:0 10px 48px rgba(0,0,0,.45);animation:msPopIn .3s ease">'
+    + '<div style="font-size:56px;margin-bottom:10px">🎉</div>'
+    + '<div style="font-size:21px;font-weight:800;color:#2c3e50;margin-bottom:8px">애니 캐릭터 해금!</div>'
+    + '<div style="font-size:13.5px;color:#7f8c8d;line-height:1.6;margin-bottom:22px">'
+    + '미션을 충분히 완료했어요!<br>왼쪽 상단 <b>캐릭터 변경</b> 버튼을 눌러<br>애니 캐릭터를 선택해보세요 ✨</div>'
+    + '<button onclick="this.closest(\'[data-ms-unlock]\').remove()" '
+    + 'style="background:linear-gradient(135deg,#3498db,#2ecc71);color:#fff;border:none;'
+    + 'border-radius:12px;padding:12px 32px;font-size:15px;font-weight:700;cursor:pointer;'
+    + 'font-family:inherit">확인</button></div>';
+  overlay.setAttribute('data-ms-unlock', '1');
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
 }
 
 /* 36 – 쓰레기통 */

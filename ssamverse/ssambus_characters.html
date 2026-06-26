@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -475,139 +475,146 @@ body{
 <!-- 애니 캐릭터 -->
 <div class="section" id="S_anime">
 <div style="padding:.5rem 0">
+  <div id="anime-lock-overlay" style="display:none;text-align:center;padding:40px 20px;background:rgba(248,248,252,.97);border-radius:14px;margin-bottom:16px;border:2px dashed #d1d5db">
+    <div style="font-size:48px;margin-bottom:12px">🔒</div>
+    <div style="font-size:16px;font-weight:700;color:#374151;margin-bottom:6px">애니 캐릭터 잠금 중</div>
+    <div id="anime-lock-desc" style="font-size:13px;color:#6b7280;line-height:1.6">미션을 완료하면 해금됩니다.</div>
+  </div>
+  <div id="anime-grid-wrap">
   <p style="font-size:12px;color:var(--muted);margin-bottom:14px">캐릭터를 클릭하면 바로 선택됩니다. 세부 설정 없이 바로 입장할 수 있어요.</p>
   <div class="anime-grid">
     <div class="anime-card on" id="ac_tanjiro" onclick="selectAnime('tanjiro',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_tanjiro"></g></svg>
-      <span class="anime-name">탄지로</span>
+      <span class="anime-name">딴지로</span>
       <span class="anime-series">귀멸의 칼날</span>
     </div>
     <div class="anime-card" id="ac_nezuko" onclick="selectAnime('nezuko',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_nezuko"></g></svg>
-      <span class="anime-name">네즈코</span>
+      <span class="anime-name">넷츠고</span>
       <span class="anime-series">귀멸의 칼날</span>
     </div>
     <div class="anime-card" id="ac_inosuke" onclick="selectAnime('inosuke',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_inosuke"></g></svg>
-      <span class="anime-name">이노스케</span>
+      <span class="anime-name">이놈스겜</span>
       <span class="anime-series">귀멸의 칼날</span>
     </div>
     <div class="anime-card" id="ac_zenitsu" onclick="selectAnime('zenitsu',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_zenitsu"></g></svg>
-      <span class="anime-name">젠이츠</span>
+      <span class="anime-name">젠장츠</span>
       <span class="anime-series">귀멸의 칼날</span>
     </div>
     <div class="anime-card" id="ac_hinata" onclick="selectAnime('hinata',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_hinata"></g></svg>
-      <span class="anime-name">히나타</span>
+      <span class="anime-name">힘나타</span>
       <span class="anime-series">하이큐!!</span>
     </div>
     <div class="anime-card" id="ac_luffy" onclick="selectAnime('luffy',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_luffy"></g></svg>
-      <span class="anime-name">루피</span>
+      <span class="anime-name">루비</span>
       <span class="anime-series">원피스</span>
     </div>
     <div class="anime-card" id="ac_zoro" onclick="selectAnime('zoro',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_zoro"></g></svg>
-      <span class="anime-name">조로</span>
+      <span class="anime-name">조롱</span>
       <span class="anime-series">원피스</span>
     </div>
     <div class="anime-card" id="ac_naruto" onclick="selectAnime('naruto',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_naruto"></g></svg>
-      <span class="anime-name">나루토</span>
+      <span class="anime-name">나루터</span>
       <span class="anime-series">나루토</span>
     </div>
     <div class="anime-card" id="ac_goku" onclick="selectAnime('goku',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_goku"></g></svg>
-      <span class="anime-name">손오공</span>
+      <span class="anime-name">손오뎅</span>
       <span class="anime-series">드래곤볼</span>
     </div>
     <div class="anime-card" id="ac_ichigo" onclick="selectAnime('ichigo',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_ichigo"></g></svg>
-      <span class="anime-name">이치고</span>
+      <span class="anime-name">미치고</span>
       <span class="anime-series">블리치</span>
     </div>
     <div class="anime-card" id="ac_sailormoon" onclick="selectAnime('sailormoon',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_sailormoon"></g></svg>
-      <span class="anime-name">세일러문</span>
+      <span class="anime-name">세일러묵</span>
       <span class="anime-series">미소녀전사 세일러문</span>
     </div>
     <div class="anime-card" id="ac_gojo" onclick="selectAnime('gojo',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_gojo"></g></svg>
-      <span class="anime-name">고죠 사토루</span>
+      <span class="anime-name">고죠 사투리</span>
       <span class="anime-series">주술회전</span>
     </div>
     <div class="anime-card" id="ac_itadori" onclick="selectAnime('itadori',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_itadori"></g></svg>
-      <span class="anime-name">이타도리</span>
+      <span class="anime-name">이따도리</span>
       <span class="anime-series">주술회전</span>
     </div>
     <div class="anime-card" id="ac_deku" onclick="selectAnime('deku',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_deku"></g></svg>
-      <span class="anime-name">데쿠</span>
+      <span class="anime-name">대구</span>
       <span class="anime-series">나의 히어로 아카데미아</span>
     </div>
     <div class="anime-card" id="ac_eren" onclick="selectAnime('eren',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_eren"></g></svg>
-      <span class="anime-name">에렌</span>
+      <span class="anime-name">에러</span>
       <span class="anime-series">진격의 거인</span>
     </div>
     <div class="anime-card" id="ac_levi" onclick="selectAnime('levi',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_levi"></g></svg>
-      <span class="anime-name">레비</span>
+      <span class="anime-name">네비</span>
       <span class="anime-series">진격의 거인</span>
     </div>
     <div class="anime-card" id="ac_kirito" onclick="selectAnime('kirito',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_kirito"></g></svg>
-      <span class="anime-name">키리토</span>
+      <span class="anime-name">낋이토</span>
       <span class="anime-series">소드 아트 온라인</span>
     </div>
     <div class="anime-card" id="ac_asuna" onclick="selectAnime('asuna',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_asuna"></g></svg>
-      <span class="anime-name">아스나</span>
+      <span class="anime-name">아프나</span>
       <span class="anime-series">소드 아트 온라인</span>
     </div>
     <div class="anime-card" id="ac_conan" onclick="selectAnime('conan',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_conan"></g></svg>
-      <span class="anime-name">코난</span>
+      <span class="anime-name">고난</span>
       <span class="anime-series">명탐정 코난</span>
     </div>
     <div class="anime-card" id="ac_shinchan" onclick="selectAnime('shinchan',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_shinchan"></g></svg>
-      <span class="anime-name">짱구</span>
+      <span class="anime-name">빵구</span>
       <span class="anime-series">짱구는 못말려</span>
     </div>
     <div class="anime-card" id="ac_elsa" onclick="selectAnime('elsa',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_elsa"></g></svg>
-      <span class="anime-name">엘사</span>
+      <span class="anime-name">열사</span>
       <span class="anime-series">겨울왕국</span>
     </div>
     <div class="anime-card" id="ac_moana" onclick="selectAnime('moana',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_moana"></g></svg>
-      <span class="anime-name">모아나</span>
+      <span class="anime-name">모아놔</span>
       <span class="anime-series">모아나</span>
     </div>
     <div class="anime-card" id="ac_snowwhite" onclick="selectAnime('snowwhite',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_snowwhite"></g></svg>
-      <span class="anime-name">백설공주</span>
+      <span class="anime-name">백설탕공주</span>
       <span class="anime-series">백설공주</span>
     </div>
     <div class="anime-card" id="ac_rapunzel" onclick="selectAnime('rapunzel',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_rapunzel"></g></svg>
-      <span class="anime-name">라푼젤</span>
+      <span class="anime-name">라푼젤리</span>
       <span class="anime-series">라푼젤</span>
     </div>
     <div class="anime-card" id="ac_cinderella" onclick="selectAnime('cinderella',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_cinderella"></g></svg>
-      <span class="anime-name">신데렐라</span>
+      <span class="anime-name">쉰데렐라</span>
       <span class="anime-series">신데렐라</span>
     </div>
     <div class="anime-card" id="ac_mulan" onclick="selectAnime('mulan',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_mulan"></g></svg>
-      <span class="anime-name">뮬란</span>
+      <span class="anime-name">물란</span>
       <span class="anime-series">뮬란</span>
     </div>
   </div>
+  </div><!-- #anime-grid-wrap -->
 </div>
 </div>
 
@@ -621,7 +628,37 @@ var ST={
 var TAB_MAP={student:'s',teacher:'t',fantasy:'f',anime:'a'};
 var currentChar='s';
 var selectedAnime='tanjiro';
-function switchTab(id,el){document.querySelectorAll('.tab').forEach(function(e){e.classList.remove('on')});document.querySelectorAll('.section').forEach(function(e){e.classList.remove('on')});el.classList.add('on');document.getElementById('S_'+id).classList.add('on');currentChar=TAB_MAP[id];}
+function __animeLocked(){
+  var room=new URLSearchParams(location.search).get('room')||'';
+  if(!room) return false;
+  var threshold=Number(localStorage.getItem('ssambus_anime_threshold_'+room)||0);
+  if(threshold<=0) return false;
+  return !localStorage.getItem('ssambus_anime_unlocked_'+room);
+}
+function __applyAnimeLock(){
+  var room=new URLSearchParams(location.search).get('room')||'';
+  var locked=__animeLocked();
+  var overlay=document.getElementById('anime-lock-overlay');
+  var wrap=document.getElementById('anime-grid-wrap');
+  if(!overlay||!wrap) return;
+  if(locked){
+    var threshold=Number(localStorage.getItem('ssambus_anime_threshold_'+room)||0);
+    document.getElementById('anime-lock-desc').textContent='미션 '+threshold+'개를 완료하면 해금됩니다. (현재 잠금 중)';
+    overlay.style.display='block';
+    wrap.style.display='none';
+  } else {
+    overlay.style.display='none';
+    wrap.style.display='block';
+  }
+}
+function switchTab(id,el){
+  document.querySelectorAll('.tab').forEach(function(e){e.classList.remove('on')});
+  document.querySelectorAll('.section').forEach(function(e){e.classList.remove('on')});
+  el.classList.add('on');
+  document.getElementById('S_'+id).classList.add('on');
+  currentChar=TAB_MAP[id];
+  if(id==='anime') __applyAnimeLock();
+}
 function selectAnime(preset,el){selectedAnime=preset;document.querySelectorAll('.anime-card').forEach(function(e){e.classList.remove('on')});el.classList.add('on');}
 function pickS(c,k,gid,el){ST[c][k]=el.dataset.v;document.querySelectorAll('#'+gid+' .sw').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}
 function pickB(c,k,gid,el){ST[c][k]=el.dataset.v;document.querySelectorAll('#'+gid+' .sb').forEach(function(e){e.classList.remove('on')});el.classList.add('on');render(c);}

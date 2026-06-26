@@ -51,11 +51,11 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 /* ===== Layout ===== */
 #dash{display:none}
 #dash.show{display:block}
-.topbar{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to right,#112340,#1A3558);color:#fff;padding:10px 20px;box-shadow:0 2px 8px rgba(0,0,0,.2);gap:12px}
+.topbar{display:flex;flex-direction:column;align-items:stretch;background:linear-gradient(to right,#112340,#1A3558);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.topbar-top{display:flex;align-items:center;padding:9px 16px;gap:0}
 .topbar h1{font-size:.95rem;margin:0;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:7px;white-space:nowrap}
 .topbar .room{font-size:11.5px;background:rgba(255,255,255,.12);padding:4px 10px;border-radius:20px;margin-left:8px;font-family:monospace;font-weight:700;letter-spacing:1.5px;white-space:nowrap}
-.topbar button{padding:6px 12px;border-radius:8px;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
-.topbar .left{display:flex;align-items:center;gap:0;flex-shrink:0}
+.topbar button{padding:5px 11px;border-radius:7px;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
 
 .maptabs{display:flex;gap:6px;flex-wrap:wrap;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border)}
 .maptab{padding:7px 16px;font-size:13px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:500;color:var(--muted);transition:all .15s}
@@ -187,6 +187,12 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 #bw-input-row{display:flex;gap:6px;margin-bottom:8px}
 #bw-new-word{flex:1;padding:7px 10px;border:1px solid #ccc;border-radius:6px;font-size:13px}
 
+/* ===== 캐릭터 해금 기준 모달 ===== */
+#ulModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:57;padding:16px}
+#ulModal-bg.show{display:flex}
+#ulModal{background:#fff;border-radius:12px;padding:1.6rem;width:100%;max-width:420px}
+#ulModal h2{margin:0 0 .5rem;font-size:16px}
+
 /* ===== 실시간 맵 보기 모달 ===== */
 #liveMapModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:55;padding:16px}
 #liveMapModal-bg.show{display:flex}
@@ -230,19 +236,28 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 #pdf-preview-list .pdf-qcard .qmeta-row label{font-size:11.5px;color:var(--muted);white-space:nowrap}
 #pdf-preview-list .pdf-qcard .qmeta-row select{font-size:12px;padding:2px 6px;border:1px solid var(--border);border-radius:5px}
 
-/* ===== Topbar button group ===== */
-.topbar .right{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
-.topbar .right::-webkit-scrollbar{height:3px}
-.topbar .right::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px}
-.topbar .right button{padding:6px 12px;border-radius:8px;border:none;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px}
-.topbar .right .primary{background:rgba(255,255,255,.14);color:#fff}
-.topbar .right .primary:hover{background:rgba(255,255,255,.24)}
-.topbar .right .ghost{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8)}
-.topbar .right .ghost:hover{background:rgba(255,255,255,.15)}
-.topbar .right .chat-prox{background:#C87B1A;color:#fff}
-.topbar .right .chat-prox:hover{background:#A86510}
-.topbar .right .chat-ban{background:var(--danger);color:#fff}
-.topbar .right .chat-ban:hover{background:#A93226}
+/* ===== Topbar category nav ===== */
+.topbar-cats{display:flex;align-items:center;gap:4px;padding:5px 16px 6px;border-top:1px solid rgba(255,255,255,.1);flex-wrap:wrap}
+.cat-btn{background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);border:none;border-radius:8px;padding:6px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
+.cat-btn:hover{background:rgba(255,255,255,.18)}
+.cat-btn.active{background:rgba(255,255,255,.26);color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.3)}
+.cat-btn.cat-logout{background:rgba(192,57,43,.3);color:rgba(255,180,170,1);margin-left:auto}
+.cat-btn.cat-logout:hover{background:rgba(192,57,43,.55)}
+/* ===== Dropdown panel ===== */
+.cat-panel{display:none;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 16px 10px;background:rgba(0,0,0,.25);border-top:1px solid rgba(255,255,255,.08)}
+.cat-panel.show{display:flex}
+.cat-panel button{padding:7px 13px;border-radius:8px;border:none;font-size:12.5px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.cat-panel .primary{background:rgba(255,255,255,.16);color:#fff}
+.cat-panel .primary:hover{background:rgba(255,255,255,.28)}
+.cat-panel .ghost{background:rgba(255,255,255,.07);color:rgba(255,255,255,.8)}
+.cat-panel .ghost:hover{background:rgba(255,255,255,.18)}
+.cat-panel .chat-prox{background:#C87B1A;color:#fff}
+.cat-panel .chat-prox:hover{background:#A86510}
+.cat-panel .chat-ban{background:var(--danger);color:#fff}
+.cat-panel .chat-ban:hover{background:#A93226}
+/* topbar 공통 버튼 (1행 복사 버튼) */
+.topbar .ghost{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:none;border-radius:7px;padding:5px 11px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s}
+.topbar .ghost:hover{background:rgba(255,255,255,.2)}
 
 /* ===== Map editor modal ===== */
 #edModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:12px;overflow-y:auto}
@@ -323,26 +338,45 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <!-- 대시보드 -->
 <div id="dash">
   <div class="topbar">
-    <div class="left">
+    <!-- 1행: 타이틀 + 수업코드 -->
+    <div class="topbar-top">
       <h1><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 4 2 10l10 6 10-6z"/><path d="M6 12.5v5a6 6 0 0012 0v-5"/></svg> 쌤버스 대시보드</h1>
       <span class="room" id="roomBadge">수업 코드: -</span>
       <button id="roomCopyBtn" class="ghost" style="display:none;font-size:11px;padding:4px 9px;margin-left:4px" onclick="copyText(ROOM_ID, this)">복사</button>
     </div>
-    <div class="right">
+    <!-- 2행: 카테고리 탭 -->
+    <div class="topbar-cats">
+      <button class="cat-btn" onclick="toggleCat('map')">🗺 맵 관련</button>
+      <button class="cat-btn" onclick="toggleCat('ai')">🤖 AI 문제생성</button>
+      <button class="cat-btn" onclick="toggleCat('chat')">💬 채팅</button>
+      <button class="cat-btn" onclick="toggleCat('class')">📋 수업</button>
+      <button class="cat-btn cat-logout" onclick="logout()">로그아웃</button>
+    </div>
+    <!-- 드롭다운 패널: 맵 관련 -->
+    <div class="cat-panel" id="cat-map">
       <button class="primary" onclick="openMapEditor()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="12" rx="2"/><path d="M6 15v4M18 15v4M9 19h6"/></svg> 맵 에디터</button>
-      <button class="primary" onclick="openPdfModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z"/><path d="M20 14l.5 1.5 1.5.5-1.5.5L20 18l-.5-1.5L18 16l1.5-.5L20 14z"/></svg> AI 자동문제 생성</button>
-      <button class="primary" onclick="openLinkModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> 학생 초대 링크</button>
       <button class="primary" onclick="openOrderModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> 맵 이동 순서</button>
       <button class="primary" onclick="openLiveMapModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg> 실시간 맵 보기</button>
       <button class="primary" onclick="openJoinMapModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> 맵 참가하기</button>
+      <button class="ghost" onclick="openUnlockModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> 캐릭터 해금 기준</button>
+    </div>
+    <!-- 드롭다운 패널: AI -->
+    <div class="cat-panel" id="cat-ai">
+      <button class="primary" onclick="openPdfModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z"/><path d="M20 14l.5 1.5 1.5.5-1.5.5L20 18l-.5-1.5L18 16l1.5-.5L20 14z"/></svg> AI 자동문제 생성</button>
+    </div>
+    <!-- 드롭다운 패널: 채팅 -->
+    <div class="cat-panel" id="cat-chat">
       <button class="primary" id="chatModeBtn" onclick="toggleChatMode()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 채팅: 전체</button>
       <button class="ghost" id="chatBanBtn" onclick="toggleChatBan()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg> 채팅 금지</button>
       <button class="ghost" onclick="openBadWordsModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> 욕설 필터</button>
+    </div>
+    <!-- 드롭다운 패널: 수업 -->
+    <div class="cat-panel" id="cat-class">
+      <button class="primary" onclick="openLinkModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> 학생 초대 링크</button>
       <button class="primary" onclick="openProgressModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="23 21 23 19 19 19"/><line x1="19" y1="15" x2="23" y2="15"/></svg> 실시간 진행현황</button>
       <button class="primary" onclick="openRankingModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v10a6 6 0 01-12 0V2z"/><path d="M6 6H3v4a4 4 0 004 4"/><path d="M18 6h3v4a4 4 0 01-4 4"/><path d="M12 18v3M9 21h6"/></svg> 완료 순위</button>
       <button class="primary" onclick="downloadProgressExcel()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg> 진행현황 다운로드</button>
       <button class="ghost" onclick="newClass()">수업 변경</button>
-      <button class="ghost" onclick="logout()">로그아웃</button>
     </div>
   </div>
 
@@ -406,6 +440,24 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
     <div class="modal-btns" style="margin-top:14px">
       <button class="btn-cancel" onclick="closeBadWordsModal()">닫기</button>
       <button class="btn-save" onclick="saveBadWords()">저장 및 적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- 캐릭터 해금 기준 모달 -->
+<div id="ulModal-bg">
+  <div id="ulModal">
+    <h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> 애니 캐릭터 해금 기준</h2>
+    <div class="section-hint">학생이 지정한 수 이상의 미션을 완료하면 애니 캐릭터 탭이 해금됩니다. 0으로 설정하면 처음부터 모두 사용 가능합니다.</div>
+    <div style="display:flex;align-items:center;gap:12px;margin:16px 0">
+      <label style="font-size:14px;font-weight:600;white-space:nowrap">미션 완료 기준:</label>
+      <input type="number" id="ul-threshold-input" min="0" max="99" value="0" style="width:80px;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:16px;font-weight:700;text-align:center">
+      <span style="font-size:13px;color:#6b7280">개</span>
+    </div>
+    <div id="ul-hint" style="font-size:12.5px;color:#9ca3af;margin-bottom:4px">0 = 항상 해금 (기본값)</div>
+    <div class="modal-btns" style="margin-top:16px">
+      <button class="btn-cancel" onclick="closeUnlockModal()">취소</button>
+      <button class="btn-save" onclick="saveUnlockThreshold()">저장 및 적용</button>
     </div>
   </div>
 </div>
@@ -1070,6 +1122,20 @@ function continueRoom(roomId){
   showDash();
 }
 
+function toggleCat(cat){
+  const panel = document.getElementById('cat-' + cat);
+  const btn = document.querySelector('.cat-btn[onclick="toggleCat(\'' + cat + '\')"]');
+  const isOpen = panel && panel.classList.contains('show');
+  // 모두 닫기
+  document.querySelectorAll('.cat-panel').forEach(function(p){ p.classList.remove('show'); });
+  document.querySelectorAll('.cat-btn').forEach(function(b){ b.classList.remove('active'); });
+  // 같은 카테고리 클릭 시 토글(닫기), 다른 카테고리면 열기
+  if(!isOpen && panel){
+    panel.classList.add('show');
+    if(btn) btn.classList.add('active');
+  }
+}
+
 function logout(){
   __disconnectTeacherChannel();
   sessionStorage.removeItem('ssambus_teacher_ok');
@@ -1328,6 +1394,58 @@ async function saveBadWords(){
     showToast('욕설 필터가 저장 및 적용되었습니다.');
   }catch(e){
     console.error(e);
+    showToast('저장 실패: ' + (e.message||e));
+  }
+}
+
+/* ===================== 캐릭터 해금 기준 ===================== */
+let __ulThreshold = 0;
+
+async function openUnlockModal(){
+  if(!client) return;
+  try{
+    const { data } = await client.from('room_settings')
+      .select('char_unlock_threshold').eq('room_id', ROOM_ID).maybeSingle();
+    __ulThreshold = (data && data.char_unlock_threshold != null) ? Number(data.char_unlock_threshold) : 0;
+  }catch(e){ __ulThreshold = 0; }
+  const inp = document.getElementById('ul-threshold-input');
+  if(inp) inp.value = __ulThreshold;
+  __ulUpdateHint();
+  document.getElementById('ulModal-bg').classList.add('show');
+}
+function closeUnlockModal(){
+  document.getElementById('ulModal-bg').classList.remove('show');
+}
+function __ulUpdateHint(){
+  const v = Number(document.getElementById('ul-threshold-input').value) || 0;
+  const hint = document.getElementById('ul-hint');
+  if(!hint) return;
+  hint.textContent = v <= 0
+    ? '0 = 항상 해금 (기본값)'
+    : `미션 ${v}개 완료 시 애니 캐릭터 탭이 해금됩니다.`;
+}
+document.addEventListener('DOMContentLoaded', function(){
+  const inp = document.getElementById('ul-threshold-input');
+  if(inp) inp.addEventListener('input', __ulUpdateHint);
+});
+async function saveUnlockThreshold(){
+  if(!client) return;
+  const threshold = Math.max(0, Number(document.getElementById('ul-threshold-input').value) || 0);
+  try{
+    await client.from('room_settings').upsert(
+      { room_id: ROOM_ID, char_unlock_threshold: threshold, teacher_id: currentUserId },
+      { onConflict: 'room_id', ignoreDuplicates: false }
+    );
+    const bCh = client.channel('room:' + ROOM_ID);
+    bCh.subscribe(st => {
+      if(st === 'SUBSCRIBED'){
+        bCh.send({ type:'broadcast', event:'char_unlock_update', payload:{ threshold } });
+        setTimeout(() => { try{ client.removeChannel(bCh); }catch(e){} }, 1500);
+      }
+    });
+    closeUnlockModal();
+    showToast(threshold <= 0 ? '애니 캐릭터 해금 해제됨 (항상 해금).' : `미션 ${threshold}개 완료 시 해금으로 설정되었습니다.`);
+  }catch(e){
     showToast('저장 실패: ' + (e.message||e));
   }
 }

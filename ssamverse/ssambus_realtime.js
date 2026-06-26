@@ -72,10 +72,18 @@ function __rtConnect(){
     __rtChannel.on('presence', { event: 'sync' }, () => {
       try{ renderRemotePlayers(__rtChannel.presenceState()); }
       catch(e){ console.warn('[쌤버스] 원격 캐릭터 렌더링 실패', e); }
+      try{ __rtUpdateProgressPanel(__rtChannel.presenceState()); }catch(e){}
     });
 
     __rtChannel.on('broadcast', { event: 'bad_words_update' }, ({ payload }) => {
       if(payload && Array.isArray(payload.words)) __rtApplyCustomBadWords(payload.words);
+    });
+
+    __rtChannel.on('broadcast', { event: 'char_unlock_update' }, ({ payload }) => {
+      if(!payload) return;
+      const threshold = Number(payload.threshold) || 0;
+      try{ localStorage.setItem('ssambus_anime_threshold_' + __rtRoomId, String(threshold)); }catch(e){}
+      if(typeof __msCheckAnimeUnlock === 'function') __msCheckAnimeUnlock(threshold);
     });
 
     __rtChannel.on('broadcast', { event: 'chat_setting' }, ({ payload }) => {
@@ -145,10 +153,10 @@ function initRealtime(mapId){
     return;
   }
   __rtRoomId = __rtGetParam('room', 'demo');
-  __rtStudentId = sessionStorage.getItem('ssambus_student_id');
+  __rtStudentId = localStorage.getItem('ssambus_student_id');
   if(!__rtStudentId){
     __rtStudentId = 'stu_' + Math.random().toString(36).slice(2, 10);
-    sessionStorage.setItem('ssambus_student_id', __rtStudentId);
+    localStorage.setItem('ssambus_student_id', __rtStudentId);
   }
   if(__rtTeacherView) __rtStudentId = 'teacher_' + Math.random().toString(36).slice(2, 10);
   __rtNickname = __rtGetParam('nickname', null)
@@ -165,6 +173,7 @@ function initRealtime(mapId){
     __rtBuildChatUI();
     __rtInjectNickStyle();
     __rtInjectLocalNick();
+    __rtInitProgressPanel();
   }
 }
 
@@ -1639,4 +1648,89 @@ function __rtCT97(ctx,x,y,ts){
   ctx.fillStyle='#bbb';
   ctx.fillRect(x+r(.12),y+r(.14),r(.06),r(.06)); ctx.fillRect(x+r(.82),y+r(.14),r(.06),r(.06));
   ctx.fillRect(x+r(.12),y+r(.76),r(.06),r(.06)); ctx.fillRect(x+r(.82),y+r(.76),r(.06),r(.06));
+}
+
+/* ===================== Q3: 실시간 진행현황 패널 (학생 화면) ===================== */
+let __rtProgressPanelOpen = false;
+
+function __rtInitProgressPanel(){
+  if(__rtMapId === 'race') return; // 경주 트랙은 자체 순위판 보유
+  if(document.getElementById('rt-prog-toggle')) return;
+
+  const style = document.createElement('style');
+  style.textContent = [
+    '#rt-prog-toggle{position:fixed;bottom:68px;right:10px;z-index:1000;background:rgba(52,112,212,.85);',
+    'color:#fff;border:none;border-radius:50%;width:38px;height:38px;font-size:17px;cursor:pointer;',
+    'box-shadow:0 2px 8px rgba(0,0,0,.35);backdrop-filter:blur(6px);display:flex;align-items:center;',
+    'justify-content:center;padding:0;transition:transform .15s}',
+    '#rt-prog-toggle:hover{transform:scale(1.1)}',
+    '#rt-prog-panel{position:fixed;bottom:112px;right:10px;z-index:999;background:rgba(15,20,40,.9);',
+    'backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.15);border-radius:12px;width:210px;',
+    'max-height:280px;overflow-y:auto;padding:10px 12px;display:none;',
+    'box-shadow:0 4px 24px rgba(0,0,0,.5);font-family:"Noto Sans KR",sans-serif}',
+    '#rt-prog-panel.show{display:block}',
+    '.rt-prog-title{font-size:11px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.06em;',
+    'margin-bottom:8px;text-align:center}',
+    '.rt-prog-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}',
+    '.rt-prog-nick{flex:1;font-size:11px;color:#ecf0f1;white-space:nowrap;overflow:hidden;',
+    'text-overflow:ellipsis;font-weight:500}',
+    '.rt-prog-me{color:#f39c12!important;font-weight:700!important}',
+    '.rt-prog-bar-wrap{width:54px;height:5px;background:rgba(255,255,255,.12);border-radius:3px;flex-shrink:0}',
+    '.rt-prog-bar{height:5px;border-radius:3px;background:linear-gradient(90deg,#3498db,#2ecc71);transition:width .4s}',
+    '.rt-prog-num{font-size:10px;color:rgba(255,255,255,.5);white-space:nowrap;min-width:26px;text-align:right}'
+  ].join('');
+  document.head.appendChild(style);
+
+  const btn = document.createElement('button');
+  btn.id = 'rt-prog-toggle';
+  btn.title = '진행현황 보기';
+  btn.innerHTML = '📊';
+  btn.addEventListener('click', function(){
+    __rtProgressPanelOpen = !__rtProgressPanelOpen;
+    document.getElementById('rt-prog-panel').classList.toggle('show', __rtProgressPanelOpen);
+    if(__rtProgressPanelOpen && __rtChannel) __rtUpdateProgressPanel(__rtChannel.presenceState());
+  });
+  document.body.appendChild(btn);
+
+  const panel = document.createElement('div');
+  panel.id = 'rt-prog-panel';
+  panel.innerHTML = '<div class="rt-prog-title">📊 실시간 진행현황</div><div id="rt-prog-rows"></div>';
+  document.body.appendChild(panel);
+}
+
+function __rtUpdateProgressPanel(state){
+  if(!__rtProgressPanelOpen) return;
+  const container = document.getElementById('rt-prog-rows');
+  if(!container) return;
+
+  const rows = [];
+  Object.keys(state).forEach(function(key){
+    if(key.startsWith('teacher_') || key.startsWith('dash_')) return;
+    const presences = state[key];
+    if(!presences || !presences.length) return;
+    const s = presences[presences.length - 1];
+    if(!s.nickname) return;
+    rows.push({ nickname: s.nickname, mDone: s.mDone || 0, mTotal: s.mTotal || 0 });
+  });
+
+  rows.sort(function(a, b){
+    if(b.mDone !== a.mDone) return b.mDone - a.mDone;
+    return (a.nickname||'').localeCompare(b.nickname||'');
+  });
+
+  if(!rows.length){
+    container.innerHTML = '<div style="color:rgba(255,255,255,.35);font-size:11px;text-align:center;padding:6px 0">접속 중인 학생 없음</div>';
+    return;
+  }
+
+  container.innerHTML = rows.map(function(r){
+    const pct = r.mTotal ? Math.round(r.mDone / r.mTotal * 100) : 0;
+    const isMe = r.nickname === __rtNickname;
+    return '<div class="rt-prog-row">'
+      + '<span class="rt-prog-nick' + (isMe ? ' rt-prog-me' : '') + '">'
+      + (isMe ? '★ ' : '') + r.nickname + '</span>'
+      + '<div class="rt-prog-bar-wrap"><div class="rt-prog-bar" style="width:' + pct + '%"></div></div>'
+      + '<span class="rt-prog-num">' + r.mDone + '/' + r.mTotal + '</span>'
+      + '</div>';
+  }).join('');
 }
