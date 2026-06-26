@@ -80,35 +80,38 @@ function __rtConnect(){
       config: { presence: { key: __rtStudentId } }
     });
 
-    __rtChannel.on('presence', { event: 'sync' }, () => {
+    // 이 채널 참조를 클로저에 캡처 — removeChannel로 인한 CLOSED와 실제 오류를 구분하기 위해
+    const _thisChannel = __rtChannel;
+
+    _thisChannel.on('presence', { event: 'sync' }, () => {
       try{ renderRemotePlayers(__rtChannel.presenceState()); }
       catch(e){ console.warn('[쌤버스] 원격 캐릭터 렌더링 실패', e); }
       try{ __rtUpdateProgressPanel(__rtChannel.presenceState()); }catch(e){}
     });
 
-    __rtChannel.on('broadcast', { event: 'bad_words_update' }, ({ payload }) => {
+    _thisChannel.on('broadcast', { event: 'bad_words_update' }, ({ payload }) => {
       if(payload && Array.isArray(payload.words)) __rtApplyCustomBadWords(payload.words);
     });
 
-    __rtChannel.on('broadcast', { event: 'char_unlock_update' }, ({ payload }) => {
+    _thisChannel.on('broadcast', { event: 'char_unlock_update' }, ({ payload }) => {
       if(!payload) return;
       const threshold = Number(payload.threshold) || 0;
       try{ localStorage.setItem('ssambus_anime_threshold_' + __rtRoomId, String(threshold)); }catch(e){}
       if(typeof __msCheckAnimeUnlock === 'function') __msCheckAnimeUnlock(threshold);
     });
 
-    __rtChannel.on('broadcast', { event: 'chat_setting' }, ({ payload }) => {
+    _thisChannel.on('broadcast', { event: 'chat_setting' }, ({ payload }) => {
       if(payload && payload.mode){
         __rtChatMode = payload.mode;
         __rtApplyChatMode();
       }
     });
 
-    __rtChannel.on('broadcast', { event: 'map_reload' }, () => {
+    _thisChannel.on('broadcast', { event: 'map_reload' }, () => {
       setTimeout(__rtReloadOverlays, 400);
     });
 
-    __rtChannel.on('broadcast', { event: 'chat' }, ({ payload }) => {
+    _thisChannel.on('broadcast', { event: 'chat' }, ({ payload }) => {
       if(!payload || payload.id === __rtStudentId) return;
       // 교사 뷰(모니터링)는 항상 전체 채팅 표시
       if(!__rtTeacherView && __rtChatMode === 'proximity'){
@@ -118,7 +121,10 @@ function __rtConnect(){
       __rtShowBubble(payload.id, payload.text);
     });
 
-    __rtChannel.subscribe((status, err) => {
+    _thisChannel.subscribe((status, err) => {
+      // 이미 다른 채널로 교체된 경우 이 콜백 무시 — removeChannel이 CLOSED를 발생시켜
+      // 무한 재연결 루프가 생기는 것을 방지
+      if(_thisChannel !== __rtChannel) return;
       if(status === 'SUBSCRIBED'){
         if(!__rtTeacherView) __rtChannel.track(__rtMyState());
       } else if(status === 'CLOSED' || status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
@@ -127,7 +133,7 @@ function __rtConnect(){
           __rtReconnectTimer = setTimeout(() => {
             __rtReconnectTimer = null;
             __rtConnect();
-          }, 1000);
+          }, 3000);
         }
       }
     });
