@@ -98,6 +98,7 @@ function __rtConnect(){
     // 위치 broadcast 수신 — presence sync 없이 실시간 위치 반영
     _thisChannel.on('broadcast', { event: 'pos' }, ({ payload }) => {
       if(!payload || !payload.id || payload.id === __rtStudentId) return;
+      const prevDir = __rtRemotePos[payload.id] ? __rtRemotePos[payload.id].dir : null;
       __rtRemotePos[payload.id] = payload;
       const container = document.getElementById('remote-players');
       if(!container) return;
@@ -107,6 +108,25 @@ function __rtConnect(){
       el.classList.toggle('flip', payload.dir === 'left' && !payload.facingRight);
       el.style.left = (payload.c * TS) + 'px';
       el.style.top  = (payload.r * TS - 24) + 'px';
+      // 방향(앞/옆/뒤) 변경 시 SVG 재렌더링
+      if(payload.dir && payload.dir !== prevDir && __rtChannel){
+        try{
+          const ps = __rtChannel.presenceState();
+          const presences = ps[payload.id];
+          if(presences && presences.length){
+            const s = presences[presences.length - 1];
+            const ms = Object.assign({}, s, { dir: payload.dir, facingRight: payload.facingRight });
+            if(__rtAvatarChanged(payload.id, ms)){
+              __rtAvatarState[payload.id] = {
+                type:ms.type, preset:ms.preset, skin:ms.skin, hcolor:ms.hcolor,
+                hair:ms.hair, ccolor:ms.ccolor, cloth:ms.cloth, gender:ms.gender,
+                dir:ms.dir, facingRight:ms.facingRight, acc:[...(ms.acc||[])]
+              };
+              el.querySelector('g').innerHTML = renderCharacterSVG(ms);
+            }
+          }
+        }catch(e){}
+      }
     });
 
     _thisChannel.on('broadcast', { event: 'bad_words_update' }, ({ payload }) => {
@@ -571,18 +591,14 @@ function __rtShowBubble(id, text){
   bubble.__rtTimer = setTimeout(() => bubble.remove(), 4000);
 }
 
-/* 해당 타일에 다른 학생이 이미 있는지 확인 */
+/* 해당 타일에 다른 학생이 이미 있는지 확인 — broadcast 위치 캐시 기준 */
 function __rtIsTileOccupied(r, c){
-  if(!__rtChannel) return false;
-  const state = __rtChannel.presenceState();
-  return Object.keys(state).some(key => {
-    if(key === __rtStudentId) return false;
-    const presences = state[key];
-    if(!presences || !presences.length) return false;
-    const s = presences[presences.length - 1];
-    if(s.map && __rtMapId && s.map !== __rtMapId) return false;
-    return s.r === r && s.c === c;
-  });
+  for(const id in __rtRemotePos){
+    if(id === __rtStudentId) continue;
+    const p = __rtRemotePos[id];
+    if(p && p.r === r && p.c === c && (!p.map || !__rtMapId || p.map === __rtMapId)) return true;
+  }
+  return false;
 }
 
 /* 발신자가 나와 근접 타일 안에 있는지 확인 (payload 위치 우선, presence fallback) */
@@ -728,6 +744,13 @@ async function loadMapOverlays(mapId, ctx, ts){
           __rtDrawOverlayTile(ctx, c*ts, r*ts, ts, type);
         }
       });
+      // 교사 뷰에서는 type 98(장애물)을 즉시 시각화
+      if(window.TEACHER_VIEW){
+        Object.keys(window.__rtCustomBlockers||{}).forEach(function(key){
+          const [r,c]=key.split(',').map(Number);
+          __rtDrawOverlayTile(ctx,c*ts,r*ts,ts,98);
+        });
+      }
       // 애니메이션 맵(race)용 사후 렌더 훅
       window.__rtPostDrawHook = function(){
         Object.keys(window.__rtCustomBlockers||{}).forEach(function(key){

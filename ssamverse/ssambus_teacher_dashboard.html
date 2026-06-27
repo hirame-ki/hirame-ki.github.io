@@ -184,6 +184,8 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 #bw-tag-list{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;min-height:36px}
 .bw-tag{background:#fde8e8;border:1px solid #e74c3c;color:#c0392b;border-radius:12px;padding:3px 8px 3px 10px;font-size:12px;display:inline-flex;align-items:center;gap:4px}
 .bw-tag button{background:none;border:none;cursor:pointer;font-size:13px;color:#c0392b;line-height:1;padding:0}
+.bw-tag-default{background:#f1f5f9;border:1px solid #cbd5e1;color:#64748b;border-radius:12px;padding:3px 10px;font-size:12px;display:inline-flex;align-items:center}
+#bw-default-list{display:flex;flex-wrap:wrap;gap:5px;padding:10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;max-height:120px;overflow-y:auto;margin-bottom:14px}
 #bw-input-row{display:flex;gap:6px;margin-bottom:8px}
 #bw-new-word{flex:1;padding:7px 10px;border:1px solid #ccc;border-radius:6px;font-size:13px}
 
@@ -431,7 +433,10 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <div id="bwModal-bg">
   <div id="bwModal">
     <h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> 욕설 필터 단어 관리</h2>
-    <div class="section-hint">수업 코드 전용 추가 금지 단어를 설정합니다. 저장하면 접속 중인 학생에게도 즉시 적용됩니다. (기본 필터 단어는 별도로 내장되어 있습니다)</div>
+    <div style="font-size:12.5px;font-weight:700;color:#475569;margin-bottom:5px">기본 필터 단어 <span style="font-weight:400;color:#94a3b8">(수정 불가)</span></div>
+    <div id="bw-default-list"></div>
+    <div style="font-size:12.5px;font-weight:700;color:#475569;margin-bottom:5px">추가 필터 단어</div>
+    <div class="section-hint" style="margin-bottom:8px">저장하면 접속 중인 학생에게도 즉시 적용됩니다.</div>
     <div id="bw-input-row">
       <input type="text" id="bw-new-word" placeholder="추가할 단어 입력" maxlength="20" onkeydown="if(event.key==='Enter') addBadWord()">
       <button class="btn-save" onclick="addBadWord()">추가</button>
@@ -1351,10 +1356,20 @@ function closeDiscAnsModal(){
 
 
 /* ===================== 욕설 필터 관리 ===================== */
+const __BW_DEFAULT = [
+  '씨발','씨팔','씨바','쉬발','ㅅㅂ','개새끼','새끼','병신','ㅂㅅ','미친놈','미친년',
+  '지랄','ㅈㄹ','꺼져','죽어라','보지','자지','창녀','잡년','개년','개놈','개같은',
+  '좆','존나','ㅈㄴ','빠구리','섹스','강간','성폭행',
+  'fuck','shit','bitch','bastard','cunt','asshole','dick','pussy','cock',
+  'faggot','nigger','nigga','retard','whore','slut','motherfucker'
+];
 let __bwList = [];
 
 async function openBadWordsModal(){
   document.getElementById('bwModal-bg').classList.add('show');
+  /* 기본 단어 표시 */
+  const defEl = document.getElementById('bw-default-list');
+  if(defEl) defEl.innerHTML = __BW_DEFAULT.map(w => `<span class="bw-tag-default">${escapeHtml(w)}</span>`).join('');
   __bwList = [];
   if(client){
     try{

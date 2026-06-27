@@ -728,10 +728,10 @@ function _tanjiroBody(dir,sk,id){
       '<path d="M14,33 Q9,40 11,54 Q13,59 18,55 L20,33 Z" fill="url(#'+pid+')"/>'+
       '<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
       '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="url(#'+pid+')"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<rect x="23" y="47" width="15" height="9" rx="2" fill="'+D+'"/>'+
       '<rect x="23" y="55" width="7" height="12" rx="3" fill="'+D+'"/>'+
       '<rect x="31" y="55" width="6" height="12" rx="3" fill="'+D+'"/>'+
+      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<ellipse cx="27" cy="68" rx="4.5" ry="2.6" fill="#1a1008"/>'+
       '<ellipse cx="34.5" cy="68" rx="4.5" ry="2.6" fill="#1a1008"/>';
   }
@@ -782,8 +782,8 @@ function _nezukoBody(dir,sk){
       '<path d="M19,33 L22,33 L22,47 L19,47 Z" fill="'+jacket+'"/>'+
       '<rect x="19" y="42" width="21" height="5" fill="'+sash+'"/>'+
       '<rect x="26" y="34" width="6.5" height="14" rx="3" fill="'+jacket+'"/>'+
-      '<ellipse cx="29.3" cy="49" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<path d="M19,47 L40,47 L42,68 L17,68 Z" fill="'+kimono+'"/>'+
+      '<ellipse cx="29.3" cy="49" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<ellipse cx="26" cy="71" rx="4" ry="2" fill="#1a1008"/>';
   }
   return '<rect x="18" y="33" width="24" height="15" rx="5" fill="'+dk(kimono,15)+'"/>'+
@@ -830,8 +830,8 @@ function _inosukeBody(dir,sk){
       '<rect x="2" y="21" width="5" height="3.5" rx=".8" fill="'+gu+'"/>'+
       '<rect x="19" y="33" width="21" height="14" rx="5" fill="'+sk+'"/>'+
       '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="'+sk+'"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+dk(sk,12)+'"/>'+
       '<path d="M19,46 L40,46 L42,68 L17,68 Z" fill="'+cc+'"/>'+
+      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+dk(sk,12)+'"/>'+
       '<ellipse cx="25" cy="71" rx="4" ry="2" fill="#1a1008"/>';
   }
   return '<rect x="18" y="33" width="24" height="14" rx="5" fill="'+dk(sk,15)+'"/>'+
@@ -908,10 +908,10 @@ function _zenitsuBody(dir,sk,id){
       '<path d="M14,33 Q9,40 11,54 Q13,59 18,55 L20,33 Z" fill="url(#'+pid+')"/>'+
       '<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
       '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="url(#'+pid+')"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<rect x="23" y="47" width="15" height="9" rx="2" fill="'+D+'"/>'+
       '<rect x="23" y="55" width="7" height="12" rx="3" fill="'+D+'"/>'+
       '<rect x="31" y="55" width="6" height="12" rx="3" fill="'+D+'"/>'+
+      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<ellipse cx="27" cy="68" rx="4.5" ry="2.6" fill="#1a1008"/>'+
       '<ellipse cx="34.5" cy="68" rx="4.5" ry="2.6" fill="#1a1008"/>';
   }
@@ -949,8 +949,8 @@ function _hinataBody(dir,sk){
     return '<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
       '<rect x="19" y="40" width="21" height="3" fill="'+acc+'" opacity=".65"/>'+
       '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="'+cc+'"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<path d="M19,47 L40,47 L42,65 L17,65 Z" fill="'+cc+'"/>'+
+      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<ellipse cx="26" cy="68" rx="4.5" ry="2" fill="#e0e0e0" stroke="#ccc" stroke-width=".5"/>';
   }
   return '<rect x="18" y="33" width="24" height="14" rx="5" fill="'+dk(cc,15)+'"/>'+
@@ -990,8 +990,8 @@ function _luffyBody(dir,sk){
     return '<rect x="19" y="33" width="21" height="16" rx="5" fill="#E62C39"/>'+
       '<rect x="26" y="33" width="9" height="15" fill="#4C7FD4"/>'+
       '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="#E62C39"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<path d="M19,47 L40,47 L42,65 L17,65 Z" fill="#3B5998"/>'+
+      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<ellipse cx="26" cy="68" rx="4.5" ry="2.2" fill="#2a1a08"/>';
   }
   return '<rect x="18" y="33" width="24" height="14" rx="5" fill="#B01F28"/>'+
@@ -1942,11 +1942,7 @@ function _animeChar(preset,dir,id){
   face=(preset==='inosuke')?_boarMask(dir):_face(id,dir,skin,hc);
   neck=_neck(dir,skin);
   if(dir==='up') return defs+shadow+body+neck+hBack+hFront+extra;
-  // 옆모습에서 손을 마지막에 그려 바지/치마에 덮이지 않게 함
-  var sideHand = dir==='left'
-    ? '<ellipse cx="29.3" cy="47.5" rx="3.2" ry="2.6" fill="'+skin+'"/>'
-    : '';
-  return defs+shadow+body+hBack+face+neck+hFront+extra+sideHand;
+  return defs+shadow+body+hBack+face+neck+hFront+extra;
 }
 
 /* ---- 메인 렌더 ---- */
