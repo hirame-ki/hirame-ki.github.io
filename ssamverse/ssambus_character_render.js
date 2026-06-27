@@ -279,11 +279,11 @@ function _studentBody(dir, cc, sk, gender) {
         '<rect x="26" y="57" width="5.5" height="11" rx="2.5" fill="#3a2f4a"/>'+
         '<ellipse cx="29" cy="68" rx="4" ry="2.4" fill="#2a1f2f"/>';
     } else {
-      t='<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
+      t='<rect x="26" y="34" width="6.5" height="13" rx="3" fill="'+cc+'"/>'+
+        '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
+        '<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
         '<polygon points="27,33 29,44 33,33" fill="#f7f7f2"/>'+
         '<polygon points="28,35 27.5,38 29,46 30.5,38" fill="#b03030"/>'+
-        '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="'+cc+'"/>'+
-        '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
         '<rect x="23" y="47" width="15" height="9" rx="2" fill="'+D+'"/>'+
         '<rect x="23" y="55" width="7" height="12" rx="3" fill="'+D+'"/>'+
         '<rect x="31" y="55" width="6" height="12" rx="3" fill="'+D+'"/>'+
@@ -725,13 +725,13 @@ function _tanjiroBody(dir,sk,id){
     return pat+
       '<rect x="2.5" y="26" width="2.5" height="26" rx=".8" fill="#2a2010"/>'+
       '<rect x="1" y="23" width="5" height="3.5" rx=".8" fill="#784212"/>'+
+      '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="url(#'+pid+')"/>'+
+      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<path d="M14,33 Q9,40 11,54 Q13,59 18,55 L20,33 Z" fill="url(#'+pid+')"/>'+
       '<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
-      '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="url(#'+pid+')"/>'+
       '<rect x="23" y="47" width="15" height="9" rx="2" fill="'+D+'"/>'+
       '<rect x="23" y="55" width="7" height="12" rx="3" fill="'+D+'"/>'+
       '<rect x="31" y="55" width="6" height="12" rx="3" fill="'+D+'"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<ellipse cx="27" cy="68" rx="4.5" ry="2.6" fill="#1a1008"/>'+
       '<ellipse cx="34.5" cy="68" rx="4.5" ry="2.6" fill="#1a1008"/>';
   }
@@ -778,12 +778,12 @@ function _nezukoBody(dir,sk){
       '<ellipse cx="34" cy="71" rx="4" ry="2" fill="#1a1008"/>';
   }
   if(dir==='left'){
-    return '<rect x="19" y="33" width="21" height="15" rx="5" fill="'+kimono+'"/>'+
+    return '<rect x="26" y="34" width="6.5" height="14" rx="3" fill="'+jacket+'"/>'+
+      '<ellipse cx="29.3" cy="49" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
+      '<rect x="19" y="33" width="21" height="15" rx="5" fill="'+kimono+'"/>'+
       '<path d="M19,33 L22,33 L22,47 L19,47 Z" fill="'+jacket+'"/>'+
       '<rect x="19" y="42" width="21" height="5" fill="'+sash+'"/>'+
-      '<rect x="26" y="34" width="6.5" height="14" rx="3" fill="'+jacket+'"/>'+
       '<path d="M19,47 L40,47 L42,68 L17,68 Z" fill="'+kimono+'"/>'+
-      '<ellipse cx="29.3" cy="49" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<ellipse cx="26" cy="71" rx="4" ry="2" fill="#1a1008"/>';
   }
   return '<rect x="18" y="33" width="24" height="15" rx="5" fill="'+dk(kimono,15)+'"/>'+
@@ -828,10 +828,10 @@ function _inosukeBody(dir,sk){
   if(dir==='left'){
     return '<rect x="3.5" y="24" width="2.5" height="28" rx=".8" fill="'+bl+'"/>'+
       '<rect x="2" y="21" width="5" height="3.5" rx=".8" fill="'+gu+'"/>'+
-      '<rect x="19" y="33" width="21" height="14" rx="5" fill="'+sk+'"/>'+
       '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="'+sk+'"/>'+
-      '<path d="M19,46 L40,46 L42,68 L17,68 Z" fill="'+cc+'"/>'+
       '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+dk(sk,12)+'"/>'+
+      '<rect x="19" y="33" width="21" height="14" rx="5" fill="'+sk+'"/>'+
+      '<path d="M19,46 L40,46 L42,68 L17,68 Z" fill="'+cc+'"/>'+
       '<ellipse cx="25" cy="71" rx="4" ry="2" fill="#1a1008"/>';
   }
   return '<rect x="18" y="33" width="24" height="14" rx="5" fill="'+dk(sk,15)+'"/>'+
@@ -905,13 +905,13 @@ function _zenitsuBody(dir,sk,id){
     return pat+
       '<rect x="2.5" y="26" width="2.5" height="26" rx=".8" fill="#E8C840"/>'+
       '<rect x="1" y="23" width="5" height="3.5" rx=".8" fill="#784212"/>'+
+      '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="url(#'+pid+')"/>'+
+      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<path d="M14,33 Q9,40 11,54 Q13,59 18,55 L20,33 Z" fill="url(#'+pid+')"/>'+
       '<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
-      '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="url(#'+pid+')"/>'+
       '<rect x="23" y="47" width="15" height="9" rx="2" fill="'+D+'"/>'+
       '<rect x="23" y="55" width="7" height="12" rx="3" fill="'+D+'"/>'+
       '<rect x="31" y="55" width="6" height="12" rx="3" fill="'+D+'"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<ellipse cx="27" cy="68" rx="4.5" ry="2.6" fill="#1a1008"/>'+
       '<ellipse cx="34.5" cy="68" rx="4.5" ry="2.6" fill="#1a1008"/>';
   }
@@ -946,11 +946,11 @@ function _hinataBody(dir,sk){
       '<ellipse cx="35" cy="69" rx="4.5" ry="2" fill="#e0e0e0" stroke="#ccc" stroke-width=".5"/>';
   }
   if(dir==='left'){
-    return '<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
-      '<rect x="19" y="40" width="21" height="3" fill="'+acc+'" opacity=".65"/>'+
-      '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="'+cc+'"/>'+
-      '<path d="M19,47 L40,47 L42,65 L17,65 Z" fill="'+cc+'"/>'+
+    return '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="'+cc+'"/>'+
       '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
+      '<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
+      '<rect x="19" y="40" width="21" height="3" fill="'+acc+'" opacity=".65"/>'+
+      '<path d="M19,47 L40,47 L42,65 L17,65 Z" fill="'+cc+'"/>'+
       '<ellipse cx="26" cy="68" rx="4.5" ry="2" fill="#e0e0e0" stroke="#ccc" stroke-width=".5"/>';
   }
   return '<rect x="18" y="33" width="24" height="14" rx="5" fill="'+dk(cc,15)+'"/>'+
@@ -987,11 +987,11 @@ function _luffyBody(dir,sk){
       '<ellipse cx="34.5" cy="69" rx="4.5" ry="2.2" fill="#2a1a08"/>';
   }
   if(dir==='left'){
-    return '<rect x="19" y="33" width="21" height="16" rx="5" fill="#E62C39"/>'+
-      '<rect x="26" y="33" width="9" height="15" fill="#4C7FD4"/>'+
-      '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="#E62C39"/>'+
-      '<path d="M19,47 L40,47 L42,65 L17,65 Z" fill="#3B5998"/>'+
+    return '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="#E62C39"/>'+
       '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
+      '<rect x="19" y="33" width="21" height="16" rx="5" fill="#E62C39"/>'+
+      '<rect x="26" y="33" width="9" height="15" fill="#4C7FD4"/>'+
+      '<path d="M19,47 L40,47 L42,65 L17,65 Z" fill="#3B5998"/>'+
       '<ellipse cx="26" cy="68" rx="4.5" ry="2.2" fill="#2a1a08"/>';
   }
   return '<rect x="18" y="33" width="24" height="14" rx="5" fill="#B01F28"/>'+
