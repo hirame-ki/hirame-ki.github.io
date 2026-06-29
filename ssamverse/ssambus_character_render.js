@@ -1533,8 +1533,12 @@ function _gojoBody(dir,sk){
 }
 function _gojoBlindfold(dir){
   if(dir==='up') return '';
-  return '<rect x="14" y="17" width="32" height="7" rx="3" fill="#F0F0FF"/>'+
-    '<rect x="14" y="18" width="32" height="3" rx="1.5" fill="white" opacity=".6"/>';
+  if(dir==='left'){
+    return '<rect x="16" y="16" width="28" height="9" rx="3" fill="#0A0A18"/>'+
+      '<rect x="17" y="17" width="26" height="3" rx="1.5" fill="#1C1C30" opacity=".6"/>';
+  }
+  return '<rect x="12" y="16" width="36" height="9" rx="3" fill="#0A0A18"/>'+
+    '<rect x="13" y="17" width="34" height="3" rx="1.5" fill="#1C1C30" opacity=".5"/>';
 }
 
 /* 이타도리 — 주술회전 네이비 교복 */
@@ -1837,8 +1841,313 @@ function _asunaBody(dir,sk){
     '<path d="M15,49 L17,54 Q30,57 43,54 L45,49" fill="'+dk(top,10)+'" opacity=".5"/>';
 }
 
+/* 가오나시(가오잡이) — 머리부터 덮은 검정 보자기 + 흰 마스크 */
+function _nofaceChar(dir,id){
+  var sh='<ellipse cx="30" cy="73" rx="15" ry="3" fill="#00000018"/>';
+  var blk='#10101A',msk='#F2EEEA';
+  var cloth='<path d="M20,10 Q15,7 9,36 Q5,59 8,73 L52,73 Q55,59 51,36 Q45,7 40,10 Q30,3 20,10 Z" fill="'+blk+'"/>';
+  var arms='<ellipse cx="6" cy="52" rx="5" ry="9" fill="'+blk+'"/>'+
+    '<ellipse cx="54" cy="52" rx="5" ry="9" fill="'+blk+'"/>';
+  if(dir==='down'){
+    return sh+cloth+arms+
+      '<ellipse cx="30" cy="23" rx="13.5" ry="15.5" fill="'+msk+'" stroke="#D0CCC8" stroke-width="0.5"/>'+
+      '<ellipse cx="22" cy="18.5" rx="3.5" ry="4" fill="#181828"/>'+
+      '<ellipse cx="38" cy="18.5" rx="3.5" ry="4" fill="#181828"/>'+
+      '<path d="M18,29 Q30,36 42,29" stroke="#181828" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+  }
+  if(dir==='left'){
+    return sh+cloth+
+      '<ellipse cx="6" cy="52" rx="5" ry="9" fill="'+blk+'"/>'+
+      '<ellipse cx="28" cy="23" rx="11.5" ry="14" fill="'+msk+'" stroke="#D0CCC8" stroke-width="0.5"/>'+
+      '<ellipse cx="23" cy="18.5" rx="3" ry="3.5" fill="#181828"/>'+
+      '<ellipse cx="31" cy="18.5" rx="3" ry="3.5" fill="#181828"/>'+
+      '<path d="M17,29 Q27,35 37,29" stroke="#181828" stroke-width="1.6" fill="none" stroke-linecap="round"/>';
+  }
+  return sh+cloth;
+}
+
+/* 쿵푸팬더 포(쿵푸팬덤) — 뚱뚱한 판다 + 옥빛 쿵후복 */
+function _poChar(dir,id){
+  var sh='<ellipse cx="30" cy="73" rx="19" ry="4" fill="#00000022"/>';
+  var blk='#181210',wht='#F4F0EC',jade='#3D6A28',belt='#C8901A';
+  if(dir==='down'){
+    return sh+
+      '<ellipse cx="21" cy="70" rx="9.5" ry="5" fill="'+blk+'"/>'+
+      '<ellipse cx="39" cy="70" rx="9.5" ry="5" fill="'+blk+'"/>'+
+      '<ellipse cx="30" cy="50" rx="22" ry="19" fill="'+blk+'"/>'+
+      '<ellipse cx="30" cy="54" rx="15" ry="13" fill="'+wht+'"/>'+
+      '<path d="M10,38 Q12,32 30,31 Q48,32 50,38 L48,55 Q40,61 30,62 Q20,61 12,55 Z" fill="'+jade+'"/>'+
+      '<path d="M20,37 L30,34 L40,37 L38,55 Q30,59 22,55 Z" fill="'+wht+'"/>'+
+      '<rect x="13" y="53" width="34" height="7" rx="3.5" fill="'+belt+'"/>'+
+      '<rect x="24" y="51" width="12" height="11" rx="4" fill="'+dk(belt,12)+'"/>'+
+      '<ellipse cx="5" cy="51" rx="7" ry="10" fill="'+blk+'"/>'+
+      '<ellipse cx="55" cy="51" rx="7" ry="10" fill="'+blk+'"/>'+
+      '<ellipse cx="5" cy="62" rx="6.5" ry="5" fill="'+wht+'"/>'+
+      '<ellipse cx="55" cy="62" rx="6.5" ry="5" fill="'+wht+'"/>'+
+      '<ellipse cx="30" cy="20" rx="19" ry="18" fill="'+blk+'"/>'+
+      '<circle cx="15" cy="8" r="9" fill="'+blk+'"/>'+
+      '<circle cx="45" cy="8" r="9" fill="'+blk+'"/>'+
+      '<ellipse cx="30" cy="21" rx="15" ry="16" fill="'+wht+'"/>'+
+      '<ellipse cx="21" cy="21" rx="8.5" ry="7.5" fill="'+blk+'"/>'+
+      '<ellipse cx="39" cy="21" rx="8.5" ry="7.5" fill="'+blk+'"/>'+
+      '<ellipse cx="22" cy="21" rx="5.5" ry="6" fill="'+wht+'"/>'+
+      '<ellipse cx="38" cy="21" rx="5.5" ry="6" fill="'+wht+'"/>'+
+      '<circle cx="23" cy="22" r="3.8" fill="#111"/>'+
+      '<circle cx="37" cy="22" r="3.8" fill="#111"/>'+
+      '<circle cx="24.5" cy="20.5" r="1.5" fill="white"/>'+
+      '<circle cx="38.5" cy="20.5" r="1.5" fill="white"/>'+
+      '<ellipse cx="30" cy="30" rx="4.5" ry="3.5" fill="'+blk+'"/>'+
+      '<path d="M22,35 Q30,41 38,35" stroke="#333" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+  }
+  if(dir==='left'){
+    return sh+
+      '<ellipse cx="21" cy="70" rx="8.5" ry="5" fill="'+blk+'"/>'+
+      '<ellipse cx="36" cy="70" rx="8.5" ry="5" fill="'+blk+'"/>'+
+      '<ellipse cx="30" cy="50" rx="20" ry="19" fill="'+blk+'"/>'+
+      '<ellipse cx="31" cy="54" rx="13" ry="12" fill="'+wht+'"/>'+
+      '<path d="M10,38 Q12,32 30,31 Q47,32 49,38 L47,55 Q39,61 30,62 Q21,61 13,55 Z" fill="'+jade+'"/>'+
+      '<path d="M20,37 L30,34 L39,37 L37,54 Q30,58 23,54 Z" fill="'+wht+'"/>'+
+      '<rect x="14" y="53" width="32" height="7" rx="3.5" fill="'+belt+'"/>'+
+      '<ellipse cx="5" cy="51" rx="6.5" ry="9.5" fill="'+blk+'"/>'+
+      '<ellipse cx="5" cy="62" rx="6" ry="4.5" fill="'+wht+'"/>'+
+      '<ellipse cx="30" cy="20" rx="17" ry="18" fill="'+blk+'"/>'+
+      '<circle cx="43" cy="8" r="8.5" fill="'+blk+'"/>'+
+      '<ellipse cx="29" cy="21" rx="13" ry="15" fill="'+wht+'"/>'+
+      '<ellipse cx="37" cy="21" rx="7.5" ry="7" fill="'+blk+'"/>'+
+      '<ellipse cx="36" cy="21" rx="4.5" ry="5.5" fill="'+wht+'"/>'+
+      '<circle cx="37" cy="22" r="3.2" fill="#111"/>'+
+      '<circle cx="38.5" cy="20.5" r="1.3" fill="white"/>'+
+      '<ellipse cx="27" cy="30" rx="4" ry="3" fill="'+blk+'"/>'+
+      '<path d="M20,35 Q27,41 36,35" stroke="#333" stroke-width="1.6" fill="none" stroke-linecap="round"/>';
+  }
+  return sh+
+    '<ellipse cx="21" cy="70" rx="9.5" ry="5" fill="'+blk+'"/>'+
+    '<ellipse cx="39" cy="70" rx="9.5" ry="5" fill="'+blk+'"/>'+
+    '<ellipse cx="30" cy="50" rx="22" ry="19" fill="'+blk+'"/>'+
+    '<ellipse cx="30" cy="54" rx="15" ry="13" fill="'+dk(wht,12)+'"/>'+
+    '<path d="M10,38 Q12,32 30,31 Q48,32 50,38 L48,55 Q40,61 30,62 Q20,61 12,55 Z" fill="'+dk(jade,10)+'"/>'+
+    '<rect x="13" y="53" width="34" height="7" rx="3.5" fill="'+dk(belt,10)+'"/>'+
+    '<ellipse cx="5" cy="51" rx="7" ry="10" fill="'+blk+'"/>'+
+    '<ellipse cx="55" cy="51" rx="7" ry="10" fill="'+blk+'"/>'+
+    '<ellipse cx="30" cy="20" rx="19" ry="18" fill="'+blk+'"/>'+
+    '<circle cx="15" cy="8" r="9" fill="'+blk+'"/>'+
+    '<circle cx="45" cy="8" r="9" fill="'+blk+'"/>';
+}
+
+/* 도라에몽(또랑에퐁) — 파란 고양이 로봇 */
+function _doraemonChar(dir,id){
+  var sh='<ellipse cx="30" cy="73" rx="14" ry="3.5" fill="#00000018"/>';
+  var bl='#1898D8',wh='#FAFAFA',cl='#E53030',gold='#F0C028',wk='#666';
+  if(dir==='down'){
+    return sh+
+      // Small round feet
+      '<ellipse cx="22" cy="69" rx="8" ry="5" fill="'+bl+'"/>'+
+      '<ellipse cx="38" cy="69" rx="8" ry="5" fill="'+bl+'"/>'+
+      // Body cylinder (blue)
+      '<rect x="12" y="40" width="36" height="22" rx="10" fill="'+bl+'"/>'+
+      // White belly
+      '<ellipse cx="30" cy="52" rx="13" ry="10" fill="'+wh+'"/>'+
+      // Pocket
+      '<path d="M21,52 Q30,48 39,52 L38,62 Q30,65 22,62 Z" fill="none" stroke="#DDD" stroke-width="1.3"/>'+
+      // Short rectangular arms
+      '<rect x="2" y="44" width="12" height="10" rx="5" fill="'+bl+'"/>'+
+      '<rect x="46" y="44" width="12" height="10" rx="5" fill="'+bl+'"/>'+
+      // Round white hands
+      '<circle cx="7" cy="56" r="6.5" fill="'+wh+'"/>'+
+      '<circle cx="53" cy="56" r="6.5" fill="'+wh+'"/>'+
+      // Red collar between head and body
+      '<rect x="10" y="35" width="40" height="7" rx="3.5" fill="'+cl+'"/>'+
+      // Bell at center of collar
+      '<circle cx="30" cy="38" r="5.5" fill="'+gold+'" stroke="#B08010" stroke-width="1.2"/>'+
+      '<circle cx="30" cy="38" r="1.5" fill="#8B6800"/>'+
+      '<line x1="27" y1="38" x2="33" y2="38" stroke="#8B6800" stroke-width="1.1"/>'+
+      '<line x1="30" y1="35.5" x2="30" y2="40.5" stroke="#8B6800" stroke-width="1.1"/>'+
+      // Large round head
+      '<ellipse cx="30" cy="19" rx="20" ry="19" fill="'+bl+'"/>'+
+      // Dominant white face oval
+      '<ellipse cx="30" cy="21" rx="16" ry="17" fill="'+wh+'"/>'+
+      // Round eyes
+      '<circle cx="22" cy="15" r="5.5" fill="white" stroke="#222" stroke-width="0.8"/>'+
+      '<circle cx="38" cy="15" r="5.5" fill="white" stroke="#222" stroke-width="0.8"/>'+
+      '<circle cx="23" cy="16" r="3.5" fill="#111"/>'+
+      '<circle cx="37" cy="16" r="3.5" fill="#111"/>'+
+      '<circle cx="24.2" cy="14.5" r="1.4" fill="white"/>'+
+      '<circle cx="38.2" cy="14.5" r="1.4" fill="white"/>'+
+      // Red nose
+      '<circle cx="30" cy="24" r="4.8" fill="'+cl+'"/>'+
+      // Wide mouth
+      '<path d="M13,28 Q30,42 47,28" stroke="#333" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
+      '<path d="M18,29 Q30,40 42,29" fill="'+wh+'" stroke="none"/>'+
+      // Whiskers
+      '<line x1="6" y1="22" x2="24" y2="24" stroke="'+wk+'" stroke-width="1.3"/>'+
+      '<line x1="5" y1="26.5" x2="23" y2="27.5" stroke="'+wk+'" stroke-width="1.3"/>'+
+      '<line x1="6" y1="31" x2="23" y2="30.5" stroke="'+wk+'" stroke-width="1.1"/>'+
+      '<line x1="36" y1="24" x2="54" y2="22" stroke="'+wk+'" stroke-width="1.3"/>'+
+      '<line x1="37" y1="27.5" x2="55" y2="26.5" stroke="'+wk+'" stroke-width="1.3"/>'+
+      '<line x1="37" y1="30.5" x2="54" y2="31" stroke="'+wk+'" stroke-width="1.1"/>';
+  }
+  if(dir==='left'){
+    return sh+
+      '<ellipse cx="22" cy="69" rx="7.5" ry="5" fill="'+bl+'"/>'+
+      '<ellipse cx="35" cy="69" rx="7.5" ry="5" fill="'+bl+'"/>'+
+      '<rect x="13" y="40" width="32" height="22" rx="10" fill="'+bl+'"/>'+
+      '<ellipse cx="30" cy="52" rx="11" ry="9.5" fill="'+wh+'"/>'+
+      '<rect x="2" y="44" width="12" height="10" rx="5" fill="'+bl+'"/>'+
+      '<circle cx="7" cy="56" r="6" fill="'+wh+'"/>'+
+      '<rect x="11" y="35" width="35" height="7" rx="3.5" fill="'+cl+'"/>'+
+      '<circle cx="27" cy="38" r="5" fill="'+gold+'" stroke="#B08010" stroke-width="1.2"/>'+
+      '<circle cx="27" cy="38" r="1.5" fill="#8B6800"/>'+
+      '<ellipse cx="28" cy="19" rx="18" ry="19" fill="'+bl+'"/>'+
+      '<ellipse cx="27" cy="21" rx="14" ry="16" fill="'+wh+'"/>'+
+      '<circle cx="35" cy="15" r="5" fill="white" stroke="#222" stroke-width="0.8"/>'+
+      '<circle cx="35.5" cy="16" r="3" fill="#111"/>'+
+      '<circle cx="36.5" cy="14.5" r="1.2" fill="white"/>'+
+      '<circle cx="27" cy="24" r="4.2" fill="'+cl+'"/>'+
+      '<path d="M13,28 Q27,41 41,28" stroke="#333" stroke-width="2.2" fill="none" stroke-linecap="round"/>'+
+      '<path d="M17,29 Q27,39 38,29" fill="'+wh+'" stroke="none"/>'+
+      '<line x1="29" y1="24" x2="44" y2="22" stroke="'+wk+'" stroke-width="1.2"/>'+
+      '<line x1="30" y1="27.5" x2="45" y2="26.5" stroke="'+wk+'" stroke-width="1.2"/>'+
+      '<line x1="30" y1="31" x2="44" y2="30.5" stroke="'+wk+'" stroke-width="1"/>';
+  }
+  return sh+
+    '<ellipse cx="22" cy="69" rx="8" ry="5" fill="'+dk(bl,10)+'"/>'+
+    '<ellipse cx="38" cy="69" rx="8" ry="5" fill="'+dk(bl,10)+'"/>'+
+    '<rect x="12" y="40" width="36" height="22" rx="10" fill="'+dk(bl,8)+'"/>'+
+    '<rect x="2" y="44" width="12" height="10" rx="5" fill="'+dk(bl,12)+'"/>'+
+    '<rect x="46" y="44" width="12" height="10" rx="5" fill="'+dk(bl,12)+'"/>'+
+    '<circle cx="7" cy="56" r="6.5" fill="'+dk(wh,20)+'"/>'+
+    '<circle cx="53" cy="56" r="6.5" fill="'+dk(wh,20)+'"/>'+
+    '<rect x="10" y="35" width="40" height="7" rx="3.5" fill="'+dk(cl,12)+'"/>'+
+    '<circle cx="30" cy="38" r="5.5" fill="'+dk(gold,15)+'"/>'+
+    '<ellipse cx="30" cy="19" rx="20" ry="19" fill="'+dk(bl,8)+'"/>';
+}
+
+/* 토토로(토토루) — 완전 커스텀: 올빼미 눈+넓은 몸 */
+function _totoroChar(dir,id){
+  var sh='<ellipse cx="30" cy="73" rx="21" ry="5" fill="#00000022"/>';
+  var gr='#6E8070',dg='#4E6050',by='#C8D4B0',eO='#5A6C52';
+  if(dir==='down'){
+    return sh+
+      // Wide flat feet
+      '<ellipse cx="20" cy="70" rx="9" ry="5" fill="'+gr+'"/>'+
+      '<ellipse cx="40" cy="70" rx="9" ry="5" fill="'+gr+'"/>'+
+      // Very wide fat body
+      '<ellipse cx="30" cy="50" rx="23" ry="20" fill="'+gr+'"/>'+
+      // White belly — large, rounded
+      '<ellipse cx="30" cy="54" rx="16" ry="14" fill="'+by+'"/>'+
+      // Belly stripe markings (V shapes)
+      '<path d="M22,48 Q30,45 38,48" stroke="'+eO+'" stroke-width="1.8" fill="none"/>'+
+      '<path d="M23,53 Q30,50 37,53" stroke="'+eO+'" stroke-width="1.5" fill="none"/>'+
+      '<path d="M24,58 Q30,56 36,58" stroke="'+eO+'" stroke-width="1.3" fill="none"/>'+
+      // Small arm stubs
+      '<ellipse cx="6" cy="53" rx="5" ry="7" fill="'+gr+'"/>'+
+      '<ellipse cx="54" cy="53" rx="5" ry="7" fill="'+gr+'"/>'+
+      // Round head, wide
+      '<ellipse cx="30" cy="23" rx="21" ry="20" fill="'+gr+'"/>'+
+      // Pointed ears (triangular)
+      '<path d="M10,18 L14,2 L22,15 Z" fill="'+gr+'"/>'+
+      '<path d="M38,15 L46,2 L50,18 Z" fill="'+gr+'"/>'+
+      '<path d="M12,17 L14,5 L21,15 Z" fill="'+by+'"/>'+
+      '<path d="M39,15 L46,5 L48,17 Z" fill="'+by+'"/>'+
+      // HUGE owl eyes — key visual
+      '<circle cx="20" cy="23" r="9" fill="white" stroke="#333" stroke-width="1"/>'+
+      '<circle cx="40" cy="23" r="9" fill="white" stroke="#333" stroke-width="1"/>'+
+      '<circle cx="21" cy="24" r="7" fill="#111"/>'+
+      '<circle cx="39" cy="24" r="7" fill="#111"/>'+
+      '<circle cx="23" cy="21.5" r="2.8" fill="white"/>'+
+      '<circle cx="41" cy="21.5" r="2.8" fill="white"/>'+
+      // Nose — tiny oval
+      '<ellipse cx="30" cy="32" rx="2.5" ry="1.8" fill="#556650"/>'+
+      // Whiskers
+      '<line x1="7" y1="29" x2="26" y2="31" stroke="#8A8A7A" stroke-width="1.3"/>'+
+      '<line x1="8" y1="33.5" x2="26" y2="33" stroke="#8A8A7A" stroke-width="1.1"/>'+
+      '<line x1="34" y1="31" x2="53" y2="29" stroke="#8A8A7A" stroke-width="1.3"/>'+
+      '<line x1="34" y1="33" x2="52" y2="33.5" stroke="#8A8A7A" stroke-width="1.1"/>'+
+      // Small smile
+      '<path d="M25,37 Q30,42 35,37" stroke="#556650" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
+  }
+  if(dir==='left'){
+    return sh+
+      '<ellipse cx="20" cy="70" rx="8.5" ry="5" fill="'+gr+'"/>'+
+      '<ellipse cx="37" cy="70" rx="8.5" ry="5" fill="'+gr+'"/>'+
+      '<ellipse cx="29" cy="50" rx="20" ry="20" fill="'+gr+'"/>'+
+      '<ellipse cx="31" cy="54" rx="14" ry="13" fill="'+by+'"/>'+
+      '<path d="M23,48 Q31,45 39,48" stroke="'+eO+'" stroke-width="1.5" fill="none"/>'+
+      '<path d="M24,53 Q31,50 38,53" stroke="'+eO+'" stroke-width="1.3" fill="none"/>'+
+      '<ellipse cx="7" cy="53" rx="4.5" ry="6" fill="'+gr+'"/>'+
+      '<ellipse cx="29" cy="22" rx="19" ry="20" fill="'+gr+'"/>'+
+      '<path d="M36,15 L43,2 L47,17 Z" fill="'+gr+'"/>'+
+      '<path d="M37,16 L43,5 L46,17 Z" fill="'+by+'"/>'+
+      // Single big visible eye (side view)
+      '<circle cx="37" cy="22" r="8.5" fill="white" stroke="#333" stroke-width="1"/>'+
+      '<circle cx="37.5" cy="23" r="6.5" fill="#111"/>'+
+      '<circle cx="39.5" cy="21" r="2.5" fill="white"/>'+
+      '<ellipse cx="26" cy="31" rx="2.2" ry="1.6" fill="#556650"/>'+
+      '<line x1="28" y1="29" x2="44" y2="27" stroke="#8A8A7A" stroke-width="1.2"/>'+
+      '<line x1="29" y1="33" x2="44" y2="31.5" stroke="#8A8A7A" stroke-width="1"/>'+
+      '<path d="M22,36 Q28,40 34,36" stroke="#556650" stroke-width="1.5" fill="none" stroke-linecap="round"/>';
+  }
+  return sh+
+    '<ellipse cx="20" cy="70" rx="9" ry="5" fill="'+dk(gr,10)+'"/>'+
+    '<ellipse cx="40" cy="70" rx="9" ry="5" fill="'+dk(gr,10)+'"/>'+
+    '<ellipse cx="30" cy="50" rx="23" ry="20" fill="'+dk(gr,8)+'"/>'+
+    '<ellipse cx="6" cy="53" rx="5" ry="7" fill="'+dk(gr,10)+'"/>'+
+    '<ellipse cx="54" cy="53" rx="5" ry="7" fill="'+dk(gr,10)+'"/>'+
+    '<ellipse cx="30" cy="23" rx="21" ry="20" fill="'+dk(gr,8)+'"/>'+
+    '<path d="M10,18 L14,2 L22,15 Z" fill="'+dk(gr,12)+'"/>'+
+    '<path d="M38,15 L46,2 L50,18 Z" fill="'+dk(gr,12)+'"/>';
+}
+
+/* 마쿠로쿠로스케(검뎅이) — 복슬복슬 먼지 검댕이 무리 */
+function _susuwatariChar(dir,id){
+  var sh='<ellipse cx="30" cy="73" rx="20" ry="4" fill="#00000025"/>';
+  var blk='#10100E',blk2='#1C1A18',ey='#F2F0E8';
+  /* 개별 검댕이 — 외곽에 작은 범프 원으로 복슬복슬 표현 */
+  function spr(cx,cy,r,hl){
+    var out='';
+    // 8방향 범프 원 (복슬복슬 효과)
+    var br=r+2.5, bs=(r*0.3).toFixed(1);
+    var dirs=[[0,-1],[0.71,-0.71],[1,0],[0.71,0.71],[0,1],[-0.71,0.71],[-1,0],[-0.71,-0.71]];
+    for(var i=0;i<dirs.length;i++){
+      var bx=(cx+dirs[i][0]*br).toFixed(1), by2=(cy+dirs[i][1]*br).toFixed(1);
+      out+='<circle cx="'+bx+'" cy="'+by2+'" r="'+bs+'" fill="'+blk+'"/>';
+    }
+    // 본체 원
+    out+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+blk+'"/>';
+    // 눈 (타원 흰자 + 검은자)
+    var ex=r*0.38, ey2=r*0.35;
+    out+='<ellipse cx="'+(cx-ex).toFixed(1)+'" cy="'+(cy-ey2).toFixed(1)+'" rx="'+(r*0.32).toFixed(1)+'" ry="'+(r*0.26).toFixed(1)+'" fill="'+ey+'"/>'+
+         '<ellipse cx="'+(cx+ex).toFixed(1)+'" cy="'+(cy-ey2).toFixed(1)+'" rx="'+(r*0.32).toFixed(1)+'" ry="'+(r*0.26).toFixed(1)+'" fill="'+ey+'"/>'+
+         '<circle cx="'+(cx-ex+r*0.06).toFixed(1)+'" cy="'+(cy-ey2).toFixed(1)+'" r="'+(r*0.17).toFixed(1)+'" fill="#111"/>'+
+         '<circle cx="'+(cx+ex+r*0.06).toFixed(1)+'" cy="'+(cy-ey2).toFixed(1)+'" r="'+(r*0.17).toFixed(1)+'" fill="#111"/>';
+    if(hl) out+='<circle cx="'+(cx-ex+r*0.14).toFixed(1)+'" cy="'+(cy-ey2-r*0.08).toFixed(1)+'" r="'+(r*0.08).toFixed(1)+'" fill="white"/>';
+    return out;
+  }
+  var s='';
+  // 좌하 소형
+  s+=spr(12,57,7,false);
+  // 우하 소형
+  s+=spr(48,55,8,false);
+  // 좌중 소형
+  s+=spr(18,34,6.5,false);
+  // 우중 소형
+  s+=spr(43,38,7.5,false);
+  // 중앙 대형 (가장 크고 선명)
+  s+=spr(30,52,13,true);
+  // 중상 중형
+  s+=spr(30,35,9,true);
+  return sh+s;
+}
+
 /* 애니 캐릭터 메인 */
 function _animeChar(preset,dir,id){
+  /* 완전 커스텀 비인간형 — 일반 파이프라인 우회 */
+  if(preset==='doraemon')   return _doraemonChar(dir,id);
+  if(preset==='totoro')     return _totoroChar(dir,id);
+  if(preset==='susuwatari') return _susuwatariChar(dir,id);
+  if(preset==='noface')     return _nofaceChar(dir,id);
+  if(preset==='po')         return _poChar(dir,id);
+
   var skin,hc,hs,body,extra,face,neck,hBack,hFront;
   switch(preset){
     /* ── 귀멸의 칼날 ── */
@@ -1939,7 +2248,9 @@ function _animeChar(preset,dir,id){
   hBack=_hairBack(id,dir,hc,hs);
   var noHairFront=(preset==='inosuke'||preset==='sailormoon');
   hFront=noHairFront?'':_hairFront(id,dir,hc,hs);
-  face=(preset==='inosuke')?_boarMask(dir):_face(id,dir,skin,hc);
+  /* 얼굴 오버라이드 */
+  if(preset==='inosuke') face=_boarMask(dir);
+  else                   face=_face(id,dir,skin,hc);
   neck=_neck(dir,skin);
   if(dir==='up') return defs+shadow+body+neck+hBack+hFront+extra;
   return defs+shadow+body+hBack+face+neck+hFront+extra;

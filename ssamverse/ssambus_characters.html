@@ -159,7 +159,6 @@ body{
       <option value="ssambus_map_library.html">도서관</option>
       <option value="ssambus_map_playground.html">운동장</option>
       <option value="ssambus_map_gym.html">체육관</option>
-      <option value="ssambus_map_city.html">현대 도시</option>
       <option value="ssambus_map_forest.html">자연 숲</option>
       <option value="ssambus_map_music.html">음악실</option>
       <option value="ssambus_map_artroom.html">미술실</option>
@@ -612,6 +611,31 @@ body{
       <span class="anime-name">물란</span>
       <span class="anime-series">뮬란</span>
     </div>
+    <div class="anime-card" id="ac_doraemon" onclick="selectAnime('doraemon',this)">
+      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_doraemon"></g></svg>
+      <span class="anime-name">또랑에퐁</span>
+      <span class="anime-series">도라에몽</span>
+    </div>
+    <div class="anime-card" id="ac_totoro" onclick="selectAnime('totoro',this)">
+      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_totoro"></g></svg>
+      <span class="anime-name">도도로</span>
+      <span class="anime-series">이웃집 토토로</span>
+    </div>
+    <div class="anime-card" id="ac_susuwatari" onclick="selectAnime('susuwatari',this)">
+      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_susuwatari"></g></svg>
+      <span class="anime-name">검뎅이</span>
+      <span class="anime-series">토토로 / 하울</span>
+    </div>
+    <div class="anime-card" id="ac_po" onclick="selectAnime('po',this)">
+      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_po"></g></svg>
+      <span class="anime-name">꿍한팬더</span>
+      <span class="anime-series">쿵푸팬더</span>
+    </div>
+    <div class="anime-card" id="ac_noface" onclick="selectAnime('noface',this)">
+      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_noface"></g></svg>
+      <span class="anime-name">가오잡이</span>
+      <span class="anime-series">센과 치히로</span>
+    </div>
   </div>
   </div><!-- #anime-grid-wrap -->
 </div>
@@ -628,7 +652,9 @@ var TAB_MAP={student:'s',teacher:'t',fantasy:'f',anime:'a'};
 var currentChar='s';
 var selectedAnime='tanjiro';
 function __animeLocked(){
-  var room=new URLSearchParams(location.search).get('room')||'';
+  var params=new URLSearchParams(location.search);
+  if(params.get('teacherMode')==='1') return false;
+  var room=params.get('room')||'';
   if(!room) return false;
   var threshold=Number(localStorage.getItem('ssambus_anime_threshold_'+room)||0);
   if(threshold<=0) return false;
@@ -717,7 +743,8 @@ render('f');
   var presets=['tanjiro','nezuko','inosuke','zenitsu','hinata','luffy',
     'zoro','naruto','goku','ichigo','sailormoon','gojo','itadori',
     'deku','eren','levi','kirito','asuna','conan','shinchan',
-    'elsa','moana','snowwhite','rapunzel','cinderella','mulan'];
+    'elsa','moana','snowwhite','rapunzel','cinderella','mulan',
+    'doraemon','totoro','susuwatari','po','noface'];
   presets.forEach(function(p){
     var g=document.getElementById('ag_'+p);
     if(g) g.innerHTML=_animeChar(p,'down','_ap_'+p);

@@ -53,16 +53,6 @@ const MISSION_ZONES = {
     {id:'zone_G', label:'코트 우측2',       r0:2, c0:21, r1:11, c1:22},
     {id:'zone_H', label:'관람석·보관대(우)', r0:2, c0:25, r1:11, c1:27}
   ],
-  city: [   // 48열 x 24행 - 도로/공원 기준
-    {id:'zone_A', label:'블록1 상가(북)',    r0:0, c0:0,  r1:8,  c1:12},
-    {id:'zone_B', label:'블록1 상가(남)',    r0:9, c0:1,  r1:12, c1:6},
-    {id:'zone_C', label:'블록2 상가(북)',    r0:1, c0:11, r1:4,  c1:16},
-    {id:'zone_D', label:'블록2 상가(남)',    r0:9, c0:11, r1:12, c1:16},
-    {id:'zone_E', label:'블록3 상가(북)',    r0:1, c0:21, r1:4,  c1:26},
-    {id:'zone_F', label:'블록3 상가(남)',    r0:9, c0:21, r1:12, c1:26},
-    {id:'zone_G', label:'사거리1(횡단보도)', r0:5, c0:8,  r1:8,  c1:9},
-    {id:'zone_H', label:'사거리2(횡단보도)', r0:5, c0:18, r1:8,  c1:19}
-  ],
   forest: [   // 28열 x 14행 - 구역 중심부만 (테두리 제외)
     {id:'zone_A', label:'입구·서북쪽 숲',   r0:1, c0:1,  r1:5,  c1:5},
     {id:'zone_B', label:'북쪽 연못가',      r0:1, c0:8,  r1:5,  c1:12},
@@ -171,12 +161,6 @@ const EXIT_ZONES = {
   gym: [
     {r0:0, c0:10, r1:1, c1:11}     // 출입구 (48x24)
   ],
-  city: [
-    {r0:0, c0:14, r1:1, c1:17},    // 북쪽 1번 도로 (48x24)
-    {r0:0, c0:30, r1:1, c1:34},    // 북쪽 2번 도로
-    {r0:22, c0:14, r1:23, c1:17},  // 남쪽 1번 도로
-    {r0:22, c0:30, r1:23, c1:34}   // 남쪽 2번 도로
-  ],
   forest: [
     {r0:0, c0:23, r1:1, c1:24},    // 북쪽 출구 (48x24)
     {r0:22, c0:23, r1:23, c1:24},  // 남쪽 출구
@@ -226,7 +210,6 @@ const MAP_FILES = {
   library:'ssambus_map_library.html',
   playground:'ssambus_map_playground.html',
   gym:'ssambus_map_gym.html',
-  city:'ssambus_map_city.html',
   forest:'ssambus_map_forest.html',
   music:'ssambus_map_music.html',
   artroom:'ssambus_map_artroom.html',
@@ -239,18 +222,58 @@ const MAP_FILES = {
 };
 const MAP_LABELS = {
   classroom:'일반교실', library:'도서관', playground:'운동장',
-  gym:'체육관', city:'현대도시', forest:'자연숲',
+  gym:'체육관', forest:'자연숲',
   music:'음악실', artroom:'미술실', computer:'컴퓨터실',
   science:'과학실', cafeteria:'급식실', health:'보건실', maze:'미로', race:'경주 트랙'
 };
 
 /* 교사가 순서를 설정하지 않았을 때 사용할 기본 맵 순서 */
-const MAP_ORDER_DEFAULT = ['classroom','library','playground','gym','city','forest','music','artroom','computer','science','cafeteria','health'];
+const MAP_ORDER_DEFAULT = ['classroom','library','playground','gym','forest','music','artroom','computer','science','cafeteria','health'];
 
 /* ===================== 데모 미션 (Supabase 미설정/데이터 없을 때 대체) ===================== */
 const __MS_DEMO_VIDEO = 'https://www.youtube.com/watch?v=v66yDEGA9nk';
 const __MS_DEMO_INSTA = {id_suffix:'_3', zone_id:'zone_C', order:3, required:true,
   title:'쌤버스 인스타그램 방문하기', type:'link', content:'https://www.instagram.com/hirame.ki/'};
+
+/* 데모 이미지 퀴즈용 SVG (복도 에티켓) - 자체 생성 data URL */
+const __MS_DEMO_IMG = (()=>{
+  const s='<svg xmlns="http://www.w3.org/2000/svg" width="380" height="200">'
+    +'<rect width="380" height="200" fill="#EEF2FF" rx="8"/>'
+    +'<text x="190" y="24" font-family="sans-serif" font-size="15" font-weight="bold" fill="#2C3E50" text-anchor="middle">학교 복도 통행 규칙</text>'
+    +'<rect x="10" y="33" width="170" height="157" fill="#FFE8E8" rx="8"/>'
+    +'<text x="95" y="52" font-family="sans-serif" font-size="13" fill="#C0392B" text-anchor="middle" font-weight="bold">X 잘못된 행동</text>'
+    +'<circle cx="95" cy="83" r="13" fill="#F4A261"/>'
+    +'<line x1="95" y1="96" x2="87" y2="116" stroke="#444" stroke-width="4"/>'
+    +'<line x1="87" y1="116" x2="74" y2="137" stroke="#444" stroke-width="3"/>'
+    +'<line x1="87" y1="116" x2="103" y2="132" stroke="#444" stroke-width="3"/>'
+    +'<line x1="95" y1="103" x2="77" y2="111" stroke="#444" stroke-width="3"/>'
+    +'<line x1="95" y1="103" x2="113" y2="108" stroke="#444" stroke-width="3"/>'
+    +'<line x1="40" y1="90" x2="65" y2="88" stroke="#E74C3C" stroke-width="2.5"/>'
+    +'<line x1="36" y1="98" x2="62" y2="96" stroke="#E74C3C" stroke-width="2.5"/>'
+    +'<text x="95" y="175" font-family="sans-serif" font-size="12" fill="#C0392B" text-anchor="middle">복도에서 뛰기</text>'
+    +'<rect x="200" y="33" width="170" height="157" fill="#E8FFED" rx="8"/>'
+    +'<text x="285" y="52" font-family="sans-serif" font-size="13" fill="#27AE60" text-anchor="middle" font-weight="bold">O 올바른 행동</text>'
+    +'<circle cx="285" cy="83" r="13" fill="#F4A261"/>'
+    +'<line x1="285" y1="96" x2="285" y2="120" stroke="#444" stroke-width="4"/>'
+    +'<line x1="285" y1="120" x2="274" y2="142" stroke="#444" stroke-width="3"/>'
+    +'<line x1="285" y1="120" x2="296" y2="142" stroke="#444" stroke-width="3"/>'
+    +'<line x1="285" y1="105" x2="270" y2="116" stroke="#444" stroke-width="3"/>'
+    +'<line x1="285" y1="105" x2="300" y2="116" stroke="#444" stroke-width="3"/>'
+    +'<text x="285" y="175" font-family="sans-serif" font-size="12" fill="#27AE60" text-anchor="middle">오른쪽으로 걷기</text>'
+    +'</svg>';
+  try{return 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(s)));}catch(e){return '';}
+})();
+
+/* 데모 구글 설문지 URL - Chrome 확장 미연결로 직접 생성 불가, 아래 URL을 실제 폼 주소로 교체 */
+const __MS_DEMO_FORM_URL = '';
+
+/* 데모 이미지 퀴즈 공통 객체 */
+const __MS_DEMO_IQ = {
+  image: __MS_DEMO_IMG,
+  question: '위 그림을 보고, 학교 복도에서 올바른 행동을 고르세요.',
+  options: ['빠르게 뛰어다닌다','오른쪽으로 조용히 걷는다','친구와 큰 소리로 떠든다','장난을 치며 걸어다닌다'],
+  answer: 1
+};
 
 const DEMO_MISSIONS = {
   classroom: [
@@ -259,8 +282,10 @@ const DEMO_MISSIONS = {
     {id:'demo_classroom_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 교실 예절',
       type:'quiz', quiz:{question:'친구가 발표할 때 가장 알맞은 태도는 무엇일까요?',
         options:['딴짓을 한다','발표자를 바라보며 경청한다','옆 친구와 이야기한다','자리에서 일어나 돌아다닌다'], answer:1}},
-    {id:'demo_classroom_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+    {id:'demo_classroom_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
+      type:'image_quiz', quiz:__MS_DEMO_IQ},
+    {id:'demo_classroom_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
+      type:'google_form', content:__MS_DEMO_FORM_URL}
   ],
   library: [
     {id:'demo_library_1', zone_id:'zone_A', order:1, required:true, title:'도서관 이용 안내 영상',
@@ -268,8 +293,10 @@ const DEMO_MISSIONS = {
     {id:'demo_library_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 도서관 예절',
       type:'quiz', quiz:{question:'도서관에서 책을 다 읽은 후 가장 알맞은 행동은?',
         options:['아무 곳에나 두고 나간다','제자리에 정리한다','다른 칸에 숨겨둔다','바닥에 쌓아둔다'], answer:1}},
-    {id:'demo_library_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+    {id:'demo_library_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
+      type:'image_quiz', quiz:__MS_DEMO_IQ},
+    {id:'demo_library_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
+      type:'google_form', content:__MS_DEMO_FORM_URL}
   ],
   playground: [
     {id:'demo_playground_1', zone_id:'zone_A', order:1, required:true, title:'운동장 안전 영상',
@@ -277,8 +304,10 @@ const DEMO_MISSIONS = {
     {id:'demo_playground_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 운동장 안전',
       type:'quiz', quiz:{question:'축구공이 다른 친구 쪽으로 빠르게 날아갈 때 가장 먼저 해야 할 일은?',
         options:['소리쳐서 알려준다','모른 척한다','더 세게 찬다','뛰어가서 잡는다'], answer:0}},
-    {id:'demo_playground_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+    {id:'demo_playground_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
+      type:'image_quiz', quiz:__MS_DEMO_IQ},
+    {id:'demo_playground_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
+      type:'google_form', content:__MS_DEMO_FORM_URL}
   ],
   gym: [
     {id:'demo_gym_1', zone_id:'zone_A', order:1, required:true, title:'체육관 이용 안내 영상',
@@ -286,17 +315,10 @@ const DEMO_MISSIONS = {
     {id:'demo_gym_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 체육 안전 수칙',
       type:'quiz', quiz:{question:'체육 활동을 시작하기 전에 가장 먼저 해야 할 일은?',
         options:['바로 전속력으로 달리기','준비 운동(스트레칭)','물 마시기 생략','신발 벗고 활동하기'], answer:1}},
-    {id:'demo_gym_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
-  ],
-  city: [
-    {id:'demo_city_1', zone_id:'zone_A', order:1, required:true, title:'교통안전 영상',
-      type:'youtube', content:__MS_DEMO_VIDEO},
-    {id:'demo_city_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 횡단보도 안전',
-      type:'quiz', quiz:{question:'횡단보도를 건널 때 가장 알맞은 행동은?',
-        options:['좌우를 살피지 않고 빠르게 건넌다','초록불이 켜지면 좌우를 살피고 건넌다','빨간불에도 차가 없으면 건넌다','휴대폰을 보며 건넌다'], answer:1}},
-    {id:'demo_city_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+    {id:'demo_gym_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
+      type:'image_quiz', quiz:__MS_DEMO_IQ},
+    {id:'demo_gym_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
+      type:'google_form', content:__MS_DEMO_FORM_URL}
   ],
   forest: [
     {id:'demo_forest_1', zone_id:'zone_A', order:1, required:true, title:'자연 생태 안내 영상',
@@ -304,8 +326,10 @@ const DEMO_MISSIONS = {
     {id:'demo_forest_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 자연 보호',
       type:'quiz', quiz:{question:'숲에서 가져온 쓰레기는 어떻게 처리해야 할까요?',
         options:['숲 속에 묻는다','연못에 버린다','집까지 가져가 분리배출한다','나무 위에 걸어둔다'], answer:2}},
-    {id:'demo_forest_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+    {id:'demo_forest_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
+      type:'image_quiz', quiz:__MS_DEMO_IQ},
+    {id:'demo_forest_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
+      type:'google_form', content:__MS_DEMO_FORM_URL}
   ],
   music: [
     {id:'demo_music_1', zone_id:'zone_A', order:1, required:true, title:'음악실 소개 영상',
@@ -313,8 +337,10 @@ const DEMO_MISSIONS = {
     {id:'demo_music_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 악기 예절',
       type:'quiz', quiz:{question:'음악 시간에 악기를 연주하기 전 가장 먼저 해야 할 일은?',
         options:['바로 힘껏 두드린다','선생님의 지도를 듣고 조용히 기다린다','친구의 악기를 먼저 빌린다','큰 소리로 자유롭게 연주한다'], answer:1}},
-    {id:'demo_music_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+    {id:'demo_music_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
+      type:'image_quiz', quiz:__MS_DEMO_IQ},
+    {id:'demo_music_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
+      type:'google_form', content:__MS_DEMO_FORM_URL}
   ],
   artroom: [
     {id:'demo_artroom_1', zone_id:'zone_A', order:1, required:true, title:'미술실 이용 안내 영상',
@@ -322,8 +348,10 @@ const DEMO_MISSIONS = {
     {id:'demo_artroom_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 미술 재료 정리',
       type:'quiz', quiz:{question:'미술 시간이 끝난 후 팔레트를 정리하는 올바른 방법은?',
         options:['물감이 묻은 채로 그냥 둔다','물로 깨끗이 씻어 건조시킨다','다른 사람 자리에 밀어 놓는다','바닥에 내려놓는다'], answer:1}},
-    {id:'demo_artroom_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+    {id:'demo_artroom_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
+      type:'image_quiz', quiz:__MS_DEMO_IQ},
+    {id:'demo_artroom_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
+      type:'google_form', content:__MS_DEMO_FORM_URL}
   ],
   computer: [
     {id:'demo_computer_1', zone_id:'zone_A', order:1, required:true, title:'컴퓨터실 이용 안내 영상',
@@ -331,8 +359,10 @@ const DEMO_MISSIONS = {
     {id:'demo_computer_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 인터넷 예절',
       type:'quiz', quiz:{question:'인터넷에서 타인의 개인 정보를 발견했을 때 가장 알맞은 행동은?',
         options:['친구에게 공유한다','그냥 지나친다','SNS에 올린다','관계 기관에 신고한다'], answer:3}},
-    {id:'demo_computer_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+    {id:'demo_computer_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
+      type:'image_quiz', quiz:__MS_DEMO_IQ},
+    {id:'demo_computer_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
+      type:'google_form', content:__MS_DEMO_FORM_URL}
   ],
   science: [
     {id:'demo_science_1', zone_id:'zone_A', order:1, required:true, title:'과학 실험 안전 영상',
@@ -340,8 +370,10 @@ const DEMO_MISSIONS = {
     {id:'demo_science_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 실험 안전 수칙',
       type:'quiz', quiz:{question:'과학 실험 중 화학 약품이 눈에 들어갔을 때 가장 먼저 해야 할 일은?',
         options:['손으로 비빈다','깨끗한 물로 즉시 세척하고 선생님께 알린다','그냥 참는다','친구에게 물어본다'], answer:1}},
-    {id:'demo_science_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+    {id:'demo_science_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
+      type:'image_quiz', quiz:__MS_DEMO_IQ},
+    {id:'demo_science_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
+      type:'google_form', content:__MS_DEMO_FORM_URL}
   ],
   cafeteria: [
     {id:'demo_cafeteria_1', zone_id:'zone_A', order:1, required:true, title:'급식 예절 영상',
@@ -349,8 +381,10 @@ const DEMO_MISSIONS = {
     {id:'demo_cafeteria_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 급식 예절',
       type:'quiz', quiz:{question:'급식 줄에서 친구가 새치기를 했을 때 가장 알맞은 행동은?',
         options:['함께 새치기한다','아무말도 안 한다','정중하게 줄을 서달라고 말한다','줄에서 나와버린다'], answer:2}},
-    {id:'demo_cafeteria_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+    {id:'demo_cafeteria_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
+      type:'image_quiz', quiz:__MS_DEMO_IQ},
+    {id:'demo_cafeteria_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
+      type:'google_form', content:__MS_DEMO_FORM_URL}
   ],
   health: [
     {id:'demo_health_1', zone_id:'zone_A', order:1, required:true, title:'보건실 이용 안내 영상',
@@ -358,8 +392,10 @@ const DEMO_MISSIONS = {
     {id:'demo_health_2', zone_id:'zone_B', order:2, required:true, title:'퀴즈: 응급 처치',
       type:'quiz', quiz:{question:'친구가 갑자기 코피를 흘릴 때 가장 먼저 해야 할 일은?',
         options:['고개를 뒤로 젖히게 한다','고개를 앞으로 숙이고 코를 살짝 막는다','바닥에 눕힌다','코를 세게 풀게 한다'], answer:1}},
-    {id:'demo_health_3', zone_id:'zone_C', order:3, required:true, title:'쌤버스 인스타그램 방문하기',
-      type:'link', content:'https://www.instagram.com/hirame.ki/'}
+    {id:'demo_health_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
+      type:'image_quiz', quiz:__MS_DEMO_IQ},
+    {id:'demo_health_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
+      type:'google_form', content:__MS_DEMO_FORM_URL}
   ]
 };
 
@@ -473,6 +509,7 @@ function __msZoneAt(pos){
 function checkZoneOnMove(pos){
   if(__msMissions === null) return; // 미션 로드 전에는 판정하지 않음
   __msCheckExit(pos);
+  if(window.__rtTeacherParticipant) return; // 교사 참가자는 미션 발동 없음
 
   // ── 1. 타일 직접 지정 트리거 우선 확인 ──────────────────────────────
   const tileMission = __msMissions.find(m =>
@@ -539,6 +576,7 @@ function __msShowBlockedNotice(){
 /* 맵 페이지(move())에서 이동 직전 호출: 출입구 칸인데 필수 미션을 다 마치지 못했으면 true(이동 차단) */
 function __msBlockExit(r, c){
   if(__msMissions === null) return false;            // 미션 로드 전에는 막지 않음
+  if(window.__rtTeacherParticipant) return false;    // 교사 참가자는 출구 차단 없음
   if(!__msMapsWithMissions || !__msMapsWithMissions.has(__msMapId)) return false; // 이 맵에 미션이 없으면 잠금 없음
   const exits = EXIT_ZONES[__msMapId] || [];
   const inExit = exits.some(z => r >= z.r0 && r <= z.r1 && c >= z.c0 && c <= z.c1);
@@ -550,7 +588,7 @@ function __msCheckExit(pos){
   if(__msTransitioning) return;
   if(!__msMapOrder || !__msMapsWithMissions) return; // 아직 로드 전
   if(!__msMapsWithMissions.has(__msMapId)) return;   // 이 맵에 등록된 미션이 없으면 자동 이동 없음
-  if(!__msMissions.length || !__msAllRequiredDone()) return;
+  if(!__msMissions.length || (!__msAllRequiredDone() && !window.__rtTeacherParticipant)) return;
 
   const exits = EXIT_ZONES[__msMapId] || [];
   const inExit = exits.some(z => pos.r >= z.r0 && pos.r <= z.r1 && pos.c >= z.c0 && pos.c <= z.c1);
@@ -844,9 +882,16 @@ function __msRenderMission(m){
       <div class="ms-feedback" id="ms-feedback"></div>`;
     completeDisabled = 'disabled';
   } else if(m.type === 'google_form'){
-    const src = __msFormEmbedUrl(m.content);
-    body = `<iframe height="320" src="${src}"></iframe>
-      <a class="ms-link-btn" href="${m.content}" target="_blank" rel="noopener">새 창에서 열기</a>`;
+    if(!m.content){
+      body = `<div class="ms-body" style="text-align:center;padding:24px 12px;color:#7f8c8d">
+        <div style="font-size:44px;margin-bottom:12px">📋</div>
+        <div style="font-size:14px;line-height:1.7">설문지가 아직 연결되지 않았습니다.<br>선생님께 문의해 주세요.</div>
+      </div>`;
+    } else {
+      const src = __msFormEmbedUrl(m.content);
+      body = `<iframe height="320" src="${src}"></iframe>
+        <a class="ms-link-btn" href="${m.content}" target="_blank" rel="noopener">새 창에서 열기</a>`;
+    }
   } else if(m.type === 'link'){
     body = `<div class="ms-body">아래 버튼을 눌러 활동 페이지로 이동한 뒤, 완료를 눌러주세요.</div>
       <a class="ms-link-btn" href="${m.content}" target="_blank" rel="noopener">열기</a>`;
@@ -1815,7 +1860,7 @@ async function __msLoadCharUnlockThreshold(){
       .select('char_unlock_threshold')
       .eq('room_id', __msRoomId)
       .maybeSingle();
-    const t = (data && data.char_unlock_threshold != null) ? Number(data.char_unlock_threshold) : 0;
+    const t = (data && data.char_unlock_threshold != null) ? Number(data.char_unlock_threshold) : 5;
     __msCharUnlockThreshold = t;
     try{ localStorage.setItem('ssambus_anime_threshold_' + __msRoomId, String(t)); }catch(e){}
   }catch(e){ /* 컬럼 미존재 시 항상 해금 상태로 유지 */ }

@@ -556,7 +556,7 @@ QR 스캔 입장
    - `index.html`
    - `ssambus_characters.html`
    - `ssambus_character_render.js`
-   - `ssambus_map_classroom.html`, `ssambus_map_library.html`, `ssambus_map_playground.html`, `ssambus_map_gym.html`, `ssambus_map_city.html`, `ssambus_map_forest.html`
+   - `ssambus_map_classroom.html`, `ssambus_map_library.html`, `ssambus_map_playground.html`, `ssambus_map_gym.html`, `ssambus_map_city.html`, `ssambus_map_forest.html`, `ssambus_map_artroom.html`, `ssambus_map_cafeteria.html`, `ssambus_map_computer.html`, `ssambus_map_health.html`, `ssambus_map_music.html`, `ssambus_map_science.html`, `ssambus_map_modum_classroom.html`, `ssambus_map_maze.html`, `ssambus_map_race.html`
    - `ssambus_missions.js`
    - `ssambus_realtime.js`
    - `ssambus_supabase_config.js` (Supabase URL/anon key 포함 - anon key는 공개되어도 되는 키이므로 그대로 업로드해도 됨)
@@ -571,7 +571,7 @@ QR 스캔 입장
 
 ### 3) 배포 후 동작 확인 체크리스트
 1. 배포된 주소로 접속 → `index.html` 랜딩 페이지가 보이는지 확인
-2. "교사용 대시보드" 클릭 → 접속 코드(`ssambus2026`) 입력 → "새 수업 만들기"로 수업 코드 생성 확인
+2. "교사용 대시보드" 클릭 → 접속 코드(`ssam`) 입력 → "새 수업 만들기"로 수업 코드 생성 확인
 3. 임의의 맵에 미션 1개를 추가 → "🔗 학생 초대 링크" 모달에서 해당 맵 링크 복사
 4. 복사한 링크를 새 탭(또는 다른 브라우저/시크릿창)에서 열어 입장 → 해당 구역으로 이동 시 방금 추가한 미션이 뜨는지 확인
 5. (2명 이상 테스트 가능하면) 같은 맵에 두 명이 들어가서 서로의 캐릭터가 실시간으로 움직이는지 확인 (Realtime 동작 확인)
@@ -747,14 +747,88 @@ alter table missions add column if not exists trigger_tiles jsonb;
 
 ---
 
+## 추가 기능 완료 (2026-06-22~28)
+
+### 애니 캐릭터 26종 (`ssambus_character_render.js`, 2026-06-22)
+* **귀멸의 칼날** 4종: 탄지로, 네즈코, 이노스케, 젠이츠 (하오리 패턴 텍스처, 대나무 재갈, 멧돼지 마스크 등 캐릭터 전용 액세서리 포함)
+* **하이큐·원피스** 2종: 히나타(배구 유니폼), 루피(밀짚모자+조끼)
+* **디즈니** 6종: 엘사, 모아나, 백설공주, 라푼젤, 신데렐라, 뮬란
+* **인기 애니** 14종: 나루토, 손오공, 세일러문, 키리토, 에렌, 레비, 고죠, 이타도리, 데쿠, 코난, 짱구, 이치고, 조로, 아스나
+* 캐릭터 캐릭터 선택 화면(`ssambus_characters.html`) '애니' 탭에 통합. 교사 대시보드에서 수업 참여자 비율 기준으로 해금 임계값 설정 가능(`char_unlock_threshold`)
+* **realtime preset 버그픽스**: 애니 캐릭터 외형이 다른 플레이어 화면에도 올바르게 렌더링
+
+### 멀티타일 가구 시스템 + 캐릭터 커스터마이징 개선 (2026-06-23)
+* 맵 에디터에서 **2×2 크기 가구**(교실 책상, 피아노, 드럼 세트, 침대, PC 등) 배치 지원 — 단일 타일로 표현하던 가구를 실제 비율에 맞게 확장
+* 캐릭터 **눈 모양 커스터마이징** 추가 (일반/큰눈/반달/점눈 등)
+* 캐릭터 **목 길이 단축** — 머리와 몸통 사이 공백 줄임
+* `loadMapOverlays` 위치 버그 수정 — 맵 진입 시 가구 타일이 누락되는 문제 해결
+
+### 신규 맵 2종 (2026-06-24~25)
+* **미로 맵** (`ssambus_map_maze.html`): Z자 경로 + 8개 막다른 길 + 60×60 그리드. 캐릭터 겹침 허용(통로가 좁아 막힘 방지). 미션 트리거 타일 기반 퀴즈 구조
+* **경주 트랙 맵** (`ssambus_map_race.html`): 타원형 트랙 + 실시간 진행 현황 UI(Q8 기준 순위 표시). 겹침 허용. type 98 투명 장애물로 트랙 경계 제한
+
+### 교사 대시보드 개선 (2026-06-24~25)
+* 교사 접속 코드 **`ssam`으로 변경** (기존 `ssambus2026`)
+* 모든 페이지(index, 맵, 대시보드, 캐릭터 화면) **제작자 크레딧** 우하단 고정 표시
+* 실시간 진행현황 **Q8 미션 기반 완료 순위** 패널 추가 (경주 트랙용)
+* **욕설 필터** 추가: 채팅 전송 시 금칙어 감지 → 전송 차단 + 경고 토스트. 기본 한/영 금칙어 목록 내장
+* 맵 에디터에 **type 98 투명 장애물** 배치 지원 (미로/경주 트랙용). 학생 화면에서는 투명, 교사 뷰에서는 빨간 X 표시
+
+### 모바일 호환 개선 (2026-06-25~26)
+* **채팅 후 화면 축소 버그 수정**: iOS Safari에서 채팅 입력창 포커스 → blur 후 viewport 축소 현상 → viewport 메타 동적 주입 + 스크롤 초기화로 해결
+* 모든 맵 파일 터치/스와이프 이동 지원 완비
+
+### 애니 캐릭터 해금 강제 적용 (2026-06-26)
+* `__rtLoadRoomSettings` 수신 시 `char_unlock_threshold`가 있으면 즉시 캐릭터 선택 화면에 반영 (새로고침 없이 실시간 적용)
+
+### 멀티플레이어 안정성 대폭 개선 (2026-06-27)
+* **캐릭터 방향 버그 수정**: 다른 플레이어 화면에서 항상 오른쪽만 바라보던 문제 → `facingRight` 플래그를 broadcast에 포함해 수정
+* **캐릭터 깜빡임 수정**: 다른 플레이어 캐릭터가 반복적으로 사라졌다 나타나던 문제 → `__rtAvatarState` 캐시 도입, 실제 외형 변경 시에만 SVG 재생성
+* **Supabase 무한 재연결 루프 수정**: `removeChannel()` → CLOSED 이벤트 → 재연결 예약 → 무한루프 패턴 차단. `__rtChannel = null` 선행 + 클로저 캡처로 구 채널 콜백 조기 종료
+* **`ClientPresenceRateLimitReached` 해결**: 위치/상태 전송을 `channel.track()` → `channel.send(broadcast)` 방식으로 전환. `track()`은 접속 1회만 호출 (`__rtTrackPresence`). 이동 딜레이 개선 + 분당 `track()` 호출 수 400~600회 → 1~2회로 감소
+
+### 버그픽스 (2026-06-28)
+* **`__rtIsTileOccupied` stale presence 버그**: 교실 입장 후 r:6,c:30이 이유 없이 막히던 문제 + 캐릭터 겹침 → `presenceState()` 루프를 `__rtRemotePos`(broadcast 기반 실시간 캐시) 루프로 교체
+* **type 98 타일 교사 뷰 시각화**: 맵 에디터로 배치한 투명 장애물을 교사가 `?teacherView=1`로 접속하면 빨간 X로 확인 가능
+* **욕설필터 기본단어 UI**: 교사 대시보드 욕설필터 모달에 기본 내장 금칙어 목록을 회색 태그로 표시
+* **캐릭터 LEFT view 손 위치 버그**: 옆모습에서 손이 엉덩이에 떠 보이던 문제 → SVG 렌더링 순서 수정(back arm + hand를 body rect 이전으로 이동). 영향 캐릭터: `_studentBody`(남학생), `_tanjiroBody`, `_zenitsuBody`, `_nezukoBody`, `_inosukeBody`, `_hinataBody`, `_luffyBody`. Group B(Disney 6 + 일반 애니 14)는 구조상 문제없어 수정 불필요
+
+### 교사 참가자 미션 면제 (`ssambus_missions.js`, 2026-06-28)
+* "맵 참가하기"(`teacherMode=1`)로 입장한 교사는 구역/타일 진입 시 미션 팝업이 뜨지 않고, 출구에서 차단되지 않으며, 필수 미션 미완료 상태에서도 다음 맵으로 자동 이동 가능
+* 수정 위치: `checkZoneOnMove` (미션 발동 생략), `__msBlockExit` (출구 차단 생략), `__msCheckExit` (다음 맵 이동 허용)
+
+---
+
+## 현재 완성된 맵 목록 (15종)
+
+| id | 파일명 | 특징 |
+|-|-|-|
+| classroom | `ssambus_map_classroom.html` | 일반교실, 60×60, 48px |
+| library | `ssambus_map_library.html` | 도서관, 세로 카메라 추적 |
+| playground | `ssambus_map_playground.html` | 운동장, 가로 확장 |
+| gym | `ssambus_map_gym.html` | 체육관, 가로 확장 |
+| city | `ssambus_map_city.html` | 현대도시, 십자도로 구조 |
+| forest | `ssambus_map_forest.html` | 자연숲, 연못+통나무다리 |
+| artroom | `ssambus_map_artroom.html` | 미술실 |
+| cafeteria | `ssambus_map_cafeteria.html` | 급식실 |
+| computer | `ssambus_map_computer.html` | 컴퓨터실 |
+| health | `ssambus_map_health.html` | 보건실 |
+| music | `ssambus_map_music.html` | 음악실 |
+| science | `ssambus_map_science.html` | 과학실 |
+| modum_classroom | `ssambus_map_modum_classroom.html` | 모둠교실(그룹 활동용) |
+| maze | `ssambus_map_maze.html` | 미로(겹침 허용, Z자 경로) |
+| race | `ssambus_map_race.html` | 경주 트랙(실시간 순위 UI) |
+
+---
+
 ## 다음 작업
 
-맵 에디터(가구 배치+픽셀 아트+맵별 팔레트) + 미션 트리거 타일 + 채팅 모드(전체/근접/금지) + 다양한 미션 타입(image_quiz/short_answer/discussion/ox_quiz) + PDF 미션 자동 생성(Groq API) + 이전 수업 맵 불러오기 + 소감 입력 + 캐릭터 부드러운 이동 완료.
+현재 구현 완료 목록: 맵 15종 · 애니 캐릭터 26종 · 맵 에디터(가구 배치·픽셀 아트·팔레트) · 미션 트리거 타일 · 채팅 모드(전체/근접/금지) · 욕설 필터 · 다양한 미션 타입(youtube/quiz/google_form/link/image_quiz/short_answer/discussion/ox_quiz) · PDF 미션 자동 생성(Groq API) · 이전 수업 맵 불러오기 · 소감 입력 + 엑셀 반영 · 캐릭터 부드러운 이동 · 실시간 완료 순위 · 교사 참가자 미션 면제.
 
 남은 작업(모두 선택 사항):
 
-* (선택) **새 맵 추가** - 아래 "새 맵 추가 가이드" 섹션 참고. 후보: 음악실, 미술실, 컴퓨터실, 교무실, 한강공원, 동네마을, 일반 길거리
-* (선택) 미션 시스템 고도화: 전체 클리어 시 "완료 화면" 연동, 교사 대시보드와의 실시간 동기화
+* (선택) **새 맵 추가**: 교무실, 한강공원, 동네마을, 일반 길거리 — 새 맵 추가 가이드 섹션 참고
+* (선택) **미션 전체 완료 화면 고도화**: 전체 클리어 시 애니메이션 연출 강화, 교사 대시보드 실시간 동기화
 
 \---
 
