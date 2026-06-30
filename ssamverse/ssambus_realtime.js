@@ -183,7 +183,7 @@ function __rtConnect(){
   }
 }
 
-let __rtTeacherParticipant = false; // 교사가 맵 참가하기로 입장 시 채팅 금지 면제
+var __rtTeacherParticipant = false; // 교사가 맵 참가하기로 입장 시 채팅 금지 면제
 
 /* 이동 쿨다운 패치: 키 입력 속도를 CSS 트랜지션과 동기화해 부드러운 슬라이드 보장 */
 function __rtPatchMoveWithCooldown(){

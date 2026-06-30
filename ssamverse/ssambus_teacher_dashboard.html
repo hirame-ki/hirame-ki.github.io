@@ -1221,7 +1221,7 @@ async function openLinkModal(){
   const firstMap = MAPS.find(m => m.id === firstMapId);
   if(!firstMap) return;
 
-  const url = new URL(MAP_FILES[firstMap.id], window.location.href).href + '?room=' + encodeURIComponent(ROOM_ID);
+  const url = new URL('ssambus_characters.html', window.location.href).href + '?room=' + encodeURIComponent(ROOM_ID) + '&map=' + MAP_FILES[firstMap.id];
   __lmCurrentQrUrl = url;
   document.getElementById('lm_first_url').value = url;
   document.getElementById('lm_qr_label').textContent = url;

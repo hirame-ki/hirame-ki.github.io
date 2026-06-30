@@ -616,11 +616,6 @@ body{
       <span class="anime-name">검뎅이</span>
       <span class="anime-series">토토로 / 하울</span>
     </div>
-    <div class="anime-card" id="ac_po" onclick="selectAnime('po',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_po"></g></svg>
-      <span class="anime-name">꿍한팬더</span>
-      <span class="anime-series">쿵푸팬더</span>
-    </div>
     <div class="anime-card" id="ac_noface" onclick="selectAnime('noface',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_noface"></g></svg>
       <span class="anime-name">가오잡이</span>
@@ -734,7 +729,7 @@ render('f');
     'zoro','naruto','goku','ichigo','sailormoon','gojo','itadori',
     'deku','eren','levi','kirito','asuna','conan','shinchan',
     'elsa','moana','snowwhite','rapunzel','cinderella','mulan',
-    'susuwatari','po','noface'];
+    'susuwatari','noface'];
   presets.forEach(function(p){
     var g=document.getElementById('ag_'+p);
     if(g) g.innerHTML=_animeChar(p,'down','_ap_'+p);

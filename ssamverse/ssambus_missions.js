@@ -919,7 +919,8 @@ function __msDismissOverlay(){
   const overlay = document.getElementById('ms-overlay');
   if(overlay) overlay.classList.add('hidden');
   __msQueue = [];
-  __msCurrentZone = null; // 구역 초기화 → 재진입 시 미션 다시 발동
+  // __msCurrentZone 유지: 닫은 직후 같은 구역 내 이동 시 즉시 재발동 방지
+  // 구역을 완전히 벗어났다가 재진입하면 자연스럽게 다시 발동됨
 }
 
 function __msBindMission(m, card){

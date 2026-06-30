@@ -1865,7 +1865,7 @@ function _nofaceChar(dir,id){
   return sh+cloth;
 }
 
-/* 쿵푸팬더 포(쿵푸팬덤) — 뚱뚱한 판다 + 옥빛 쿵후복 */
+/* 쿵푸팬더 포 — 미사용(캐릭터 선택 UI에서 제거됨) */
 function _poChar(dir,id){
   var sh='<ellipse cx="30" cy="73" rx="19" ry="4" fill="#00000022"/>';
   var blk='#181210',wht='#F4F0EC',jade='#3D6A28',belt='#C8901A';
