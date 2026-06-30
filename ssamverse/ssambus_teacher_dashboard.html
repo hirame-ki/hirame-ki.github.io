@@ -927,7 +927,8 @@ const MAP_CANVAS_SIZE = {
   cafeteria: { w:2880, h:2880 },
   health:    { w:1920, h:1920 },
   maze:      { w:2880, h:2880 },
-  race:      { w:1920, h:5760 }
+  race:      { w:1920, h:5760 },
+  modum_classroom: { w:1920, h:2112 }
 };
 
 const MAPS = [
@@ -2239,15 +2240,22 @@ function buildAndDownloadExcel(missions, progress, completionData, totalData, re
     return (a.order || 1) - (b.order || 1);
   });
 
-  // 학생별 완료 미션 집계
+  // 학생별 완료 미션 집계 (텍스트 답변 포함)
   const studentsMap = new Map();
+  const TEXT_MISSION_TYPES = new Set(['short_answer', 'discussion']);
+  const missionTypeMap = new Map();
+  missions.forEach(m => missionTypeMap.set(m.id, m.type));
+
   progress.forEach(p => {
     if(!studentsMap.has(p.student_id)){
-      studentsMap.set(p.student_id, { nickname: p.nickname || p.student_id, done: new Set() });
+      studentsMap.set(p.student_id, { nickname: p.nickname || p.student_id, done: new Set(), answers: new Map() });
     }
     const s = studentsMap.get(p.student_id);
     if(p.nickname) s.nickname = p.nickname;
     s.done.add(p.mission_id);
+    if(p.student_answer && isNaN(Number(p.student_answer))){
+      s.answers.set(p.mission_id, p.student_answer);
+    }
   });
   const students = Array.from(studentsMap.values())
     .sort((a, b) => a.nickname.localeCompare(b.nickname, 'ko'));
@@ -2273,7 +2281,9 @@ function buildAndDownloadExcel(missions, progress, completionData, totalData, re
     missions.forEach(m => {
       const ok = s.done.has(m.id);
       if(ok) doneCount++;
-      row.push(ok ? '✅' : '');
+      const isText = TEXT_MISSION_TYPES.has(m.type);
+      const ans = s.answers.get(m.id);
+      row.push(ok ? (isText && ans ? ans : '완료') : '미완료');
     });
     row.push(`${doneCount}/${totalAll}`, Math.round(doneCount / totalAll * 100) + '%');
     rows.push(row);
@@ -2298,8 +2308,13 @@ function buildAndDownloadExcel(missions, progress, completionData, totalData, re
   ws['!merges'] = merges;
 
   // 열 너비 / 행 높이
-  ws['!cols'] = header2.map((_, i) => i === 0 ? { wch:14 } : (i >= colCount-2 ? { wch:10 } : { wch:18 }));
-  ws['!rows'] = [{ hpt:22 }, { hpt:48 }, ...students.map(() => ({ hpt:20 }))];
+  ws['!cols'] = header2.map((_, i) => {
+    if(i === 0) return { wch:14 };
+    if(i >= colCount-2) return { wch:10 };
+    const m = missions[i-1];
+    return TEXT_MISSION_TYPES.has(m?.type) ? { wch:36 } : { wch:12 };
+  });
+  ws['!rows'] = [{ hpt:22 }, { hpt:48 }, ...students.map(() => ({ hpt:36 }))];
 
   const setStyle = (r, c, style) => {
     const addr = XLSX.utils.encode_cell({ r, c });
@@ -2334,11 +2349,18 @@ function buildAndDownloadExcel(missions, progress, completionData, totalData, re
   for(let r = 2; r < rowCount; r++){
     for(let c = 0; c < colCount; c++){
       const isSummary = c >= colCount - 2;
-      const isDone = !isSummary && c >= 1 && rows[r][c] === '✅';
+      const cellVal = rows[r][c];
+      const isDone = !isSummary && c >= 1 && cellVal !== '미완료';
+      const isTextCell = !isSummary && c >= 1 && isDone && cellVal !== '완료';
+      let bg, fontColor;
+      if(isSummary){ bg = 'FFF9C4'; fontColor = '333333'; }
+      else if(c === 0){ bg = 'F5F5F5'; fontColor = '222222'; }
+      else if(isDone){ bg = isTextCell ? 'E8F5E9' : 'C8E6C9'; fontColor = '1B5E20'; }
+      else { bg = 'FFEBEE'; fontColor = 'B71C1C'; }
       setStyle(r, c, {
-        font:{ bold: (c === 0 || isSummary), sz:11 },
-        fill:{ fgColor:{rgb: isDone ? 'C8E6C9' : (isSummary ? 'FFF9C4' : (c === 0 ? 'F5F5F5' : 'FFFFFF'))} },
-        alignment:{ horizontal:'center', vertical:'center' },
+        font:{ bold: (c === 0 || isSummary), sz: isTextCell ? 10 : 11, color:{rgb: fontColor} },
+        fill:{ fgColor:{rgb: bg} },
+        alignment:{ horizontal: isTextCell ? 'left' : 'center', vertical:'center', wrapText:true },
         border:THIN_BORDER
       });
     }
