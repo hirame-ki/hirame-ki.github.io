@@ -23,15 +23,15 @@ const MISSION_ZONES = {
     {id:'zone_G', label:'책상 5열',              r0:44, c0:2, r1:48, c1:57},
     {id:'zone_H', label:'뒤쪽 통로·게시판/사물함', r0:52, c0:2, r1:58, c1:57}
   ],
-  library: [   // 15열 x 21행 - 구역 간 간격 확보
-    {id:'zone_A', label:'입구·대출대',      r0:0,  c0:1, r1:2,  c1:13},
-    {id:'zone_B', label:'서가 1열',         r0:4,  c0:1, r1:5,  c1:13},
-    {id:'zone_C', label:'서가 2열',         r0:7,  c0:1, r1:8,  c1:13},
-    {id:'zone_D', label:'중앙 통로',        r0:10, c0:1, r1:11, c1:13},
-    {id:'zone_E', label:'열람석 1열',       r0:13, c0:1, r1:14, c1:13},
-    {id:'zone_F', label:'열람석 2열',       r0:15, c0:1, r1:16, c1:13},
-    {id:'zone_G', label:'열람석 3열',       r0:17, c0:1, r1:18, c1:13},
-    {id:'zone_H', label:'열람석 4·5열',     r0:19, c0:1, r1:20, c1:13}
+  library: [   // 30열 x 36행 - 4칸 서가 그룹, 4칸 폭 통로
+    {id:'zone_A', label:'입구·대출대',      r0:0,  c0:1, r1:3,  c1:28},
+    {id:'zone_B', label:'서가 1열 통로',    r0:4,  c0:1, r1:5,  c1:28},
+    {id:'zone_C', label:'서가 2열 통로',    r0:8,  c0:1, r1:9,  c1:28},
+    {id:'zone_D', label:'서가 3열 통로',    r0:12, c0:1, r1:13, c1:28},
+    {id:'zone_E', label:'서가 4열 통로',    r0:16, c0:1, r1:17, c1:28},
+    {id:'zone_F', label:'서가 5열 통로',    r0:20, c0:1, r1:21, c1:28},
+    {id:'zone_G', label:'서가 6열 통로',    r0:24, c0:1, r1:25, c1:28},
+    {id:'zone_H', label:'열람실',           r0:28, c0:1, r1:34, c1:28}
   ],
   playground: [   // 32열 x 14행 - 열 단위 구역 (4열 간격 + 2열 완충)
     {id:'zone_A', label:'서쪽 펜스·골대',   r0:2, c0:0,  r1:11, c1:2},
@@ -153,7 +153,7 @@ const EXIT_ZONES = {
     {r0:48, c0:58, r1:48, c1:59}   // 뒷문 (60x60)
   ],
   library: [
-    {r0:0, c0:11, r1:0, c1:14}     // 입구 (26x36)
+    {r0:0, c0:13, r1:0, c1:15}     // 입구 (30x36, 중앙 3칸 출입구)
   ],
   playground: [
     {r0:0, c0:27, r1:1, c1:28}     // 정문 게이트 (56x24)
@@ -269,7 +269,7 @@ const __MS_DEMO_FORM_URL = '';
 
 /* 데모 이미지 퀴즈 공통 객체 */
 const __MS_DEMO_IQ = {
-  image: __MS_DEMO_IMG,
+  image_url: __MS_DEMO_IMG,
   question: '위 그림을 보고, 학교 복도에서 올바른 행동을 고르세요.',
   options: ['빠르게 뛰어다닌다','오른쪽으로 조용히 걷는다','친구와 큰 소리로 떠든다','장난을 치며 걸어다닌다'],
   answer: 1
@@ -296,7 +296,8 @@ const DEMO_MISSIONS = {
     {id:'demo_library_3', zone_id:'zone_C', order:3, required:true, title:'이미지 퀴즈: 복도 에티켓',
       type:'image_quiz', quiz:__MS_DEMO_IQ},
     {id:'demo_library_4', zone_id:'zone_D', order:4, required:true, title:'쌤버스 체험 설문지',
-      type:'google_form', content:__MS_DEMO_FORM_URL}
+      type:'google_form', content:__MS_DEMO_FORM_URL,
+      trigger_tiles:[{r:0,c:13},{r:0,c:14},{r:0,c:15}]}
   ],
   playground: [
     {id:'demo_playground_1', zone_id:'zone_A', order:1, required:true, title:'운동장 안전 영상',
@@ -883,9 +884,13 @@ function __msRenderMission(m){
     completeDisabled = 'disabled';
   } else if(m.type === 'google_form'){
     if(!m.content){
-      body = `<div class="ms-body" style="text-align:center;padding:24px 12px;color:#7f8c8d">
+      body = `<div class="ms-body" style="text-align:center;padding:24px 12px">
         <div style="font-size:44px;margin-bottom:12px">📋</div>
-        <div style="font-size:14px;line-height:1.7">설문지가 아직 연결되지 않았습니다.<br>선생님께 문의해 주세요.</div>
+        <div style="font-size:14px;line-height:1.8;color:#555">
+          <strong>쌤버스 체험 설문지</strong><br>
+          실제 수업에서는 선생님께서 설문지를 연결합니다.<br>
+          <span style="color:#27ae60;font-weight:600">완료 버튼을 눌러 다음 미션으로 진행하세요!</span>
+        </div>
       </div>`;
     } else {
       const src = __msFormEmbedUrl(m.content);

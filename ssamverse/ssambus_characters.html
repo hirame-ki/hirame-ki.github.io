@@ -611,16 +611,6 @@ body{
       <span class="anime-name">물란</span>
       <span class="anime-series">뮬란</span>
     </div>
-    <div class="anime-card" id="ac_doraemon" onclick="selectAnime('doraemon',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_doraemon"></g></svg>
-      <span class="anime-name">또랑에퐁</span>
-      <span class="anime-series">도라에몽</span>
-    </div>
-    <div class="anime-card" id="ac_totoro" onclick="selectAnime('totoro',this)">
-      <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_totoro"></g></svg>
-      <span class="anime-name">도도로</span>
-      <span class="anime-series">이웃집 토토로</span>
-    </div>
     <div class="anime-card" id="ac_susuwatari" onclick="selectAnime('susuwatari',this)">
       <svg width="88" height="112" viewBox="0 0 60 76" style="display:block"><g id="ag_susuwatari"></g></svg>
       <span class="anime-name">검뎅이</span>
@@ -744,7 +734,7 @@ render('f');
     'zoro','naruto','goku','ichigo','sailormoon','gojo','itadori',
     'deku','eren','levi','kirito','asuna','conan','shinchan',
     'elsa','moana','snowwhite','rapunzel','cinderella','mulan',
-    'doraemon','totoro','susuwatari','po','noface'];
+    'susuwatari','po','noface'];
   presets.forEach(function(p){
     var g=document.getElementById('ag_'+p);
     if(g) g.innerHTML=_animeChar(p,'down','_ap_'+p);

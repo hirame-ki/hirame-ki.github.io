@@ -1846,22 +1846,21 @@ function _nofaceChar(dir,id){
   var sh='<ellipse cx="30" cy="73" rx="15" ry="3" fill="#00000018"/>';
   var blk='#10101A',msk='#F2EEEA';
   var cloth='<path d="M20,10 Q15,7 9,36 Q5,59 8,73 L52,73 Q55,59 51,36 Q45,7 40,10 Q30,3 20,10 Z" fill="'+blk+'"/>';
-  var arms='<ellipse cx="6" cy="52" rx="5" ry="9" fill="'+blk+'"/>'+
-    '<ellipse cx="54" cy="52" rx="5" ry="9" fill="'+blk+'"/>';
   if(dir==='down'){
-    return sh+cloth+arms+
+    return sh+cloth+
       '<ellipse cx="30" cy="23" rx="13.5" ry="15.5" fill="'+msk+'" stroke="#D0CCC8" stroke-width="0.5"/>'+
       '<ellipse cx="22" cy="18.5" rx="3.5" ry="4" fill="#181828"/>'+
       '<ellipse cx="38" cy="18.5" rx="3.5" ry="4" fill="#181828"/>'+
       '<path d="M18,29 Q30,36 42,29" stroke="#181828" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
   }
-  if(dir==='left'){
-    return sh+cloth+
-      '<ellipse cx="6" cy="52" rx="5" ry="9" fill="'+blk+'"/>'+
-      '<ellipse cx="28" cy="23" rx="11.5" ry="14" fill="'+msk+'" stroke="#D0CCC8" stroke-width="0.5"/>'+
-      '<ellipse cx="23" cy="18.5" rx="3" ry="3.5" fill="#181828"/>'+
-      '<ellipse cx="31" cy="18.5" rx="3" ry="3.5" fill="#181828"/>'+
-      '<path d="M17,29 Q27,35 37,29" stroke="#181828" stroke-width="1.6" fill="none" stroke-linecap="round"/>';
+  /* side view: CSS flip handles left direction — no explicit left/right arm */
+  if(dir==='left'||dir==='right'){
+    var sideCloth='<path d="M23,10 Q18,8 12,36 Q8,58 10,73 L50,73 Q52,58 48,36 Q42,8 37,10 Q30,4 23,10 Z" fill="'+blk+'"/>';
+    return sh+sideCloth+
+      '<ellipse cx="30" cy="22" rx="10" ry="13" fill="'+msk+'" stroke="#D0CCC8" stroke-width="0.5"/>'+
+      '<ellipse cx="25" cy="18" rx="2.8" ry="3.2" fill="#181828"/>'+
+      '<ellipse cx="33" cy="18" rx="2.8" ry="3.2" fill="#181828"/>'+
+      '<path d="M19,28 Q29,34 38,28" stroke="#181828" stroke-width="1.5" fill="none" stroke-linecap="round"/>';
   }
   return sh+cloth;
 }
@@ -1900,6 +1899,7 @@ function _poChar(dir,id){
       '<path d="M22,35 Q30,41 38,35" stroke="#333" stroke-width="1.8" fill="none" stroke-linecap="round"/>';
   }
   if(dir==='left'){
+    /* CSS flip(scaleX-1) 적용됨 → SVG 우측(cx=55)이 화면 좌측(앞방향)에 표시 */
     return sh+
       '<ellipse cx="21" cy="70" rx="8.5" ry="5" fill="'+blk+'"/>'+
       '<ellipse cx="36" cy="70" rx="8.5" ry="5" fill="'+blk+'"/>'+
@@ -1908,10 +1908,10 @@ function _poChar(dir,id){
       '<path d="M10,38 Q12,32 30,31 Q47,32 49,38 L47,55 Q39,61 30,62 Q21,61 13,55 Z" fill="'+jade+'"/>'+
       '<path d="M20,37 L30,34 L39,37 L37,54 Q30,58 23,54 Z" fill="'+wht+'"/>'+
       '<rect x="14" y="53" width="32" height="7" rx="3.5" fill="'+belt+'"/>'+
-      '<ellipse cx="5" cy="51" rx="6.5" ry="9.5" fill="'+blk+'"/>'+
-      '<ellipse cx="5" cy="62" rx="6" ry="4.5" fill="'+wht+'"/>'+
+      '<ellipse cx="55" cy="40" rx="6" ry="9" fill="'+blk+'"/>'+
+      '<ellipse cx="55" cy="49" rx="6" ry="4.5" fill="'+wht+'"/>'+
       '<ellipse cx="30" cy="20" rx="17" ry="18" fill="'+blk+'"/>'+
-      '<circle cx="43" cy="8" r="8.5" fill="'+blk+'"/>'+
+      '<circle cx="32" cy="2" r="8.5" fill="'+blk+'"/>'+
       '<ellipse cx="29" cy="21" rx="13" ry="15" fill="'+wht+'"/>'+
       '<ellipse cx="37" cy="21" rx="7.5" ry="7" fill="'+blk+'"/>'+
       '<ellipse cx="36" cy="21" rx="4.5" ry="5.5" fill="'+wht+'"/>'+
@@ -1934,7 +1934,7 @@ function _poChar(dir,id){
     '<circle cx="45" cy="8" r="9" fill="'+blk+'"/>';
 }
 
-/* 도라에몽(또랑에퐁) — 파란 고양이 로봇 */
+/* 도라에몽 — 미사용(캐릭터 선택 UI에서 제거됨) */
 function _doraemonChar(dir,id){
   var sh='<ellipse cx="30" cy="73" rx="14" ry="3.5" fill="#00000018"/>';
   var bl='#1898D8',wh='#FAFAFA',cl='#E53030',gold='#F0C028',wk='#666';

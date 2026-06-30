@@ -50,7 +50,7 @@ h2{text-align:center;padding-top:18px;color:rgba(255,255,255,.85);font-size:.95r
 <div class="info">방향키 · 화면 스와이프로 이동</div>
 <div class="stage-wrap">
 <div class="stage">
-  <canvas id="map" width="1248" height="1728"></canvas>
+  <canvas id="map" width="1440" height="1728"></canvas>
   <div id="player"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
   <div id="remote-players"></div>
 </div>
@@ -66,10 +66,10 @@ h2{text-align:center;padding-top:18px;color:rgba(255,255,255,.85);font-size:.95r
 <script src="ssambus_supabase_config.js"></script>
 <script src="ssambus_character_render.js?v=20260628b"></script>
 <script src="ssambus_realtime.js?v=20260628a"></script>
-<script src="ssambus_missions.js"></script>
+<script src="ssambus_missions.js?v=20260630b"></script>
 <script>
 /* === Library map 26x36 (936 tiles ~3x original 15x21=315) === */
-var TS=48,COLS=26,ROWS=36,VIEW_W=768,VIEW_H=672;
+var TS=48,COLS=30,ROWS=36,VIEW_W=768,VIEW_H=672;
 
 var TEACHER_VIEW=new URLSearchParams(window.location.search).get('teacherView')==='1';
 if(TEACHER_VIEW){
@@ -105,21 +105,22 @@ if(TEACHER_VIEW){
 })();
 
 /* Tile: 0=floor 1=wall 5=door 9=bookshelf 10=reading-table 11=plant */
-/* Layout:
+/* Layout (30열 x 36행):
    Perimeter: wall (1)
-   Top row (0): wall with windows + entrance doors at cols 11-14
+   Top row (0): wall + entrance doors at cols 13-15 (center aisle 3칸)
    Bookshelves: rows 2-3, 6-7, 10-11, 14-15, 18-19, 22-23, 26-27
-                at cols 2-5, 8-11, 14-17, 20-23
-   Aisle between shelves: rows 4-5, 8-9, 12-13, 16-17, 20-21, 24-25
-   Reading tables: rows 29-34, cols 4-21 (reading room)
-   Plants in corners */
+                at cols 3-5, 10-12, 17-19, 24-26  (4 groups, 4-tile wide aisles)
+   Aisles (4 tiles wide): cols 6-9, 13-16(center), 20-23; edge: cols 1-2, 27-28
+   Reception desk: rows 2-3, cols 13-15 (center aisle 대출 카운터)
+   Reading tables: rows 29-34, cols 3-26 (열람실, 세로통로 cols 6-9/13-16/20-23 제외)
+   Plants: row 2, cols 2 and 27 */
 var grid=[];
 for(var r=0;r<ROWS;r++){
   grid[r]=[];
   for(var c=0;c<COLS;c++){
     var wall=(r===0||r===ROWS-1||c===0||c===COLS-1);
-    /* entrance doors */
-    var door=(r===0&&(c>=11&&c<=14));
+    /* entrance doors — aligned with center aisle (cols 13-15) */
+    var door=(r===0&&(c>=13&&c<=15));
     if(door){grid[r][c]=5;continue;}
     if(wall){grid[r][c]=1;continue;}
     /* bookshelf rows: pairs at rows 2-3, 6-7, 10-11, 14-15, 18-19, 22-23, 26-27 */
@@ -128,22 +129,23 @@ for(var r=0;r<ROWS;r++){
     for(var i=0;i<shelfRowStart.length;i++){
       if(r===shelfRowStart[i]||r===shelfRowStart[i]+1){inShelfRow=true;break;}
     }
-    /* bookshelf columns: cols 2-4, 7-9, 12-14, 17-19, 22-23 */
-    var shelfColGroups=[[2,4],[7,9],[12,14],[17,19],[22,23]];
+    /* bookshelf columns: 4 groups with 4-tile aisles between them */
+    var shelfColGroups=[[3,5],[10,12],[17,19],[24,26]];
     var inShelfCol=false;
     for(var j=0;j<shelfColGroups.length;j++){
       if(c>=shelfColGroups[j][0]&&c<=shelfColGroups[j][1]){inShelfCol=true;break;}
     }
-    /* reading room: rows 29-34 */
-    var readRoom=(r>=29&&r<=34&&c>=3&&c<=22);
-    /* reception desk: rows 2-3, cols 11-14 */
-    var desk=(r>=2&&r<=3&&c>=11&&c<=14);
-    /* plants in corners */
-    var plant=(r===2&&(c===2||c===COLS-2)); /* bottom plants removed - blocked path */
+    /* reading room: rows 29-34, with vertical aisles for walkability */
+    var readRoom=(r>=29&&r<=34&&c>=3&&c<=26);
+    var readAisle=(c>=6&&c<=9)||(c>=13&&c<=16)||(c>=20&&c<=23);
+    /* reception desk: rows 2-3, cols 13-15 (center aisle counter) */
+    var desk=(r>=2&&r<=3&&c>=13&&c<=15);
+    /* plants in far corners */
+    var plant=(r===2&&(c===2||c===27));
     if(plant){grid[r][c]=11;continue;}
     if(desk){grid[r][c]=10;continue;}
     if(inShelfRow&&inShelfCol&&r<=27){grid[r][c]=9;continue;}
-    if(readRoom&&(r%2===1)){grid[r][c]=10;continue;}
+    if(readRoom&&(r%2===1)&&!readAisle){grid[r][c]=10;continue;}
     grid[r][c]=0;
   }
 }
@@ -338,9 +340,9 @@ function drawMap(){
   }
   /* Reception counter */
   ctx.fillStyle='#8B4513';
-  ctx.fillRect(11*TS+4,2*TS+4,3*TS-8,TS*2-8);
+  ctx.fillRect(13*TS+4,2*TS+4,3*TS-8,TS*2-8);
   ctx.fillStyle='#a0522d';
-  ctx.fillRect(11*TS+6,2*TS+6,3*TS-12,TS-10);
+  ctx.fillRect(13*TS+6,2*TS+6,3*TS-12,TS-10);
   /* Chandelier / reading lamp decoration */
   for(var col=5;col<21;col+=5){
     ctx.fillStyle='rgba(255,220,100,0.15)';
@@ -367,7 +369,7 @@ function updateCamera(){var _sw=document.querySelector('.stage-wrap');var _vw=_s
   stage.style.transform='translate(-'+offX+'px,-'+offY+'px)';
 }
 
-var pos={r:1,c:13};
+var pos={r:1,c:14};
 function placePlayer(){
   var el=document.getElementById('player');
   if(TEACHER_VIEW) el.style.display='none';
