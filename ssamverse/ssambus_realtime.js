@@ -135,7 +135,7 @@ function __rtConnect(){
 
     _thisChannel.on('broadcast', { event: 'char_unlock_update' }, ({ payload }) => {
       if(!payload) return;
-      const threshold = Number(payload.threshold) || 0;
+      const threshold = Number(payload.threshold) || 5;
       try{ localStorage.setItem('ssambus_anime_threshold_' + __rtRoomId, String(threshold)); }catch(e){}
       if(typeof __msCheckAnimeUnlock === 'function') __msCheckAnimeUnlock(threshold);
     });

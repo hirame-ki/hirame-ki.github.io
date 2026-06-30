@@ -1261,8 +1261,8 @@ async function openLinkModal(){
   document.getElementById('lm_qr_label').textContent = '';
   document.getElementById('linkModal-bg').classList.add('show');
 
-  const order = await loadMapOrder();
-  const firstMapId = order[0];
+  const [order, withMissions] = await Promise.all([loadMapOrder(), loadMapsWithMissions()]);
+  const firstMapId = order.find(id => withMissions.has(id)) || order[0];
   const firstMap = MAPS.find(m => m.id === firstMapId);
   if(!firstMap) return;
 
@@ -1459,15 +1459,15 @@ async function saveBadWords(){
 }
 
 /* ===================== 애니 캐릭터 해금 기준 ===================== */
-let __ulThreshold = 0;
+let __ulThreshold = 5;
 
 async function openUnlockModal(){
   if(!client) return;
   try{
     const { data } = await client.from('room_settings')
       .select('char_unlock_threshold').eq('room_id', ROOM_ID).maybeSingle();
-    __ulThreshold = (data && data.char_unlock_threshold != null) ? Number(data.char_unlock_threshold) : 0;
-  }catch(e){ __ulThreshold = 0; }
+    __ulThreshold = (data && data.char_unlock_threshold != null) ? Number(data.char_unlock_threshold) : 5;
+  }catch(e){ __ulThreshold = 5; }
   const inp = document.getElementById('ul-threshold-input');
   if(inp) inp.value = __ulThreshold;
   __ulUpdateHint();
@@ -1481,7 +1481,7 @@ function __ulUpdateHint(){
   const hint = document.getElementById('ul-hint');
   if(!hint) return;
   hint.textContent = v <= 0
-    ? '0 = 항상 해금 (기본값)'
+    ? '0 = 항상 해금'
     : `미션 ${v}개 완료 시 애니 캐릭터 탭이 해금됩니다.`;
 }
 document.addEventListener('DOMContentLoaded', function(){

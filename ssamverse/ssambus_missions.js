@@ -406,7 +406,7 @@ let __msRoomId = null;
 let __msStudentId = null;
 let __msMissions = null;  // null = 아직 로드 전
 let __msDone = new Set();
-let __msCharUnlockThreshold = 0;
+let __msCharUnlockThreshold = 5;
 let __msCurrentZone;       // undefined = 아직 판정 전
 let __msQueue = [];
 let __msMapOrder = null;        // 교사가 설정한(또는 기본) 맵 순서

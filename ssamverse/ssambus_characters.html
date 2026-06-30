@@ -641,7 +641,7 @@ function __animeLocked(){
   if(params.get('teacherMode')==='1') return false;
   var room=params.get('room')||'';
   if(!room) return false;
-  var threshold=Number(localStorage.getItem('ssambus_anime_threshold_'+room)||0);
+  var threshold=Number(localStorage.getItem('ssambus_anime_threshold_'+room)||5);
   if(threshold<=0) return false;
   return !localStorage.getItem('ssambus_anime_unlocked_'+room);
 }
@@ -652,7 +652,7 @@ function __applyAnimeLock(){
   var wrap=document.getElementById('anime-grid-wrap');
   if(!overlay||!wrap) return;
   if(locked){
-    var threshold=Number(localStorage.getItem('ssambus_anime_threshold_'+room)||0);
+    var threshold=Number(localStorage.getItem('ssambus_anime_threshold_'+room)||5);
     document.getElementById('anime-lock-desc').textContent='미션 '+threshold+'개를 완료하면 해금됩니다. (현재 잠금 중)';
     overlay.style.display='block';
     wrap.style.display='none';
@@ -679,7 +679,7 @@ function enterMap(){
   if(!nickname){alert('이름을 입력해주세요.');document.getElementById('nicknameInput').focus();return;}
   if(currentChar==='a'&&__animeLocked()){
     var room=new URLSearchParams(location.search).get('room')||'';
-    var thr=Number(localStorage.getItem('ssambus_anime_threshold_'+room)||0);
+    var thr=Number(localStorage.getItem('ssambus_anime_threshold_'+room)||5);
     alert('🔒 애니 캐릭터는 잠금 중입니다.\n미션을 '+thr+'개 완료하면 해금됩니다!');
     return;
   }
