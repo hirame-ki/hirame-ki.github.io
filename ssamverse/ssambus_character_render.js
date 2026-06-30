@@ -725,8 +725,8 @@ function _tanjiroBody(dir,sk,id){
     return pat+
       '<rect x="2.5" y="26" width="2.5" height="26" rx=".8" fill="#2a2010"/>'+
       '<rect x="1" y="23" width="5" height="3.5" rx=".8" fill="#784212"/>'+
-      '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="url(#'+pid+')"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
+      '<rect x="26" y="34" width="6.5" height="10" rx="3" fill="url(#'+pid+')"/>'+
+      '<ellipse cx="29.3" cy="45" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<path d="M14,33 Q9,40 11,54 Q13,59 18,55 L20,33 Z" fill="url(#'+pid+')"/>'+
       '<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
       '<rect x="23" y="47" width="15" height="9" rx="2" fill="'+D+'"/>'+
@@ -778,8 +778,8 @@ function _nezukoBody(dir,sk){
       '<ellipse cx="34" cy="71" rx="4" ry="2" fill="#1a1008"/>';
   }
   if(dir==='left'){
-    return '<rect x="26" y="34" width="6.5" height="14" rx="3" fill="'+jacket+'"/>'+
-      '<ellipse cx="29.3" cy="49" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
+    return '<rect x="26" y="34" width="6.5" height="11" rx="3" fill="'+jacket+'"/>'+
+      '<ellipse cx="29.3" cy="46" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<rect x="19" y="33" width="21" height="15" rx="5" fill="'+kimono+'"/>'+
       '<path d="M19,33 L22,33 L22,47 L19,47 Z" fill="'+jacket+'"/>'+
       '<rect x="19" y="42" width="21" height="5" fill="'+sash+'"/>'+
@@ -828,8 +828,8 @@ function _inosukeBody(dir,sk){
   if(dir==='left'){
     return '<rect x="3.5" y="24" width="2.5" height="28" rx=".8" fill="'+bl+'"/>'+
       '<rect x="2" y="21" width="5" height="3.5" rx=".8" fill="'+gu+'"/>'+
-      '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="'+sk+'"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+dk(sk,12)+'"/>'+
+      '<rect x="26" y="34" width="6.5" height="10" rx="3" fill="'+sk+'"/>'+
+      '<ellipse cx="29.3" cy="45" rx="3.2" ry="2.6" fill="'+dk(sk,12)+'"/>'+
       '<rect x="19" y="33" width="21" height="14" rx="5" fill="'+sk+'"/>'+
       '<path d="M19,46 L40,46 L42,68 L17,68 Z" fill="'+cc+'"/>'+
       '<ellipse cx="25" cy="71" rx="4" ry="2" fill="#1a1008"/>';
@@ -905,8 +905,8 @@ function _zenitsuBody(dir,sk,id){
     return pat+
       '<rect x="2.5" y="26" width="2.5" height="26" rx=".8" fill="#E8C840"/>'+
       '<rect x="1" y="23" width="5" height="3.5" rx=".8" fill="#784212"/>'+
-      '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="url(#'+pid+')"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
+      '<rect x="26" y="34" width="6.5" height="10" rx="3" fill="url(#'+pid+')"/>'+
+      '<ellipse cx="29.3" cy="45" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<path d="M14,33 Q9,40 11,54 Q13,59 18,55 L20,33 Z" fill="url(#'+pid+')"/>'+
       '<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
       '<rect x="23" y="47" width="15" height="9" rx="2" fill="'+D+'"/>'+
@@ -946,8 +946,8 @@ function _hinataBody(dir,sk){
       '<ellipse cx="35" cy="69" rx="4.5" ry="2" fill="#e0e0e0" stroke="#ccc" stroke-width=".5"/>';
   }
   if(dir==='left'){
-    return '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="'+cc+'"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
+    return '<rect x="26" y="34" width="6.5" height="10" rx="3" fill="'+cc+'"/>'+
+      '<ellipse cx="29.3" cy="45" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<rect x="19" y="33" width="21" height="16" rx="5" fill="'+cc+'"/>'+
       '<rect x="19" y="40" width="21" height="3" fill="'+acc+'" opacity=".65"/>'+
       '<path d="M19,47 L40,47 L42,65 L17,65 Z" fill="'+cc+'"/>'+
@@ -987,8 +987,8 @@ function _luffyBody(dir,sk){
       '<ellipse cx="34.5" cy="69" rx="4.5" ry="2.2" fill="#2a1a08"/>';
   }
   if(dir==='left'){
-    return '<rect x="26" y="34" width="6.5" height="13" rx="3" fill="#E62C39"/>'+
-      '<ellipse cx="29.3" cy="48" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
+    return '<rect x="26" y="34" width="6.5" height="10" rx="3" fill="#E62C39"/>'+
+      '<ellipse cx="29.3" cy="45" rx="3.2" ry="2.6" fill="'+sk+'"/>'+
       '<rect x="19" y="33" width="21" height="16" rx="5" fill="#E62C39"/>'+
       '<rect x="26" y="33" width="9" height="15" fill="#4C7FD4"/>'+
       '<path d="M19,47 L40,47 L42,65 L17,65 Z" fill="#3B5998"/>'+
@@ -1045,8 +1045,8 @@ function _elsaBody(dir,sk){
       '<path d="M36,37 L37,34 L38,37" fill="white" opacity=".55"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="12" rx="3.5" fill="'+c+'"/>'+
-      '<ellipse cx="10" cy="48" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="8" rx="3.5" fill="'+c+'"/>'+
+      '<ellipse cx="10" cy="44" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="16" rx="5" fill="'+c+'"/>'+
       '<path d="M16,49 L40,49 L38,70 L17,70 Z" fill="'+D+'"/>';
   }
@@ -1076,8 +1076,8 @@ function _moanaBody(dir,sk){
       '<path d="M21,49 L22,70 M28,49 L29,70 M35,49 L35,70 M41,49 L40,70" stroke="'+dk(skirt,15)+'" stroke-width=".7" opacity=".45"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="10" rx="3.5" fill="'+top+'"/>'+
-      '<ellipse cx="10" cy="45" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="7" rx="3.5" fill="'+top+'"/>'+
+      '<ellipse cx="10" cy="42" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="12" rx="4" fill="'+top+'"/>'+
       '<rect x="17" y="44" width="23" height="5" rx="1" fill="'+belt+'"/>'+
       '<path d="M15,49 L40,49 L38,70 L16,70 Z" fill="'+skirt+'"/>';
@@ -1111,8 +1111,8 @@ function _snowwhiteBody(dir,sk){
       '<path d="M21,47 L22,70 M27,47 L28,70 M33,47 L33,70 M39,47 L38,70" stroke="'+dk(skirt,12)+'" stroke-width=".7" opacity=".4"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="12" rx="3.5" fill="'+sleeve+'"/>'+
-      '<ellipse cx="10" cy="47" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="8" rx="3.5" fill="'+sleeve+'"/>'+
+      '<ellipse cx="10" cy="43" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="14" rx="4" fill="'+bodice+'"/>'+
       '<path d="M14,47 L40,47 L38,70 L16,70 Z" fill="'+skirt+'"/>';
   }
@@ -1144,8 +1144,8 @@ function _rapunzelBody(dir,sk){
       '<path d="M22,50 L23,70 M29,50 L29,70 M36,50 L35,70 M42,50 L41,70" stroke="'+dk(D,15)+'" stroke-width=".6" opacity=".4"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="12" rx="3.5" fill="'+sl+'"/>'+
-      '<ellipse cx="10" cy="47" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="8" rx="3.5" fill="'+sl+'"/>'+
+      '<ellipse cx="10" cy="43" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="14" rx="5" fill="'+cc+'"/>'+
       '<rect x="17" y="46" width="23" height="4" rx="1" fill="'+belt+'"/>'+
       '<path d="M14,50 L40,50 L38,70 L16,70 Z" fill="'+D+'"/>';
@@ -1171,8 +1171,8 @@ function _cinderellaBody(dir,sk){
       '<path d="M20,49 L21,70 M26,49 L27,70 M30,49 L30,70 M34,49 L33,70 M40,49 L39,70" stroke="white" stroke-width=".6" opacity=".35"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="12" rx="3.5" fill="'+sl+'"/>'+
-      '<ellipse cx="10" cy="47" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="8" rx="3.5" fill="'+sl+'"/>'+
+      '<ellipse cx="10" cy="43" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="14" rx="5" fill="'+c+'"/>'+
       '<path d="M12,49 L40,49 L38,70 L14,70 Z" fill="'+D+'"/>';
   }
@@ -1205,8 +1205,8 @@ function _mulanBody(dir,sk){
       '<path d="M24,50 Q26,60 24,70 M36,50 Q34,60 36,70" stroke="'+acc+'" stroke-width=".8" fill="none" opacity=".5"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="14" rx="3.5" fill="'+outer+'"/>'+
-      '<ellipse cx="10" cy="49" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="10" rx="3.5" fill="'+outer+'"/>'+
+      '<ellipse cx="10" cy="45" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="16" rx="4" fill="'+outer+'"/>'+
       '<rect x="17" y="46" width="23" height="4" rx="1" fill="'+sash+'"/>'+
       '<path d="M15,50 L40,50 L38,70 L16,70 Z" fill="'+outer+'"/>';
@@ -1243,8 +1243,8 @@ function _narutoBody(dir,sk){
       '<ellipse cx="37" cy="70" rx="5.5" ry="2.5" fill="#1A1A1A"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="14" rx="3.5" fill="'+c+'"/>'+
-      '<ellipse cx="10" cy="49" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="10" rx="3.5" fill="'+c+'"/>'+
+      '<ellipse cx="10" cy="45" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="16" rx="4" fill="'+c+'"/>'+
       '<rect x="14" y="33" width="2.5" height="16" rx="1" fill="'+bl+'"/>'+
       '<rect x="18" y="49" width="10" height="21" rx="3" fill="'+c+'"/>'+
@@ -1295,8 +1295,8 @@ function _gokuBody(dir,sk){
       '<ellipse cx="37" cy="70" rx="5.5" ry="2.5" fill="#111"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="14" rx="3.5" fill="'+blue+'"/>'+
-      '<ellipse cx="10" cy="49" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="10" rx="3.5" fill="'+blue+'"/>'+
+      '<ellipse cx="10" cy="45" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="16" rx="4" fill="'+c+'"/>'+
       '<rect x="16" y="45" width="24" height="5" rx="1.5" fill="'+belt+'"/>'+
       '<rect x="18" y="50" width="10" height="20" rx="3" fill="'+c+'"/>'+
@@ -1343,8 +1343,8 @@ function _sailormoonBody(dir,sk){
       '<ellipse cx="36" cy="70" rx="5" ry="2.2" fill="#fff" opacity=".9"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="12" rx="3.5" fill="'+top+'"/>'+
-      '<ellipse cx="10" cy="47" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="8" rx="3.5" fill="'+top+'"/>'+
+      '<ellipse cx="10" cy="43" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="14" rx="4" fill="'+top+'"/>'+
       '<rect x="16" y="47" width="24" height="23" rx="3" fill="'+skirt+'"/>'+
       '<ellipse cx="22" cy="70" rx="5" ry="2.2" fill="white" opacity=".9"/>'+
@@ -1440,8 +1440,8 @@ function _erenBody(dir,sk){
   }
   if(dir==='left'){
     return '<path d="M9,33 Q7,40 8,54 L13,54 L13,33 Z" fill="'+cape+'"/>'+
-      '<rect x="12" y="35" width="7" height="14" rx="3.5" fill="'+uniform+'"/>'+
-      '<ellipse cx="10" cy="49" rx="4" ry="4" fill="'+sk+'"/>'+
+      '<rect x="12" y="35" width="7" height="10" rx="3.5" fill="'+uniform+'"/>'+
+      '<ellipse cx="10" cy="45" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="16" rx="4" fill="'+uniform+'"/>'+
       '<rect x="17" y="44" width="23" height="4" rx="1.5" fill="'+belt+'"/>'+
       '<rect x="18" y="48" width="10" height="22" rx="3" fill="'+uniform+'"/>'+
@@ -1480,8 +1480,8 @@ function _leviBody(dir,sk){
       '<ellipse cx="37" cy="70" rx="5" ry="2.5" fill="#2A1808"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="14" rx="3.5" fill="'+uniform+'"/>'+
-      '<ellipse cx="10" cy="49" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="10" rx="3.5" fill="'+uniform+'"/>'+
+      '<ellipse cx="10" cy="45" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="16" rx="4" fill="'+uniform+'"/>'+
       '<path d="M22,33 Q30,38 40,33 L38,42 Q30,45 24,42 Z" fill="'+cravat+'" opacity=".9"/>'+
       '<rect x="17" y="44" width="23" height="4" rx="1.5" fill="'+belt+'"/>'+
@@ -1515,8 +1515,8 @@ function _gojoBody(dir,sk){
       '<ellipse cx="37" cy="70" rx="5.5" ry="2.5" fill="#08080F"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="16" rx="3.5" fill="'+c+'"/>'+
-      '<ellipse cx="10" cy="51" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="12" rx="3.5" fill="'+c+'"/>'+
+      '<ellipse cx="10" cy="47" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="18" rx="4" fill="'+c+'"/>'+
       '<rect x="18" y="51" width="10" height="19" rx="3" fill="'+c+'"/>'+
       '<rect x="29" y="51" width="10" height="19" rx="3" fill="'+D+'"/>'+
@@ -1557,8 +1557,8 @@ function _itadoriBody(dir,sk){
       '<ellipse cx="37" cy="70" rx="5.5" ry="2.5" fill="#0A0A18"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="15" rx="3.5" fill="'+c+'"/>'+
-      '<ellipse cx="10" cy="50" rx="4.5" ry="4.5" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="11" rx="3.5" fill="'+c+'"/>'+
+      '<ellipse cx="10" cy="46" rx="4.5" ry="4.5" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="18" rx="4" fill="'+c+'"/>'+
       '<rect x="18" y="51" width="10" height="19" rx="3" fill="'+c+'"/>'+
       '<rect x="29" y="51" width="10" height="19" rx="3" fill="'+D+'"/>'+
@@ -1592,8 +1592,8 @@ function _dekuBody(dir,sk){
       '<ellipse cx="38" cy="70" rx="5.5" ry="2.5" fill="#1A1A1A"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="15" rx="3.5" fill="'+c+'"/>'+
-      '<ellipse cx="10" cy="50" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="11" rx="3.5" fill="'+c+'"/>'+
+      '<ellipse cx="10" cy="46" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="17" rx="4" fill="'+c+'"/>'+
       '<rect x="16" y="46" width="24" height="5" rx="2" fill="'+acc+'"/>'+
       '<rect x="17" y="51" width="10" height="19" rx="3" fill="'+c+'"/>'+
@@ -1642,8 +1642,8 @@ function _conanBody(dir,sk){
       '<ellipse cx="37" cy="70" rx="5" ry="2.5" fill="#1A1A28"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="12" rx="3.5" fill="'+jacket+'"/>'+
-      '<ellipse cx="10" cy="47" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="8" rx="3.5" fill="'+jacket+'"/>'+
+      '<ellipse cx="10" cy="43" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="14" rx="4" fill="'+jacket+'"/>'+
       '<rect x="18" y="47" width="10" height="13" rx="3" fill="'+shorts+'"/>'+
       '<rect x="29" y="47" width="10" height="13" rx="3" fill="'+D+'"/>'+
@@ -1690,8 +1690,8 @@ function _shinchanBody(dir,sk){
       '<ellipse cx="37" cy="70" rx="5.5" ry="2.5" fill="'+shoe+'"/>';
   }
   if(dir==='left'){
-    return '<rect x="12" y="35" width="7" height="12" rx="3.5" fill="'+shirt+'"/>'+
-      '<ellipse cx="10" cy="47" rx="4" ry="4" fill="'+sk+'"/>'+
+    return '<rect x="12" y="35" width="7" height="8" rx="3.5" fill="'+shirt+'"/>'+
+      '<ellipse cx="10" cy="43" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="14" rx="4" fill="'+shirt+'"/>'+
       '<rect x="17" y="47" width="11" height="11" rx="3" fill="'+shorts+'"/>'+
       '<rect x="29" y="47" width="11" height="11" rx="3" fill="'+D+'"/>'+
@@ -1733,8 +1733,8 @@ function _ichigoBody(dir,sk){
   if(dir==='left'){
     return '<rect x="8" y="16" width="3" height="44" rx="1.2" fill="'+bl+'"/>'+
       '<rect x="6" y="13" width="7" height="4.5" rx="1" fill="'+gu+'"/>'+
-      '<rect x="12" y="35" width="7" height="16" rx="3.5" fill="'+c+'"/>'+
-      '<ellipse cx="10" cy="51" rx="4" ry="4" fill="'+sk+'"/>'+
+      '<rect x="12" y="35" width="7" height="12" rx="3.5" fill="'+c+'"/>'+
+      '<ellipse cx="10" cy="47" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="18" rx="4" fill="'+c+'"/>'+
       '<rect x="18" y="51" width="10" height="19" rx="3" fill="'+c+'"/>'+
       '<rect x="29" y="51" width="10" height="19" rx="3" fill="'+D+'"/>'+
@@ -1779,8 +1779,8 @@ function _zoroBody(dir,sk){
     return '<rect x="6"  y="24" width="2.5" height="38" rx=".8" fill="'+bl+'"/>'+
       '<rect x="10" y="24" width="2.5" height="38" rx=".8" fill="'+bl+'"/>'+
       '<rect x="5"  y="21" width="5"   height="3.5" rx=".8" fill="'+gu+'"/>'+
-      '<rect x="12" y="35" width="7" height="14" rx="3.5" fill="'+shirt+'"/>'+
-      '<ellipse cx="10" cy="49" rx="4" ry="4" fill="'+sk+'"/>'+
+      '<rect x="12" y="35" width="7" height="10" rx="3.5" fill="'+shirt+'"/>'+
+      '<ellipse cx="10" cy="45" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="16" rx="4" fill="'+shirt+'"/>'+
       '<rect x="16" y="44" width="24" height="5" rx="2" fill="'+belt+'"/>'+
       '<rect x="18" y="49" width="10" height="21" rx="3" fill="'+c+'"/>'+
@@ -1827,8 +1827,8 @@ function _asunaBody(dir,sk){
   if(dir==='left'){
     return '<rect x="7" y="24" width="2" height="38" rx=".8" fill="'+rapier+'"/>'+
       '<rect x="5.5" y="21" width="5" height="3.5" rx=".8" fill="'+gu2+'"/>'+
-      '<rect x="12" y="35" width="7" height="14" rx="3.5" fill="'+white+'"/>'+
-      '<ellipse cx="10" cy="49" rx="4" ry="4" fill="'+sk+'"/>'+
+      '<rect x="12" y="35" width="7" height="10" rx="3.5" fill="'+white+'"/>'+
+      '<ellipse cx="10" cy="45" rx="4" ry="4" fill="'+sk+'"/>'+
       '<rect x="18" y="33" width="22" height="16" rx="4" fill="'+white+'"/>'+
       '<rect x="18" y="33" width="4"  height="16" rx="2" fill="'+top+'"/>'+
       '<path d="M14,49 L40,49 L38,70 L16,70 Z" fill="'+white+'"/>'+
