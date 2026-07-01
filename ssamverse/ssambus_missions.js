@@ -266,7 +266,7 @@ const __MS_DEMO_IMG = (()=>{
 })();
 
 /* 데모 구글 설문지 URL - Chrome 확장 미연결로 직접 생성 불가, 아래 URL을 실제 폼 주소로 교체 */
-const __MS_DEMO_FORM_URL = '';
+const __MS_DEMO_FORM_URL = 'https://forms.gle/VTwB8SzrN7YH212e9';
 
 /* 데모 이미지 퀴즈 공통 객체 */
 const __MS_DEMO_IQ = {
@@ -447,6 +447,7 @@ function __msGetClient(){
 }
 
 async function __msLoadMissions(mapId){
+  if(__msRoomId === 'demo') return (DEMO_MISSIONS[mapId] || []).map(m => Object.assign({}, m));
   const client = __msGetClient();
   if(client){
     try{
@@ -461,7 +462,6 @@ async function __msLoadMissions(mapId){
       console.warn('[쌤버스] 미션 로드 실패', e);
     }
   }
-  if(__msRoomId === 'demo') return (DEMO_MISSIONS[mapId] || []).map(m => Object.assign({}, m));
   return [];
 }
 
