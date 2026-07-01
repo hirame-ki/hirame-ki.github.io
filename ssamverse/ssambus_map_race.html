@@ -481,8 +481,8 @@ async function loadRaceMissions(){
       if(quizRows.length) __raceMissions=quizRows; else __raceMissions=RACE_DEMO_MISSIONS;
       var obsEntry=r.data.find(function(m){return m.type==='obstacle_config';});
       if(obsEntry&&obsEntry.quiz){
-        var newEnabled=(obsEntry.quiz.enabled!==false);
-        if(newEnabled!==OBSTACLE_ENABLED){OBSTACLE_ENABLED=newEnabled;buildGrid();drawAll();}
+        OBSTACLE_ENABLED=(obsEntry.quiz.enabled!==false);
+        buildGrid();drawAll();
       }
     } else {__raceMissions=RACE_DEMO_MISSIONS;}
   }catch(e){__raceMissions=RACE_DEMO_MISSIONS;}
@@ -569,15 +569,19 @@ if(!TEACHER_VIEW){
 /* ============================================================
    초기화
    ============================================================ */
-buildGrid();drawAll();renderPlayer();
-try{placePlayer();}catch(e){console.warn('[race] placePlayer:',e);}
 try{
   initRealtime('race');
   if(typeof __rtMyState==='function'){var _oMS=__rtMyState;window.__rtMyState=function(){var st=_oMS();st.stage=window.__raceStage||0;return st;};}
   if(typeof renderRemotePlayers==='function'){var _oRRP=renderRemotePlayers;window.renderRemotePlayers=function(ps){_oRRP(ps);updateRaceRanking(ps);};}
 }catch(e){console.warn('[race] realtime:',e);}
-try{loadMapOverlays('race',ctx,TS);}catch(e){console.warn('[race] overlays:',e);}
-loadRaceMissions();updateRaceRanking(null);window.addEventListener('resize',updateCamera);
+(async function(){
+  await loadRaceMissions();
+  buildGrid();drawAll();renderPlayer();
+  try{placePlayer();}catch(e){console.warn('[race] placePlayer:',e);}
+  try{loadMapOverlays('race',ctx,TS);}catch(e){console.warn('[race] overlays:',e);}
+  updateRaceRanking(null);
+})();
+window.addEventListener('resize',updateCamera);
 </script>
 <div id="creator-credit" style="position:fixed;bottom:56px;right:170px;z-index:9999;font-family:'Noto Sans KR',sans-serif;opacity:.5;transition:opacity .2s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.5'"><a href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;font-size:11px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.4);padding:3px 8px;border-radius:6px;backdrop-filter:blur(4px)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>황성재 · @hirame.ki</a></div>
 </body>
