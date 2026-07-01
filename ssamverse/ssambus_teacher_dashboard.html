@@ -1082,6 +1082,7 @@ const TYPE_LABEL = {
 /* ===================== 상태 ===================== */
 let currentMap = MAPS[0].id;
 let missionsCache = {};   // mapId -> [missions]
+let __raceObstacleEnabled = true;  // room_settings에서 로드됨
 let editingId = null;     // 수정 중인 미션 id (null이면 새로 추가)
 let editingMapId = null;
 let editingZoneId = null;
@@ -1870,6 +1871,12 @@ async function loadMissions(mapId){
       .order('order', { ascending: true });
     if(error) throw error;
     missionsCache[mapId] = data || [];
+    if(mapId === 'race'){
+      const rs = await client.from('room_settings').select('race_obstacle_enabled').eq('room_id', ROOM_ID).maybeSingle();
+      if(!rs.error && rs.data && rs.data.race_obstacle_enabled !== undefined){
+        __raceObstacleEnabled = rs.data.race_obstacle_enabled !== false;
+      }
+    }
   }catch(e){
     console.error(e);
     missionsCache[mapId] = [];
@@ -1885,8 +1892,7 @@ function renderZones(mapId){
 
   /* 경주 트랙 전용: 장애물 설정 섹션 */
   if(mapId === 'race'){
-    const obsEntry = missions.find(m => m.type === 'obstacle_config');
-    const obsEnabled = obsEntry && obsEntry.quiz ? obsEntry.quiz.enabled !== false : true;
+    const obsEnabled = __raceObstacleEnabled;
     const obsEl = document.createElement('div');
     obsEl.className = 'zone';
     obsEl.style.cssText = 'margin-bottom:10px;border:1px solid rgba(231,76,60,.35);';
@@ -1985,17 +1991,12 @@ async function saveObstacleConfig(){
   const enabled = toggle.checked;
   if(!client || !ROOM_ID){ showToast('수업 코드가 없습니다.'); return; }
   try{
-    await ensureAuth();
-    const {data:existing} = await client.from('missions').select('id')
-      .eq('room_id', ROOM_ID).eq('map_id','race').eq('type','obstacle_config').maybeSingle();
-    if(existing && existing.id){
-      await client.from('missions').update({ quiz:{enabled}, teacher_id:currentUserId }).eq('id', existing.id);
-    } else {
-      await client.from('missions').insert({
-        room_id:ROOM_ID, map_id:'race', zone_id:'system', type:'obstacle_config',
-        title:'장애물 설정', order:999, quiz:{enabled}, teacher_id:currentUserId
-      });
-    }
+    const { error } = await client.from('room_settings').upsert(
+      { room_id: ROOM_ID, race_obstacle_enabled: enabled },
+      { onConflict: 'room_id', ignoreDuplicates: false }
+    );
+    if(error) throw error;
+    __raceObstacleEnabled = enabled;
     await loadMissions('race');
     renderZones('race');
     showToast(enabled ? '장애물이 활성화되었습니다.' : '장애물이 비활성화되었습니다.');

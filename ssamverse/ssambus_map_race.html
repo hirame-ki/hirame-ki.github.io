@@ -479,12 +479,11 @@ async function loadRaceMissions(){
     if(!r.error&&r.data&&r.data.length){
       var quizRows=r.data.filter(function(m){return m.type!=='obstacle_config';});
       if(quizRows.length) __raceMissions=quizRows; else __raceMissions=RACE_DEMO_MISSIONS;
-      var obsEntry=r.data.find(function(m){return m.type==='obstacle_config';});
-      if(obsEntry&&obsEntry.quiz){
-        OBSTACLE_ENABLED=(obsEntry.quiz.enabled!==false);
-        buildGrid();drawAll();
-      }
     } else {__raceMissions=RACE_DEMO_MISSIONS;}
+    var rs=await __rtClient.from('room_settings').select('race_obstacle_enabled').eq('room_id',roomId).maybeSingle();
+    if(!rs.error&&rs.data&&rs.data.race_obstacle_enabled!==undefined){
+      OBSTACLE_ENABLED=(rs.data.race_obstacle_enabled!==false);
+    }
   }catch(e){__raceMissions=RACE_DEMO_MISSIONS;}
 }
 function showGateQuiz(gateIdx){
