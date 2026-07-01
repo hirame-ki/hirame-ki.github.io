@@ -1991,8 +1991,9 @@ async function saveObstacleConfig(){
   const enabled = toggle.checked;
   if(!client || !ROOM_ID){ showToast('수업 코드가 없습니다.'); return; }
   try{
+    await ensureAuth();
     const { error } = await client.from('room_settings').upsert(
-      { room_id: ROOM_ID, race_obstacle_enabled: enabled },
+      { room_id: ROOM_ID, race_obstacle_enabled: enabled, teacher_id: currentUserId },
       { onConflict: 'room_id', ignoreDuplicates: false }
     );
     if(error) throw error;
