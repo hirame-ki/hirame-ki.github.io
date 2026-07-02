@@ -15,7 +15,14 @@ exam-system/
 - [x] Supabase SQL Editor에서 테이블 생성 SQL 실행 완료
 - [x] GitHub Pages 배포 완료 (https://hirame-ki.github.io/exam)
 - [x] 학교코드 설정 완료 (SEONGPO2025)
-- [ ] 설정 탭에서 고사 날짜 / 학급 / 학생 등록
+- [x] 학급/학생 등록 완료 (엑셀 일괄 업로드, 1~3학년 각 2개 반)
+- [ ] 고사 날짜 등록 확인
+- [ ] 동료 교사 공유 및 결시 입력 실사용 테스트
+- [ ] **Supabase SQL Editor에서 아래 컬럼 추가 SQL 실행 필요** (결시 사유 기능 추가로 인한 스키마 변경)
+  ```sql
+  ALTER TABLE absences ADD COLUMN IF NOT EXISTS reason TEXT DEFAULT '미인정';
+  ALTER TABLE absences ADD COLUMN IF NOT EXISTS reason_detail TEXT;
+  ```
 
 ---
 
@@ -54,6 +61,8 @@ CREATE TABLE IF NOT EXISTS absences (
   period INT NOT NULL,
   class_id INT REFERENCES classes(id),
   student_id INT REFERENCES students(id) ON DELETE CASCADE,
+  reason TEXT DEFAULT '미인정',
+  reason_detail TEXT,
   recorded_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(school_code, exam_date, period, student_id)
 );
@@ -103,18 +112,21 @@ ALTER PUBLICATION supabase_realtime ADD TABLE absences;
 
 ### 결시 입력 (담임 교사)
 1. **결시 입력 탭** → 날짜 / 교시 / 학급 선택 → 불러오기
-2. 결시 학생 클릭 → 자동 저장
+2. 이름 클릭 → 결시로 전환 (자동 저장), 결시로 표시되면 **사유(인정/미인정/질병/기타)** 선택 → 기타 선택 시 사유 직접 입력 가능
 
 ### 고사본부 확인
-1. **고사본부 탭** → 날짜 선택
-2. 교시별 탭으로 학년 / 학급별 결시 현황 실시간 확인
+1. **고사본부 탭** → 날짜 선택, 필요 시 학년 / 반 필터
+2. 상단 요약에서 선택한 교시 기준 **총 재적 인원 / 총 응시 인원 / 총 결시 인원 / 사유별 결시 인원** 한눈에 확인
+3. 교시별 탭으로 학년 / 학급별 결시자 명단(사유 포함) 실시간 확인
 
 ### 자리배치표
 1. **자리배치표 탭** → 날짜 / 교시 / 학급 선택
 2. 모드 선택:
    - **별실**: 응시자 직접 선택 → 배치표 생성
    - **각자교실**: 미응시자 설정 (또는 전원 응시) → 배치표 생성
-3. 인쇄 버튼
+3. **교실 행/열 수**를 직접 입력, **앞번호 시작 방향**(창가부터/복도부터) 선택 후 배치표 생성
+   - 좌석 수(행×열)보다 배치할 학생이 많으면 오류 안내 후 행/열을 늘려야 함
+4. 인쇄 버튼 → 자리배치표(제목/범례/좌석배치/요약)만 인쇄됨
 
 ---
 
@@ -133,7 +145,6 @@ ALTER PUBLICATION supabase_realtime ADD TABLE absences;
 
 ## 5. 향후 개선 아이디어
 
-- [ ] 결시 사유 입력 필드 추가
 - [ ] 날짜별 전체 결시 현황 Excel 다운로드
 - [ ] 고사 날짜를 DB에 저장 (현재는 localStorage)
 - [ ] 교시별 과목명 설정
