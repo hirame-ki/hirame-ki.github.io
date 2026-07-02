@@ -294,7 +294,7 @@
       </div>
       <div class="card no-print">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-          <div style="font-size:13px;color:var(--text2)">입력 내용은 실시간으로 고사본부에 반영됩니다</div>
+          <div style="font-size:13px;color:var(--text2)">입력 내용은 실시간으로 고사본부에 반영됩니다<br><span style="color:var(--warning);font-weight:600">⚠️ 입력이 끝나면 로그아웃해주세요 (다른 선생님 접속을 위해 자리를 비워주세요)</span></div>
           <button class="btn btn-primary" id="completeInputBtn" onclick="completeInput()">💾 저장하기</button>
         </div>
       </div>
@@ -453,6 +453,20 @@ const ABSENCE_REASONS=['인정','미인정','질병','기타'];
 const REASON_COLORS={'인정':'#2d6be4','미인정':'#d63384','질병':'#f4a228','기타':'#4a5060'};
 function reasonColor(r){return REASON_COLORS[r]||REASON_COLORS['미인정'];}
 
+let idleTimer=null;
+const IDLE_LIMIT_MS=5*60*1000;
+function resetIdleTimer(){
+  clearTimeout(idleTimer);
+  if(!sb)return;
+  idleTimer=setTimeout(()=>{
+    showToast('⏱️ 5분간 활동이 없어 자동 로그아웃되었습니다');
+    doLogout();
+  },IDLE_LIMIT_MS);
+}
+['mousemove','keydown','click','touchstart','scroll'].forEach(evt=>{
+  document.addEventListener(evt,resetIdleTimer,{passive:true});
+});
+
 window.onload=()=>{
   const code=localStorage.getItem('schoolCode');
   if(code){
@@ -475,12 +489,15 @@ async function doLogin(silent=false){
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('appScreen').style.display='block';
     document.getElementById('headerSchool').textContent='학교코드: '+code;
-    await loadAllData();setupRealtime();
+    await loadAllData();setupRealtime();resetIdleTimer();
     if(!silent)showToast('✅ '+code+' 로 접속됨');
   }catch(e){errEl.textContent='연결 실패: '+e.message;errEl.style.display='block';sb=null;}
 }
 
 function doLogout(){
+  clearTimeout(idleTimer);
+  if(sb&&hqChannel)sb.removeChannel(hqChannel);
+  hqChannel=null;
   localStorage.removeItem('schoolCode');sb=null;SCHOOL_CODE='';
   document.getElementById('appScreen').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
