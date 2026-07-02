@@ -307,6 +307,7 @@
       <div class="section-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0">🏢 고사본부 실시간 현황</div>
       <div style="display:flex;align-items:center;gap:10px">
         <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--success)"><span class="pulse"></span>실시간</span>
+        <button class="btn btn-outline btn-sm no-print" onclick="downloadHQExcel()">📥 엑셀 다운로드</button>
         <button class="btn btn-outline btn-sm no-print" onclick="loadHQData()">🔄 새로고침</button>
       </div>
     </div>
@@ -964,6 +965,126 @@ function renderHQContent(period){
       </div>
     </div>`;
   }).join('');
+}
+
+async function downloadHQExcel(){
+  const date=document.getElementById('hqDate').value;
+  if(!date){showToast('날짜를 선택하세요');return;}
+  if(!hqAllAbsences.length){showToast('이 날짜에 입력된 결시 데이터가 없습니다');return;}
+
+  const periods=[...new Set(hqAllAbsences.map(a=>a.period))].sort((a,b)=>a-b);
+  const grades=[...new Set(classes.map(c=>c.grade))].sort((a,b)=>a-b);
+  const totalEnrolled=classes.reduce((s,c)=>s+(students[c.id]||[]).length,0);
+  const gradeEnrolled={};grades.forEach(g=>{gradeEnrolled[g]=classes.filter(c=>c.grade===g).reduce((s,c)=>s+(students[c.id]||[]).length,0);});
+
+  const reasonCountsOf=list=>{const c={인정:0,미인정:0,질병:0,기타:0};list.forEach(a=>{const r=a.reason||'미인정';c[r]=(c[r]||0)+1;});return c;};
+
+  const overallRows=periods.map(p=>{
+    const pAbs=hqAllAbsences.filter(a=>a.period===p);
+    const absent=pAbs.length;
+    return{period:p,enrolled:totalEnrolled,present:totalEnrolled-absent,absent,...reasonCountsOf(pAbs)};
+  });
+  const gradeRows=[];
+  grades.forEach(g=>periods.forEach(p=>{
+    const pAbs=hqAllAbsences.filter(a=>a.period===p&&a.classes.grade===g);
+    const absent=pAbs.length,enrolled=gradeEnrolled[g]||0;
+    gradeRows.push({grade:g,period:p,enrolled,present:enrolled-absent,absent,...reasonCountsOf(pAbs)});
+  }));
+  const detailRows=hqAllAbsences.slice()
+    .sort((a,b)=>a.period-b.period||a.classes.grade-b.classes.grade||a.classes.class_num-b.classes.class_num||a.students.number-b.students.number)
+    .map(a=>({period:a.period,grade:a.classes.grade,classNum:a.classes.class_num,number:a.students.number,name:a.students.name,reason:a.reason||'미인정',detail:a.reason_detail||''}));
+
+  const FONT='맑은 고딕';
+  const border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+  const wb=new ExcelJS.Workbook();
+  const ws=wb.addWorksheet('결시현황');
+  ws.columns=Array.from({length:9},()=>({width:12}));
+
+  let r=1;
+  ws.mergeCells(r,1,r,9);
+  const titleCell=ws.getCell(r,1);
+  titleCell.value=`고사본부 결시 현황 — ${fmtDate(date)}`;
+  titleCell.font={name:FONT,size:16,bold:true,color:{argb:'FFFFFFFF'}};
+  titleCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2D6BE4'}};
+  titleCell.alignment={horizontal:'center',vertical:'middle'};
+  ws.getRow(r).height=28;
+  r+=2;
+
+  function sectionHeader(text){
+    ws.mergeCells(r,1,r,9);
+    const c=ws.getCell(r,1);
+    c.value=text;
+    c.font={name:FONT,size:12,bold:true,color:{argb:'FF2D6BE4'}};
+    c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFEEF2FD'}};
+    c.alignment={vertical:'middle',indent:1};
+    ws.getRow(r).height=22;
+    r++;
+  }
+  function tableHeader(cols){
+    for(let i=0;i<9;i++){
+      const c=ws.getCell(r,i+1);
+      c.value=cols[i]||'';
+      c.font={name:FONT,size:10.5,bold:true,color:{argb:'FFFFFFFF'}};
+      c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF4A5060'}};
+      c.alignment={horizontal:'center',vertical:'middle'};
+      c.border=border;
+    }
+    ws.getRow(r).height=20;
+    r++;
+  }
+  function dataRow(vals,i,opts={}){
+    for(let ci=0;ci<9;ci++){
+      const c=ws.getCell(r,ci+1);
+      c.value=vals[ci]===undefined?'':vals[ci];
+      c.font={name:FONT,size:10.5};
+      c.alignment={horizontal:opts.leftCols&&opts.leftCols.includes(ci)?'left':'center',vertical:'middle'};
+      c.border=border;
+      c.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?'FFF8F9FB':'FFFFFFFF'}};
+    }
+    if(opts.greenCol!==undefined)ws.getCell(r,opts.greenCol+1).font={name:FONT,size:10.5,bold:true,color:{argb:'FF2A9D5C'}};
+    if(opts.redCol!==undefined)ws.getCell(r,opts.redCol+1).font={name:FONT,size:10.5,bold:true,color:{argb:'FFE63946'}};
+    if(opts.reasonCol!==undefined&&opts.reason){
+      const hex=reasonColor(opts.reason).replace('#','').toUpperCase();
+      ws.getCell(r,opts.reasonCol+1).font={name:FONT,size:10.5,bold:true,color:{argb:'FF'+hex}};
+    }
+    ws.getRow(r).height=19;
+    r++;
+  }
+
+  sectionHeader('① 전체 재적·결시 현황');
+  tableHeader(['교시','재적','응시','결시','인정','미인정','질병','기타','']);
+  overallRows.forEach((row,i)=>dataRow(
+    [row.period+'교시',row.enrolled,row.present,row.absent,row.인정,row.미인정,row.질병,row.기타,''],
+    i,{greenCol:2,redCol:3}));
+  r++;
+
+  sectionHeader('② 학년별 재적·결시 현황');
+  tableHeader(['학년','교시','재적','응시','결시','인정','미인정','질병','기타']);
+  gradeRows.forEach((row,i)=>dataRow(
+    [row.grade+'학년',row.period+'교시',row.enrolled,row.present,row.absent,row.인정,row.미인정,row.질병,row.기타],
+    i,{greenCol:3,redCol:4}));
+  r++;
+
+  sectionHeader('③ 결시 학생 명단');
+  tableHeader(['교시','학년','반','번호','이름','사유','상세사유','','']);
+  if(detailRows.length){
+    detailRows.forEach((row,i)=>dataRow(
+      [row.period+'교시',row.grade+'학년',row.classNum+'반',row.number+'번',row.name,row.reason,row.detail,'',''],
+      i,{leftCols:[6],reasonCol:5,reason:row.reason}));
+  }else{
+    ws.mergeCells(r,1,r,9);
+    const c=ws.getCell(r,1);
+    c.value='결시 학생이 없습니다';
+    c.font={name:FONT,size:10.5,italic:true,color:{argb:'FF8A909E'}};
+    c.alignment={horizontal:'center',vertical:'middle'};
+    r++;
+  }
+
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`고사본부_결시현황_${date}.xlsx`;document.body.appendChild(a);a.click();a.remove();
+  URL.revokeObjectURL(url);
 }
 
 function gradeStudents(grade){
