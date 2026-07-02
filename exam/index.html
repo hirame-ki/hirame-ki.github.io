@@ -277,7 +277,7 @@
       <div class="card no-print">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
           <div style="font-size:13px;color:var(--text2)">입력 내용은 실시간으로 고사본부에 반영됩니다</div>
-          <button class="btn btn-success" onclick="showToast('✅ 입력 완료! 고사본부에서 확인 가능합니다')">✅ 입력 완료</button>
+          <button class="btn btn-success" onclick="completeInput()">✅ 입력 완료</button>
         </div>
       </div>
     </div>
@@ -306,7 +306,7 @@
 
   <!-- 자리배치표 -->
   <div class="page" id="page-seat">
-    <div class="section-title">🪑 자리배치표 생성</div>
+    <div class="section-title no-print">🪑 자리배치표 생성</div>
     <div class="card no-print">
       <div class="form-row" style="justify-content:space-between;margin-bottom:0">
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
@@ -741,6 +741,46 @@ async function updateAbsenceDetail(sid,date,period,detail){
     .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('student_id',sid);
 }
 function updateAbsentCount(){document.getElementById('absentCountBadge').textContent=currentAbsents.size+'명 결시';}
+
+function completeInput(){
+  showToast('✅ 입력 완료! 고사본부에서 확인 가능합니다');
+  if(confirm('응시현황표를 출력하시겠습니까?'))openAttendanceReport();
+}
+function openAttendanceReport(){
+  const classId=parseInt(document.getElementById('inputClass').value);
+  const date=document.getElementById('inputDate').value;
+  const period=parseInt(document.getElementById('inputPeriod').value);
+  const classInfo=classes.find(c=>c.id===classId);
+  const cn=classInfo?`${classInfo.grade}-${classInfo.class_num}반`:'';
+  const total=(students[classId]||[]).length;
+  const absent=currentAbsents.size;
+  const present=total-absent;
+  const win=window.open('','_blank','width=480,height=560');
+  if(!win){showToast('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요');return;}
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>응시현황표</title>
+<style>
+  body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;padding:28px;}
+  h2{text-align:center;margin-bottom:6px;}
+  .meta{text-align:center;color:#555;font-size:13px;margin-bottom:24px;}
+  table{width:100%;border-collapse:collapse;text-align:center;}
+  th,td{border:1px solid #333;padding:14px;font-size:16px;}
+  th{background:#f0f2f5;}
+  .print-btn{display:block;margin:24px auto 0;padding:10px 20px;font-size:14px;cursor:pointer;}
+  @media print{.print-btn{display:none;}}
+</style></head>
+<body>
+  <h2>응시현황표</h2>
+  <div class="meta">${fmtDate(date)} · ${period}교시 · ${cn}</div>
+  <table>
+    <tr><th>재적</th><th>응시</th><th>결시</th><th>결번</th></tr>
+    <tr><td>${total}</td><td>${present}</td><td>${absent}</td><td></td></tr>
+  </table>
+  <button class="print-btn" onclick="window.print()">🖨️ 인쇄</button>
+</body></html>`);
+  win.document.close();
+  win.focus();
+  win.onload=()=>win.print();
+}
 
 function populateHQFilters(){
   const gradeSel=document.getElementById('hqGrade');
