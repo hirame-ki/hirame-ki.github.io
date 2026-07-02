@@ -173,42 +173,6 @@
 
   <!-- 설정 -->
   <div class="page active" id="page-setup">
-    <div class="card" id="sqlGuideCard">
-      <div class="card-title">🗄️ 최초 1회: Supabase 테이블 생성 SQL</div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Supabase → SQL Editor에서 실행하세요.</p>
-      <div class="code-block" id="sqlBlock">-- 학급
-CREATE TABLE IF NOT EXISTS classes (
-  id SERIAL PRIMARY KEY,
-  school_code TEXT NOT NULL,
-  grade INT NOT NULL,
-  class_num INT NOT NULL,
-  UNIQUE(school_code, grade, class_num)
-);
-
--- 학생
-CREATE TABLE IF NOT EXISTS students (
-  id SERIAL PRIMARY KEY,
-  class_id INT REFERENCES classes(id) ON DELETE CASCADE,
-  number INT NOT NULL,
-  name TEXT NOT NULL
-);
-
--- 결시
-CREATE TABLE IF NOT EXISTS absences (
-  id SERIAL PRIMARY KEY,
-  school_code TEXT NOT NULL,
-  exam_date DATE NOT NULL,
-  period INT NOT NULL,
-  class_id INT REFERENCES classes(id),
-  student_id INT REFERENCES students(id) ON DELETE CASCADE,
-  recorded_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(school_code, exam_date, period, student_id)
-);
-
--- Realtime 활성화
-ALTER PUBLICATION supabase_realtime ADD TABLE absences;</div>
-      <button class="btn btn-outline btn-sm no-print" style="margin-top:10px" onclick="copySQL()">📋 SQL 복사</button>
-    </div>
 
     <div class="section-title">📅 고사 날짜</div>
     <div class="card">
@@ -738,9 +702,6 @@ function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${m}월 ${
 function showToast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2800);
-}
-function copySQL(){
-  navigator.clipboard.writeText(document.getElementById('sqlBlock').textContent).then(()=>showToast('✅ SQL 복사됨'));
 }
 </script>
 </body>

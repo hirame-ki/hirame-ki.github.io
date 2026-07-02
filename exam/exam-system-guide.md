@@ -13,7 +13,9 @@ exam-system/
 
 - [x] `index.html`의 `SUPABASE_URL`, `SUPABASE_ANON_KEY`에 실제 프로젝트 값 입력 완료
 - [x] Supabase SQL Editor에서 테이블 생성 SQL 실행 완료
-- [ ] GitHub Pages 배포
+- [x] GitHub Pages 배포 완료 (https://hirame-ki.github.io/exam)
+- [x] 학교코드 설정 완료 (SEONGPO2025)
+- [ ] 설정 탭에서 고사 날짜 / 학급 / 학생 등록
 
 ---
 
@@ -76,7 +78,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE absences;
 3. Save → 배포 URL 확인
 
 ```
-배포 URL 예시: https://hirame-ki.github.io/exam-system/
+배포 URL 예시: https://hirame-ki.github.io/exam/
 ```
 
 ---
@@ -92,7 +94,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE absences;
 ### 동료 교사 공유
 ```
 공유 내용:
-- URL: https://hirame-ki.github.io/exam-system/
+- URL: https://hirame-ki.github.io/exam/
 - 학교코드: SEONGPO2025  ← 관리자가 정한 코드
 ```
 > Supabase URL/Anon Key는 코드에 이미 내장되어 있어 동료 교사는 입력할 필요 없음.
