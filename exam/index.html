@@ -134,6 +134,8 @@
   .seat.non-exam{background:var(--surface2);border-color:var(--border);color:var(--text3);}
   .seat.empty-seat{background:transparent;border:1.5px dashed #ddd;}
   .seat.seat-none{background:transparent;border:none;}
+  .seat.absent-seat{background:transparent;border:1.5px dashed var(--danger);color:var(--danger);}
+  .seat.absent-seat .seat-name{font-weight:600;}
   .seat-editor{display:flex;flex-direction:column;gap:4px;margin-top:8px;}
   .seat-editor-row{display:flex;gap:4px;}
   .seat-edit-cell{flex:1;min-width:26px;height:26px;border-radius:5px;background:var(--primary-light);border:1.5px solid var(--primary);cursor:pointer;transition:all 0.15s;}
@@ -204,6 +206,7 @@
     </div>
     <div class="header-right">
       <div class="db-status"><div class="status-dot connected"></div><span>연결됨</span></div>
+      <div class="db-status" id="onlineCountBox" title="현재 우리 학교 접속자 수"><span>👥</span><span id="onlineCount">-</span>명 접속</div>
       <button class="logout-btn" onclick="doLogout()">로그아웃</button>
     </div>
   </div>
@@ -338,7 +341,7 @@
       </div>
       <div class="mode-btn" onclick="selectSeatMode('own',this)">
         <div class="mode-icon">🏫</div><div class="mode-label">각자교실 시험</div>
-        <div class="mode-desc">학급별 응시자 선택<br>선택순 배치</div>
+        <div class="mode-desc">학급별 응시자 선택<br>번호순 고정 배치, 결시자는 빈자리</div>
       </div>
     </div>
 
@@ -521,7 +524,14 @@ function setupRealtime(){
   if(hqChannel)sb.removeChannel(hqChannel);
   hqChannel=sb.channel('abs-'+SCHOOL_CODE)
     .on('postgres_changes',{event:'*',schema:'public',table:'absences',filter:'school_code=eq.'+SCHOOL_CODE},()=>loadHQData())
-    .subscribe();
+    .on('presence',{event:'sync'},()=>{
+      const el=document.getElementById('onlineCount');
+      if(!el)return;
+      el.textContent=Object.keys(hqChannel.presenceState()).length;
+    })
+    .subscribe(async(status)=>{
+      if(status==='SUBSCRIBED')await hqChannel.track({online_at:Date.now()});
+    });
 }
 
 async function loadAllData(){
@@ -534,20 +544,23 @@ async function loadAllData(){
     const{data:sts}=await sb.from('students').select('*').in('class_id',classes.map(c=>c.id)).order('number');
     (sts||[]).forEach(s=>{if(!students[s.class_id])students[s.class_id]=[];students[s.class_id].push(s);});
   }
-  examDates=JSON.parse(localStorage.getItem('examDates_'+SCHOOL_CODE)||'[]');
+  const{data:edRows}=await sb.from('exam_dates').select('exam_date').eq('school_code',SCHOOL_CODE).order('exam_date');
+  examDates=(edRows||[]).map(r=>r.exam_date);
   renderClassList();renderStudentSummary();renderStudentClassSelect();populateDateSelects();
 }
 
-function addExamDate(){
+async function addExamDate(){
   const d=document.getElementById('newExamDate').value;
   if(!d||examDates.includes(d))return;
+  const{error}=await sb.from('exam_dates').upsert({school_code:SCHOOL_CODE,exam_date:d},{onConflict:'school_code,exam_date'});
+  if(error){showToast('오류: '+error.message);return;}
   examDates.push(d);examDates.sort();
-  localStorage.setItem('examDates_'+SCHOOL_CODE,JSON.stringify(examDates));
   renderExamDates();populateDateSelects();
 }
-function removeExamDate(d){
+async function removeExamDate(d){
+  const{error}=await sb.from('exam_dates').delete().eq('school_code',SCHOOL_CODE).eq('exam_date',d);
+  if(error){showToast('오류: '+error.message);return;}
   examDates=examDates.filter(x=>x!==d);
-  localStorage.setItem('examDates_'+SCHOOL_CODE,JSON.stringify(examDates));
   renderExamDates();populateDateSelects();
 }
 function renderExamDates(){
@@ -1202,7 +1215,7 @@ async function generateSeatChart(){
   if(!selectedExamineeIds.size){showToast('응시 학생을 선택하세요');return;}
   const examinees=gradeStudents(grade).filter(s=>selectedExamineeIds.has(s.id));
   setSeatResultTitle(subj,room);
-  if(!drawSeats(examinees,[],rows,cols,startSide,[],true,disabledSeats.sep))return;
+  if(!drawSeats(examinees,[],rows,cols,startSide,true,disabledSeats.sep))return;
   document.getElementById('seatSummaryText').textContent=`응시자 ${examinees.length}명 · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
   document.getElementById('seatResult').style.display='block';
 }
@@ -1220,14 +1233,19 @@ async function generateOwnSeatChart(){
     .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('class_id',classId);
   const abIds=new Set((abData||[]).map(a=>a.student_id));
   if(!ownExamineeIds.size){showToast('응시 학생을 선택하세요');return;}
-  const examinees=sts.filter(s=>!abIds.has(s.id)&&ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
-  const nonExam=sts.filter(s=>!abIds.has(s.id)&&!ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
-  const absentees=sts.filter(s=>abIds.has(s.id)).sort((a,b)=>a.number-b.number);
+  const roster=sts.slice().sort((a,b)=>a.number-b.number).map(s=>({
+    ...s,
+    isAbsent:abIds.has(s.id),
+    isExaminee:!abIds.has(s.id)&&ownExamineeIds.has(s.id)
+  }));
   const cn=classInfo?`${classInfo.grade}-${classInfo.class_num}반`:'';
   setSeatResultTitle(subj,cn);
-  if(!drawSeats(examinees,nonExam,rows,cols,startSide,absentees,false,disabledSeats.own))return;
+  if(!drawSeatsRoster(roster,rows,cols,startSide,disabledSeats.own))return;
+  const examCount=roster.filter(s=>s.isExaminee).length;
+  const absentCount=roster.filter(s=>s.isAbsent).length;
+  const nonExamCount=roster.length-examCount-absentCount;
   document.getElementById('seatSummaryText').textContent=
-    `응시 ${examinees.length}명 · 미응시 ${nonExam.length}명 · 결시 ${absentees.length}명 · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
+    `응시 ${examCount}명 · 미응시 ${nonExamCount}명 · 결시 ${absentCount}명(빈자리 처리) · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터, 번호순 고정)`;
   document.getElementById('seatResult').style.display='block';
 }
 
@@ -1235,8 +1253,7 @@ function setSeatResultTitle(subject,roomLabel){
   document.getElementById('seatResultTitle').innerHTML=
     `<div class="seat-subject">${subject}</div><div class="seat-room">${roomLabel}</div>`;
 }
-function drawSeats(examinees,nonExam,rows,cols,startSide,absentees=[],showClassInfo=false,disabledSet=new Set()){
-  const all=[...examinees,...nonExam];
+function seatFillSlots(rows,cols,startSide,disabledSet){
   const colOrder=[];
   for(let i=0;i<cols;i++)colOrder.push(startSide==='corridor'?(cols-1-i):i);
   const slots=[];
@@ -1245,6 +1262,11 @@ function drawSeats(examinees,nonExam,rows,cols,startSide,absentees=[],showClassI
       if(!disabledSet.has(seatKey(row,col)))slots.push({row,col});
     }
   });
+  return slots;
+}
+function drawSeats(examinees,nonExam,rows,cols,startSide,showClassInfo=false,disabledSet=new Set()){
+  const all=[...examinees,...nonExam];
+  const slots=seatFillSlots(rows,cols,startSide,disabledSet);
   if(all.length>slots.length){
     showToast(`⚠️ 사용 가능한 좌석(${slots.length}석)보다 배치할 학생 수(${all.length}명)가 많습니다. 좌석 편집 또는 행/열 수를 확인하세요`);
     return false;
@@ -1265,12 +1287,30 @@ function drawSeats(examinees,nonExam,rows,cols,startSide,absentees=[],showClassI
       const numLabel=showClassInfo?`${s.grade}-${s.class_num} ${s.number}번`:`${s.number}번`;
       return`<div class="seat ${cls}"><div class="seat-num">${numLabel}</div><div class="seat-name">${s.name}</div></div>`;
     }).join('')}</div>`).join('');
-  if(absentees.length){
-    layout.innerHTML+=`<div style="margin-top:14px;padding:12px;background:var(--danger-light);border-radius:8px;border:1px solid var(--danger)">
-      <div style="font-size:12px;font-weight:700;color:var(--danger);margin-bottom:8px">결시자 (미배치)</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px">${absentees.map(s=>`<span class="absent-chip">${s.number}번 ${s.name}</span>`).join('')}</div>
-    </div>`;
+  return true;
+}
+function drawSeatsRoster(roster,rows,cols,startSide,disabledSet=new Set()){
+  const slots=seatFillSlots(rows,cols,startSide,disabledSet);
+  if(roster.length>slots.length){
+    showToast(`⚠️ 사용 가능한 좌석(${slots.length}석)보다 학급 인원(${roster.length}명)이 많습니다. 좌석 편집 또는 행/열 수를 확인하세요`);
+    return false;
   }
+  const grid=Array.from({length:rows},()=>Array(cols).fill(null));
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    if(disabledSet.has(seatKey(r,c)))grid[r][c]=undefined;
+  }
+  slots.forEach((slot,idx)=>{
+    if(idx<roster.length)grid[slot.row][slot.col]=roster[idx];
+  });
+  const layout=document.getElementById('seatLayout');
+  layout.innerHTML=grid.map(row=>
+    `<div class="seat-row">${row.map(s=>{
+      if(s===undefined)return`<div class="seat seat-none"></div>`;
+      if(!s)return`<div class="seat empty-seat"></div>`;
+      if(s.isAbsent)return`<div class="seat absent-seat"><div class="seat-num">${s.number}번</div><div class="seat-name">결시</div></div>`;
+      const cls=s.isExaminee?'present':'non-exam';
+      return`<div class="seat ${cls}"><div class="seat-num">${s.number}번</div><div class="seat-name">${s.name}</div></div>`;
+    }).join('')}</div>`).join('');
   return true;
 }
 
