@@ -126,13 +126,13 @@
   .mode-label{font-size:14px;font-weight:700;}
   .mode-desc{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4;}
 
-  .seat{width:66px;height:50px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;border:1.5px solid transparent;flex-shrink:0;}
+  .seat{flex:1;min-width:44px;height:56px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;border:1.5px solid transparent;box-sizing:border-box;}
   .seat.present{background:var(--primary-light);border-color:var(--primary);color:var(--primary);font-weight:700;}
   .seat.non-exam{background:var(--surface2);border-color:var(--border);color:var(--text3);}
   .seat.empty-seat{background:transparent;border:1.5px dashed #ddd;}
   .seat .seat-num{font-size:10px;opacity:0.7;}
   .seat .seat-name{font-size:12px;font-weight:700;}
-  .board-area{background:#e0e0e0;border-radius:6px;padding:7px 24px;text-align:center;font-size:12px;color:#666;margin-bottom:16px;display:inline-block;}
+  .board-area{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px;text-align:center;font-size:13px;font-weight:700;color:var(--text2);letter-spacing:4px;margin-bottom:20px;width:100%;box-sizing:border-box;}
   .seat-print-header{margin-bottom:16px;}
   .seat-print-header .seat-subject{font-size:20px;font-weight:800;color:var(--text);}
   .seat-print-header .seat-room{font-size:13px;color:var(--text2);margin-top:2px;}
@@ -141,8 +141,10 @@
     .seat-print-header .seat-subject{font-size:26px;}
     .seat-print-header .seat-room{font-size:15px;}
   }
-  .window-label{writing-mode:vertical-rl;font-size:11px;color:var(--text3);padding:4px 0;}
-  .layout-wrap{display:flex;gap:10px;align-items:flex-start;overflow-x:auto;}
+  .window-label{writing-mode:vertical-rl;font-size:11px;color:var(--text3);padding:4px 0;flex-shrink:0;}
+  .layout-wrap{display:flex;gap:10px;align-items:flex-start;}
+  .seat-grid-col{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .seat-row{display:flex;gap:6px;width:100%;}
 
   .section-title{font-size:16px;font-weight:800;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--primary);display:flex;align-items:center;gap:8px;}
   .grade-title{font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;padding:4px 10px;background:var(--primary-light);border-radius:6px;display:inline-block;}
@@ -150,7 +152,9 @@
   .divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
   .empty-state{text-align:center;padding:40px 20px;color:var(--text3);}
   .empty-state .icon{font-size:36px;margin-bottom:10px;}
-  .toast{position:fixed;bottom:24px;right:24px;background:#1a1d23;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;max-width:300px;}
+  .toast{position:fixed;bottom:70px;right:24px;background:#1a1d23;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;max-width:300px;}
+  .credit-chip{position:fixed;bottom:16px;right:16px;background:rgba(26,29,35,0.85);color:#fff;padding:7px 14px;border-radius:20px;font-size:11.5px;font-weight:600;text-decoration:none;z-index:9998;box-shadow:0 2px 8px rgba(0,0,0,0.2);transition:background 0.15s;}
+  .credit-chip:hover{background:rgba(45,107,228,0.9);}
   .toast.show{opacity:1;transform:translateY(0);}
   @media print{.header,.tabs,.no-print{display:none!important;}body{background:#fff;}.card{box-shadow:none;}}
 </style>
@@ -189,10 +193,10 @@
     </div>
   </div>
   <div class="tabs">
-    <div class="tab active" onclick="showPage('setup')" id="tab-setup">⚙️ 설정</div>
     <div class="tab" onclick="showPage('input')" id="tab-input">✏️ 결시 입력</div>
     <div class="tab" onclick="showPage('hq')" id="tab-hq">🏢 고사본부</div>
     <div class="tab" onclick="showPage('seat')" id="tab-seat">🪑 자리배치표</div>
+    <div class="tab active" onclick="showPage('setup')" id="tab-setup" style="margin-left:auto">⚙️ 설정(고사 담당자용)</div>
   </div>
   <div class="main">
 
@@ -374,14 +378,14 @@
           <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ 인쇄</button>
         </div>
         <div class="seat-print-header" id="seatResultTitle"></div>
-        <div style="margin-bottom:14px"><div class="board-area">📋 칠판 / 앞</div></div>
+        <div class="board-area">칠판</div>
         <div style="display:flex;gap:14px;margin-bottom:12px;font-size:12px;color:var(--text3)">
           <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:3px;display:inline-block"></span>응시</span>
           <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:3px;display:inline-block"></span>미응시</span>
         </div>
         <div class="layout-wrap">
           <div class="window-label">← 창가 (왼쪽)</div>
-          <div style="display:flex;flex-direction:column;gap:6px" id="seatLayout"></div>
+          <div class="seat-grid-col" id="seatLayout"></div>
           <div class="window-label">복도 (오른쪽) →</div>
         </div>
         <div id="seatSummaryText" style="margin-top:14px;font-size:13px;color:var(--text2)"></div>
@@ -391,6 +395,7 @@
 
   </div><!-- /main -->
 </div><!-- /appScreen -->
+<a class="credit-chip no-print" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener">제작 : 황성재 @hirame.ki 문의는 클릭</a>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -998,7 +1003,7 @@ function drawSeats(examinees,nonExam,rows,cols,startSide,absentees=[]){
   });
   const layout=document.getElementById('seatLayout');
   layout.innerHTML=grid.map(row=>
-    `<div style="display:flex;gap:6px">${row.map(s=>{
+    `<div class="seat-row">${row.map(s=>{
       if(!s)return`<div class="seat empty-seat"></div>`;
       const cls=s.isExaminee?'present':'non-exam';
       return`<div class="seat ${cls}"><div class="seat-num">${s.number}번</div><div class="seat-name">${s.name}</div></div>`;
