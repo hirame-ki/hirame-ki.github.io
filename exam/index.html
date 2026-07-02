@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>정기고사 관리 시스템</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <style>
   :root {
     --bg:#f0f2f5;--surface:#fff;--surface2:#f8f9fb;--border:#e2e6ea;
@@ -474,28 +474,66 @@ async function saveStudents(){
   document.getElementById('studentSaveStatus').innerHTML=`<span class="badge badge-success">✅ ${parsed.length}명 저장됨</span>`;
   document.getElementById('studentListInput').value='';await loadAllData();
 }
-function downloadExcelTemplate(){
-  const rows=[
-    {학년:1,반:1,번호:1,이름:'홍길동'},
-    {학년:1,반:1,번호:2,이름:'김철수'},
-    {학년:1,반:2,번호:1,이름:'이영희'}
+async function downloadExcelTemplate(){
+  const wb=new ExcelJS.Workbook();
+  const ws=wb.addWorksheet('학생명단');
+  ws.columns=[
+    {header:'학년',key:'grade',width:10},
+    {header:'반',key:'class_num',width:10},
+    {header:'번호',key:'number',width:10},
+    {header:'이름',key:'name',width:16}
   ];
-  const ws=XLSX.utils.json_to_sheet(rows);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'학생명단');
-  XLSX.writeFile(wb,'학생명단_양식.xlsx');
+  const headerRow=ws.getRow(1);
+  headerRow.height=24;
+  headerRow.eachCell(cell=>{
+    cell.font={bold:true,color:{argb:'FFFFFFFF'},size:12};
+    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2D6BE4'}};
+    cell.alignment={horizontal:'center',vertical:'middle'};
+    cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+  });
+  const sample=[
+    {grade:1,class_num:1,number:1,name:'홍길동'},
+    {grade:1,class_num:1,number:2,name:'김철수'},
+    {grade:1,class_num:2,number:1,name:'이영희'}
+  ];
+  sample.forEach((s,i)=>{
+    const row=ws.addRow(s);
+    row.eachCell(cell=>{
+      cell.alignment={horizontal:'center',vertical:'middle'};
+      cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+      cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?'FFEEF2FD':'FFFFFFFF'}};
+    });
+  });
+  ws.views=[{state:'frozen',ySplit:1}];
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='학생명단_양식.xlsx';document.body.appendChild(a);a.click();a.remove();
+  URL.revokeObjectURL(url);
 }
 async function handleExcelUpload(e){
   const file=e.target.files[0];if(!file)return;
   const statusEl=document.getElementById('excelUploadStatus');
   statusEl.textContent='읽는 중...';
   const buf=await file.arrayBuffer();
-  const wb=XLSX.read(buf,{type:'array'});
-  const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-  const parsed=rows.map(r=>({
-    grade:parseInt(r['학년']),class_num:parseInt(r['반']),
-    number:parseInt(r['번호']),name:String(r['이름']||'').trim()
-  })).filter(r=>r.grade&&r.class_num&&r.number&&r.name);
+  const wb=new ExcelJS.Workbook();
+  await wb.xlsx.load(buf);
+  const ws=wb.worksheets[0];
+  const colIdx={};
+  if(ws)ws.getRow(1).eachCell((cell,colNumber)=>{
+    const v=String(cell.value||'').trim();if(v)colIdx[v]=colNumber;
+  });
+  const parsed=[];
+  if(ws&&['학년','반','번호','이름'].every(k=>colIdx[k])){
+    ws.eachRow((row,rowNumber)=>{
+      if(rowNumber===1)return;
+      const grade=parseInt(row.getCell(colIdx['학년']).value);
+      const class_num=parseInt(row.getCell(colIdx['반']).value);
+      const number=parseInt(row.getCell(colIdx['번호']).value);
+      const name=String(row.getCell(colIdx['이름']).value||'').trim();
+      if(grade&&class_num&&number&&name)parsed.push({grade,class_num,number,name});
+    });
+  }
   if(!parsed.length){statusEl.innerHTML='<span class="badge badge-danger">형식 오류: 학년/반/번호/이름 열을 확인하세요</span>';e.target.value='';return;}
 
   const classKey=r=>r.grade+'-'+r.class_num;
