@@ -158,7 +158,13 @@
   .credit-chip{position:fixed;bottom:16px;right:16px;background:rgba(26,29,35,0.85);color:#fff;padding:7px 14px;border-radius:20px;font-size:11.5px;font-weight:600;text-decoration:none;z-index:9998;box-shadow:0 2px 8px rgba(0,0,0,0.2);transition:background 0.15s;}
   .credit-chip:hover{background:rgba(45,107,228,0.9);}
   .toast.show{opacity:1;transform:translateY(0);}
-  @media print{.header,.tabs,.no-print{display:none!important;}body{background:#fff;}.card{box-shadow:none;}}
+  @media print{
+    @page{size:landscape;margin:10mm;}
+    .header,.tabs,.no-print{display:none!important;}
+    body{background:#fff;}
+    .card{box-shadow:none;}
+    .main{max-width:none;width:100%;padding:0;margin:0;}
+  }
 </style>
 </head>
 <body>
@@ -793,7 +799,6 @@ function completeInput(){
 function openAttendanceReport(){
   const classId=parseInt(document.getElementById('inputClass').value);
   const date=document.getElementById('inputDate').value;
-  const period=parseInt(document.getElementById('inputPeriod').value);
   const classInfo=classes.find(c=>c.id===classId);
   const cn=classInfo?`${classInfo.grade}-${classInfo.class_num}반`:'';
   const sts=students[classId]||[];
@@ -808,11 +813,11 @@ function openAttendanceReport(){
 <style>
   @page{size:A4;margin:14mm;}
   *{box-sizing:border-box;}
-  body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;margin:0;padding:0;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;height:269mm;display:flex;flex-direction:column;}
   h1{text-align:center;font-size:60px;font-weight:800;margin:0 0 10px;}
   .meta{text-align:center;color:#555;font-size:16px;margin-bottom:22px;}
-  table{width:100%;border-collapse:collapse;table-layout:fixed;page-break-inside:avoid;}
-  tr{page-break-inside:avoid;}
+  table{width:100%;flex:1;border-collapse:collapse;table-layout:fixed;}
   th,td{border:1.5px solid #333;padding:14px 16px;vertical-align:middle;}
   th{background:#f0f2f5;width:32%;text-align:center;font-weight:800;font-size:48px;}
   td{text-align:center;font-weight:800;font-size:48px;}
@@ -826,7 +831,7 @@ function openAttendanceReport(){
   <table>
     <tr><th>재적</th><td>${total}</td></tr>
     <tr><th>응시</th><td>${present}</td></tr>
-    <tr><th>결시 (${period}교시)</th><td class="${absent?'absent-cell':''}">${absent?absentList.join(', '):'0'}</td></tr>
+    <tr><th>결시</th><td class="${absent?'absent-cell':''}">${absent?absentList.join(', '):'0'}</td></tr>
     <tr><th>결번</th><td></td></tr>
   </table>
   <button class="print-btn" onclick="window.print()">🖨️ 인쇄</button>
