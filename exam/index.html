@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>정기고사 관리 시스템</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root {
     --bg:#f0f2f5;--surface:#fff;--surface2:#f8f9fb;--border:#e2e6ea;
@@ -184,6 +185,15 @@
     </div>
 
     <div class="section-title">👥 학급 및 학생 관리</div>
+    <div class="card">
+      <div class="card-title">📥 엑셀로 일괄 등록</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">양식 다운로드 후 학년/반/번호/이름을 채워서 업로드하면 학급 생성과 학생 등록이 한 번에 처리됩니다. (같은 학급에 이미 등록된 학생은 업로드 내용으로 교체됩니다)</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <button class="btn btn-outline btn-sm" onclick="downloadExcelTemplate()">📄 양식 다운로드</button>
+        <input type="file" id="excelUploadInput" accept=".xlsx,.xls" onchange="handleExcelUpload(event)" style="font-size:13px" />
+      </div>
+      <div id="excelUploadStatus" style="margin-top:8px;font-size:13px"></div>
+    </div>
     <div class="grid-2">
       <div class="card">
         <div class="card-title">🏫 학급 추가</div>
@@ -463,6 +473,57 @@ async function saveStudents(){
   if(error){showToast('오류: '+error.message);return;}
   document.getElementById('studentSaveStatus').innerHTML=`<span class="badge badge-success">✅ ${parsed.length}명 저장됨</span>`;
   document.getElementById('studentListInput').value='';await loadAllData();
+}
+function downloadExcelTemplate(){
+  const rows=[
+    {학년:1,반:1,번호:1,이름:'홍길동'},
+    {학년:1,반:1,번호:2,이름:'김철수'},
+    {학년:1,반:2,번호:1,이름:'이영희'}
+  ];
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'학생명단');
+  XLSX.writeFile(wb,'학생명단_양식.xlsx');
+}
+async function handleExcelUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  const statusEl=document.getElementById('excelUploadStatus');
+  statusEl.textContent='읽는 중...';
+  const buf=await file.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array'});
+  const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+  const parsed=rows.map(r=>({
+    grade:parseInt(r['학년']),class_num:parseInt(r['반']),
+    number:parseInt(r['번호']),name:String(r['이름']||'').trim()
+  })).filter(r=>r.grade&&r.class_num&&r.number&&r.name);
+  if(!parsed.length){statusEl.innerHTML='<span class="badge badge-danger">형식 오류: 학년/반/번호/이름 열을 확인하세요</span>';e.target.value='';return;}
+
+  const classKey=r=>r.grade+'-'+r.class_num;
+  const uniqClasses=[...new Map(parsed.map(r=>[classKey(r),{school_code:SCHOOL_CODE,grade:r.grade,class_num:r.class_num}])).values()];
+  const{error:clsErr}=await sb.from('classes').upsert(uniqClasses,{onConflict:'school_code,grade,class_num'});
+  if(clsErr){statusEl.innerHTML='<span class="badge badge-danger">학급 저장 오류: '+clsErr.message+'</span>';e.target.value='';return;}
+
+  const{data:allCls}=await sb.from('classes').select('*').eq('school_code',SCHOOL_CODE);
+  const clsMap={};(allCls||[]).forEach(c=>clsMap[c.grade+'-'+c.class_num]=c.id);
+
+  const byClass={};
+  parsed.forEach(r=>{
+    const cid=clsMap[classKey(r)];if(!cid)return;
+    if(!byClass[cid])byClass[cid]=[];
+    byClass[cid].push({class_id:cid,number:r.number,name:r.name});
+  });
+
+  for(const cid of Object.keys(byClass)){
+    await sb.from('students').delete().eq('class_id',cid);
+  }
+  const studentRows=Object.values(byClass).flat();
+  const{error:stErr}=await sb.from('students').insert(studentRows);
+  if(stErr){statusEl.innerHTML='<span class="badge badge-danger">학생 저장 오류: '+stErr.message+'</span>';e.target.value='';return;}
+
+  statusEl.innerHTML=`<span class="badge badge-success">✅ 학급 ${Object.keys(byClass).length}개 / 학생 ${studentRows.length}명 업로드 완료</span>`;
+  showToast('✅ 엑셀 업로드 완료');
+  e.target.value='';
+  await loadAllData();
 }
 function renderClassList(){
   const el=document.getElementById('classList');
