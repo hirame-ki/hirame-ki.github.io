@@ -311,63 +311,81 @@
   <!-- 자리배치표 -->
   <div class="page" id="page-seat">
     <div class="section-title no-print">🪑 자리배치표 생성</div>
-    <div class="card no-print">
+
+    <!-- STEP 1: 시험 방식 선택 -->
+    <div class="card-title no-print" style="font-size:13px;color:var(--text3)">1️⃣ 시험 방식 선택</div>
+    <div class="no-print" style="display:flex;gap:10px;margin-bottom:16px">
+      <div class="mode-btn active" onclick="selectSeatMode('separate',this)">
+        <div class="mode-icon">🏛️</div><div class="mode-label">별실 시험</div>
+        <div class="mode-desc">학년 전체에서 응시자 선택<br>번호순 배치</div>
+      </div>
+      <div class="mode-btn" onclick="selectSeatMode('own',this)">
+        <div class="mode-icon">🏫</div><div class="mode-label">각자교실 시험</div>
+        <div class="mode-desc">학급별 응시자 선택<br>선택순 배치</div>
+      </div>
+    </div>
+
+    <!-- STEP 2: 별실 -->
+    <div id="separateStep2" class="card no-print">
+      <div class="card-title" style="font-size:13px;color:var(--text3)">2️⃣ 시험 정보</div>
       <div class="form-row" style="justify-content:space-between;margin-bottom:0">
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
-          <div class="form-group"><label>날짜</label><select id="seatDate"></select></div>
-          <div class="form-group"><label>교시</label><input type="number" id="seatPeriod" min="1" max="9" value="1" style="width:70px" /></div>
-          <div class="form-group"><label>학급</label><select id="seatClass" onchange="onSeatClassChange()"></select></div>
+          <div class="form-group"><label>날짜</label><select id="sepDate"></select></div>
+          <div class="form-group"><label>교시</label><input type="number" id="sepPeriod" min="1" max="9" value="1" style="width:70px" /></div>
+          <div class="form-group"><label>학년</label><select id="sepGrade" onchange="loadSeatGradeGrid()"></select></div>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
-          <div class="form-group"><label>교실 행 수</label><input type="number" id="seatRows" value="6" min="1" max="12" style="width:70px" /></div>
-          <div class="form-group"><label>교실 열 수</label><input type="number" id="seatCols" value="5" min="1" max="10" style="width:70px" /></div>
+          <div class="form-group"><label>교실 행 수</label><input type="number" id="sepRows" value="6" min="1" max="12" style="width:70px" /></div>
+          <div class="form-group"><label>교실 열 수</label><input type="number" id="sepCols" value="5" min="1" max="10" style="width:70px" /></div>
           <div class="form-group"><label>앞번호 시작</label>
-            <select id="seatStartSide"><option value="window">창가부터</option><option value="corridor">복도부터</option></select>
+            <select id="sepStartSide"><option value="window">창가부터</option><option value="corridor">복도부터</option></select>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="no-print" style="display:flex;gap:10px;margin-bottom:16px">
-      <div class="mode-btn active" onclick="selectSeatMode('separate',this)">
-        <div class="mode-icon">🏛️</div><div class="mode-label">별실 시험</div>
-        <div class="mode-desc">응시자만 배치<br>앞번호 → 왼쪽창가</div>
-      </div>
-      <div class="mode-btn" onclick="selectSeatMode('own',this)">
-        <div class="mode-icon">🏫</div><div class="mode-label">각자교실 시험</div>
-        <div class="mode-desc">응시자 먼저, 미응시 뒤로<br>결시자 자동 제외</div>
+    <!-- STEP 2: 각자교실 -->
+    <div id="ownStep2" class="card no-print" style="display:none">
+      <div class="card-title" style="font-size:13px;color:var(--text3)">2️⃣ 시험 정보</div>
+      <div class="form-row" style="justify-content:space-between;margin-bottom:0">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div class="form-group"><label>날짜</label><select id="ownDate"></select></div>
+          <div class="form-group"><label>교시</label><input type="number" id="ownPeriod" min="1" max="9" value="1" style="width:70px" /></div>
+          <div class="form-group"><label>학급</label><select id="ownClass" onchange="loadOwnStudentGrid()"></select></div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div class="form-group"><label>교실 행 수</label><input type="number" id="ownRows" value="6" min="1" max="12" style="width:70px" /></div>
+          <div class="form-group"><label>교실 열 수</label><input type="number" id="ownCols" value="5" min="1" max="10" style="width:70px" /></div>
+          <div class="form-group"><label>앞번호 시작</label>
+            <select id="ownStartSide"><option value="window">창가부터</option><option value="corridor">복도부터</option></select>
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- STEP 3: 별실 응시자 설정 -->
     <div id="separateSettings" class="card no-print">
-      <div class="card-title">🏛️ 별실 응시자 설정</div>
+      <div class="card-title" style="font-size:13px;color:var(--text3)">3️⃣ 별실 응시자 설정</div>
       <div class="form-row">
         <div class="form-group" style="flex:1"><label>과목명</label><input type="text" id="subjectName" placeholder="예: 경제" /></div>
         <div class="form-group" style="flex:1"><label>별실 호실</label><input type="text" id="roomName" placeholder="예: 3-1교실" /></div>
       </div>
-      <div class="form-group" style="margin-bottom:10px"><label style="color:var(--primary);font-weight:800;font-size:13px">🖊️ 응시 학생 선택 (클릭으로 선택)</label></div>
+      <div class="form-group" style="margin-bottom:10px"><label style="color:var(--primary);font-weight:800;font-size:13px">🖊️ 응시 학생 선택 (클릭으로 선택, 번호순 배치)</label></div>
       <div class="student-grid" id="seatStudentGrid"></div>
       <div class="form-row" style="margin-top:14px;margin-bottom:0">
         <button class="btn btn-primary" onclick="generateSeatChart()">🪑 배치표 생성</button>
       </div>
     </div>
 
+    <!-- STEP 3: 각자교실 -->
     <div id="ownSettings" class="card no-print" style="display:none">
-      <div class="card-title">🏫 각자교실 설정</div>
+      <div class="card-title" style="font-size:13px;color:var(--text3)">3️⃣ 각자교실 응시자 설정</div>
       <div class="form-row">
         <div class="form-group" style="flex:1"><label>과목명</label><input type="text" id="ownSubjectName" placeholder="예: 수학 I" /></div>
-        <div class="form-group"><label>응시자 설정</label>
-          <select id="ownCriterion" onchange="onOwnCriterionChange()">
-            <option value="notAbsent">결시자만 제외 (전원 응시)</option>
-            <option value="select">응시자 직접 선택</option>
-          </select>
-        </div>
       </div>
-      <div id="ownSelectArea" style="display:none;margin-bottom:12px">
-        <div class="form-group" style="margin-bottom:8px"><label style="color:var(--primary);font-weight:800;font-size:13px">🖊️ 응시 학생 선택 (클릭으로 선택)</label></div>
-        <div class="student-grid" id="ownStudentGrid"></div>
-      </div>
-      <div class="form-row" style="margin-bottom:0">
+      <div class="form-group" style="margin-bottom:10px"><label style="color:var(--primary);font-weight:800;font-size:13px">🖊️ 응시 학생 선택 (클릭으로 선택)</label></div>
+      <div class="student-grid" id="ownStudentGrid"></div>
+      <div class="form-row" style="margin-top:14px;margin-bottom:0">
         <button class="btn btn-primary" onclick="generateOwnSeatChart()">🪑 배치표 생성</button>
       </div>
     </div>
@@ -497,7 +515,7 @@ function renderExamDates(){
 }
 function populateDateSelects(){
   renderExamDates();
-  ['inputDate','hqDate','seatDate'].forEach(id=>{
+  ['inputDate','hqDate','sepDate','ownDate'].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;
     el.innerHTML=examDates.length?examDates.map(d=>`<option value="${d}">${fmtDate(d)}</option>`).join(''):'<option value="">날짜 없음</option>';
   });
@@ -897,84 +915,83 @@ function renderHQContent(period){
   }).join('');
 }
 
+function gradeStudents(grade){
+  return classes.filter(c=>c.grade===grade).sort((a,b)=>a.class_num-b.class_num)
+    .flatMap(c=>(students[c.id]||[]).map(s=>({...s,grade:c.grade,class_num:c.class_num})));
+}
 function populateSeatSelects(){
   populateDateSelects();
-  document.getElementById('seatClass').innerHTML=
+  const grades=[...new Set(classes.map(c=>c.grade))].sort((a,b)=>a-b);
+  document.getElementById('sepGrade').innerHTML=
+    grades.map(g=>`<option value="${g}">${g}학년</option>`).join('')||'<option>학급 없음</option>';
+  document.getElementById('ownClass').innerHTML=
     classes.map(c=>`<option value="${c.id}">${c.grade}-${c.class_num}반</option>`).join('')||'<option>학급 없음</option>';
-  onSeatClassChange();
-}
-function onSeatClassChange(){
-  if(currentSeatMode==='separate')loadSeatStudentGrid();else loadOwnStudentGrid();
+  loadSeatGradeGrid();loadOwnStudentGrid();
   document.getElementById('seatResult').style.display='none';
 }
 function selectSeatMode(mode,el){
   currentSeatMode=mode;
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');
+  document.getElementById('separateStep2').style.display=mode==='separate'?'block':'none';
   document.getElementById('separateSettings').style.display=mode==='separate'?'block':'none';
+  document.getElementById('ownStep2').style.display=mode==='own'?'block':'none';
   document.getElementById('ownSettings').style.display=mode==='own'?'block':'none';
   document.getElementById('seatResult').style.display='none';
-  if(mode==='separate')loadSeatStudentGrid();else loadOwnStudentGrid();
 }
-function loadSeatStudentGrid(){
-  const classId=parseInt(document.getElementById('seatClass').value);
-  const sts=students[classId]||[];selectedExamineeIds=new Set();
-  document.getElementById('seatStudentGrid').innerHTML=sts.map(s=>
+function loadSeatGradeGrid(){
+  const grade=parseInt(document.getElementById('sepGrade').value);
+  const gStudents=gradeStudents(grade);selectedExamineeIds=new Set();
+  document.getElementById('seatStudentGrid').innerHTML=gStudents.length?gStudents.map(s=>
     `<div class="student-item" id="seat-si-${s.id}" onclick="toggleExaminee(${s.id},this)">
-      <span class="student-num">${s.number}</span><span>${s.name}</span></div>`).join('');
+      <span class="student-num">${s.grade}-${s.class_num} ${s.number}번</span><span>${s.name}</span></div>`).join('')
+    :'<p style="font-size:13px;color:var(--text3)">등록된 학생이 없습니다</p>';
 }
 function toggleExaminee(id,el){
   if(selectedExamineeIds.has(id)){selectedExamineeIds.delete(id);el.classList.remove('selected');}
   else{selectedExamineeIds.add(id);el.classList.add('selected');}
 }
 function loadOwnStudentGrid(){
-  const classId=parseInt(document.getElementById('seatClass').value);
+  const classId=parseInt(document.getElementById('ownClass').value);
   const sts=students[classId]||[];ownExamineeIds=new Set();
-  document.getElementById('ownStudentGrid').innerHTML=sts.map(s=>
+  document.getElementById('ownStudentGrid').innerHTML=sts.length?sts.map(s=>
     `<div class="student-item" id="own-si-${s.id}" onclick="toggleOwnExaminee(${s.id},this)">
-      <span class="student-num">${s.number}</span><span>${s.name}</span></div>`).join('');
+      <span class="student-num">${s.number}</span><span>${s.name}</span></div>`).join('')
+    :'<p style="font-size:13px;color:var(--text3)">등록된 학생이 없습니다</p>';
 }
 function toggleOwnExaminee(id,el){
   if(ownExamineeIds.has(id)){ownExamineeIds.delete(id);el.classList.remove('selected');}
   else{ownExamineeIds.add(id);el.classList.add('selected');}
 }
-function onOwnCriterionChange(){
-  document.getElementById('ownSelectArea').style.display=document.getElementById('ownCriterion').value==='select'?'block':'none';
-}
 async function generateSeatChart(){
-  const classId=parseInt(document.getElementById('seatClass').value);
-  const rows=parseInt(document.getElementById('seatRows').value)||6;
-  const cols=parseInt(document.getElementById('seatCols').value)||5;
-  const startSide=document.getElementById('seatStartSide').value;
+  const grade=parseInt(document.getElementById('sepGrade').value);
+  const rows=parseInt(document.getElementById('sepRows').value)||6;
+  const cols=parseInt(document.getElementById('sepCols').value)||5;
+  const startSide=document.getElementById('sepStartSide').value;
   const subj=document.getElementById('subjectName').value||'선택과목';
   const room=document.getElementById('roomName').value||'별실';
   if(!selectedExamineeIds.size){showToast('응시 학생을 선택하세요');return;}
-  const examinees=(students[classId]||[]).filter(s=>selectedExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
+  const examinees=gradeStudents(grade).filter(s=>selectedExamineeIds.has(s.id));
   setSeatResultTitle(subj,room);
   if(!drawSeats(examinees,[],rows,cols,startSide))return;
   document.getElementById('seatSummaryText').textContent=`응시자 ${examinees.length}명 · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
   document.getElementById('seatResult').style.display='block';
 }
 async function generateOwnSeatChart(){
-  const classId=parseInt(document.getElementById('seatClass').value);
-  const rows=parseInt(document.getElementById('seatRows').value)||6;
-  const cols=parseInt(document.getElementById('seatCols').value)||5;
-  const startSide=document.getElementById('seatStartSide').value;
-  const date=document.getElementById('seatDate').value;
-  const period=parseInt(document.getElementById('seatPeriod').value);
+  const classId=parseInt(document.getElementById('ownClass').value);
+  const rows=parseInt(document.getElementById('ownRows').value)||6;
+  const cols=parseInt(document.getElementById('ownCols').value)||5;
+  const startSide=document.getElementById('ownStartSide').value;
+  const date=document.getElementById('ownDate').value;
+  const period=parseInt(document.getElementById('ownPeriod').value);
   const subj=document.getElementById('ownSubjectName').value||'시험';
-  const criterion=document.getElementById('ownCriterion').value;
   const sts=students[classId]||[];
   const classInfo=classes.find(c=>c.id===classId);
   const{data:abData}=await sb.from('absences').select('student_id')
     .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('class_id',classId);
   const abIds=new Set((abData||[]).map(a=>a.student_id));
-  if(criterion==='select'&&!ownExamineeIds.size){showToast('응시 학생을 선택하세요');return;}
-  const examinees=criterion==='select'
-    ?sts.filter(s=>!abIds.has(s.id)&&ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number)
-    :sts.filter(s=>!abIds.has(s.id)).sort((a,b)=>a.number-b.number);
-  const nonExam=criterion==='select'
-    ?sts.filter(s=>!abIds.has(s.id)&&!ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number)
-    :[];
+  if(!ownExamineeIds.size){showToast('응시 학생을 선택하세요');return;}
+  const examinees=sts.filter(s=>!abIds.has(s.id)&&ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
+  const nonExam=sts.filter(s=>!abIds.has(s.id)&&!ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
   const absentees=sts.filter(s=>abIds.has(s.id)).sort((a,b)=>a.number-b.number);
   const cn=classInfo?`${classInfo.grade}-${classInfo.class_num}반`:'';
   setSeatResultTitle(subj,cn);
