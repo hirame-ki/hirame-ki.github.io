@@ -98,19 +98,22 @@
   .absence-row.absent{border-color:var(--danger);background:var(--danger-light);}
   .absence-row-head{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;}
   .absence-row-head .student-num{min-width:20px;}
+  .absence-row-head .badge{min-width:56px;justify-content:center;padding:5px 14px;font-size:12px;}
   .absence-reason{display:flex;gap:6px;margin-top:8px;}
   .absence-reason select,.absence-reason input[type=text]{font-size:12px;padding:5px 6px;flex:1;min-width:0;border-radius:6px;}
 
-  .hq-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px;}
-  .hq-stat{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;}
-  .hq-stat-num{font-size:28px;font-weight:800;color:var(--danger);}
-  .hq-stat-label{font-size:12px;color:var(--text3);margin-top:4px;}
+  .hq-summary{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:20px;box-shadow:var(--shadow);}
+  .hq-total-line{font-size:19px;font-weight:800;color:var(--text);padding-bottom:12px;margin-bottom:10px;border-bottom:1px solid var(--border);}
+  .hq-period-line{display:flex;flex-wrap:wrap;align-items:center;gap:16px;font-size:13px;padding:8px 0;color:var(--text2);}
+  .hq-period-line+.hq-period-line{border-top:1px dashed var(--border);}
+  .hq-period-badge{background:var(--primary-light);color:var(--primary);font-weight:800;padding:4px 12px;border-radius:20px;font-size:12px;min-width:50px;text-align:center;}
+  .hq-period-line b{font-size:14.5px;}
   .hq-class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;}
   .hq-class-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
   .hq-class-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .hq-class-name{font-size:14px;font-weight:700;}
   .hq-absent-list{display:flex;flex-wrap:wrap;gap:6px;}
-  .absent-chip{background:var(--danger-light);color:var(--danger);border-radius:6px;padding:3px 8px;font-size:12px;font-weight:600;}
+  .absent-chip{border-radius:6px;padding:3px 8px;font-size:12px;font-weight:600;border:1px solid transparent;}
   .period-tab{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);font-size:13px;font-weight:600;cursor:pointer;color:var(--text2);transition:all 0.15s;}
   .period-tab.active{background:var(--primary);border-color:var(--primary);color:#fff;}
   .pulse{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 1.5s infinite;display:inline-block;}
@@ -249,9 +252,10 @@
     <div class="card">
       <div class="form-row">
         <div class="form-group"><label>고사 날짜</label><select id="inputDate"></select></div>
-        <div class="form-group"><label>교시</label><input type="number" id="inputPeriod" min="1" max="9" value="1" style="width:70px" /></div>
         <div class="form-group"><label>담당 학급</label><select id="inputClass"></select></div>
+        <div class="form-group"><label>교시</label><input type="number" id="inputPeriod" min="1" max="9" value="1" style="width:70px" /></div>
         <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary" onclick="loadStudentsForInput()">📋 불러오기</button></div>
+        <div class="form-group"><label>&nbsp;</label><span style="font-size:12px;font-weight:700;color:var(--warning)">⚠️ 교시별로 결시를 저장하세요</span></div>
       </div>
     </div>
     <div id="inputStudentArea" style="display:none">
@@ -296,10 +300,19 @@
   <div class="page" id="page-seat">
     <div class="section-title">🪑 자리배치표 생성</div>
     <div class="card no-print">
-      <div class="form-row">
-        <div class="form-group"><label>날짜</label><select id="seatDate"></select></div>
-        <div class="form-group"><label>교시</label><input type="number" id="seatPeriod" min="1" max="9" value="1" style="width:70px" /></div>
-        <div class="form-group"><label>학급</label><select id="seatClass" onchange="onSeatClassChange()"></select></div>
+      <div class="form-row" style="justify-content:space-between;margin-bottom:0">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div class="form-group"><label>날짜</label><select id="seatDate"></select></div>
+          <div class="form-group"><label>교시</label><input type="number" id="seatPeriod" min="1" max="9" value="1" style="width:70px" /></div>
+          <div class="form-group"><label>학급</label><select id="seatClass" onchange="onSeatClassChange()"></select></div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div class="form-group"><label>교실 행 수</label><input type="number" id="seatRows" value="6" min="1" max="12" style="width:70px" /></div>
+          <div class="form-group"><label>교실 열 수</label><input type="number" id="seatCols" value="5" min="1" max="10" style="width:70px" /></div>
+          <div class="form-group"><label>앞번호 시작</label>
+            <select id="seatStartSide"><option value="window">창가부터</option><option value="corridor">복도부터</option></select>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -322,13 +335,8 @@
       </div>
       <div class="form-group" style="margin-bottom:10px"><label>응시 학생 선택 (클릭으로 선택)</label></div>
       <div class="student-grid" id="seatStudentGrid"></div>
-      <div class="form-row" style="margin-top:14px">
-        <div class="form-group"><label>교실 행 수</label><input type="number" id="seatRows" value="6" min="1" max="12" style="width:70px" /></div>
-        <div class="form-group"><label>교실 열 수</label><input type="number" id="seatCols" value="5" min="1" max="10" style="width:70px" /></div>
-        <div class="form-group"><label>앞번호 시작</label>
-          <select id="seatStartSide"><option value="window">창가부터</option><option value="corridor">복도부터</option></select>
-        </div>
-        <div class="form-group" style="align-self:flex-end"><button class="btn btn-primary" onclick="generateSeatChart()">🪑 배치표 생성</button></div>
+      <div class="form-row" style="margin-top:14px;margin-bottom:0">
+        <button class="btn btn-primary" onclick="generateSeatChart()">🪑 배치표 생성</button>
       </div>
     </div>
 
@@ -347,13 +355,8 @@
         <div class="form-group" style="margin-bottom:8px"><label>미응시 학생 선택 (클릭 = 미응시)</label></div>
         <div class="student-grid" id="ownStudentGrid"></div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label>교실 행 수</label><input type="number" id="ownSeatRows" value="6" min="1" max="12" style="width:70px" /></div>
-        <div class="form-group"><label>교실 열 수</label><input type="number" id="ownSeatCols" value="5" min="1" max="10" style="width:70px" /></div>
-        <div class="form-group"><label>앞번호 시작</label>
-          <select id="ownStartSide"><option value="window">창가부터</option><option value="corridor">복도부터</option></select>
-        </div>
-        <div class="form-group" style="align-self:flex-end"><button class="btn btn-primary" onclick="generateOwnSeatChart()">🪑 배치표 생성</button></div>
+      <div class="form-row" style="margin-bottom:0">
+        <button class="btn btn-primary" onclick="generateOwnSeatChart()">🪑 배치표 생성</button>
       </div>
     </div>
 
@@ -392,6 +395,8 @@ let currentAbsents=new Set(),currentAbsenceInfo={},currentSeatMode='separate';
 let selectedExamineeIds=new Set(),ownNonExamineeIds=new Set();
 let hqChannel=null,currentHQPeriod=null,hqAllAbsences=[];
 const ABSENCE_REASONS=['인정','미인정','질병','기타'];
+const REASON_COLORS={'인정':'#2d6be4','미인정':'#d63384','질병':'#f4a228','기타':'#6c5ce7'};
+function reasonColor(r){return REASON_COLORS[r]||REASON_COLORS['미인정'];}
 
 window.onload=()=>{
   const code=localStorage.getItem('schoolCode');
@@ -764,7 +769,7 @@ async function loadHQData(){
   if(!periods.length){
     tabsEl.innerHTML='';
     document.getElementById('hqContent').innerHTML='<div class="empty-state"><div class="icon">📋</div><p>이 날짜에 입력된 결시 데이터가 없습니다</p></div>';
-    document.getElementById('hqSummary').innerHTML='';return;
+    renderHQSummary();return;
   }
   if(!currentHQPeriod||!periods.includes(currentHQPeriod))currentHQPeriod=periods[0];
   tabsEl.innerHTML=periods.map(p=>
@@ -777,20 +782,28 @@ function selectHQPeriod(p){
   renderHQSummary();renderHQContent(p);
 }
 function renderHQSummary(){
-  if(!currentHQPeriod){document.getElementById('hqSummary').innerHTML='';return;}
   const scope=hqScopeClasses();
   const scopeIds=new Set(scope.map(c=>c.id));
   const totalEnrolled=scope.reduce((s,c)=>s+(students[c.id]||[]).length,0);
-  const periodAbsences=hqAllAbsences.filter(a=>a.period===currentHQPeriod&&scopeIds.has(a.class_id));
-  const reasonCounts={};ABSENCE_REASONS.forEach(r=>reasonCounts[r]=0);
-  periodAbsences.forEach(a=>{const r=a.reason||'미인정';if(reasonCounts[r]===undefined)reasonCounts[r]=0;reasonCounts[r]++;});
-  const totalAbsent=periodAbsences.length;
-  const totalPresent=totalEnrolled-totalAbsent;
+  const scopedAbsences=hqAllAbsences.filter(a=>scopeIds.has(a.class_id));
+  const periods=[...new Set(scopedAbsences.map(a=>a.period))].sort((a,b)=>a-b);
+
+  const lines=periods.map(p=>{
+    const pAbs=scopedAbsences.filter(a=>a.period===p);
+    const counts={};ABSENCE_REASONS.forEach(r=>counts[r]=0);
+    pAbs.forEach(a=>{const r=a.reason||'미인정';if(counts[r]===undefined)counts[r]=0;counts[r]++;});
+    const absent=pAbs.length,present=totalEnrolled-absent;
+    return`<div class="hq-period-line">
+      <span class="hq-period-badge">${p}교시</span>
+      <span>응시 <b style="color:var(--success)">${present}</b>명</span>
+      <span>결시 <b style="color:var(--danger)">${absent}</b>명</span>
+      ${ABSENCE_REASONS.map(r=>`<span>${r} <b style="color:${reasonColor(r)}">${counts[r]}</b>명</span>`).join('')}
+    </div>`;
+  }).join('');
+
   document.getElementById('hqSummary').innerHTML=`
-    <div class="hq-stat"><div class="hq-stat-num" style="color:var(--text)">${totalEnrolled}</div><div class="hq-stat-label">총 재적 인원</div></div>
-    <div class="hq-stat"><div class="hq-stat-num" style="color:var(--success)">${totalPresent}</div><div class="hq-stat-label">총 응시 인원 (${currentHQPeriod}교시)</div></div>
-    <div class="hq-stat"><div class="hq-stat-num" style="color:var(--danger)">${totalAbsent}</div><div class="hq-stat-label">총 결시 인원 (${currentHQPeriod}교시)</div></div>
-    ${Object.entries(reasonCounts).map(([r,c])=>`<div class="hq-stat"><div class="hq-stat-num" style="color:var(--warning)">${c}</div><div class="hq-stat-label">결시 - ${r}</div></div>`).join('')}`;
+    <div class="hq-total-line">총 재적 인원 <span style="color:var(--text)">${totalEnrolled}</span>명</div>
+    ${lines||'<div style="font-size:13px;color:var(--text3)">이 날짜에 입력된 결시 데이터가 없습니다</div>'}`;
 }
 function renderHQContent(period){
   const grade=document.getElementById('hqGrade').value;
@@ -823,7 +836,7 @@ function renderHQContent(period){
             <div class="hq-class-header"><div class="hq-class-name">${cls.grade}-${cls.classNum}반</div>
             ${sorted.length?`<span class="badge badge-danger">${sorted.length}명</span>`:'<span class="badge badge-success">✓</span>'}</div>
             <div class="hq-absent-list">
-              ${sorted.length?sorted.map(s=>`<span class="absent-chip">${s.number}번 ${s.name} · ${s.reason}${s.reason==='기타'&&s.detail?`(${s.detail})`:''}</span>`).join(''):'<span style="font-size:13px;color:var(--text3)">결시 없음</span>'}
+              ${sorted.length?sorted.map(s=>{const col=reasonColor(s.reason);return`<span class="absent-chip" style="background:${col}1c;color:${col};border-color:${col}66">${s.number}번 ${s.name} · ${s.reason}${s.reason==='기타'&&s.detail?`(${s.detail})`:''}</span>`;}).join(''):'<span style="font-size:13px;color:var(--text3)">결시 없음</span>'}
             </div>
           </div>`;}).join('')}
       </div>
@@ -890,9 +903,9 @@ async function generateSeatChart(){
 }
 async function generateOwnSeatChart(){
   const classId=parseInt(document.getElementById('seatClass').value);
-  const rows=parseInt(document.getElementById('ownSeatRows').value)||6;
-  const cols=parseInt(document.getElementById('ownSeatCols').value)||5;
-  const startSide=document.getElementById('ownStartSide').value;
+  const rows=parseInt(document.getElementById('seatRows').value)||6;
+  const cols=parseInt(document.getElementById('seatCols').value)||5;
+  const startSide=document.getElementById('seatStartSide').value;
   const date=document.getElementById('seatDate').value;
   const period=parseInt(document.getElementById('seatPeriod').value);
   const subj=document.getElementById('ownSubjectName').value||'시험';
