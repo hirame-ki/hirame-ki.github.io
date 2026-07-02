@@ -86,6 +86,8 @@
   @media(max-width:700px){.grid-2{grid-template-columns:1fr;}}
 
   .student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+  .seat-grade-groups{display:flex;flex-direction:column;gap:16px;}
+  .seat-class-group .grade-title{margin-bottom:8px;}
   .student-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s;font-size:13px;}
   .student-item:hover{border-color:var(--primary);}
   .student-item.absent{background:var(--danger-light);border-color:var(--danger);color:var(--danger);font-weight:700;}
@@ -281,7 +283,7 @@
       <div class="card no-print">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
           <div style="font-size:13px;color:var(--text2)">입력 내용은 실시간으로 고사본부에 반영됩니다</div>
-          <button class="btn btn-success" onclick="completeInput()">✅ 입력 완료</button>
+          <button class="btn btn-primary" id="completeInputBtn" onclick="completeInput()">💾 저장하기</button>
         </div>
       </div>
     </div>
@@ -371,7 +373,7 @@
         <div class="form-group" style="flex:1"><label>별실 호실</label><input type="text" id="roomName" placeholder="예: 3-1교실" /></div>
       </div>
       <div class="form-group" style="margin-bottom:10px"><label style="color:var(--primary);font-weight:800;font-size:13px">🖊️ 응시 학생 선택 (클릭으로 선택, 번호순 배치)</label></div>
-      <div class="student-grid" id="seatStudentGrid"></div>
+      <div class="seat-grade-groups" id="seatStudentGrid"></div>
       <div class="form-row" style="margin-top:14px;margin-bottom:0">
         <button class="btn btn-primary" onclick="generateSeatChart()">🪑 배치표 생성</button>
       </div>
@@ -422,7 +424,7 @@ const SUPABASE_URL='https://fhfzjqezjbwptubicjxy.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZoZnpqcWV6amJ3cHR1Ymljanh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5Mzk1NzMsImV4cCI6MjA5ODUxNTU3M30.lGZLhJMxqzVNdpfjqlOMoUjbSaFKFUrW5dmHY9kRhno';
 
 let sb=null,SCHOOL_CODE='',examDates=[],classes=[],students={};
-let currentAbsents=new Set(),currentAbsenceInfo={},currentSeatMode='separate';
+let currentAbsents=new Set(),currentAbsenceInfo={},currentSeatMode='separate',inputCompleted=false;
 let selectedExamineeIds=new Set(),ownExamineeIds=new Set();
 let hqChannel=null,currentHQPeriod=null,hqAllAbsences=[];
 const ABSENCE_REASONS=['인정','미인정','질병','기타'];
@@ -716,6 +718,7 @@ async function loadStudentsForInput(){
   document.getElementById('inputStudentArea').style.display='block';
   renderInputList(classId,date,period);
   updateAbsentCount();
+  inputCompleted=false;updateCompleteButton();
 }
 function renderInputList(classId,date,period){
   const sts=students[classId]||[];
@@ -750,6 +753,7 @@ async function toggleAbsent(sid,cid,date,period){
   }
   renderInputList(cid,date,period);
   updateAbsentCount();
+  markInputDirty();
 }
 async function updateAbsenceReason(sid,cid,date,period,reason){
   const detail=reason==='기타'?(currentAbsenceInfo[sid]?.detail||''):'';
@@ -757,16 +761,33 @@ async function updateAbsenceReason(sid,cid,date,period,reason){
   await sb.from('absences').update({reason,reason_detail:reason==='기타'?(detail||null):null})
     .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('student_id',sid);
   renderInputList(cid,date,period);
+  markInputDirty();
 }
 async function updateAbsenceDetail(sid,date,period,detail){
   if(currentAbsenceInfo[sid])currentAbsenceInfo[sid].detail=detail;
   await sb.from('absences').update({reason_detail:detail||null})
     .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('student_id',sid);
+  markInputDirty();
 }
 function updateAbsentCount(){document.getElementById('absentCountBadge').textContent=currentAbsents.size+'명 결시';}
 
+function updateCompleteButton(){
+  const btn=document.getElementById('completeInputBtn');
+  if(!btn)return;
+  if(inputCompleted){
+    btn.textContent='✅ 반영 완료';
+    btn.classList.remove('btn-primary');btn.classList.add('btn-success');
+  }else{
+    btn.textContent='💾 저장하기';
+    btn.classList.remove('btn-success');btn.classList.add('btn-primary');
+  }
+}
+function markInputDirty(){
+  if(inputCompleted){inputCompleted=false;updateCompleteButton();}
+}
 function completeInput(){
-  showToast('✅ 입력 완료! 고사본부에서 확인 가능합니다');
+  showToast('✅ 반영 완료! 고사본부에서 확인 가능합니다');
+  inputCompleted=true;updateCompleteButton();
   if(confirm('응시현황표를 출력하시겠습니까?'))openAttendanceReport();
 }
 function openAttendanceReport(){
@@ -775,28 +796,36 @@ function openAttendanceReport(){
   const period=parseInt(document.getElementById('inputPeriod').value);
   const classInfo=classes.find(c=>c.id===classId);
   const cn=classInfo?`${classInfo.grade}-${classInfo.class_num}반`:'';
-  const total=(students[classId]||[]).length;
-  const absent=currentAbsents.size;
+  const sts=students[classId]||[];
+  const total=sts.length;
+  const absentList=sts.filter(s=>currentAbsents.has(s.id)).sort((a,b)=>a.number-b.number)
+    .map(s=>`${s.number}번(${(currentAbsenceInfo[s.id]||{}).reason||'미인정'})`);
+  const absent=absentList.length;
   const present=total-absent;
-  const win=window.open('','_blank','width=480,height=560');
+  const win=window.open('','_blank','width=520,height=720');
   if(!win){showToast('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요');return;}
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>응시현황표</title>
 <style>
-  body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;padding:28px;}
-  h2{text-align:center;margin-bottom:6px;}
-  .meta{text-align:center;color:#555;font-size:13px;margin-bottom:24px;}
-  table{width:100%;border-collapse:collapse;text-align:center;}
-  th,td{border:1px solid #333;padding:14px;font-size:16px;}
-  th{background:#f0f2f5;}
-  .print-btn{display:block;margin:24px auto 0;padding:10px 20px;font-size:14px;cursor:pointer;}
+  html,body{height:100%;}
+  body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;padding:28px;display:flex;flex-direction:column;box-sizing:border-box;}
+  h1{text-align:center;font-size:30px;font-weight:800;margin-bottom:8px;}
+  .meta{text-align:center;color:#555;font-size:15px;margin-bottom:20px;}
+  table{width:100%;flex:1;border-collapse:collapse;table-layout:fixed;}
+  th,td{border:1.5px solid #333;padding:16px;font-size:17px;vertical-align:middle;}
+  th{background:#f0f2f5;width:32%;text-align:center;font-weight:700;}
+  td{text-align:center;font-weight:700;}
+  td.absent-cell{text-align:left;font-weight:500;font-size:14px;line-height:1.9;padding:18px 22px;}
+  .print-btn{display:block;margin:20px auto 0;padding:10px 20px;font-size:14px;cursor:pointer;}
   @media print{.print-btn{display:none;}}
 </style></head>
 <body>
-  <h2>응시현황표</h2>
-  <div class="meta">${fmtDate(date)} · ${period}교시 · ${cn}</div>
+  <h1>응시현황표</h1>
+  <div class="meta">${fmtDate(date)} · ${cn}</div>
   <table>
-    <tr><th>재적</th><th>응시</th><th>결시</th><th>결번</th></tr>
-    <tr><td>${total}</td><td>${present}</td><td>${absent}</td><td></td></tr>
+    <tr><th>재적</th><td>${total}</td></tr>
+    <tr><th>응시</th><td>${present}</td></tr>
+    <tr><th>결시 (${period}교시)</th><td class="${absent?'absent-cell':''}">${absent?absentList.join(', '):'0'}</td></tr>
+    <tr><th>결번</th><td></td></tr>
   </table>
   <button class="print-btn" onclick="window.print()">🖨️ 인쇄</button>
 </body></html>`);
@@ -941,10 +970,19 @@ function selectSeatMode(mode,el){
 function loadSeatGradeGrid(){
   const grade=parseInt(document.getElementById('sepGrade').value);
   const gStudents=gradeStudents(grade);selectedExamineeIds=new Set();
-  document.getElementById('seatStudentGrid').innerHTML=gStudents.length?gStudents.map(s=>
-    `<div class="student-item" id="seat-si-${s.id}" onclick="toggleExaminee(${s.id},this)">
-      <span class="student-num">${s.grade}-${s.class_num} ${s.number}번</span><span>${s.name}</span></div>`).join('')
-    :'<p style="font-size:13px;color:var(--text3)">등록된 학생이 없습니다</p>';
+  const byClass={};
+  gStudents.forEach(s=>{if(!byClass[s.class_num])byClass[s.class_num]=[];byClass[s.class_num].push(s);});
+  const classNums=Object.keys(byClass).map(Number).sort((a,b)=>a-b);
+  document.getElementById('seatStudentGrid').innerHTML=classNums.length?classNums.map(cn=>{
+    const sts=byClass[cn];
+    return`<div class="seat-class-group">
+      <div class="grade-title">${cn}반 (${sts.length}명)</div>
+      <div class="student-grid">
+        ${sts.map(s=>`<div class="student-item" id="seat-si-${s.id}" onclick="toggleExaminee(${s.id},this)">
+          <span class="student-num">${s.number}</span><span>${s.name}</span></div>`).join('')}
+      </div>
+    </div>`;
+  }).join(''):'<p style="font-size:13px;color:var(--text3)">등록된 학생이 없습니다</p>';
 }
 function toggleExaminee(id,el){
   if(selectedExamineeIds.has(id)){selectedExamineeIds.delete(id);el.classList.remove('selected');}
