@@ -6,6 +6,7 @@
 <title>정기고사 관리 시스템</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root {
     --bg:#f0f2f5;--surface:#fff;--surface2:#f8f9fb;--border:#e2e6ea;
@@ -551,62 +552,64 @@ async function processExcelFile(file){
   const statusEl=document.getElementById('excelUploadStatus');
   if(!/\.(xlsx|xls)$/i.test(file.name)){statusEl.innerHTML='<span class="badge badge-danger">엑셀 파일(.xlsx, .xls)만 업로드할 수 있습니다</span>';return;}
   statusEl.textContent='읽는 중...';
-  const buf=await file.arrayBuffer();
-  const wb=new ExcelJS.Workbook();
-  await wb.xlsx.load(buf);
+  try{
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
 
-  let ws=null,colIdx={},headerRowNum=0;
-  for(const sheet of wb.worksheets){
-    const scanLimit=Math.min(sheet.rowCount,10);
-    for(let r=1;r<=scanLimit;r++){
-      const idx={};
-      sheet.getRow(r).eachCell((cell,colNumber)=>{
-        const v=String(cell.value||'').trim();if(v)idx[v]=colNumber;
-      });
-      if(['학년','반','번호','이름'].every(k=>idx[k])){ws=sheet;colIdx=idx;headerRowNum=r;break;}
+    let aoa=null,colIdx={},headerRowIdx=-1;
+    for(const sheetName of wb.SheetNames){
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:''});
+      for(let r=0;r<Math.min(rows.length,10);r++){
+        const idx={};
+        (rows[r]||[]).forEach((v,ci)=>{const s=String(v).trim();if(s)idx[s]=ci;});
+        if(['학년','반','번호','이름'].every(k=>k in idx)){aoa=rows;colIdx=idx;headerRowIdx=r;break;}
+      }
+      if(aoa)break;
     }
-    if(ws)break;
-  }
 
-  const parsed=[];
-  if(ws){
-    ws.eachRow((row,rowNumber)=>{
-      if(rowNumber<=headerRowNum)return;
-      const grade=parseInt(row.getCell(colIdx['학년']).value);
-      const class_num=parseInt(row.getCell(colIdx['반']).value);
-      const number=parseInt(row.getCell(colIdx['번호']).value);
-      const name=String(row.getCell(colIdx['이름']).value||'').trim();
-      if(grade&&class_num&&number&&name)parsed.push({grade,class_num,number,name});
+    const parsed=[];
+    if(aoa){
+      for(let r=headerRowIdx+1;r<aoa.length;r++){
+        const row=aoa[r]||[];
+        const grade=parseInt(row[colIdx['학년']]);
+        const class_num=parseInt(row[colIdx['반']]);
+        const number=parseInt(row[colIdx['번호']]);
+        const name=String(row[colIdx['이름']]||'').trim();
+        if(grade&&class_num&&number&&name)parsed.push({grade,class_num,number,name});
+      }
+    }
+    if(!parsed.length){statusEl.innerHTML='<span class="badge badge-danger">형식 오류: 학년/반/번호/이름 열을 확인하세요</span>';return;}
+
+    const classKey=r=>r.grade+'-'+r.class_num;
+    const uniqClasses=[...new Map(parsed.map(r=>[classKey(r),{school_code:SCHOOL_CODE,grade:r.grade,class_num:r.class_num}])).values()];
+    const{error:clsErr}=await sb.from('classes').upsert(uniqClasses,{onConflict:'school_code,grade,class_num'});
+    if(clsErr){statusEl.innerHTML='<span class="badge badge-danger">학급 저장 오류: '+clsErr.message+'</span>';return;}
+
+    const{data:allCls}=await sb.from('classes').select('*').eq('school_code',SCHOOL_CODE);
+    const clsMap={};(allCls||[]).forEach(c=>clsMap[c.grade+'-'+c.class_num]=c.id);
+
+    const byClass={};
+    parsed.forEach(r=>{
+      const cid=clsMap[classKey(r)];if(!cid)return;
+      if(!byClass[cid])byClass[cid]=[];
+      byClass[cid].push({class_id:cid,number:r.number,name:r.name});
     });
+
+    const affectedClassIds=Object.keys(byClass).map(Number);
+    if(affectedClassIds.length){
+      await sb.from('students').delete().in('class_id',affectedClassIds);
+    }
+    const studentRows=Object.values(byClass).flat();
+    const{error:stErr}=await sb.from('students').insert(studentRows);
+    if(stErr){statusEl.innerHTML='<span class="badge badge-danger">학생 저장 오류: '+stErr.message+'</span>';return;}
+
+    statusEl.innerHTML=`<span class="badge badge-success">✅ 학급 ${Object.keys(byClass).length}개 / 학생 ${studentRows.length}명 업로드 완료</span>`;
+    showToast('✅ 엑셀 업로드 완료');
+    await loadAllData();
+  }catch(err){
+    console.error(err);
+    statusEl.innerHTML='<span class="badge badge-danger">업로드 실패: '+err.message+'</span>';
   }
-  if(!parsed.length){statusEl.innerHTML='<span class="badge badge-danger">형식 오류: 학년/반/번호/이름 열을 확인하세요</span>';return;}
-
-  const classKey=r=>r.grade+'-'+r.class_num;
-  const uniqClasses=[...new Map(parsed.map(r=>[classKey(r),{school_code:SCHOOL_CODE,grade:r.grade,class_num:r.class_num}])).values()];
-  const{error:clsErr}=await sb.from('classes').upsert(uniqClasses,{onConflict:'school_code,grade,class_num'});
-  if(clsErr){statusEl.innerHTML='<span class="badge badge-danger">학급 저장 오류: '+clsErr.message+'</span>';return;}
-
-  const{data:allCls}=await sb.from('classes').select('*').eq('school_code',SCHOOL_CODE);
-  const clsMap={};(allCls||[]).forEach(c=>clsMap[c.grade+'-'+c.class_num]=c.id);
-
-  const byClass={};
-  parsed.forEach(r=>{
-    const cid=clsMap[classKey(r)];if(!cid)return;
-    if(!byClass[cid])byClass[cid]=[];
-    byClass[cid].push({class_id:cid,number:r.number,name:r.name});
-  });
-
-  const affectedClassIds=Object.keys(byClass).map(Number);
-  if(affectedClassIds.length){
-    await sb.from('students').delete().in('class_id',affectedClassIds);
-  }
-  const studentRows=Object.values(byClass).flat();
-  const{error:stErr}=await sb.from('students').insert(studentRows);
-  if(stErr){statusEl.innerHTML='<span class="badge badge-danger">학생 저장 오류: '+stErr.message+'</span>';return;}
-
-  statusEl.innerHTML=`<span class="badge badge-success">✅ 학급 ${Object.keys(byClass).length}개 / 학생 ${studentRows.length}명 업로드 완료</span>`;
-  showToast('✅ 엑셀 업로드 완료');
-  await loadAllData();
 }
 function renderClassList(){
   const el=document.getElementById('classList');
