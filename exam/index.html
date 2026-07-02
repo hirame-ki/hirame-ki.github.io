@@ -133,6 +133,14 @@
   .seat .seat-num{font-size:10px;opacity:0.7;}
   .seat .seat-name{font-size:12px;font-weight:700;}
   .board-area{background:#e0e0e0;border-radius:6px;padding:7px 24px;text-align:center;font-size:12px;color:#666;margin-bottom:16px;display:inline-block;}
+  .seat-print-header{margin-bottom:16px;}
+  .seat-print-header .seat-subject{font-size:20px;font-weight:800;color:var(--text);}
+  .seat-print-header .seat-room{font-size:13px;color:var(--text2);margin-top:2px;}
+  @media print{
+    .seat-print-header{text-align:center;margin-bottom:14px;}
+    .seat-print-header .seat-subject{font-size:26px;}
+    .seat-print-header .seat-room{font-size:15px;}
+  }
   .window-label{writing-mode:vertical-rl;font-size:11px;color:var(--text3);padding:4px 0;}
   .layout-wrap{display:flex;gap:10px;align-items:flex-start;overflow-x:auto;}
 
@@ -333,7 +341,7 @@
         <div class="form-group" style="flex:1"><label>과목명</label><input type="text" id="subjectName" placeholder="예: 경제" /></div>
         <div class="form-group" style="flex:1"><label>별실 호실</label><input type="text" id="roomName" placeholder="예: 3-1교실" /></div>
       </div>
-      <div class="form-group" style="margin-bottom:10px"><label>응시 학생 선택 (클릭으로 선택)</label></div>
+      <div class="form-group" style="margin-bottom:10px"><label style="color:var(--primary);font-weight:800;font-size:13px">🖊️ 응시 학생 선택 (클릭으로 선택)</label></div>
       <div class="student-grid" id="seatStudentGrid"></div>
       <div class="form-row" style="margin-top:14px;margin-bottom:0">
         <button class="btn btn-primary" onclick="generateSeatChart()">🪑 배치표 생성</button>
@@ -344,15 +352,15 @@
       <div class="card-title">🏫 각자교실 설정</div>
       <div class="form-row">
         <div class="form-group" style="flex:1"><label>과목명</label><input type="text" id="ownSubjectName" placeholder="예: 수학 I" /></div>
-        <div class="form-group"><label>미응시자 설정</label>
+        <div class="form-group"><label>응시자 설정</label>
           <select id="ownCriterion" onchange="onOwnCriterionChange()">
             <option value="notAbsent">결시자만 제외 (전원 응시)</option>
-            <option value="select">직접 선택</option>
+            <option value="select">응시자 직접 선택</option>
           </select>
         </div>
       </div>
       <div id="ownSelectArea" style="display:none;margin-bottom:12px">
-        <div class="form-group" style="margin-bottom:8px"><label>미응시 학생 선택 (클릭 = 미응시)</label></div>
+        <div class="form-group" style="margin-bottom:8px"><label style="color:var(--primary);font-weight:800;font-size:13px">🖊️ 응시 학생 선택 (클릭으로 선택)</label></div>
         <div class="student-grid" id="ownStudentGrid"></div>
       </div>
       <div class="form-row" style="margin-bottom:0">
@@ -362,10 +370,10 @@
 
     <div id="seatResult" style="display:none">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div class="card-title" style="margin-bottom:0"><span id="seatResultTitle">자리배치표</span></div>
-          <button class="btn btn-outline btn-sm no-print" onclick="window.print()">🖨️ 인쇄</button>
+        <div class="no-print" style="display:flex;justify-content:flex-end;margin-bottom:8px">
+          <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ 인쇄</button>
         </div>
+        <div class="seat-print-header" id="seatResultTitle"></div>
         <div style="margin-bottom:14px"><div class="board-area">📋 칠판 / 앞</div></div>
         <div style="display:flex;gap:14px;margin-bottom:12px;font-size:12px;color:var(--text3)">
           <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:3px;display:inline-block"></span>응시</span>
@@ -392,10 +400,10 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 let sb=null,SCHOOL_CODE='',examDates=[],classes=[],students={};
 let currentAbsents=new Set(),currentAbsenceInfo={},currentSeatMode='separate';
-let selectedExamineeIds=new Set(),ownNonExamineeIds=new Set();
+let selectedExamineeIds=new Set(),ownExamineeIds=new Set();
 let hqChannel=null,currentHQPeriod=null,hqAllAbsences=[];
 const ABSENCE_REASONS=['인정','미인정','질병','기타'];
-const REASON_COLORS={'인정':'#2d6be4','미인정':'#d63384','질병':'#f4a228','기타':'#6c5ce7'};
+const REASON_COLORS={'인정':'#2d6be4','미인정':'#d63384','질병':'#f4a228','기타':'#4a5060'};
 function reasonColor(r){return REASON_COLORS[r]||REASON_COLORS['미인정'];}
 
 window.onload=()=>{
@@ -875,14 +883,14 @@ function toggleExaminee(id,el){
 }
 function loadOwnStudentGrid(){
   const classId=parseInt(document.getElementById('seatClass').value);
-  const sts=students[classId]||[];ownNonExamineeIds=new Set();
+  const sts=students[classId]||[];ownExamineeIds=new Set();
   document.getElementById('ownStudentGrid').innerHTML=sts.map(s=>
-    `<div class="student-item" id="own-si-${s.id}" onclick="toggleOwnNon(${s.id},this)">
+    `<div class="student-item" id="own-si-${s.id}" onclick="toggleOwnExaminee(${s.id},this)">
       <span class="student-num">${s.number}</span><span>${s.name}</span></div>`).join('');
 }
-function toggleOwnNon(id,el){
-  if(ownNonExamineeIds.has(id)){ownNonExamineeIds.delete(id);el.classList.remove('absent');}
-  else{ownNonExamineeIds.add(id);el.classList.add('absent');}
+function toggleOwnExaminee(id,el){
+  if(ownExamineeIds.has(id)){ownExamineeIds.delete(id);el.classList.remove('selected');}
+  else{ownExamineeIds.add(id);el.classList.add('selected');}
 }
 function onOwnCriterionChange(){
   document.getElementById('ownSelectArea').style.display=document.getElementById('ownCriterion').value==='select'?'block':'none';
@@ -896,7 +904,7 @@ async function generateSeatChart(){
   const room=document.getElementById('roomName').value||'별실';
   if(!selectedExamineeIds.size){showToast('응시 학생을 선택하세요');return;}
   const examinees=(students[classId]||[]).filter(s=>selectedExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
-  document.getElementById('seatResultTitle').textContent=`[${room}] ${subj} 자리배치표`;
+  setSeatResultTitle(subj,room);
   if(!drawSeats(examinees,[],rows,cols,startSide))return;
   document.getElementById('seatSummaryText').textContent=`응시자 ${examinees.length}명 · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
   document.getElementById('seatResult').style.display='block';
@@ -915,18 +923,26 @@ async function generateOwnSeatChart(){
   const{data:abData}=await sb.from('absences').select('student_id')
     .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('class_id',classId);
   const abIds=new Set((abData||[]).map(a=>a.student_id));
-  const nonIds=criterion==='select'?ownNonExamineeIds:new Set();
-  const examinees=sts.filter(s=>!abIds.has(s.id)&&!nonIds.has(s.id)).sort((a,b)=>a.number-b.number);
-  const nonExam=sts.filter(s=>!abIds.has(s.id)&&nonIds.has(s.id)).sort((a,b)=>a.number-b.number);
+  if(criterion==='select'&&!ownExamineeIds.size){showToast('응시 학생을 선택하세요');return;}
+  const examinees=criterion==='select'
+    ?sts.filter(s=>!abIds.has(s.id)&&ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number)
+    :sts.filter(s=>!abIds.has(s.id)).sort((a,b)=>a.number-b.number);
+  const nonExam=criterion==='select'
+    ?sts.filter(s=>!abIds.has(s.id)&&!ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number)
+    :[];
   const absentees=sts.filter(s=>abIds.has(s.id)).sort((a,b)=>a.number-b.number);
   const cn=classInfo?`${classInfo.grade}-${classInfo.class_num}반`:'';
-  document.getElementById('seatResultTitle').textContent=`[${cn}] ${subj} 자리배치표`;
+  setSeatResultTitle(subj,cn);
   if(!drawSeats(examinees,nonExam,rows,cols,startSide,absentees))return;
   document.getElementById('seatSummaryText').textContent=
     `응시 ${examinees.length}명 · 미응시 ${nonExam.length}명 · 결시 ${absentees.length}명 · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
   document.getElementById('seatResult').style.display='block';
 }
 
+function setSeatResultTitle(subject,roomLabel){
+  document.getElementById('seatResultTitle').innerHTML=
+    `<div class="seat-subject">${subject}</div><div class="seat-room">${roomLabel}</div>`;
+}
 function drawSeats(examinees,nonExam,rows,cols,startSide,absentees=[]){
   const all=[...examinees,...nonExam];
   if(all.length>rows*cols){
