@@ -352,7 +352,7 @@
       </div>
       <div class="mode-btn" onclick="selectSeatMode('own',this)">
         <div class="mode-icon"><svg class="icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2 9l10 5 10-5-10-5z"></path><path d="M6 11.5V17c0 1.5 2.8 3 6 3s6-1.5 6-3v-5.5"></path><line x1="22" y1="9" x2="22" y2="15"></line></svg></div><div class="mode-label">각자교실 시험</div>
-        <div class="mode-desc">학급별 응시자 선택<br>번호순 고정 배치, 결시자는 빈자리</div>
+        <div class="mode-desc">학급별 응시자 선택<br>응시자(결시 포함) 먼저, 미응시 뒤로</div>
       </div>
     </div>
 
@@ -1246,10 +1246,12 @@ async function generateOwnSeatChart(){
     .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('class_id',classId);
   const abIds=new Set((abData||[]).map(a=>a.student_id));
   if(!ownExamineeIds.size){showToast('응시 학생을 선택하세요');return;}
-  const roster=sts.slice().sort((a,b)=>a.number-b.number).map(s=>({
+  const selectedGroup=sts.filter(s=>ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
+  const nonSelectedGroup=sts.filter(s=>!ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
+  const roster=[...selectedGroup,...nonSelectedGroup].map(s=>({
     ...s,
     isAbsent:abIds.has(s.id),
-    isExaminee:!abIds.has(s.id)&&ownExamineeIds.has(s.id)
+    isExaminee:ownExamineeIds.has(s.id)&&!abIds.has(s.id)
   }));
   const cn=classInfo?`${classInfo.grade}-${classInfo.class_num}반`:'';
   setSeatResultTitle(subj,cn);
@@ -1258,7 +1260,7 @@ async function generateOwnSeatChart(){
   const absentCount=roster.filter(s=>s.isAbsent).length;
   const nonExamCount=roster.length-examCount-absentCount;
   document.getElementById('seatSummaryText').textContent=
-    `응시 ${examCount}명 · 미응시 ${nonExamCount}명 · 결시 ${absentCount}명(빈자리 처리) · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터, 번호순 고정)`;
+    `응시 ${examCount}명 · 미응시 ${nonExamCount}명 · 결시 ${absentCount}명(빈자리 처리) · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터, 응시자 우선 배치)`;
   document.getElementById('seatResult').style.display='block';
 }
 
