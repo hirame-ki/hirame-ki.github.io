@@ -132,7 +132,7 @@
   .seat.present{background:var(--primary-light);border-color:var(--primary);color:var(--primary);font-weight:700;}
   .seat.non-exam{background:var(--surface2);border-color:var(--border);color:var(--text3);}
   .seat.empty-seat{background:transparent;border:1.5px dashed #ddd;}
-  .seat .seat-num{font-size:10px;opacity:0.7;}
+  .seat .seat-num{font-size:9px;opacity:0.7;}
   .seat .seat-name{font-size:12px;font-weight:700;}
   .board-area{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px;text-align:center;font-size:13px;font-weight:700;color:var(--text2);letter-spacing:4px;margin-bottom:20px;width:100%;box-sizing:border-box;}
   .seat-print-header{margin-bottom:16px;}
@@ -806,15 +806,17 @@ function openAttendanceReport(){
   if(!win){showToast('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요');return;}
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>응시현황표</title>
 <style>
-  html,body{height:100%;}
-  body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;padding:28px;display:flex;flex-direction:column;box-sizing:border-box;}
-  h1{text-align:center;font-size:30px;font-weight:800;margin-bottom:8px;}
-  .meta{text-align:center;color:#555;font-size:15px;margin-bottom:20px;}
-  table{width:100%;flex:1;border-collapse:collapse;table-layout:fixed;}
-  th,td{border:1.5px solid #333;padding:16px;font-size:17px;vertical-align:middle;}
-  th{background:#f0f2f5;width:32%;text-align:center;font-weight:700;}
-  td{text-align:center;font-weight:700;}
-  td.absent-cell{text-align:left;font-weight:500;font-size:14px;line-height:1.9;padding:18px 22px;}
+  @page{size:A4;margin:14mm;}
+  *{box-sizing:border-box;}
+  body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;margin:0;padding:0;}
+  h1{text-align:center;font-size:60px;font-weight:800;margin:0 0 10px;}
+  .meta{text-align:center;color:#555;font-size:16px;margin-bottom:22px;}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;page-break-inside:avoid;}
+  tr{page-break-inside:avoid;}
+  th,td{border:1.5px solid #333;padding:14px 16px;vertical-align:middle;}
+  th{background:#f0f2f5;width:32%;text-align:center;font-weight:800;font-size:48px;}
+  td{text-align:center;font-weight:800;font-size:48px;}
+  td.absent-cell{text-align:left;font-weight:600;font-size:26px;line-height:1.5;padding:16px 20px;}
   .print-btn{display:block;margin:20px auto 0;padding:10px 20px;font-size:14px;cursor:pointer;}
   @media print{.print-btn{display:none;}}
 </style></head>
@@ -1010,7 +1012,7 @@ async function generateSeatChart(){
   if(!selectedExamineeIds.size){showToast('응시 학생을 선택하세요');return;}
   const examinees=gradeStudents(grade).filter(s=>selectedExamineeIds.has(s.id));
   setSeatResultTitle(subj,room);
-  if(!drawSeats(examinees,[],rows,cols,startSide))return;
+  if(!drawSeats(examinees,[],rows,cols,startSide,[],true))return;
   document.getElementById('seatSummaryText').textContent=`응시자 ${examinees.length}명 · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
   document.getElementById('seatResult').style.display='block';
 }
@@ -1043,7 +1045,7 @@ function setSeatResultTitle(subject,roomLabel){
   document.getElementById('seatResultTitle').innerHTML=
     `<div class="seat-subject">${subject}</div><div class="seat-room">${roomLabel}</div>`;
 }
-function drawSeats(examinees,nonExam,rows,cols,startSide,absentees=[]){
+function drawSeats(examinees,nonExam,rows,cols,startSide,absentees=[],showClassInfo=false){
   const all=[...examinees,...nonExam];
   if(all.length>rows*cols){
     showToast(`⚠️ 좌석 수(${rows*cols}석)보다 배치할 학생 수(${all.length}명)가 많습니다. 행/열 수를 늘려주세요`);
@@ -1061,7 +1063,8 @@ function drawSeats(examinees,nonExam,rows,cols,startSide,absentees=[]){
     `<div class="seat-row">${row.map(s=>{
       if(!s)return`<div class="seat empty-seat"></div>`;
       const cls=s.isExaminee?'present':'non-exam';
-      return`<div class="seat ${cls}"><div class="seat-num">${s.number}번</div><div class="seat-name">${s.name}</div></div>`;
+      const numLabel=showClassInfo?`${s.grade}-${s.class_num} ${s.number}번`:`${s.number}번`;
+      return`<div class="seat ${cls}"><div class="seat-num">${numLabel}</div><div class="seat-name">${s.name}</div></div>`;
     }).join('')}</div>`).join('');
   if(absentees.length){
     layout.innerHTML+=`<div style="margin-top:14px;padding:12px;background:var(--danger-light);border-radius:8px;border:1px solid var(--danger)">
