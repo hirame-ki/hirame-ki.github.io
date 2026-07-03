@@ -316,6 +316,24 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 .stats-chart-block{margin-bottom:22px}
 .stats-chart-block h3{font-size:13.5px;font-weight:700;color:var(--primary);margin:0 0 8px}
 .stats-chart-wrap{position:relative;width:100%}
+/* ===== Bank(자료실) modal ===== */
+#bankModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:20px;overflow-y:auto}
+#bankModal-bg.show{display:flex}
+#bankModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:640px;margin:auto;box-shadow:0 16px 48px rgba(0,0,0,.3)}
+#bankModal h2{margin:0 0 .6rem;font-size:16px;font-weight:700;color:var(--primary)}
+.bank-tabs{display:flex;gap:6px;margin-top:12px}
+.bank-tab{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.bank-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.bank-item{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.bank-item .bi-info{flex:1;min-width:0}
+.bank-item .bi-title{font-size:13.5px;font-weight:700;color:var(--text)}
+.bank-item .bi-meta{font-size:11.5px;color:var(--muted);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.bank-item .bi-badge{background:var(--accent-l);color:var(--accent);border-radius:5px;padding:1px 7px;font-size:11px;font-weight:700}
+.bank-item .bi-badge.pub{background:#E8F5E9;color:#1B6B45}
+.bank-item .bi-btns{display:flex;gap:6px;flex-shrink:0}
+.bank-item button{padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+.bank-item button.bi-import{background:var(--accent);border-color:var(--accent);color:#fff}
+.bank-item button.bi-danger{color:#C0392B;border-color:#F5C6C0}
 .rank-table{width:100%;border-collapse:collapse;font-size:13.5px}
 .rank-table th{background:var(--primary);color:#fff;padding:9px 10px;text-align:center;white-space:nowrap;font-weight:600}
 .rank-table td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -723,7 +741,26 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-cancel" onclick="saveMissionToBank()" style="background:#f0f4ff;color:#2c5282;border-color:#90cdf4">💾 자료실에 저장</button>
       <button class="btn-save" onclick="saveMission()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 자료실/문제은행 모달 -->
+<div id="bankModal-bg">
+  <div id="bankModal">
+    <h2>📚 자료실에서 불러오기</h2>
+    <div class="section-hint">저장해둔 문제를 선택한 구역에 바로 추가합니다.</div>
+    <div class="bank-tabs">
+      <button class="bank-tab active" id="bank-tab-mine" onclick="switchBankTab('mine')">내 자료실</button>
+      <button class="bank-tab" id="bank-tab-public" onclick="switchBankTab('public')">공개 자료실</button>
+    </div>
+    <input type="text" id="bank-search" placeholder="제목으로 검색" oninput="renderBankList()" style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px;margin:10px 0">
+    <div id="bank-loading" style="font-size:13px;color:#888"></div>
+    <div id="bank-list"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeBankModal()">닫기</button>
     </div>
   </div>
 </div>
@@ -1965,6 +2002,13 @@ function renderZones(mapId){
     addBtn.textContent = '+ 미션 추가';
     addBtn.onclick = () => openModal(mapId, zone.id, null);
     head.appendChild(addBtn);
+    const bankBtn = document.createElement('button');
+    bankBtn.className = 'addbtn';
+    bankBtn.style.background = '#f0f4ff';
+    bankBtn.style.color = '#2c5282';
+    bankBtn.textContent = '📚 자료실에서 불러오기';
+    bankBtn.onclick = () => openBankModal(mapId, zone.id);
+    head.appendChild(bankBtn);
     zoneEl.appendChild(head);
 
     const list = document.createElement('div');
@@ -2123,15 +2167,16 @@ function closeModal(){
   document.getElementById('modal-bg').classList.remove('show');
 }
 
-async function saveMission(){
+/* 미션 입력 폼에서 title/type/content/quiz/required를 읽어 검증까지 마친 값을 돌려준다.
+   유효하지 않으면 alert을 띄우고 null을 반환한다. (저장 / 자료실 저장 공용) */
+function collectMissionFormValues(){
   const title = document.getElementById('f_title').value.trim();
   const type = document.getElementById('f_type').value;
-  const order = parseInt(document.getElementById('f_order').value, 10) || 1;
   const required = document.getElementById('f_required').checked;
 
   if(!title){
     alert('미션 제목을 입력해주세요.');
-    return;
+    return null;
   }
 
   let content = null;
@@ -2143,7 +2188,7 @@ async function saveMission(){
     const answerInput = document.querySelector('input[name=q_answer]:checked');
     if(!question || options.some(o => !o) || !answerInput){
       alert('퀴즈 질문, 보기 4개, 정답을 모두 입력해주세요.');
-      return;
+      return null;
     }
     quiz = { question, options, answer: Number(answerInput.value) };
   } else if(type === 'image_quiz'){
@@ -2151,19 +2196,19 @@ async function saveMission(){
     const question = document.getElementById('q_question').value.trim();
     const options = [0,1,2,3].map(i => document.getElementById('q_opt'+i).value.trim());
     const answerInput = document.querySelector('input[name=q_answer]:checked');
-    if(!image_url){ alert('이미지 URL을 입력해주세요.'); return; }
+    if(!image_url){ alert('이미지 URL을 입력해주세요.'); return null; }
     if(!question || options.some(o => !o) || !answerInput){
-      alert('질문, 보기 4개, 정답을 모두 입력해주세요.'); return;
+      alert('질문, 보기 4개, 정답을 모두 입력해주세요.'); return null;
     }
     quiz = { image_url, question, options, answer: Number(answerInput.value) };
   } else if(type === 'short_answer'){
     const question = document.getElementById('sa_question').value.trim();
     const model_answer = document.getElementById('sa_model').value.trim();
-    if(!question){ alert('질문을 입력해주세요.'); return; }
+    if(!question){ alert('질문을 입력해주세요.'); return null; }
     quiz = { question, model_answer: model_answer || null };
   } else if(type === 'discussion'){
     const topic = document.getElementById('di_topic').value.trim();
-    if(!topic){ alert('토론 주제를 입력해주세요.'); return; }
+    if(!topic){ alert('토론 주제를 입력해주세요.'); return null; }
     const guides = [
       document.getElementById('di_q1').value.trim(),
       document.getElementById('di_q2').value.trim(),
@@ -2173,12 +2218,20 @@ async function saveMission(){
   } else if(type === 'ox_quiz'){
     const question = document.getElementById('ox_question').value.trim();
     const answerInput = document.querySelector('input[name="ox_answer"]:checked');
-    if(!question || !answerInput){ alert('문제와 정답(O/X)을 모두 입력해주세요.'); return; }
+    if(!question || !answerInput){ alert('문제와 정답(O/X)을 모두 입력해주세요.'); return null; }
     quiz = { question, answer: answerInput.value };
   } else {
     content = document.getElementById('f_content').value.trim();
-    if(!content){ alert('내용(URL)을 입력해주세요.'); return; }
+    if(!content){ alert('내용(URL)을 입력해주세요.'); return null; }
   }
+
+  return { title, type, content, quiz, required };
+}
+
+async function saveMission(){
+  const values = collectMissionFormValues();
+  if(!values) return;
+  const order = parseInt(document.getElementById('f_order').value, 10) || 1;
 
   // 트리거 타일 수집
   const trigMode = document.querySelector('input[name=trig_mode]:checked')?.value;
@@ -2192,7 +2245,9 @@ async function saveMission(){
     map_id: editingMapId,
     zone_id: editingZoneId,
     teacher_id: currentUserId,
-    title, type, content, order, required, quiz, trigger_tiles
+    order,
+    ...values,
+    trigger_tiles
   };
 
   try{
@@ -2208,6 +2263,31 @@ async function saveMission(){
   }
 }
 
+async function saveMissionToBank(){
+  const values = collectMissionFormValues();
+  if(!values) return;
+  if(!currentUserId){ alert('자료실 저장에는 인증이 필요합니다. 잠시 후 다시 시도해주세요.'); return; }
+
+  const isPublic = confirm('다른 선생님도 볼 수 있는 공개 자료실에 저장할까요?\n(취소를 누르면 나만 보는 비공개로 저장됩니다)');
+
+  try{
+    const { error } = await client.from('quiz_bank').insert({
+      teacher_id: currentUserId,
+      title: values.title,
+      type: values.type,
+      content: values.content,
+      quiz: values.quiz,
+      required: values.required,
+      is_public: isPublic
+    });
+    if(error) throw error;
+    showToast('자료실에 저장되었습니다.');
+  }catch(e){
+    console.error(e);
+    alert('자료실 저장에 실패했습니다: ' + e.message);
+  }
+}
+
 async function deleteMission(mapId, mission){
   if(!confirm(`"${mission.title}" 미션을 삭제할까요?`)) return;
   try{
@@ -2216,6 +2296,148 @@ async function deleteMission(mapId, mission){
     showToast('삭제되었습니다.');
     await loadMissions(mapId);
     renderZones(mapId);
+  }catch(e){
+    console.error(e);
+    alert('삭제에 실패했습니다: ' + e.message);
+  }
+}
+
+/* ===================== 자료실/문제은행 ===================== */
+let __bankTargetMapId = null;
+let __bankTargetZoneId = null;
+let __bankTab = 'mine';
+let __bankMineItems = [];
+let __bankPublicItems = [];
+
+async function openBankModal(mapId, zoneId){
+  __bankTargetMapId = mapId;
+  __bankTargetZoneId = zoneId;
+  document.getElementById('bank-search').value = '';
+  document.getElementById('bankModal-bg').classList.add('show');
+  __bankTab = 'mine';
+  document.getElementById('bank-tab-mine').classList.add('active');
+  document.getElementById('bank-tab-public').classList.remove('active');
+  await __bankLoad();
+}
+
+function closeBankModal(){
+  document.getElementById('bankModal-bg').classList.remove('show');
+}
+
+function switchBankTab(tab){
+  __bankTab = tab;
+  document.getElementById('bank-tab-mine').classList.toggle('active', tab === 'mine');
+  document.getElementById('bank-tab-public').classList.toggle('active', tab === 'public');
+  renderBankList();
+}
+
+async function __bankLoad(){
+  const loadingEl = document.getElementById('bank-loading');
+  loadingEl.textContent = '불러오는 중...';
+  document.getElementById('bank-list').innerHTML = '';
+  try{
+    const [mineRes, publicRes] = await Promise.all([
+      currentUserId
+        ? client.from('quiz_bank').select('*').eq('teacher_id', currentUserId).order('created_at', { ascending:false })
+        : Promise.resolve({ data:[] }),
+      client.from('quiz_bank').select('*').eq('is_public', true).order('created_at', { ascending:false })
+    ]);
+    if(mineRes.error) throw mineRes.error;
+    if(publicRes.error) throw publicRes.error;
+    __bankMineItems = mineRes.data || [];
+    __bankPublicItems = publicRes.data || [];
+    loadingEl.textContent = '';
+    renderBankList();
+  }catch(e){
+    console.error(e);
+    loadingEl.textContent = '자료실을 불러오지 못했습니다: ' + e.message;
+  }
+}
+
+function renderBankList(){
+  const listEl = document.getElementById('bank-list');
+  const search = document.getElementById('bank-search').value.trim().toLowerCase();
+  const items = (__bankTab === 'mine' ? __bankMineItems : __bankPublicItems)
+    .filter(it => !search || it.title.toLowerCase().includes(search));
+
+  if(!items.length){
+    listEl.innerHTML = `<div class="empty">${__bankTab === 'mine' ? '저장된 자료가 없습니다. 미션 추가/수정 화면에서 "자료실에 저장"을 눌러보세요.' : '공개된 자료가 없습니다.'}</div>`;
+    return;
+  }
+
+  listEl.innerHTML = '';
+  items.forEach(it => {
+    const isOwner = !!currentUserId && it.teacher_id === currentUserId;
+    const typeLabel = TYPE_LABEL[it.type] || it.type;
+    const row = document.createElement('div');
+    row.className = 'bank-item';
+    row.innerHTML = `
+      <div class="bi-info">
+        <div class="bi-title">${escapeHtml(it.title)}</div>
+        <div class="bi-meta">
+          <span class="bi-badge">${typeLabel}</span>
+          ${it.is_public ? '<span class="bi-badge pub">공개</span>' : ''}
+        </div>
+      </div>
+      <div class="bi-btns">
+        ${isOwner ? `<button class="bi-toggle">${it.is_public ? '비공개로' : '공개로'}</button>` : ''}
+        ${isOwner ? '<button class="bi-danger bi-delete">삭제</button>' : ''}
+        <button class="bi-import">이 구역에 추가</button>
+      </div>`;
+    row.querySelector('.bi-import').onclick = () => importBankItem(it);
+    if(isOwner){
+      row.querySelector('.bi-toggle').onclick = () => toggleBankPublic(it);
+      row.querySelector('.bi-delete').onclick = () => deleteBankItem(it);
+    }
+    listEl.appendChild(row);
+  });
+}
+
+async function importBankItem(it){
+  if(!__bankTargetMapId || !__bankTargetZoneId) return;
+  const row = {
+    id: `${ROOM_ID}_${__bankTargetMapId}_${__bankTargetZoneId}_${Date.now()}`,
+    room_id: ROOM_ID,
+    map_id: __bankTargetMapId,
+    zone_id: __bankTargetZoneId,
+    teacher_id: currentUserId,
+    title: it.title,
+    type: it.type,
+    content: it.content,
+    quiz: it.quiz,
+    order: nextOrder(__bankTargetMapId, __bankTargetZoneId),
+    required: it.required !== false
+  };
+  try{
+    const { error } = await client.from('missions').insert(row);
+    if(error) throw error;
+    closeBankModal();
+    showToast('구역에 추가되었습니다.');
+    await loadMissions(__bankTargetMapId);
+    renderZones(__bankTargetMapId);
+  }catch(e){
+    console.error(e);
+    alert('추가에 실패했습니다: ' + e.message);
+  }
+}
+
+async function toggleBankPublic(it){
+  try{
+    const { error } = await client.from('quiz_bank').update({ is_public: !it.is_public }).eq('id', it.id);
+    if(error) throw error;
+    await __bankLoad();
+  }catch(e){
+    console.error(e);
+    alert('변경에 실패했습니다: ' + e.message);
+  }
+}
+
+async function deleteBankItem(it){
+  if(!confirm(`"${it.title}" 자료를 자료실에서 삭제할까요?`)) return;
+  try{
+    const { error } = await client.from('quiz_bank').delete().eq('id', it.id);
+    if(error) throw error;
+    await __bankLoad();
   }catch(e){
     console.error(e);
     alert('삭제에 실패했습니다: ' + e.message);

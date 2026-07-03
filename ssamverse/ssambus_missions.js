@@ -433,6 +433,12 @@ function __msStorageKey(){
   return 'ssambus_missions_done_' + __msRoomId + '_' + __msStudentId;
 }
 
+/* 닉네임 기반으로 student_id를 고정 생성 — 같은 방에 다른 기기로 같은 닉네임을 입력하면
+   동일한 student_id가 되어 mission_progress 기록을 그대로 이어받을 수 있다. */
+function __msDeriveStudentId(nickname){
+  return 'nick_' + nickname.trim();
+}
+
 function __msAllDoneKey(){
   return 'ssambus_alldone_' + __msRoomId + '_' + __msStudentId + '_' + __msMapId;
 }
@@ -1107,6 +1113,31 @@ async function __msRecordProgress(mission, answer = null){
   }
 }
 
+/* 기기 간 이어풀기: room_id + student_id 기준으로 서버에 기록된 완료 미션을 불러와
+   localStorage 기반 __msDone에 병합한다. (다른 기기에서도 같은 닉네임이면 이어서 진행) */
+async function __msLoadDoneFromServer(){
+  const client = __msGetClient();
+  if(!client) return;
+  try{
+    const { data, error } = await client
+      .from('mission_progress')
+      .select('mission_id')
+      .eq('room_id', __msRoomId)
+      .eq('student_id', __msStudentId);
+    if(error || !data) return;
+    data.forEach(row => {
+      const mid = row.mission_id;
+      if(!mid.startsWith('__completion_') && mid !== '__total__' && mid !== '__reflection__'){
+        __msDone.add(mid);
+      }
+    });
+    try{ localStorage.setItem(__msStorageKey(), JSON.stringify(Array.from(__msDone))); }
+    catch(e){ /* 저장 실패 시 진행은 계속 가능 */ }
+  }catch(e){
+    console.warn('[쌤버스] 진행도 서버 조회 실패', e);
+  }
+}
+
 /* 전체 필수 미션 완료 시 소요 시간 기록 (맵별 + 세션 누적) */
 async function __msSaveCompletionTime(){
   if(!__msEntryTime) return;
@@ -1187,10 +1218,17 @@ async function initMissionSystem(mapId){
   __msMapId = mapId;
   __msRoomId = __msParam('room', 'demo');
 
-  __msStudentId = localStorage.getItem('ssambus_student_id');
-  if(!__msStudentId){
-    __msStudentId = 'stu_' + Math.random().toString(36).slice(2, 10);
-    localStorage.setItem('ssambus_student_id', __msStudentId);
+  const __msNickname = __msParam('nickname', null)
+    || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('ssambus_nickname'));
+  if(__msNickname){
+    __msStudentId = __msDeriveStudentId(__msNickname);
+  } else {
+    // 닉네임 없이 접속한 경우(구버전 링크 등) 기기별 임의 ID로 폴백
+    __msStudentId = localStorage.getItem('ssambus_student_id');
+    if(!__msStudentId){
+      __msStudentId = 'stu_' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem('ssambus_student_id', __msStudentId);
+    }
   }
 
   try{
@@ -1198,6 +1236,7 @@ async function initMissionSystem(mapId){
   }catch(e){
     __msDone = new Set();
   }
+  await __msLoadDoneFromServer(); // 기기 간 이어풀기: 서버 기록을 병합
 
   try{
     __msAllDoneShown = localStorage.getItem(__msAllDoneKey()) === '1';
