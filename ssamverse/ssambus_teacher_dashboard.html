@@ -304,6 +304,18 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 #rankModal-bg.show{display:flex}
 #rankModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:620px;margin:auto;box-shadow:0 16px 48px rgba(0,0,0,.3)}
 #rankModal h2{margin:0 0 .6rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
+/* ===== Stats modal ===== */
+#statsModal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:20px;overflow-y:auto}
+#statsModal-bg.show{display:flex}
+#statsModal{background:var(--surface);border-radius:16px;padding:1.6rem;width:100%;max-width:760px;margin:auto;box-shadow:0 16px 48px rgba(0,0,0,.3)}
+#statsModal h2{margin:0 0 .6rem;font-size:16px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px}
+.stats-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 20px}
+.stats-tile{background:var(--accent-l);border:1px solid var(--border);border-radius:10px;padding:12px 10px;text-align:center}
+.stats-tile .num{font-size:22px;font-weight:800;color:var(--primary)}
+.stats-tile .lbl{font-size:12px;color:var(--muted);margin-top:2px}
+.stats-chart-block{margin-bottom:22px}
+.stats-chart-block h3{font-size:13.5px;font-weight:700;color:var(--primary);margin:0 0 8px}
+.stats-chart-wrap{position:relative;width:100%}
 .rank-table{width:100%;border-collapse:collapse;font-size:13.5px}
 .rank-table th{background:var(--primary);color:#fff;padding:9px 10px;text-align:center;white-space:nowrap;font-weight:600}
 .rank-table td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -379,6 +391,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
     <!-- 드롭다운 패널: 수업 후 -->
     <div class="cat-panel" id="cat-after">
       <button class="primary" onclick="openRankingModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v10a6 6 0 01-12 0V2z"/><path d="M6 6H3v4a4 4 0 004 4"/><path d="M18 6h3v4a4 4 0 01-4 4"/><path d="M12 18v3M9 21h6"/></svg> 완료 순위</button>
+      <button class="primary" onclick="openStatsModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg> 통계 대시보드</button>
       <button class="primary" onclick="downloadProgressExcel()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg> 진행현황 다운로드</button>
     </div>
     <!-- 드롭다운 패널: 수업 설정 -->
@@ -551,6 +564,33 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
     <div id="rank-table-wrap"></div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeRankingModal()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 통계 대시보드 모달 -->
+<div id="statsModal-bg">
+  <div id="statsModal">
+    <h2><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg> 통계 대시보드</h2>
+    <div class="section-hint">지금까지 학생들의 미션 진행 현황을 한눈에 확인합니다.</div>
+    <div id="stats-loading" style="font-size:13px;color:#888;margin-top:10px"></div>
+    <div id="stats-body" style="display:none">
+      <div class="stats-tiles">
+        <div class="stats-tile"><div class="num" id="stats-tile-students">-</div><div class="lbl">참여 학생 수</div></div>
+        <div class="stats-tile"><div class="num" id="stats-tile-avg">-</div><div class="lbl">평균 진행률</div></div>
+        <div class="stats-tile"><div class="num" id="stats-tile-done">-</div><div class="lbl">전체 완료 학생</div></div>
+      </div>
+      <div class="stats-chart-block">
+        <h3>맵별 평균 완료율</h3>
+        <div class="stats-chart-wrap"><canvas id="stats-chart-maps"></canvas></div>
+      </div>
+      <div class="stats-chart-block">
+        <h3>학생 진행률 분포</h3>
+        <div class="stats-chart-wrap"><canvas id="stats-chart-dist" height="160"></canvas></div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeStatsModal()">닫기</button>
     </div>
   </div>
 </div>
@@ -836,6 +876,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style/dist/xlsx.bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="ssambus_supabase_config.js"></script>
 <script>
 /* ===================== 설정 ===================== */
@@ -2501,6 +2542,150 @@ function buildAndDownloadExcel(missions, progress, completionData, totalData, re
 
   const today = new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb, `쌤버스_미션진행현황_${ROOM_ID}_${today}.xlsx`);
+}
+
+/* ===================== 통계 대시보드 ===================== */
+let __statsChartMaps = null;
+let __statsChartDist = null;
+
+async function openStatsModal(){
+  const bg = document.getElementById('statsModal-bg');
+  if(!bg) return;
+  bg.classList.add('show');
+
+  const loadingEl = document.getElementById('stats-loading');
+  const bodyEl = document.getElementById('stats-body');
+  bodyEl.style.display = 'none';
+  loadingEl.textContent = '불러오는 중...';
+
+  if(!client){
+    loadingEl.textContent = 'Supabase 설정을 확인할 수 없습니다.';
+    return;
+  }
+
+  try{
+    const [missionsRes, progressRes] = await Promise.all([
+      client.from('missions').select('*').eq('room_id', ROOM_ID),
+      client.from('mission_progress').select('*').eq('room_id', ROOM_ID)
+    ]);
+    if(missionsRes.error) throw missionsRes.error;
+    if(progressRes.error) throw progressRes.error;
+
+    const missions = missionsRes.data || [];
+    const progress = (progressRes.data || []).filter(p =>
+      !p.mission_id.startsWith('__completion_') && p.mission_id !== '__total__' && p.mission_id !== '__reflection__'
+    );
+
+    if(!missions.length){
+      loadingEl.textContent = '등록된 미션이 없습니다.';
+      return;
+    }
+    if(!progress.length){
+      loadingEl.textContent = '아직 미션을 완료한 학생이 없습니다.';
+      return;
+    }
+
+    loadingEl.textContent = '';
+    bodyEl.style.display = '';
+    renderStatsDashboard(missions, progress);
+  }catch(e){
+    console.error(e);
+    loadingEl.textContent = '통계를 불러오지 못했습니다: ' + e.message;
+  }
+}
+
+function closeStatsModal(){
+  document.getElementById('statsModal-bg').classList.remove('show');
+}
+
+function renderStatsDashboard(missions, progress){
+  // 학생별 완료 미션 집계
+  const studentsMap = new Map();
+  progress.forEach(p => {
+    if(!studentsMap.has(p.student_id)){
+      studentsMap.set(p.student_id, { nickname: p.nickname || p.student_id, done: new Set() });
+    }
+    studentsMap.get(p.student_id).done.add(p.mission_id);
+  });
+  const students = Array.from(studentsMap.values());
+  const totalAll = missions.length;
+
+  // 상단 요약 타일
+  const avgRate = students.reduce((sum, s) => sum + s.done.size / totalAll, 0) / students.length;
+  const doneAllCount = students.filter(s => s.done.size >= totalAll).length;
+  document.getElementById('stats-tile-students').textContent = students.length;
+  document.getElementById('stats-tile-avg').textContent = Math.round(avgRate * 100) + '%';
+  document.getElementById('stats-tile-done').textContent = doneAllCount;
+
+  // 맵별 평균 완료율
+  const mapsWithMissions = MAPS.filter(m => missions.some(mi => mi.map_id === m.id));
+  const mapLabels = mapsWithMissions.map(m => m.label);
+  const mapRates = mapsWithMissions.map(m => {
+    const missionIdsInMap = new Set(missions.filter(mi => mi.map_id === m.id).map(mi => mi.id));
+    if(!missionIdsInMap.size) return 0;
+    const rate = students.reduce((sum, s) => {
+      let doneInMap = 0;
+      missionIdsInMap.forEach(id => { if(s.done.has(id)) doneInMap++; });
+      return sum + doneInMap / missionIdsInMap.size;
+    }, 0) / students.length;
+    return Math.round(rate * 100);
+  });
+
+  const mapsCanvas = document.getElementById('stats-chart-maps');
+  mapsCanvas.parentElement.style.height = Math.max(180, mapLabels.length * 30) + 'px';
+  if(__statsChartMaps) __statsChartMaps.destroy();
+  __statsChartMaps = new Chart(mapsCanvas, {
+    type: 'bar',
+    data: {
+      labels: mapLabels,
+      datasets: [{ data: mapRates, backgroundColor: '#3470D4', borderRadius: 4, maxBarThickness: 22 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `완료율 ${ctx.parsed.x}%` } }
+      },
+      scales: {
+        x: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#EEE' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // 학생 진행률 분포 (0~20 / 21~40 / 41~60 / 61~80 / 81~100)
+  const bucketLabels = ['0~20%', '21~40%', '41~60%', '61~80%', '81~100%'];
+  const bucketColors = ['#EAF0FF', '#B9CFF5', '#7DA3E8', '#3470D4', '#1A3558'];
+  const buckets = [0, 0, 0, 0, 0];
+  students.forEach(s => {
+    const pct = (s.done.size / totalAll) * 100;
+    const idx = pct <= 20 ? 0 : pct <= 40 ? 1 : pct <= 60 ? 2 : pct <= 80 ? 3 : 4;
+    buckets[idx]++;
+  });
+
+  const distCanvas = document.getElementById('stats-chart-dist');
+  if(__statsChartDist) __statsChartDist.destroy();
+  __statsChartDist = new Chart(distCanvas, {
+    type: 'bar',
+    data: {
+      labels: bucketLabels,
+      datasets: [{ data: buckets, backgroundColor: bucketColors, borderRadius: 4, maxBarThickness: 48 }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `${ctx.parsed.y}명` } }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#EEE' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
 }
 
 /* ===================== 완료 순위 모달 ===================== */
