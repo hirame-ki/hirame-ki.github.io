@@ -4,7 +4,8 @@
 
 ```
 exam-system/
-└── index.html        # 단일 파일 (전체 앱)
+├── index.html         # 단일 파일 (전체 앱) — 실제 배포/작업 대상
+└── index기존.html      # 디자인 변경 전 시점의 구버전 백업 (사용 안 함, 삭제 검토 필요)
 ```
 
 ---
@@ -19,19 +20,12 @@ exam-system/
 - [x] 학교코드 설정 완료 (SEONGPO2025)
 - [x] 학급/학생 등록 완료 (엑셀 일괄 업로드, 1~3학년 각 2개 반)
 - [x] 결시 입력 실사용 테스트 (사유 입력, 저장 상태 전환 등 확인)
+- [x] Supabase SQL Editor에서 `exam_dates` 테이블 생성 SQL 실행 완료
 
 ### 확인 필요 (운영 작업, 코드 아님)
+- [ ] Supabase SQL Editor에서 `seat_charts` 테이블 생성 SQL 실행 필요 (자리배치표 저장/불러오기 기능 — 실행 전까지는 저장 시 오류 발생)
 - [ ] 동료 교사에게 URL + 학교코드 공유 완료 여부 확인
 - [ ] 실제 고사 기간에 전체 교사 대상 실사용 테스트
-- [ ] **Supabase SQL Editor에서 아래 테이블 생성 SQL 실행 필요** (고사 날짜 DB 저장 기능 추가로 인한 스키마 변경)
-  ```sql
-  CREATE TABLE IF NOT EXISTS exam_dates (
-    id SERIAL PRIMARY KEY,
-    school_code TEXT NOT NULL,
-    exam_date DATE NOT NULL,
-    UNIQUE(school_code, exam_date)
-  );
-  ```
 
 ---
 
@@ -83,6 +77,25 @@ CREATE TABLE IF NOT EXISTS exam_dates (
   school_code TEXT NOT NULL,
   exam_date DATE NOT NULL,
   UNIQUE(school_code, exam_date)
+);
+
+-- 자리배치표 저장 (별실 시험 - 불러오기/재저장용)
+CREATE TABLE IF NOT EXISTS seat_charts (
+  id SERIAL PRIMARY KEY,
+  school_code TEXT NOT NULL,
+  mode TEXT NOT NULL DEFAULT 'separate',
+  exam_date DATE,
+  period INT,
+  grade INT,
+  subject_name TEXT,
+  room_name TEXT,
+  rows INT NOT NULL,
+  cols INT NOT NULL,
+  start_side TEXT NOT NULL,
+  disabled_seats JSONB DEFAULT '[]',
+  student_ids JSONB DEFAULT '[]',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Realtime 활성화
@@ -150,6 +163,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE absences;
 1. 2단계: 날짜 / 교시 / **학년** / 교실 행·열 수 / 앞번호 시작 방향(창가·복도) / **좌석 편집**(없는 자리 클릭해서 제외 — 기둥, 사물함 등 불규칙한 교실 구조 대응)
 2. 3단계: 과목명 / 별실 호실 입력 → 선택한 **학년 전체 학생**이 반별로 그룹핑되어 나열됨(1반 전체, 2반 전체 순) → 응시자를 클릭해서 선택
 3. 배치표 생성 → 선택된 학생이 **반-번호 순**으로 자동 배치, 좌석 칸에 **학년-반-번호-이름**까지 표시
+4. 인쇄 버튼 옆 **현재 자리배치 저장** 버튼 → 날짜/교시/학년/과목명/호실/좌석 설정/선택 학생을 `seat_charts` 테이블에 저장. "3단계" 카드 우측 상단 **저장된 배치표 불러오기**로 목록을 열어 클릭하면 해당 설정이 그대로 복원되고 배치표가 즉시 재생성됨. 불러온 뒤 내용을 수정하고 다시 저장하면 새 항목이 아니라 **같은 저장 항목이 갱신**됨(버튼 라벨이 "다시 저장"으로 바뀜). 학년을 바꾸거나 다른 시험 방식으로 전환하면 새 저장으로 취급됨
 
 **각자교실 시험** (자기 반 교실에서 그대로 응시)
 1. 2단계: 날짜 / 교시 / **학급** / 교실 행·열 수 / 앞번호 시작 방향 / 좌석 편집
@@ -165,6 +179,10 @@ ALTER PUBLICATION supabase_realtime ADD TABLE absences;
 - 5분간 조작이 없으면 자동 로그아웃(실시간 연결도 함께 정리됨), 로그아웃 버튼도 실시간 연결을 정리하도록 수정됨
 - 헤더 우측 "연결됨" 옆에 **우리 학교 실시간 접속자 수**(Supabase Realtime Presence 기반) 표시
 
+### 디자인 / UI
+- 전체 색상 테마를 남색·골드 톤으로 변경, 폰트는 Pretendard(본문) + Noto Serif KR(제목류) 적용 — 외부 디자인 도구로 `index.html`에 직접 반영됨(별도 파일 아님)
+- 브라우저 탭 아이콘을 기본 지구본 아이콘 → 📝(메모) 이모지로 변경 (`<link rel="icon">`에 SVG 데이터 URI 사용, 별도 이미지 파일 불필요)
+
 ---
 
 ## 4. 데이터 구조 메모
@@ -175,6 +193,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE absences;
 | students | class_id (→ school_code) | 학급에 종속 |
 | absences | school_code | 결시 기록(사유 포함), Realtime 구독 |
 | exam_dates | school_code | 고사 날짜 — DB 저장으로 전환, 담당자가 저장하면 다른 교사도 접속 시 동일하게 보임 |
+| seat_charts | school_code | 자리배치표 저장(별실 시험 전용, mode='separate') — 좌석 설정 + 선택 학생 id 목록(JSONB) 저장, 불러오기 시 재적용 |
 
 - Realtime 채널: 로그인 시 1회 생성(`abs-{SCHOOL_CODE}`), 로그아웃 또는 5분 유휴 시 해제. 같은 채널에 Presence를 붙여 헤더의 접속자 수 표시에 사용
 - 엑셀 처리: 템플릿 생성(스타일링)은 ExcelJS, 업로드 파일 읽기는 SheetJS 사용 (용도별로 라이브러리 분리)
