@@ -23,7 +23,7 @@ exam-system/
 - [x] Supabase SQL Editor에서 `exam_dates` 테이블 생성 SQL 실행 완료
 
 ### 확인 필요 (운영 작업, 코드 아님)
-- [ ] Supabase SQL Editor에서 `seat_charts` 테이블 생성 SQL 실행 필요 (자리배치표 저장/불러오기 기능 — 실행 전까지는 저장 시 오류 발생)
+- [ ] Supabase SQL Editor에서 `seat_charts` 테이블 생성 SQL 실행 필요 (자리배치표 저장/불러오기 기능 — 실행 전까지는 저장 시 오류 발생). 이미 구버전(별실 전용)으로 만들었다면 `class_id` 컬럼 추가 ALTER 문도 함께 실행
 - [ ] Supabase SQL Editor에서 `input_completions` 테이블 생성 SQL 실행 필요 (결시 입력 미제출 학급 현황판 — 실행 전까지는 "저장하기" 클릭 시 오류 발생)
 - [ ] 동료 교사에게 URL + 학교코드 공유 완료 여부 확인
 - [ ] 실제 고사 기간에 전체 교사 대상 실사용 테스트
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS exam_dates (
   UNIQUE(school_code, exam_date)
 );
 
--- 자리배치표 저장 (별실 시험 - 불러오기/재저장용)
+-- 자리배치표 저장 (별실/각자교실 공용 - 불러오기/재저장용)
 CREATE TABLE IF NOT EXISTS seat_charts (
   id SERIAL PRIMARY KEY,
   school_code TEXT NOT NULL,
@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS seat_charts (
   exam_date DATE,
   period INT,
   grade INT,
+  class_id INT REFERENCES classes(id) ON DELETE CASCADE,
   subject_name TEXT,
   room_name TEXT,
   rows INT NOT NULL,
@@ -98,6 +99,8 @@ CREATE TABLE IF NOT EXISTS seat_charts (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+-- 이미 seat_charts를 만든 경우 (mode='separate'만 지원하던 구버전) 아래를 추가로 실행
+ALTER TABLE seat_charts ADD COLUMN IF NOT EXISTS class_id INT REFERENCES classes(id) ON DELETE CASCADE;
 
 -- 결시 입력 제출 완료 기록 (고사본부 미제출 학급 현황판용)
 CREATE TABLE IF NOT EXISTS input_completions (
@@ -145,6 +148,8 @@ ALTER PUBLICATION supabase_realtime ADD TABLE input_completions;
 2. 배포 URL 접속 → 학교코드 입력 후 시작 (최초 입력 시 해당 코드로 학교 데이터 생성)
 3. **설정 탭(고사 담당자용)** → 고사 날짜 추가
 4. **설정 탭** → 학급/학생 등록 — 엑셀 일괄 업로드(양식 다운로드 → 드래그앤드롭 업로드) 또는 수동 추가 중 선택
+   - "학생 등록" 카드의 텍스트 영역 + "전체 저장(덮어쓰기)"는 **학급 전체 명단을 교체**하는 방식(줄 하나만 빠뜨려도 그 학생은 삭제됨)이라 신중하게 사용
+   - 그 아래 **"개별 학생 관리"** 목록에서는 학급 선택 시 등록된 학생이 한 명씩 나열되며, 번호/이름을 고쳐 **저장**하거나 **삭제** 버튼으로 그 학생 한 명만 반영 가능 (전학생 추가·중도 전출 등 부분 수정에 적합)
 
 ### 동료 교사 공유
 ```
@@ -169,6 +174,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE input_completions;
 3. 교시 탭 아래 **제출 현황판** → 선택한 교시에 대해 재적 학급 전체를 학년별로 묶어 "제출완료(초록, 제출 시각 표시)/미제출(주황)" 칩으로 표시(학년 제목 옆에 그 학년의 제출 학급 수도 표시). 담임이 결시 입력 후 "반영 완료"를 눌러야 제출완료로 표시되며, 이후 수정해서 다시 "저장하기" 상태가 되면 자동으로 미제출로 되돌아감
 4. 교시별 탭으로 학년 / 학급별 결시자 명단(사유 포함, 색상 통일) 실시간 확인
 5. **📥 엑셀 다운로드** (날짜/학년/반 필터 옆) → 선택한 날짜 전체 데이터를 색상·표가 적용된 한셀 호환 xlsx로 다운로드 (① 전체 재적·결시 현황 ② 학년별 재적·결시 현황 ③ 결시 학생 명단, 3개 섹션)
+6. 화면 하단 **기간 합산 결시 통계** 카드 → 단일 날짜가 아니라 **시작일~종료일 범위**(+ 학년/반 필터)로 결시 데이터를 합산 조회. 사유별 총계, 학급별 결시 건수, **학생별 누적 결시 순위**(사유별 세분화, 많은 순 정렬)를 화면에서 확인 가능하고, 옆의 **엑셀 다운로드**로 같은 데이터를 한셀 호환 xlsx(① 기간 전체 사유별 집계 ② 학급별 집계 ③ 학생별 누적 결시 명단, 3개 섹션)로 받을 수 있음. 여러 날짜에 걸친 상습 결시 파악에 사용
 
 > **제출 현황판의 한계**: 교시는 담임이 결시 입력 시 직접 입력하는 자유 숫자라, 그 날짜에 "몇 교시까지 시험이 있는지"를 시스템이 미리 알지 못합니다. 따라서 교시 탭은 **누군가 그 교시로 최초 입력(또는 반영 완료)한 순간부터** 생성되며, 그 전에는 "1교시가 아직 하나도 없다"는 것 자체를 표시할 수 없습니다. 고사 당일 일정을 미리 등록해두고 그 기준으로 처음부터 미제출을 표시하려면 별도의 "교시 일정" 기능이 필요합니다.
 
@@ -185,10 +191,12 @@ ALTER PUBLICATION supabase_realtime ADD TABLE input_completions;
 1. 2단계: 날짜 / 교시 / **학급** / 교실 행·열 수 / 앞번호 시작 방향 / 좌석 편집
 2. 3단계: 과목명 입력 → 선택한 **학급 학생 명단**이 나열됨 → 응시자를 클릭해서 선택
 3. 배치표 생성 → **응시자(체크한 학생, 결시자 포함)가 앞쪽에 번호순으로 몰려 배치**되고, 미응시(선택 안 한 학생)는 그 뒤로 번호순 배치됨. 응시자 그룹 안에 있는 결시자는 자리를 당기지 않고 **자기 자리를 빨간 점선 + "결시"로 빈자리 처리**함 (시험 규정 반영). 좌석 칸에는 번호만 표시
+4. 별실 시험과 동일하게 **현재 자리배치 저장 / 저장된 배치표 불러오기**(3단계 카드 우측 상단) 지원 — 날짜/교시/학급/좌석 설정/선택 학생을 저장(`seat_charts.mode='own'`, `class_id`로 학급 식별)하고, 목록에서 선택하면 그대로 복원 후 즉시 재생성됨
 
 **공통**
 - 좌석 수(행×열, 편집으로 제외한 자리 제외)보다 배치할 인원(별실=선택 인원, 각자교실=학급 전체 인원)이 많으면 오류 안내
 - 인쇄는 **가로 방향**으로 용지 폭을 가득 채우며, 자리배치표(과목명/교실명 상단 + 좌석배치 + 요약)만 인쇄됨 — 설정 화면·메뉴는 인쇄 안 됨
+- 배치표 생성 후 **PDF로 저장** 버튼(인쇄 버튼 왼쪽) → html2canvas로 배치표 영역을 캡처해 jsPDF로 가로 A4 PDF 다운로드(한글 폰트 임베딩 없이도 화면 그대로 캡처하는 방식이라 한글이 깨지지 않음). 저장/불러오기 버튼 등 no-print 요소는 캡처에서 제외됨
 
 ### 계정 / 보안
 - 우측 하단 고정 칩("제작 : 황성재 @hirame.ki")은 인쇄 시 자동으로 숨김
@@ -209,7 +217,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE input_completions;
 | students | class_id (→ school_code) | 학급에 종속 |
 | absences | school_code | 결시 기록(사유 포함), Realtime 구독 |
 | exam_dates | school_code | 고사 날짜 — DB 저장으로 전환, 담당자가 저장하면 다른 교사도 접속 시 동일하게 보임 |
-| seat_charts | school_code | 자리배치표 저장(별실 시험 전용, mode='separate') — 좌석 설정 + 선택 학생 id 목록(JSONB) 저장, 불러오기 시 재적용 |
+| seat_charts | school_code | 자리배치표 저장(별실/각자교실 공용, mode='separate'\|'own') — separate는 grade, own은 class_id로 대상 식별. 좌석 설정 + 선택 학생 id 목록(JSONB) 저장, 불러오기 시 재적용 |
 | input_completions | school_code | 결시 입력 "반영 완료" 기록(학급/날짜/교시 단위), 고사본부 제출 현황판의 근거 데이터. absences와 함께 Realtime 구독 |
 
 - Realtime 채널: 로그인 시 1회 생성(`abs-{SCHOOL_CODE}`), 로그아웃 또는 5분 유휴 시 해제. 같은 채널에 Presence를 붙여 헤더의 접속자 수 표시에 사용, absences/input_completions 변경 시 고사본부 자동 새로고침
@@ -220,9 +228,6 @@ ALTER PUBLICATION supabase_realtime ADD TABLE input_completions;
 ## 5. 구현되지 않은 목록 (TODO)
 
 - [ ] **교시별 과목명 고정 설정** — 현재는 자리배치표 생성 시마다 과목명을 매번 직접 입력해야 함
-- [ ] **자리배치표 PDF 내보내기** — 별도 "PDF로 저장" 버튼 없음 (인쇄 대화상자에서 "PDF로 저장" 선택은 가능하나 전용 기능은 아님)
-- [ ] **결시 사유 통계/추이 등 장기 리포트** — 현재는 날짜 단위 엑셀 다운로드만 있고, 여러 날짜를 합산하는 리포트는 없음
-- [ ] **학생 개별 삭제 UI** — 학급 단위 삭제(X 버튼)만 있고, 학급 내 학생 한 명만 삭제하는 기능은 없음 (전체 재저장으로 대체 가능)
 - [ ] **RLS(행 단위 보안) 미적용** — 의도적으로 비활성화된 상태 (위 1번 섹션 참고), 민감도가 높아지면 정책 추가 필요
 - [ ] **전체 학교 합산 동시 접속자 수는 표시 불가** — Supabase 클라이언트 SDK로는 프로젝트 전체의 실시간 연결 수를 조회할 수 없음(Supabase 대시보드에서만 확인 가능). 현재는 **우리 학교 접속자 수**만 헤더에 표시됨. 200명 한도에 근접했을 때 앱이 자동으로 경고하는 기능은 없음
 
@@ -230,6 +235,5 @@ ALTER PUBLICATION supabase_realtime ADD TABLE input_completions;
 
 ## 6. 향후 개선 아이디어 (선택 사항)
 
-- [ ] 반 단위가 아닌 학생 단위 결시 사유 통계 export
 - [ ] 좌석 편집 결과(제외한 자리)를 학급/교실별로 저장해 재사용
 - [ ] 응시현황표에 담임 서명란 등 학교 양식에 맞춘 커스터마이징
