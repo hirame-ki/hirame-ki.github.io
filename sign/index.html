@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>연수 전자서명</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+  :root {
+    --bg:          #F4F6F3;
+    --card:        #FFFFFF;
+    --ink:         #0E1A14;
+    --ink2:        #465045;
+    --ink3:        #8A958C;
+    --hair:        #E8ECE7;
+    --brand:       #1F4D3A;
+    --brand-soft:  #E4ECE6;
+    --brand-light: #EFF4F0;
+    --shadow-sm:   0 1px 2px rgba(14,26,20,.04);
+    --shadow-md:   0 4px 14px rgba(31,77,58,.10);
+    --shadow-lg:   0 8px 20px rgba(31,77,58,.22);
+    --shadow-xl:   0 12px 28px rgba(31,77,58,.32);
+    --radius-sm:   12px;
+    --radius:      16px;
+    --radius-lg:   20px;
+    --font:        'Pretendard Variable','Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100%;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+
+  #app {
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ──────────────────────────────────────── */
+  .header { padding: 22px 20px 14px; }
+  .header-meta {
+    display: flex; justify-content: flex-end; align-items: center;
+    margin-bottom: 18px; min-height: 18px;
+  }
+  .date-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--ink3); font-weight: 500;
+  }
+  .org-name {
+    font-size: 30px; font-weight: 800; color: var(--ink);
+    letter-spacing: -0.035em; line-height: 1.15;
+  }
+  .header-sub {
+    font-size: 14px; font-weight: 500; color: var(--ink2);
+    margin-top: 4px; letter-spacing: -0.01em;
+  }
+
+  /* ── Progress ─────────────────────────────────────── */
+  .progress { padding: 8px 20px 12px; }
+  .progress-track { display: flex; gap: 6px; }
+  .progress-bar {
+    flex: 1; height: 4px; border-radius: 999px;
+    background: var(--hair); transition: background .3s;
+  }
+  .progress-bar.active, .progress-bar.done { background: var(--brand); }
+  .progress-label {
+    margin-top: 8px; font-size: 11px;
+    color: var(--ink3); font-weight: 500;
+  }
+
+  /* ── Page title ───────────────────────────────────── */
+  .page-title {
+    padding: 4px 20px 14px;
+    font-size: 22px; font-weight: 800; color: var(--ink);
+    letter-spacing: -0.03em; line-height: 1.25;
+  }
+  .page-sub {
+    padding: 0 20px 12px;
+    font-size: 13px; color: var(--ink2); font-weight: 500;
+    margin-top: -8px;
+  }
+
+  /* ── Content ──────────────────────────────────────── */
+  .content { flex: 1; padding: 0 20px 8px; }
+
+  /* ── Training items ───────────────────────────────── */
+  .training-list {
+    display: flex; flex-direction: column; gap: 10px;
+    animation: fadeUp .3s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .training-item {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 16px 16px 16px 18px;
+    display: flex; align-items: center; gap: 12px;
+    border: 1px solid var(--hair);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s, transform .12s;
+    -webkit-user-select: none; user-select: none;
+  }
+  .training-item:active { transform: scale(0.985); }
+  .training-item.selected {
+    border: 2px solid var(--brand);
+    box-shadow: var(--shadow-md);
+    padding: 15px 15px 15px 17px;
+  }
+  .training-item.signed-done {
+    background: var(--brand-light);
+    opacity: .9; cursor: default;
+  }
+  .training-icon {
+    width: 38px; height: 38px; border-radius: 12px;
+    background: var(--brand-light); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .training-item.selected .training-icon,
+  .training-item.signed-done .training-icon {
+    background: var(--brand); color: #fff;
+  }
+  .training-body { flex: 1; min-width: 0; }
+  .training-name {
+    font-size: 14px; font-weight: 700; color: var(--ink);
+    letter-spacing: -0.01em; line-height: 1.4;
+    margin-bottom: 2px;
+    overflow: hidden; text-overflow: ellipsis;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .training-meta {
+    font-size: 11px; color: var(--ink3); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .training-item.signed-done .training-meta { color: var(--brand); font-weight: 600; }
+  .training-chev { color: var(--ink3); flex-shrink: 0; }
+  .training-item.selected .training-chev { color: var(--brand); }
+
+  /* ── Empty state ──────────────────────────────────── */
+  .empty-state {
+    text-align: center; padding: 40px 16px 20px;
+    background: var(--card); border-radius: var(--radius-lg);
+    border: 1px solid var(--hair);
+  }
+  .empty-state .ico { color: var(--ink3); margin-bottom: 12px; display: inline-block; }
+  .empty-state p { font-size: 13px; line-height: 1.7; color: var(--ink2); }
+  .empty-hint {
+    margin-top: 14px; background: var(--brand-light);
+    border-radius: 12px; padding: 12px 14px;
+    font-size: 11px; color: var(--ink2); line-height: 1.8; text-align: left;
+  }
+  .empty-hint b { color: var(--brand); font-weight: 700; }
+
+  /* ── Loading ─────────────────────────────────────── */
+  .loading { text-align: center; padding: 60px 0; color: var(--ink3); }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 2.5px solid var(--hair); border-top-color: var(--brand);
+    border-radius: 50%; animation: spin .8s linear infinite;
+    margin: 0 auto 14px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p { font-size: 12px; color: var(--ink3); font-weight: 500; }
+
+  /* ── Info cards (step 2) ──────────────────────────── */
+  .info-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px 16px; border: 1px solid var(--hair);
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 10px;
+    animation: fadeUp .3s ease;
+  }
+  .info-card.preview {
+    background: var(--card);
+    border: 1px solid var(--hair);
+  }
+  .info-card-icon {
+    width: 32px; height: 32px; border-radius: 10px;
+    background: var(--brand-light); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .info-card.active .info-card-icon {
+    background: var(--brand); color: #fff;
+  }
+  .info-card.active { border: 1.5px solid var(--brand); }
+  .info-card-body { flex: 1; min-width: 0; position: relative; }
+  .info-card-label {
+    font-size: 10px; color: var(--ink3); font-weight: 600;
+    letter-spacing: .04em; margin-bottom: 1px;
+  }
+  .info-card-value {
+    font-size: 15px; font-weight: 700; color: var(--ink);
+    letter-spacing: -0.01em;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .info-card-value.placeholder { color: var(--ink3); font-weight: 500; }
+  .info-card.preview .info-card-value { font-size: 13px; }
+  .info-card .chev { color: var(--ink3); flex-shrink: 0; }
+  .info-card.active .chev { color: var(--brand); }
+  .info-card.disabled { opacity: .55; }
+  .info-card.disabled .info-card-icon {
+    background: var(--hair); color: var(--ink3);
+  }
+
+  /* Native select overlay */
+  .native-select {
+    position: absolute; inset: -14px -16px;
+    opacity: 0; cursor: pointer;
+    font-size: 16px; /* avoid iOS zoom */
+    font-family: var(--font);
+  }
+  .native-select:disabled { cursor: not-allowed; }
+
+  /* ── Sign step ────────────────────────────────────── */
+  .sign-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px; background: var(--brand-soft); color: var(--brand);
+    border-radius: 999px; font-size: 11px; font-weight: 700;
+    margin-bottom: 10px; letter-spacing: -0.01em;
+  }
+  .canvas-card {
+    background: var(--card); border-radius: var(--radius-lg);
+    border: 1px solid var(--hair); box-shadow: 0 4px 16px rgba(14,26,20,.04);
+    overflow: hidden;
+    animation: fadeUp .3s ease;
+  }
+  .canvas-head {
+    padding: 11px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--hair);
+  }
+  .canvas-head-meta {
+    font-size: 11px; color: var(--ink3); font-weight: 600;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    max-width: 70%;
+  }
+  .clear-btn {
+    padding: 5px 11px; background: var(--brand-light); color: var(--brand);
+    border: none; border-radius: 999px; font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+  .clear-btn:hover { background: var(--brand-soft); }
+  .canvas-wrap {
+    position: relative; background: #FCFDFC;
+    touch-action: none;
+  }
+  canvas { display: block; width: 100%; cursor: crosshair; }
+  .canvas-hint {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px;
+    pointer-events: none; transition: opacity .25s;
+  }
+  .canvas-hint .pen-ico { color: var(--ink3); opacity: .5; }
+  .canvas-hint p {
+    font-size: 12px; color: var(--ink3);
+    letter-spacing: -0.005em; font-weight: 500;
+  }
+  .canvas-baseline {
+    position: absolute; left: 24px; right: 24px; bottom: 38px;
+    border-top: 1px dashed var(--hair);
+    pointer-events: none;
+  }
+  .canvas-foot {
+    position: absolute; left: 0; right: 0; bottom: 14px;
+    text-align: center; font-size: 10px; color: var(--ink3);
+    letter-spacing: .2em; font-weight: 600; pointer-events: none;
+  }
+
+  /* ── Success ──────────────────────────────────────── */
+  .success-wrap {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 16px 20px 0;
+    animation: fadeUp .35s ease;
+  }
+  .success-circle-wrap {
+    position: relative; margin-bottom: 22px;
+  }
+  .success-circle-bg {
+    position: absolute; inset: 0;
+    width: 96px; height: 96px; border-radius: 50%;
+    background: var(--brand-soft);
+    transform: scale(1.25); opacity: .5;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1.25); opacity: .5; }
+    50%      { transform: scale(1.5);  opacity: .25; }
+  }
+  .success-circle {
+    width: 96px; height: 96px; border-radius: 50%;
+    background: var(--brand); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; box-shadow: var(--shadow-xl);
+    animation: popIn .5s cubic-bezier(.17,.67,.35,1.3) both;
+  }
+  @keyframes popIn {
+    from { transform: scale(.5); opacity: 0; }
+    to   { transform: scale(1);  opacity: 1; }
+  }
+  .success-title {
+    font-size: 26px; font-weight: 800; color: var(--ink);
+    letter-spacing: -0.035em; margin-bottom: 8px;
+  }
+  .success-sub {
+    font-size: 14px; color: var(--ink2);
+    text-align: center; line-height: 1.6; font-weight: 500;
+  }
+  .success-info {
+    margin-top: 26px; width: 100%; background: var(--card);
+    border-radius: 18px; padding: 14px 18px;
+    border: 1px solid var(--hair);
+  }
+  .si-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--hair);
+    gap: 14px;
+  }
+  .si-row:last-child { border-bottom: none; }
+  .si-label {
+    font-size: 12px; color: var(--ink3); font-weight: 600; flex-shrink: 0;
+  }
+  .si-value {
+    font-size: 13px; color: var(--ink); font-weight: 700;
+    letter-spacing: -0.01em; text-align: right;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* ── Footer / Buttons ─────────────────────────────── */
+  .footer-actions {
+    padding: 14px 20px 24px;
+    display: flex; gap: 10px;
+  }
+  .btn {
+    padding: 16px; border: none; border-radius: 16px;
+    font-family: var(--font);
+    font-size: 15px; font-weight: 700;
+    letter-spacing: -0.01em;
+    transition: transform .12s, opacity .15s, box-shadow .15s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.98); }
+  .btn-primary {
+    flex: 1; background: var(--brand); color: #fff;
+    box-shadow: var(--shadow-lg);
+  }
+  .btn-primary:disabled {
+    background: var(--hair); color: var(--ink3);
+    box-shadow: none;
+  }
+  .btn-back {
+    width: 54px; padding: 15px; background: var(--card);
+    color: var(--ink2); border: 1px solid var(--hair);
+  }
+  .btn-outline {
+    flex: 1; background: var(--card); color: var(--ink);
+    border: 1px solid var(--hair);
+  }
+
+  /* ── Brand footer ────────────────────────────────── */
+  .credit-foot {
+    text-align: center; padding: 18px 20px 28px;
+    font-size: 11px; color: var(--ink3);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    flex-wrap: wrap;
+  }
+  .credit-foot .dot { color: #C9D2C9; }
+  .credit-foot a {
+    display: inline-flex; align-items: center; gap: 4px;
+    color: var(--ink2); text-decoration: none; font-weight: 600;
+    padding: 3px 9px; border-radius: 999px; border: 1px solid var(--hair);
+    background: var(--card);
+  }
+  .credit-foot a:hover { background: var(--brand-light); border-color: var(--brand-soft); }
+
+  /* ── Modal ────────────────────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(14,26,20,.45); z-index: 999;
+    align-items: center; justify-content: center; padding: 24px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-card {
+    background: var(--card); border-radius: 22px;
+    padding: 28px 24px 22px; width: 100%; max-width: 320px;
+    text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    animation: popIn .25s cubic-bezier(.17,.67,.35,1.3) both;
+  }
+  .modal-icon-wrap {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--brand-light); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+  }
+  .modal-icon-wrap.warn { background: #FDECEA; color: #C0392B; }
+  .modal-title {
+    font-size: 17px; font-weight: 800; color: var(--ink);
+    margin-bottom: 8px; letter-spacing: -0.02em;
+  }
+  .modal-msg {
+    font-size: 13px; color: var(--ink2); line-height: 1.7;
+    margin-bottom: 18px; white-space: pre-line;
+  }
+  .modal-msg b { color: var(--ink); font-weight: 700; }
+  .modal-btn {
+    display: block; width: 100%; padding: 13px;
+    background: var(--brand); color: #fff; border: none;
+    border-radius: 12px; font-family: var(--font);
+    font-size: 14px; font-weight: 700;
+  }
+  .modal-btn.ghost {
+    background: var(--card); color: var(--ink2);
+    border: 1px solid var(--hair); margin-top: 8px;
+  }
+
+  /* ── Setup gate (시스템 연결) ─────────────────────── */
+  .gate {
+    display: none; flex: 1; flex-direction: column;
+    padding: 8px 20px 24px;
+    animation: fadeUp .3s ease;
+  }
+  body.gate-active .progress,
+  body.gate-active .step { display: none !important; }
+  body.gate-active .gate { display: flex; }
+  .gate-card {
+    background: var(--card); border: 1px solid var(--hair);
+    border-radius: var(--radius-lg); padding: 32px 22px 26px;
+    box-shadow: var(--shadow-md); text-align: center;
+  }
+  .gate-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--brand-light); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .gate-title {
+    font-size: 20px; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--ink); margin-bottom: 8px;
+  }
+  .gate-desc {
+    font-size: 13px; color: var(--ink2); line-height: 1.7;
+    font-weight: 500; margin-bottom: 22px;
+  }
+  .gate-desc b { color: var(--brand); font-weight: 700; }
+  .gate-input {
+    width: 100%; padding: 14px 16px;
+    border: 1.5px solid var(--hair); border-radius: 14px;
+    font-family: var(--font); font-size: 13px; color: var(--ink);
+    background: #FCFDFC; outline: none;
+    transition: border-color .15s;
+  }
+  .gate-input::placeholder { color: var(--ink3); }
+  .gate-input:focus { border-color: var(--brand); }
+  .gate-input.error { border-color: #C0392B; }
+  .gate-err {
+    display: none; margin-top: 10px; text-align: left;
+    font-size: 12px; color: #C0392B; font-weight: 600; line-height: 1.6;
+    background: #FDECEA; padding: 10px 12px; border-radius: 10px;
+  }
+  .gate-err.show { display: block; }
+  .gate-btn {
+    margin-top: 14px; width: 100%; padding: 15px;
+    background: var(--brand); color: #fff; border: none;
+    border-radius: 14px; font-family: var(--font);
+    font-size: 15px; font-weight: 700;
+    box-shadow: var(--shadow-lg);
+  }
+  .gate-btn:disabled { background: var(--hair); color: var(--ink3); box-shadow: none; }
+  .gate-note {
+    margin-top: 16px; font-size: 11px; color: var(--ink3);
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    font-weight: 500;
+  }
+
+  /* ── 서명결과 출력 버튼 ───────────────────────────── */
+  .print-link-btn {
+    margin: 14px 0 0; display: flex; align-items: center; justify-content: center;
+    gap: 6px; width: 100%; padding: 13px;
+    background: var(--card); border: 1px solid var(--hair); border-radius: 14px;
+    color: var(--ink2); font-size: 13px; font-weight: 600;
+    transition: background .15s, color .15s;
+  }
+  .print-link-btn:hover { background: var(--brand-light); color: var(--brand); }
+
+  /* ── 연수 선택 목록 (출력용) ──────────────────────── */
+  .picker-list {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 16px; max-height: 40vh; overflow-y: auto;
+  }
+  .picker-item {
+    text-align: left; padding: 13px 14px;
+    border: 1px solid var(--hair); background: #FCFDFC;
+    border-radius: 12px; font-size: 13px; font-weight: 700;
+    color: var(--ink); font-family: var(--font);
+    display: flex; align-items: center; gap: 9px;
+    transition: border-color .15s, background .15s;
+  }
+  .picker-item:hover { border-color: var(--brand); background: var(--brand-light); }
+  .picker-item .pi-ico { color: var(--brand); flex-shrink: 0; display: flex; }
+
+  /* ── 공유 링크 박스 ───────────────────────────────── */
+  .share-box {
+    background: #FCFDFC; border: 1px dashed #C9D2C9; border-radius: 12px;
+    padding: 11px 12px; font-size: 11px; color: var(--ink2);
+    word-break: break-all; text-align: left; margin-bottom: 12px;
+    max-height: 88px; overflow: auto; font-weight: 500; line-height: 1.6;
+  }
+  .share-qr-wrap { text-align: center; margin-bottom: 12px; }
+  .share-qr {
+    width: 150px; height: 150px; border-radius: 12px;
+    border: 1px solid var(--hair); background: #fff; padding: 8px;
+  }
+  .share-qr-hint {
+    margin-top: 6px; font-size: 10.5px; color: var(--ink3); font-weight: 500;
+  }
+
+  /* ── 안내문 배너 ─────────────────────────────────── */
+  .notice-bar {
+    display: none; margin: 0 20px 10px;
+    background: var(--brand-light); border: 1px solid var(--brand-soft);
+    border-radius: 14px; padding: 12px 14px;
+    font-size: 12.5px; color: var(--ink2); font-weight: 500; line-height: 1.65;
+    align-items: flex-start; gap: 9px;
+    animation: fadeUp .3s ease;
+  }
+  .notice-bar.show { display: flex; }
+  .notice-bar .nb-ico { color: var(--brand); flex-shrink: 0; margin-top: 1px; display: flex; }
+  body.gate-active .notice-bar { display: none !important; }
+
+  /* ── 공유 미니 버튼 (관리자용) ────────────────────── */
+  .share-mini {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1px solid var(--hair); background: var(--card); color: var(--ink3);
+    display: none; align-items: center; justify-content: center;
+    margin-left: 8px; padding: 0;
+  }
+  .share-mini.show { display: inline-flex; }
+  .share-mini:hover { color: var(--brand); border-color: var(--brand-soft); }
+
+  /* ── 출력 비밀번호 입력 ──────────────────────────── */
+  .pin-input {
+    width: 100%; padding: 13px 16px; margin-bottom: 4px;
+    border: 1.5px solid var(--hair); border-radius: 12px;
+    font-family: var(--font); font-size: 18px; font-weight: 700;
+    letter-spacing: .25em; text-align: center;
+    color: var(--ink); background: #FCFDFC; outline: none;
+  }
+  .pin-input:focus { border-color: var(--brand); }
+
+  /* ── 서명등록부 (인쇄) ────────────────────────────── */
+  .print-overlay {
+    display: none; position: fixed; inset: 0;
+    background: #EDEFEC; z-index: 1200; overflow: auto;
+  }
+  .print-overlay.show { display: block; }
+  .print-toolbar {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--card); border-bottom: 1px solid var(--hair);
+    padding: 12px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .pt-title {
+    font-size: 14px; font-weight: 800; color: var(--ink);
+    letter-spacing: -0.02em;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .pt-title svg { color: var(--brand); }
+  .pt-actions { display: flex; gap: 8px; }
+  .pt-btn {
+    padding: 9px 16px; border-radius: 10px;
+    font-size: 13px; font-weight: 700; font-family: var(--font);
+    border: 1px solid var(--hair); background: var(--card); color: var(--ink2);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pt-btn.solid { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .print-doc {
+    max-width: 760px; margin: 20px auto 48px;
+    background: #fff; padding: 44px 40px;
+    box-shadow: 0 4px 24px rgba(14,26,20,.08);
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .pd-org {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12px; font-weight: 700; color: #555;
+    letter-spacing: .04em;
+    border-bottom: 2px solid #2C3E50; padding-bottom: 9px;
+  }
+  .pd-title {
+    text-align: center; font-size: 24px; font-weight: 800; color: #111;
+    letter-spacing: .01em; margin: 24px 0 6px; line-height: 1.35;
+    word-break: keep-all;
+  }
+  .pd-meta {
+    text-align: center; font-size: 12px; color: #555;
+    margin-bottom: 22px; font-weight: 500;
+  }
+  /* 페이지 단위 컨테이너: 각 표가 인쇄 시 한 페이지를 이룸 */
+  .pd-page { break-after: page; page-break-after: always; }
+  .pd-page.last { break-after: auto; page-break-after: auto; }
+  .pd-page + .pd-page { margin-top: 22px; }
+  .print-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .print-table th {
+    background: #F1F3F0; border: 1px solid #9AA39A;
+    padding: 7px 4px; font-size: 11.5px; font-weight: 700; color: #222;
+  }
+  .print-table th.pd-div, .print-table td.pd-div {
+    border-left: 2px solid #6B756B;
+  }
+  .print-table td {
+    border: 1px solid #B9C0B9; padding: 2px 4px;
+    font-size: 11.5px; color: #222; text-align: center;
+    vertical-align: middle; height: 15mm;
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  .print-table td.pd-name { font-weight: 700; }
+  .print-table td.pd-sig { padding: 1mm; }
+  .print-table td img {
+    width: 100%; height: 13mm; object-fit: contain;
+    display: block; margin: 0 auto;
+  }
+  .print-table tr { break-inside: avoid; page-break-inside: avoid; }
+  .pd-unsigned { color: #C0392B; font-size: 11px; font-weight: 700; }
+  .pd-signed-alt { color: #1F4D3A; font-size: 11px; font-weight: 700; }
+  .pd-summary {
+    margin-top: 22px; border: 1.5px solid #2C3E50; border-radius: 8px;
+    padding: 15px 18px 16px;
+  }
+  .pd-sum-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12.5px; color: #222; font-weight: 600; gap: 12px;
+  }
+  .pd-sum-row b { font-weight: 800; }
+  .pd-pct { font-size: 20px; font-weight: 800; color: #1F4D3A; white-space: nowrap; }
+  .pd-bar {
+    margin-top: 11px; height: 8px; background: #E8ECE7;
+    border-radius: 99px; overflow: hidden;
+  }
+  .pd-bar i {
+    display: block; height: 100%; background: #1F4D3A; border-radius: 99px;
+  }
+  .pd-foot {
+    margin-top: 24px; text-align: center;
+    font-size: 10.5px; color: #888; font-weight: 500; line-height: 1.7;
+  }
+  .pd-loading { padding: 90px 0; text-align: center; color: var(--ink3); }
+
+  @page { size: A4; margin: 13mm; }
+  @media print {
+    body.print-mode { background: #fff; }
+    body.print-mode #app,
+    body.print-mode .modal-overlay { display: none !important; }
+    body.print-mode .print-overlay {
+      position: static; background: #fff; overflow: visible;
+    }
+    body.print-mode .print-toolbar { display: none !important; }
+    body.print-mode .print-doc {
+      max-width: none; margin: 0; padding: 0; box-shadow: none;
+    }
+  }
+
+  /* steps wrapper transitions */
+  .step { display: none; }
+  .step.active { display: flex; flex-direction: column; flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- ── Inline icon defs ──────────────────────────────── -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+    </symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12l5 5L20 7"/>
+    </symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 6l6 6-6 6"/>
+    </symbol>
+    <symbol id="i-chev-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 6l-6 6 6 6"/>
+    </symbol>
+    <symbol id="i-chev-d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 9l6 6 6-6"/>
+    </symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+      <rect x="8" y="2" width="8" height="4" rx="1"/>
+    </symbol>
+    <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="1"/>
+      <path d="M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/>
+    </symbol>
+    <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 20h9"/>
+      <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 4v6h6M23 20v-6h-6"/>
+      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+    </symbol>
+    <symbol id="i-inbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+      <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+    </symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </symbol>
+    <symbol id="i-print" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 9V2h12v7"/>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+      <rect x="6" y="14" width="12" height="8"/>
+    </symbol>
+    <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+    </symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="app">
+
+  <!-- ── Header ── -->
+  <header class="header">
+    <div class="header-meta">
+      <span class="date-pill" id="datePill">
+        <svg width="11" height="11"><use href="#i-calendar"/></svg>
+        <span id="headerDate">—</span>
+      </span>
+      <button class="share-mini" id="shareMini" onclick="showShareModal()" aria-label="공유 링크·QR 보기" title="공유 링크·QR 보기">
+        <svg width="12" height="12"><use href="#i-link"/></svg>
+      </button>
+    </div>
+    <h1 class="org-name" id="headerOrg">연수 전자서명</h1>
+    <div class="header-sub">연수 참여 전자서명</div>
+  </header>
+
+  <!-- ── 안내문 배너 (시트 B19 입력 시 표시) ── -->
+  <div class="notice-bar" id="noticeBar">
+    <span class="nb-ico"><svg width="14" height="14"><use href="#i-bell"/></svg></span>
+    <span id="noticeText"></span>
+  </div>
+
+  <!-- ── 시스템 연결 (최초 1회) ── -->
+  <div class="gate" id="gate">
+    <div class="gate-card">
+      <div class="gate-icon"><svg width="30" height="30"><use href="#i-shield"/></svg></div>
+      <div class="gate-title">시스템 연결이 필요해요</div>
+      <div class="gate-desc">
+        관리자에게 받은 <b>접속 링크</b>로 접속하시거나,<br>
+        아래에 <b>웹앱 배포 URL</b>을 입력해 주세요.
+      </div>
+      <input type="url" class="gate-input" id="gateInput"
+             placeholder="https://script.google.com/macros/s/…/exec"
+             autocomplete="off" spellcheck="false">
+      <div class="gate-err" id="gateErr"></div>
+      <button class="gate-btn" id="gateBtn" onclick="connectApi()">연결하기</button>
+      <div class="gate-note">
+        <svg width="11" height="11"><use href="#i-lock"/></svg>
+        입력한 주소는 이 기기에만 저장됩니다
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Progress ── -->
+  <div class="progress">
+    <div class="progress-track">
+      <div class="progress-bar active" id="bar1"></div>
+      <div class="progress-bar" id="bar2"></div>
+      <div class="progress-bar" id="bar3"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">1 of 3 단계</div>
+  </div>
+
+  <!-- ── STEP 1: 연수 선택 ── -->
+  <div id="step1" class="step active">
+    <div class="page-title">어떤 연수를<br>서명하시겠어요?</div>
+    <div class="content">
+      <div id="trainingContainer">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>연수 목록을 불러오는 중...</p>
+        </div>
+      </div>
+      <button class="print-link-btn" onclick="openPrintPicker()">
+        <svg width="14" height="14"><use href="#i-print"/></svg> 서명결과 출력
+      </button>
+    </div>
+    <div class="footer-actions">
+      <button class="btn btn-primary" id="btn1" onclick="goToStep2()" disabled>
+        다음 단계로
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: 정보 입력 ── -->
+  <div id="step2" class="step">
+    <div class="page-title">본인 정보를<br>선택해 주세요</div>
+    <div class="content">
+
+      <div class="info-card preview">
+        <div class="info-card-icon"><svg width="15" height="15"><use href="#i-clipboard"/></svg></div>
+        <div class="info-card-body">
+          <div class="info-card-label">선택한 연수</div>
+          <div class="info-card-value" id="previewTitle">—</div>
+        </div>
+      </div>
+
+      <div class="info-card" id="deptCard">
+        <div class="info-card-icon"><svg width="15" height="15"><use href="#i-building"/></svg></div>
+        <div class="info-card-body">
+          <div class="info-card-label">부서</div>
+          <div class="info-card-value placeholder" id="deptValue">부서를 선택해 주세요</div>
+          <select id="dept" class="native-select" onchange="onDeptChange()">
+            <option value="">— 부서를 선택해 주세요 —</option>
+          </select>
+        </div>
+        <span class="chev"><svg width="16" height="16"><use href="#i-chev-d"/></svg></span>
+      </div>
+
+      <div class="info-card disabled" id="nameCard">
+        <div class="info-card-icon"><svg width="15" height="15"><use href="#i-user"/></svg></div>
+        <div class="info-card-body">
+          <div class="info-card-label">성명</div>
+          <div class="info-card-value placeholder" id="nameValue">부서를 먼저 선택해 주세요</div>
+          <select id="uname" class="native-select" onchange="onNameChange()" disabled>
+            <option value="">— 부서를 먼저 선택해 주세요 —</option>
+          </select>
+        </div>
+        <span class="chev"><svg width="16" height="16"><use href="#i-chev-d"/></svg></span>
+      </div>
+
+    </div>
+    <div class="footer-actions">
+      <button class="btn btn-back" onclick="goToStep1()" aria-label="이전">
+        <svg width="18" height="18"><use href="#i-chev-l"/></svg>
+      </button>
+      <button class="btn btn-primary" id="btn2" onclick="goToStep3()" disabled>
+        서명하러 가기
+        <svg width="15" height="15"><use href="#i-pen"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: 서명 ── -->
+  <div id="step3" class="step">
+    <div style="padding: 4px 20px 4px;">
+      <div class="sign-tag">
+        <svg width="11" height="11"><use href="#i-pen"/></svg> 마지막 단계
+      </div>
+      <div style="font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-0.035em;line-height:1.2;">
+        서명을 남겨주세요
+      </div>
+      <div style="font-size:13px;color:var(--ink2);margin-top:6px;font-weight:500;">
+        손가락이나 펜으로 자유롭게
+      </div>
+    </div>
+    <div class="content" style="padding-top: 14px;">
+      <div class="canvas-card">
+        <div class="canvas-head">
+          <div class="canvas-head-meta" id="signMeta">—</div>
+          <button class="clear-btn" onclick="clearCanvas()">
+            <svg width="11" height="11"><use href="#i-refresh"/></svg> 다시
+          </button>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="sigCanvas" height="240"></canvas>
+          <div class="canvas-baseline"></div>
+          <div class="canvas-hint" id="canvasHint">
+            <span class="pen-ico"><svg width="28" height="28"><use href="#i-pen"/></svg></span>
+            <p>여기에 서명해 주세요</p>
+          </div>
+          <div class="canvas-foot">SIGNATURE</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-actions">
+      <button class="btn btn-back" onclick="goToStep2FromStep3()" aria-label="이전">
+        <svg width="18" height="18"><use href="#i-chev-l"/></svg>
+      </button>
+      <button class="btn btn-primary" id="btn3" onclick="doSubmit()" disabled>
+        서명 제출하기
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: 완료 ── -->
+  <div id="step4" class="step">
+    <div class="success-wrap">
+      <div class="success-circle-wrap">
+        <div class="success-circle-bg"></div>
+        <div class="success-circle">
+          <svg width="44" height="44"><use href="#i-check"/></svg>
+        </div>
+      </div>
+      <div class="success-title">서명 완료!</div>
+      <div class="success-sub">
+        연수 참여 기록이 정상적으로<br>접수되었어요.
+      </div>
+      <div class="success-info" id="successInfo"></div>
+    </div>
+    <div class="footer-actions">
+      <button class="btn btn-primary" onclick="resetAll()">
+        다른 연수 서명하기
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Footer credit ── -->
+  <div class="credit-foot">
+    <span>Designed &amp; Built by 성포고등학교 황성재</span>
+    <span class="dot">·</span>
+    <a href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener">@hirame.ki</a>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ── Modals ── -->
+<div class="modal-overlay" id="modalAlreadySigned" onclick="this.classList.remove('show')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="26" height="26"><use href="#i-check"/></svg></div>
+    <div class="modal-title">이미 서명을 완료하셨어요</div>
+    <div class="modal-msg">이 기기에서 이미<br><b id="modalSignedTitle">—</b><br>서명을 완료하셨습니다.<br><br>다른 연수는 선택해서 서명하실 수 있어요.</div>
+    <button class="modal-btn" onclick="document.getElementById('modalAlreadySigned').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalDuplicate" onclick="this.classList.remove('show')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap warn"><svg width="26" height="26"><use href="#i-lock"/></svg></div>
+    <div class="modal-title">중복 서명이 차단되었어요</div>
+    <div class="modal-msg" id="modalDuplicateMsg">—</div>
+    <button class="modal-btn" onclick="document.getElementById('modalDuplicate').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalError" onclick="this.classList.remove('show')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap warn"><svg width="26" height="26"><use href="#i-warn"/></svg></div>
+    <div class="modal-title">잠시 후 다시 시도해 주세요</div>
+    <div class="modal-msg" id="modalErrorMsg">—</div>
+    <button class="modal-btn" onclick="document.getElementById('modalError').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<!-- 연결 완료 + 공유 링크 -->
+<div class="modal-overlay" id="modalShare">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="26" height="26"><use href="#i-link"/></svg></div>
+    <div class="modal-title">공유 링크</div>
+    <div class="modal-msg">아래 <b>공유 링크 또는 QR</b>을 구성원에게 안내하시면<br>별도 설정 없이 바로 서명할 수 있어요.</div>
+    <div class="share-qr-wrap">
+      <img class="share-qr" id="shareQr" alt="공유 링크 QR 코드">
+      <div class="share-qr-hint">QR 이미지를 길게 누르면 저장할 수 있어요</div>
+    </div>
+    <div class="share-box" id="shareLinkBox">—</div>
+    <button class="modal-btn" id="copyShareBtn" onclick="copyShareLink()">
+      링크 복사하기
+    </button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalShare').classList.remove('show')">닫기</button>
+  </div>
+</div>
+
+<!-- 출력 비밀번호 입력 -->
+<div class="modal-overlay" id="modalPin">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-lock"/></svg></div>
+    <div class="modal-title">출력 비밀번호</div>
+    <div class="modal-msg">관리자가 설정한 <b>출력 비밀번호</b>를<br>입력해 주세요.</div>
+    <input type="password" class="pin-input" id="pinInput" autocomplete="off" inputmode="text">
+    <div class="gate-err" id="pinErr" style="margin-bottom:8px"></div>
+    <button class="modal-btn" onclick="submitPin()" style="margin-top:6px">확인</button>
+    <button class="modal-btn ghost" onclick="closePinModal()">취소</button>
+  </div>
+</div>
+
+<!-- 출력할 연수 선택 -->
+<div class="modal-overlay" id="modalPicker" onclick="this.classList.remove('show')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-print"/></svg></div>
+    <div class="modal-title">서명등록부 출력</div>
+    <div class="modal-msg">출력할 연수를 선택해 주세요.</div>
+    <div class="picker-list" id="pickerList"></div>
+    <button class="modal-btn ghost" style="margin-top:0" onclick="document.getElementById('modalPicker').classList.remove('show')">취소</button>
+  </div>
+</div>
+
+<!-- ── 서명등록부 미리보기 / 인쇄 ── -->
+<div class="print-overlay" id="printOverlay">
+  <div class="print-toolbar">
+    <div class="pt-title">
+      <svg width="16" height="16"><use href="#i-print"/></svg>
+      서명등록부 미리보기
+    </div>
+    <div class="pt-actions">
+      <button class="pt-btn" onclick="closePrintView()">닫기</button>
+      <button class="pt-btn solid" onclick="window.print()">
+        <svg width="13" height="13"><use href="#i-print"/></svg> 인쇄하기
+      </button>
+    </div>
+  </div>
+  <div class="print-doc" id="printDoc"></div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   상태
+═══════════════════════════════════════════ */
+var API_URL          = '';
+var API_STORAGE_KEY  = 'esign_api_url';
+var PIN_SESSION_KEY  = 'esign_print_pin';
+var orgName          = '';
+var trainings        = [];
+var selectedTraining = null;
+var selectedIndex    = -1;
+var isDrawing        = false;
+var hasSignature     = false;
+var canvas, ctx;
+var staffByDept      = {};
+var deptOrder        = [];
+var printPinSet      = false;   // 시트에 출력 비밀번호가 설정되어 있는지
+var pendingPrintTraining = null;
+var BRAND_INK        = '#1F4D3A';  // 서명 잉크 색 (대표 색상 적용 시 어둡게 보정)
+
+/* ═══════════════════════════════════════════
+   초기화
+═══════════════════════════════════════════ */
+window.addEventListener('load', function() {
+  var now = new Date();
+  document.getElementById('headerDate').textContent =
+    (now.getMonth() + 1) + '월 ' + now.getDate() + '일 (' +
+    ['일','월','화','수','목','금','토'][now.getDay()] + ')';
+
+  initCanvas();
+
+  var params   = new URLSearchParams(location.search);
+  var apiParam = params.get('api');
+
+  // 접속 링크(?api=...)로 들어온 경우: URL 저장 후 사용
+  if (apiParam && isValidApiUrl(apiParam)) {
+    localStorage.setItem(API_STORAGE_KEY, apiParam);
+  }
+  API_URL = localStorage.getItem(API_STORAGE_KEY) || '';
+
+  // 데모 미리보기: ?demo=1 또는 파일로 직접 열었을 때
+  if (params.get('demo') === '1' ||
+      (location.protocol === 'file:' && !API_URL)) {
+    API_URL = '';
+    loadDemoData();
+    return;
+  }
+
+  if (!API_URL) {
+    document.body.classList.add('gate-active');
+    return;
+  }
+  loadPageData(false);
+});
+
+function isValidApiUrl(url) {
+  return /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(String(url).trim());
+}
+
+/* ═══════════════════════════════════════════
+   API 연결 (최초 1회)
+═══════════════════════════════════════════ */
+function connectApi() {
+  var input = document.getElementById('gateInput');
+  var err   = document.getElementById('gateErr');
+  var btn   = document.getElementById('gateBtn');
+  var url   = input.value.trim();
+
+  err.classList.remove('show');
+  input.classList.remove('error');
+
+  if (!isValidApiUrl(url)) {
+    err.textContent = '주소 형식이 올바르지 않아요. 배포 URL은 https://script.google.com/macros/s/…/exec 형태입니다.';
+    err.classList.add('show');
+    input.classList.add('error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '연결 확인 중...';
+
+  fetch(url + '?action=pageData')
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(data) {
+      if (!data || typeof data !== 'object' || !('trainings' in data)) {
+        throw new Error('invalid response');
+      }
+      API_URL = url;
+      localStorage.setItem(API_STORAGE_KEY, url);
+      document.body.classList.remove('gate-active');
+      onPageDataLoaded(data);
+      showShareModal();
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.textContent = '연결하기';
+      err.textContent = '연결에 실패했어요.\n① 배포 URL이 정확한지\n② 배포 시 액세스 권한이 "모든 사용자"인지 확인해 주세요.';
+      err.classList.add('show');
+      input.classList.add('error');
+    });
+}
+
+document.getElementById('gateInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') connectApi();
+});
+
+function resetConnection() {
+  localStorage.removeItem(API_STORAGE_KEY);
+  location.href = location.pathname;
+}
+
+/* ── 공유 링크 ── */
+function buildShareLink() {
+  return location.origin + location.pathname + '?api=' + encodeURIComponent(API_URL);
+}
+
+function showShareModal() {
+  var link = buildShareLink();
+  document.getElementById('shareLinkBox').textContent = link;
+  document.getElementById('shareQr').src =
+    'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=' + encodeURIComponent(link);
+  document.getElementById('modalShare').classList.add('show');
+}
+
+/* ── 기관 대표 색상 적용 (시트 B20, #RRGGBB) ── */
+function applyBrandColor(hex) {
+  hex = String(hex || '').trim();
+  if (!/^#?[0-9a-fA-F]{6}$/.test(hex)) return;
+  if (hex.charAt(0) !== '#') hex = '#' + hex;
+
+  var r = parseInt(hex.substr(1, 2), 16),
+      g = parseInt(hex.substr(3, 2), 16),
+      b = parseInt(hex.substr(5, 2), 16);
+
+  // p만큼 흰색과 혼합 (파스텔 톤 파생)
+  function tint(p) {
+    return 'rgb(' +
+      Math.round(r + (255 - r) * p) + ',' +
+      Math.round(g + (255 - g) * p) + ',' +
+      Math.round(b + (255 - b) * p) + ')';
+  }
+  // p만큼 검정과 혼합 (서명 잉크가 항상 진하도록 보정)
+  function shade(p) {
+    return 'rgb(' +
+      Math.round(r * (1 - p)) + ',' +
+      Math.round(g * (1 - p)) + ',' +
+      Math.round(b * (1 - p)) + ')';
+  }
+
+  var rs = document.documentElement.style;
+  rs.setProperty('--brand',       hex);
+  rs.setProperty('--brand-soft',  tint(0.87));
+  rs.setProperty('--brand-light', tint(0.93));
+  rs.setProperty('--shadow-md', '0 4px 14px rgba('  + r + ',' + g + ',' + b + ',.10)');
+  rs.setProperty('--shadow-lg', '0 8px 20px rgba('  + r + ',' + g + ',' + b + ',.22)');
+  rs.setProperty('--shadow-xl', '0 12px 28px rgba(' + r + ',' + g + ',' + b + ',.32)');
+
+  BRAND_INK = shade(0.35);
+  if (ctx) ctx.strokeStyle = BRAND_INK;
+}
+
+function copyShareLink() {
+  var link = buildShareLink();
+  var btn  = document.getElementById('copyShareBtn');
+  function done() {
+    btn.textContent = '복사되었어요!';
+    setTimeout(function() { btn.textContent = '링크 복사하기'; }, 1800);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(done).catch(function() { fallbackCopy(link, done); });
+  } else {
+    fallbackCopy(link, done);
+  }
+}
+
+function fallbackCopy(text, done) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) {}
+  document.body.removeChild(ta);
+}
+
+/* ═══════════════════════════════════════════
+   데이터 로드
+═══════════════════════════════════════════ */
+function loadPageData() {
+  fetch(API_URL + '?action=pageData')
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(data) {
+      if (!data || typeof data !== 'object' || !('trainings' in data)) throw new Error('invalid');
+      onPageDataLoaded(data);
+    })
+    .catch(function() { renderEmpty(true); });
+}
+
+function loadDemoData() {
+  setTimeout(function() {
+    onPageDataLoaded({
+      orgName: '○○기관 (미리보기)',
+      notice: '오늘 연수 종료 후 만족도 설문에도 참여해 주세요. (데모 안내문 — 시트 B19에서 설정)',
+      trainings: [
+        { title: '학교폭력 예방교육', content: '전 구성원 · 09:00 ~ 09:40' },
+        { title: 'AI 활용 수업 설계 워크숍', content: '자율 참여' },
+        { title: '심폐소생술(CPR) 응급처치 교육', content: '보건 담당 주관' }
+      ],
+      deptOrder: ['기획부','운영부','교육부','행정실'],
+      staffByDept: {
+        '기획부': ['황성재','김지영','이민호'],
+        '운영부': ['박서연','정현우'],
+        '교육부': ['최유진','한도윤','오세빈'],
+        '행정실': ['윤지호','강미래']
+      }
+    });
+  }, 400);
+}
+
+function onPageDataLoaded(data) {
+  orgName = String(data.orgName || '').trim();
+  if (orgName) {
+    document.getElementById('headerOrg').textContent = orgName;
+    document.title = orgName + ' · 연수 전자서명';
+  }
+  staffByDept = data.staffByDept || {};
+  deptOrder   = data.deptOrder   || [];
+  printPinSet = !!data.printPinSet;
+
+  // 안내문 (시트 B19)
+  var notice = String(data.notice || '').trim();
+  if (notice) {
+    document.getElementById('noticeText').textContent = notice;
+    document.getElementById('noticeBar').classList.add('show');
+  }
+
+  // 대표 색상 (시트 B20)
+  applyBrandColor(data.brandColor);
+
+  // 연결된 상태면 헤더에 공유 버튼 표시 (관리자용)
+  if (API_URL) document.getElementById('shareMini').classList.add('show');
+
+  var deptSel = document.getElementById('dept');
+  deptSel.innerHTML = '<option value="">— 부서를 선택해 주세요 —</option>';
+  deptOrder.forEach(function(d) {
+    var opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    deptSel.appendChild(opt);
+  });
+
+  trainings = data.trainings || [];
+  renderTrainings(trainings);
+}
+
+/* ═══════════════════════════════════════════
+   연수 목록
+═══════════════════════════════════════════ */
+function renderEmpty(isError) {
+  var container = document.getElementById('trainingContainer');
+  if (isError) {
+    container.innerHTML =
+      '<div class="empty-state">' +
+        '<span class="ico"><svg width="32" height="32"><use href="#i-warn"/></svg></span>' +
+        '<p>데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해 주세요.</p>' +
+        '<div class="empty-hint">' +
+          '<b>계속 실패한다면</b><br>' +
+          '① 시트 관리자에게 배포 상태 확인 요청<br>' +
+          '② 아래 버튼으로 연결을 다시 설정' +
+        '</div>' +
+        '<button class="print-link-btn" onclick="resetConnection()">연결 다시 설정</button>' +
+      '</div>';
+  } else {
+    container.innerHTML =
+      '<div class="empty-state">' +
+        '<span class="ico"><svg width="34" height="34"><use href="#i-inbox"/></svg></span>' +
+        '<p>오늘 등록된 연수가 없습니다.</p>' +
+        '<div class="empty-hint">' +
+          '<b>관리자 확인 사항</b><br>' +
+          '① [⚙️ 연수설정] 시트에서 A열이 <b>Y</b>인지 확인<br>' +
+          '② D열 날짜가 <b>오늘 날짜</b> 또는 <b>매일</b>인지 확인<br>' +
+          '③ D열 셀 서식이 <b>일반 텍스트</b>인지 확인' +
+        '</div>' +
+      '</div>';
+  }
+}
+
+function renderTrainings(list) {
+  var container = document.getElementById('trainingContainer');
+  if (!list || list.length === 0) { renderEmpty(false); return; }
+
+  var html = '<div class="training-list">';
+  list.forEach(function(t, i) {
+    html += '<div class="training-item" id="ti' + i + '" onclick="selectTraining(' + i + ')">' +
+      '<div class="training-icon"><svg width="18" height="18"><use href="#i-book"/></svg></div>' +
+      '<div class="training-body">' +
+        '<div class="training-name">' + esc(t.title) + '</div>' +
+        '<div class="training-meta">' + (t.content ? esc(t.content) : '연수 참여 서명') + '</div>' +
+      '</div>' +
+      '<span class="training-chev"><svg width="16" height="16"><use href="#i-chev-r"/></svg></span>' +
+    '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+  updateTrainingListUI();
+}
+
+function selectTraining(idx) {
+  var training = trainings[idx];
+  if (localStorage.getItem('signed_' + training.title)) {
+    document.getElementById('modalSignedTitle').textContent = training.title;
+    document.getElementById('modalAlreadySigned').classList.add('show');
+    return;
+  }
+  document.querySelectorAll('.training-item').forEach(function(el) {
+    el.classList.remove('selected');
+    var icon = el.querySelector('.training-icon svg use');
+    if (icon && !el.classList.contains('signed-done')) icon.setAttribute('href', '#i-book');
+  });
+  var el = document.getElementById('ti' + idx);
+  if (el) {
+    el.classList.add('selected');
+    var iconUse = el.querySelector('.training-icon svg use');
+    if (iconUse) iconUse.setAttribute('href', '#i-check');
+  }
+  selectedTraining = training;
+  selectedIndex = idx;
+  document.getElementById('btn1').disabled = false;
+}
+
+function updateTrainingListUI() {
+  trainings.forEach(function(t, i) {
+    var el = document.getElementById('ti' + i);
+    if (!el) return;
+    if (localStorage.getItem('signed_' + t.title)) {
+      el.classList.add('signed-done');
+      el.classList.remove('selected');
+      var iconUse = el.querySelector('.training-icon svg use');
+      if (iconUse) iconUse.setAttribute('href', '#i-check');
+      var meta = el.querySelector('.training-meta');
+      if (meta) meta.textContent = '서명 완료';
+      var chev = el.querySelector('.training-chev');
+      if (chev) chev.style.display = 'none';
+      el.onclick = function() {
+        document.getElementById('modalSignedTitle').textContent = t.title;
+        document.getElementById('modalAlreadySigned').classList.add('show');
+      };
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════
+   스텝 이동
+═══════════════════════════════════════════ */
+function showStep(n) {
+  for (var i = 1; i <= 4; i++) {
+    document.getElementById('step' + i).classList.toggle('active', i === n);
+  }
+  setBars(n);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setBars(n) {
+  var label = document.getElementById('progressLabel');
+  if (n >= 4) {
+    document.getElementById('bar1').classList.add('done');
+    document.getElementById('bar2').classList.add('done');
+    document.getElementById('bar3').classList.add('done');
+    label.textContent = '완료';
+    return;
+  }
+  for (var i = 1; i <= 3; i++) {
+    var b = document.getElementById('bar' + i);
+    b.classList.remove('active', 'done');
+    if (i < n) b.classList.add('done');
+    else if (i === n) b.classList.add('active');
+  }
+  label.textContent = n + ' of 3 단계';
+}
+
+function goToStep1() {
+  showStep(1);
+}
+
+function goToStep2() {
+  if (!selectedTraining) return;
+  document.getElementById('previewTitle').textContent = selectedTraining.title;
+  showStep(2);
+}
+
+function goToStep2FromStep3() {
+  showStep(2);
+}
+
+function goToStep3() {
+  document.getElementById('signMeta').textContent =
+    document.getElementById('dept').value + ' · ' + document.getElementById('uname').value;
+  showStep(3);
+  setTimeout(resizeCanvas, 80);
+}
+
+/* ── 부서/이름 ───────────────────────────────────── */
+function onDeptChange() {
+  var dept = document.getElementById('dept').value;
+  var nameSel = document.getElementById('uname');
+  var deptCard = document.getElementById('deptCard');
+  var nameCard = document.getElementById('nameCard');
+  var deptValue = document.getElementById('deptValue');
+  var nameValue = document.getElementById('nameValue');
+
+  if (dept) {
+    deptValue.textContent = dept;
+    deptValue.classList.remove('placeholder');
+    deptCard.classList.add('active');
+  } else {
+    deptValue.textContent = '부서를 선택해 주세요';
+    deptValue.classList.add('placeholder');
+    deptCard.classList.remove('active');
+  }
+
+  nameSel.innerHTML = '<option value="">— 성명을 선택해 주세요 —</option>';
+  if (dept && staffByDept[dept]) {
+    staffByDept[dept].forEach(function(n) {
+      var opt = document.createElement('option');
+      opt.value = n; opt.textContent = n;
+      nameSel.appendChild(opt);
+    });
+    nameSel.disabled = false;
+    nameCard.classList.remove('disabled');
+    nameValue.textContent = '성명을 선택해 주세요';
+    nameValue.classList.add('placeholder');
+    nameCard.classList.remove('active');
+  } else {
+    nameSel.innerHTML = '<option value="">— 부서를 먼저 선택해 주세요 —</option>';
+    nameSel.disabled = true;
+    nameCard.classList.add('disabled');
+    nameCard.classList.remove('active');
+    nameValue.textContent = '부서를 먼저 선택해 주세요';
+    nameValue.classList.add('placeholder');
+  }
+  validateStep2();
+}
+
+function onNameChange() {
+  var name = document.getElementById('uname').value;
+  var nameCard = document.getElementById('nameCard');
+  var nameValue = document.getElementById('nameValue');
+  if (name) {
+    nameValue.textContent = name;
+    nameValue.classList.remove('placeholder');
+    nameCard.classList.add('active');
+  } else {
+    nameValue.textContent = '성명을 선택해 주세요';
+    nameValue.classList.add('placeholder');
+    nameCard.classList.remove('active');
+  }
+  validateStep2();
+}
+
+function validateStep2() {
+  var dept = document.getElementById('dept').value;
+  var name = document.getElementById('uname').value;
+  document.getElementById('btn2').disabled = !(dept && name);
+}
+
+/* ═══════════════════════════════════════════
+   캔버스 서명
+═══════════════════════════════════════════ */
+function initCanvas() {
+  canvas = document.getElementById('sigCanvas');
+  ctx    = canvas.getContext('2d');
+  canvas.addEventListener('mousedown',  startDraw);
+  canvas.addEventListener('mousemove',  draw);
+  canvas.addEventListener('mouseup',    endDraw);
+  canvas.addEventListener('mouseleave', endDraw);
+  canvas.addEventListener('touchstart', function(e) { e.preventDefault(); startDraw(e.touches[0]); }, { passive:false });
+  canvas.addEventListener('touchmove',  function(e) { e.preventDefault(); draw(e.touches[0]); },      { passive:false });
+  canvas.addEventListener('touchend',   endDraw);
+}
+
+function resizeCanvas() {
+  var dpr = window.devicePixelRatio || 1;
+  var w   = canvas.offsetWidth;
+  if (!w) return;
+  canvas.width  = w * dpr;
+  canvas.height = 240 * dpr;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(dpr, dpr);
+  ctx.strokeStyle = BRAND_INK;
+  ctx.lineWidth   = 2.6;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+}
+
+function getPos(e) {
+  var rect   = canvas.getBoundingClientRect();
+  var dpr    = window.devicePixelRatio || 1;
+  var scaleX = (canvas.width  / dpr) / rect.width;
+  var scaleY = (canvas.height / dpr) / rect.height;
+  return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+}
+
+function startDraw(e) {
+  isDrawing = true;
+  var p = getPos(e);
+  ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  document.getElementById('canvasHint').style.opacity = '0';
+}
+function draw(e) {
+  if (!isDrawing) return;
+  var p = getPos(e);
+  ctx.lineTo(p.x, p.y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  hasSignature = true;
+  document.getElementById('btn3').disabled = false;
+}
+function endDraw() { isDrawing = false; }
+function clearCanvas() {
+  var dpr = window.devicePixelRatio || 1;
+  ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+  hasSignature = false;
+  document.getElementById('btn3').disabled = true;
+  document.getElementById('canvasHint').style.opacity = '1';
+}
+
+/* ═══════════════════════════════════════════
+   제출
+═══════════════════════════════════════════ */
+function doSubmit() {
+  if (!hasSignature) return;
+  var btn = document.getElementById('btn3');
+  btn.disabled = true; btn.textContent = '제출 중...';
+
+  var payload = {
+    trainingTitle : selectedTraining.title,
+    department    : document.getElementById('dept').value,
+    name          : document.getElementById('uname').value.trim(),
+    signatureData : canvas.toDataURL('image/png'),
+  };
+
+  // 데모 모드
+  if (!API_URL) {
+    setTimeout(function() { showSuccess(payload); }, 500);
+    return;
+  }
+
+  // ※ Content-Type 헤더를 지정하지 않아야(text/plain 전송)
+  //   Apps Script에서 CORS preflight 없이 처리됩니다.
+  fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(res) {
+      if (res.success) {
+        showSuccess(payload);
+      } else if (res.duplicate) {
+        document.getElementById('modalDuplicateMsg').textContent = res.message || '이미 서명이 등록되어 있습니다.';
+        document.getElementById('modalDuplicate').classList.add('show');
+        btn.disabled = false; btn.textContent = '서명 제출하기';
+      } else {
+        document.getElementById('modalErrorMsg').textContent = res.message || '알 수 없는 오류';
+        document.getElementById('modalError').classList.add('show');
+        btn.disabled = false; btn.textContent = '서명 제출하기';
+      }
+    })
+    .catch(function(err) {
+      document.getElementById('modalErrorMsg').textContent =
+        '서버에 연결할 수 없습니다.\n네트워크 상태를 확인한 뒤 다시 시도해 주세요.';
+      document.getElementById('modalError').classList.add('show');
+      btn.disabled = false; btn.textContent = '서명 제출하기';
+    });
+}
+
+function showSuccess(p) {
+  localStorage.setItem('signed_' + p.trainingTitle, '1');
+  updateTrainingListUI();
+  var btn3 = document.getElementById('btn3');
+  btn3.textContent = '서명 제출하기';
+  showStep(4);
+  var now = new Date();
+  var time = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+  document.getElementById('successInfo').innerHTML =
+    '<div class="si-row"><span class="si-label">연수</span><span class="si-value">' + esc(p.trainingTitle) + '</span></div>' +
+    '<div class="si-row"><span class="si-label">부서</span><span class="si-value">' + esc(p.department) + '</span></div>' +
+    '<div class="si-row"><span class="si-label">성명</span><span class="si-value">' + esc(p.name) + '</span></div>' +
+    '<div class="si-row"><span class="si-label">시각</span><span class="si-value">' + time + '</span></div>';
+}
+
+function resetAll() {
+  selectedTraining = null; selectedIndex = -1; hasSignature = false;
+
+  document.getElementById('dept').value = '';
+  onDeptChange();
+
+  document.querySelectorAll('.training-item').forEach(function(el) {
+    if (el.classList.contains('signed-done')) return;
+    el.classList.remove('selected');
+    var iconUse = el.querySelector('.training-icon svg use');
+    if (iconUse) iconUse.setAttribute('href', '#i-book');
+  });
+  document.getElementById('btn1').disabled = true;
+  clearCanvas();
+  showStep(1);
+  updateTrainingListUI();
+}
+
+/* ═══════════════════════════════════════════
+   서명등록부 출력
+═══════════════════════════════════════════ */
+function openPrintPicker() {
+  if (!trainings || trainings.length === 0) {
+    document.getElementById('modalErrorMsg').textContent = '오늘 등록된 연수가 없어 출력할 수 없습니다.';
+    document.getElementById('modalError').classList.add('show');
+    return;
+  }
+  var list = document.getElementById('pickerList');
+  list.innerHTML = '';
+  trainings.forEach(function(t, i) {
+    var btn = document.createElement('button');
+    btn.className = 'picker-item';
+    btn.innerHTML =
+      '<span class="pi-ico"><svg width="15" height="15"><use href="#i-clipboard"/></svg></span>' +
+      '<span>' + esc(t.title) + '</span>';
+    btn.onclick = function() {
+      document.getElementById('modalPicker').classList.remove('show');
+      openPrintView(t);
+    };
+    list.appendChild(btn);
+  });
+  document.getElementById('modalPicker').classList.add('show');
+}
+
+function openPrintView(training) {
+  pendingPrintTraining = training;
+
+  // 데모 모드: 기록 없이 명단만 출력
+  if (!API_URL) {
+    showPrintLoading();
+    buildPrintDoc(training, { records: [], date: todayStr() });
+    return;
+  }
+
+  // 출력 비밀번호가 설정된 기관: 세션에 저장된 값이 없으면 먼저 입력받기
+  var pin = sessionStorage.getItem(PIN_SESSION_KEY) || '';
+  if (printPinSet && !pin) {
+    showPinModal(false);
+    return;
+  }
+  fetchRecordsAndBuild(training, pin);
+}
+
+function showPrintLoading() {
+  document.getElementById('printDoc').innerHTML =
+    '<div class="pd-loading">' +
+      '<div class="spinner"></div>' +
+      '<p style="font-size:12px;font-weight:500;">서명 기록을 불러오는 중...</p>' +
+    '</div>';
+  document.getElementById('printOverlay').classList.add('show');
+  document.body.classList.add('print-mode');
+}
+
+function fetchRecordsAndBuild(training, pin) {
+  showPrintLoading();
+  var url = API_URL + '?action=records&title=' + encodeURIComponent(training.title);
+  if (pin) url += '&pin=' + encodeURIComponent(pin);
+
+  fetch(url)
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(res) {
+      if (res && res.needPin) {
+        // 비밀번호 미입력 또는 불일치
+        sessionStorage.removeItem(PIN_SESSION_KEY);
+        closePrintView();
+        showPinModal(!!pin);   // 값을 보냈는데 거부됐으면 "불일치" 안내
+        return;
+      }
+      if (!res || res.success === false) throw new Error((res && res.message) || 'error');
+      buildPrintDoc(training, res);
+    })
+    .catch(function() {
+      document.getElementById('printDoc').innerHTML =
+        '<div class="pd-loading">' +
+          '<p style="font-size:13px;font-weight:600;color:#C0392B;">서명 기록을 불러오지 못했습니다.<br>잠시 후 다시 시도해 주세요.</p>' +
+        '</div>';
+    });
+}
+
+/* ── 출력 비밀번호 모달 ── */
+function showPinModal(wasWrong) {
+  var err = document.getElementById('pinErr');
+  var input = document.getElementById('pinInput');
+  input.value = '';
+  if (wasWrong) {
+    err.textContent = '비밀번호가 일치하지 않아요. 다시 입력해 주세요.';
+    err.classList.add('show');
+  } else {
+    err.classList.remove('show');
+  }
+  document.getElementById('modalPin').classList.add('show');
+  setTimeout(function() { input.focus(); }, 100);
+}
+
+function closePinModal() {
+  document.getElementById('modalPin').classList.remove('show');
+  pendingPrintTraining = null;
+}
+
+function submitPin() {
+  var pin = document.getElementById('pinInput').value.trim();
+  if (!pin) {
+    var err = document.getElementById('pinErr');
+    err.textContent = '비밀번호를 입력해 주세요.';
+    err.classList.add('show');
+    return;
+  }
+  sessionStorage.setItem(PIN_SESSION_KEY, pin);
+  document.getElementById('modalPin').classList.remove('show');
+  if (pendingPrintTraining) fetchRecordsAndBuild(pendingPrintTraining, pin);
+}
+
+document.getElementById('pinInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') submitPin();
+});
+
+function closePrintView() {
+  document.getElementById('printOverlay').classList.remove('show');
+  document.body.classList.remove('print-mode');
+}
+
+function buildPrintDoc(training, res) {
+  var records = res.records || [];
+  var dateStr = res.date || todayStr();
+
+  // 서명 기록 매칭용 인덱스 (부서+이름 우선, 이름 단독 보조)
+  var byKey = {}, byName = {};
+  records.forEach(function(r) {
+    byKey[r.department + '_' + r.name] = r;
+    if (!byName[r.name]) byName[r.name] = r;
+  });
+
+  var entries = [], total = 0, signed = 0;
+
+  // 명단 순서대로 전원 표시 (서명자는 이미지, 미서명자는 표시)
+  deptOrder.forEach(function(dept) {
+    (staffByDept[dept] || []).forEach(function(name) {
+      total++;
+      var rec = byKey[dept + '_' + name] || byName[name] || null;
+      if (rec) { rec._used = true; signed++; }
+      entries.push({ dept: dept, name: name, rec: rec });
+    });
+  });
+
+  // 명단에 없는 서명자도 누락 없이 추가
+  records.forEach(function(r) {
+    if (!r._used) {
+      total++; signed++;
+      entries.push({ dept: r.department, name: r.name, rec: r });
+    }
+  });
+
+  var pct = total > 0 ? Math.round(signed / total * 100) : 0;
+
+  // ── 2인 1행 · 페이지 세로 순번 배치 ──────────────────
+  // 각 페이지: 왼쪽 블록 위→아래 순번, 이어서 오른쪽 블록 위→아래 순번
+  var ROWS_FIRST = 12;   // 첫 페이지 (제목 영역 포함)
+  var ROWS_NEXT  = 15;   // 이후 페이지
+
+  function cellHtml(entry, globalNo, isRightBlock) {
+    var div = isRightBlock ? ' class="pd-div"' : '';
+    if (!entry) {
+      return '<td' + div + '></td><td></td><td></td><td class="pd-sig"></td>';
+    }
+    var sigCell;
+    if (entry.rec && entry.rec.fileId) {
+      sigCell = '<img src="https://drive.google.com/thumbnail?id=' + esc(entry.rec.fileId) + '&amp;sz=w300"' +
+        ' referrerpolicy="no-referrer" alt="서명"' +
+        ' onerror="this.outerHTML=\'<span class=&quot;pd-signed-alt&quot;>서명 완료</span>\'">';
+    } else if (entry.rec) {
+      sigCell = '<span class="pd-signed-alt">서명 완료</span>';
+    } else {
+      sigCell = '<span class="pd-unsigned">미서명</span>';
+    }
+    return '<td' + div + '>' + globalNo + '</td>' +
+      '<td>' + esc(entry.dept) + '</td>' +
+      '<td class="pd-name">' + esc(entry.name) + '</td>' +
+      '<td class="pd-sig">' + sigCell + '</td>';
+  }
+
+  var theadHtml =
+    '<colgroup>' +
+      '<col style="width:6%"><col style="width:13%"><col style="width:9%"><col style="width:22%">' +
+      '<col style="width:6%"><col style="width:13%"><col style="width:9%"><col style="width:22%">' +
+    '</colgroup>' +
+    '<thead><tr>' +
+      '<th>번호</th><th>부서</th><th>성명</th><th>서명</th>' +
+      '<th class="pd-div">번호</th><th>부서</th><th>성명</th><th>서명</th>' +
+    '</tr></thead>';
+
+  var pagesHtml = '';
+  var base = 0, pageIdx = 0;
+  while (base < entries.length || pageIdx === 0) {
+    var R = pageIdx === 0 ? ROWS_FIRST : ROWS_NEXT;
+    var remaining  = entries.length - base;
+    var leftCount  = Math.min(R, remaining);
+    var rowsOnPage = Math.max(leftCount, 1);
+    var trs = '';
+    for (var i = 0; i < rowsOnPage; i++) {
+      var li = base + i;                 // 왼쪽 블록: base+1 ~ base+leftCount
+      var ri = base + leftCount + i;     // 오른쪽 블록: 이어지는 순번
+      var left  = (i < leftCount) ? entries[li] : null;
+      var right = (ri < base + leftCount + Math.min(R, remaining - leftCount) && entries[ri]) ? entries[ri] : null;
+      trs += '<tr>' +
+        cellHtml(left,  li + 1, false) +
+        cellHtml(right, ri + 1, true) +
+      '</tr>';
+    }
+    pagesHtml += '<div class="pd-page">' +
+      '<table class="print-table">' + theadHtml + '<tbody>' + trs + '</tbody></table>' +
+    '</div>';
+    base += leftCount + Math.min(R, remaining - leftCount);
+    pageIdx++;
+    if (remaining <= 0) break;
+  }
+
+  var now = new Date();
+  var printedAt = now.getFullYear() + '-' +
+    ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
+    ('0' + now.getDate()).slice(-2) + ' ' +
+    ('0' + now.getHours()).slice(-2) + ':' +
+    ('0' + now.getMinutes()).slice(-2);
+
+  document.getElementById('printDoc').innerHTML =
+    '<div class="pd-org">' +
+      '<span>' + esc(orgName || '연수 전자서명 시스템') + '</span>' +
+      '<span>연수일: ' + esc(dateStr) + '</span>' +
+    '</div>' +
+    '<h1 class="pd-title">' + esc(training.title) + ' 서명등록부</h1>' +
+    '<div class="pd-meta">' + esc(orgName ? orgName + ' · ' : '') + '전자서명 기록 자동 집계</div>' +
+    pagesHtml +
+    '<div class="pd-summary">' +
+      '<div class="pd-sum-row">' +
+        '<span>대상 <b>' + total + '명</b> · 서명 <b>' + signed + '명</b> · 미서명 <b>' + (total - signed) + '명</b></span>' +
+        '<span class="pd-pct">서명률 ' + pct + '%</span>' +
+      '</div>' +
+      '<div class="pd-bar"><i style="width:' + pct + '%"></i></div>' +
+    '</div>' +
+    '<div class="pd-foot">' +
+      '본 서명등록부는 연수 전자서명 시스템에서 자동 생성된 문서입니다.<br>' +
+      '출력일시: ' + printedAt +
+    '</div>';
+
+  // 마지막 페이지는 강제 페이지 넘김 해제 (요약이 같은 페이지에 붙도록)
+  var pages = document.querySelectorAll('#printDoc .pd-page');
+  if (pages.length) pages[pages.length - 1].classList.add('last');
+}
+
+function todayStr() {
+  var n = new Date();
+  return n.getFullYear() + '-' +
+    ('0' + (n.getMonth() + 1)).slice(-2) + '-' +
+    ('0' + n.getDate()).slice(-2);
+}
+
+/* ── 유틸 ── */
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
