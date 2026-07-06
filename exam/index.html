@@ -348,6 +348,10 @@
     </div>
     <div class="hq-summary" id="hqSummary"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="hqPeriodTabs"></div>
+    <div class="card" style="padding:14px 16px">
+      <div class="card-title" style="margin-bottom:10px;font-size:14px">결시 입력 제출 현황 (선택한 교시 기준)</div>
+      <div id="hqSubmissionBoard"></div>
+    </div>
     <div id="hqContent"></div>
   </div>
 
@@ -495,7 +499,7 @@ let sb=null,SCHOOL_CODE='',examDates=[],classes=[],students={};
 let currentAbsents=new Set(),currentAbsenceInfo={},currentSeatMode='separate',inputCompleted=false;
 let selectedExamineeIds=new Set(),ownExamineeIds=new Set();
 let disabledSeats={sep:new Set(),own:new Set()};
-let hqChannel=null,currentHQPeriod=null,hqAllAbsences=[];
+let hqChannel=null,currentHQPeriod=null,hqAllAbsences=[],hqAllCompletions=[];
 let currentSeatChartId=null,lastSeparateChartParams=null,savedSeatCharts=[];
 const ABSENCE_REASONS=['인정','미인정','질병','기타'];
 const REASON_COLORS={'인정':'#2d6be4','미인정':'#d63384','질병':'#f4a228','기타':'#4a5060'};
@@ -569,6 +573,7 @@ function setupRealtime(){
   if(hqChannel)sb.removeChannel(hqChannel);
   hqChannel=sb.channel('abs-'+SCHOOL_CODE)
     .on('postgres_changes',{event:'*',schema:'public',table:'absences',filter:'school_code=eq.'+SCHOOL_CODE},()=>loadHQData())
+    .on('postgres_changes',{event:'*',schema:'public',table:'input_completions',filter:'school_code=eq.'+SCHOOL_CODE},()=>loadHQData())
     .on('presence',{event:'sync'},()=>{
       const el=document.getElementById('onlineCount');
       if(!el)return;
@@ -817,7 +822,9 @@ async function loadStudentsForInput(){
   document.getElementById('inputStudentArea').style.display='block';
   renderInputList(classId,date,period);
   updateAbsentCount();
-  inputCompleted=false;updateCompleteButton();
+  const{data:comp}=await sb.from('input_completions').select('id')
+    .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('class_id',classId).maybeSingle();
+  inputCompleted=!!comp;updateCompleteButton();
 }
 function renderInputList(classId,date,period){
   const sts=students[classId]||[];
@@ -882,9 +889,23 @@ function updateCompleteButton(){
   }
 }
 function markInputDirty(){
-  if(inputCompleted){inputCompleted=false;updateCompleteButton();}
+  if(!inputCompleted)return;
+  inputCompleted=false;updateCompleteButton();
+  const classId=parseInt(document.getElementById('inputClass').value);
+  const date=document.getElementById('inputDate').value;
+  const period=parseInt(document.getElementById('inputPeriod').value);
+  sb.from('input_completions').delete()
+    .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('class_id',classId);
 }
-function completeInput(){
+async function completeInput(){
+  const classId=parseInt(document.getElementById('inputClass').value);
+  const date=document.getElementById('inputDate').value;
+  const period=parseInt(document.getElementById('inputPeriod').value);
+  const{error}=await sb.from('input_completions').upsert(
+    {school_code:SCHOOL_CODE,exam_date:date,period,class_id:classId,completed_at:new Date().toISOString()},
+    {onConflict:'school_code,exam_date,period,class_id'}
+  );
+  if(error){showToast('반영 완료 저장 실패: '+error.message);return;}
   showToast('반영 완료! 고사본부에서 확인 가능합니다');
   inputCompleted=true;updateCompleteButton();
   if(confirm('응시현황표를 출력하시겠습니까?'))openAttendanceReport();
@@ -950,8 +971,8 @@ function updateHQClassFilterOptions(){
   classSel.innerHTML='<option value="">전체 반</option>'+list.map(c=>`<option value="${c.id}">${c.grade}-${c.class_num}반</option>`).join('');
   if(list.some(c=>String(c.id)===prevClass))classSel.value=prevClass;
 }
-function onHQGradeChange(){updateHQClassFilterOptions();renderHQSummary();renderHQContent(currentHQPeriod);}
-function onHQClassChange(){renderHQSummary();renderHQContent(currentHQPeriod);}
+function onHQGradeChange(){updateHQClassFilterOptions();renderHQSummary();renderHQContent(currentHQPeriod);renderHQSubmissionBoard(currentHQPeriod);}
+function onHQClassChange(){renderHQSummary();renderHQContent(currentHQPeriod);renderHQSubmissionBoard(currentHQPeriod);}
 function hqScopeClasses(){
   const grade=document.getElementById('hqGrade').value;
   const classId=document.getElementById('hqClass').value;
@@ -960,26 +981,30 @@ function hqScopeClasses(){
 async function loadHQData(){
   if(!sb)return;
   const date=document.getElementById('hqDate').value;if(!date)return;
-  const{data}=await sb.from('absences')
-    .select('*,classes(grade,class_num),students(number,name)')
-    .eq('school_code',SCHOOL_CODE).eq('exam_date',date);
-  hqAllAbsences=data||[];
-  const periods=[...new Set(hqAllAbsences.map(a=>a.period))].sort((a,b)=>a-b);
+  const[{data:absData},{data:compData}]=await Promise.all([
+    sb.from('absences').select('*,classes(grade,class_num),students(number,name)').eq('school_code',SCHOOL_CODE).eq('exam_date',date),
+    sb.from('input_completions').select('*').eq('school_code',SCHOOL_CODE).eq('exam_date',date)
+  ]);
+  hqAllAbsences=absData||[];
+  hqAllCompletions=compData||[];
+  const periods=[...new Set([...hqAllAbsences.map(a=>a.period),...hqAllCompletions.map(c=>c.period)])].sort((a,b)=>a-b);
   const tabsEl=document.getElementById('hqPeriodTabs');
   if(!periods.length){
     tabsEl.innerHTML='';
     document.getElementById('hqContent').innerHTML='<div class="empty-state"><div class="icon">'+icon('clipboard',34)+'</div><p>이 날짜에 입력된 결시 데이터가 없습니다</p></div>';
+    document.getElementById('hqSubmissionBoard').innerHTML='';
+    currentHQPeriod=null;
     renderHQSummary();return;
   }
   if(!currentHQPeriod||!periods.includes(currentHQPeriod))currentHQPeriod=periods[0];
   tabsEl.innerHTML=periods.map(p=>
     `<div class="period-tab ${p===currentHQPeriod?'active':''}" onclick="selectHQPeriod(${p})">${p}교시</div>`).join('');
-  renderHQSummary();renderHQContent(currentHQPeriod);
+  renderHQSummary();renderHQContent(currentHQPeriod);renderHQSubmissionBoard(currentHQPeriod);
 }
 function selectHQPeriod(p){
   currentHQPeriod=p;
   document.querySelectorAll('.period-tab').forEach(t=>t.classList.toggle('active',t.textContent.trim()===p+'교시'));
-  renderHQSummary();renderHQContent(p);
+  renderHQSummary();renderHQContent(p);renderHQSubmissionBoard(p);
 }
 function renderHQSummary(){
   const scope=hqScopeClasses();
@@ -1042,6 +1067,30 @@ function renderHQContent(period){
       </div>
     </div>`;
   }).join('');
+}
+function renderHQSubmissionBoard(period){
+  const el=document.getElementById('hqSubmissionBoard');
+  if(!el)return;
+  if(period==null){el.innerHTML='';return;}
+  const scope=hqScopeClasses().slice().sort((a,b)=>a.grade-b.grade||a.class_num-b.class_num);
+  if(!scope.length){el.innerHTML='<p style="font-size:13px;color:var(--text3)">학급이 없습니다</p>';return;}
+  const completedMap={};
+  hqAllCompletions.filter(c=>c.period===period).forEach(c=>{completedMap[c.class_id]=c.completed_at;});
+  const doneCount=scope.filter(c=>completedMap[c.id]).length;
+  el.innerHTML=`
+    <div style="font-size:12.5px;color:var(--text2);margin-bottom:10px">제출 완료 <b style="color:var(--success)">${doneCount}</b> / ${scope.length}학급</div>
+    <div class="hq-class-grid">
+      ${scope.map(c=>{
+        const done=completedMap[c.id];
+        const timeLabel=done?new Date(done).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'';
+        return`<div class="hq-class-card" style="padding:10px 12px">
+          <div class="hq-class-header" style="margin-bottom:0">
+            <div class="hq-class-name">${c.grade}-${c.class_num}반</div>
+            ${done?`<span class="badge badge-success">${icon('check',11)} 제출완료 ${timeLabel}</span>`:`<span class="badge" style="background:var(--warning-light);color:var(--warning)">미제출</span>`}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
 async function downloadHQExcel(){

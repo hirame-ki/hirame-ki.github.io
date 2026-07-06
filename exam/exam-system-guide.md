@@ -24,6 +24,7 @@ exam-system/
 
 ### 확인 필요 (운영 작업, 코드 아님)
 - [ ] Supabase SQL Editor에서 `seat_charts` 테이블 생성 SQL 실행 필요 (자리배치표 저장/불러오기 기능 — 실행 전까지는 저장 시 오류 발생)
+- [ ] Supabase SQL Editor에서 `input_completions` 테이블 생성 SQL 실행 필요 (결시 입력 미제출 학급 현황판 — 실행 전까지는 "저장하기" 클릭 시 오류 발생)
 - [ ] 동료 교사에게 URL + 학교코드 공유 완료 여부 확인
 - [ ] 실제 고사 기간에 전체 교사 대상 실사용 테스트
 
@@ -98,8 +99,20 @@ CREATE TABLE IF NOT EXISTS seat_charts (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 결시 입력 제출 완료 기록 (고사본부 미제출 학급 현황판용)
+CREATE TABLE IF NOT EXISTS input_completions (
+  id SERIAL PRIMARY KEY,
+  school_code TEXT NOT NULL,
+  exam_date DATE NOT NULL,
+  period INT NOT NULL,
+  class_id INT REFERENCES classes(id) ON DELETE CASCADE,
+  completed_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(school_code, exam_date, period, class_id)
+);
+
 -- Realtime 활성화
 ALTER PUBLICATION supabase_realtime ADD TABLE absences;
+ALTER PUBLICATION supabase_realtime ADD TABLE input_completions;
 ```
 
 > ⚠️ **보안 참고**: RLS(행 단위 보안)를 켜지 않아 anon key만 알면 누구나 데이터에 접근 가능합니다. 학교코드로만 데이터를 구분하는 구조라 실질적인 보안 경계는 없습니다. 학생 이름/결시 기록 수준이라 지금은 문제없지만, 더 민감한 데이터를 다루게 되면 RLS 정책 추가를 고려해야 합니다.
@@ -146,15 +159,18 @@ ALTER PUBLICATION supabase_realtime ADD TABLE absences;
 ### 결시 입력 (담임 교사)
 1. **결시 입력 탭** → 날짜 / 담당 학급 / 교시 선택 → 불러오기
 2. 이름 클릭 → 결시로 전환 (자동 저장), 결시로 표시되면 **사유(인정/미인정/질병/기타)** 선택 → 기타 선택 시 사유 직접 입력 가능
-3. 버튼은 **"저장하기"(파랑) → 클릭 시 "반영 완료"(초록)**로 바뀌고, 이후 추가로 수정하면 다시 "저장하기"로 돌아감 (재확인 필요 표시)
+3. 버튼은 **"저장하기"(파랑) → 클릭 시 "반영 완료"(초록)**로 바뀌고, 이후 추가로 수정하면 다시 "저장하기"로 돌아감 (재확인 필요 표시). "반영 완료" 상태는 `input_completions` 테이블에 학급/날짜/교시 단위로 저장되어 고사본부의 제출 현황판에 반영되고, 새로고침해도 유지됨
 4. "반영 완료" 클릭 시 "응시현황표를 출력하시겠습니까?" 팝업 → 확인하면 별도 팝업창에 **재적/응시/결시(학생번호+사유)/결번**을 담은 세로형 표가 뜨고 자동으로 인쇄 대화상자가 열림 (A4 1장, 가득 채움)
 5. 입력이 끝나면 반드시 로그아웃 (동시 접속 인원 제한 때문)
 
 ### 고사본부 확인
 1. **고사본부 탭** → 날짜 선택, 필요 시 학년 / 반 필터
 2. 상단 요약에 **총 재적 인원**과, 데이터가 있는 **모든 교시별 줄**로 응시(초록)/결시(빨강)/사유별(인정·미인정·질병·기타, 색상 구분) 인원이 한눈에 표시됨
-3. 교시별 탭으로 학년 / 학급별 결시자 명단(사유 포함, 색상 통일) 실시간 확인
-4. **📥 엑셀 다운로드** (날짜/학년/반 필터 옆) → 선택한 날짜 전체 데이터를 색상·표가 적용된 한셀 호환 xlsx로 다운로드 (① 전체 재적·결시 현황 ② 학년별 재적·결시 현황 ③ 결시 학생 명단, 3개 섹션)
+3. 교시 탭 아래 **제출 현황판** → 선택한 교시에 대해 재적 학급 전체를 "제출완료(초록, 제출 시각 표시)/미제출(빨강)" 칩으로 표시. 담임이 결시 입력 후 "반영 완료"를 눌러야 제출완료로 표시되며, 이후 수정해서 다시 "저장하기" 상태가 되면 자동으로 미제출로 되돌아감
+4. 교시별 탭으로 학년 / 학급별 결시자 명단(사유 포함, 색상 통일) 실시간 확인
+5. **📥 엑셀 다운로드** (날짜/학년/반 필터 옆) → 선택한 날짜 전체 데이터를 색상·표가 적용된 한셀 호환 xlsx로 다운로드 (① 전체 재적·결시 현황 ② 학년별 재적·결시 현황 ③ 결시 학생 명단, 3개 섹션)
+
+> **제출 현황판의 한계**: 교시는 담임이 결시 입력 시 직접 입력하는 자유 숫자라, 그 날짜에 "몇 교시까지 시험이 있는지"를 시스템이 미리 알지 못합니다. 따라서 교시 탭은 **누군가 그 교시로 최초 입력(또는 반영 완료)한 순간부터** 생성되며, 그 전에는 "1교시가 아직 하나도 없다"는 것 자체를 표시할 수 없습니다. 고사 당일 일정을 미리 등록해두고 그 기준으로 처음부터 미제출을 표시하려면 별도의 "교시 일정" 기능이 필요합니다.
 
 ### 자리배치표
 **1단계 — 시험 방식 선택**: 별실 시험 / 각자교실 시험
@@ -194,8 +210,9 @@ ALTER PUBLICATION supabase_realtime ADD TABLE absences;
 | absences | school_code | 결시 기록(사유 포함), Realtime 구독 |
 | exam_dates | school_code | 고사 날짜 — DB 저장으로 전환, 담당자가 저장하면 다른 교사도 접속 시 동일하게 보임 |
 | seat_charts | school_code | 자리배치표 저장(별실 시험 전용, mode='separate') — 좌석 설정 + 선택 학생 id 목록(JSONB) 저장, 불러오기 시 재적용 |
+| input_completions | school_code | 결시 입력 "반영 완료" 기록(학급/날짜/교시 단위), 고사본부 제출 현황판의 근거 데이터. absences와 함께 Realtime 구독 |
 
-- Realtime 채널: 로그인 시 1회 생성(`abs-{SCHOOL_CODE}`), 로그아웃 또는 5분 유휴 시 해제. 같은 채널에 Presence를 붙여 헤더의 접속자 수 표시에 사용
+- Realtime 채널: 로그인 시 1회 생성(`abs-{SCHOOL_CODE}`), 로그아웃 또는 5분 유휴 시 해제. 같은 채널에 Presence를 붙여 헤더의 접속자 수 표시에 사용, absences/input_completions 변경 시 고사본부 자동 새로고침
 - 엑셀 처리: 템플릿 생성(스타일링)은 ExcelJS, 업로드 파일 읽기는 SheetJS 사용 (용도별로 라이브러리 분리)
 
 ---
