@@ -411,7 +411,12 @@
       </div>
       <div class="form-group" style="margin-top:12px">
         <label style="font-size:12px;color:var(--text3);display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>좌석 편집 (없는 자리를 클릭해서 제외 — 예: 기둥, 사물함 자리)</label>
-        <div class="seat-editor" id="sepSeatEditor"></div>
+        <div class="board-area" style="margin-bottom:8px;font-size:11px;padding:6px;letter-spacing:2px">칠판</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:11px;color:var(--text3);white-space:nowrap">← 창가</span>
+          <div class="seat-editor" id="sepSeatEditor" style="flex:1;margin-top:0"></div>
+          <span style="font-size:11px;color:var(--text3);white-space:nowrap">복도 →</span>
+        </div>
       </div>
     </div>
 
@@ -421,8 +426,8 @@
       <div class="form-row" style="justify-content:space-between;margin-bottom:0">
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
           <div class="form-group"><label>날짜</label><select id="ownDate"></select></div>
-          <div class="form-group"><label>교시</label><input type="number" id="ownPeriod" min="1" max="9" value="1" style="width:70px" /></div>
           <div class="form-group"><label>학급</label><select id="ownClass" onchange="loadOwnStudentGrid()"></select></div>
+          <div class="form-group"><label>교시</label><input type="number" id="ownPeriod" min="1" max="9" value="1" style="width:70px" /></div>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
           <div class="form-group"><label>교실 행 수</label><input type="number" id="ownRows" value="6" min="1" max="12" style="width:70px" oninput="renderSeatEditor('own')" /></div>
@@ -434,7 +439,12 @@
       </div>
       <div class="form-group" style="margin-top:12px">
         <label style="font-size:12px;color:var(--text3);display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>좌석 편집 (없는 자리를 클릭해서 제외 — 예: 기둥, 사물함 자리)</label>
-        <div class="seat-editor" id="ownSeatEditor"></div>
+        <div class="board-area" style="margin-bottom:8px;font-size:11px;padding:6px;letter-spacing:2px">칠판</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:11px;color:var(--text3);white-space:nowrap">← 창가</span>
+          <div class="seat-editor" id="ownSeatEditor" style="flex:1;margin-top:0"></div>
+          <span style="font-size:11px;color:var(--text3);white-space:nowrap">복도 →</span>
+        </div>
       </div>
     </div>
 
@@ -502,7 +512,7 @@
 
   </div><!-- /main -->
 </div><!-- /appScreen -->
-<a class="credit-chip no-print" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener">제작 : 황성재 @hirame.ki 문의는 클릭</a>
+<a class="credit-chip no-print" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener">제작:@hirame.ki 문의는 클릭</a>
 <div class="toast" id="toast"></div>
 <div class="modal-overlay no-print" id="seatChartListModal" style="display:none" onclick="if(event.target===this)closeSeatChartListModal()">
   <div class="modal-box">
