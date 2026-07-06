@@ -597,7 +597,8 @@
   }
   .pt-btn.solid { background: var(--brand); color: #fff; border-color: var(--brand); }
   .print-doc {
-    max-width: 760px; margin: 20px auto 48px;
+    max-width: 760px; min-height: 1075px;   /* 760px 폭 기준 A4(210×297mm) 비율 */
+    margin: 20px auto 48px;
     background: #fff; padding: 44px 40px;
     box-shadow: 0 4px 24px rgba(14,26,20,.08);
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
@@ -677,7 +678,7 @@
     }
     body.print-mode .print-toolbar { display: none !important; }
     body.print-mode .print-doc {
-      max-width: none; margin: 0; padding: 0; box-shadow: none;
+      max-width: none; min-height: 0; margin: 0; padding: 0; box-shadow: none;
     }
   }
 
