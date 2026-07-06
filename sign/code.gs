@@ -8,7 +8,7 @@
 
 const SHEET_CONFIG   = '⚙️ 연수설정';
 const SHEET_RECORDS  = '📋 서명현황';
-const SHEET_STAFF    = '👥 교직원명단';
+const SHEET_STAFF    = '👥 구성원명단';
 const SHEET_SUMMARY  = '📊 미서명현황';
 const SHEET_GUIDE    = '📖 사용설명서';
 const DRIVE_FOLDER   = '연수 전자서명 파일';
@@ -30,7 +30,7 @@ const ROW_COLOR      = 20;  // 대표 색상 (B20 셀의 배경색을 그대로 
 
 /**
  * GET 요청 처리
- *  - ?action=pageData : 기관명 + 오늘의 연수 + 교직원 명단 (JSON)
+ *  - ?action=pageData : 기관명 + 오늘의 연수 + 구성원 명단 (JSON)
  *  - ?action=records  : 특정 연수의 서명 기록 (JSON, 서명등록부 출력용)
  *  - 파라미터 없음     : 배포 확인용 안내 페이지 (HTML)
  */
@@ -88,7 +88,7 @@ function _json(obj) {
 // ============================================================
 
 /**
- * 기관명 + 오늘의 활성 연수 + 부서별 교직원 목록 한 번에 반환
+ * 기관명 + 오늘의 활성 연수 + 부서별 구성원 목록 한 번에 반환
  */
 function getPageData() {
   try {
@@ -125,7 +125,7 @@ function getPageData() {
       }
     }
 
-    // ── 교직원명단 시트에서 부서·성명 읽기 ─────────────────
+    // ── 구성원명단 시트에서 부서·성명 읽기 ─────────────────
     const staffSheet = ss.getSheetByName(SHEET_STAFF);
     const staffByDept = {};  // { 부서명: [성명, ...] }
     const deptOrder   = [];  // 부서 순서 유지
@@ -144,7 +144,7 @@ function getPageData() {
       });
     }
 
-    // 교직원명단이 비어있으면 연수설정의 부서 목록으로 fallback
+    // 구성원명단이 비어있으면 연수설정의 부서 목록으로 fallback
     if (deptOrder.length === 0) {
       const deptRaw = String(config.getRange(ROW_DEPT, 2).getValue()).trim();
       deptRaw.split(',').map(d => d.trim()).filter(Boolean).forEach(d => {
@@ -358,7 +358,7 @@ function generateAttendanceSummary() {
 
   const staffSheet = ss.getSheetByName(SHEET_STAFF);
   if (!staffSheet || staffSheet.getLastRow() < 4) {
-    ui.alert('⚠️ 교직원명단 없음', '[👥 교직원명단] 시트에 구성원 정보를 먼저 입력하세요.', ui.ButtonSet.OK);
+    ui.alert('⚠️ 구성원명단 없음', '[👥 구성원명단] 시트에 구성원 정보를 먼저 입력하세요.', ui.ButtonSet.OK);
     return;
   }
 
@@ -367,7 +367,7 @@ function generateAttendanceSummary() {
     .filter(r => String(r[1]).trim())
     .map(r => ({ dept: String(r[0]).trim(), name: String(r[1]).trim() }));
 
-  if (staffList.length === 0) { ui.alert('[👥 교직원명단] 시트에 구성원 정보를 입력해 주세요.'); return; }
+  if (staffList.length === 0) { ui.alert('[👥 구성원명단] 시트에 구성원 정보를 입력해 주세요.'); return; }
 
   let sumSheet = ss.getSheetByName(SHEET_SUMMARY);
   if (!sumSheet) sumSheet = ss.insertSheet(SHEET_SUMMARY);
@@ -512,7 +512,7 @@ function setupSpreadsheet() {
     '① [⚙️ 연수설정] → B2 기관명, B4 부서목록, 7~16행 연수 입력\n' +
     '   (선택) B18 출력 비밀번호, B19 안내문\n' +
     '   (선택) B20 대표 색상 → 셀 클릭 후 채우기 색으로 직접 선택\n' +
-    '② [👥 교직원명단] → A열 부서, B열 성명 입력\n' +
+    '② [👥 구성원명단] → A열 부서, B열 성명 입력\n' +
     '   (이 명단이 서명 화면의 부서·이름 선택 목록이 됩니다)\n' +
     '③ [배포] → [새 배포] → 웹 앱 (액세스: 모든 사용자) → URL 복사\n' +
     '④ 서명 웹페이지에 접속해 복사한 URL을 연결\n\n' +
@@ -547,7 +547,7 @@ function _setupConfigSheet(ss) {
     '교무기획부,교육과정부,인문사회부,과학기술부,예술체육부,학생생활부,진로상담부,행정실',
     { bg:'#FFFFFF', fg:'#2C3E50', wrap:true });
   sheet.getRange(ROW_DEPT, 3, 1, 3).merge();
-  sheet.getRange(ROW_DEPT, 3).setValue('← 쉼표(,)로 구분 입력 (웹 선택 목록은 👥 교직원명단 시트 기준)')
+  sheet.getRange(ROW_DEPT, 3).setValue('← 쉼표(,)로 구분 입력 (웹 선택 목록은 👥 구성원명단 시트 기준)')
     .setBackground('#FFFFFF').setFontColor('#999').setFontSize(10).setVerticalAlignment('middle');
   sheet.setRowHeight(ROW_DEPT, 44);
 
@@ -635,7 +635,7 @@ function _setupRecordSheet(ss) {
   sheet.setTabColor('#27AE60');
 }
 
-// ── 교직원 명단 시트 ────────────────────────────────────────
+// ── 구성원 명단 시트 ────────────────────────────────────────
 function _setupStaffSheet(ss) {
   let sheet = ss.getSheetByName(SHEET_STAFF);
   if (!sheet) sheet = ss.insertSheet(SHEET_STAFF);
@@ -706,18 +706,18 @@ function _setupGuideSheet(ss) {
     [2,  'Designed & Built by 성포고등학교 황성재 | @hirame.ki', null, true, '#34495E', null, 28, 10, '#BDC3C7', 'right'],
     [3,  '', null, true, '#C8D6E5', null, 5],
     [4,  '🔧 최초 설치 (딱 1회만 하면 끝!)', null, true, '#4A90D9', null, 36, 12],
-    [5,  '① 코드 등록', 'Apps Script에 Code.gs 내용만 붙여넣기 후 저장 (index.html은 필요 없음)', false, '#EBF4FF', '#EBF4FF'],
-    [6,  '② 초기 설정', '[🎓 연수서명관리] → [초기설정 실행] 클릭', false, '#F0F4FF', '#F0F4FF'],
-    [7,  '③ 웹앱 배포', '[배포] → [새 배포] → 웹 앱 / 실행: 나 / 액세스: 모든 사용자 → URL 복사', false, '#EBF4FF', '#EBF4FF'],
+    [5,  '① Apps Script 열기', '시트 상단 메뉴 [확장 프로그램] → [Apps Script] 클릭\n(코드는 이 시트에 이미 포함되어 있어 붙여넣기가 필요 없습니다)', false, '#EBF4FF', '#EBF4FF', 52, null, true],
+    [6,  '② 웹앱 배포', '[배포] → [새 배포] → 유형: 웹 앱 / 실행: 나 / 액세스: 모든 사용자 → [배포]\n(최초 1회 권한 승인 창이 뜨면 계정 선택 후 허용) → 웹 앱 URL 복사', false, '#F0F4FF', '#F0F4FF', 56, null, true],
+    [7,  '③ 기본 정보 입력', '[⚙️ 연수설정] B2 기관명 · 7~16행 연수 입력 / [👥 구성원명단] 부서·성명 입력', false, '#EBF4FF', '#EBF4FF', 44, null, true],
     [8,  '④ 웹페이지 연결', '서명 웹페이지 접속 → 복사한 배포 URL 붙여넣기 → [연결하기]', false, '#F0F4FF', '#F0F4FF'],
-    [9,  '⑤ 링크 공유', '연결 완료 후 표시되는 공유 링크(또는 QR)를 구성원에게 안내', false, '#EBF4FF', '#EBF4FF'],
+    [9,  '⑤ 링크 공유', '연결 완료 후 표시되는 공유 링크·QR을 구성원에게 안내', false, '#EBF4FF', '#EBF4FF'],
     [10, '', null, true, '#C8D6E5', null, 5],
     [11, '✨ v5의 달라진 점', null, true, '#16A085', null, 36, 12],
     [12, '재배포 불필요', '화면(디자인·기능) 업데이트는 웹페이지에 자동 반영됩니다.\n→ 이 코드와 배포를 다시 손댈 필요가 없습니다.', false, '#E8F8F3', '#E8F8F3', 52, null, true],
     [13, '서명등록부 출력', '웹페이지 [서명결과 출력] → 부서·성명·서명 이미지가 담긴 서명등록부를 인쇄(PDF 저장)할 수 있습니다.', false, '#F0FBF7', '#F0FBF7', 44, null, true],
     [14, '', null, true, '#C8D6E5', null, 5],
-    [15, '👥 교직원명단 입력 (중요!)', null, true, '#E67E22', null, 36, 12],
-    [16, '입력 위치', '[👥 교직원명단] 시트 → A열: 부서, B열: 성명 입력', false, '#FFF8F0', '#FFF8F0'],
+    [15, '👥 구성원명단 입력 (중요!)', null, true, '#E67E22', null, 36, 12],
+    [16, '입력 위치', '[👥 구성원명단] 시트 → A열: 부서, B열: 성명 입력', false, '#FFF8F0', '#FFF8F0'],
     [17, '자동 연동', '명단에 입력된 부서·이름이 웹 서명 화면의 선택 목록에 자동 반영됨', false, '#FFF3E6', '#FFF3E6', 44, null, true],
     [18, '', null, true, '#C8D6E5', null, 5],
     [19, '📋 연수 등록', null, true, '#27AE60', null, 36, 12],

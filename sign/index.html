@@ -1213,8 +1213,9 @@ function showShareModal() {
 }
 
 /**
- * is.gd 무료 단축 서비스로 짧은 주소 생성 (JSONP 방식)
- * 실패하면 null → 압축 링크(?s=...)를 그대로 사용
+ * 무료 단축 서비스로 짧은 주소 생성
+ * da.gd → clck.ru 순서로 시도, 모두 실패하면 null → 압축 링크(?s=...) 사용
+ * (두 서비스 모두 CORS를 지원해 브라우저에서 직접 호출 가능)
  */
 function makeShortUrl(longUrl, cb) {
   // 같은 링크로 이미 만든 단축 주소가 있으면 재사용
@@ -1222,32 +1223,43 @@ function makeShortUrl(longUrl, cb) {
   var cachedFor = localStorage.getItem('esign_short_url_for');
   if (cached && cachedFor === longUrl) { cb(cached); return; }
 
-  var cbName = '__isgd_cb_' + Date.now();
-  var script = null;
-  var timer  = setTimeout(function() { cleanup(); cb(null); }, 6000);
+  var services = [
+    'https://da.gd/shorten?url=',
+    'https://clck.ru/--?url='
+  ];
 
-  function cleanup() {
-    clearTimeout(timer);
-    try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
-    if (script && script.parentNode) script.parentNode.removeChild(script);
+  function tryService(idx) {
+    if (idx >= services.length) { cb(null); return; }
+
+    var timedOut = false;
+    var timer = setTimeout(function() {
+      timedOut = true;
+      tryService(idx + 1);
+    }, 6000);
+
+    fetch(services[idx] + encodeURIComponent(longUrl))
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+      .then(function(text) {
+        if (timedOut) return;
+        clearTimeout(timer);
+        var url = String(text).trim();
+        // 응답이 "https://xx.xx/xxxxx" 형태의 짧은 주소인지 확인
+        if (/^https:\/\/\S{8,40}$/.test(url)) {
+          localStorage.setItem('esign_short_url', url);
+          localStorage.setItem('esign_short_url_for', longUrl);
+          cb(url);
+        } else {
+          tryService(idx + 1);
+        }
+      })
+      .catch(function() {
+        if (timedOut) return;
+        clearTimeout(timer);
+        tryService(idx + 1);
+      });
   }
 
-  window[cbName] = function(res) {
-    cleanup();
-    if (res && res.shorturl) {
-      localStorage.setItem('esign_short_url', res.shorturl);
-      localStorage.setItem('esign_short_url_for', longUrl);
-      cb(res.shorturl);
-    } else {
-      cb(null);
-    }
-  };
-
-  script = document.createElement('script');
-  script.src = 'https://is.gd/create.php?format=json&callback=' + cbName +
-               '&url=' + encodeURIComponent(longUrl);
-  script.onerror = function() { cleanup(); cb(null); };
-  document.body.appendChild(script);
+  tryService(0);
 }
 
 /* ── 기관 대표 색상 적용 (시트 B20, #RRGGBB) ── */
