@@ -398,8 +398,8 @@
       <div class="form-row" style="justify-content:space-between;margin-bottom:0">
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
           <div class="form-group"><label>날짜</label><select id="sepDate"></select></div>
-          <div class="form-group"><label>교시</label><input type="number" id="sepPeriod" min="1" max="9" value="1" style="width:70px" /></div>
           <div class="form-group"><label>학년</label><select id="sepGrade" onchange="loadSeatGradeGrid()"></select></div>
+          <div class="form-group"><label>교시</label><input type="number" id="sepPeriod" min="1" max="9" value="1" style="width:70px" /></div>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
           <div class="form-group"><label>교실 행 수</label><input type="number" id="sepRows" value="6" min="1" max="12" style="width:70px" oninput="renderSeatEditor('sep')" /></div>
@@ -499,6 +499,7 @@
         <div style="display:flex;gap:14px;margin-bottom:12px;font-size:12px;color:var(--text3)">
           <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:3px;display:inline-block"></span>응시</span>
           <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:3px;display:inline-block"></span>미응시</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:transparent;border:1.5px dashed var(--danger);border-radius:3px;display:inline-block"></span>결시(자리 유지)</span>
         </div>
         <div class="layout-wrap">
           <div class="window-label">← 창가 (왼쪽)</div>
@@ -1605,11 +1606,23 @@ async function generateSeatChart(){
   const startSide=document.getElementById('sepStartSide').value;
   const subj=document.getElementById('subjectName').value||'선택과목';
   const room=document.getElementById('roomName').value||'별실';
+  const date=document.getElementById('sepDate').value;
+  const period=parseInt(document.getElementById('sepPeriod').value);
   if(!selectedExamineeIds.size){showToast('응시 학생을 선택하세요');return;}
-  const examinees=gradeStudents(grade).filter(s=>selectedExamineeIds.has(s.id));
+  const examineesBase=gradeStudents(grade).filter(s=>selectedExamineeIds.has(s.id));
+  let abIds=new Set();
+  if(date&&!isNaN(period)){
+    const{data:abData}=await sb.from('absences').select('student_id')
+      .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period)
+      .in('student_id',examineesBase.map(s=>s.id));
+    abIds=new Set((abData||[]).map(a=>a.student_id));
+  }
+  const examinees=examineesBase.map(s=>({...s,isAbsent:abIds.has(s.id)}));
   setSeatResultTitle(subj,room);
   if(!drawSeats(examinees,[],rows,cols,startSide,true,disabledSeats.sep))return;
-  document.getElementById('seatSummaryText').textContent=`응시자 ${examinees.length}명 · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
+  const absentCount=examinees.filter(s=>s.isAbsent).length;
+  const examCount=examinees.length-absentCount;
+  document.getElementById('seatSummaryText').textContent=`응시 ${examCount}명 · 결시 ${absentCount}명(빈자리 처리) · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
   document.getElementById('seatResult').style.display='block';
   lastChartParams={
     mode:'separate',
@@ -1734,22 +1747,42 @@ async function openSeatChartListModal(){
   if(!savedSeatCharts.length){body.innerHTML='<p style="font-size:13px;color:var(--text3)">저장된 배치표가 없습니다</p>';return;}
   body.innerHTML=savedSeatCharts.map(c=>{
     const dateLabel=c.exam_date?fmtDate(c.exam_date)+(c.period?` ${c.period}교시`:''):'날짜 미지정';
+    const deleteBtn=`<button type="button" class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);flex-shrink:0" onclick="event.stopPropagation();deleteSavedSeatChart(${c.id})">삭제</button>`;
     if(c.mode==='own'){
       const cls=classes.find(x=>x.id===c.class_id);
       const clsLabel=cls?`${cls.grade}-${cls.class_num}반`:'학급 정보 없음';
-      return`<div class="saved-chart-item" onclick="applySavedSeatChartById(${c.id})">
-        <div class="sci-title">${c.subject_name||'과목명 없음'} · ${clsLabel}</div>
-        <div class="sci-meta">${dateLabel} · 응시자 ${(c.student_ids||[]).length}명</div>
+      return`<div class="saved-chart-item" style="display:flex;align-items:flex-start;gap:10px">
+        <div style="flex:1;cursor:pointer" onclick="applySavedSeatChartById(${c.id})">
+          <div class="sci-title">${c.subject_name||'과목명 없음'} · ${clsLabel}</div>
+          <div class="sci-meta">${dateLabel} · 응시자 ${(c.student_ids||[]).length}명</div>
+        </div>
+        ${deleteBtn}
       </div>`;
     }
     const gradeLabel=c.grade?`${c.grade}학년 · `:'';
-    return`<div class="saved-chart-item" onclick="applySavedSeatChartById(${c.id})">
-      <div class="sci-title">${c.subject_name||'과목명 없음'} · ${c.room_name||'호실 미지정'}</div>
-      <div class="sci-meta">${gradeLabel}${dateLabel} · 응시자 ${(c.student_ids||[]).length}명</div>
+    return`<div class="saved-chart-item" style="display:flex;align-items:flex-start;gap:10px">
+      <div style="flex:1;cursor:pointer" onclick="applySavedSeatChartById(${c.id})">
+        <div class="sci-title">${c.subject_name||'과목명 없음'} · ${c.room_name||'호실 미지정'}</div>
+        <div class="sci-meta">${gradeLabel}${dateLabel} · 응시자 ${(c.student_ids||[]).length}명</div>
+      </div>
+      ${deleteBtn}
     </div>`;
   }).join('');
 }
 function closeSeatChartListModal(){document.getElementById('seatChartListModal').style.display='none';}
+async function deleteSavedSeatChart(id){
+  const c=savedSeatCharts.find(x=>x.id===id);
+  const label=c?(c.subject_name||'이름 없는 배치표'):'이 배치표';
+  if(!confirm(`"${label}" 항목을 삭제할까요? 되돌릴 수 없습니다.`))return;
+  const{error}=await sb.from('seat_charts').delete().eq('id',id);
+  if(error){showToast('삭제 실패: '+error.message);return;}
+  if(currentSeatChartId===id){
+    currentSeatChartId=null;
+    updateSaveSeatChartBtnLabel();
+  }
+  showToast('삭제되었습니다');
+  openSeatChartListModal();
+}
 function applySavedSeatChartById(id){
   const c=savedSeatCharts.find(x=>x.id===id);
   if(c)applySavedSeatChart(c);
@@ -1831,8 +1864,9 @@ function drawSeats(examinees,nonExam,rows,cols,startSide,showClassInfo=false,dis
     `<div class="seat-row">${row.map(s=>{
       if(s===undefined)return`<div class="seat seat-none"></div>`;
       if(!s)return`<div class="seat empty-seat"></div>`;
-      const cls=s.isExaminee?'present':'non-exam';
       const numLabel=showClassInfo?`${s.grade}-${s.class_num} ${s.number}번`:`${s.number}번`;
+      if(s.isAbsent)return`<div class="seat absent-seat"><div class="seat-num">${numLabel}</div><div class="seat-name">결시</div></div>`;
+      const cls=s.isExaminee?'present':'non-exam';
       return`<div class="seat ${cls}"><div class="seat-num">${numLabel}</div><div class="seat-name">${s.name}</div></div>`;
     }).join('')}</div>`).join('');
   return true;
