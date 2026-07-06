@@ -532,6 +532,10 @@
   .share-qr-hint {
     margin-top: 6px; font-size: 10.5px; color: var(--ink3); font-weight: 500;
   }
+  .share-short-status {
+    min-height: 15px; margin: -6px 0 10px;
+    font-size: 11px; color: var(--brand); font-weight: 600;
+  }
 
   /* ── 안내문 배너 ─────────────────────────────────── */
   .notice-bar {
@@ -997,6 +1001,7 @@
       <div class="share-qr-hint">QR 이미지를 길게 누르면 저장할 수 있어요</div>
     </div>
     <div class="share-box" id="shareLinkBox">—</div>
+    <div class="share-short-status" id="shareShortStatus"></div>
     <button class="modal-btn" id="copyShareBtn" onclick="copyShareLink()">
       링크 복사하기
     </button>
@@ -1077,10 +1082,13 @@ window.addEventListener('load', function() {
   initCanvas();
 
   var params   = new URLSearchParams(location.search);
-  var apiParam = params.get('api');
+  var sParam   = params.get('s');    // 압축형 접속 링크: 배포 ID만 전달
+  var apiParam = params.get('api');  // 전체 URL형 (구버전 링크 호환)
 
-  // 접속 링크(?api=...)로 들어온 경우: URL 저장 후 사용
-  if (apiParam && isValidApiUrl(apiParam)) {
+  if (sParam && /^[\w-]+$/.test(sParam)) {
+    localStorage.setItem(API_STORAGE_KEY,
+      'https://script.google.com/macros/s/' + sParam + '/exec');
+  } else if (apiParam && isValidApiUrl(apiParam)) {
     localStorage.setItem(API_STORAGE_KEY, apiParam);
   }
   API_URL = localStorage.getItem(API_STORAGE_KEY) || '';
@@ -1157,16 +1165,76 @@ function resetConnection() {
 }
 
 /* ── 공유 링크 ── */
+var currentShareLink = '';
+
 function buildShareLink() {
+  // 배포 URL 전체 대신 배포 ID만 담아 링크를 절반 이하로 압축 (QR 단순화)
+  var m = String(API_URL).match(/\/macros\/s\/([\w-]+)\/exec/);
+  if (m) return location.origin + location.pathname + '?s=' + m[1];
   return location.origin + location.pathname + '?api=' + encodeURIComponent(API_URL);
+}
+
+function setShareUi(link) {
+  currentShareLink = link;
+  document.getElementById('shareLinkBox').textContent = link;
+  document.getElementById('shareQr').src =
+    'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=' + encodeURIComponent(link);
 }
 
 function showShareModal() {
   var link = buildShareLink();
-  document.getElementById('shareLinkBox').textContent = link;
-  document.getElementById('shareQr').src =
-    'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=' + encodeURIComponent(link);
+  setShareUi(link);
   document.getElementById('modalShare').classList.add('show');
+
+  // 단축 URL 생성 시도 → 성공하면 짧은 주소로 링크·QR 교체 (QR이 훨씬 단순해짐)
+  var status = document.getElementById('shareShortStatus');
+  status.textContent = '더 짧은 주소를 만드는 중...';
+  makeShortUrl(link, function(shortUrl) {
+    if (shortUrl) {
+      setShareUi(shortUrl);
+      status.textContent = '✓ 단축 주소 생성 완료 — QR도 단축 주소로 만들어졌어요';
+    } else {
+      status.textContent = '';
+    }
+  });
+}
+
+/**
+ * is.gd 무료 단축 서비스로 짧은 주소 생성 (JSONP 방식)
+ * 실패하면 null → 압축 링크(?s=...)를 그대로 사용
+ */
+function makeShortUrl(longUrl, cb) {
+  // 같은 링크로 이미 만든 단축 주소가 있으면 재사용
+  var cached    = localStorage.getItem('esign_short_url');
+  var cachedFor = localStorage.getItem('esign_short_url_for');
+  if (cached && cachedFor === longUrl) { cb(cached); return; }
+
+  var cbName = '__isgd_cb_' + Date.now();
+  var script = null;
+  var timer  = setTimeout(function() { cleanup(); cb(null); }, 6000);
+
+  function cleanup() {
+    clearTimeout(timer);
+    try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+    if (script && script.parentNode) script.parentNode.removeChild(script);
+  }
+
+  window[cbName] = function(res) {
+    cleanup();
+    if (res && res.shorturl) {
+      localStorage.setItem('esign_short_url', res.shorturl);
+      localStorage.setItem('esign_short_url_for', longUrl);
+      cb(res.shorturl);
+    } else {
+      cb(null);
+    }
+  };
+
+  script = document.createElement('script');
+  script.src = 'https://is.gd/create.php?format=json&callback=' + cbName +
+               '&url=' + encodeURIComponent(longUrl);
+  script.onerror = function() { cleanup(); cb(null); };
+  document.body.appendChild(script);
 }
 
 /* ── 기관 대표 색상 적용 (시트 B20, #RRGGBB) ── */
@@ -1207,7 +1275,7 @@ function applyBrandColor(hex) {
 }
 
 function copyShareLink() {
-  var link = buildShareLink();
+  var link = currentShareLink || buildShareLink();
   var btn  = document.getElementById('copyShareBtn');
   function done() {
     btn.textContent = '복사되었어요!';
