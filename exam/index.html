@@ -11,6 +11,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <style>
   :root {
     --bg:#f7f5f0;--surface:#fff;--surface2:#f1efe7;--border:#e6e1d3;
@@ -285,13 +287,16 @@
       </div>
       <div class="card">
         <div class="card-title"><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"></circle><path d="M5 20a7 7 0 0 1 14 0"></path></svg>학생 등록</div>
-        <div class="form-row"><div class="form-group" style="flex:1"><label>학급 선택</label><select id="studentClassSel"></select></div></div>
+        <div class="form-row"><div class="form-group" style="flex:1"><label>학급 선택</label><select id="studentClassSel" onchange="renderClassStudentRoster()"></select></div></div>
         <div class="form-group" style="margin-bottom:10px">
-          <label>학생 목록 (번호. 이름 형식)</label>
+          <label>학생 목록 (번호. 이름 형식) — 저장 시 이 학급 명단 전체를 덮어씁니다</label>
           <textarea id="studentListInput" placeholder="1. 홍길동&#10;2. 김철수&#10;3. 이영희"></textarea>
         </div>
-        <button class="btn btn-primary" onclick="saveStudents()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M8 3v5h8V3"></path><rect x="7" y="13" width="10" height="7"></rect></svg>저장</button>
+        <button class="btn btn-primary" onclick="saveStudents()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M8 3v5h8V3"></path><rect x="7" y="13" width="10" height="7"></rect></svg>전체 저장(덮어쓰기)</button>
         <div id="studentSaveStatus" style="margin-top:8px;font-size:13px"></div>
+        <hr class="divider" />
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">개별 학생 관리 (선택한 학급, 번호/이름 수정 · 삭제)</div>
+        <div id="classStudentRoster"></div>
       </div>
     </div>
     <div class="card">
@@ -353,6 +358,21 @@
       <div id="hqSubmissionBoard"></div>
     </div>
     <div id="hqContent"></div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span style="display:inline-flex;align-items:center;gap:8px"><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"></line><line x1="12" y1="20" x2="12" y2="6"></line><line x1="19" y1="20" x2="19" y2="14"></line><line x1="2.5" y1="20" x2="21.5" y2="20"></line></svg>기간 합산 결시 통계</span>
+        <button type="button" class="btn btn-outline btn-sm no-print" onclick="downloadPeriodReportExcel()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><polyline points="7 10 12 15 17 10"></polyline><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>엑셀 다운로드</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>시작일</label><select id="reportStartDate"></select></div>
+        <div class="form-group"><label>종료일</label><select id="reportEndDate"></select></div>
+        <div class="form-group"><label>학년</label><select id="reportGrade" onchange="updateReportClassFilterOptions()"></select></div>
+        <div class="form-group"><label>반</label><select id="reportClass"></select></div>
+        <div class="form-group"><label>&nbsp;</label><button type="button" class="btn btn-primary btn-sm" onclick="loadPeriodReport()">조회</button></div>
+      </div>
+      <div id="periodReportBody"><p style="font-size:13px;color:var(--text3)">시작일/종료일을 선택하고 조회를 누르세요</p></div>
+    </div>
   </div>
 
   <!-- 자리배치표 -->
@@ -437,7 +457,10 @@
 
     <!-- STEP 3: 각자교실 -->
     <div id="ownSettings" class="card no-print" style="display:none">
-      <div class="card-title" style="font-size:13px;color:var(--text3)"><span class="step-badge">3</span>각자교실 응시자 설정</div>
+      <div class="card-title" style="font-size:13px;color:var(--text3);justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span style="display:inline-flex;align-items:center;gap:8px"><span class="step-badge">3</span>각자교실 응시자 설정</span>
+        <button type="button" class="btn btn-outline btn-sm" onclick="openSeatChartListModal()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5"></path><path d="M4.6 15a8 8 0 1 0 2-8.4L4 9"></path></svg>저장된 배치표 불러오기</button>
+      </div>
       <div class="form-row">
         <div class="form-group" style="flex:1"><label>과목명</label><input type="text" id="ownSubjectName" placeholder="예: 수학 I" /></div>
       </div>
@@ -458,6 +481,7 @@
       <div class="card">
         <div class="no-print" style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px">
           <button class="btn btn-outline btn-sm" id="saveSeatChartBtn" style="display:none" onclick="saveSeatChart()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M8 3v5h8V3"></path><rect x="7" y="13" width="10" height="7"></rect></svg><span id="saveSeatChartBtnLabel">현재 자리배치 저장</span></button>
+          <button class="btn btn-outline btn-sm" id="pdfSeatChartBtn" onclick="exportSeatChartPDF()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"></path><polyline points="15 2 15 7 20 7"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="13" y2="17"></line></svg>PDF로 저장</button>
           <button class="btn btn-outline btn-sm" onclick="window.print()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"></path><rect x="4" y="9" width="16" height="8" rx="1"></rect><path d="M6 14h12v7H6z"></path></svg>인쇄</button>
         </div>
         <div class="seat-print-header" id="seatResultTitle"></div>
@@ -483,7 +507,7 @@
 <div class="modal-overlay no-print" id="seatChartListModal" style="display:none" onclick="if(event.target===this)closeSeatChartListModal()">
   <div class="modal-box">
     <div class="modal-header">
-      <span>저장된 배치표 (별실 시험)</span>
+      <span id="seatChartListModalTitle">저장된 배치표 (별실 시험)</span>
       <button type="button" class="modal-close" onclick="closeSeatChartListModal()"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></button>
     </div>
     <div class="modal-body" id="seatChartListBody"></div>
@@ -500,7 +524,8 @@ let currentAbsents=new Set(),currentAbsenceInfo={},currentSeatMode='separate',in
 let selectedExamineeIds=new Set(),ownExamineeIds=new Set();
 let disabledSeats={sep:new Set(),own:new Set()};
 let hqChannel=null,currentHQPeriod=null,hqAllAbsences=[],hqAllCompletions=[];
-let currentSeatChartId=null,lastSeparateChartParams=null,savedSeatCharts=[];
+let periodReportRows=[];
+let currentSeatChartId=null,lastChartParams=null,savedSeatCharts=[];
 const ABSENCE_REASONS=['인정','미인정','질병','기타'];
 const REASON_COLORS={'인정':'#2d6be4','미인정':'#d63384','질병':'#f4a228','기타':'#4a5060'};
 function reasonColor(r){return REASON_COLORS[r]||REASON_COLORS['미인정'];}
@@ -564,7 +589,7 @@ function showPage(name){
   document.getElementById('page-'+name).classList.add('active');
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='input')populateInputSelects();
-  if(name==='hq'){populateDateSelects();populateHQFilters();loadHQData();}
+  if(name==='hq'){populateDateSelects();populateHQFilters();loadHQData();populateReportFilters();}
   if(name==='seat')populateSeatSelects();
 }
 
@@ -596,7 +621,7 @@ async function loadAllData(){
   }
   const{data:edRows}=await sb.from('exam_dates').select('exam_date').eq('school_code',SCHOOL_CODE).order('exam_date');
   examDates=(edRows||[]).map(r=>r.exam_date);
-  renderClassList();renderStudentSummary();renderStudentClassSelect();populateDateSelects();
+  renderClassList();renderStudentSummary();renderStudentClassSelect();renderClassStudentRoster();populateDateSelects();
 }
 
 async function addExamDate(){
@@ -783,8 +808,43 @@ function renderClassList(){
     </div></div>`).join('');
 }
 function renderStudentClassSelect(){
-  document.getElementById('studentClassSel').innerHTML=
-    classes.map(c=>`<option value="${c.id}">${c.grade}-${c.class_num}반</option>`).join('')||'<option>학급 없음</option>';
+  const sel=document.getElementById('studentClassSel');
+  const prev=sel.value;
+  sel.innerHTML=classes.map(c=>`<option value="${c.id}">${c.grade}-${c.class_num}반</option>`).join('')||'<option>학급 없음</option>';
+  if(classes.some(c=>String(c.id)===prev))sel.value=prev;
+}
+function renderClassStudentRoster(){
+  const el=document.getElementById('classStudentRoster');
+  if(!el)return;
+  const classId=parseInt(document.getElementById('studentClassSel').value);
+  const sts=(students[classId]||[]).slice().sort((a,b)=>a.number-b.number);
+  if(!sts.length){el.innerHTML='<p style="font-size:13px;color:var(--text3)">등록된 학생이 없습니다</p>';return;}
+  el.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">
+    ${sts.map(s=>`<div style="display:flex;align-items:center;gap:8px;border:1.5px solid var(--border);border-radius:8px;padding:6px 8px">
+      <input type="number" value="${s.number}" id="ser-num-${s.id}" style="width:60px" />
+      <input type="text" value="${s.name.replace(/"/g,'&quot;')}" id="ser-name-${s.id}" style="flex:1;min-width:0" />
+      <button type="button" class="btn btn-outline btn-sm" onclick="updateStudent(${s.id},${classId})">저장</button>
+      <button type="button" class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger)" onclick="deleteStudent(${s.id},${classId})">삭제</button>
+    </div>`).join('')}
+  </div>`;
+}
+async function updateStudent(sid,classId){
+  const number=parseInt(document.getElementById('ser-num-'+sid).value);
+  const name=document.getElementById('ser-name-'+sid).value.trim();
+  if(!number||!name){showToast('번호와 이름을 입력하세요');return;}
+  const{error}=await sb.from('students').update({number,name}).eq('id',sid);
+  if(error){showToast('오류: '+error.message);return;}
+  showToast('학생 정보가 수정되었습니다');
+  await loadAllData();
+}
+async function deleteStudent(sid,classId){
+  const s=(students[classId]||[]).find(x=>x.id===sid);
+  const label=s?`${s.number}번 ${s.name}`:'이 학생';
+  if(!confirm(`${label} 학생을 삭제할까요?`))return;
+  const{error}=await sb.from('students').delete().eq('id',sid);
+  if(error){showToast('오류: '+error.message);return;}
+  showToast(label+' 삭제됨');
+  await loadAllData();
 }
 function renderStudentSummary(){
   const el=document.getElementById('studentSummary');
@@ -1225,6 +1285,210 @@ async function downloadHQExcel(){
   URL.revokeObjectURL(url);
 }
 
+function populateReportFilters(){
+  const startSel=document.getElementById('reportStartDate');
+  const endSel=document.getElementById('reportEndDate');
+  if(!startSel||!endSel)return;
+  const prevStart=startSel.value,prevEnd=endSel.value;
+  const opts=examDates.length?examDates.map(d=>`<option value="${d}">${fmtDate(d)}</option>`).join(''):'<option value="">날짜 없음</option>';
+  startSel.innerHTML=opts;endSel.innerHTML=opts;
+  if(examDates.includes(prevStart))startSel.value=prevStart;else if(examDates.length)startSel.value=examDates[0];
+  if(examDates.includes(prevEnd))endSel.value=prevEnd;else if(examDates.length)endSel.value=examDates[examDates.length-1];
+  const gradeSel=document.getElementById('reportGrade');
+  const prevGrade=gradeSel.value;
+  const grades=[...new Set(classes.map(c=>c.grade))].sort((a,b)=>a-b);
+  gradeSel.innerHTML='<option value="">전체 학년</option>'+grades.map(g=>`<option value="${g}">${g}학년</option>`).join('');
+  if(grades.map(String).includes(prevGrade))gradeSel.value=prevGrade;
+  updateReportClassFilterOptions();
+}
+function updateReportClassFilterOptions(){
+  const classSel=document.getElementById('reportClass');
+  if(!classSel)return;
+  const prevClass=classSel.value;
+  const grade=document.getElementById('reportGrade').value;
+  const list=classes.filter(c=>!grade||c.grade===parseInt(grade)).sort((a,b)=>a.grade-b.grade||a.class_num-b.class_num);
+  classSel.innerHTML='<option value="">전체 반</option>'+list.map(c=>`<option value="${c.id}">${c.grade}-${c.class_num}반</option>`).join('');
+  if(list.some(c=>String(c.id)===prevClass))classSel.value=prevClass;
+}
+async function loadPeriodReport(){
+  const start=document.getElementById('reportStartDate').value;
+  const end=document.getElementById('reportEndDate').value;
+  if(!start||!end){showToast('시작일과 종료일을 선택하세요');return;}
+  if(start>end){showToast('시작일이 종료일보다 늦을 수 없습니다');return;}
+  const{data,error}=await sb.from('absences')
+    .select('*,classes(grade,class_num),students(number,name)')
+    .eq('school_code',SCHOOL_CODE).gte('exam_date',start).lte('exam_date',end);
+  if(error){showToast('조회 실패: '+error.message);return;}
+  const grade=document.getElementById('reportGrade').value;
+  const classId=document.getElementById('reportClass').value;
+  periodReportRows=(data||[]).filter(a=>
+    (!grade||a.classes.grade===parseInt(grade))&&(!classId||a.class_id===parseInt(classId)));
+  renderPeriodReport(start,end);
+}
+function renderPeriodReport(start,end){
+  const el=document.getElementById('periodReportBody');
+  if(!periodReportRows.length){
+    el.innerHTML=`<p style="font-size:13px;color:var(--text3)">${fmtDate(start)} ~ ${fmtDate(end)} 기간에 결시 기록이 없습니다</p>`;
+    return;
+  }
+  const reasonCounts={};ABSENCE_REASONS.forEach(r=>reasonCounts[r]=0);
+  periodReportRows.forEach(a=>{const r=a.reason||'미인정';reasonCounts[r]=(reasonCounts[r]||0)+1;});
+
+  const byClass={};
+  periodReportRows.forEach(a=>{
+    const key=a.class_id;
+    if(!byClass[key])byClass[key]={grade:a.classes.grade,classNum:a.classes.class_num,count:0};
+    byClass[key].count++;
+  });
+  const classRows=Object.values(byClass).sort((a,b)=>a.grade-b.grade||a.classNum-b.classNum);
+
+  const byStudent={};
+  periodReportRows.forEach(a=>{
+    const key=a.student_id;
+    if(!byStudent[key])byStudent[key]={grade:a.classes.grade,classNum:a.classes.class_num,number:a.students.number,name:a.students.name,total:0,reasons:{}};
+    byStudent[key].total++;
+    const r=a.reason||'미인정';
+    byStudent[key].reasons[r]=(byStudent[key].reasons[r]||0)+1;
+  });
+  const studentRows=Object.values(byStudent).sort((a,b)=>b.total-a.total||a.grade-b.grade||a.classNum-b.classNum||a.number-b.number);
+
+  el.innerHTML=`
+    <div class="hq-total-line" style="border:none;padding-bottom:0;margin-bottom:14px">${fmtDate(start)} ~ ${fmtDate(end)} 결시 총 <span style="color:var(--danger)">${periodReportRows.length}</span>건</div>
+    <div class="hq-period-line" style="padding:0 0 16px 0">
+      ${ABSENCE_REASONS.map(r=>`<span>${r} <b style="color:${reasonColor(r)}">${reasonCounts[r]}</b>건</span>`).join('')}
+    </div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">학급별 결시 건수</div>
+    <div class="hq-class-grid" style="margin-bottom:20px">
+      ${classRows.map(c=>`<div class="hq-class-card" style="padding:10px 12px">
+        <div class="hq-class-header" style="margin-bottom:0">
+          <div class="hq-class-name">${c.grade}-${c.classNum}반</div>
+          <span class="badge badge-danger">${c.count}건</span>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">학생별 누적 결시 (많은 순)</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${studentRows.map(s=>`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px">
+        <span style="min-width:90px;color:var(--text3)">${s.grade}-${s.classNum}반 ${s.number}번</span>
+        <span style="font-weight:700;flex:1">${s.name}</span>
+        <span class="badge badge-danger">총 ${s.total}건</span>
+        <span style="color:var(--text3);font-size:12px">${ABSENCE_REASONS.filter(r=>s.reasons[r]).map(r=>`${r} ${s.reasons[r]}`).join(' · ')}</span>
+      </div>`).join('')}
+    </div>`;
+}
+async function downloadPeriodReportExcel(){
+  const start=document.getElementById('reportStartDate').value;
+  const end=document.getElementById('reportEndDate').value;
+  if(!start||!end){showToast('시작일과 종료일을 선택하세요');return;}
+  if(!periodReportRows.length){showToast('먼저 조회를 눌러 데이터를 불러오세요');return;}
+
+  const reasonCounts={};ABSENCE_REASONS.forEach(r=>reasonCounts[r]=0);
+  periodReportRows.forEach(a=>{const r=a.reason||'미인정';reasonCounts[r]=(reasonCounts[r]||0)+1;});
+
+  const byClass={};
+  periodReportRows.forEach(a=>{
+    const key=a.class_id;
+    if(!byClass[key])byClass[key]={grade:a.classes.grade,classNum:a.classes.class_num,count:0,인정:0,미인정:0,질병:0,기타:0};
+    byClass[key].count++;
+    const r=a.reason||'미인정';byClass[key][r]=(byClass[key][r]||0)+1;
+  });
+  const classRows=Object.values(byClass).sort((a,b)=>a.grade-b.grade||a.classNum-b.classNum);
+
+  const byStudent={};
+  periodReportRows.forEach(a=>{
+    const key=a.student_id;
+    if(!byStudent[key])byStudent[key]={grade:a.classes.grade,classNum:a.classes.class_num,number:a.students.number,name:a.students.name,total:0,인정:0,미인정:0,질병:0,기타:0};
+    byStudent[key].total++;
+    const r=a.reason||'미인정';byStudent[key][r]=(byStudent[key][r]||0)+1;
+  });
+  const studentRows=Object.values(byStudent).sort((a,b)=>b.total-a.total||a.grade-b.grade||a.classNum-b.classNum||a.number-b.number);
+
+  const FONT='맑은 고딕';
+  const border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+  const wb=new ExcelJS.Workbook();
+  const ws=wb.addWorksheet('기간합산결시통계');
+  ws.columns=Array.from({length:9},()=>({width:12}));
+
+  let r=1;
+  ws.mergeCells(r,1,r,9);
+  const titleCell=ws.getCell(r,1);
+  titleCell.value=`기간 합산 결시 통계 — ${fmtDate(start)} ~ ${fmtDate(end)}`;
+  titleCell.font={name:FONT,size:16,bold:true,color:{argb:'FFFFFFFF'}};
+  titleCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2D6BE4'}};
+  titleCell.alignment={horizontal:'center',vertical:'middle'};
+  ws.getRow(r).height=28;
+  r+=2;
+
+  function sectionHeader(text){
+    ws.mergeCells(r,1,r,9);
+    const c=ws.getCell(r,1);
+    c.value=text;
+    c.font={name:FONT,size:12,bold:true,color:{argb:'FF2D6BE4'}};
+    c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFEEF2FD'}};
+    c.alignment={vertical:'middle',indent:1};
+    ws.getRow(r).height=22;
+    r++;
+  }
+  function tableHeader(cols){
+    for(let i=0;i<9;i++){
+      const c=ws.getCell(r,i+1);
+      c.value=cols[i]||'';
+      c.font={name:FONT,size:10.5,bold:true,color:{argb:'FFFFFFFF'}};
+      c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF4A5060'}};
+      c.alignment={horizontal:'center',vertical:'middle'};
+      c.border=border;
+    }
+    ws.getRow(r).height=20;
+    r++;
+  }
+  function dataRow(vals,i,opts={}){
+    for(let ci=0;ci<9;ci++){
+      const c=ws.getCell(r,ci+1);
+      c.value=vals[ci]===undefined?'':vals[ci];
+      c.font={name:FONT,size:10.5};
+      c.alignment={horizontal:opts.leftCols&&opts.leftCols.includes(ci)?'left':'center',vertical:'middle'};
+      c.border=border;
+      c.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?'FFF8F9FB':'FFFFFFFF'}};
+    }
+    if(opts.redCol!==undefined)ws.getCell(r,opts.redCol+1).font={name:FONT,size:10.5,bold:true,color:{argb:'FFE63946'}};
+    ws.getRow(r).height=19;
+    r++;
+  }
+
+  sectionHeader('① 기간 전체 사유별 집계');
+  tableHeader(['총 결시','인정','미인정','질병','기타','','','','']);
+  dataRow([periodReportRows.length,reasonCounts.인정,reasonCounts.미인정,reasonCounts.질병,reasonCounts.기타,'','','',''],0,{redCol:0});
+  r++;
+
+  sectionHeader('② 학급별 집계');
+  tableHeader(['학년','반','결시','인정','미인정','질병','기타','','']);
+  classRows.forEach((row,i)=>dataRow(
+    [row.grade+'학년',row.classNum+'반',row.count,row.인정,row.미인정,row.질병,row.기타,'',''],
+    i,{redCol:2}));
+  r++;
+
+  sectionHeader('③ 학생별 누적 결시 명단 (많은 순)');
+  tableHeader(['학년','반','번호','이름','총 결시','인정','미인정','질병','기타']);
+  if(studentRows.length){
+    studentRows.forEach((row,i)=>dataRow(
+      [row.grade+'학년',row.classNum+'반',row.number+'번',row.name,row.total,row.인정,row.미인정,row.질병,row.기타],
+      i,{leftCols:[3],redCol:4}));
+  }else{
+    ws.mergeCells(r,1,r,9);
+    const c=ws.getCell(r,1);
+    c.value='결시 학생이 없습니다';
+    c.font={name:FONT,size:10.5,italic:true,color:{argb:'FF8A909E'}};
+    c.alignment={horizontal:'center',vertical:'middle'};
+    r++;
+  }
+
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`결시통계_${start}_${end}.xlsx`;document.body.appendChild(a);a.click();a.remove();
+  URL.revokeObjectURL(url);
+}
+
 function gradeStudents(grade){
   return classes.filter(c=>c.grade===grade).sort((a,b)=>a.class_num-b.class_num)
     .flatMap(c=>(students[c.id]||[]).map(s=>({...s,grade:c.grade,class_num:c.class_num})));
@@ -1278,11 +1542,11 @@ function selectSeatMode(mode,el){
   document.getElementById('ownSettings').style.display=mode==='own'?'block':'none';
   document.getElementById('seatResult').style.display='none';
   document.getElementById('saveSeatChartBtn').style.display='none';
-  currentSeatChartId=null;lastSeparateChartParams=null;
+  currentSeatChartId=null;lastChartParams=null;
 }
 function loadSeatGradeGrid(){
   const grade=parseInt(document.getElementById('sepGrade').value);
-  currentSeatChartId=null;lastSeparateChartParams=null;
+  currentSeatChartId=null;lastChartParams=null;
   const gStudents=gradeStudents(grade);selectedExamineeIds=new Set();
   const byClass={};
   gStudents.forEach(s=>{if(!byClass[s.class_num])byClass[s.class_num]=[];byClass[s.class_num].push(s);});
@@ -1304,6 +1568,7 @@ function toggleExaminee(id,el){
 }
 function loadOwnStudentGrid(){
   const classId=parseInt(document.getElementById('ownClass').value);
+  currentSeatChartId=null;lastChartParams=null;
   const sts=students[classId]||[];ownExamineeIds=new Set();
   document.getElementById('ownStudentGrid').innerHTML=sts.length?sts.map(s=>
     `<div class="student-item" id="own-si-${s.id}" onclick="toggleOwnExaminee(${s.id},this)">
@@ -1336,10 +1601,11 @@ async function generateSeatChart(){
   if(!drawSeats(examinees,[],rows,cols,startSide,true,disabledSeats.sep))return;
   document.getElementById('seatSummaryText').textContent=`응시자 ${examinees.length}명 · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
   document.getElementById('seatResult').style.display='block';
-  lastSeparateChartParams={
+  lastChartParams={
+    mode:'separate',
     exam_date:document.getElementById('sepDate').value||null,
     period:parseInt(document.getElementById('sepPeriod').value)||null,
-    grade,rows,cols,start_side:startSide,
+    grade,class_id:null,rows,cols,start_side:startSide,
     subject_name:subj,room_name:room,
     disabled_seats:[...disabledSeats.sep],
     student_ids:[...selectedExamineeIds]
@@ -1377,7 +1643,17 @@ async function generateOwnSeatChart(){
   document.getElementById('seatSummaryText').textContent=
     `응시 ${examCount}명 · 미응시 ${nonExamCount}명 · 결시 ${absentCount}명(빈자리 처리) · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터, 응시자 우선 배치)`;
   document.getElementById('seatResult').style.display='block';
-  document.getElementById('saveSeatChartBtn').style.display='none';
+  lastChartParams={
+    mode:'own',
+    exam_date:date||null,
+    period:isNaN(period)?null:period,
+    grade:null,class_id:classId,rows,cols,start_side:startSide,
+    subject_name:subj,room_name:null,
+    disabled_seats:[...disabledSeats.own],
+    student_ids:[...ownExamineeIds]
+  };
+  document.getElementById('saveSeatChartBtn').style.display='inline-flex';
+  updateSaveSeatChartBtnLabel();
 }
 
 function setSeatResultTitle(subject,roomLabel){
@@ -1389,8 +1665,8 @@ function updateSaveSeatChartBtnLabel(){
   if(el)el.textContent=currentSeatChartId?'다시 저장':'현재 자리배치 저장';
 }
 async function saveSeatChart(){
-  if(!lastSeparateChartParams){showToast('먼저 배치표를 생성하세요');return;}
-  const payload={school_code:SCHOOL_CODE,mode:'separate',...lastSeparateChartParams,updated_at:new Date().toISOString()};
+  if(!lastChartParams){showToast('먼저 배치표를 생성하세요');return;}
+  const payload={school_code:SCHOOL_CODE,...lastChartParams,updated_at:new Date().toISOString()};
   if(currentSeatChartId){
     const{error}=await sb.from('seat_charts').update(payload).eq('id',currentSeatChartId);
     if(error){showToast('저장 실패: '+error.message);return;}
@@ -1403,19 +1679,60 @@ async function saveSeatChart(){
   }
   updateSaveSeatChartBtnLabel();
 }
+async function exportSeatChartPDF(){
+  if(!lastChartParams){showToast('먼저 배치표를 생성하세요');return;}
+  const card=document.querySelector('#seatResult .card');
+  if(!card)return;
+  showToast('PDF 생성 중...');
+  try{
+    const canvas=await html2canvas(card,{
+      scale:2,backgroundColor:'#ffffff',
+      ignoreElements:el=>el.classList&&el.classList.contains('no-print')
+    });
+    const imgData=canvas.toDataURL('image/png');
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const pageW=doc.internal.pageSize.getWidth();
+    const pageH=doc.internal.pageSize.getHeight();
+    const margin=8;
+    const maxW=pageW-margin*2,maxH=pageH-margin*2;
+    const ratio=Math.min(maxW/canvas.width,maxH/canvas.height);
+    const imgW=canvas.width*ratio,imgH=canvas.height*ratio;
+    const x=(pageW-imgW)/2,y=(pageH-imgH)/2;
+    doc.addImage(imgData,'PNG',x,y,imgW,imgH);
+    const subjectEl=document.querySelector('#seatResultTitle .seat-subject');
+    const roomEl=document.querySelector('#seatResultTitle .seat-room');
+    const subject=(subjectEl?subjectEl.textContent:'배치표').trim()||'배치표';
+    const room=(roomEl?roomEl.textContent:'').trim();
+    const filename=(subject+(room?'_'+room:'')+'_자리배치표.pdf').replace(/[\\/:*?"<>|]/g,'');
+    doc.save(filename);
+  }catch(e){
+    showToast('PDF 생성 실패: '+e.message);
+  }
+}
 async function openSeatChartListModal(){
   document.getElementById('seatChartListModal').style.display='flex';
+  const titleEl=document.getElementById('seatChartListModalTitle');
+  if(titleEl)titleEl.textContent=currentSeatMode==='own'?'저장된 배치표 (각자교실 시험)':'저장된 배치표 (별실 시험)';
   const body=document.getElementById('seatChartListBody');
   body.innerHTML='<p style="font-size:13px;color:var(--text3)">불러오는 중...</p>';
   const{data,error}=await sb.from('seat_charts').select('*')
-    .eq('school_code',SCHOOL_CODE).eq('mode','separate')
+    .eq('school_code',SCHOOL_CODE).eq('mode',currentSeatMode)
     .order('exam_date',{ascending:false}).order('period',{ascending:false}).order('id',{ascending:false});
   if(error){body.innerHTML='<p style="font-size:13px;color:var(--danger)">불러오기 실패: '+error.message+'</p>';return;}
   savedSeatCharts=data||[];
   if(!savedSeatCharts.length){body.innerHTML='<p style="font-size:13px;color:var(--text3)">저장된 배치표가 없습니다</p>';return;}
   body.innerHTML=savedSeatCharts.map(c=>{
-    const gradeLabel=c.grade?`${c.grade}학년 · `:'';
     const dateLabel=c.exam_date?fmtDate(c.exam_date)+(c.period?` ${c.period}교시`:''):'날짜 미지정';
+    if(c.mode==='own'){
+      const cls=classes.find(x=>x.id===c.class_id);
+      const clsLabel=cls?`${cls.grade}-${cls.class_num}반`:'학급 정보 없음';
+      return`<div class="saved-chart-item" onclick="applySavedSeatChartById(${c.id})">
+        <div class="sci-title">${c.subject_name||'과목명 없음'} · ${clsLabel}</div>
+        <div class="sci-meta">${dateLabel} · 응시자 ${(c.student_ids||[]).length}명</div>
+      </div>`;
+    }
+    const gradeLabel=c.grade?`${c.grade}학년 · `:'';
     return`<div class="saved-chart-item" onclick="applySavedSeatChartById(${c.id})">
       <div class="sci-title">${c.subject_name||'과목명 없음'} · ${c.room_name||'호실 미지정'}</div>
       <div class="sci-meta">${gradeLabel}${dateLabel} · 응시자 ${(c.student_ids||[]).length}명</div>
@@ -1428,6 +1745,30 @@ function applySavedSeatChartById(id){
   if(c)applySavedSeatChart(c);
 }
 function applySavedSeatChart(c){
+  if(c.mode==='own'){
+    const cls=classes.find(x=>x.id===c.class_id);
+    if(!cls){showToast('해당 학급 정보를 찾을 수 없습니다');return;}
+    document.getElementById('ownDate').value=c.exam_date||'';
+    document.getElementById('ownPeriod').value=c.period||1;
+    document.getElementById('ownClass').value=c.class_id;
+    document.getElementById('ownRows').value=c.rows;
+    document.getElementById('ownCols').value=c.cols;
+    document.getElementById('ownStartSide').value=c.start_side;
+    document.getElementById('ownSubjectName').value=c.subject_name||'';
+    disabledSeats.own=new Set(c.disabled_seats||[]);
+    loadOwnStudentGrid();
+    renderSeatEditor('own');
+    ownExamineeIds=new Set(c.student_ids||[]);
+    ownExamineeIds.forEach(id=>{
+      const el=document.getElementById('own-si-'+id);
+      if(el)el.classList.add('selected');
+    });
+    currentSeatChartId=c.id;
+    closeSeatChartListModal();
+    generateOwnSeatChart();
+    showToast('저장된 배치표를 불러왔습니다');
+    return;
+  }
   if(!classes.some(x=>x.grade===c.grade)){showToast('해당 학년 정보를 찾을 수 없습니다');return;}
   document.getElementById('sepDate').value=c.exam_date||'';
   document.getElementById('sepPeriod').value=c.period||1;
