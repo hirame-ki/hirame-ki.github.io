@@ -1077,20 +1077,32 @@ function renderHQSubmissionBoard(period){
   const completedMap={};
   hqAllCompletions.filter(c=>c.period===period).forEach(c=>{completedMap[c.class_id]=c.completed_at;});
   const doneCount=scope.filter(c=>completedMap[c.id]).length;
+  const byGrade={};
+  scope.forEach(c=>{(byGrade[c.grade]=byGrade[c.grade]||[]).push(c);});
   el.innerHTML=`
-    <div style="font-size:12.5px;color:var(--text2);margin-bottom:10px">제출 완료 <b style="color:var(--success)">${doneCount}</b> / ${scope.length}학급</div>
-    <div class="hq-class-grid">
-      ${scope.map(c=>{
-        const done=completedMap[c.id];
-        const timeLabel=done?new Date(done).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'';
-        return`<div class="hq-class-card" style="padding:10px 12px">
-          <div class="hq-class-header" style="margin-bottom:0">
-            <div class="hq-class-name">${c.grade}-${c.class_num}반</div>
-            ${done?`<span class="badge badge-success">${icon('check',11)} 제출완료 ${timeLabel}</span>`:`<span class="badge" style="background:var(--warning-light);color:var(--warning)">미제출</span>`}
-          </div>
-        </div>`;
-      }).join('')}
-    </div>`;
+    <div style="font-size:12.5px;color:var(--text2);margin-bottom:14px">제출 완료 <b style="color:var(--success)">${doneCount}</b> / ${scope.length}학급</div>
+    ${Object.entries(byGrade).sort(([a],[b])=>a-b).map(([grade,clsList])=>{
+      const gradeDone=clsList.filter(c=>completedMap[c.id]).length;
+      const allDone=gradeDone===clsList.length;
+      return`<div class="grade-section">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div class="grade-title">${grade}학년</div>
+          ${allDone?`<span class="badge badge-success">${icon('check',12)} 전체 제출완료</span>`:`<span class="badge" style="background:var(--warning-light);color:var(--warning)">${gradeDone}/${clsList.length}학급 제출</span>`}
+        </div>
+        <div class="hq-class-grid">
+          ${clsList.map(c=>{
+            const done=completedMap[c.id];
+            const timeLabel=done?new Date(done).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'';
+            return`<div class="hq-class-card" style="padding:10px 12px">
+              <div class="hq-class-header" style="margin-bottom:0">
+                <div class="hq-class-name">${c.grade}-${c.class_num}반</div>
+                ${done?`<span class="badge badge-success">${icon('check',11)} 제출완료 ${timeLabel}</span>`:`<span class="badge" style="background:var(--warning-light);color:var(--warning)">미제출</span>`}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }).join('')}`;
 }
 
 async function downloadHQExcel(){
