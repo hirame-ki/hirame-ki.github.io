@@ -1,4 +1,4 @@
-name: [sign] Archive Old Signatures
+name: "sign: Archive Old Signatures"
 
 # 2개월(기본값 60일)이 지난 서명 기록을 각 기관 자신의 구글 드라이브로
 # 백업(엑셀 저장 + 이메일 알림)한 뒤 Supabase에서 삭제해 DB 용량을 가볍게 유지한다.
