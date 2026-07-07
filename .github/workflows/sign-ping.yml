@@ -1,4 +1,4 @@
-name: [sign] Supabase Keep-Alive Ping
+name: "sign: Supabase Keep-Alive Ping"
 
 # hirame-ki.github.io 저장소는 sign 외에도 여러 프로젝트가 같이 있으므로,
 # 이 워크플로/시크릿은 전부 "sign-" 접두사로 다른 프로젝트와 구분한다.
