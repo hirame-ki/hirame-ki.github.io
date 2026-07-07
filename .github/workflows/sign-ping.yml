@@ -1,0 +1,46 @@
+name: [sign] Supabase Keep-Alive Ping
+
+# hirame-ki.github.io 저장소는 sign 외에도 여러 프로젝트가 같이 있으므로,
+# 이 워크플로/시크릿은 전부 "sign-" 접두사로 다른 프로젝트와 구분한다.
+#
+# 무료 플랜 Supabase 프로젝트는 1주일간 요청이 없으면 자동 일시정지된다.
+# 3일 간격으로 가벼운 요청을 보내 이를 방지한다.
+# 아울러 이 워크플로가 커밋을 하나 남기므로, GitHub이 "60일간 커밋 없는
+# 저장소의 예약 실행(cron) 워크플로를 자동 비활성화"하는 것도 함께 방지된다.
+#
+# ※ ssambus 프로젝트는 이미 다른 워크플로가 주기적으로 깨우고 있어서
+#   (프로젝트 단위 정책이라 sign 테이블도 함께 보호됨) 이 워크플로는
+#   이중 안전장치일 뿐이다 — 없어도 무방하지만 안전하게 남겨둔다.
+
+on:
+  schedule:
+    - cron: '0 3 */3 * *'   # 3일마다 UTC 03:00 (KST 정오)
+  workflow_dispatch: {}       # 필요 시 수동 실행 버튼으로도 실행 가능
+
+permissions:
+  contents: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Supabase에 가벼운 요청 보내기
+        run: |
+          curl -s -o /dev/null -w "Supabase ping → HTTP %{http_code}\n" \
+            -X POST "${{ secrets.SIGN_SUPABASE_URL }}/rest/v1/rpc/get_page_data" \
+            -H "apikey: ${{ secrets.SIGN_SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SIGN_SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"p_org_key":"__keepalive__"}'
+
+      - name: 60일 무커밋 방지용 sentinel 커밋
+        run: |
+          mkdir -p .github/keepalive
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/keepalive/sign-last-ping.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/keepalive/sign-last-ping.txt
+          git diff --cached --quiet || git commit -m "chore(sign): keepalive ping"
+          git push
