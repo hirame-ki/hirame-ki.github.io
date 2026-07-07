@@ -1,0 +1,19 @@
+name: Supabase Keep-Alive Ping
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # 매일 00:00 UTC (한국 시간 09:00)
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          curl -sS -o /dev/null -w "HTTP %{http_code}\n" \
+            "https://kelvxbvvxpcnlholvmfr.supabase.co/rest/v1/missions?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}"
+        env:
+          SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlbHZ4YnZ2eHBjbmxob2x2bWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTIxOTQsImV4cCI6MjA5Njk4ODE5NH0.5Y9VScOYiXuBNLkhCevRaBUFdBWnx6SyhHFVS8LMBKo
