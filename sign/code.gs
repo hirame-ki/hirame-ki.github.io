@@ -158,6 +158,101 @@ function _setupArchiveSheet(ss) {
 }
 
 // ============================================================
+//  사용설명서 시트 (선택 사항)
+//  이 코드는 시트 없이도(스탠드얼론 Apps Script) 완전히 동작하지만,
+//  "코드가 이미 담긴 시트 사본"을 기관에 공유하는 방식으로 배포하고
+//  싶을 때를 위해 안내 시트를 만드는 기능을 추가로 제공한다.
+//  onOpen()은 이 코드가 시트에 바인딩되어 사본이 열렸을 때만 자동
+//  실행되며, script.google.com에서 만든 완전 스탠드얼론 배포에서는
+//  애초에 호출되지 않으므로 서로 방해되지 않는다.
+// ============================================================
+const SHEET_GUIDE = '📖 사용설명서';
+const WEBAPP_URL  = 'https://hirame-ki.github.io/sign';   // 실제 배포 주소로 바꿔서 사용
+
+function onOpen() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) return;   // 스탠드얼론 배포에는 시트가 없으므로 아무 것도 하지 않음
+  SpreadsheetApp.getUi()
+    .createMenu('🖊️ 전자서명 관리')
+    .addItem('📖 사용설명서 만들기 (최초 1회)', 'setupGuideSheet')
+    .addToUi();
+}
+
+function setupGuideSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_GUIDE);
+  if (!sheet) sheet = ss.insertSheet(SHEET_GUIDE);
+  sheet.clear();
+  sheet.setColumnWidth(1, 220);
+  sheet.setColumnWidth(2, 640);
+
+  const W = '#FFFFFF';
+  const rows = [
+    [1,  '📖 연수 전자서명 시스템 사용설명서', null, true, '#2C3E50', null, 42, 14],
+    [2,  '이 시트의 코드가 담긴 사본을 배포받으셨습니다. 아래 순서대로 진행해 주세요.', null, true, '#34495E', null, 30, 10.5, '#BDC3C7'],
+    [3,  '', null, true, '#C8D6E5', null, 6],
+
+    [4,  '🚀 1단계 — Apps Script 배포 (최초 1회, 약 3분)', null, true, '#4A90D9', null, 38, 12],
+    [5,  '① Apps Script 열기', '이 시트 상단 메뉴 [확장 프로그램] → [Apps Script] 클릭\n(코드는 이미 이 사본에 포함되어 있어 붙여넣을 필요가 없습니다)', false, '#EBF4FF', '#EBF4FF', 50, null, true],
+    [6,  '② 새 배포 시작', 'Apps Script 화면 우측 상단 [배포] → [새 배포] 클릭', false, '#F0F4FF', '#F0F4FF'],
+    [7,  '③ 유형 선택', '배포 설정 창의 톱니바퀴(⚙️) 아이콘 클릭 → 유형 목록에서 [웹 앱] 선택', false, '#EBF4FF', '#EBF4FF', 44, null, true],
+    [8,  '④ 실행 설정', '실행 계정: 나 / 액세스 권한: 모든 사용자 ← 반드시 이렇게 설정해야 구성원이 접속 가능합니다', false, '#F0F4FF', '#F0F4FF', 44, null, true],
+    [9,  '⑤ 배포·권한 승인', '[배포] 클릭 → 최초 1회 권한 승인 창이 뜨면 본인 계정 선택 →\n[고급] → [~(으)로 이동(안전하지 않음)] → [허용]', false, '#EBF4FF', '#EBF4FF', 52, null, true],
+    [10, '⑥ 웹 앱 URL 복사', '배포 완료 화면에 표시되는 "웹 앱 URL"을 통째로 복사\n(https://script.google.com/macros/s/…/exec 형태)', false, '#F0F4FF', '#F0F4FF', 50, null, true],
+    [11, '⑦ 웹페이지 연결', '브라우저에서 ' + WEBAPP_URL + ' 접속 →\n복사한 URL을 붙여넣고 [연결하기] 클릭', false, '#EBF4FF', '#EBF4FF', 50, null, true],
+    [12, '', null, true, '#C8D6E5', null, 6],
+
+    [13, '⚙️ 2단계 — 웹페이지 초기 설정 (연결 직후, 최초 1회)', null, true, '#27AE60', null, 38, 12],
+    [14, '① 관리자 비밀번호 생성', '헤더의 ⚙️ [관리자] 버튼 클릭 → 처음이라 "비밀번호 만들기" 화면이 뜸 →\n4자리 이상으로 설정 (서명등록부 출력 시 비밀번호로도 함께 사용됨)', false, '#F0FFF4', '#F0FFF4', 52, null, true],
+    [15, '② 기관 설정 입력', '[기관 설정] 탭 → 기관명 입력, 안내문(선택 — 서명 화면 상단 배너), 대표 색상 선택 → [저장하기]', false, '#ECFDF5', '#ECFDF5', 44, null, true],
+    [16, '③ 구성원 등록', '[구성원 관리] 탭 → [구성원 추가] → 부서 선택(또는 새 부서 직접 입력) →\n성명 칸에 여러 명을 줄바꿈으로 구분해 한 번에 붙여넣기 가능(엑셀 이름 열 복사 지원) → [저장하기]', false, '#F0FFF4', '#F0FFF4', 56, null, true],
+    [17, '④ 연수 등록', '[연수 관리] 탭 → [새 연수 추가] → 연수명 · 대상 · 시간 · 날짜 입력 → [저장하기]', false, '#ECFDF5', '#ECFDF5'],
+    [18, '⑤ 공유 링크 안내', '관리자 패널을 닫으면 서명 화면으로 돌아갑니다 → 헤더의 🔗 버튼 →\n표시되는 공유 링크·QR을 구성원에게 안내', false, '#F0FFF4', '#F0FFF4', 44, null, true],
+    [19, '', null, true, '#C8D6E5', null, 6],
+
+    [20, '✅ 이후에는', null, true, '#8E44AD', null, 36, 12],
+    [21, '재배포 불필요', '화면 업데이트는 웹페이지에 자동 반영되고, 기관명·구성원·연수 정보는\n전부 웹페이지의 관리자 패널에서 관리하므로 이 시트나 코드를 다시 열 일이 거의 없습니다.', false, '#FAF5FF', '#FAF5FF', 52, null, true],
+    [22, '정보 변경', '기관명·구성원·연수 내용을 바꾸고 싶을 때는 언제든 웹페이지 헤더의\n⚙️ 관리자 버튼으로 들어가 수정하면 됩니다.', false, '#F5EBFF', '#F5EBFF', 44, null, true],
+    [23, '이미지 파일', '제출된 서명 이미지는 이 계정의 구글 드라이브 [연수 전자서명 파일] 폴더에\n연수명별로 자동 정리되어 저장됩니다.', false, '#FAF5FF', '#FAF5FF', 44, null, true],
+  ];
+
+  rows.forEach(function(entry) {
+    const r = entry[0], col1 = entry[1], col2 = entry[2], isHdr = entry[3];
+    const bg1 = entry[4], bg2 = entry[5];
+    const h = entry[6] || 32, size = entry[7] || 11, fgOvr = entry[8] || W, wrap = entry[10] || false;
+
+    if (isHdr && col2 === null) {
+      sheet.getRange(r, 1, 1, 2).merge();
+      const cell = sheet.getRange(r, 1);
+      if (col1) cell.setValue(col1);
+      cell.setBackground(bg1 || '#EEE');
+      if (col1 && bg1 !== '#C8D6E5') {
+        cell.setFontColor(fgOvr).setFontWeight('bold').setFontSize(size)
+          .setHorizontalAlignment('left').setVerticalAlignment('middle');
+      }
+    } else {
+      const c1 = sheet.getRange(r, 1);
+      c1.setValue(col1).setBackground(bg1).setFontColor('#2C3E50').setFontWeight('bold').setVerticalAlignment('middle');
+      const c2 = sheet.getRange(r, 2);
+      c2.setValue(col2).setBackground(bg2 || '#FFF').setFontColor('#555').setVerticalAlignment('middle');
+      if (wrap) { c1.setWrap(true); c2.setWrap(true); }
+    }
+    sheet.setRowHeight(r, h);
+  });
+
+  sheet.setTabColor('#FF6B35');
+  ss.setActiveSheet(sheet);
+  ss.moveActiveSheet(1);   // 맨 앞 탭으로 이동 → 사본을 열자마자 보이도록
+
+  SpreadsheetApp.getUi().alert(
+    '✅ 사용설명서 시트가 준비됐습니다!',
+    '이 시트를 기관별로 사본을 만들어 배포하시면, 사본을 받은 담당자가 시트를 열자마자\n' +
+    '[' + SHEET_GUIDE + '] 탭의 안내를 보고 스스로 배포·설정을 진행할 수 있습니다.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+// ============================================================
 //  유틸리티
 // ============================================================
 function _getOrCreateFolder(name, parent) {
