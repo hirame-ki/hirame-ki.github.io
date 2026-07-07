@@ -570,6 +570,99 @@
   }
   .pin-input:focus { border-color: var(--brand); }
 
+  /* ── 관리자 UI (연수 관리) ─────────────────────── */
+  .adm-field { text-align: left; margin-bottom: 12px; }
+  .adm-label {
+    display: block; font-size: 12px; font-weight: 700;
+    color: var(--ink2); margin-bottom: 6px; letter-spacing: -0.01em;
+  }
+  .adm-label .opt { font-weight: 500; color: var(--ink3); }
+  .adm-input {
+    width: 100%; padding: 13px 14px;
+    border: 1.5px solid var(--hair); border-radius: 12px;
+    font-family: var(--font); font-size: 14px; color: var(--ink);
+    background: #FCFDFC; outline: none; transition: border-color .15s;
+  }
+  .adm-input:focus { border-color: var(--brand); }
+  .adm-input.error { border-color: #C0392B; }
+  .adm-demo-note {
+    font-size: 11.5px; font-weight: 600; color: var(--brand);
+    background: var(--brand-light); border-radius: 10px;
+    padding: 9px 12px; margin-bottom: 12px; line-height: 1.55;
+  }
+  .adm-err {
+    display: none; font-size: 12px; font-weight: 600; color: #C0392B;
+    margin: 2px 0 8px; text-align: left;
+  }
+  .adm-err.show { display: block; }
+  .adm-panel-body { max-width: 560px; margin: 0 auto; padding: 18px 18px 40px; }
+  .adm-add-btn {
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: 1.5px dashed var(--brand-soft); background: var(--brand-light);
+    color: var(--brand); font-family: var(--font); font-size: 13.5px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    margin-bottom: 14px;
+  }
+  .adm-list { display: flex; flex-direction: column; gap: 10px; }
+  .adm-item {
+    background: var(--card); border: 1px solid var(--hair);
+    border-radius: 14px; padding: 14px 14px 12px;
+    display: flex; gap: 12px; align-items: flex-start; text-align: left;
+  }
+  .adm-item.off { opacity: .55; }
+  .adm-item-main { flex: 1; min-width: 0; }
+  .adm-item-title {
+    font-size: 14px; font-weight: 800; color: var(--ink);
+    letter-spacing: -0.02em; margin-bottom: 3px; word-break: keep-all;
+  }
+  .adm-item-meta { font-size: 12px; color: var(--ink2); font-weight: 500; line-height: 1.5; }
+  .adm-item-date {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11.5px; font-weight: 700; color: var(--brand);
+    background: var(--brand-light); border-radius: 8px;
+    padding: 3px 8px; margin-top: 7px;
+  }
+  .adm-item-side { display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }
+  .adm-edit-btn {
+    padding: 7px 13px; border-radius: 9px;
+    border: 1px solid var(--hair); background: var(--card); color: var(--ink2);
+    font-family: var(--font); font-size: 12px; font-weight: 700;
+  }
+  .adm-toggle {
+    position: relative; width: 40px; height: 23px; border-radius: 20px;
+    border: none; background: #D5DAD6; transition: background .15s; padding: 0;
+  }
+  .adm-toggle::after {
+    content: ''; position: absolute; top: 2.5px; left: 3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    transition: transform .15s;
+  }
+  .adm-toggle.on { background: var(--brand); }
+  .adm-toggle.on::after { transform: translateX(16px); }
+  .adm-empty {
+    text-align: center; padding: 40px 0; color: var(--ink3);
+    font-size: 13px; font-weight: 600;
+  }
+  .adm-del-btn {
+    background: none; border: none; color: #C0392B;
+    font-family: var(--font); font-size: 12.5px; font-weight: 700;
+    margin-top: 10px; padding: 6px;
+  }
+  .adm-tabs {
+    display: flex; gap: 6px; margin-bottom: 16px;
+    background: var(--brand-light); border-radius: 12px; padding: 4px;
+  }
+  .adm-tab {
+    flex: 1; padding: 9px 6px; border: none; border-radius: 9px;
+    background: transparent; color: var(--ink2);
+    font-family: var(--font); font-size: 12.5px; font-weight: 700;
+  }
+  .adm-tab.active { background: var(--card); color: var(--brand); box-shadow: var(--shadow-sm); }
+  .adm-tab-panel { display: none; }
+  .adm-tab-panel.active { display: block; }
+
+
   /* ── 서명등록부 (인쇄) ────────────────────────────── */
   .print-overlay {
     display: none; position: fixed; inset: 0;
@@ -759,6 +852,13 @@
       <rect x="9" y="9" width="13" height="13" rx="2"/>
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
     </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </symbol>
     <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
       <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -775,6 +875,9 @@
         <svg width="11" height="11"><use href="#i-calendar"/></svg>
         <span id="headerDate">—</span>
       </span>
+      <button class="share-mini" id="adminMini" onclick="showAdminModal()" aria-label="연수 관리 (관리자)" title="연수 관리 (관리자)">
+        <svg width="12" height="12"><use href="#i-gear"/></svg>
+      </button>
       <button class="share-mini" id="shareMini" onclick="showShareModal()" aria-label="공유 링크·QR 보기" title="공유 링크·QR 보기">
         <svg width="12" height="12"><use href="#i-link"/></svg>
       </button>
@@ -783,7 +886,7 @@
     <div class="header-sub">연수 참여 전자서명</div>
   </header>
 
-  <!-- ── 안내문 배너 (시트 B19 입력 시 표시) ── -->
+  <!-- ── 안내문 배너 (관리자 패널 > 기관 설정에서 입력 시 표시) ── -->
   <div class="notice-bar" id="noticeBar">
     <span class="nb-ico"><svg width="14" height="14"><use href="#i-bell"/></svg></span>
     <span id="noticeText"></span>
@@ -807,6 +910,9 @@
         <svg width="11" height="11"><use href="#i-lock"/></svg>
         입력한 주소는 이 기기에만 저장됩니다
       </div>
+      <button class="modal-btn ghost" style="margin-top:14px" onclick="startDemo()">
+        배포 URL 없이 데모 체험하기
+      </button>
     </div>
   </div>
 
@@ -992,6 +1098,127 @@
 </div>
 
 <!-- 연결 완료 + 공유 링크 -->
+<!-- 관리자: 비밀번호 로그인 / 최초 생성 -->
+<div class="modal-overlay" id="modalAdminPin">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-lock"/></svg></div>
+    <div class="modal-title" id="apTitle">관리자 확인</div>
+    <div class="modal-msg" id="apMsg">관리자 비밀번호를 입력해 주세요.</div>
+    <input type="password" class="pin-input" id="apPin" autocomplete="off" inputmode="text">
+    <input type="password" class="pin-input" id="apPin2" autocomplete="off" inputmode="text"
+           placeholder="비밀번호 확인" style="display:none">
+    <div class="adm-err" id="apErr" style="text-align:center"></div>
+    <button class="modal-btn" id="apBtn" onclick="submitAdminPin()" style="margin-top:6px">확인</button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalAdminPin').classList.remove('show')">취소</button>
+  </div>
+</div>
+
+<!-- 관리자 패널 (연수 / 구성원 / 기관 설정) -->
+<div class="print-overlay" id="adminOverlay">
+  <div class="print-toolbar">
+    <div class="pt-title">
+      <svg width="16" height="16"><use href="#i-gear"/></svg>
+      관리자
+    </div>
+    <div class="pt-actions">
+      <button class="pt-btn" onclick="closeAdminPanel()">닫기</button>
+    </div>
+  </div>
+  <div class="adm-panel-body">
+    <div class="adm-demo-note" id="admPanelDemoNote" style="display:none">
+      미리보기 모드예요. 변경 내용은 이 화면에만 적용되고, 실제로는 저장되지 않습니다.
+    </div>
+    <div class="adm-tabs">
+      <button class="adm-tab active" id="admTabBtn-trainings" onclick="switchAdminTab('trainings')">연수 관리</button>
+      <button class="adm-tab" id="admTabBtn-staff" onclick="switchAdminTab('staff')">구성원 관리</button>
+      <button class="adm-tab" id="admTabBtn-settings" onclick="switchAdminTab('settings')">기관 설정</button>
+    </div>
+
+    <div class="adm-tab-panel active" id="admTab-trainings">
+      <button class="adm-add-btn" onclick="openTrainingForm(null)">
+        <svg width="14" height="14"><use href="#i-plus"/></svg> 새 연수 추가
+      </button>
+      <div class="adm-list" id="admList"></div>
+    </div>
+
+    <div class="adm-tab-panel" id="admTab-staff">
+      <button class="adm-add-btn" onclick="openStaffForm(null)">
+        <svg width="14" height="14"><use href="#i-plus"/></svg> 구성원 추가
+      </button>
+      <div class="adm-list" id="admStaffList"></div>
+    </div>
+
+    <div class="adm-tab-panel" id="admTab-settings">
+      <div class="adm-field">
+        <label class="adm-label" for="admOrgName">기관명</label>
+        <input type="text" class="adm-input" id="admOrgName" maxlength="40" placeholder="예: ○○고등학교" autocomplete="off">
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="admDeptList">부서 목록 <span class="opt">(쉼표로 구분, 구성원 미등록 시 폴백용)</span></label>
+        <input type="text" class="adm-input" id="admDeptList" placeholder="예: 교무기획부,교육과정부,행정실" autocomplete="off">
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="admNotice">안내문 <span class="opt">(선택)</span></label>
+        <input type="text" class="adm-input" id="admNotice" maxlength="120" placeholder="예: 서명 후 설문에도 참여해 주세요" autocomplete="off">
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="admBrandColor">대표 색상</label>
+        <input type="color" class="adm-input" id="admBrandColor" style="height:46px;padding:4px;">
+      </div>
+      <div class="adm-err" id="admSettingsErr"></div>
+      <button class="modal-btn" id="admSettingsBtn" onclick="submitOrgSettings()">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 관리자: 연수 추가/수정 폼 -->
+<div class="modal-overlay" id="modalTrainingForm">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-pen"/></svg></div>
+    <div class="modal-title" id="tfTitle">새 연수 추가</div>
+
+    <div class="adm-field">
+      <label class="adm-label" for="tfName">연수명</label>
+      <input type="text" class="adm-input" id="tfName" maxlength="60" placeholder="예: 학교폭력 예방 교원 연수" autocomplete="off">
+    </div>
+    <div class="adm-field">
+      <label class="adm-label" for="tfContent">연수 내용 <span class="opt">(선택)</span></label>
+      <input type="text" class="adm-input" id="tfContent" maxlength="80" placeholder="예: 전 구성원 · 09:00 ~ 09:40" autocomplete="off">
+    </div>
+    <div class="adm-field">
+      <label class="adm-label" for="tfDate">연수 날짜</label>
+      <input type="date" class="adm-input" id="tfDate">
+    </div>
+
+    <div class="adm-err" id="tfErr"></div>
+    <button class="modal-btn" id="tfSubmitBtn" onclick="submitTrainingForm()">저장하기</button>
+    <button class="adm-del-btn" id="tfDeleteBtn" style="display:none" onclick="deleteTraining()">이 연수 삭제</button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalTrainingForm').classList.remove('show')">닫기</button>
+  </div>
+</div>
+
+<!-- 관리자: 구성원 추가/수정 폼 -->
+<div class="modal-overlay" id="modalStaffForm">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-user"/></svg></div>
+    <div class="modal-title" id="sfTitle">구성원 추가</div>
+
+    <div class="adm-field">
+      <label class="adm-label" for="sfDept">부서</label>
+      <input type="text" class="adm-input" id="sfDept" maxlength="30" placeholder="예: 교무기획부" autocomplete="off">
+    </div>
+    <div class="adm-field">
+      <label class="adm-label" for="sfName">성명</label>
+      <input type="text" class="adm-input" id="sfName" maxlength="20" placeholder="예: 홍길동" autocomplete="off">
+    </div>
+
+    <div class="adm-err" id="sfErr"></div>
+    <button class="modal-btn" id="sfSubmitBtn" onclick="submitStaffForm()">저장하기</button>
+    <button class="adm-del-btn" id="sfDeleteBtn" style="display:none" onclick="deleteStaffMember()">이 구성원 삭제</button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalStaffForm').classList.remove('show')">닫기</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalShare">
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="modal-icon-wrap"><svg width="26" height="26"><use href="#i-link"/></svg></div>
@@ -1052,13 +1279,38 @@
   <div class="print-doc" id="printDoc"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+/* ═══════════════════════════════════════════
+   Supabase 연결 (기관명·구성원·연수·서명기록 텍스트 데이터 전용)
+   ※ 서명 "이미지" 자체는 기관별 Apps Script(API_URL, 아래)가 각자의
+     구글 드라이브에 저장한다 — 여기 Supabase에는 이미지 URL(포인터)만
+     저장된다. URL/키는 공개되어도 무방 (anon key + 테이블 직접 접근
+     차단 + RPC 함수 내부 PIN 검증 조합으로 보호, supabase-schema.sql 참고)
+═══════════════════════════════════════════ */
+var SUPABASE_URL      = 'https://kelvxbvvxpcnlholvmfr.supabase.co';
+var SUPABASE_ANON_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlbHZ4YnZ2eHBjbmxob2x2bWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTIxOTQsImV4cCI6MjA5Njk4ODE5NH0.5Y9VScOYiXuBNLkhCevRaBUFdBWnx6SyhHFVS8LMBKo';
+
+// CDN 로드 실패(오프라인 데모 등) 시에도 스크립트 전체가 죽지 않도록 가드
+var sb = (typeof supabase !== 'undefined')
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+function rpc(fn, params) {
+  if (!sb) return Promise.reject(new Error('Supabase 클라이언트를 불러오지 못했습니다.'));
+  return sb.rpc(fn, params).then(function(res) {
+    if (res.error) throw res.error;
+    return res.data;
+  });
+}
+
 /* ═══════════════════════════════════════════
    상태
 ═══════════════════════════════════════════ */
-var API_URL          = '';
+var API_URL          = '';   // 기관 Apps Script 배포 URL — 서명 이미지 업로드 전용
 var API_STORAGE_KEY  = 'esign_api_url';
 var PIN_SESSION_KEY  = 'esign_print_pin';
+var ORG_KEY          = '';   // API_URL 배포 ID = Supabase 기관 식별자(org_key)
 var orgName          = '';
 var trainings        = [];
 var selectedTraining = null;
@@ -1068,7 +1320,7 @@ var hasSignature     = false;
 var canvas, ctx;
 var staffByDept      = {};
 var deptOrder        = [];
-var printPinSet      = false;   // 시트에 출력 비밀번호가 설정되어 있는지
+var printPinSet      = false;   // 관리자 비밀번호(=출력 비밀번호)가 설정되어 있는지
 var pendingPrintTraining = null;
 var BRAND_INK        = '#1F4D3A';  // 서명 잉크 색 (대표 색상 적용 시 어둡게 보정)
 
@@ -1094,11 +1346,12 @@ window.addEventListener('load', function() {
     localStorage.setItem(API_STORAGE_KEY, apiParam);
   }
   API_URL = localStorage.getItem(API_STORAGE_KEY) || '';
+  ORG_KEY = extractOrgKey(API_URL);
 
   // 데모 미리보기: ?demo=1 또는 파일로 직접 열었을 때
   if (params.get('demo') === '1' ||
       (location.protocol === 'file:' && !API_URL)) {
-    API_URL = '';
+    API_URL = ''; ORG_KEY = '';
     loadDemoData();
     return;
   }
@@ -1107,15 +1360,23 @@ window.addEventListener('load', function() {
     document.body.classList.add('gate-active');
     return;
   }
-  loadPageData(false);
+  loadPageData();
 });
 
 function isValidApiUrl(url) {
   return /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(String(url).trim());
 }
 
+function extractOrgKey(url) {
+  var m = String(url || '').match(/\/macros\/s\/([\w-]+)\/exec/);
+  return m ? m[1] : '';
+}
+
 /* ═══════════════════════════════════════════
    API 연결 (최초 1회)
+   ① 기관 Apps Script(이미지 업로드 전용)가 살아있는지 확인
+   ② Supabase에 기관을 등록(없으면 생성, 있으면 URL만 갱신)
+   ③ 공개 페이지 데이터를 불러와 렌더링
 ═══════════════════════════════════════════ */
 function connectApi() {
   var input = document.getElementById('gateInput');
@@ -1136,19 +1397,26 @@ function connectApi() {
   btn.disabled = true;
   btn.textContent = '연결 확인 중...';
 
-  fetch(url + '?action=pageData')
+  var orgKey = extractOrgKey(url);
+
+  fetch(url + '?action=ping')
     .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function(data) {
-      if (!data || typeof data !== 'object' || !('trainings' in data)) {
-        throw new Error('invalid response');
-      }
-      API_URL = url;
+      if (!data || !data.ok) throw new Error('invalid response');
+      return rpc('register_institution', { p_org_key: orgKey, p_apps_script_url: url });
+    })
+    .then(function() {
+      API_URL = url; ORG_KEY = orgKey;
       localStorage.setItem(API_STORAGE_KEY, url);
       document.body.classList.remove('gate-active');
+      return rpc('get_page_data', { p_org_key: ORG_KEY });
+    })
+    .then(function(data) {
       onPageDataLoaded(data);
       showShareModal();
     })
     .catch(function() {
+      document.body.classList.add('gate-active');   // 중간 단계 실패 시 게이트 화면 복귀
       btn.disabled = false;
       btn.textContent = '연결하기';
       err.textContent = '연결에 실패했어요.\n① 배포 URL이 정확한지\n② 배포 시 액세스 권한이 "모든 사용자"인지 확인해 주세요.';
@@ -1167,6 +1435,7 @@ function resetConnection() {
   localStorage.removeItem('esign_short_url');
   localStorage.removeItem('esign_short_url_for');
   sessionStorage.removeItem(PIN_SESSION_KEY);
+  sessionStorage.removeItem(ADMIN_PIN_KEY);   // 다른 기관으로 재연결 시 이전 PIN이 전송되지 않도록
   location.href = location.pathname;
 }
 
@@ -1177,6 +1446,513 @@ function confirmResetConnection() {
   );
   if (ok) resetConnection();
 }
+
+/* ══════════════════════════════════════════════
+   관리자: 연수 · 구성원 · 기관 설정 관리
+   전부 Supabase RPC 호출 (supabase-schema.sql 참고).
+   PIN이 필요한 동작은 각 RPC 함수 내부에서 검증하며, 클라이언트에는
+   저장된 PIN 값 자체가 절대 노출되지 않는다 (needPin 불리언만 응답).
+══════════════════════════════════════════════ */
+var ADMIN_PIN_KEY     = 'esign_admin_pin';
+var adminPin          = '';
+var adminTrainings    = [];   // [{id, active, title, content, date}]
+var adminStaff        = [];   // [{id, dept, name}]
+var editingTrainingId = null; // null = 추가 모드
+var editingStaffId    = null;
+var apCreateMode      = false;
+
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' +
+    ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
+    ('0' + d.getDate()).slice(-2);
+}
+function nowTimeStr() {
+  var d = new Date();
+  return ('0' + d.getHours()).slice(-2) + ':' +
+    ('0' + d.getMinutes()).slice(-2) + ':' +
+    ('0' + d.getSeconds()).slice(-2);
+}
+
+/* 진입: ⚙️ 버튼 */
+function showAdminModal() {
+  // 데모 모드: 비밀번호 없이 패널 진입 (화면 목록으로 시뮬레이션)
+  if (!API_URL) {
+    if (adminTrainings.length === 0) {
+      adminTrainings = trainings.map(function(t, i) {
+        return { id: i + 1, active: true, title: t.title, content: t.content || '', date: todayStr() };
+      });
+    }
+    if (adminStaff.length === 0) {
+      var sid = 1;
+      deptOrder.forEach(function(dept) {
+        (staffByDept[dept] || []).forEach(function(name) {
+          adminStaff.push({ id: sid++, dept: dept, name: name });
+        });
+      });
+    }
+    document.getElementById('admOrgName').value    = orgName;
+    document.getElementById('admDeptList').value   = deptOrder.join(',');
+    document.getElementById('admNotice').value     = document.getElementById('noticeText').textContent || '';
+    document.getElementById('admBrandColor').value = '#1f4d3a';
+    document.getElementById('admPanelDemoNote').style.display = 'block';
+    switchAdminTab('trainings');
+    openAdminPanel();
+    return;
+  }
+
+  document.getElementById('admPanelDemoNote').style.display = 'none';
+  var cached = sessionStorage.getItem(ADMIN_PIN_KEY);
+  if (cached) { adminPin = cached; fetchAdminData(); return; }
+
+  // PIN이 없으면 최초 생성, 있으면 로그인
+  showAdminPinModal(!printPinSet);
+}
+
+function switchAdminTab(tab) {
+  ['trainings', 'staff', 'settings'].forEach(function(t) {
+    document.getElementById('admTab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('admTabBtn-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+function showAdminPinModal(createMode, wasWrong) {
+  apCreateMode = createMode;
+  document.getElementById('apTitle').textContent = createMode ? '관리자 비밀번호 만들기' : '관리자 확인';
+  document.getElementById('apMsg').innerHTML = createMode
+    ? '처음 오셨네요! 연수 관리에 사용할<br><b>관리자 비밀번호</b>를 만들어 주세요.<br>(서명결과 출력 비밀번호로도 사용됩니다)'
+    : '관리자 비밀번호를 입력해 주세요.';
+  document.getElementById('apPin2').style.display = createMode ? 'block' : 'none';
+  document.getElementById('apPin').value = '';
+  document.getElementById('apPin2').value = '';
+  var err = document.getElementById('apErr');
+  if (wasWrong) { err.textContent = '비밀번호가 일치하지 않아요. 다시 입력해 주세요.'; err.classList.add('show'); }
+  else err.classList.remove('show');
+  var btn = document.getElementById('apBtn');
+  btn.disabled = false; btn.textContent = createMode ? '만들기' : '확인';
+  document.getElementById('modalAdminPin').classList.add('show');
+  setTimeout(function() { document.getElementById('apPin').focus(); }, 100);
+}
+
+function showApErr(msg) {
+  var err = document.getElementById('apErr');
+  err.textContent = msg; err.classList.add('show');
+  var btn = document.getElementById('apBtn');
+  btn.disabled = false; btn.textContent = apCreateMode ? '만들기' : '확인';
+}
+
+function submitAdminPin() {
+  var pin = document.getElementById('apPin').value.trim();
+  if (!pin) { showApErr('비밀번호를 입력해 주세요.'); return; }
+  var btn = document.getElementById('apBtn');
+  btn.disabled = true; btn.textContent = '확인 중...';
+
+  if (apCreateMode) {
+    var pin2 = document.getElementById('apPin2').value.trim();
+    if (pin.length < 4) { showApErr('4자 이상으로 만들어 주세요.'); return; }
+    if (pin !== pin2)   { showApErr('두 입력이 서로 달라요. 다시 확인해 주세요.'); return; }
+    rpc('set_admin_pin', { p_org_key: ORG_KEY, p_pin: pin }).then(function(res) {
+      if (res.success) {
+        adminPin = pin;
+        sessionStorage.setItem(ADMIN_PIN_KEY, pin);
+        printPinSet = true;
+        fetchAdminData();
+      } else showApErr(res.message || '비밀번호를 만들지 못했어요. 다시 시도해 주세요.');
+    }).catch(function() { showApErr('서버에 연결할 수 없어요.'); });
+    return;
+  }
+
+  adminPin = pin;
+  fetchAdminData();
+}
+
+function fetchAdminData() {
+  rpc('get_admin_data', { p_org_key: ORG_KEY, p_pin: adminPin })
+    .then(function(res) {
+      if (res.needPin) {
+        sessionStorage.removeItem(ADMIN_PIN_KEY);
+        showAdminPinModal(false, true);
+        return;
+      }
+      if (!res.success) throw new Error(res.message || 'error');
+      sessionStorage.setItem(ADMIN_PIN_KEY, adminPin);
+      adminTrainings = res.trainings || [];
+      adminStaff     = res.staff || [];
+      document.getElementById('admOrgName').value    = res.orgName || '';
+      document.getElementById('admDeptList').value   = res.deptList || '';
+      document.getElementById('admNotice').value     = res.notice || '';
+      document.getElementById('admBrandColor').value = /^#[0-9a-fA-F]{6}$/.test(res.brandColor) ? res.brandColor : '#1f4d3a';
+      document.getElementById('modalAdminPin').classList.remove('show');
+      switchAdminTab('trainings');
+      openAdminPanel();
+    })
+    .catch(function() {
+      if (document.getElementById('modalAdminPin').classList.contains('show')) {
+        showApErr('목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.');
+      }
+    });
+}
+
+/* 패널 */
+function openAdminPanel() {
+  renderAdminList();
+  renderAdminStaff();
+  document.getElementById('adminOverlay').classList.add('show');
+}
+
+function closeAdminPanel() {
+  document.getElementById('adminOverlay').classList.remove('show');
+  if (API_URL) loadPageData();       // 변경 사항 서명 화면에 반영
+  else refreshDemoFromAdmin();
+}
+
+function renderAdminList() {
+  var box = document.getElementById('admList');
+  if (!adminTrainings.length) {
+    box.innerHTML = '<div class="adm-empty">등록된 연수가 없어요.<br>위 버튼으로 첫 연수를 추가해 보세요.</div>';
+    return;
+  }
+  var html = '';
+  adminTrainings.forEach(function(t, i) {
+    html +=
+      '<div class="adm-item' + (t.active ? '' : ' off') + '">' +
+        '<div class="adm-item-main">' +
+          '<div class="adm-item-title">' + esc(t.title) + '</div>' +
+          (t.content ? '<div class="adm-item-meta">' + esc(t.content) + '</div>' : '') +
+          '<span class="adm-item-date"><svg width="10" height="10"><use href="#i-calendar"/></svg>' + esc(t.date || '') + '</span>' +
+        '</div>' +
+        '<div class="adm-item-side">' +
+          '<button class="adm-toggle' + (t.active ? ' on' : '') + '" onclick="toggleTraining(' + i + ')" aria-label="활성/비활성 전환"></button>' +
+          '<button class="adm-edit-btn" onclick="openTrainingForm(' + i + ')">수정</button>' +
+        '</div>' +
+      '</div>';
+  });
+  box.innerHTML = html;
+}
+
+/* 추가/수정 폼 */
+function openTrainingForm(idx) {
+  var isEdit = idx !== null;
+  editingTrainingId = isEdit ? adminTrainings[idx].id : null;
+  document.getElementById('tfTitle').textContent = isEdit ? '연수 수정' : '새 연수 추가';
+  document.getElementById('tfName').value    = isEdit ? adminTrainings[idx].title   : '';
+  document.getElementById('tfContent').value = isEdit ? adminTrainings[idx].content : '';
+  var dv = isEdit ? String(adminTrainings[idx].date || '') : todayStr();
+  document.getElementById('tfDate').value = /^\d{4}-\d{2}-\d{2}$/.test(dv) ? dv : todayStr();
+  document.getElementById('tfDeleteBtn').style.display = isEdit ? 'inline-block' : 'none';
+  document.getElementById('tfErr').classList.remove('show');
+  var btn = document.getElementById('tfSubmitBtn');
+  btn.disabled = false; btn.textContent = '저장하기';
+  document.getElementById('modalTrainingForm').classList.add('show');
+  if (!isEdit) setTimeout(function() { document.getElementById('tfName').focus(); }, 100);
+}
+
+function showTfErr(msg) {
+  var err = document.getElementById('tfErr');
+  err.textContent = msg; err.classList.add('show');
+  var btn = document.getElementById('tfSubmitBtn');
+  btn.disabled = false; btn.textContent = '저장하기';
+}
+
+function tfDone() {
+  var btn = document.getElementById('tfSubmitBtn');
+  btn.textContent = '✓ 저장되었습니다';
+  setTimeout(function() {
+    document.getElementById('modalTrainingForm').classList.remove('show');
+    renderAdminList();
+  }, 800);
+}
+
+function findAdminIdx(id) {
+  for (var i = 0; i < adminTrainings.length; i++)
+    if (adminTrainings[i].id === id) return i;
+  return -1;
+}
+
+function submitTrainingForm() {
+  var title   = document.getElementById('tfName').value.trim();
+  var content = document.getElementById('tfContent').value.trim();
+  var date    = document.getElementById('tfDate').value;
+  document.getElementById('tfErr').classList.remove('show');
+  if (!title) { showTfErr('연수명을 입력해 주세요.'); return; }
+  if (!date)  { showTfErr('연수 날짜를 선택해 주세요.'); return; }
+
+  var btn = document.getElementById('tfSubmitBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  // 데모: 로컬 목록만 갱신
+  if (!API_URL) {
+    setTimeout(function() {
+      if (editingTrainingId !== null) {
+        var i = findAdminIdx(editingTrainingId);
+        if (i > -1) {
+          adminTrainings[i].title = title;
+          adminTrainings[i].content = content;
+          adminTrainings[i].date = date;
+        }
+        tfDone();
+      } else {
+        var maxId = 0;
+        adminTrainings.forEach(function(t) { if (t.id > maxId) maxId = t.id; });
+        adminTrainings.push({ id: maxId + 1, active: true, title: title, content: content, date: date });
+        tfDone();
+      }
+    }, 350);
+    return;
+  }
+
+  var idx = editingTrainingId !== null ? findAdminIdx(editingTrainingId) : -1;
+  rpc('save_training', {
+    p_org_key : ORG_KEY,
+    p_pin     : adminPin,
+    p_id      : editingTrainingId,
+    p_title   : title,
+    p_content : content,
+    p_date    : date,
+    p_active  : idx > -1 ? adminTrainings[idx].active : true
+  }).then(function(res) {
+    if (res.success) { adminTrainings = res.trainings || adminTrainings; tfDone(); }
+    else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showTfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
+    else showTfErr(res.message || '저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
+  }).catch(function() { showTfErr('서버에 연결할 수 없어요. 네트워크 상태를 확인해 주세요.'); });
+}
+
+function toggleTraining(i) {
+  var t = adminTrainings[i];
+  var next = !t.active;
+
+  t.active = next; renderAdminList();   // 낙관적 반영
+  if (!API_URL) return;
+
+  rpc('save_training', {
+    p_org_key : ORG_KEY,
+    p_pin     : adminPin,
+    p_id      : t.id,
+    p_title   : t.title,
+    p_content : t.content,
+    p_date    : t.date,
+    p_active  : next
+  }).then(function(res) {
+    if (res.success) { adminTrainings = res.trainings || adminTrainings; renderAdminList(); }
+    else { t.active = !next; renderAdminList(); }
+  }).catch(function() { t.active = !next; renderAdminList(); });
+}
+
+function deleteTraining() {
+  if (editingTrainingId === null) return;
+  if (!confirm('이 연수를 삭제할까요?\n서명 기록은 그대로 남아요.')) return;
+
+  var btn = document.getElementById('tfSubmitBtn');
+  btn.disabled = true;
+
+  if (!API_URL) {
+    var i = findAdminIdx(editingTrainingId);
+    if (i > -1) adminTrainings.splice(i, 1);
+    document.getElementById('modalTrainingForm').classList.remove('show');
+    renderAdminList();
+    return;
+  }
+
+  rpc('delete_training', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: editingTrainingId })
+    .then(function(res) {
+      if (res.success) {
+        adminTrainings = res.trainings || [];
+        document.getElementById('modalTrainingForm').classList.remove('show');
+        renderAdminList();
+      } else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showTfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
+      else showTfErr(res.message || '삭제하지 못했어요.');
+    }).catch(function() { showTfErr('서버에 연결할 수 없어요.'); });
+}
+
+/* ── 구성원 관리 (연수 관리와 동일한 패턴) ── */
+function renderAdminStaff() {
+  var box = document.getElementById('admStaffList');
+  if (!adminStaff.length) {
+    box.innerHTML = '<div class="adm-empty">등록된 구성원이 없어요.<br>위 버튼으로 첫 구성원을 추가해 보세요.</div>';
+    return;
+  }
+  var html = '';
+  adminStaff.forEach(function(s, i) {
+    html +=
+      '<div class="adm-item">' +
+        '<div class="adm-item-main">' +
+          '<div class="adm-item-title">' + esc(s.name) + '</div>' +
+          '<div class="adm-item-meta">' + esc(s.dept || '(부서 미지정)') + '</div>' +
+        '</div>' +
+        '<div class="adm-item-side">' +
+          '<button class="adm-edit-btn" onclick="openStaffForm(' + i + ')">수정</button>' +
+        '</div>' +
+      '</div>';
+  });
+  box.innerHTML = html;
+}
+
+function openStaffForm(idx) {
+  var isEdit = idx !== null;
+  editingStaffId = isEdit ? adminStaff[idx].id : null;
+  document.getElementById('sfTitle').textContent = isEdit ? '구성원 수정' : '구성원 추가';
+  document.getElementById('sfDept').value = isEdit ? adminStaff[idx].dept : '';
+  document.getElementById('sfName').value = isEdit ? adminStaff[idx].name : '';
+  document.getElementById('sfDeleteBtn').style.display = isEdit ? 'inline-block' : 'none';
+  document.getElementById('sfErr').classList.remove('show');
+  var btn = document.getElementById('sfSubmitBtn');
+  btn.disabled = false; btn.textContent = '저장하기';
+  document.getElementById('modalStaffForm').classList.add('show');
+  if (!isEdit) setTimeout(function() { document.getElementById('sfDept').focus(); }, 100);
+}
+
+function showSfErr(msg) {
+  var err = document.getElementById('sfErr');
+  err.textContent = msg; err.classList.add('show');
+  var btn = document.getElementById('sfSubmitBtn');
+  btn.disabled = false; btn.textContent = '저장하기';
+}
+
+function findStaffIdx(id) {
+  for (var i = 0; i < adminStaff.length; i++)
+    if (adminStaff[i].id === id) return i;
+  return -1;
+}
+
+function sfDone() {
+  var btn = document.getElementById('sfSubmitBtn');
+  btn.textContent = '✓ 저장되었습니다';
+  setTimeout(function() {
+    document.getElementById('modalStaffForm').classList.remove('show');
+    renderAdminStaff();
+  }, 800);
+}
+
+function submitStaffForm() {
+  var dept = document.getElementById('sfDept').value.trim();
+  var name = document.getElementById('sfName').value.trim();
+  document.getElementById('sfErr').classList.remove('show');
+  if (!name) { showSfErr('성명을 입력해 주세요.'); return; }
+
+  var btn = document.getElementById('sfSubmitBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  if (!API_URL) {
+    setTimeout(function() {
+      if (editingStaffId !== null) {
+        var i = findStaffIdx(editingStaffId);
+        if (i > -1) { adminStaff[i].dept = dept; adminStaff[i].name = name; }
+        sfDone();
+      } else {
+        var maxId = 0;
+        adminStaff.forEach(function(s) { if (s.id > maxId) maxId = s.id; });
+        adminStaff.push({ id: maxId + 1, dept: dept, name: name });
+        sfDone();
+      }
+    }, 350);
+    return;
+  }
+
+  rpc('save_staff', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: editingStaffId, p_dept: dept, p_name: name })
+    .then(function(res) {
+      if (res.success) { adminStaff = res.staff || adminStaff; sfDone(); }
+      else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showSfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
+      else showSfErr(res.message || '저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
+    }).catch(function() { showSfErr('서버에 연결할 수 없어요. 네트워크 상태를 확인해 주세요.'); });
+}
+
+function deleteStaffMember() {
+  if (editingStaffId === null) return;
+  if (!confirm('이 구성원을 삭제할까요?\n이미 등록된 서명 기록은 그대로 남아요.')) return;
+
+  var btn = document.getElementById('sfSubmitBtn');
+  btn.disabled = true;
+
+  if (!API_URL) {
+    var i = findStaffIdx(editingStaffId);
+    if (i > -1) adminStaff.splice(i, 1);
+    document.getElementById('modalStaffForm').classList.remove('show');
+    renderAdminStaff();
+    return;
+  }
+
+  rpc('delete_staff', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: editingStaffId })
+    .then(function(res) {
+      if (res.success) {
+        adminStaff = res.staff || [];
+        document.getElementById('modalStaffForm').classList.remove('show');
+        renderAdminStaff();
+      } else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showSfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
+      else showSfErr(res.message || '삭제하지 못했어요.');
+    }).catch(function() { showSfErr('서버에 연결할 수 없어요.'); });
+}
+
+/* ── 기관 설정 (기관명/부서목록/안내문/대표색상) ── */
+function submitOrgSettings() {
+  var name   = document.getElementById('admOrgName').value.trim();
+  var depts  = document.getElementById('admDeptList').value.trim();
+  var notice = document.getElementById('admNotice').value.trim();
+  var color  = document.getElementById('admBrandColor').value;
+  document.getElementById('admSettingsErr').classList.remove('show');
+
+  var btn = document.getElementById('admSettingsBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  if (!API_URL) {
+    setTimeout(function() {
+      orgName = name;
+      deptOrder = depts.split(',').map(function(d) { return d.trim(); }).filter(Boolean);
+      document.getElementById('headerOrg').textContent = orgName || '연수 전자서명';
+      applyBrandColor(color);
+      btn.disabled = false; btn.textContent = '✓ 저장되었습니다';
+      setTimeout(function() { btn.textContent = '저장하기'; }, 1200);
+    }, 350);
+    return;
+  }
+
+  rpc('update_org_settings', {
+    p_org_key: ORG_KEY, p_pin: adminPin,
+    p_org_name: name, p_dept_list: depts, p_notice: notice, p_brand_color: color
+  }).then(function(res) {
+    if (res.success) {
+      btn.textContent = '✓ 저장되었습니다';
+      setTimeout(function() { btn.disabled = false; btn.textContent = '저장하기'; }, 1200);
+    } else if (res.needPin) {
+      sessionStorage.removeItem(ADMIN_PIN_KEY);
+      showAdmSettingsErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.');
+    } else {
+      showAdmSettingsErr(res.message || '저장하지 못했어요.');
+    }
+  }).catch(function() { showAdmSettingsErr('서버에 연결할 수 없어요.'); });
+}
+
+function showAdmSettingsErr(msg) {
+  var err = document.getElementById('admSettingsErr');
+  err.textContent = msg; err.classList.add('show');
+  var btn = document.getElementById('admSettingsBtn');
+  btn.disabled = false; btn.textContent = '저장하기';
+}
+
+/* 데모: 관리 결과를 서명 화면 목록에 반영 */
+function refreshDemoFromAdmin() {
+  if (adminStaff.length) {
+    staffByDept = {}; deptOrder = [];
+    adminStaff.forEach(function(s) {
+      var d = s.dept || '(부서 미지정)';
+      if (!staffByDept[d]) { staffByDept[d] = []; deptOrder.push(d); }
+      staffByDept[d].push(s.name);
+    });
+    var deptSel = document.getElementById('dept');
+    deptSel.innerHTML = '<option value="">— 부서를 선택해 주세요 —</option>';
+    deptOrder.forEach(function(d) {
+      var opt = document.createElement('option');
+      opt.value = d; opt.textContent = d;
+      deptSel.appendChild(opt);
+    });
+  }
+  if (!adminTrainings.length) return;
+  var today = todayStr();
+  trainings = adminTrainings
+    .filter(function(t) { return t.active && (t.date === today || t.date === '매일'); })
+    .map(function(t) { return { title: t.title, content: t.content }; });
+  renderTrainings(trainings);
+}
+
 
 /* ── 공유 링크 ── */
 var currentShareLink = '';
@@ -1263,7 +2039,7 @@ function makeShortUrl(longUrl, cb) {
   tryService(0);
 }
 
-/* ── 기관 대표 색상 적용 (시트 B20, #RRGGBB) ── */
+/* ── 기관 대표 색상 적용 (관리자 패널 > 기관 설정, #RRGGBB) ── */
 function applyBrandColor(hex) {
   hex = String(hex || '').trim();
   if (!/^#?[0-9a-fA-F]{6}$/.test(hex)) return;
@@ -1328,32 +2104,34 @@ function fallbackCopy(text, done) {
    데이터 로드
 ═══════════════════════════════════════════ */
 function loadPageData() {
-  fetch(API_URL + '?action=pageData')
-    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(function(data) {
-      if (!data || typeof data !== 'object' || !('trainings' in data)) throw new Error('invalid');
-      onPageDataLoaded(data);
-    })
+  rpc('get_page_data', { p_org_key: ORG_KEY })
+    .then(function(data) { onPageDataLoaded(data); })
     .catch(function() { renderEmpty(true); });
+}
+
+/* 게이트 화면에서 데모 시작 (배포 URL 불필요) */
+function startDemo() {
+  API_URL = ''; ORG_KEY = '';
+  document.body.classList.remove('gate-active');
+  loadDemoData();
 }
 
 function loadDemoData() {
   setTimeout(function() {
     onPageDataLoaded({
       orgName: '○○기관 (미리보기)',
-      notice: '오늘 연수 종료 후 만족도 설문에도 참여해 주세요. (데모 안내문 — 시트 B19에서 설정)',
+      notice: '오늘 연수 종료 후 만족도 설문에도 참여해 주세요. (데모 안내문 — 관리자 패널 > 기관 설정에서 입력)',
       trainings: [
         { title: '학교폭력 예방교육', content: '전 구성원 · 09:00 ~ 09:40' },
         { title: 'AI 활용 수업 설계 워크숍', content: '자율 참여' },
         { title: '심폐소생술(CPR) 응급처치 교육', content: '보건 담당 주관' }
       ],
-      deptOrder: ['기획부','운영부','교육부','행정실'],
-      staffByDept: {
-        '기획부': ['황성재','김지영','이민호'],
-        '운영부': ['박서연','정현우'],
-        '교육부': ['최유진','한도윤','오세빈'],
-        '행정실': ['윤지호','강미래']
-      }
+      staff: [
+        { dept: '기획부', name: '황성재' }, { dept: '기획부', name: '김지영' }, { dept: '기획부', name: '이민호' },
+        { dept: '운영부', name: '박서연' }, { dept: '운영부', name: '정현우' },
+        { dept: '교육부', name: '최유진' }, { dept: '교육부', name: '한도윤' }, { dept: '교육부', name: '오세빈' },
+        { dept: '행정실', name: '윤지호' }, { dept: '행정실', name: '강미래' }
+      ]
     });
   }, 400);
 }
@@ -1364,22 +2142,37 @@ function onPageDataLoaded(data) {
     document.getElementById('headerOrg').textContent = orgName;
     document.title = orgName + ' · 연수 전자서명';
   }
-  staffByDept = data.staffByDept || {};
-  deptOrder   = data.deptOrder   || [];
+
+  // Supabase는 구성원을 평평한 목록으로 반환 → 부서별로 그룹핑 (등록 순서 유지)
+  staffByDept = {}; deptOrder = [];
+  (data.staff || []).forEach(function(s) {
+    var d = String(s.dept || '').trim();
+    var n = String(s.name || '').trim();
+    if (!n) return;
+    if (!staffByDept[d]) { staffByDept[d] = []; deptOrder.push(d); }
+    staffByDept[d].push(n);
+  });
+  // 구성원이 아직 하나도 없으면 부서 목록만이라도 폴백으로 표시
+  if (deptOrder.length === 0 && data.deptList) {
+    String(data.deptList).split(',').map(function(d) { return d.trim(); }).filter(Boolean).forEach(function(d) {
+      staffByDept[d] = []; deptOrder.push(d);
+    });
+  }
   printPinSet = !!data.printPinSet;
 
-  // 안내문 (시트 B19)
+  // 안내문 (관리자 패널 > 기관 설정에서 입력)
   var notice = String(data.notice || '').trim();
   if (notice) {
     document.getElementById('noticeText').textContent = notice;
     document.getElementById('noticeBar').classList.add('show');
   }
 
-  // 대표 색상 (시트 B20)
+  // 대표 색상 (관리자 패널 > 기관 설정에서 선택)
   applyBrandColor(data.brandColor);
 
   // 연결된 상태면 헤더에 공유 버튼 표시 (관리자용)
   if (API_URL) document.getElementById('shareMini').classList.add('show');
+  document.getElementById('adminMini').classList.add('show');   // 연수 관리 버튼: 항상 표시
 
   var deptSel = document.getElementById('dept');
   deptSel.innerHTML = '<option value="">— 부서를 선택해 주세요 —</option>';
@@ -1405,7 +2198,7 @@ function renderEmpty(isError) {
         '<p>데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해 주세요.</p>' +
         '<div class="empty-hint">' +
           '<b>계속 실패한다면</b><br>' +
-          '① 시트 관리자에게 배포 상태 확인 요청<br>' +
+          '① 관리자에게 시스템 상태 확인 요청<br>' +
           '② 아래 버튼으로 연결을 다시 설정' +
         '</div>' +
         '<button class="print-link-btn" onclick="resetConnection()">연결 다시 설정</button>' +
@@ -1417,9 +2210,8 @@ function renderEmpty(isError) {
         '<p>오늘 등록된 연수가 없습니다.</p>' +
         '<div class="empty-hint">' +
           '<b>관리자 확인 사항</b><br>' +
-          '① [⚙️ 연수설정] 시트에서 A열이 <b>Y</b>인지 확인<br>' +
-          '② D열 날짜가 <b>오늘 날짜</b> 또는 <b>매일</b>인지 확인<br>' +
-          '③ D열 셀 서식이 <b>일반 텍스트</b>인지 확인' +
+          '헤더의 ⚙️ <b>관리자</b> 버튼 → 연수 관리에서<br>' +
+          '오늘 날짜(또는 매일)로 활성화된 연수를 등록해 주세요.' +
         '</div>' +
       '</div>';
   }
@@ -1671,6 +2463,8 @@ function doSubmit() {
   var btn = document.getElementById('btn3');
   btn.disabled = true; btn.textContent = '제출 중...';
 
+  var dateStr = todayStr();
+  var timeStr = nowTimeStr();
   var payload = {
     trainingTitle : selectedTraining.title,
     department    : document.getElementById('dept').value,
@@ -1684,10 +2478,39 @@ function doSubmit() {
     return;
   }
 
-  // ※ Content-Type 헤더를 지정하지 않아야(text/plain 전송)
-  //   Apps Script에서 CORS preflight 없이 처리됩니다.
-  fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+  function fail(msg) {
+    document.getElementById('modalErrorMsg').textContent = msg;
+    document.getElementById('modalError').classList.add('show');
+    btn.disabled = false; btn.textContent = '서명 제출하기';
+  }
+
+  // ① 기관 Apps Script에 이미지만 업로드(자기 드라이브에 저장) → fileId/imageUrl 수신
+  //   ※ Content-Type 헤더를 지정하지 않아야(text/plain 전송) CORS preflight 없이 처리됩니다.
+  // ② Supabase에 텍스트 기록 + 이미지 URL 저장 (UNIQUE 제약이 최종 중복 방어선)
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      trainingTitle: payload.trainingTitle,
+      department: payload.department,
+      name: payload.name,
+      dateStr: dateStr,
+      signatureData: payload.signatureData
+    })
+  })
     .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(imgRes) {
+      if (!imgRes.success) { fail(imgRes.message || '이미지 저장에 실패했습니다.'); throw new Error('__handled__'); }
+      return rpc('submit_signature', {
+        p_org_key        : ORG_KEY,
+        p_sign_date      : dateStr,
+        p_sign_time      : timeStr,
+        p_training_title : payload.trainingTitle,
+        p_department     : payload.department,
+        p_name           : payload.name,
+        p_image_file_id  : imgRes.fileId,
+        p_image_url      : imgRes.imageUrl
+      });
+    })
     .then(function(res) {
       if (res.success) {
         showSuccess(payload);
@@ -1696,16 +2519,12 @@ function doSubmit() {
         document.getElementById('modalDuplicate').classList.add('show');
         btn.disabled = false; btn.textContent = '서명 제출하기';
       } else {
-        document.getElementById('modalErrorMsg').textContent = res.message || '알 수 없는 오류';
-        document.getElementById('modalError').classList.add('show');
-        btn.disabled = false; btn.textContent = '서명 제출하기';
+        fail(res.message || '알 수 없는 오류');
       }
     })
     .catch(function(err) {
-      document.getElementById('modalErrorMsg').textContent =
-        '서버에 연결할 수 없습니다.\n네트워크 상태를 확인한 뒤 다시 시도해 주세요.';
-      document.getElementById('modalError').classList.add('show');
-      btn.disabled = false; btn.textContent = '서명 제출하기';
+      if (err && err.message === '__handled__') return;
+      fail('서버에 연결할 수 없습니다.\n네트워크 상태를 확인한 뒤 다시 시도해 주세요.');
     });
 }
 
@@ -1799,11 +2618,10 @@ function showPrintLoading() {
 
 function fetchRecordsAndBuild(training, pin) {
   showPrintLoading();
-  var url = API_URL + '?action=records&title=' + encodeURIComponent(training.title);
-  if (pin) url += '&pin=' + encodeURIComponent(pin);
 
-  fetch(url)
-    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  rpc('get_signature_records', {
+    p_org_key: ORG_KEY, p_title: training.title, p_date: todayStr(), p_pin: pin || ''
+  })
     .then(function(res) {
       if (res && res.needPin) {
         // 비밀번호 미입력 또는 불일치
