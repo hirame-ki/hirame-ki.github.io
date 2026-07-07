@@ -37,6 +37,7 @@
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
   }
   button { font-family: inherit; cursor: pointer; }
   button:disabled { cursor: not-allowed; }
@@ -2800,7 +2801,7 @@ function showStep(n) {
     document.getElementById('step' + i).classList.toggle('active', i === n);
   }
   setBars(n);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
 function setBars(n) {
@@ -3232,7 +3233,23 @@ function buildPrintDoc(training, res) {
   var ROWS_FIRST = 12;   // 첫 페이지 (제목 영역 포함)
   var ROWS_NEXT  = 15;   // 이후 페이지
 
-  function cellHtml(entry, globalNo, isRightBlock) {
+  // 같은 부서가 연속될 때 부서 셀을 세로 병합(rowspan)하기 위한 스팬 계산
+  // 반환값: 그룹 시작 행 → 병합할 행 수(양수), 병합에 흡수된 행 → -1, 빈 행 → 0
+  function computeDeptSpans(list) {
+    var spans = new Array(list.length).fill(0);
+    var i = 0;
+    while (i < list.length) {
+      if (!list[i]) { i++; continue; }
+      var j = i + 1;
+      while (j < list.length && list[j] && list[j].dept === list[i].dept) j++;
+      spans[i] = j - i;
+      for (var k = i + 1; k < j; k++) spans[k] = -1;
+      i = j;
+    }
+    return spans;
+  }
+
+  function cellHtml(entry, globalNo, isRightBlock, deptSpan) {
     var div = isRightBlock ? ' class="pd-div"' : '';
     if (!entry) {
       return '<td' + div + '></td><td></td><td></td><td class="pd-sig"></td>';
@@ -3247,8 +3264,13 @@ function buildPrintDoc(training, res) {
     } else {
       sigCell = '<span class="pd-unsigned">미서명</span>';
     }
+    var deptCell = '';
+    if (deptSpan !== -1) {
+      var rs = deptSpan > 1 ? ' rowspan="' + deptSpan + '"' : '';
+      deptCell = '<td' + rs + '>' + esc(entry.dept) + '</td>';
+    }
     return '<td' + div + '>' + globalNo + '</td>' +
-      '<td>' + esc(entry.dept) + '</td>' +
+      deptCell +
       '<td class="pd-name">' + esc(entry.name) + '</td>' +
       '<td class="pd-sig">' + sigCell + '</td>';
   }
@@ -3269,22 +3291,26 @@ function buildPrintDoc(training, res) {
     var R = pageIdx === 0 ? ROWS_FIRST : ROWS_NEXT;
     var remaining  = entries.length - base;
     var leftCount  = Math.min(R, remaining);
+    var rightCount = Math.min(R, remaining - leftCount);
     var rowsOnPage = Math.max(leftCount, 1);
+    var leftList = [], rightList = [];
+    for (var i = 0; i < rowsOnPage; i++) {
+      leftList.push(i < leftCount ? entries[base + i] : null);
+      rightList.push(i < rightCount ? entries[base + leftCount + i] : null);
+    }
+    var leftSpans  = computeDeptSpans(leftList);
+    var rightSpans = computeDeptSpans(rightList);
     var trs = '';
     for (var i = 0; i < rowsOnPage; i++) {
-      var li = base + i;                 // 왼쪽 블록: base+1 ~ base+leftCount
-      var ri = base + leftCount + i;     // 오른쪽 블록: 이어지는 순번
-      var left  = (i < leftCount) ? entries[li] : null;
-      var right = (ri < base + leftCount + Math.min(R, remaining - leftCount) && entries[ri]) ? entries[ri] : null;
       trs += '<tr>' +
-        cellHtml(left,  li + 1, false) +
-        cellHtml(right, ri + 1, true) +
+        cellHtml(leftList[i],  base + i + 1, false, leftSpans[i]) +
+        cellHtml(rightList[i], base + leftCount + i + 1, true, rightSpans[i]) +
       '</tr>';
     }
     pagesHtml += '<div class="pd-page">' +
       '<table class="print-table">' + theadHtml + '<tbody>' + trs + '</tbody></table>' +
     '</div>';
-    base += leftCount + Math.min(R, remaining - leftCount);
+    base += leftCount + rightCount;
     pageIdx++;
     if (remaining <= 0) break;
   }
