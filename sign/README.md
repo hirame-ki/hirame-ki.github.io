@@ -88,25 +88,37 @@
 
 ## 자동화 (GitHub Actions — 핑 · 아카이브 · 알림)
 
-`sign/` 폴더가 실제 GitHub 저장소로 push된 뒤, 아래 두 가지를 설정하면 **완전히 무인으로** 운영됩니다.
+⚠️ **이 프로젝트는 `hirame-ki.github.io` 저장소 안에 다른 프로젝트(ssamverse 등)와 함께
+`/sign` 하위 폴더로 존재합니다.** GitHub Actions는 **저장소 루트**의 `.github/workflows/`만
+인식하므로, 아래 파일들은 `sign/` 폴더 안이 아니라 **저장소 최상위**에 올려야 합니다:
+
+```
+(저장소 루트)/.github/workflows/sign-ping.yml
+(저장소 루트)/.github/workflows/sign-archive.yml
+(저장소 루트)/.github/scripts/sign-run-archive.mjs
+```
+
+또한 저장소가 여러 프로젝트와 시크릿을 공유하므로, 이름이 겹치지 않도록 **`SIGN_` 접두사가
+붙은 전용 시크릿**을 사용합니다 (기존에 다른 프로젝트가 쓰고 있을 `SUPABASE_URL` 등을
+건드리지 않기 위함).
 
 ### 1. 저장소 Secrets 등록 (Settings → Secrets and variables → Actions)
 
 | Secret 이름 | 값 | 용도 |
 |---|---|---|
-| `SUPABASE_URL` | `https://xxxx.supabase.co` | 핑 · 아카이브 공통 |
-| `SUPABASE_ANON_KEY` | anon/publishable 키 | 핑(`ping.yml`)에서만 사용 |
-| `SUPABASE_SERVICE_ROLE_KEY` | **service_role** 키 (Project Settings → API Keys) | 아카이브(`archive.yml`)에서만 사용 — 전체 기관 목록 조회·삭제 권한 필요. **외부에 절대 노출되면 안 됨**(GitHub Secrets에만 등록, 코드에는 절대 넣지 않음) |
+| `SIGN_SUPABASE_URL` | `https://kelvxbvvxpcnlholvmfr.supabase.co` (ssambus 프로젝트) | 핑 · 아카이브 공통 |
+| `SIGN_SUPABASE_ANON_KEY` | anon/publishable 키 | 핑(`sign-ping.yml`)에서만 사용 |
+| `SIGN_SUPABASE_SERVICE_ROLE_KEY` | **service_role** 키 (Project Settings → API Keys) | 아카이브(`sign-archive.yml`)에서만 사용 — 전체 기관 목록 조회·삭제 권한 필요. **외부에 절대 노출되면 안 됨**(GitHub Secrets에만 등록, 코드에는 절대 넣지 않음) |
 
 ### 2. 동작 방식
 
-- **`.github/workflows/ping.yml`** — 3일마다 Supabase에 가벼운 요청을 보내 무료 플랜의 "1주일 미사용 시 자동 일시정지"를 방지. 매번 sentinel 파일에 커밋을 남겨 GitHub의 "60일 무커밋 저장소는 예약 워크플로 자동 비활성화" 정책도 함께 회피.
-- **`.github/workflows/archive.yml`** — 매주 월요일, `.github/scripts/run-archive.mjs` 실행:
+- **`sign-ping.yml`** — 3일마다 Supabase에 가벼운 요청을 보내 무료 플랜의 "1주일 미사용 시 자동 일시정지"를 방지. 매번 sentinel 파일에 커밋을 남겨 GitHub의 "60일 무커밋 저장소는 예약 워크플로 자동 비활성화" 정책도 함께 회피. (ssambus 프로젝트는 이미 다른 워크플로가 주기적으로 깨우고 있다면 이 워크플로는 이중 안전장치일 뿐이며, 없어도 무방합니다.)
+- **`sign-archive.yml`** — 매주 월요일, `sign-run-archive.mjs` 실행:
   1. Supabase에서 전체 기관 목록(`org_key`, `apps_script_url`) 조회
   2. 기관별로 `archive_old_signatures()` 호출 → 60일(기본값) 지난 서명 기록을 돌려받으며 동시에 Supabase에서 삭제
   3. 돌려받은 기록을 그 기관의 Apps Script로 전송 → 그 기관 자신의 드라이브에 엑셀로 저장
   4. 저장이 끝나면 `code.gs`가 **그 기관 스크립트를 배포한 계정 이메일로 자동 알림 메일** 발송 (건수 + 백업 파일 바로가기 링크 포함). 특정 주소로 받고 싶으면 `code.gs`의 `NOTIFY_EMAIL` 상수에 이메일을 지정
-- 보관 기간은 `archive.yml`의 `ARCHIVE_DAYS` 값(기본 60)만 바꾸면 조정 가능
+- 보관 기간은 `sign-archive.yml`의 `ARCHIVE_DAYS` 값(기본 60)만 바꾸면 조정 가능
 
 ### 아직 안 된 것
 

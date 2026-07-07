@@ -93,39 +93,74 @@ Supabase 연결·검증 완료 후 사용자 피드백을 받아 다음을 추�
 앞서 "나중에 직접 하겠다"고 보류했던 항목을, 사용자가 알림 요구사항(백업 완료 시 알림 +
 백업 위치 안내)을 추가로 요청하면서 이번에 전부 구현함:
 
-- **`sign/.github/workflows/ping.yml`**: 3일마다 Supabase에 요청 1건 → 무료플랜 일시정지 방지.
+- **`.github/workflows/sign-ping.yml`**: 3일마다 Supabase에 요청 1건 → 무료플랜 일시정지 방지.
   동시에 sentinel 파일 커밋 → GitHub의 60일 무커밋 시 예약 워크플로 자동 비활성화도 방지.
-- **`sign/.github/workflows/archive.yml`** + **`sign/.github/scripts/run-archive.mjs`**: 매주 월요일,
+  ⚠️ **ssambus 프로젝트는 이미 다른 워크플로가 주기적으로 깨우고 있음을 확인함** (2026-07-08,
+  실행 기록 초록불 확인). Supabase의 "1주일 미사용 시 일시정지"는 프로젝트 전체 단위라 이
+  기존 핑만으로 sign 시스템 테이블도 함께 보호됨 — 이 워크플로는 사용자 판단으로 **이중
+  안전장치 목적으로만 유지**, 없어도 무방.
+- **`.github/workflows/sign-archive.yml`** + **`.github/scripts/sign-run-archive.mjs`**: 매주 월요일,
   전체 기관을 순회하며 `archive_old_signatures()` 호출(기본 60일 경과 기록) → 기관의 Apps Script로
   전송해 드라이브에 백업 저장.
 - **`code.gs`의 `_notifyArchiveBackup()`**: 백업 완료 시 `MailApp`으로 이메일 발송(건수 + 백업
   시트 바로가기 링크). 수신자는 기본적으로 `Session.getEffectiveUser().getEmail()`(스크립트를
   배포한 계정)이며, `NOTIFY_EMAIL` 상수로 다른 주소 지정 가능. 발송 실패해도 백업 자체는 실패
   처리하지 않음(별도 try/catch).
-- **필요한 GitHub Secrets**(저장소 연결 후 등록 필요): `SUPABASE_URL`, `SUPABASE_ANON_KEY`(핑용),
-  `SUPABASE_SERVICE_ROLE_KEY`(아카이브용 — 전체 기관 조회·삭제 권한이라 취급 주의). 자세한 내용은
-  `README.md`의 "자동화" 섹션 참고.
 - 이 자동화는 **DB 스키마 변경이 필요 없음** — 기존 `archive_old_signatures`/`institutions.apps_script_url`을
   그대로 사용.
 
-## 다음 세션에서 사용자가 직접 해야 할 것 (순서대로)
+### ⚠️ 배포 토폴로지 정정 (2026-07-08) — 매우 중요
 
-0. **테스트 데이터 정리**: SQL Editor에서
-   `delete from institutions where org_key = 'ZZTEST_delete_me';` 실행 (cascade로 하위 기록 자동 삭제)
-1. **Supabase**: `ssambus` 프로젝트 SQL Editor에서 `sign/supabase-schema.sql` 전체 실행
-   ("Run without RLS" 선택) — **완료 (2026-07-07, 보안 패치 포함)**
-2. `sign/index.html` 상단 `SUPABASE_URL` / `SUPABASE_ANON_KEY` 실제 값 입력 — **완료 (2026-07-07)**
-3. `delete_signature` + `get_signature_records`(id 포함) SQL 패치 — 첫 시도는 복사 중 잘려서
-   실패했으나 재실행 후 **원격 검증 완료** (2026-07-08)
-0-1. 테스트 데이터(`ZZTEST_delete_me`) 정리 — **완료 확인** (2026-07-08, `get_page_data`로 빈 값 반환 확인)
-4. GitHub Pages에 `sign/` 내용 배포 (아직 이 폴더는 git 저장소가 아님 — 사용자가 나중에 직접
-   저장소 연결) + Actions Secrets 3개 등록(`SUPABASE_URL`/`SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_ROLE_KEY`)
-5. [script.google.com](https://script.google.com)에서 **새 프로젝트**(시트 아님) 생성 →
+처음엔 `sign/`이 자체 GitHub 저장소가 될 거라 가정하고 워크플로 파일을 `sign/.github/...`에
+만들었으나, **실제로는 `hirame-ki.github.io`라는 하나의 저장소 안에 `/sign`, `/ssamverse` 등
+여러 프로젝트가 하위 폴더로 같이 존재**하는 구조임이 확인됨 (사용자가 지금까지 파일을 GitHub
+웹 UI로 직접 업로드하는 방식으로 운영 중, git 연동 아님). 이에 따라:
+- 워크플로/스크립트 파일은 `sign/` 안이 아니라 **저장소 루트**의 `.github/workflows/`,
+  `.github/scripts/`에 올려야 함 (GitHub Actions는 저장소 루트만 인식)
+- 시크릿 이름은 다른 프로젝트(ssamverse 등)와 겹치지 않도록 **`SIGN_` 접두사**로 변경:
+  `SIGN_SUPABASE_URL`, `SIGN_SUPABASE_ANON_KEY`, `SIGN_SUPABASE_SERVICE_ROLE_KEY`
+  (기존에 저장소에 이미 `SUPABASE_URL`/`SUPABASE_ANON_KEY`/`GROQ_API_KEY`가 다른 프로젝트용으로
+  등록되어 있는 것을 발견 — 이름 충돌·오용 방지 위해 구분함)
+- 로컬 파일도 `sign/.github/workflows/sign-ping.yml`, `sign-archive.yml`,
+  `sign/.github/scripts/sign-run-archive.mjs`로 이름 변경 완료 (업로드 시 저장소 루트의
+  `.github/...`로 옮겨서 올려야 함 — `sign/` 접두사 없이)
+
+### 실제 배포·디버깅 과정에서 겪은 문제들 (2026-07-08, 전부 해결됨)
+
+1. YAML `name:` 필드에 `[sign]` 형태로 대괄호를 썼다가 YAML 문법 오류 발생
+   (`[`는 flow sequence 시작 문자라 뒤에 텍스트가 오면 파싱 실패) →
+   `"sign: 워크플로명"` 형태(따옴표로 감싼 문자열)로 수정.
+2. Secrets를 `SIGN_` 접두사 없이 시도 → 이미 다른 프로젝트가 쓰는 `SUPABASE_URL`과 이름이
+   겹쳐 "already exists" 에러 → `SIGN_SUPABASE_URL` 등으로 새로 등록.
+3. `archive` 워크플로가 `SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 환경변수가 필요합니다`로 실패
+   → `SIGN_SUPABASE_SERVICE_ROLE_KEY`가 애초에 등록 안 되어 있었음 → 등록 후 해결.
+4. `ping` 워크플로가 curl exit code 3(URL 형식 오류)로 실패 → `SIGN_SUPABASE_URL` 값이 비어있거나
+   손상되어 있었던 것으로 추정 → Update로 값 재입력 후 해결.
+5. **최종적으로 핑·아카이브 워크플로 둘 다 성공 확인 완료** (2026-07-08, 사용자 확인).
+   GitHub Actions 자동화(핑/아카이브/알림) 구축이 완전히 끝난 상태.
+
+## 완료된 것 (전부 확인됨)
+
+- Supabase `ssambus` 프로젝트에 `supabase-schema.sql` + 이후 모든 패치(`bulk_add_staff`,
+  `rename_dept`, `delete_signature`, `get_signature_records` id 포함) 실행 및 원격 검증 완료
+- 테스트 데이터(`ZZTEST_delete_me`) 정리 완료
+- `sign/index.html`에 실제 `SUPABASE_URL`/`SUPABASE_ANON_KEY` 입력 완료
+- `hirame-ki.github.io` 저장소 루트에 `.github/workflows/sign-ping.yml`,
+  `.github/workflows/sign-archive.yml`, `.github/scripts/sign-run-archive.mjs` 업로드 완료
+- Secrets 3개(`SIGN_SUPABASE_URL`, `SIGN_SUPABASE_ANON_KEY`, `SIGN_SUPABASE_SERVICE_ROLE_KEY`) 등록 완료
+- 핑·아카이브 워크플로 수동 실행(`Run workflow`) **둘 다 성공 확인** (2026-07-08)
+- `sign/index.html`은 `hirame-ki.github.io/sign` 경로로 이미 GitHub Pages에 배포되어 실제로
+  테스트 중 (사용자가 파일을 GitHub 웹 UI로 직접 업로드하는 방식으로 운영)
+
+## 다음 세션에서 사용자가 직접 해야 할 것
+
+1. [script.google.com](https://script.google.com)에서 **새 프로젝트**(시트 아님) 생성 →
    `sign/code.gs` 붙여넣기 → 웹 앱으로 배포(액세스: 모든 사용자) → URL 복사
-6. 배포된 웹페이지 접속 → 5번 URL 붙여넣어 연결 → 관리자 비밀번호 최초 생성 →
+   (또는 `sign/README.md`의 "사본(시트)으로 배포하고 싶다면" 방식으로 사용설명서 시트 포함 배포)
+2. 배포된 웹페이지(`hirame-ki.github.io/sign`)에서 1번 URL로 연결 → 관리자 비밀번호 최초 생성 →
    **기관 설정 → 구성원 관리 → 연수 관리** 순으로 입력 → 서명 1건 테스트 → 서명등록부 출력 테스트 →
    **서명 기록 탭에서 삭제 테스트**
-7. 위 과정에서 실제로 막히는 부분이 나오면 그게 이번 구현의 첫 실전 검증이 됨 — 다음 세션에서
+3. 위 과정에서 실제로 막히는 부분이 나오면 그게 이번 구현의 첫 실전 검증이 됨 — 다음 세션에서
    그 결과를 갖고 디버깅 이어가면 됨
 
 ## 남은 미결 항목
