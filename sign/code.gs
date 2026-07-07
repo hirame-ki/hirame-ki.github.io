@@ -16,6 +16,7 @@
 
 const DRIVE_FOLDER  = '연수 전자서명 파일';
 const ARCHIVE_FILE  = '연수 전자서명 아카이브';
+const NOTIFY_EMAIL  = '';   // 비워두면 이 스크립트를 배포한 계정(실행 계정)의 이메일로 자동 발송
 
 // ============================================================
 //  웹앱 진입점
@@ -147,10 +148,35 @@ function saveArchiveBackup(rows) {
       sheet.setRowHeight(newRow, 70);
     });
 
+    _notifyArchiveBackup(rows.length, ss.getUrl());
+
     return { success: true, savedCount: rows.length };
   } catch (err) {
     Logger.log('saveArchiveBackup error: ' + err);
     return { success: false, message: err.message };
+  }
+}
+
+/**
+ * 백업 완료 시 이메일로 알림 (건수 + 백업 파일 위치).
+ * GitHub Actions가 사람 없이 호출하는 자동화라 브라우저 알림창은 띄울 대상이
+ * 없으므로, 이메일이 실질적인 알림 수단이다. 발송 실패해도 백업 자체는
+ * 이미 끝난 뒤이므로 별도로 처리해 백업 결과에 영향을 주지 않는다.
+ */
+function _notifyArchiveBackup(count, sheetUrl) {
+  try {
+    const to = NOTIFY_EMAIL || Session.getEffectiveUser().getEmail();
+    if (!to) return;
+    MailApp.sendEmail({
+      to: to,
+      subject: '[연수 전자서명] 서명 기록 자동 백업 완료 (' + count + '건)',
+      body:
+        '오래된 서명 기록 ' + count + '건이 자동으로 백업되어 Supabase에서는 삭제되었습니다.\n\n' +
+        '백업 위치: ' + sheetUrl + '\n\n' +
+        '이 메일은 연수 전자서명 시스템이 자동으로 발송했습니다.'
+    });
+  } catch (err) {
+    Logger.log('_notifyArchiveBackup error: ' + err);
   }
 }
 

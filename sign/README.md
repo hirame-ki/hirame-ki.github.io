@@ -72,7 +72,8 @@
 
 ## 관리자 패널 (헤더 ⚙️ 버튼)
 
-- **연수 관리**: 연수명·내용·날짜·활성여부 등록/수정/삭제 (개수 제한 없음)
+- **연수 관리**: 연수명·대상(드롭다운)·시간(시작~종료)·날짜·활성여부 등록/수정/삭제 (개수 제한 없음)
+- **서명 기록**: 연수·날짜 선택 → 조회 → 이름·부서·시각 목록에서 개별 삭제 (실수로 등록된 서명 등 정리용)
 - **구성원 관리**: 부서·성명 등록/수정/삭제 — 여기 등록된 명단이 서명 화면의 부서·이름 선택 목록이 됩니다.
   - 목록은 **부서별로 묶어서** 표시 (먼저 등록한 부서가 위)
   - 부서는 기존 부서 중 드롭다운으로 선택하거나 "새 부서 직접 입력"으로 추가
@@ -85,12 +86,31 @@
 
 `index.html?demo=1` 로 열면 가짜 데이터로 화면을 확인할 수 있습니다 (Supabase/Apps Script 연결 없이 전부 화면에서만 시뮬레이션).
 
-## 아직 안 된 것 (다음 단계)
+## 자동화 (GitHub Actions — 핑 · 아카이브 · 알림)
 
-- Supabase 일시정지 방지용 주간 핑, 2개월 경과 서명기록의 기관 드라이브 자동 백업 —
-  `archive_old_signatures()` (Supabase) / `archiveBackup` 액션(`code.gs`)은 준비되어 있으나,
-  이를 실제로 주기 실행하는 GitHub Actions 워크플로 연동은 아직 진행 전입니다.
-- 저장소 루트의 구버전 v4(`code.gs`/`index.html`, 시트 바인딩)는 그대로 남아있습니다.
+`sign/` 폴더가 실제 GitHub 저장소로 push된 뒤, 아래 두 가지를 설정하면 **완전히 무인으로** 운영됩니다.
+
+### 1. 저장소 Secrets 등록 (Settings → Secrets and variables → Actions)
+
+| Secret 이름 | 값 | 용도 |
+|---|---|---|
+| `SUPABASE_URL` | `https://xxxx.supabase.co` | 핑 · 아카이브 공통 |
+| `SUPABASE_ANON_KEY` | anon/publishable 키 | 핑(`ping.yml`)에서만 사용 |
+| `SUPABASE_SERVICE_ROLE_KEY` | **service_role** 키 (Project Settings → API Keys) | 아카이브(`archive.yml`)에서만 사용 — 전체 기관 목록 조회·삭제 권한 필요. **외부에 절대 노출되면 안 됨**(GitHub Secrets에만 등록, 코드에는 절대 넣지 않음) |
+
+### 2. 동작 방식
+
+- **`.github/workflows/ping.yml`** — 3일마다 Supabase에 가벼운 요청을 보내 무료 플랜의 "1주일 미사용 시 자동 일시정지"를 방지. 매번 sentinel 파일에 커밋을 남겨 GitHub의 "60일 무커밋 저장소는 예약 워크플로 자동 비활성화" 정책도 함께 회피.
+- **`.github/workflows/archive.yml`** — 매주 월요일, `.github/scripts/run-archive.mjs` 실행:
+  1. Supabase에서 전체 기관 목록(`org_key`, `apps_script_url`) 조회
+  2. 기관별로 `archive_old_signatures()` 호출 → 60일(기본값) 지난 서명 기록을 돌려받으며 동시에 Supabase에서 삭제
+  3. 돌려받은 기록을 그 기관의 Apps Script로 전송 → 그 기관 자신의 드라이브에 엑셀로 저장
+  4. 저장이 끝나면 `code.gs`가 **그 기관 스크립트를 배포한 계정 이메일로 자동 알림 메일** 발송 (건수 + 백업 파일 바로가기 링크 포함). 특정 주소로 받고 싶으면 `code.gs`의 `NOTIFY_EMAIL` 상수에 이메일을 지정
+- 보관 기간은 `archive.yml`의 `ARCHIVE_DAYS` 값(기본 60)만 바꾸면 조정 가능
+
+### 아직 안 된 것
+
+- 저장소 루트의 구버전 v4(`code.gs`/`index.html`, 시트 바인딩)는 그대로 남아있습니다 — 처리 방향 미정.
 
 ---
 Designed & Built by 성포고등학교 황성재 · [@hirame.ki](https://www.instagram.com/hirame.ki)

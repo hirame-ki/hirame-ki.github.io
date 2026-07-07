@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>연수 전자서명</title>
+<title>기관용 연수전자서명</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✍️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1185,6 +1185,7 @@
     <div class="adm-tabs">
       <button class="adm-tab active" id="admTabBtn-trainings" onclick="switchAdminTab('trainings')">연수 관리</button>
       <button class="adm-tab" id="admTabBtn-staff" onclick="switchAdminTab('staff')">구성원 관리</button>
+      <button class="adm-tab" id="admTabBtn-records" onclick="switchAdminTab('records')">서명 기록</button>
       <button class="adm-tab" id="admTabBtn-settings" onclick="switchAdminTab('settings')">기관 설정</button>
     </div>
 
@@ -1200,6 +1201,22 @@
         <svg width="14" height="14"><use href="#i-plus"/></svg> 구성원 추가
       </button>
       <div class="adm-list" id="admStaffList"></div>
+    </div>
+
+    <div class="adm-tab-panel" id="admTab-records">
+      <div class="adm-field">
+        <label class="adm-label" for="recTrainingSel">연수</label>
+        <select class="adm-input" id="recTrainingSel"></select>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="recDate">날짜</label>
+        <input type="date" class="adm-input" id="recDate">
+      </div>
+      <button class="adm-add-btn" onclick="fetchAdminRecords()" style="border-style:solid">
+        <svg width="14" height="14"><use href="#i-print"/></svg> 조회
+      </button>
+      <div class="adm-err" id="recErr"></div>
+      <div class="adm-list" id="admRecordsList"></div>
     </div>
 
     <div class="adm-tab-panel" id="admTab-settings">
@@ -1595,10 +1612,11 @@ function showAdminModal() {
 }
 
 function switchAdminTab(tab) {
-  ['trainings', 'staff', 'settings'].forEach(function(t) {
+  ['trainings', 'staff', 'records', 'settings'].forEach(function(t) {
     document.getElementById('admTab-' + t).classList.toggle('active', t === tab);
     document.getElementById('admTabBtn-' + t).classList.toggle('active', t === tab);
   });
+  if (tab === 'records') populateRecTrainingOptions();
 }
 
 function showAdminPinModal(createMode, wasWrong) {
@@ -1892,7 +1910,7 @@ function toggleTraining(i) {
 
 function deleteTraining() {
   if (editingTrainingId === null) return;
-  if (!confirm('이 연수를 삭제할까요?\n서명 기록은 그대로 남아요.')) return;
+  if (!confirm('이 연수를 삭제할까요?\n서명 기록은 삭제되지 않고 [서명결과 출력]에서 계속 조회할 수 있어요.')) return;
 
   var btn = document.getElementById('tfSubmitBtn');
   btn.disabled = true;
@@ -2145,6 +2163,112 @@ function deleteStaffMember() {
       } else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showSfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
       else showSfErr(res.message || '삭제하지 못했어요.');
     }).catch(function() { showSfErr('서버에 연결할 수 없어요.'); });
+}
+
+/* ── 서명 기록 관리 (연수+날짜로 조회 → 개별 삭제) ── */
+var admRecords = [];   // 마지막으로 조회한 목록 (id 포함)
+
+function populateRecTrainingOptions() {
+  var sel = document.getElementById('recTrainingSel');
+  var titles = [];
+  adminTrainings.forEach(function(t) {
+    if (titles.indexOf(t.title) === -1) titles.push(t.title);
+  });
+  var prev = sel.value;
+  sel.innerHTML = '';
+  if (!titles.length) {
+    sel.innerHTML = '<option value="">등록된 연수가 없어요</option>';
+  } else {
+    titles.forEach(function(t) {
+      var o = document.createElement('option');
+      o.value = t; o.textContent = t;
+      sel.appendChild(o);
+    });
+    if (titles.indexOf(prev) > -1) sel.value = prev;
+  }
+  if (!document.getElementById('recDate').value) {
+    document.getElementById('recDate').value = todayStr();
+  }
+  document.getElementById('admRecordsList').innerHTML = '';
+  document.getElementById('recErr').classList.remove('show');
+}
+
+function showRecErr(msg) {
+  var err = document.getElementById('recErr');
+  err.textContent = msg; err.classList.add('show');
+}
+
+function fetchAdminRecords() {
+  var title = document.getElementById('recTrainingSel').value;
+  var date  = document.getElementById('recDate').value;
+  document.getElementById('recErr').classList.remove('show');
+  if (!title) { showRecErr('연수를 선택해 주세요.'); return; }
+  if (!date)  { showRecErr('날짜를 선택해 주세요.'); return; }
+
+  if (!API_URL) {
+    showRecErr('데모 모드에서는 서명 기록 조회를 지원하지 않아요.');
+    return;
+  }
+
+  document.getElementById('admRecordsList').innerHTML = '<div class="adm-empty">불러오는 중...</div>';
+
+  rpc('get_signature_records', { p_org_key: ORG_KEY, p_title: title, p_date: date, p_pin: adminPin })
+    .then(function(res) {
+      if (res.needPin) {
+        sessionStorage.removeItem(ADMIN_PIN_KEY);
+        document.getElementById('admRecordsList').innerHTML = '';
+        showRecErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.');
+        return;
+      }
+      admRecords = res.records || [];
+      renderAdminRecords();
+    })
+    .catch(function() {
+      document.getElementById('admRecordsList').innerHTML = '';
+      showRecErr('서버에 연결할 수 없어요.');
+    });
+}
+
+function renderAdminRecords() {
+  var box = document.getElementById('admRecordsList');
+  if (!admRecords.length) {
+    box.innerHTML = '<div class="adm-empty">해당 날짜에 서명 기록이 없어요.</div>';
+    return;
+  }
+  var html = '';
+  admRecords.forEach(function(r, i) {
+    html +=
+      '<div class="adm-item">' +
+        '<div class="adm-item-main">' +
+          '<div class="adm-item-title">' + esc(r.name) + '</div>' +
+          '<div class="adm-item-meta">' + esc(r.department || '') + ' · ' + esc(r.time || '') + '</div>' +
+        '</div>' +
+        '<div class="adm-item-side">' +
+          '<button class="adm-del-btn" style="margin-top:0" onclick="deleteAdminRecord(' + i + ')">삭제</button>' +
+        '</div>' +
+      '</div>';
+  });
+  box.innerHTML = html;
+}
+
+function deleteAdminRecord(i) {
+  var rec = admRecords[i];
+  if (!rec) return;
+  if (!confirm('[' + rec.name + ']님의 서명 기록을 삭제할까요?\n삭제하면 되돌릴 수 없습니다.\n(드라이브에 저장된 서명 이미지 파일은 그대로 남아요)')) return;
+
+  rpc('delete_signature', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: rec.id })
+    .then(function(res) {
+      if (res.success) {
+        admRecords.splice(i, 1);
+        renderAdminRecords();
+      } else if (res.needPin) {
+        sessionStorage.removeItem(ADMIN_PIN_KEY);
+        showRecErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.');
+      } else {
+        showRecErr(res.message || '삭제하지 못했어요.');
+      }
+    })
+    .catch(function() { showRecErr('서버에 연결할 수 없어요.'); });
 }
 
 /* ── 기관 설정 (기관명/부서목록/안내문/대표색상) ── */
@@ -2437,7 +2561,7 @@ function onPageDataLoaded(data) {
   orgName = String(data.orgName || '').trim();
   if (orgName) {
     document.getElementById('headerOrg').textContent = orgName;
-    document.title = orgName + ' · 연수 전자서명';
+    document.title = orgName + ' · 기관용 연수전자서명';
   }
 
   // Supabase는 구성원을 평평한 목록으로 반환 → 부서별로 그룹핑 (등록 순서 유지)

@@ -168,7 +168,7 @@ begin
     'date', p_date,
     'records', (
       select coalesce(jsonb_agg(jsonb_build_object(
-        'department', department, 'name', name,
+        'id', id, 'department', department, 'name', name,
         'time', to_char(sign_time, 'HH24:MI:SS'),
         'fileId', image_file_id
       ) order by created_at), '[]'::jsonb)
@@ -176,6 +176,26 @@ begin
       where org_key = p_org_key and training_title = p_title and sign_date = p_date
     )
   );
+end;
+$$;
+
+-- 서명 기록 삭제 (관리자 패널의 [서명 기록] 탭 전용, PIN 검증)
+-- ※ 드라이브에 저장된 이미지 파일 자체는 지우지 않고, Supabase의 기록(행)만 삭제한다.
+create or replace function delete_signature(p_org_key text, p_pin text, p_id bigint)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  begin
+    perform _check_admin_pin(p_org_key, p_pin);
+  exception when others then
+    return jsonb_build_object('success', false, 'needPin', true);
+  end;
+
+  delete from signatures where id = p_id and org_key = p_org_key;
+  return jsonb_build_object('success', true);
 end;
 $$;
 
@@ -528,6 +548,7 @@ revoke execute on function
   bulk_add_staff(text, text, text, text[]),
   rename_dept(text, text, text, text),
   update_org_settings(text, text, text, text, text, text),
+  delete_signature(text, text, bigint),
   archive_old_signatures(text, date)
 from public, anon, authenticated;
 
@@ -544,7 +565,8 @@ grant execute on function
   delete_staff(text, text, bigint),
   bulk_add_staff(text, text, text, text[]),
   rename_dept(text, text, text, text),
-  update_org_settings(text, text, text, text, text, text)
+  update_org_settings(text, text, text, text, text, text),
+  delete_signature(text, text, bigint)
 to anon, authenticated;
 
 -- _check_admin_pin / _trainings_json / _staff_json 은 내부 헬퍼일 뿐이라

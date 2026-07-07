@@ -88,6 +88,26 @@ Supabase 연결·검증 완료 후 사용자 피드백을 받아 다음을 추�
 - **브라우저 렌더링/클릭 테스트는 여전히 못 함** (Chrome 확장 미연결). 데모 모드 포함 UI 흐름,
   그리고 Apps Script 이미지 업로드(구글 쪽)는 실제로 안 돌려봄.
 
+## GitHub Actions 자동화 (핑 · 아카이브 · 알림) — 구현 완료 (2026-07-08)
+
+앞서 "나중에 직접 하겠다"고 보류했던 항목을, 사용자가 알림 요구사항(백업 완료 시 알림 +
+백업 위치 안내)을 추가로 요청하면서 이번에 전부 구현함:
+
+- **`sign/.github/workflows/ping.yml`**: 3일마다 Supabase에 요청 1건 → 무료플랜 일시정지 방지.
+  동시에 sentinel 파일 커밋 → GitHub의 60일 무커밋 시 예약 워크플로 자동 비활성화도 방지.
+- **`sign/.github/workflows/archive.yml`** + **`sign/.github/scripts/run-archive.mjs`**: 매주 월요일,
+  전체 기관을 순회하며 `archive_old_signatures()` 호출(기본 60일 경과 기록) → 기관의 Apps Script로
+  전송해 드라이브에 백업 저장.
+- **`code.gs`의 `_notifyArchiveBackup()`**: 백업 완료 시 `MailApp`으로 이메일 발송(건수 + 백업
+  시트 바로가기 링크). 수신자는 기본적으로 `Session.getEffectiveUser().getEmail()`(스크립트를
+  배포한 계정)이며, `NOTIFY_EMAIL` 상수로 다른 주소 지정 가능. 발송 실패해도 백업 자체는 실패
+  처리하지 않음(별도 try/catch).
+- **필요한 GitHub Secrets**(저장소 연결 후 등록 필요): `SUPABASE_URL`, `SUPABASE_ANON_KEY`(핑용),
+  `SUPABASE_SERVICE_ROLE_KEY`(아카이브용 — 전체 기관 조회·삭제 권한이라 취급 주의). 자세한 내용은
+  `README.md`의 "자동화" 섹션 참고.
+- 이 자동화는 **DB 스키마 변경이 필요 없음** — 기존 `archive_old_signatures`/`institutions.apps_script_url`을
+  그대로 사용.
+
 ## 다음 세션에서 사용자가 직접 해야 할 것 (순서대로)
 
 0. **테스트 데이터 정리**: SQL Editor에서
@@ -95,27 +115,21 @@ Supabase 연결·검증 완료 후 사용자 피드백을 받아 다음을 추�
 1. **Supabase**: `ssambus` 프로젝트 SQL Editor에서 `sign/supabase-schema.sql` 전체 실행
    ("Run without RLS" 선택) — **완료 (2026-07-07, 보안 패치 포함)**
 2. `sign/index.html` 상단 `SUPABASE_URL` / `SUPABASE_ANON_KEY` 실제 값 입력 — **완료 (2026-07-07)**
-3. GitHub Pages에 `sign/` 내용 배포 (아직 이 폴더는 git 저장소가 아님 — 사용자가 나중에 직접
-   저장소 연결)
-4. [script.google.com](https://script.google.com)에서 **새 프로젝트**(시트 아님) 생성 →
+3. `delete_signature` + `get_signature_records`(id 포함) SQL 패치 — 첫 시도는 복사 중 잘려서
+   실패했으나 재실행 후 **원격 검증 완료** (2026-07-08)
+0-1. 테스트 데이터(`ZZTEST_delete_me`) 정리 — **완료 확인** (2026-07-08, `get_page_data`로 빈 값 반환 확인)
+4. GitHub Pages에 `sign/` 내용 배포 (아직 이 폴더는 git 저장소가 아님 — 사용자가 나중에 직접
+   저장소 연결) + Actions Secrets 3개 등록(`SUPABASE_URL`/`SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_ROLE_KEY`)
+5. [script.google.com](https://script.google.com)에서 **새 프로젝트**(시트 아님) 생성 →
    `sign/code.gs` 붙여넣기 → 웹 앱으로 배포(액세스: 모든 사용자) → URL 복사
-5. 배포된 웹페이지 접속 → 3번 URL 붙여넣어 연결 → 관리자 비밀번호 최초 생성 →
-   **기관 설정 → 구성원 관리 → 연수 관리** 순으로 입력 → 서명 1건 테스트 → 서명등록부 출력 테스트
-6. 위 과정에서 실제로 막히는 부분이 나오면 그게 이번 구현의 첫 실전 검증이 됨 — 다음 세션에서
+6. 배포된 웹페이지 접속 → 5번 URL 붙여넣어 연결 → 관리자 비밀번호 최초 생성 →
+   **기관 설정 → 구성원 관리 → 연수 관리** 순으로 입력 → 서명 1건 테스트 → 서명등록부 출력 테스트 →
+   **서명 기록 탭에서 삭제 테스트**
+7. 위 과정에서 실제로 막히는 부분이 나오면 그게 이번 구현의 첫 실전 검증이 됨 — 다음 세션에서
    그 결과를 갖고 디버깅 이어가면 됨
 
-## 사용자가 명시적으로 보류 요청한 항목 (이번 구현 범위 제외)
+## 남은 미결 항목
 
-- **주간 핑(Supabase 일시정지 방지) + 2개월 경과 서명기록 자동 아카이브를 도는 GitHub Actions
-  워크플로**: "다른 작업이 다 끝나고 나서 직접 진행하겠다"고 하여 이번엔 구현 안 함.
-  다만 이 자동화가 실제로 호출할 백엔드 조각은 이미 준비해둠:
-  - Supabase: `archive_old_signatures(org_key, cutoff_date)` — service_role 키로만 실행 가능,
-    잘라낼 기록을 반환하면서 동시에 삭제
-  - `code.gs`: `doPost({action:'archiveBackup', rows:[...]})` — 받은 기록을 그 기관 드라이브에
-    엑셀(구글시트)로 저장
-  - 다음에 이어서 할 일: 위 두 조각을 매일/매주 호출하는 GitHub Actions 워크플로(.yml) 작성,
-    그리고 별도로 3~4일 간격 핑 워크플로 작성 (+ 60일 무커밋 시 Actions 자동 비활성화를 막는
-    사소한 자동 커밋 트릭도 같이 필요)
 - 저장소 루트 구버전 v4를 어떻게 할지(유지/삭제/승격) — 미결, 다음에 상의 필요
 
 ## 논의됐지만 아직 구현 안 한 아이디어 (향후 후보)
