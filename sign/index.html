@@ -394,7 +394,7 @@
   /* ── Modal ────────────────────────────────────────── */
   .modal-overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(14,26,20,.45); z-index: 999;
+    background: rgba(14,26,20,.45); z-index: 1500;   /* 관리자 패널(1200) 위에 떠야 함 */
     align-items: center; justify-content: center; padding: 24px;
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   }
@@ -1182,8 +1182,18 @@
       <input type="text" class="adm-input" id="tfName" maxlength="60" placeholder="예: 학교폭력 예방 교원 연수" autocomplete="off">
     </div>
     <div class="adm-field">
-      <label class="adm-label" for="tfContent">연수 내용 <span class="opt">(선택)</span></label>
-      <input type="text" class="adm-input" id="tfContent" maxlength="80" placeholder="예: 전 구성원 · 09:00 ~ 09:40" autocomplete="off">
+      <label class="adm-label" for="tfTargetSel">연수 대상 <span class="opt">(선택)</span></label>
+      <select class="adm-input" id="tfTargetSel" onchange="onTfTargetSelChange()"></select>
+      <input type="text" class="adm-input" id="tfTargetCustom" maxlength="40" placeholder="내용 직접 입력"
+             autocomplete="off" style="display:none;margin-top:8px">
+    </div>
+    <div class="adm-field">
+      <label class="adm-label" for="tfTimeStart">연수 시간 <span class="opt">(선택)</span></label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="time" class="adm-input" id="tfTimeStart" style="flex:1;min-width:0">
+        <span style="color:var(--ink3);font-weight:700;flex-shrink:0">~</span>
+        <input type="time" class="adm-input" id="tfTimeEnd" style="flex:1;min-width:0">
+      </div>
     </div>
     <div class="adm-field">
       <label class="adm-label" for="tfDate">연수 날짜</label>
@@ -1204,12 +1214,19 @@
     <div class="modal-title" id="sfTitle">구성원 추가</div>
 
     <div class="adm-field">
-      <label class="adm-label" for="sfDept">부서</label>
-      <input type="text" class="adm-input" id="sfDept" maxlength="30" placeholder="예: 교무기획부" autocomplete="off">
+      <label class="adm-label" for="sfDeptSel">부서</label>
+      <select class="adm-input" id="sfDeptSel" onchange="onSfDeptSelChange()"></select>
+      <input type="text" class="adm-input" id="sfDept" maxlength="30" placeholder="새 부서명 입력"
+             autocomplete="off" style="display:none;margin-top:8px">
     </div>
-    <div class="adm-field">
+    <div class="adm-field" id="sfNameField">
       <label class="adm-label" for="sfName">성명</label>
       <input type="text" class="adm-input" id="sfName" maxlength="20" placeholder="예: 홍길동" autocomplete="off">
+    </div>
+    <div class="adm-field" id="sfNamesField">
+      <label class="adm-label" for="sfNames">성명 <span class="opt">(여러 명 한 번에: 줄바꿈·쉼표로 구분)</span></label>
+      <textarea class="adm-input" id="sfNames" rows="6" style="resize:vertical"
+                placeholder="홍길동&#10;김철수&#10;이영희&#10;&#10;※ 엑셀의 이름 열을 복사해&#10;   그대로 붙여넣어도 됩니다"></textarea>
     </div>
 
     <div class="adm-err" id="sfErr"></div>
@@ -1630,13 +1647,73 @@ function renderAdminList() {
   box.innerHTML = html;
 }
 
+/* 연수 대상 드롭다운 + 시간 선택 → 저장 시 "대상 · HH:MM ~ HH:MM" 형태의
+   내용 문자열 하나로 합쳐지고, 수정 시 다시 분해해서 채워준다 */
+var TF_TARGET_PRESETS = ['전 구성원', '희망자', '자율 참여', '필수 참여'];
+
+function populateTfTargetOptions(selected) {
+  var sel  = document.getElementById('tfTargetSel');
+  var opts = TF_TARGET_PRESETS.slice();
+  if (selected && opts.indexOf(selected) === -1) opts.push(selected);
+
+  sel.innerHTML = '<option value="">— 선택 안 함 —</option>';
+  opts.forEach(function(t) {
+    var o = document.createElement('option');
+    o.value = t; o.textContent = t;
+    sel.appendChild(o);
+  });
+  var custom = document.createElement('option');
+  custom.value = '__custom__'; custom.textContent = '＋ 직접 입력';
+  sel.appendChild(custom);
+
+  sel.value = selected || '';
+  onTfTargetSelChange();
+}
+
+function onTfTargetSelChange() {
+  document.getElementById('tfTargetCustom').style.display =
+    document.getElementById('tfTargetSel').value === '__custom__' ? 'block' : 'none';
+}
+
+function getTfTarget() {
+  var v = document.getElementById('tfTargetSel').value;
+  return v === '__custom__' ? document.getElementById('tfTargetCustom').value.trim() : v;
+}
+
+function padTime(t) {
+  var p = String(t).split(':');
+  return ('0' + p[0]).slice(-2) + ':' + p[1];
+}
+
+/* 기존 내용 문자열을 대상/시작/종료로 분해 (형식이 다르면 전부 대상으로 취급) */
+function parseTrainingContent(c) {
+  c = String(c || '').trim();
+  var out = { target: '', start: '', end: '' };
+  if (!c) return out;
+  var m = c.match(/^(.*?)(\d{1,2}:\d{2})\s*(?:[~\-]\s*(\d{1,2}:\d{2}))?$/);
+  if (m) {
+    out.target = m[1].replace(/[·\s]+$/, '').trim();
+    out.start  = padTime(m[2]);
+    out.end    = m[3] ? padTime(m[3]) : '';
+  } else {
+    out.target = c;
+  }
+  return out;
+}
+
 /* 추가/수정 폼 */
 function openTrainingForm(idx) {
   var isEdit = idx !== null;
   editingTrainingId = isEdit ? adminTrainings[idx].id : null;
   document.getElementById('tfTitle').textContent = isEdit ? '연수 수정' : '새 연수 추가';
-  document.getElementById('tfName').value    = isEdit ? adminTrainings[idx].title   : '';
-  document.getElementById('tfContent').value = isEdit ? adminTrainings[idx].content : '';
+  document.getElementById('tfName').value = isEdit ? adminTrainings[idx].title : '';
+
+  var parsed = parseTrainingContent(isEdit ? adminTrainings[idx].content : '');
+  populateTfTargetOptions(parsed.target);
+  document.getElementById('tfTargetCustom').value = '';
+  document.getElementById('tfTimeStart').value = parsed.start;
+  document.getElementById('tfTimeEnd').value   = parsed.end;
+
   var dv = isEdit ? String(adminTrainings[idx].date || '') : todayStr();
   document.getElementById('tfDate').value = /^\d{4}-\d{2}-\d{2}$/.test(dv) ? dv : todayStr();
   document.getElementById('tfDeleteBtn').style.display = isEdit ? 'inline-block' : 'none';
@@ -1670,12 +1747,20 @@ function findAdminIdx(id) {
 }
 
 function submitTrainingForm() {
-  var title   = document.getElementById('tfName').value.trim();
-  var content = document.getElementById('tfContent').value.trim();
-  var date    = document.getElementById('tfDate').value;
+  var title = document.getElementById('tfName').value.trim();
+  var date  = document.getElementById('tfDate').value;
   document.getElementById('tfErr').classList.remove('show');
   if (!title) { showTfErr('연수명을 입력해 주세요.'); return; }
   if (!date)  { showTfErr('연수 날짜를 선택해 주세요.'); return; }
+
+  // 대상 + 시간 → 내용 문자열 조합
+  var target = getTfTarget();
+  var ts = document.getElementById('tfTimeStart').value;
+  var te = document.getElementById('tfTimeEnd').value;
+  if (te && !ts)          { showTfErr('시작 시간을 선택해 주세요.'); return; }
+  if (ts && te && te <= ts) { showTfErr('종료 시간이 시작 시간보다 빨라요.'); return; }
+  var content = target;
+  if (ts) content += (content ? ' · ' : '') + ts + (te ? ' ~ ' + te : '');
 
   var btn = document.getElementById('tfSubmitBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
@@ -1787,18 +1872,63 @@ function renderAdminStaff() {
   box.innerHTML = html;
 }
 
+/* 부서 드롭다운: 기관 설정의 부서목록 + 기존 구성원의 부서를 합쳐 구성 */
+function populateSfDeptOptions(selected) {
+  var sel = document.getElementById('sfDeptSel');
+  var depts = [];
+  String(document.getElementById('admDeptList').value || '').split(',').forEach(function(d) {
+    d = d.trim();
+    if (d && depts.indexOf(d) === -1) depts.push(d);
+  });
+  adminStaff.forEach(function(s) {
+    var d = String(s.dept || '').trim();
+    if (d && depts.indexOf(d) === -1) depts.push(d);
+  });
+  if (selected && depts.indexOf(selected) === -1) depts.push(selected);
+
+  sel.innerHTML = '';
+  depts.forEach(function(d) {
+    var o = document.createElement('option');
+    o.value = d; o.textContent = d;
+    sel.appendChild(o);
+  });
+  var custom = document.createElement('option');
+  custom.value = '__custom__'; custom.textContent = '＋ 새 부서 직접 입력';
+  sel.appendChild(custom);
+
+  if (selected && depts.indexOf(selected) > -1) sel.value = selected;
+  else if (depts.length) sel.value = depts[0];
+  else sel.value = '__custom__';
+  onSfDeptSelChange();
+}
+
+function onSfDeptSelChange() {
+  var isCustom = document.getElementById('sfDeptSel').value === '__custom__';
+  document.getElementById('sfDept').style.display = isCustom ? 'block' : 'none';
+}
+
+function getSfDept() {
+  var v = document.getElementById('sfDeptSel').value;
+  return v === '__custom__' ? document.getElementById('sfDept').value.trim() : v;
+}
+
 function openStaffForm(idx) {
   var isEdit = idx !== null;
   editingStaffId = isEdit ? adminStaff[idx].id : null;
   document.getElementById('sfTitle').textContent = isEdit ? '구성원 수정' : '구성원 추가';
-  document.getElementById('sfDept').value = isEdit ? adminStaff[idx].dept : '';
-  document.getElementById('sfName').value = isEdit ? adminStaff[idx].name : '';
+  populateSfDeptOptions(isEdit ? String(adminStaff[idx].dept || '').trim() : null);
+  document.getElementById('sfDept').value  = '';
+  document.getElementById('sfName').value  = isEdit ? adminStaff[idx].name : '';
+  document.getElementById('sfNames').value = '';
+  // 수정 모드: 한 명 입력칸 / 추가 모드: 여러 명 일괄 입력칸
+  document.getElementById('sfNameField').style.display  = isEdit ? 'block' : 'none';
+  document.getElementById('sfNamesField').style.display = isEdit ? 'none' : 'block';
   document.getElementById('sfDeleteBtn').style.display = isEdit ? 'inline-block' : 'none';
   document.getElementById('sfErr').classList.remove('show');
   var btn = document.getElementById('sfSubmitBtn');
   btn.disabled = false; btn.textContent = '저장하기';
   document.getElementById('modalStaffForm').classList.add('show');
-  if (!isEdit) setTimeout(function() { document.getElementById('sfDept').focus(); }, 100);
+  if (!isEdit) setTimeout(function() { document.getElementById('sfNames').focus(); }, 100);
 }
 
 function showSfErr(msg) {
@@ -1824,31 +1954,55 @@ function sfDone() {
 }
 
 function submitStaffForm() {
-  var dept = document.getElementById('sfDept').value.trim();
-  var name = document.getElementById('sfName').value.trim();
+  var dept = getSfDept();
   document.getElementById('sfErr').classList.remove('show');
-  if (!name) { showSfErr('성명을 입력해 주세요.'); return; }
-
   var btn = document.getElementById('sfSubmitBtn');
+
+  // ── 수정 모드: 한 명 ──
+  if (editingStaffId !== null) {
+    var name = document.getElementById('sfName').value.trim();
+    if (!name) { showSfErr('성명을 입력해 주세요.'); return; }
+    btn.disabled = true; btn.textContent = '저장 중...';
+
+    if (!API_URL) {
+      setTimeout(function() {
+        var i = findStaffIdx(editingStaffId);
+        if (i > -1) { adminStaff[i].dept = dept; adminStaff[i].name = name; }
+        sfDone();
+      }, 350);
+      return;
+    }
+
+    rpc('save_staff', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: editingStaffId, p_dept: dept, p_name: name })
+      .then(function(res) {
+        if (res.success) { adminStaff = res.staff || adminStaff; sfDone(); }
+        else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showSfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
+        else showSfErr(res.message || '저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
+      }).catch(function() { showSfErr('서버에 연결할 수 없어요. 네트워크 상태를 확인해 주세요.'); });
+    return;
+  }
+
+  // ── 추가 모드: 여러 명 일괄 등록 (줄바꿈·쉼표 구분, 엑셀 열 복붙 지원) ──
+  var names = document.getElementById('sfNames').value
+    .split(/[\n,]/)
+    .map(function(s) { return s.trim(); })
+    .filter(Boolean);
+  names = names.filter(function(n, i) { return names.indexOf(n) === i; });   // 입력 내 중복 제거
+  if (!names.length) { showSfErr('성명을 한 명 이상 입력해 주세요.'); return; }
+
   btn.disabled = true; btn.textContent = '저장 중...';
 
   if (!API_URL) {
     setTimeout(function() {
-      if (editingStaffId !== null) {
-        var i = findStaffIdx(editingStaffId);
-        if (i > -1) { adminStaff[i].dept = dept; adminStaff[i].name = name; }
-        sfDone();
-      } else {
-        var maxId = 0;
-        adminStaff.forEach(function(s) { if (s.id > maxId) maxId = s.id; });
-        adminStaff.push({ id: maxId + 1, dept: dept, name: name });
-        sfDone();
-      }
+      var maxId = 0;
+      adminStaff.forEach(function(s) { if (s.id > maxId) maxId = s.id; });
+      names.forEach(function(n) { adminStaff.push({ id: ++maxId, dept: dept, name: n }); });
+      sfDone();
     }, 350);
     return;
   }
 
-  rpc('save_staff', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: editingStaffId, p_dept: dept, p_name: name })
+  rpc('bulk_add_staff', { p_org_key: ORG_KEY, p_pin: adminPin, p_dept: dept, p_names: names })
     .then(function(res) {
       if (res.success) { adminStaff = res.staff || adminStaff; sfDone(); }
       else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showSfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }

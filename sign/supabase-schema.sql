@@ -385,6 +385,38 @@ begin
 end;
 $$;
 
+-- 구성원 일괄 등록 (같은 부서에 여러 명 — 엑셀 복붙 등)
+create or replace function bulk_add_staff(p_org_key text, p_pin text, p_dept text, p_names text[])
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_name text;
+  v_count int := 0;
+begin
+  begin
+    perform _check_admin_pin(p_org_key, p_pin);
+  exception when others then
+    return jsonb_build_object('success', false, 'needPin', true);
+  end;
+
+  foreach v_name in array coalesce(p_names, '{}') loop
+    if coalesce(trim(v_name), '') <> '' then
+      insert into staff (org_key, dept, name) values (p_org_key, coalesce(p_dept, ''), trim(v_name));
+      v_count := v_count + 1;
+    end if;
+  end loop;
+
+  if v_count = 0 then
+    return jsonb_build_object('success', false, 'message', '성명을 한 명 이상 입력해 주세요.');
+  end if;
+
+  return jsonb_build_object('success', true, 'addedCount', v_count, 'staff', _staff_json(p_org_key));
+end;
+$$;
+
 -- 기관 설정(기관명/부서목록/안내문/대표색상) 수정
 create or replace function update_org_settings(
   p_org_key text, p_pin text,
@@ -468,6 +500,7 @@ revoke execute on function
   delete_training(text, text, bigint),
   save_staff(text, text, bigint, text, text),
   delete_staff(text, text, bigint),
+  bulk_add_staff(text, text, text, text[]),
   update_org_settings(text, text, text, text, text, text),
   archive_old_signatures(text, date)
 from public, anon, authenticated;
@@ -483,6 +516,7 @@ grant execute on function
   delete_training(text, text, bigint),
   save_staff(text, text, bigint, text, text),
   delete_staff(text, text, bigint),
+  bulk_add_staff(text, text, text, text[]),
   update_org_settings(text, text, text, text, text, text)
 to anon, authenticated;
 
