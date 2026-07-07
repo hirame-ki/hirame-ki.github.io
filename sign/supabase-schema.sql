@@ -417,6 +417,31 @@ begin
 end;
 $$;
 
+-- 부서명 일괄 변경 (해당 부서 구성원 전원)
+create or replace function rename_dept(p_org_key text, p_pin text, p_old_dept text, p_new_dept text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  begin
+    perform _check_admin_pin(p_org_key, p_pin);
+  exception when others then
+    return jsonb_build_object('success', false, 'needPin', true);
+  end;
+
+  if coalesce(trim(p_new_dept), '') = '' then
+    return jsonb_build_object('success', false, 'message', '새 부서명을 입력해 주세요.');
+  end if;
+
+  update staff set dept = trim(p_new_dept)
+  where org_key = p_org_key and dept = coalesce(p_old_dept, '');
+
+  return jsonb_build_object('success', true, 'staff', _staff_json(p_org_key));
+end;
+$$;
+
 -- 기관 설정(기관명/부서목록/안내문/대표색상) 수정
 create or replace function update_org_settings(
   p_org_key text, p_pin text,
@@ -501,6 +526,7 @@ revoke execute on function
   save_staff(text, text, bigint, text, text),
   delete_staff(text, text, bigint),
   bulk_add_staff(text, text, text, text[]),
+  rename_dept(text, text, text, text),
   update_org_settings(text, text, text, text, text, text),
   archive_old_signatures(text, date)
 from public, anon, authenticated;
@@ -517,6 +543,7 @@ grant execute on function
   save_staff(text, text, bigint, text, text),
   delete_staff(text, text, bigint),
   bulk_add_staff(text, text, text, text[]),
+  rename_dept(text, text, text, text),
   update_org_settings(text, text, text, text, text, text)
 to anon, authenticated;
 

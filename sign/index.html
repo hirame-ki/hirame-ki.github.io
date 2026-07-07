@@ -649,6 +649,14 @@
     font-family: var(--font); font-size: 12.5px; font-weight: 700;
     margin-top: 10px; padding: 6px;
   }
+  .adm-dept-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin: 14px 2px 2px; padding-bottom: 4px;
+    font-size: 13px; font-weight: 800; color: var(--brand);
+    letter-spacing: -0.01em;
+  }
+  .adm-dept-head:first-child { margin-top: 0; }
+  .adm-dept-head small { font-size: 11px; font-weight: 600; color: var(--ink3); }
   .adm-tabs {
     display: flex; gap: 6px; margin-bottom: 16px;
     background: var(--brand-light); border-radius: 12px; padding: 4px;
@@ -1154,10 +1162,6 @@
         <input type="text" class="adm-input" id="admOrgName" maxlength="40" placeholder="예: ○○고등학교" autocomplete="off">
       </div>
       <div class="adm-field">
-        <label class="adm-label" for="admDeptList">부서 목록 <span class="opt">(쉼표로 구분, 구성원 미등록 시 폴백용)</span></label>
-        <input type="text" class="adm-input" id="admDeptList" placeholder="예: 교무기획부,교육과정부,행정실" autocomplete="off">
-      </div>
-      <div class="adm-field">
         <label class="adm-label" for="admNotice">안내문 <span class="opt">(선택)</span></label>
         <input type="text" class="adm-input" id="admNotice" maxlength="120" placeholder="예: 서명 후 설문에도 참여해 주세요" autocomplete="off">
       </div>
@@ -1509,7 +1513,6 @@ function showAdminModal() {
       });
     }
     document.getElementById('admOrgName').value    = orgName;
-    document.getElementById('admDeptList').value   = deptOrder.join(',');
     document.getElementById('admNotice').value     = document.getElementById('noticeText').textContent || '';
     document.getElementById('admBrandColor').value = '#1f4d3a';
     document.getElementById('admPanelDemoNote').style.display = 'block';
@@ -1596,7 +1599,6 @@ function fetchAdminData() {
       adminTrainings = res.trainings || [];
       adminStaff     = res.staff || [];
       document.getElementById('admOrgName').value    = res.orgName || '';
-      document.getElementById('admDeptList').value   = res.deptList || '';
       document.getElementById('admNotice').value     = res.notice || '';
       document.getElementById('admBrandColor').value = /^#[0-9a-fA-F]{6}$/.test(res.brandColor) ? res.brandColor : '#1f4d3a';
       document.getElementById('modalAdminPin').classList.remove('show');
@@ -1849,37 +1851,81 @@ function deleteTraining() {
     }).catch(function() { showTfErr('서버에 연결할 수 없어요.'); });
 }
 
-/* ── 구성원 관리 (연수 관리와 동일한 패턴) ── */
+/* ── 구성원 관리 (부서별 그룹 나열 — 먼저 등록한 부서가 위) ── */
+var admDeptGroups = [];   // 부서명 수정 버튼 → 인덱스로 원래 부서명 참조
+
 function renderAdminStaff() {
   var box = document.getElementById('admStaffList');
   if (!adminStaff.length) {
     box.innerHTML = '<div class="adm-empty">등록된 구성원이 없어요.<br>위 버튼으로 첫 구성원을 추가해 보세요.</div>';
     return;
   }
-  var html = '';
+
+  // 부서별 그룹핑 — adminStaff는 등록순(id순)이므로 먼저 등록된 부서가 위로
+  var groups = {};
+  admDeptGroups = [];
   adminStaff.forEach(function(s, i) {
+    var d = String(s.dept || '').trim();
+    if (!(d in groups)) { groups[d] = []; admDeptGroups.push(d); }
+    groups[d].push(i);
+  });
+
+  var html = '';
+  admDeptGroups.forEach(function(d, gi) {
     html +=
-      '<div class="adm-item">' +
-        '<div class="adm-item-main">' +
-          '<div class="adm-item-title">' + esc(s.name) + '</div>' +
-          '<div class="adm-item-meta">' + esc(s.dept || '(부서 미지정)') + '</div>' +
-        '</div>' +
-        '<div class="adm-item-side">' +
-          '<button class="adm-edit-btn" onclick="openStaffForm(' + i + ')">수정</button>' +
-        '</div>' +
+      '<div class="adm-dept-head">' +
+        '<span>' + (d ? esc(d) : '(부서 미지정)') +
+          '<small> ' + groups[d].length + '명</small></span>' +
+        '<button class="adm-edit-btn" onclick="renameDept(' + gi + ')">부서명 수정</button>' +
       '</div>';
+    groups[d].forEach(function(i) {
+      html +=
+        '<div class="adm-item">' +
+          '<div class="adm-item-main">' +
+            '<div class="adm-item-title">' + esc(adminStaff[i].name) + '</div>' +
+          '</div>' +
+          '<div class="adm-item-side">' +
+            '<button class="adm-edit-btn" onclick="openStaffForm(' + i + ')">수정</button>' +
+          '</div>' +
+        '</div>';
+    });
   });
   box.innerHTML = html;
 }
 
-/* 부서 드롭다운: 기관 설정의 부서목록 + 기존 구성원의 부서를 합쳐 구성 */
+/* 부서명 일괄 변경 (해당 부서 구성원 전원의 부서를 한 번에 변경) */
+function renameDept(gi) {
+  var oldDept = admDeptGroups[gi];
+  var label   = oldDept || '(부서 미지정)';
+  var newDept = window.prompt('[' + label + '] 부서의 새 이름을 입력해 주세요.', oldDept);
+  if (newDept === null) return;
+  newDept = newDept.trim();
+  if (!newDept || newDept === oldDept) return;
+
+  if (!API_URL) {
+    adminStaff.forEach(function(s) {
+      if (String(s.dept || '').trim() === oldDept) s.dept = newDept;
+    });
+    renderAdminStaff();
+    return;
+  }
+
+  rpc('rename_dept', { p_org_key: ORG_KEY, p_pin: adminPin, p_old_dept: oldDept, p_new_dept: newDept })
+    .then(function(res) {
+      if (res.success) { adminStaff = res.staff || adminStaff; renderAdminStaff(); }
+      else if (res.needPin) {
+        sessionStorage.removeItem(ADMIN_PIN_KEY);
+        alert('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.');
+      } else {
+        alert(res.message || '부서명을 변경하지 못했어요.');
+      }
+    }).catch(function() { alert('서버에 연결할 수 없어요.'); });
+}
+
+/* 부서 드롭다운: 기존 구성원들의 부서에서 구성 (등록 순서 유지) */
 function populateSfDeptOptions(selected) {
   var sel = document.getElementById('sfDeptSel');
   var depts = [];
-  String(document.getElementById('admDeptList').value || '').split(',').forEach(function(d) {
-    d = d.trim();
-    if (d && depts.indexOf(d) === -1) depts.push(d);
-  });
   adminStaff.forEach(function(s) {
     var d = String(s.dept || '').trim();
     if (d && depts.indexOf(d) === -1) depts.push(d);
@@ -2039,7 +2085,6 @@ function deleteStaffMember() {
 /* ── 기관 설정 (기관명/부서목록/안내문/대표색상) ── */
 function submitOrgSettings() {
   var name   = document.getElementById('admOrgName').value.trim();
-  var depts  = document.getElementById('admDeptList').value.trim();
   var notice = document.getElementById('admNotice').value.trim();
   var color  = document.getElementById('admBrandColor').value;
   document.getElementById('admSettingsErr').classList.remove('show');
@@ -2050,7 +2095,6 @@ function submitOrgSettings() {
   if (!API_URL) {
     setTimeout(function() {
       orgName = name;
-      deptOrder = depts.split(',').map(function(d) { return d.trim(); }).filter(Boolean);
       document.getElementById('headerOrg').textContent = orgName || '연수 전자서명';
       applyBrandColor(color);
       btn.disabled = false; btn.textContent = '✓ 저장되었습니다';
@@ -2061,7 +2105,7 @@ function submitOrgSettings() {
 
   rpc('update_org_settings', {
     p_org_key: ORG_KEY, p_pin: adminPin,
-    p_org_name: name, p_dept_list: depts, p_notice: notice, p_brand_color: color
+    p_org_name: name, p_dept_list: null, p_notice: notice, p_brand_color: color
   }).then(function(res) {
     if (res.success) {
       btn.textContent = '✓ 저장되었습니다';
