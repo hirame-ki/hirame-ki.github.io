@@ -107,8 +107,23 @@ function uploadSignatureImage(payload) {
     return { success: true, fileId: fileId, imageUrl: imgUrl };
   } catch (err) {
     Logger.log('uploadSignatureImage error: ' + err);
-    return { success: false, message: err.message };
+    return { success: false, message: _friendlyDriveError(err) };
   }
+}
+
+/**
+ * 구글 API의 원본 예외 메시지는 계정 언어·시점에 따라 문구가 달라질 수 있고,
+ * 그대로 노출하면 서명자에게 뜻 모를 기술 오류로 보인다. 저장용량 초과로
+ * 의심되는 키워드가 보이면 명확한 한국어 안내로 바꿔서 반환한다.
+ */
+function _friendlyDriveError(err) {
+  const raw = String((err && err.message) || err || '');
+  const quotaLike = /quota|storage|용량|space/i.test(raw);
+  if (quotaLike) {
+    return '이 기관의 구글 드라이브 저장 공간이 가득 찼습니다.\n' +
+      '드라이브 관리자에게 여유 공간 확보를 요청한 뒤 다시 시도해 주세요.';
+  }
+  return raw || '이미지 저장 중 오류가 발생했습니다.';
 }
 
 // ============================================================
