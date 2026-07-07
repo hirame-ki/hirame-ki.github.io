@@ -1234,6 +1234,21 @@
       </div>
       <div class="adm-err" id="admSettingsErr"></div>
       <button class="modal-btn" id="admSettingsBtn" onclick="submitOrgSettings()">저장하기</button>
+
+      <div style="border-top:1px solid var(--hair);margin:22px 0 16px;"></div>
+
+      <div class="adm-label" style="margin-bottom:10px;">관리자 비밀번호 변경</div>
+      <div class="adm-field">
+        <input type="password" class="adm-input" id="admCurPin" placeholder="현재 비밀번호" autocomplete="off">
+      </div>
+      <div class="adm-field">
+        <input type="password" class="adm-input" id="admNewPin" placeholder="새 비밀번호 (4자 이상)" autocomplete="off">
+      </div>
+      <div class="adm-field">
+        <input type="password" class="adm-input" id="admNewPin2" placeholder="새 비밀번호 확인" autocomplete="off">
+      </div>
+      <div class="adm-err" id="admPinErr"></div>
+      <button class="modal-btn ghost" id="admPinChangeBtn" onclick="submitChangeAdminPin()">비밀번호 변경</button>
     </div>
   </div>
 </div>
@@ -1542,12 +1557,28 @@ function resetConnection() {
   location.href = location.pathname;
 }
 
-function confirmResetConnection() {
+function askResetConfirm() {
   var ok = window.confirm(
     '현재 연결을 해제하고 배포 URL 입력 화면으로 돌아갈까요?\n\n' +
     '(기존 배포 URL을 다시 입력하면 언제든 재연결할 수 있습니다)'
   );
   if (ok) resetConnection();
+}
+
+function confirmResetConnection() {
+  // 데모 모드이거나 아직 관리자 비밀번호를 만들기 전(printPinSet=false)이면
+  // PIN 검증 자체가 불가능하므로 기존처럼 확인창만 거친다.
+  if (!API_URL || !printPinSet) { askResetConfirm(); return; }
+
+  var pin = window.prompt('연결을 변경하려면 관리자 비밀번호를 입력해 주세요.');
+  if (pin === null) return;   // 취소
+
+  rpc('get_admin_data', { p_org_key: ORG_KEY, p_pin: pin })
+    .then(function(res) {
+      if (!res.success) { alert('비밀번호가 일치하지 않아요.'); return; }
+      askResetConfirm();
+    })
+    .catch(function() { alert('서버에 연결할 수 없어요.'); });
 }
 
 /* ══════════════════════════════════════════════
@@ -1597,6 +1628,9 @@ function showAdminModal() {
     document.getElementById('admOrgName').value    = orgName;
     document.getElementById('admNotice').value     = document.getElementById('noticeText').textContent || '';
     document.getElementById('admBrandColor').value = '#1f4d3a';
+    document.getElementById('admCurPin').value  = '';
+    document.getElementById('admNewPin').value  = '';
+    document.getElementById('admNewPin2').value = '';
     document.getElementById('admPanelDemoNote').style.display = 'block';
     switchAdminTab('trainings');
     openAdminPanel();
@@ -1684,6 +1718,9 @@ function fetchAdminData() {
       document.getElementById('admOrgName').value    = res.orgName || '';
       document.getElementById('admNotice').value     = res.notice || '';
       document.getElementById('admBrandColor').value = /^#[0-9a-fA-F]{6}$/.test(res.brandColor) ? res.brandColor : '#1f4d3a';
+      document.getElementById('admCurPin').value  = '';
+      document.getElementById('admNewPin').value  = '';
+      document.getElementById('admNewPin2').value = '';
       document.getElementById('modalAdminPin').classList.remove('show');
       switchAdminTab('trainings');
       openAdminPanel();
@@ -2313,6 +2350,59 @@ function showAdmSettingsErr(msg) {
   err.textContent = msg; err.classList.add('show');
   var btn = document.getElementById('admSettingsBtn');
   btn.disabled = false; btn.textContent = '저장하기';
+}
+
+/* ── 관리자 비밀번호 변경 ── */
+function showAdmPinErr(msg) {
+  var err = document.getElementById('admPinErr');
+  err.textContent = msg; err.classList.add('show');
+  var btn = document.getElementById('admPinChangeBtn');
+  btn.disabled = false; btn.textContent = '비밀번호 변경';
+}
+
+function submitChangeAdminPin() {
+  var curPin  = document.getElementById('admCurPin').value.trim();
+  var newPin  = document.getElementById('admNewPin').value.trim();
+  var newPin2 = document.getElementById('admNewPin2').value.trim();
+  document.getElementById('admPinErr').classList.remove('show');
+
+  if (!curPin)              { showAdmPinErr('현재 비밀번호를 입력해 주세요.'); return; }
+  if (newPin.length < 4)    { showAdmPinErr('새 비밀번호는 4자 이상이어야 해요.'); return; }
+  if (newPin !== newPin2)   { showAdmPinErr('새 비밀번호 확인이 서로 달라요.'); return; }
+
+  var btn = document.getElementById('admPinChangeBtn');
+  btn.disabled = true; btn.textContent = '변경 중...';
+
+  function clearFields() {
+    document.getElementById('admCurPin').value  = '';
+    document.getElementById('admNewPin').value  = '';
+    document.getElementById('admNewPin2').value = '';
+  }
+
+  if (!API_URL) {
+    setTimeout(function() {
+      clearFields();
+      btn.textContent = '✓ 변경되었습니다 (데모)';
+      setTimeout(function() { btn.disabled = false; btn.textContent = '비밀번호 변경'; }, 1200);
+    }, 350);
+    return;
+  }
+
+  rpc('change_admin_pin', { p_org_key: ORG_KEY, p_pin: curPin, p_new_pin: newPin })
+    .then(function(res) {
+      if (res.success) {
+        adminPin = newPin;
+        sessionStorage.setItem(ADMIN_PIN_KEY, newPin);
+        clearFields();
+        btn.textContent = '✓ 변경되었습니다';
+        setTimeout(function() { btn.disabled = false; btn.textContent = '비밀번호 변경'; }, 1200);
+      } else if (res.needPin) {
+        showAdmPinErr('현재 비밀번호가 일치하지 않아요.');
+      } else {
+        showAdmPinErr(res.message || '변경하지 못했어요.');
+      }
+    })
+    .catch(function() { showAdmPinErr('서버에 연결할 수 없어요.'); });
 }
 
 /* 데모: 관리 결과를 서명 화면 목록에 반영 */

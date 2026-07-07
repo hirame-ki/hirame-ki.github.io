@@ -230,6 +230,29 @@ begin
 end;
 $$;
 
+-- 관리자 비밀번호 변경 (기존 비밀번호 확인 후 교체 — 기관 설정 탭에서 사용)
+create or replace function change_admin_pin(p_org_key text, p_pin text, p_new_pin text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  begin
+    perform _check_admin_pin(p_org_key, p_pin);
+  exception when others then
+    return jsonb_build_object('success', false, 'needPin', true);
+  end;
+
+  if length(coalesce(p_new_pin, '')) < 4 then
+    return jsonb_build_object('success', false, 'message', '새 비밀번호는 4자 이상이어야 합니다.');
+  end if;
+
+  update institutions set admin_pin = p_new_pin where org_key = p_org_key;
+  return jsonb_build_object('success', true);
+end;
+$$;
+
 -- 내부 헬퍼: PIN 검증 (틀리면 예외)
 create or replace function _check_admin_pin(p_org_key text, p_pin text)
 returns void
@@ -537,6 +560,7 @@ revoke execute on function
   submit_signature(text, date, time, text, text, text, text, text),
   get_signature_records(text, text, date, text),
   set_admin_pin(text, text),
+  change_admin_pin(text, text, text),
   _check_admin_pin(text, text),
   _trainings_json(text),
   _staff_json(text),
@@ -558,6 +582,7 @@ grant execute on function
   submit_signature(text, date, time, text, text, text, text, text),
   get_signature_records(text, text, date, text),
   set_admin_pin(text, text),
+  change_admin_pin(text, text, text),
   get_admin_data(text, text),
   save_training(text, text, bigint, text, text, text, boolean),
   delete_training(text, text, bigint),
