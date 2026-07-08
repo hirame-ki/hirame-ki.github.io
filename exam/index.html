@@ -458,7 +458,22 @@
         <div class="form-group" style="flex:1"><label>과목명</label><input type="text" id="subjectName" placeholder="예: 경제" /></div>
         <div class="form-group" style="flex:1"><label>별실 호실</label><input type="text" id="roomName" placeholder="예: 3-1교실" /></div>
       </div>
-      <div class="form-group" style="margin-bottom:10px"><label style="color:var(--primary);font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17.5V20h2.5L18.4 8.1a1.7 1.7 0 0 0 0-2.4l-.1-.1a1.7 1.7 0 0 0-2.4 0L4 17.5z"></path><line x1="14.5" y1="5" x2="17.5" y2="8"></line></svg>응시 학생 선택 (클릭으로 선택, 번호순 배치)</label></div>
+      <div class="form-group" style="background:var(--surface2);border-radius:var(--radius);padding:12px;margin-bottom:14px">
+        <label style="font-size:12px;color:var(--text3);display:inline-flex;align-items:center;gap:5px;margin-bottom:8px"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><polyline points="7 10 12 15 17 10"></polyline><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>엑셀로 응시자 일괄 등록 (선택한 학년 기준, 반/번호/이름으로 매칭)</label>
+        <div style="margin-bottom:8px">
+          <button type="button" class="btn btn-outline btn-sm" onclick="downloadSeatExamineeTemplate()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"></path><polyline points="15 2 15 7 20 7"></polyline><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="16" x2="14" y2="16"></line></svg>양식 다운로드</button>
+        </div>
+        <div class="dropzone" id="seatExcelDropzone"
+          onclick="document.getElementById('seatExcelUploadInput').click()"
+          ondragover="event.preventDefault();this.classList.add('dragover')"
+          ondragleave="this.classList.remove('dragover')"
+          ondrop="handleSeatExamineeDrop(event)">
+          <div style="font-size:13px;color:var(--text2);display:flex;align-items:center;justify-content:center;gap:6px"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11.5 11 19.5a4.5 4.5 0 0 1-6.4-6.4l8.6-8.6a3 3 0 0 1 4.3 4.3L9 17.3a1.5 1.5 0 0 1-2.1-2.1l7.1-7.1"></path></svg>엑셀 파일을 여기로 끌어다 놓거나 클릭해서 선택하세요</div>
+          <input type="file" id="seatExcelUploadInput" accept=".xlsx,.xls" onchange="handleSeatExamineeUpload(event)" style="display:none" />
+        </div>
+        <div id="seatExcelUploadStatus" style="margin-top:8px;font-size:13px"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px"><label style="color:var(--primary);font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17.5V20h2.5L18.4 8.1a1.7 1.7 0 0 0 0-2.4l-.1-.1a1.7 1.7 0 0 0-2.4 0L4 17.5z"></path><line x1="14.5" y1="5" x2="17.5" y2="8"></line></svg>응시 학생 선택 (클릭으로 선택/해제 — 위 엑셀 업로드로 자동 선택 후에도 조정 가능, 번호순 배치)</label></div>
       <div class="seat-grade-groups" id="seatStudentGrid"></div>
       <div class="form-row" style="margin-top:14px;margin-bottom:0">
         <button class="btn btn-primary" onclick="generateSeatChart()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>배치표 생성</button>
@@ -1576,6 +1591,119 @@ function loadSeatGradeGrid(){
 function toggleExaminee(id,el){
   if(selectedExamineeIds.has(id)){selectedExamineeIds.delete(id);el.classList.remove('selected');}
   else{selectedExamineeIds.add(id);el.classList.add('selected');}
+}
+async function downloadSeatExamineeTemplate(){
+  const wb=new ExcelJS.Workbook();
+  const ws=wb.addWorksheet('응시자명단');
+  ws.columns=[{key:'class_num',width:10},{key:'number',width:10},{key:'name',width:16}];
+
+  ws.mergeCells('A1:C1');
+  const noteCell=ws.getCell('A1');
+  noteCell.value='반 / 번호 / 이름 칸에 이 과목 응시자만 입력하세요. (학년은 화면에서 선택한 학년이 자동 적용됩니다. 제목 글자는 그대로 두세요)';
+  noteCell.font={italic:true,size:10,color:{argb:'FF8A6D3B'}};
+  noteCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF6E8'}};
+  noteCell.alignment={vertical:'middle',wrapText:true};
+  ws.getRow(1).height=34;
+
+  const headerRow=ws.getRow(2);
+  headerRow.values=['반','번호','이름'];
+  headerRow.height=24;
+  headerRow.eachCell(cell=>{
+    cell.font={bold:true,color:{argb:'FFFFFFFF'},size:12};
+    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2D6BE4'}};
+    cell.alignment={horizontal:'center',vertical:'middle'};
+    cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+  });
+  const sample=[
+    {class_num:1,number:3,name:'홍길동'},
+    {class_num:1,number:11,name:'김철수'},
+    {class_num:2,number:5,name:'이영희'}
+  ];
+  sample.forEach((s,i)=>{
+    const row=ws.addRow(s);
+    row.eachCell(cell=>{
+      cell.alignment={horizontal:'center',vertical:'middle'};
+      cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+      cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?'FFEEF2FD':'FFFFFFFF'}};
+    });
+  });
+  ws.views=[{state:'frozen',ySplit:2}];
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='별실_응시자명단_양식.xlsx';document.body.appendChild(a);a.click();a.remove();
+  URL.revokeObjectURL(url);
+}
+function handleSeatExamineeUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  processSeatExamineeExcel(file);
+  e.target.value='';
+}
+function handleSeatExamineeDrop(e){
+  e.preventDefault();
+  e.currentTarget.classList.remove('dragover');
+  const file=e.dataTransfer.files[0];
+  if(file)processSeatExamineeExcel(file);
+}
+async function processSeatExamineeExcel(file){
+  const statusEl=document.getElementById('seatExcelUploadStatus');
+  const grade=parseInt(document.getElementById('sepGrade').value);
+  if(!grade){statusEl.innerHTML='<span class="badge badge-danger">먼저 학년을 선택하세요</span>';return;}
+  if(!/\.(xlsx|xls)$/i.test(file.name)){statusEl.innerHTML='<span class="badge badge-danger">엑셀 파일(.xlsx, .xls)만 업로드할 수 있습니다</span>';return;}
+  statusEl.textContent='읽는 중...';
+  try{
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+
+    let aoa=null,colIdx={},headerRowIdx=-1;
+    for(const sheetName of wb.SheetNames){
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:''});
+      for(let r=0;r<Math.min(rows.length,10);r++){
+        const idx={};
+        (rows[r]||[]).forEach((v,ci)=>{const s=String(v).trim();if(s)idx[s]=ci;});
+        if(['반','번호','이름'].every(k=>k in idx)){aoa=rows;colIdx=idx;headerRowIdx=r;break;}
+      }
+      if(aoa)break;
+    }
+    if(!aoa){statusEl.innerHTML='<span class="badge badge-danger">형식 오류: 반/번호/이름 열을 확인하세요</span>';return;}
+
+    const gStudents=gradeStudents(grade);
+    const byKey={};gStudents.forEach(s=>{byKey[s.class_num+'-'+s.number]=s;});
+
+    const matched=new Set(),notFound=[],nameMismatch=[];
+    for(let r=headerRowIdx+1;r<aoa.length;r++){
+      const row=aoa[r]||[];
+      const class_num=parseInt(row[colIdx['반']]);
+      const number=parseInt(row[colIdx['번호']]);
+      const name=String(row[colIdx['이름']]||'').trim();
+      if(!class_num||!number||!name)continue;
+      if('학년' in colIdx){
+        const g=parseInt(row[colIdx['학년']]);
+        if(g&&g!==grade){notFound.push(`${g}학년 ${class_num}반 ${number}번 ${name} (선택된 학년과 다름)`);continue;}
+      }
+      const s=byKey[class_num+'-'+number];
+      if(!s){notFound.push(`${class_num}반 ${number}번 ${name} (등록된 학생 없음)`);continue;}
+      if(s.name!==name)nameMismatch.push(`${class_num}반 ${number}번: 명단 "${name}" ↔ 등록 "${s.name}"`);
+      matched.add(s.id);
+    }
+    if(!matched.size){statusEl.innerHTML='<span class="badge badge-danger">일치하는 학생을 찾지 못했습니다</span>';return;}
+
+    document.querySelectorAll('#seatStudentGrid .student-item.selected').forEach(el=>el.classList.remove('selected'));
+    selectedExamineeIds=matched;
+    selectedExamineeIds.forEach(id=>{
+      const el=document.getElementById('seat-si-'+id);
+      if(el)el.classList.add('selected');
+    });
+
+    let msg=`<span class="badge badge-success">${icon('checkCircle',12)}${matched.size}명 선택됨</span>`;
+    if(notFound.length)msg+=`<div style="margin-top:6px;color:var(--danger)">매칭 실패 ${notFound.length}건: ${notFound.slice(0,5).join(', ')}${notFound.length>5?' 외 '+(notFound.length-5)+'건':''}</div>`;
+    if(nameMismatch.length)msg+=`<div style="margin-top:4px;color:var(--warning)">이름 불일치 ${nameMismatch.length}건(반/번호 기준으로는 선택됨): ${nameMismatch.slice(0,5).join(', ')}${nameMismatch.length>5?' 외 '+(nameMismatch.length-5)+'건':''}</div>`;
+    statusEl.innerHTML=msg;
+    showToast(`엑셀로 ${matched.size}명 선택 완료`);
+  }catch(err){
+    console.error(err);
+    statusEl.innerHTML='<span class="badge badge-danger">업로드 실패: '+err.message+'</span>';
+  }
 }
 function loadOwnStudentGrid(){
   const classId=parseInt(document.getElementById('ownClass').value);

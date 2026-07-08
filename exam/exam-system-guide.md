@@ -21,10 +21,10 @@ exam-system/
 - [x] 학급/학생 등록 완료 (엑셀 일괄 업로드, 1~3학년 각 2개 반)
 - [x] 결시 입력 실사용 테스트 (사유 입력, 저장 상태 전환 등 확인)
 - [x] Supabase SQL Editor에서 `exam_dates` 테이블 생성 SQL 실행 완료
+- [x] Supabase SQL Editor에서 `seat_charts` 테이블 생성 SQL 실행 완료 (자리배치표 저장/불러오기 정상 작동 확인)
+- [x] Supabase SQL Editor에서 `input_completions` 테이블 생성 SQL 실행 완료 (결시 입력 "저장하기" → 응시현황표 출력 전환 및 고사본부 실시간 반영 확인)
 
 ### 확인 필요 (운영 작업, 코드 아님)
-- [ ] Supabase SQL Editor에서 `seat_charts` 테이블 생성 SQL 실행 필요 (자리배치표 저장/불러오기 기능 — 실행 전까지는 저장 시 오류 발생). 이미 구버전(별실 전용)으로 만들었다면 `class_id` 컬럼 추가 ALTER 문도 함께 실행
-- [ ] Supabase SQL Editor에서 `input_completions` 테이블 생성 SQL 실행 필요 (결시 입력 미제출 학급 현황판 — 실행 전까지는 "저장하기" 클릭 시 오류 발생)
 - [ ] 동료 교사에게 URL + 학교코드 공유 완료 여부 확인
 - [ ] 실제 고사 기간에 전체 교사 대상 실사용 테스트
 
