@@ -609,6 +609,24 @@
   }
   .pin-input:focus { border-color: var(--brand); }
 
+  /* ── 인쇄 형식 선택 ──────────────────────────────── */
+  .pf-field { text-align: left; margin-bottom: 14px; }
+  .pf-label {
+    display: block; font-size: 12px; font-weight: 700;
+    color: var(--ink2); margin-bottom: 6px; letter-spacing: -0.01em;
+  }
+  .pf-select {
+    width: 100%; padding: 12px 34px 12px 14px;
+    border: 1.5px solid var(--hair); border-radius: 12px;
+    font-family: var(--font); font-size: 14px; font-weight: 600;
+    color: var(--ink); background: #FCFDFC; outline: none;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7' fill='none'%3E%3Cpath d='M1 1L5.5 5.5L10 1' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+    transition: border-color .15s;
+  }
+  .pf-select:focus { border-color: var(--brand); }
+
   /* ── 관리자 UI (연수 관리) ─────────────────────── */
   .adm-field { text-align: left; margin-bottom: 12px; }
   .adm-label {
@@ -1381,6 +1399,39 @@
   </div>
 </div>
 
+<!-- 인쇄 형식 선택 -->
+<div class="modal-overlay" id="modalPrintFormat">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-print"/></svg></div>
+    <div class="modal-title">인쇄 형식 선택</div>
+    <div class="modal-msg">서명등록부를 어떤 형식으로 출력할지 선택해 주세요.</div>
+    <div class="pf-field">
+      <label class="pf-label">표 열 수</label>
+      <select class="pf-select" id="pfCols">
+        <option value="1">1열</option>
+        <option value="2" selected>2열 (기본)</option>
+        <option value="3">3열</option>
+      </select>
+    </div>
+    <div class="pf-field">
+      <label class="pf-label">정렬 방식</label>
+      <select class="pf-select" id="pfGroup">
+        <option value="dept" selected>부서별로 모아서 (기본)</option>
+        <option value="name">이름 가나다순</option>
+      </select>
+    </div>
+    <div class="pf-field">
+      <label class="pf-label">서명율 표시</label>
+      <select class="pf-select" id="pfRate">
+        <option value="yes" selected>포함 (기본)</option>
+        <option value="no">미포함</option>
+      </select>
+    </div>
+    <button class="modal-btn" onclick="submitPrintFormat()" style="margin-top:6px">출력 미리보기</button>
+    <button class="modal-btn ghost" onclick="cancelPrintFormat()">취소</button>
+  </div>
+</div>
+
 <!-- ── 서명등록부 미리보기 / 인쇄 ── -->
 <div class="print-overlay" id="printOverlay">
   <div class="print-toolbar">
@@ -1441,6 +1492,8 @@ var staffByDept      = {};
 var deptOrder        = [];
 var printPinSet      = false;   // 관리자 비밀번호(=출력 비밀번호)가 설정되어 있는지
 var pendingPrintTraining = null;
+var pendingPrintRes = null;
+var PRINT_FORMAT_KEY = 'esign_print_format';
 var BRAND_INK        = '#1F4D3A';  // 서명 잉크 색 (대표 색상 적용 시 어둡게 보정)
 
 /* ═══════════════════════════════════════════
@@ -3105,7 +3158,8 @@ function openPrintView(training) {
   // 데모 모드: 기록 없이 명단만 출력
   if (!API_URL) {
     showPrintLoading();
-    buildPrintDoc(training, { records: [], date: todayStr() });
+    pendingPrintRes = { records: [], date: todayStr() };
+    showPrintFormatModal();
     return;
   }
 
@@ -3143,7 +3197,8 @@ function fetchRecordsAndBuild(training, pin) {
         return;
       }
       if (!res || res.success === false) throw new Error((res && res.message) || 'error');
-      buildPrintDoc(training, res);
+      pendingPrintRes = res;
+      showPrintFormatModal();
     })
     .catch(function() {
       document.getElementById('printDoc').innerHTML =
@@ -3190,12 +3245,56 @@ document.getElementById('pinInput').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') submitPin();
 });
 
+/* ── 인쇄 형식 선택 모달 ── */
+function getSavedPrintFormat() {
+  try {
+    var saved = JSON.parse(localStorage.getItem(PRINT_FORMAT_KEY) || 'null');
+    if (saved && saved.cols && saved.group && saved.rate) return saved;
+  } catch (e) {}
+  return { cols: '2', group: 'dept', rate: 'yes' };
+}
+
+function showPrintFormatModal() {
+  var f = getSavedPrintFormat();
+  document.getElementById('pfCols').value = f.cols;
+  document.getElementById('pfGroup').value = f.group;
+  document.getElementById('pfRate').value = f.rate;
+  document.getElementById('modalPrintFormat').classList.add('show');
+}
+
+function cancelPrintFormat() {
+  document.getElementById('modalPrintFormat').classList.remove('show');
+  pendingPrintRes = null;
+  closePrintView();
+}
+
+function submitPrintFormat() {
+  var opts = {
+    cols: parseInt(document.getElementById('pfCols').value, 10) || 2,
+    group: document.getElementById('pfGroup').value === 'name' ? 'name' : 'dept',
+    showRate: document.getElementById('pfRate').value !== 'no'
+  };
+  try {
+    localStorage.setItem(PRINT_FORMAT_KEY, JSON.stringify({
+      cols: String(opts.cols), group: opts.group, rate: opts.showRate ? 'yes' : 'no'
+    }));
+  } catch (e) {}
+  document.getElementById('modalPrintFormat').classList.remove('show');
+  if (pendingPrintTraining && pendingPrintRes) {
+    buildPrintDoc(pendingPrintTraining, pendingPrintRes, opts);
+  }
+}
+
 function closePrintView() {
   document.getElementById('printOverlay').classList.remove('show');
   document.body.classList.remove('print-mode');
 }
 
-function buildPrintDoc(training, res) {
+function buildPrintDoc(training, res, opts) {
+  opts = opts || { cols: 2, group: 'dept', showRate: true };
+  var cols = (opts.cols === 1 || opts.cols === 3) ? opts.cols : 2;
+  var groupByDept = opts.group !== 'name';
+  var showRate = opts.showRate !== false;
   var records = res.records || [];
   var dateStr = res.date || todayStr();
 
@@ -3226,17 +3325,27 @@ function buildPrintDoc(training, res) {
     }
   });
 
+  // 정렬 방식이 '이름 가나다순'이면 부서 그룹을 풀고 이름 기준으로 재정렬
+  if (!groupByDept) {
+    entries.sort(function(a, b) { return a.name.localeCompare(b.name, 'ko'); });
+  }
+
   var pct = total > 0 ? Math.round(signed / total * 100) : 0;
 
-  // ── 2인 1행 · 페이지 세로 순번 배치 ──────────────────
-  // 각 페이지: 왼쪽 블록 위→아래 순번, 이어서 오른쪽 블록 위→아래 순번
+  // ── N열 1행 · 페이지 세로 순번 배치 (열 수는 opts.cols) ──
+  // 각 페이지: 첫 블록부터 순서대로 위→아래 채우고, 다음 블록으로 이어짐
   var ROWS_FIRST = 12;   // 첫 페이지 (제목 영역 포함)
   var ROWS_NEXT  = 15;   // 이후 페이지
 
   // 같은 부서가 연속될 때 부서 셀을 세로 병합(rowspan)하기 위한 스팬 계산
   // 반환값: 그룹 시작 행 → 병합할 행 수(양수), 병합에 흡수된 행 → -1, 빈 행 → 0
+  // 부서별 정렬이 아닐 때는 병합하지 않음(우연히 이웃한 동일 부서까지 묶이는 것을 방지)
   function computeDeptSpans(list) {
     var spans = new Array(list.length).fill(0);
+    if (!groupByDept) {
+      for (var n = 0; n < list.length; n++) spans[n] = list[n] ? 1 : 0;
+      return spans;
+    }
     var i = 0;
     while (i < list.length) {
       if (!list[i]) { i++; continue; }
@@ -3275,44 +3384,58 @@ function buildPrintDoc(training, res) {
       '<td class="pd-sig">' + sigCell + '</td>';
   }
 
+  // 열별 컬럼 비율(번호:부서:성명:서명 = 6:13:9:22, 합계 50)을 열 수에 맞게 재분배
+  var BLOCK_RATIO = [6, 13, 9, 22];
+  var BLOCK_RATIO_SUM = 50;
+  var blockWidthPct = 100 / cols;
+  var colsHtml = '', theadCells = '';
+  for (var b = 0; b < cols; b++) {
+    BLOCK_RATIO.forEach(function(r) {
+      colsHtml += '<col style="width:' + (r / BLOCK_RATIO_SUM * blockWidthPct).toFixed(2) + '%">';
+    });
+    var divCls = b > 0 ? ' class="pd-div"' : '';
+    theadCells += '<th' + divCls + '>번호</th><th>부서</th><th>성명</th><th>서명</th>';
+  }
   var theadHtml =
-    '<colgroup>' +
-      '<col style="width:6%"><col style="width:13%"><col style="width:9%"><col style="width:22%">' +
-      '<col style="width:6%"><col style="width:13%"><col style="width:9%"><col style="width:22%">' +
-    '</colgroup>' +
-    '<thead><tr>' +
-      '<th>번호</th><th>부서</th><th>성명</th><th>서명</th>' +
-      '<th class="pd-div">번호</th><th>부서</th><th>성명</th><th>서명</th>' +
-    '</tr></thead>';
+    '<colgroup>' + colsHtml + '</colgroup>' +
+    '<thead><tr>' + theadCells + '</tr></thead>';
 
   var pagesHtml = '';
   var base = 0, pageIdx = 0;
   while (base < entries.length || pageIdx === 0) {
     var R = pageIdx === 0 ? ROWS_FIRST : ROWS_NEXT;
-    var remaining  = entries.length - base;
-    var leftCount  = Math.min(R, remaining);
-    var rightCount = Math.min(R, remaining - leftCount);
-    var rowsOnPage = Math.max(leftCount, 1);
-    var leftList = [], rightList = [];
-    for (var i = 0; i < rowsOnPage; i++) {
-      leftList.push(i < leftCount ? entries[base + i] : null);
-      rightList.push(i < rightCount ? entries[base + leftCount + i] : null);
+    var counts = [], consumed = 0;
+    for (var b = 0; b < cols; b++) {
+      var c = Math.max(0, Math.min(R, entries.length - base - consumed));
+      counts.push(c);
+      consumed += c;
     }
-    var leftSpans  = computeDeptSpans(leftList);
-    var rightSpans = computeDeptSpans(rightList);
+    var rowsOnPage = Math.max(counts[0], 1);
+    var blockBase = [], acc = 0;
+    for (var b = 0; b < cols; b++) { blockBase.push(acc); acc += counts[b]; }
+    var blockLists = [];
+    for (var b = 0; b < cols; b++) {
+      var list = [];
+      for (var i = 0; i < rowsOnPage; i++) {
+        list.push(i < counts[b] ? entries[base + blockBase[b] + i] : null);
+      }
+      blockLists.push(list);
+    }
+    var blockSpans = blockLists.map(computeDeptSpans);
     var trs = '';
     for (var i = 0; i < rowsOnPage; i++) {
-      trs += '<tr>' +
-        cellHtml(leftList[i],  base + i + 1, false, leftSpans[i]) +
-        cellHtml(rightList[i], base + leftCount + i + 1, true, rightSpans[i]) +
-      '</tr>';
+      var rowHtml = '';
+      for (var b = 0; b < cols; b++) {
+        rowHtml += cellHtml(blockLists[b][i], base + blockBase[b] + i + 1, b > 0, blockSpans[b][i]);
+      }
+      trs += '<tr>' + rowHtml + '</tr>';
     }
     pagesHtml += '<div class="pd-page">' +
       '<table class="print-table">' + theadHtml + '<tbody>' + trs + '</tbody></table>' +
     '</div>';
-    base += leftCount + rightCount;
+    base += consumed;
     pageIdx++;
-    if (remaining <= 0) break;
+    if (consumed === 0) break;
   }
 
   var now = new Date();
@@ -3322,6 +3445,15 @@ function buildPrintDoc(training, res) {
     ('0' + now.getHours()).slice(-2) + ':' +
     ('0' + now.getMinutes()).slice(-2);
 
+  var summaryHtml =
+    '<div class="pd-summary">' +
+      '<div class="pd-sum-row">' +
+        '<span>대상 <b>' + total + '명</b> · 서명 <b>' + signed + '명</b> · 미서명 <b>' + (total - signed) + '명</b></span>' +
+        (showRate ? '<span class="pd-pct">서명률 ' + pct + '%</span>' : '') +
+      '</div>' +
+      (showRate ? '<div class="pd-bar"><i style="width:' + pct + '%"></i></div>' : '') +
+    '</div>';
+
   document.getElementById('printDoc').innerHTML =
     '<div class="pd-org">' +
       '<span>' + esc(orgName || '연수 전자서명 시스템') + '</span>' +
@@ -3330,13 +3462,7 @@ function buildPrintDoc(training, res) {
     '<h1 class="pd-title">' + esc(training.title) + ' 서명등록부</h1>' +
     '<div class="pd-meta">' + esc(orgName ? orgName + ' · ' : '') + '전자서명 기록 자동 집계</div>' +
     pagesHtml +
-    '<div class="pd-summary">' +
-      '<div class="pd-sum-row">' +
-        '<span>대상 <b>' + total + '명</b> · 서명 <b>' + signed + '명</b> · 미서명 <b>' + (total - signed) + '명</b></span>' +
-        '<span class="pd-pct">서명률 ' + pct + '%</span>' +
-      '</div>' +
-      '<div class="pd-bar"><i style="width:' + pct + '%"></i></div>' +
-    '</div>' +
+    summaryHtml +
     '<div class="pd-foot">' +
       '본 서명등록부는 연수 전자서명 시스템에서 자동 생성된 문서입니다.<br>' +
       '출력일시: ' + printedAt +
