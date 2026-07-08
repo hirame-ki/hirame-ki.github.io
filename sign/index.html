@@ -1440,7 +1440,7 @@
       서명등록부 미리보기
     </div>
     <div class="pt-actions">
-      <button class="pt-btn" onclick="closePrintView()">닫기</button>
+      <button class="pt-btn" onclick="backToPrintFormat()">닫기</button>
       <button class="pt-btn solid" onclick="window.print()">
         <svg width="13" height="13"><use href="#i-print"/></svg> 인쇄하기
       </button>
@@ -3266,6 +3266,15 @@ function cancelPrintFormat() {
   document.getElementById('modalPrintFormat').classList.remove('show');
   pendingPrintRes = null;
   closePrintView();
+}
+
+// 미리보기 화면의 "닫기": 메인 화면으로 나가지 않고 인쇄 형식 선택으로 되돌아감
+function backToPrintFormat() {
+  if (pendingPrintTraining && pendingPrintRes) {
+    showPrintFormatModal();
+  } else {
+    closePrintView();
+  }
 }
 
 function submitPrintFormat() {
