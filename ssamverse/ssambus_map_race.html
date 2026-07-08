@@ -126,7 +126,7 @@ if(TEACHER_VIEW){
    게임 상태
    ============================================================ */
 var __raceStage=0,OPEN_GATES=new Set(),__quizActive=false;
-var __currentGateIdx=0,__currentQuizAnswer=-1,__selectedAnswer=-1;
+var __currentGateIdx=0,__currentQuizAnswer=-1,__selectedAnswer=-1,__currentQuizType='quiz';
 var __finishShown=false,__raceMissions=null;
 
 /* ============================================================
@@ -490,18 +490,20 @@ function showGateQuiz(gateIdx){
   if(__quizActive) return;
   __quizActive=true;__currentGateIdx=gateIdx;
   var gInfo=GATE_INFO_LIST.find(function(g){return g.idx===gateIdx;});
-  var pool=(__raceMissions||RACE_DEMO_MISSIONS).filter(function(m){return m.zone_id===gInfo.zone&&m.type==='quiz'&&m.quiz;});
+  var pool=(__raceMissions||RACE_DEMO_MISSIONS).filter(function(m){return m.zone_id===gInfo.zone&&(m.type==='quiz'||m.type==='ox_quiz')&&m.quiz;});
   if(!pool.length) pool=RACE_DEMO_MISSIONS.filter(function(m){return m.zone_id===gInfo.zone;});
   var mission=pool[Math.floor(Math.random()*pool.length)]||null;
   if(!mission||!mission.quiz){__quizActive=false;onGateOpen(gateIdx);return;}
   var q=mission.quiz;
+  __currentQuizType=mission.type==='ox_quiz'?'ox_quiz':'quiz';
   document.getElementById('rq-gate-label').innerHTML='🚧 게이트 '+gateIdx+' / 8&nbsp;&nbsp;<span style="font-weight:400;color:#999;font-size:11px">문제를 풀어야 통과할 수 있어요</span>';
   document.getElementById('rq-question').textContent=q.question;
   document.getElementById('rq-feedback').textContent='';document.getElementById('rq-feedback').className='';
   var ch=document.getElementById('rq-choices');ch.innerHTML='';__selectedAnswer=-1;__currentQuizAnswer=q.answer;
-  ['①','②','③','④'].forEach(function(n,i){
-    var btn=document.createElement('button');btn.className='rq-choice';btn.textContent=n+' '+q.options[i];btn.dataset.idx=i;
-    btn.addEventListener('click',function(){document.querySelectorAll('.rq-choice').forEach(function(b){b.classList.remove('selected');});btn.classList.add('selected');__selectedAnswer=i;});
+  var choices=__currentQuizType==='ox_quiz' ? [['⭕ O', 'O'],['❌ X','X']] : ['①','②','③','④'].map(function(n,i){return [n+' '+q.options[i], i];});
+  choices.forEach(function(pair){
+    var btn=document.createElement('button');btn.className='rq-choice';btn.textContent=pair[0];btn.dataset.idx=pair[1];
+    btn.addEventListener('click',function(){document.querySelectorAll('.rq-choice').forEach(function(b){b.classList.remove('selected');});btn.classList.add('selected');__selectedAnswer=pair[1];});
     ch.appendChild(btn);
   });
   document.getElementById('race-quiz-bg').classList.remove('hidden');

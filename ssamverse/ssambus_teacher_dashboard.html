@@ -870,6 +870,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
             <option value="discussion">토론/토의</option>
           </select>
           <div class="section-hint" style="margin-top:4px">형식마다 AI 출력 구조가 다릅니다</div>
+          <div id="pdf-race-notice" class="section-hint" style="display:none;margin-top:4px;color:#e74c3c">⚠ 경주 트랙은 맵 특성상 <b>객관식·O/X</b> 문제만 게이트에서 출제됩니다. 주관식·토론으로 생성하면 저장은 되지만 트랙에서 표시되지 않습니다.</div>
         </div>
       </div>
       <div class="row2">
@@ -1987,6 +1988,11 @@ function renderZones(mapId){
         <button onclick="saveObstacleConfig()" style="margin-top:12px;padding:8px 20px;background:#e74c3c;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">저장</button>
       </div>`;
     content.appendChild(obsEl);
+
+    const noticeEl = document.createElement('div');
+    noticeEl.style.cssText = 'margin-bottom:10px;padding:10px 14px;border:1px solid rgba(231,76,60,.35);border-radius:8px;background:rgba(231,76,60,.08);font-size:12.5px;color:#e74c3c;line-height:1.5';
+    noticeEl.innerHTML = '⚠ 경주 트랙은 맵 특성상 게이트에서 <b>객관식·O/X 퀴즈만</b> 출제됩니다. 주관식·토론 미션은 저장은 되지만 트랙에서 표시되지 않고 기본 문제로 대체되니, 아래 각 구역에는 객관식 또는 O/X 형식으로만 미션을 등록해주세요.';
+    content.appendChild(noticeEl);
   }
 
   map.zones.forEach(zone=>{
@@ -5227,6 +5233,8 @@ function resetPdfApiKey(){
 function openPdfModal(){
   const saved = localStorage.getItem(PDF_APIKEY_KEY);
   if(saved) document.getElementById('pdf-apikey').value = saved;
+
+  document.getElementById('pdf-race-notice').style.display = currentMap === 'race' ? 'block' : 'none';
 
   __pdfInitDropzone();
   resetPdfPreview();
