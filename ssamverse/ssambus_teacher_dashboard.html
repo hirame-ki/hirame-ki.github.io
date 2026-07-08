@@ -245,6 +245,13 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
 #pdf-preview-list .pdf-qcard .qmeta-row{display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);flex-wrap:wrap}
 #pdf-preview-list .pdf-qcard .qmeta-row label{font-size:11.5px;color:var(--muted);white-space:nowrap}
 #pdf-preview-list .pdf-qcard .qmeta-row select{font-size:12px;padding:2px 6px;border:1px solid var(--border);border-radius:5px}
+.pdf-mode-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 14px}
+.pdf-mode-btn{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:12.5px;font-weight:600;cursor:pointer;color:var(--text);transition:all .15s;font-family:'Noto Sans KR',sans-serif}
+.pdf-mode-btn:hover{background:#EEF2F9;border-color:var(--accent)}
+.pdf-mode-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.ai-fill-btn{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:20px;border:1.5px solid #7C3AED;background:#EDE9FE;color:#7C3AED;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'Noto Sans KR',sans-serif}
+.ai-fill-btn:hover{background:#DDD6FE}
+.ai-fill-btn:disabled{opacity:.6;cursor:default}
 
 /* ===== Topbar category nav ===== */
 .topbar-cats{display:flex;align-items:center;gap:4px;padding:5px 16px 6px;border-top:1px solid rgba(255,255,255,.1);flex-wrap:wrap}
@@ -667,9 +674,12 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
       <div class="section-hint">이미지의 직접 링크를 입력하세요. (구글 드라이브 공유 링크, Imgur 등)</div>
     </div>
     <div class="field" id="quizField" style="display:none">
-      <label>퀴즈 질문</label>
+      <label style="display:flex;justify-content:space-between;align-items:center">
+        <span>퀴즈 질문</span>
+        <button type="button" id="ai-fill-btn" class="ai-fill-btn" onclick="aiFillQuizOptions()">✨ AI로 보기·정답 채우기</button>
+      </label>
       <textarea id="q_question" placeholder="질문을 입력하세요"></textarea>
-      <div class="section-hint">아래 보기 중 정답에 해당하는 라디오 버튼을 선택하세요</div>
+      <div class="section-hint">질문만 입력한 뒤 <strong>AI로 보기·정답 채우기</strong>를 누르면 보기 4개와 정답을 AI가 자동으로 채워줍니다. 또는 아래 보기 중 정답에 해당하는 라디오 버튼을 직접 선택하세요</div>
       <div class="opt-row"><input type="radio" name="q_answer" value="0"><input type="text" id="q_opt0" placeholder="보기 1"></div>
       <div class="opt-row"><input type="radio" name="q_answer" value="1"><input type="text" id="q_opt1" placeholder="보기 2"></div>
       <div class="opt-row"><input type="radio" name="q_answer" value="2"><input type="text" id="q_opt2" placeholder="보기 3"></div>
@@ -683,7 +693,7 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
         <textarea id="sa_question" placeholder="학생에게 물어볼 질문을 입력하세요"></textarea>
       </div>
       <div class="field">
-        <label>예시 답안 <span style="font-weight:normal;color:#999">(선택 – 학생이 제출 후 참고용으로 공개됩니다)</span></label>
+        <label>예시 답안 <span style="font-weight:normal;color:#999">(선택 – 입력하면 학생 답과 정확히 비교해 채점합니다. 비워두면 채점 없이 입력만 해도 완료됩니다)</span></label>
         <textarea id="sa_model" placeholder="모범 답안 또는 힌트 (없으면 비워두세요)"></textarea>
       </div>
     </div>
@@ -834,7 +844,14 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
       <h2 style="margin:0">✨ AI 자동문제 생성</h2>
       <button class="groq-chip" onclick="openGroqInfo()">⚡ Groq AI란?</button>
     </div>
-    <div class="section-hint">학습 자료 PDF를 업로드하면 Qwen3-32B AI가 문제를 자동 생성합니다.</div>
+    <div class="section-hint">학습 자료를 준비하는 방법을 선택하면 Qwen3-32B AI가 문제를 자동 생성합니다.</div>
+
+    <div class="pdf-mode-tabs" id="pdf-mode-tabs">
+      <button type="button" class="pdf-mode-btn active" data-mode="pdf" onclick="switchPdfMode('pdf')">📄 PDF 업로드</button>
+      <button type="button" class="pdf-mode-btn" data-mode="topic" onclick="switchPdfMode('topic')">📝 주제 입력</button>
+      <button type="button" class="pdf-mode-btn" data-mode="link" onclick="switchPdfMode('link')">🔗 웹페이지 링크</button>
+      <button type="button" class="pdf-mode-btn" data-mode="similar" onclick="switchPdfMode('similar')">🔄 유사 문제 생성</button>
+    </div>
 
     <div id="pdf-form">
       <div class="field">
@@ -844,14 +861,67 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
         </label>
         <input type="password" id="pdf-apikey" placeholder="gsk_...">
       </div>
-      <div class="field">
-        <label>PDF 파일</label>
-        <div id="pdf-dropzone">
-          <span id="pdf-drop-text">📄 클릭하거나 PDF 파일을 여기로 드래그하세요</span>
-          <input type="file" id="pdf-file" accept=".pdf" style="display:none">
+
+      <!-- 모드: PDF 업로드 -->
+      <div id="mode-pdf" class="pdf-mode-pane">
+        <div class="field">
+          <label>PDF 파일</label>
+          <div id="pdf-dropzone">
+            <span id="pdf-drop-text">📄 클릭하거나 PDF 파일을 여기로 드래그하세요</span>
+            <input type="file" id="pdf-file" accept=".pdf" style="display:none">
+          </div>
+          <div class="section-hint">텍스트 레이어가 있는 PDF만 지원됩니다. (스캔본 불가)</div>
         </div>
-        <div class="section-hint">텍스트 레이어가 있는 PDF만 지원됩니다. (스캔본 불가)</div>
+        <div class="row2">
+          <div class="field">
+            <label>AI에 전달할 시작 페이지</label>
+            <input type="number" id="pdf-page-start" value="1" min="1">
+          </div>
+          <div class="field">
+            <label>끝 페이지 <span style="font-weight:normal;color:#999">(최대 4페이지 권장)</span></label>
+            <input type="number" id="pdf-page-end" value="4" min="1">
+          </div>
+        </div>
+        <div class="section-hint" style="margin-top:-6px">💡 지정 범위의 PDF 텍스트만 AI에 전달됩니다. 너무 많은 페이지는 토큰 초과로 오류가 발생할 수 있습니다.</div>
       </div>
+
+      <!-- 모드: 주제 직접 입력 -->
+      <div id="mode-topic" class="pdf-mode-pane" style="display:none">
+        <div class="field">
+          <label>주제</label>
+          <input type="text" id="topic-subject" placeholder="예: 조선시대 임진왜란, 광합성의 원리, 분수의 덧셈">
+        </div>
+        <div class="field">
+          <label>추가 설명 <span style="font-weight:normal;color:#999">(선택)</span></label>
+          <textarea id="topic-detail" placeholder="다루고 싶은 세부 범위나 난이도를 적어주세요. (예: 초등 6학년 수준, 주요 전투 위주로)"></textarea>
+        </div>
+        <div class="section-hint">별도 자료 없이 AI가 가진 지식을 바탕으로 문제를 만듭니다. 특정 자료 내용을 그대로 반영하고 싶다면 PDF나 링크 모드를 이용하세요.</div>
+      </div>
+
+      <!-- 모드: 웹페이지 링크 -->
+      <div id="mode-link" class="pdf-mode-pane" style="display:none">
+        <div class="field">
+          <label>웹페이지 링크</label>
+          <input type="url" id="link-url" placeholder="https://...">
+        </div>
+        <div class="section-hint">일반 웹페이지의 본문 텍스트를 가져와 문제를 생성합니다. ⚠ 유튜브 영상은 자막(음성 텍스트)이 아니라 제목·설명 등 페이지 정보만 가져와질 수 있어 정확도가 낮을 수 있습니다.</div>
+      </div>
+
+      <!-- 모드: 유사 문제 생성 -->
+      <div id="mode-similar" class="pdf-mode-pane" style="display:none">
+        <div class="field">
+          <label>현재 맵의 기존 미션에서 선택 <span style="font-weight:normal;color:#999">(선택)</span></label>
+          <select id="similar-pick" onchange="__pdfPickSimilar()">
+            <option value="">직접 입력...</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>참고할 문제</label>
+          <textarea id="similar-ref" placeholder="예: 마라톤의 공식 거리는? (정답: 42.195km)"></textarea>
+          <div class="section-hint">입력한 문제와 같은 주제·난이도의 새 문제를 다른 표현으로 만들어줍니다.</div>
+        </div>
+      </div>
+
       <div class="row2">
         <div class="field" style="flex:0 0 100px">
           <label>문제 수</label>
@@ -870,20 +940,9 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
             <option value="discussion">토론/토의</option>
           </select>
           <div class="section-hint" style="margin-top:4px">형식마다 AI 출력 구조가 다릅니다</div>
-          <div id="pdf-race-notice" class="section-hint" style="display:none;margin-top:4px;color:#e74c3c">⚠ 경주 트랙은 맵 특성상 <b>객관식·O/X</b> 문제만 게이트에서 출제됩니다. 주관식·토론으로 생성하면 저장은 되지만 트랙에서 표시되지 않습니다.</div>
+          <div id="pdf-race-notice" class="section-hint" style="display:none;margin-top:4px;color:#e74c3c">⚠ 경주 트랙은 맵 특성상 <b>객관식·O/X·주관식</b> 문제만 게이트에서 출제됩니다. 토론/토의로 생성하면 저장은 되지만 트랙에서 표시되지 않습니다. (주관식은 예시 답안을 입력하면 정확히 일치할 때만 정답 처리, 비워두면 입력만으로 통과됩니다)</div>
         </div>
       </div>
-      <div class="row2">
-        <div class="field">
-          <label>AI에 전달할 시작 페이지</label>
-          <input type="number" id="pdf-page-start" value="1" min="1">
-        </div>
-        <div class="field">
-          <label>끝 페이지 <span style="font-weight:normal;color:#999">(최대 4페이지 권장)</span></label>
-          <input type="number" id="pdf-page-end" value="4" min="1">
-        </div>
-      </div>
-      <div class="section-hint" style="margin-top:-6px">💡 지정 범위의 PDF 텍스트만 AI에 전달됩니다. 너무 많은 페이지는 토큰 초과로 오류가 발생할 수 있습니다.</div>
       <div style="margin-top:8px">
         <label class="checkrow"><input type="checkbox" id="pdf-required" checked> 필수 미션으로 추가</label>
       </div>
@@ -1991,7 +2050,7 @@ function renderZones(mapId){
 
     const noticeEl = document.createElement('div');
     noticeEl.style.cssText = 'margin-bottom:10px;padding:10px 14px;border:1px solid rgba(231,76,60,.35);border-radius:8px;background:rgba(231,76,60,.08);font-size:12.5px;color:#e74c3c;line-height:1.5';
-    noticeEl.innerHTML = '⚠ 경주 트랙은 맵 특성상 게이트에서 <b>객관식·O/X 퀴즈만</b> 출제됩니다. 주관식·토론 미션은 저장은 되지만 트랙에서 표시되지 않고 기본 문제로 대체되니, 아래 각 구역에는 객관식 또는 O/X 형식으로만 미션을 등록해주세요.';
+    noticeEl.innerHTML = '⚠ 경주 트랙은 맵 특성상 게이트에서 <b>객관식·O/X·주관식</b> 문제만 출제됩니다. 토론/토의 미션은 저장은 되지만 트랙에서 표시되지 않고 기본 문제로 대체되니, 아래 각 구역에는 객관식·O/X·주관식 중 하나로만 미션을 등록해주세요. (주관식은 예시 답안을 넣으면 정확히 일치할 때만 정답 처리됩니다)';
     content.appendChild(noticeEl);
   }
 
@@ -5195,6 +5254,32 @@ function __updateTrigInfo(){
 const PDF_GROQ_MODEL  = 'qwen/qwen3-32b';
 const PDF_APIKEY_KEY  = 'ssambus_groq_apikey';
 let __pdfMissions = []; // 미리보기 중인 생성 결과
+let __pdfMode = 'pdf'; // pdf | topic | link | similar
+let __pdfSimilarList = []; // '유사 문제 생성' 모드의 select 옵션과 매칭되는 기존 미션 목록
+
+function switchPdfMode(mode){
+  __pdfMode = mode;
+  document.querySelectorAll('.pdf-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  ['pdf','topic','link','similar'].forEach(m => {
+    document.getElementById('mode-' + m).style.display = (m === mode) ? '' : 'none';
+  });
+  if(mode === 'similar') __pdfPopulateSimilarPicker();
+}
+
+function __pdfPopulateSimilarPicker(){
+  const sel = document.getElementById('similar-pick');
+  __pdfSimilarList = (missionsCache[currentMap] || []).filter(m => m.quiz && (m.quiz.question || m.quiz.topic));
+  sel.innerHTML = '<option value="">직접 입력...</option>' +
+    __pdfSimilarList.map((m, i) => `<option value="${i}">${escapeHtml(m.title || TYPE_LABEL[m.type] || m.type)}</option>`).join('');
+}
+
+function __pdfPickSimilar(){
+  const idx = document.getElementById('similar-pick').value;
+  if(idx === '') return;
+  const m = __pdfSimilarList[Number(idx)];
+  if(!m) return;
+  document.getElementById('similar-ref').value = (m.quiz.question || m.quiz.topic || '').trim();
+}
 
 function __pdfInitDropzone(){
   const dz   = document.getElementById('pdf-dropzone');
@@ -5236,6 +5321,7 @@ function openPdfModal(){
 
   document.getElementById('pdf-race-notice').style.display = currentMap === 'race' ? 'block' : 'none';
 
+  switchPdfMode('pdf');
   __pdfInitDropzone();
   resetPdfPreview();
   document.getElementById('pdfModal-bg').classList.add('show');
@@ -5290,15 +5376,39 @@ async function __pdfExtract(file, startPage, endPage){
   return text;
 }
 
-/* Groq API 호출 */
-async function __pdfCallGroq(apiKey, pdfText, count, type){
+/* 웹페이지 링크에서 본문 텍스트 추출 (r.jina.ai Reader — 무료, 키 불필요, CORS 허용) */
+async function __pdfExtractFromLink(url){
+  url = url.trim();
+  if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  let raw;
+  try{
+    const res = await fetch('https://r.jina.ai/' + url);
+    if(!res.ok) throw new Error('status ' + res.status);
+    raw = await res.text();
+  }catch(e){
+    throw new Error('링크에서 텍스트를 가져오지 못했습니다. URL이 올바른지, 로그인이 필요한 페이지는 아닌지 확인해주세요.');
+  }
+
+  const text = raw.replace(/\s+/g, ' ').trim();
+  if(!text) throw new Error('페이지에서 텍스트를 추출할 수 없습니다.');
+
+  // 토큰 초과 방지: 앞부분 일부만 사용 (PDF 모드와 동일한 안전장치)
+  const MAX_CHARS = 6000;
+  return text.length > MAX_CHARS ? text.slice(0, MAX_CHARS) : text;
+}
+
+/* Groq API 호출
+   promptKind: 'material'(기본, PDF/주제/링크 공통) | 'similar'(유사 문제 생성) | 'fill_options'(보기·정답만 자동완성) */
+async function __pdfCallGroq(apiKey, pdfText, count, type, promptKind){
+  promptKind = promptKind || 'material';
   const formatDesc = {
     quiz:
       `객관식 4지선다. options 배열에 보기 4개, answer는 정답 인덱스(0~3 숫자).`,
     ox_quiz:
       `O/X 퀴즈. 문장이 맞으면 O, 틀리면 X. answer는 "O" 또는 "X" 문자열.`,
     short_answer:
-      `주관식 단답형. model_answer에 짧은 예시 답안.`,
+      `주관식 단답형. 학생 답과 정확히(공백·대소문자만 무시) 비교해 채점되므로, model_answer에는 여러 표현이 아닌 하나의 짧고 명확한 정답 단어/구만 넣을 것 (예: "42.195km", "광합성").`,
     discussion:
       `토론/토의 주제. topic에 토론 주제 1개, guides 배열에 학생들이 생각해볼 안내 질문 3개.`
   };
@@ -5313,21 +5423,38 @@ async function __pdfCallGroq(apiKey, pdfText, count, type){
       `[{"title":"미션 제목(15자 이내)","topic":"토론 주제 문장","guides":["안내 질문 1","안내 질문 2","안내 질문 3"]}]`
   };
 
+  const rule3 = promptKind === 'similar'
+    ? `3. 주어진 참고 문제와 같은 주제·개념·난이도를 유지하되, 문장과 보기는 새롭게 바꿔서 출제하세요.`
+    : promptKind === 'fill_options'
+    ? `3. 주어진 질문의 의도에 맞는 보기와 정답만 만드세요. 질문 문장 자체는 바꾸지 마세요.`
+    : `3. 주어진 학습 자료 내용만을 근거로 핵심을 묻는 문제를 출제하세요.`;
   const system =
     `당신은 한국 초중고 교육 전문가입니다. 학생들을 위한 학습 문제를 출제합니다.\n` +
     `[절대 규칙]\n` +
     `1. 순수 한글(한국어)만 사용하세요. 한자(漢字)를 절대 사용하지 마세요.\n` +
     `2. JSON 배열 외에 다른 텍스트를 출력하지 마세요.\n` +
-    `3. 주어진 학습 자료 내용만을 근거로 핵심을 묻는 문제를 출제하세요.\n` +
+    `${rule3}\n` +
     (type === 'discussion'
       ? `4. 토론/토의 주제는 학생들이 다양한 의견을 나눌 수 있는 열린 질문이어야 합니다.`
       : `4. 문제는 명확하고 한 가지 정답이 있어야 합니다.`);
 
+  let instructionLine, materialLabel;
+  if(promptKind === 'similar'){
+    instructionLine = `아래는 참고할 기존 문제입니다. 같은 주제와 개념을 다루되 문장·보기를 그대로 복사하지 말고 표현을 바꾼, 유사한 난이도의 새로운 [${formatDesc[type]}] 문제를 정확히 ${count}개 만들어주세요.`;
+    materialLabel = '참고 문제';
+  } else if(promptKind === 'fill_options'){
+    instructionLine = `아래 [질문]에 어울리는 4지선다 보기 4개와 정답을 만들어주세요. question 필드에는 주어진 질문 문장을 그대로 사용하세요.`;
+    materialLabel = '질문';
+  } else {
+    instructionLine = `아래 학습 자료를 바탕으로 [${formatDesc[type]}] 방식의 문제를 정확히 ${count}개 만들어주세요.`;
+    materialLabel = '학습 자료';
+  }
+
   const user =
     `/no_think\n\n` +
-    `아래 학습 자료를 바탕으로 [${formatDesc[type]}] 방식의 문제를 정확히 ${count}개 만들어주세요.\n\n` +
+    `${instructionLine}\n\n` +
     `반환 형식(JSON 배열만, 다른 텍스트 없이):\n${exampleJSON[type]}\n\n` +
-    `[학습 자료]\n${pdfText}`;
+    `[${materialLabel}]\n${pdfText}`;
 
   const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
@@ -5390,19 +5517,34 @@ async function __pdfCallGroq(apiKey, pdfText, count, type){
   return parsed;
 }
 
-/* 생성 실행 */
+/* 생성 실행 (모드별로 자료 텍스트를 준비한 뒤 공통 Groq 호출로 수렴) */
 async function generatePdfMissions(){
-  const apiKey  = document.getElementById('pdf-apikey').value.trim();
-  const fileInp = document.getElementById('pdf-file');
-  const file    = fileInp ? fileInp.files[0] : null;
-  const count   = Number(document.getElementById('pdf-count').value);
-  const type    = document.getElementById('pdf-type').value;
-  const sPage   = Number(document.getElementById('pdf-page-start').value) || 1;
-  const ePage   = Number(document.getElementById('pdf-page-end').value)   || 4;
+  const apiKey = document.getElementById('pdf-apikey').value.trim();
+  const count  = Number(document.getElementById('pdf-count').value);
+  const type   = document.getElementById('pdf-type').value;
+  const mode   = __pdfMode;
 
-  if(!apiKey)  { alert('Groq API 키를 입력해주세요.'); return; }
-  if(!file)    { alert('PDF 파일을 선택해주세요.');    return; }
-  if(sPage > ePage){ alert('시작 페이지가 끝 페이지보다 클 수 없습니다.'); return; }
+  if(!apiKey){ alert('Groq API 키를 입력해주세요.'); return; }
+
+  let file, sPage, ePage, topic, detail, linkUrl, similarRef;
+  if(mode === 'pdf'){
+    const fileInp = document.getElementById('pdf-file');
+    file  = fileInp ? fileInp.files[0] : null;
+    sPage = Number(document.getElementById('pdf-page-start').value) || 1;
+    ePage = Number(document.getElementById('pdf-page-end').value)   || 4;
+    if(!file){ alert('PDF 파일을 선택해주세요.'); return; }
+    if(sPage > ePage){ alert('시작 페이지가 끝 페이지보다 클 수 없습니다.'); return; }
+  } else if(mode === 'topic'){
+    topic  = document.getElementById('topic-subject').value.trim();
+    detail = document.getElementById('topic-detail').value.trim();
+    if(!topic){ alert('주제를 입력해주세요.'); return; }
+  } else if(mode === 'link'){
+    linkUrl = document.getElementById('link-url').value.trim();
+    if(!linkUrl){ alert('웹페이지 링크를 입력해주세요.'); return; }
+  } else if(mode === 'similar'){
+    similarRef = document.getElementById('similar-ref').value.trim();
+    if(!similarRef){ alert('참고할 기존 문제를 입력해주세요.'); return; }
+  }
 
   localStorage.setItem(PDF_APIKEY_KEY, apiKey);
 
@@ -5412,11 +5554,22 @@ async function generatePdfMissions(){
   document.getElementById('pdf-preview').style.display = 'none';
 
   try{
-    __pdfStatus('📄 PDF에서 텍스트를 추출하는 중...');
-    const pdfText = await __pdfExtract(file, sPage, ePage);
+    let sourceText, promptKind = 'material';
+    if(mode === 'pdf'){
+      __pdfStatus('📄 PDF에서 텍스트를 추출하는 중...');
+      sourceText = await __pdfExtract(file, sPage, ePage);
+    } else if(mode === 'topic'){
+      sourceText = `주제: ${topic}` + (detail ? `\n추가 설명: ${detail}` : '');
+    } else if(mode === 'link'){
+      __pdfStatus('🔗 링크에서 텍스트를 가져오는 중...');
+      sourceText = await __pdfExtractFromLink(linkUrl);
+    } else if(mode === 'similar'){
+      sourceText = similarRef;
+      promptKind = 'similar';
+    }
 
     __pdfStatus(`🤖 AI가 문제를 생성하는 중입니다... (${count}문제)`);
-    const missions = await __pdfCallGroq(apiKey, pdfText, count, type);
+    const missions = await __pdfCallGroq(apiKey, sourceText, count, type, promptKind);
 
     __pdfMissions = missions;
     __pdfStatus('');
@@ -5426,6 +5579,38 @@ async function generatePdfMissions(){
     __pdfStatus(`❌ ${e.message}`, true);
     btn.disabled = false;
     btn.textContent = '✨ AI 문제 생성';
+  }
+}
+
+/* 미션 수정/추가 모달에서 질문만 입력하고 보기·정답을 AI로 자동완성 */
+async function aiFillQuizOptions(){
+  const qEl = document.getElementById('q_question');
+  const question = qEl.value.trim();
+  if(!question){ alert('먼저 질문을 입력해주세요.'); qEl.focus(); return; }
+
+  const apiKey = localStorage.getItem(PDF_APIKEY_KEY);
+  if(!apiKey){ alert('Groq API 키가 없습니다. "✨ AI 문제 생성" 팝업에서 먼저 키를 등록해주세요.'); return; }
+
+  const btn = document.getElementById('ai-fill-btn');
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '생성 중...';
+
+  try{
+    const result = await __pdfCallGroq(apiKey, question, 1, 'quiz', 'fill_options');
+    const m = result[0];
+    if(!m || !Array.isArray(m.options) || m.options.length < 4)
+      throw new Error('보기를 생성하지 못했습니다. 질문을 조금 더 구체적으로 입력해보세요.');
+
+    [0,1,2,3].forEach(i => { document.getElementById('q_opt'+i).value = m.options[i] || ''; });
+    const ansIdx = Number(m.answer) || 0;
+    document.querySelectorAll('input[name=q_answer]').forEach(r => { r.checked = (Number(r.value) === ansIdx); });
+    showToast('✅ 보기·정답이 채워졌습니다. 확인 후 저장하세요.');
+  }catch(e){
+    alert('생성 실패: ' + e.message);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = origText;
   }
 }
 

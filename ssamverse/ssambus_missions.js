@@ -421,6 +421,11 @@ function __msEscHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+/* 주관식 채점용 정규화: 공백/대소문자/일부 문장부호 차이만 무시 (경주 트랙과 동일 기준) */
+function __msNormalizeAnswer(s){
+  return String(s || '').trim().toLowerCase().replace(/\s+/g, '').replace(/[.,!?~·˙'"()\[\]]/g, '');
+}
+
 function __msParam(name, fallback){
   if(typeof __rtGetParam === 'function') return __rtGetParam(name, fallback);
   try{
@@ -855,12 +860,14 @@ function __msRenderMission(m){
     completeDisabled = 'disabled';
   } else if(m.type === 'short_answer'){
     const q = m.quiz || {};
+    const hasAnswer = !!(q.model_answer && q.model_answer.trim());
     body = `<div class="ms-body">${__msEscHtml(q.question || '')}</div>
       <textarea id="ms-sa-input" placeholder="답을 입력하세요"
         style="width:100%;min-height:80px;padding:8px 10px;border:1px solid #ccc;border-radius:6px;
           font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;margin-bottom:4px"></textarea>
+      ${hasAnswer ? `<button id="ms-sa-check" type="button" style="margin-bottom:6px;padding:6px 14px;border:1px solid #2980b9;background:#eaf3fc;color:#2980b9;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer">정답 확인</button>` : ''}
       <div class="ms-feedback" id="ms-feedback" style="display:none"></div>`;
-    completeDisabled = 'disabled';
+    completeDisabled = hasAnswer ? 'disabled' : '';
   } else if(m.type === 'discussion'){
     const q = m.quiz || {};
     const guides = (q.guides || []).filter(Boolean)
@@ -955,30 +962,39 @@ function __msBindMission(m, card){
   } else if(m.type === 'short_answer'){
     const q = m.quiz || {};
     const input = card.querySelector('#ms-sa-input');
+    const checkBtn = card.querySelector('#ms-sa-check');
     const completeBtn = card.querySelector('#ms-complete');
     const fb = card.querySelector('#ms-feedback');
+    const hasAnswer = !!(q.model_answer && q.model_answer.trim());
 
-    if(input) input.addEventListener('input', () => {
-      if(completeBtn) completeBtn.disabled = !input.value.trim();
-    });
+    if(hasAnswer){
+      // 예시 답안이 있으면 실제로 채점: 정답 확인을 눌러 맞아야 완료 버튼이 활성화됨
+      if(input) input.addEventListener('input', () => {
+        if(completeBtn) completeBtn.disabled = true;
+        if(fb) fb.style.display = 'none';
+      });
+      if(checkBtn) checkBtn.addEventListener('click', () => {
+        const val = input ? input.value.trim() : '';
+        if(!val) return;
+        const correct = __msNormalizeAnswer(val) === __msNormalizeAnswer(q.model_answer);
+        if(fb){
+          fb.style.display = 'block';
+          fb.textContent = correct ? '정답입니다! 완료를 눌러주세요.' : '다시 한 번 생각해볼까요?';
+          fb.className = correct ? 'ms-feedback ok' : 'ms-feedback bad';
+        }
+        if(completeBtn) completeBtn.disabled = !correct;
+      });
+    } else {
+      // 예시 답안이 없으면 채점 없이 입력만 하면 완료 (기존 방식 유지)
+      if(input) input.addEventListener('input', () => {
+        if(completeBtn) completeBtn.disabled = !input.value.trim();
+      });
+    }
 
     if(completeBtn) completeBtn.addEventListener('click', () => {
       const answer = input ? input.value.trim() : '';
       if(!answer) return;
-
-      if(q.model_answer){
-        if(input) input.disabled = true;
-        fb.innerHTML = `✅ 제출 완료!&nbsp;&nbsp;<strong>예시 답안:</strong> ${__msEscHtml(q.model_answer)}`;
-        fb.style.display = 'block';
-        fb.className = 'ms-feedback ok';
-        completeBtn.textContent = '닫기';
-        // 리스너 교체(기존 클릭 제거)
-        const newBtn = completeBtn.cloneNode(true);
-        completeBtn.replaceWith(newBtn);
-        newBtn.addEventListener('click', () => __msComplete(m.id, answer));
-      } else {
-        __msComplete(m.id, answer);
-      }
+      __msComplete(m.id, answer);
     });
     customComplete = true;
 

@@ -49,6 +49,8 @@ html,body{height:100%;align-items:stretch;padding:0;overflow:hidden}
 .rq-choice{display:block;width:100%;padding:10px 14px;background:#f5f5f5;border:2px solid #e0e0e0;border-radius:8px;margin-bottom:8px;cursor:pointer;text-align:left;font-size:14px;font-family:'Noto Sans KR',sans-serif;transition:background .1s,border-color .1s;line-height:1.45}
 .rq-choice:hover{background:#eaf2ff;border-color:#3498db}
 .rq-choice.selected{background:#daeeff;border-color:#2980b9;font-weight:600}
+#rq-text-input{width:100%;box-sizing:border-box;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:14px;font-family:'Noto Sans KR',sans-serif;margin-bottom:8px}
+#rq-text-input:focus{border-color:#3498db;outline:none}
 #rq-feedback{min-height:1.4em;font-size:13px;font-weight:600;margin:8px 0}
 #rq-feedback.ok{color:#27ae60}
 #rq-feedback.bad{color:#e74c3c}
@@ -490,28 +492,47 @@ function showGateQuiz(gateIdx){
   if(__quizActive) return;
   __quizActive=true;__currentGateIdx=gateIdx;
   var gInfo=GATE_INFO_LIST.find(function(g){return g.idx===gateIdx;});
-  var pool=(__raceMissions||RACE_DEMO_MISSIONS).filter(function(m){return m.zone_id===gInfo.zone&&(m.type==='quiz'||m.type==='ox_quiz')&&m.quiz;});
+  var pool=(__raceMissions||RACE_DEMO_MISSIONS).filter(function(m){return m.zone_id===gInfo.zone&&(m.type==='quiz'||m.type==='ox_quiz'||m.type==='short_answer')&&m.quiz;});
   if(!pool.length) pool=RACE_DEMO_MISSIONS.filter(function(m){return m.zone_id===gInfo.zone;});
   var mission=pool[Math.floor(Math.random()*pool.length)]||null;
   if(!mission||!mission.quiz){__quizActive=false;onGateOpen(gateIdx);return;}
   var q=mission.quiz;
-  __currentQuizType=mission.type==='ox_quiz'?'ox_quiz':'quiz';
+  __currentQuizType=(mission.type==='ox_quiz'||mission.type==='short_answer')?mission.type:'quiz';
   document.getElementById('rq-gate-label').innerHTML='🚧 게이트 '+gateIdx+' / 8&nbsp;&nbsp;<span style="font-weight:400;color:#999;font-size:11px">문제를 풀어야 통과할 수 있어요</span>';
   document.getElementById('rq-question').textContent=q.question;
   document.getElementById('rq-feedback').textContent='';document.getElementById('rq-feedback').className='';
-  var ch=document.getElementById('rq-choices');ch.innerHTML='';__selectedAnswer=-1;__currentQuizAnswer=q.answer;
-  var choices=__currentQuizType==='ox_quiz' ? [['⭕ O', 'O'],['❌ X','X']] : ['①','②','③','④'].map(function(n,i){return [n+' '+q.options[i], i];});
-  choices.forEach(function(pair){
-    var btn=document.createElement('button');btn.className='rq-choice';btn.textContent=pair[0];btn.dataset.idx=pair[1];
-    btn.addEventListener('click',function(){document.querySelectorAll('.rq-choice').forEach(function(b){b.classList.remove('selected');});btn.classList.add('selected');__selectedAnswer=pair[1];});
-    ch.appendChild(btn);
-  });
+  var ch=document.getElementById('rq-choices');ch.innerHTML='';__selectedAnswer=-1;
+  __currentQuizAnswer=__currentQuizType==='short_answer'?(q.model_answer||''):q.answer;
+  if(__currentQuizType==='short_answer'){
+    var inp=document.createElement('input');inp.type='text';inp.id='rq-text-input';inp.placeholder='답을 입력하세요';
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();submitGateQuiz();}});
+    ch.appendChild(inp);
+  } else {
+    var choices=__currentQuizType==='ox_quiz' ? [['⭕ O', 'O'],['❌ X','X']] : ['①','②','③','④'].map(function(n,i){return [n+' '+q.options[i], i];});
+    choices.forEach(function(pair){
+      var btn=document.createElement('button');btn.className='rq-choice';btn.textContent=pair[0];btn.dataset.idx=pair[1];
+      btn.addEventListener('click',function(){document.querySelectorAll('.rq-choice').forEach(function(b){b.classList.remove('selected');});btn.classList.add('selected');__selectedAnswer=pair[1];});
+      ch.appendChild(btn);
+    });
+  }
   document.getElementById('race-quiz-bg').classList.remove('hidden');
+}
+function __rqNormalize(s){
+  return String(s||'').trim().toLowerCase().replace(/\s+/g,'').replace(/[.,!?~·˙'"()\[\]]/g,'');
 }
 function submitGateQuiz(){
   var fb=document.getElementById('rq-feedback');
-  if(__selectedAnswer===-1){fb.textContent='답을 선택해주세요.';fb.className='bad';return;}
-  if(__selectedAnswer===__currentQuizAnswer){
+  var correct;
+  if(__currentQuizType==='short_answer'){
+    var val=(document.getElementById('rq-text-input')||{}).value||'';
+    val=val.trim();
+    if(!val){fb.textContent='답을 입력해주세요.';fb.className='bad';return;}
+    correct=!__currentQuizAnswer || __rqNormalize(val)===__rqNormalize(__currentQuizAnswer);
+  } else {
+    if(__selectedAnswer===-1){fb.textContent='답을 선택해주세요.';fb.className='bad';return;}
+    correct=(__selectedAnswer===__currentQuizAnswer);
+  }
+  if(correct){
     fb.textContent='🎉 정답! 게이트가 열립니다!';fb.className='ok';
     setTimeout(function(){document.getElementById('race-quiz-bg').classList.add('hidden');__quizActive=false;onGateOpen(__currentGateIdx);},700);
   } else {
