@@ -626,6 +626,10 @@
     transition: border-color .15s;
   }
   .pf-select:focus { border-color: var(--brand); }
+  .pf-hint {
+    text-align: left; font-size: 11px; color: var(--ink3);
+    font-weight: 500; line-height: 1.6; margin: -2px 0 14px;
+  }
 
   /* ── 관리자 UI (연수 관리) ─────────────────────── */
   .adm-field { text-align: left; margin-bottom: 12px; }
@@ -1426,6 +1430,10 @@
         <option value="yes" selected>포함 (기본)</option>
         <option value="no">미포함</option>
       </select>
+    </div>
+    <div class="pf-hint">
+      모바일에서는 미리보기 화면이 화면 폭에 맞게 좁게 표시될 수 있어요.
+      실제 인쇄·PDF 저장 결과물은 PC와 동일한 A4 규격으로 나오니 걱정하지 않으셔도 됩니다.
     </div>
     <button class="modal-btn" onclick="submitPrintFormat()" style="margin-top:6px">출력 미리보기</button>
     <button class="modal-btn ghost" onclick="cancelPrintFormat()">취소</button>
