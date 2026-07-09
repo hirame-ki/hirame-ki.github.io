@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>기관용 연수전자서명</title>
+<title>연수 전자서명</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✍️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -377,9 +377,9 @@
     border: 1px solid var(--hair);
   }
 
-  /* ── 우측 하단 고정 칩 (제작자 문의, 항상 노출) ─────── */
+  /* ── 좌측 상단 고정 칩 (제작자 문의, 항상 노출) ─────── */
   .site-credit-chip {
-    position: fixed; right: 14px; bottom: 14px; z-index: 1700;
+    position: fixed; left: 14px; top: 14px; z-index: 1700;
     padding: 9px 15px; border-radius: 999px;
     background: var(--card); border: 1px solid var(--hair);
     color: var(--ink2); text-decoration: none;
@@ -1137,9 +1137,9 @@
 
 </div><!-- /app -->
 
-<!-- 우측 하단 고정 칩 (항상 노출, 인쇄 시에는 자동 숨김) -->
+<!-- 좌측 상단 고정 칩 (항상 노출, 인쇄 시에는 자동 숨김) -->
 <a class="site-credit-chip" href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener">
-  @hirame.ki 문의:클릭
+  문의 @hirame.ki
 </a>
 
 <!-- ── Modals ── -->
@@ -2705,7 +2705,7 @@ function onPageDataLoaded(data) {
   orgName = String(data.orgName || '').trim();
   if (orgName) {
     document.getElementById('headerOrg').textContent = orgName;
-    document.title = orgName + ' · 기관용 연수전자서명';
+    document.title = orgName + ' · 연수 전자서명';
   }
 
   // Supabase는 구성원을 평평한 목록으로 반환 → 부서별로 그룹핑 (등록 순서 유지)
