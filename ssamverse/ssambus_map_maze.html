@@ -81,8 +81,9 @@ if(TEACHER_VIEW){
       _cb.style.cssText='position:fixed;top:12px;left:12px;z-index:999;background:#2980b9;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);text-decoration:none;display:inline';
       var _nk=((_s.match(/[?&]nickname=([^&]*)/)||[])[1])||'';
       try{_nk=_nk||sessionStorage.getItem('ssambus_nickname')||'';}catch(e){}
+      var _tm=/[?&]teacherMode=1(?:&|$)/.test(_s);
       var _mf=window.location.pathname.split('/').pop()||'ssambus_map_maze.html';
-      _cb.href='ssambus_characters.html?room='+_rm+'&map='+_mf+(_nk?'&nickname='+_nk:'');
+      _cb.href='ssambus_characters.html?room='+_rm+'&map='+_mf+(_nk?'&nickname='+_nk:'')+(_tm?'&teacherMode=1':'');
     }
   }
 })();

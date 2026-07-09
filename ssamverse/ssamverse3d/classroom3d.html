@@ -191,6 +191,8 @@ var pos = { r: 0, c: 0 }; // ssambus_3d_adapter.js가 매 프레임 camera 위�
   try{ nickname = nickname || sessionStorage.getItem('ssambus_nickname') || ''; }catch(e){}
   var q = 'room=' + encodeURIComponent(room) + '&map=' + encodeURIComponent('ssamverse3d/classroom3d.html');
   if(nickname) q += '&nickname=' + encodeURIComponent(nickname);
+  // teacherMode=1을 유지해야 캐릭터 선택 화면에서도 애니 캐릭터 잠금이 면제됨(__animeLocked())
+  if(params.get('teacherMode') === '1') q += '&teacherMode=1';
   btn.href = '../ssambus_characters.html?' + q;
   btn.style.display = 'inline-block';
 })();
@@ -564,7 +566,15 @@ addEventListener('keydown', e => {
 addEventListener('keyup', e => keys[e.code] = false);
 
 // Pointer Lock (데스크톱)
-const isTouch = matchMedia('(hover: none) and (pointer: coarse)').matches;
+// CSS 미디어쿼리(hover:none)만으로는 일부 기기(터치+마우스 겸용 노트북, 특정 브라우저)에서
+// 오탐지가 나 조이스틱이 display:none으로 숨어버리는 경우가 있어, 실제 터치 지원 여부를
+// JS로 한 번 더 확인해서 표시 상태를 강제로 맞춰준다(단일 기준점 = isTouch).
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0
+  || matchMedia('(hover: none) and (pointer: coarse)').matches;
+if (isTouch) {
+  document.getElementById('joystick-zone').style.display = 'block';
+  document.getElementById('action-btn').style.display = 'block';
+}
 document.getElementById('start-btn').addEventListener('click', () => {
   document.getElementById('overlay').style.display = 'none';
   started = true;
