@@ -36,8 +36,14 @@ create table if not exists trainings (
   title          text not null,
   content        text not null default '',
   training_date  text not null,   -- 'yyyy-MM-dd' 또는 '매일'
+  sort_order     integer,         -- 연수 목록 표시 순서 (관리자 패널에서 위/아래로 변경)
   created_at     timestamptz not null default now()
 );
+
+-- 기존 설치본에는 sort_order 컬럼이 없을 수 있으므로 안전하게 추가 후,
+-- 비어있는 값은 등록 순서(id)로 초기화한다.
+alter table trainings add column if not exists sort_order integer;
+update trainings set sort_order = id where sort_order is null;
 
 create table if not exists signatures (
   id             bigserial primary key,
@@ -116,7 +122,7 @@ begin
       from staff where org_key = p_org_key
     ),
     'trainings', (
-      select coalesce(jsonb_agg(jsonb_build_object('title', title, 'content', content) order by id), '[]'::jsonb)
+      select coalesce(jsonb_agg(jsonb_build_object('title', title, 'content', content) order by sort_order, id), '[]'::jsonb)
       from trainings
       where org_key = p_org_key and active
         and (training_date = v_today or training_date = '매일')
@@ -279,7 +285,7 @@ set search_path = public
 as $$
   select coalesce(jsonb_agg(jsonb_build_object(
     'id', id, 'active', active, 'title', title, 'content', content, 'date', training_date
-  ) order by id), '[]'::jsonb)
+  ) order by sort_order, id), '[]'::jsonb)
   from trainings where org_key = p_org_key;
 $$;
 
@@ -346,8 +352,11 @@ begin
   end if;
 
   if p_id is null then
-    insert into trainings (org_key, active, title, content, training_date)
-    values (p_org_key, coalesce(p_active, true), p_title, coalesce(p_content,''), p_date);
+    insert into trainings (org_key, active, title, content, training_date, sort_order)
+    values (
+      p_org_key, coalesce(p_active, true), p_title, coalesce(p_content,''), p_date,
+      coalesce((select max(sort_order) from trainings where org_key = p_org_key), 0) + 1
+    );
   else
     update trainings set
       active = coalesce(p_active, true),
@@ -375,6 +384,50 @@ begin
   end;
 
   delete from trainings where id = p_id and org_key = p_org_key;
+  return jsonb_build_object('success', true, 'trainings', _trainings_json(p_org_key));
+end;
+$$;
+
+-- 연수 순서 변경 (관리자 패널의 위/아래 버튼 전용 — 바로 위/아래 연수와 순서를 맞바꾼다)
+create or replace function move_training(p_org_key text, p_pin text, p_id bigint, p_direction text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_cur_order integer;
+  v_neighbor  trainings;
+begin
+  begin
+    perform _check_admin_pin(p_org_key, p_pin);
+  exception when others then
+    return jsonb_build_object('success', false, 'needPin', true);
+  end;
+
+  select sort_order into v_cur_order from trainings where id = p_id and org_key = p_org_key;
+  if v_cur_order is null then
+    return jsonb_build_object('success', false, 'message', '연수를 찾을 수 없습니다.');
+  end if;
+
+  if p_direction = 'up' then
+    select * into v_neighbor from trainings
+    where org_key = p_org_key and sort_order < v_cur_order
+    order by sort_order desc limit 1;
+  else
+    select * into v_neighbor from trainings
+    where org_key = p_org_key and sort_order > v_cur_order
+    order by sort_order asc limit 1;
+  end if;
+
+  if not found then
+    -- 이미 맨 위(또는 맨 아래)라 바꿀 상대가 없음 — 조용히 현재 목록만 반환
+    return jsonb_build_object('success', true, 'trainings', _trainings_json(p_org_key));
+  end if;
+
+  update trainings set sort_order = v_neighbor.sort_order where id = p_id and org_key = p_org_key;
+  update trainings set sort_order = v_cur_order where id = v_neighbor.id and org_key = p_org_key;
+
   return jsonb_build_object('success', true, 'trainings', _trainings_json(p_org_key));
 end;
 $$;
@@ -567,6 +620,7 @@ revoke execute on function
   get_admin_data(text, text),
   save_training(text, text, bigint, text, text, text, boolean),
   delete_training(text, text, bigint),
+  move_training(text, text, bigint, text),
   save_staff(text, text, bigint, text, text),
   delete_staff(text, text, bigint),
   bulk_add_staff(text, text, text, text[]),
@@ -586,6 +640,7 @@ grant execute on function
   get_admin_data(text, text),
   save_training(text, text, bigint, text, text, text, boolean),
   delete_training(text, text, bigint),
+  move_training(text, text, bigint, text),
   save_staff(text, text, bigint, text, text),
   delete_staff(text, text, bigint),
   bulk_add_staff(text, text, text, text[]),

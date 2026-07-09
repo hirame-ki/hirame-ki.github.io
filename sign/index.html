@@ -715,6 +715,16 @@
     background: var(--brand-light); border-radius: 8px;
     padding: 3px 8px; margin-top: 7px;
   }
+  .adm-item-move { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+  .adm-move-btn {
+    width: 26px; height: 22px; border-radius: 7px; padding: 0;
+    border: 1px solid var(--hair); background: var(--card); color: var(--ink2);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .adm-move-btn svg { transform: rotate(180deg); }
+  .adm-move-btn.down svg { transform: none; }
+  .adm-move-btn:disabled { opacity: .3; }
+  .adm-move-btn:active:not(:disabled) { background: var(--brand-light); border-color: var(--brand-soft); color: var(--brand); }
   .adm-item-side { display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }
   .adm-edit-btn {
     padding: 7px 13px; border-radius: 9px;
@@ -1850,6 +1860,14 @@ function renderAdminList() {
   adminTrainings.forEach(function(t, i) {
     html +=
       '<div class="adm-item' + (t.active ? '' : ' off') + '">' +
+        '<div class="adm-item-move">' +
+          '<button class="adm-move-btn" onclick="moveTraining(' + i + ',\'up\')"' +
+            (i === 0 ? ' disabled' : '') + ' aria-label="위로 이동">' +
+            '<svg width="12" height="12"><use href="#i-chev-d"/></svg></button>' +
+          '<button class="adm-move-btn down" onclick="moveTraining(' + i + ',\'down\')"' +
+            (i === adminTrainings.length - 1 ? ' disabled' : '') + ' aria-label="아래로 이동">' +
+            '<svg width="12" height="12"><use href="#i-chev-d"/></svg></button>' +
+        '</div>' +
         '<div class="adm-item-main">' +
           '<div class="adm-item-title">' + esc(t.title) + '</div>' +
           (t.content ? '<div class="adm-item-meta">' + esc(t.content) + '</div>' : '') +
@@ -2038,6 +2056,29 @@ function toggleTraining(i) {
     if (res.success) { adminTrainings = res.trainings || adminTrainings; renderAdminList(); }
     else { t.active = !next; renderAdminList(); }
   }).catch(function() { t.active = !next; renderAdminList(); });
+}
+
+function moveTraining(i, dir) {
+  var j = dir === 'up' ? i - 1 : i + 1;
+  if (j < 0 || j >= adminTrainings.length) return;
+
+  var id = adminTrainings[i].id;
+  var tmp = adminTrainings[i];
+  adminTrainings[i] = adminTrainings[j];
+  adminTrainings[j] = tmp;
+  renderAdminList();   // 낙관적 반영
+  if (!API_URL) return;
+
+  rpc('move_training', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: id, p_direction: dir })
+    .then(function(res) {
+      if (res.success) { adminTrainings = res.trainings || adminTrainings; renderAdminList(); }
+      else { swapBack(); renderAdminList(); }
+    })
+    .catch(function() { swapBack(); renderAdminList(); });
+
+  function swapBack() {
+    var t = adminTrainings[i]; adminTrainings[i] = adminTrainings[j]; adminTrainings[j] = t;
+  }
 }
 
 function deleteTraining() {
