@@ -27,6 +27,15 @@
   }
   .hud-badge .accent { color: #7dd87d; }
 
+  #char-btn {
+    position: fixed; top: 12px; right: 12px; z-index: 10; display: none;
+    background: rgba(41,128,185,0.85); color: #fff; backdrop-filter: blur(6px);
+    padding: 8px 14px; border-radius: 12px; font-size: 13px; font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.12); text-decoration: none;
+    font-family: inherit;
+  }
+  #char-btn:hover { background: rgba(41,128,185,1); }
+
   #prompt {
     position: fixed; bottom: 130px; left: 50%; transform: translateX(-50%);
     background: rgba(20,24,38,0.85); color: #fff; backdrop-filter: blur(6px);
@@ -65,9 +74,11 @@
   }
   .guide-item b { display: block; color: #fff; font-size: 15px; margin-bottom: 4px; }
 
-  /* ── 모바일 컨트롤 ── */
+  /* ── 모바일 컨트롤 ──
+     bottom 오프셋을 ssambus_realtime.js가 추가하는 하단 채팅바(#rt-chat-bar, 약 54px)보다
+     높게 잡아서 조이스틱/액션버튼이 채팅바에 가려지거나 터치가 막히지 않게 함 */
   #joystick-zone {
-    position: fixed; bottom: 24px; left: 24px; width: 120px; height: 120px;
+    position: fixed; bottom: 88px; left: 24px; width: 120px; height: 120px;
     z-index: 20; display: none; touch-action: none;
   }
   #joystick-base {
@@ -80,7 +91,7 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   }
   #action-btn {
-    position: fixed; bottom: 48px; right: 28px; width: 74px; height: 74px;
+    position: fixed; bottom: 112px; right: 28px; width: 74px; height: 74px;
     border-radius: 50%; z-index: 20; display: none;
     background: rgba(74,124,255,0.85); color: #fff; border: 2px solid rgba(255,255,255,0.4);
     font-size: 15px; font-weight: 800; font-family: inherit; touch-action: manipulation;
@@ -108,6 +119,8 @@
   <div class="hud-badge">🏫 쌤버스 3D 교실</div>
   <div class="hud-badge">미션 <span class="accent" id="mission-count">0</span>/<span id="mission-total">5</span></div>
 </div>
+
+<a id="char-btn" href="#">← 캐릭터 변경</a>
 
 <div id="prompt"><kbd>E</kbd><span id="prompt-text">미션 수행하기</span></div>
 
@@ -166,6 +179,21 @@ var PLAYER = Object.assign({
   ccolor: '#1a3a6b', cloth: 'suit', gender: 'male', acc: [], dir: 'down'
 }, __savedChar || {});
 var pos = { r: 0, c: 0 }; // ssambus_3d_adapter.js가 매 프레임 camera 위치로 갱신
+
+/* ── 캐릭터 변경 버튼 (2D 맵의 #char-btn과 동일한 동작) ── */
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var room = params.get('room');
+  if(!room || TEACHER_VIEW) return;
+  var btn = document.getElementById('char-btn');
+  if(!btn) return;
+  var nickname = params.get('nickname') || '';
+  try{ nickname = nickname || sessionStorage.getItem('ssambus_nickname') || ''; }catch(e){}
+  var q = 'room=' + encodeURIComponent(room) + '&map=' + encodeURIComponent('ssamverse3d/classroom3d.html');
+  if(nickname) q += '&nickname=' + encodeURIComponent(nickname);
+  btn.href = '../ssambus_characters.html?' + q;
+  btn.style.display = 'inline-block';
+})();
 
 /* ── 기본 셋업 ── */
 const scene = new THREE.Scene();
