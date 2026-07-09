@@ -104,19 +104,38 @@
     return el;
   }
 
+  /* ===================== 시점 상대 방향 계산 =====================
+     ssambus_character_render.js의 dir(down/left/up)+facingRight는 원래
+     "고정된 하향 2D 카메라"를 전제로 캐릭터의 절대 이동방향을 표현한다.
+     3D에서는 보는 사람마다 위치가 다르므로, 캐릭터의 절대 이동방향과
+     "그 캐릭터에서 나(카메라)를 바라보는 각도"의 상대각을 구해서, 마치
+     그 상대각이 곧 절대 이동방향인 것처럼 같은 매핑 규칙을 적용한다.
+     (그래야 앞에서 보면 정면, 뒤에서 보면 뒤통수가 항상 맞게 보인다) */
+  function angleFromDirFacing(dir, facingRight){
+    if(dir === 'down') return 0;
+    if(dir === 'up') return 180;
+    if(dir === 'left') return facingRight ? 90 : 270;
+    return 0;
+  }
+  function pickDirFromAngle(a){
+    a = ((a % 360) + 360) % 360;
+    if(a >= 315 || a < 45)  return { dir: 'down', facingRight: false };
+    if(a < 135)              return { dir: 'left', facingRight: true  };
+    if(a < 225)              return { dir: 'up',   facingRight: false };
+    return                        { dir: 'left', facingRight: false };
+  }
+
   /* ===================== 원격 학생 스프라이트 동기화 ===================== */
   function syncRemoteSprites(){
     var container = document.getElementById('remote-players');
     if(!container) return;
     var seen = new Set();
+    var myPos = camera_.position;
 
     container.querySelectorAll('[data-student]').forEach(function(el){
       var id = el.dataset.student;
       seen.add(id);
 
-      var g = el.querySelector('g');
-      var innerHtml = g ? g.innerHTML : '';
-      var flip = el.classList.contains('flip');
       // TS=1: left=c*TS → worldX=c, top=r*TS-24 → worldZ=r (역보정 +24)
       var worldX = parseFloat(el.style.left) || 0;
       var worldZ = (parseFloat(el.style.top) || 0) + 24;
@@ -125,16 +144,28 @@
       if(!entry){
         var made = makeSprite();
         entry = { sprite: made.sprite, canvas: made.canvas, texture: made.texture,
-          lastInner: null, lastFlip: null, nickEl: ensureNickLabel(id), nickText: '' };
+          lastKey: null, nickEl: ensureNickLabel(id), nickText: '' };
         sprites.set(id, entry);
       }
 
       entry.sprite.position.set(worldX, PIVOT_Y, worldZ);
 
-      if(innerHtml && (innerHtml !== entry.lastInner || flip !== entry.lastFlip)){
-        entry.lastInner = innerHtml;
-        entry.lastFlip = flip;
-        updateSpriteTexture(entry, innerHtml, flip);
+      var appearance = __rtAvatarState[id];
+      var remotePos = __rtRemotePos[id];
+      if(appearance && remotePos && typeof remotePos.dir === 'string'){
+        var charFacingAngle = angleFromDirFacing(remotePos.dir, remotePos.facingRight);
+        var angleToViewer = Math.atan2(myPos.x - worldX, myPos.z - worldZ) * 180 / Math.PI;
+        var picked = pickDirFromAngle(angleToViewer - charFacingAngle);
+        var key = id + '|' + appearance.type + '|' + appearance.preset + '|' + appearance.skin
+          + '|' + appearance.hcolor + '|' + appearance.hair + '|' + appearance.ccolor + '|' + appearance.cloth
+          + '|' + appearance.gender + '|' + (appearance.acc || []).join(',') + '|' + picked.dir + '|' + picked.facingRight;
+        if(key !== entry.lastKey){
+          entry.lastKey = key;
+          var renderState = Object.assign({}, appearance, { dir: picked.dir, facingRight: picked.facingRight });
+          var svgMarkup = renderCharacterSVG(renderState);
+          var flip = (picked.dir === 'left' && !picked.facingRight);
+          updateSpriteTexture(entry, svgMarkup, flip);
+        }
       }
 
       var nickSpan = el.querySelector('.nick');
