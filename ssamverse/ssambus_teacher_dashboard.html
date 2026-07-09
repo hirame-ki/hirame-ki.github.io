@@ -738,14 +738,26 @@ body{font-family:'Noto Sans KR',sans-serif;padding:0;margin:0;background:var(--b
       <div class="trig-mode-row">
         <label><input type="radio" name="trig_mode" value="zone" onchange="onTriggerModeChange()" checked> 구역으로 발동 <span style="color:#aaa;font-size:11px">(기본)</span></label>
         <label><input type="radio" name="trig_mode" value="tile" onchange="onTriggerModeChange()"> 타일 직접 지정</label>
+        <label id="trig-mode-3d-option" style="display:none"><input type="radio" name="trig_mode" value="3d" onchange="onTriggerModeChange()"> 3D 좌표 지정</label>
       </div>
       <div id="trig-zone-info" style="display:none"></div>
       <div id="trig-mode-zone-desc" class="trig-mode-desc">학생이 이 미션의 구역(zone) 안에 들어오면 자동 발동됩니다. AI 자동 생성 미션의 기본 방식입니다.</div>
       <div id="trig-mode-tile-desc" class="trig-mode-desc" style="display:none">아래 맵에서 발동할 타일을 직접 클릭해 지정합니다. <strong>구역은 분류 목적으로만 사용</strong>되며 실제 발동은 선택한 타일에서만 일어납니다.</div>
+      <div id="trig-mode-3d-desc" class="trig-mode-desc" style="display:none">아래 탑다운 미니맵을 클릭해 3D 공간의 발동 좌표를 지정합니다. 반경(m) 안에 들어오면 발동됩니다.</div>
       <div id="trigTileArea" style="display:none">
         <div class="trig-hint" style="margin-top:6px">발동할 위치(타일)를 클릭하세요. 오렌지 표시 = 선택됨. 다시 클릭하면 취소.</div>
         <div id="trig-canvas-wrap"><canvas id="trig-canvas"></canvas></div>
         <div id="trig-info">선택된 위치: 없음</div>
+      </div>
+      <div id="trig3DArea" style="display:none">
+        <div class="trig-hint" style="margin-top:6px">미니맵을 클릭해 발동 좌표를 지정하세요. 오렌지 원 = 선택됨(반경 표시).</div>
+        <div id="trig3d-canvas-wrap" style="overflow:auto;max-height:280px;border:1px solid var(--border);border-radius:7px;cursor:crosshair;margin-top:8px"><canvas id="trig3d-canvas"></canvas></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px">
+          <label for="trig3d-radius">발동 반경(m)</label>
+          <input type="range" id="trig3d-radius" min="1" max="5" step="0.1" value="2.2" oninput="__onTrigger3DRadiusChange()" style="flex:1">
+          <span id="trig3d-radius-val">2.2</span>
+        </div>
+        <div id="trig3d-info">선택된 위치: 없음</div>
       </div>
     </div>
 
@@ -1047,7 +1059,8 @@ const MAP_FILES = {
   health:'ssambus_map_health.html',
   maze:'ssambus_map_maze.html',
   race:'ssambus_map_race.html',
-  modum_classroom:'ssambus_map_modum_classroom.html'
+  modum_classroom:'ssambus_map_modum_classroom.html',
+  classroom3d:'ssamverse3d/classroom3d.html'
 };
 
 /* 각 맵의 실제 캔버스 픽셀 크기 (실시간 맵 보기에서 축소 표시용) */
@@ -1066,7 +1079,9 @@ const MAP_CANVAS_SIZE = {
   health:    { w:1920, h:1920 },
   maze:      { w:2880, h:2880 },
   race:      { w:1920, h:5760 },
-  modum_classroom: { w:1920, h:2112 }
+  modum_classroom: { w:1920, h:2112 },
+  /* 3D 맵은 고정 캔버스가 아니라 WebGL 뷰포트 — 실시간 맵 보기에서 이 해상도로 렌더링 후 축소 표시 */
+  classroom3d: { w:1280, h:720 }
 };
 
 const MAPS = [
@@ -1209,6 +1224,16 @@ const MAPS = [
     {id:'zone_F', label:'게이트 6 (두 번째 코너 전)'},
     {id:'zone_G', label:'게이트 7 (두 번째 코너 후)'},
     {id:'zone_H', label:'게이트 8 (결승선 직전)'}
+  ]},
+  { id:'classroom3d', label:'🧊 3D 교실 (베타)', zones:[
+    {id:'zone_A', label:'칠판 앞'},
+    {id:'zone_B', label:'교탁'},
+    {id:'zone_C', label:'책상열(앞쪽)'},
+    {id:'zone_D', label:'책상열(뒤쪽)'},
+    {id:'zone_E', label:'창가(좌측)'},
+    {id:'zone_F', label:'사물함(뒷벽)'},
+    {id:'zone_G', label:'게시판(우측)'},
+    {id:'zone_H', label:'뒷문 부근'}
   ]}
 ];
 
@@ -2054,6 +2079,14 @@ function renderZones(mapId){
     content.appendChild(noticeEl);
   }
 
+  /* 3D 맵 전용 안내: 구역보다 "3D 좌표 지정" 모드 사용을 권장 */
+  if(MAP_3D_LAYOUTS[mapId]){
+    const notice3D = document.createElement('div');
+    notice3D.style.cssText = 'margin-bottom:10px;padding:10px 14px;border:1px solid rgba(52,112,212,.35);border-radius:8px;background:rgba(52,112,212,.08);font-size:12.5px;color:var(--accent);line-height:1.5';
+    notice3D.innerHTML = '🧊 3D 맵은 아래 구역을 선택해 미션을 추가한 뒤, 미션 편집창에서 <b>"3D 좌표 지정"</b>으로 발동 위치(좌표+반경)를 정확히 지정하는 것을 권장합니다. 구역만 지정하면 3D에서는 발동되지 않습니다.';
+    content.appendChild(notice3D);
+  }
+
   map.zones.forEach(zone=>{
     const zoneMissions = missions.filter(m => m.zone_id === zone.id);
     const zoneEl = document.createElement('div');
@@ -2298,11 +2331,12 @@ async function saveMission(){
   if(!values) return;
   const order = parseInt(document.getElementById('f_order').value, 10) || 1;
 
-  // 트리거 타일 수집
+  // 트리거 타일/좌표 수집 (구역 / 타일 직접 지정 / 3D 좌표 지정 — 상호 배타)
   const trigMode = document.querySelector('input[name=trig_mode]:checked')?.value;
   const trigger_tiles = (trigMode === 'tile' && __triggerTiles && __triggerTiles.length)
     ? __triggerTiles.slice()
     : null;
+  const trigger_point = (trigMode === '3d' && __trigger3D) ? { ...__trigger3D } : null;
 
   const row = {
     id: editingId || `${ROOM_ID}_${editingMapId}_${editingZoneId}_${Date.now()}`,
@@ -2312,7 +2346,8 @@ async function saveMission(){
     teacher_id: currentUserId,
     order,
     ...values,
-    trigger_tiles
+    trigger_tiles,
+    trigger_point
   };
 
   try{
@@ -3586,6 +3621,21 @@ function __edMakeModumClassroomGrid(){
   return g;
 }
 
+/* 3D 맵 전용: 탑다운 미니맵에 그릴 가구 배치(월드 좌표, classroom3d.html의 addCollider 좌표를 그대로 옮김) */
+const MAP_3D_LAYOUTS = {
+  classroom3d: {
+    w: 36, d: 26, // ROOM.W × ROOM.D (미터)
+    furniture: [
+      { x:0,    z:-12.9, w:11,  d:0.3, label:'칠판' },
+      { x:5.5,  z:-9.8,  w:1.6, d:0.9, label:'교탁' },
+      { x:0,    z:1,     w:23,  d:15,  label:'책상열' },
+      { x:-4,   z:12.65, w:14,  d:0.6, label:'사물함' },
+      { x:17.9, z:4,     w:0.3, d:6,   label:'게시판' },
+      { x:-18,  z:0,     w:0.3, d:20,  label:'창가' }
+    ]
+  }
+};
+
 const MAP_EDITOR_GRIDS = {
   classroom: {
     cols:60, rows:60, ts:48, walkable:new Set([0,5]),
@@ -3773,9 +3823,9 @@ function __edCalcTS(cols){ return Math.max(10, Math.min(32, Math.floor(960 / col
 
 /* ── 에디터 열기 / 닫기 ───────────────────── */
 async function openMapEditor(){
-  // 맵탭 생성
+  // 맵탭 생성 (3D 맵은 타일 그리드가 없어 이 2D 가구 에디터 대상에서 제외)
   const tabs = document.getElementById('ed-tabs');
-  tabs.innerHTML = MAPS.map(m =>
+  tabs.innerHTML = MAPS.filter(m => MAP_EDITOR_GRIDS[m.id]).map(m =>
     `<button class="${m.id === currentMap ? 'on' : ''}"
       onclick="switchEditorMap('${m.id}')">${m.label}</button>`
   ).join('');
@@ -3798,7 +3848,9 @@ async function openMapEditor(){
   __edBuildPalette();
 
   document.getElementById('edModal-bg').classList.add('show');
-  switchEditorMap(currentMap);
+  // 현재 선택 맵이 3D(그리드 없음)면 그리드가 있는 첫 맵으로 대체
+  const startMap = MAP_EDITOR_GRIDS[currentMap] ? currentMap : (MAPS.find(m => MAP_EDITOR_GRIDS[m.id]) || {}).id;
+  switchEditorMap(startMap);
 }
 
 function closeMapEditor(){
@@ -5063,8 +5115,10 @@ async function loadMapFromRoom(roomId){
 /* ===================== 미션 트리거 타일 선택기 ===================== */
 
 let __triggerTiles  = [];   // [{r,c}] - 현재 선택된 트리거 위치
+let __trigger3D      = null; // {x,z,r} - 3D 맵의 현재 선택된 발동 좌표
 let __trigPickMap   = null; // 선택기가 보여주는 맵 id
 let __trigTS        = 14;   // 트리거 캔버스 타일 크기
+let __trig3DTS       = 14;   // 3D 트리거 미니맵 스케일(px per meter)
 
 function __trigCalcTS(cols){ return Math.max(10, Math.min(20, Math.floor(430 / cols))); }
 
@@ -5072,31 +5126,49 @@ function __trigCalcTS(cols){ return Math.max(10, Math.min(20, Math.floor(430 / c
 function __initTriggerSection(mapId, mission){
   __trigPickMap   = mapId;
   __triggerTiles  = [];
+  __trigger3D     = null;
 
   if(mission && Array.isArray(mission.trigger_tiles) && mission.trigger_tiles.length){
     __triggerTiles = mission.trigger_tiles.map(t => ({ r:t.r, c:t.c }));
+  }
+  if(mission && mission.trigger_point){
+    __trigger3D = { ...mission.trigger_point };
   }
 
   const section = document.getElementById('trigSection');
   if(section) section.classList.add('show');
 
-  // 모드 라디오 초기화
-  const hasCustomTiles = __triggerTiles.length > 0;
-  document.querySelectorAll('input[name=trig_mode]').forEach(r => {
-    r.checked = (r.value === 'tile') === hasCustomTiles;
-  });
+  const has3DLayout = !!MAP_3D_LAYOUTS[mapId];
+  const opt3D = document.getElementById('trig-mode-3d-option');
+  if(opt3D) opt3D.style.display = has3DLayout ? '' : 'none';
+
+  // 모드 결정: 3D 좌표 > 타일 직접 지정 > 구역(기본)
+  const mode = __trigger3D ? '3d' : (__triggerTiles.length ? 'tile' : 'zone');
+  document.querySelectorAll('input[name=trig_mode]').forEach(r => { r.checked = (r.value === mode); });
 
   // 설명/구역 정보 표시 초기화
   const zoneId = mission ? mission.zone_id : (editingZoneId || null);
-  __updateTriggerZoneInfo(mapId, zoneId, hasCustomTiles);
+  __updateTriggerZoneInfo(mapId, zoneId, mode !== 'zone');
 
   const zoneDesc = document.getElementById('trig-mode-zone-desc');
   const tileDesc = document.getElementById('trig-mode-tile-desc');
-  if(zoneDesc) zoneDesc.style.display = hasCustomTiles ? 'none' : '';
-  if(tileDesc) tileDesc.style.display = hasCustomTiles ? '' : 'none';
+  const desc3D   = document.getElementById('trig-mode-3d-desc');
+  if(zoneDesc) zoneDesc.style.display = (mode === 'zone') ? '' : 'none';
+  if(tileDesc) tileDesc.style.display = (mode === 'tile') ? '' : 'none';
+  if(desc3D)   desc3D.style.display   = (mode === '3d')   ? '' : 'none';
 
-  document.getElementById('trigTileArea').style.display = hasCustomTiles ? 'block' : 'none';
-  if(hasCustomTiles){ __bindTriggerCanvas(); __renderTriggerMap(); }
+  document.getElementById('trigTileArea').style.display = (mode === 'tile') ? 'block' : 'none';
+  document.getElementById('trig3DArea').style.display   = (mode === '3d')   ? 'block' : 'none';
+  if(mode === 'tile'){ __bindTriggerCanvas(); __renderTriggerMap(); }
+  if(mode === '3d'){
+    const radiusInput = document.getElementById('trig3d-radius');
+    const valEl = document.getElementById('trig3d-radius-val');
+    const r = (__trigger3D && __trigger3D.r) || 2.2;
+    if(radiusInput) radiusInput.value = r;
+    if(valEl) valEl.textContent = r.toFixed(1);
+    __bindTriggerCanvas3D();
+    __renderTriggerMap3D();
+  }
 }
 
 function __updateTriggerZoneInfo(mapId, zoneId, isTileMode){
@@ -5119,15 +5191,21 @@ function __updateTriggerZoneInfo(mapId, zoneId, isTileMode){
 function onTriggerModeChange(){
   const mode = document.querySelector('input[name=trig_mode]:checked')?.value;
   const area = document.getElementById('trigTileArea');
+  const area3D = document.getElementById('trig3DArea');
   const zoneDesc = document.getElementById('trig-mode-zone-desc');
   const tileDesc = document.getElementById('trig-mode-tile-desc');
+  const desc3D = document.getElementById('trig-mode-3d-desc');
   const isTile = (mode === 'tile');
+  const is3D = (mode === '3d');
 
   area.style.display = isTile ? 'block' : 'none';
-  if(zoneDesc) zoneDesc.style.display = isTile ? 'none' : '';
+  area3D.style.display = is3D ? 'block' : 'none';
+  if(zoneDesc) zoneDesc.style.display = (!isTile && !is3D) ? '' : 'none';
   if(tileDesc) tileDesc.style.display = isTile ? '' : 'none';
+  if(desc3D) desc3D.style.display = is3D ? '' : 'none';
 
   if(isTile){
+    __trigger3D = null;
     if(!__triggerTiles) __triggerTiles = [];
     __bindTriggerCanvas();
     __renderTriggerMap();
@@ -5135,8 +5213,17 @@ function onTriggerModeChange(){
       const wrap = document.getElementById('trig-canvas-wrap');
       if(wrap) wrap.scrollIntoView({ behavior:'smooth', block:'nearest' });
     }, 60);
+  } else if(is3D){
+    __triggerTiles = [];
+    __bindTriggerCanvas3D();
+    __renderTriggerMap3D();
+    setTimeout(() => {
+      const wrap = document.getElementById('trig3d-canvas-wrap');
+      if(wrap) wrap.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }, 60);
   } else {
     __triggerTiles = [];
+    __trigger3D = null;
     __updateTrigInfo();
     // 구역 모드로 돌아가면 zone info 다시 표시
     const zoneId = editingZoneId || null;
@@ -5247,6 +5334,102 @@ function __updateTrigInfo(){
     el.textContent = '선택된 위치: 없음';
   } else {
     el.textContent = '선택된 위치: ' + __triggerTiles.map(t => `(${t.r}행, ${t.c}열)`).join(' / ');
+  }
+}
+
+/* ===================== 3D 맵 미션 좌표 선택기 (탑다운 미니맵) ===================== */
+
+function __trigCalc3DTS(w, d){ return Math.max(6, Math.min(16, Math.floor(430 / Math.max(w, d)))); }
+
+function __renderTriggerMap3D(){
+  const layout = MAP_3D_LAYOUTS[__trigPickMap];
+  if(!layout) return;
+
+  __trig3DTS = __trigCalc3DTS(layout.w, layout.d);
+  const ts = __trig3DTS;
+  const canvas = document.getElementById('trig3d-canvas');
+  if(!canvas) return;
+  canvas.width  = layout.w * ts;
+  canvas.height = layout.d * ts;
+  const ctx = canvas.getContext('2d');
+
+  // 바닥
+  ctx.fillStyle = '#d4a96a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 가구 배치 (월드 좌표 x,z → 캔버스: cx = (x + w/2)*ts, cy = (z + d/2)*ts)
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.font = `${Math.max(9, Math.round(ts * 0.7))}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  layout.furniture.forEach(f => {
+    const cx = (f.x + layout.w / 2) * ts, cz = (f.z + layout.d / 2) * ts;
+    const fw = f.w * ts, fd = f.d * ts;
+    ctx.fillRect(cx - fw / 2, cz - fd / 2, fw, fd);
+    ctx.fillStyle = '#fff';
+    ctx.fillText(f.label, cx, cz - fd / 2 - 8);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  });
+
+  // 선택된 좌표 (오렌지 원 + 반경)
+  if(__trigger3D){
+    const cx = (__trigger3D.x + layout.w / 2) * ts, cz = (__trigger3D.z + layout.d / 2) * ts;
+    const rad = (__trigger3D.r || 2.2) * ts;
+    ctx.beginPath();
+    ctx.arc(cx, cz, rad, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,100,0,.25)';
+    ctx.fill();
+    ctx.strokeStyle = '#ff6400';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cz, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff6400';
+    ctx.fill();
+  }
+
+  __updateTrig3DInfo();
+}
+
+function __bindTriggerCanvas3D(){
+  const canvas = document.getElementById('trig3d-canvas');
+  if(!canvas) return;
+
+  if(canvas.__trig3DHandler) canvas.removeEventListener('click', canvas.__trig3DHandler);
+
+  canvas.__trig3DHandler = (e) => {
+    const layout = MAP_3D_LAYOUTS[__trigPickMap];
+    if(!layout) return;
+    const rect = canvas.getBoundingClientRect();
+    const px = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const py = (e.clientY - rect.top)  * (canvas.height / rect.height);
+    const x = px / __trig3DTS - layout.w / 2;
+    const z = py / __trig3DTS - layout.d / 2;
+    const radiusInput = document.getElementById('trig3d-radius');
+    const r = radiusInput ? parseFloat(radiusInput.value) || 2.2 : 2.2;
+    __trigger3D = { x: Math.round(x * 10) / 10, z: Math.round(z * 10) / 10, r };
+    __renderTriggerMap3D();
+  };
+
+  canvas.addEventListener('click', canvas.__trig3DHandler);
+}
+
+function __onTrigger3DRadiusChange(){
+  const radiusInput = document.getElementById('trig3d-radius');
+  const valEl = document.getElementById('trig3d-radius-val');
+  const r = radiusInput ? parseFloat(radiusInput.value) || 2.2 : 2.2;
+  if(valEl) valEl.textContent = r.toFixed(1);
+  if(__trigger3D){ __trigger3D.r = r; __renderTriggerMap3D(); }
+}
+
+function __updateTrig3DInfo(){
+  const el = document.getElementById('trig3d-info');
+  if(!el) return;
+  if(!__trigger3D){
+    el.textContent = '선택된 위치: 없음';
+  } else {
+    el.textContent = `선택된 위치: x=${__trigger3D.x}, z=${__trigger3D.z} (반경 ${(__trigger3D.r || 2.2).toFixed(1)}m)`;
   }
 }
 

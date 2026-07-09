@@ -519,6 +519,23 @@ function __msZoneAt(pos){
   return null;
 }
 
+/* ===================== 3D 맵 전용: 좌표 기반 근접 판정 ===================== */
+/* trigger_point:{x,z,r} 를 가진 미션 중 플레이어(x,z)와 가장 가까운 미완료 미션을 반환.
+   미션 로드 전(__msMissions===null)이거나 근처에 없으면 null. 교사 참가자는 발동 대상에서 제외. */
+function checkMission3D(x, z){
+  if(__msMissions === null) return null;
+  if(window.__rtTeacherParticipant) return null;
+  let best = null, bestDist = Infinity;
+  for(const m of __msMissions){
+    if(__msDone.has(m.id) || !m.trigger_point) continue;
+    const dx = x - m.trigger_point.x, dz = z - m.trigger_point.z;
+    const rad = m.trigger_point.r || 2.2;
+    const dist = Math.sqrt(dx*dx + dz*dz);
+    if(dist <= rad && dist < bestDist){ best = m; bestDist = dist; }
+  }
+  return best;
+}
+
 function checkZoneOnMove(pos){
   if(__msMissions === null) return; // 미션 로드 전에는 판정하지 않음
   __msCheckExit(pos);
