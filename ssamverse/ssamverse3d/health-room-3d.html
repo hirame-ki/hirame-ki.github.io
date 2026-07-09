@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>쌤버스 3D - 보건실</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#1a2530; font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif; touch-action:none; }
+  #canvas-wrap { position:fixed; inset:0; }
+  canvas { display:block; }
+
+  /* 시작 오버레이 */
+  #overlay {
+    position:fixed; inset:0; z-index:50;
+    background:linear-gradient(160deg,#e8f6f3 0%,#d3ecf7 100%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+  }
+  #overlay .cross {
+    width:72px; height:72px; border-radius:18px; background:#ff6b6b; position:relative;
+    box-shadow:0 8px 24px rgba(255,107,107,.35);
+  }
+  #overlay .cross::before, #overlay .cross::after {
+    content:''; position:absolute; background:#fff; border-radius:4px;
+    top:50%; left:50%; transform:translate(-50%,-50%);
+  }
+  #overlay .cross::before { width:14px; height:42px; }
+  #overlay .cross::after { width:42px; height:14px; }
+  #overlay h1 { color:#2c3e50; font-size:26px; letter-spacing:-0.5px; }
+  #overlay p { color:#5a6b7b; font-size:14px; line-height:1.7; text-align:center; }
+  #overlay button {
+    padding:14px 44px; font-size:17px; font-weight:700; color:#fff;
+    background:#2bb3a3; border:none; border-radius:30px; cursor:pointer;
+    box-shadow:0 6px 18px rgba(43,179,163,.4); font-family:inherit;
+  }
+  #overlay button:active { transform:scale(.96); }
+  #overlay .keys { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  #overlay .key {
+    background:#fff; border:1px solid #cfe3e0; border-radius:8px; padding:6px 12px;
+    font-size:12px; color:#3a4b5c; box-shadow:0 2px 0 #cfe3e0;
+  }
+
+  /* HUD */
+  #hud { position:fixed; inset:0; z-index:10; pointer-events:none; display:none; }
+  #crosshair {
+    position:absolute; top:50%; left:50%; width:6px; height:6px;
+    transform:translate(-50%,-50%); border-radius:50%;
+    background:rgba(255,255,255,.85); box-shadow:0 0 6px rgba(0,0,0,.4);
+  }
+  #zone-label {
+    position:absolute; top:18px; left:50%; transform:translateX(-50%);
+    background:rgba(30,45,58,.78); color:#fff; padding:8px 20px; border-radius:20px;
+    font-size:14px; font-weight:600; backdrop-filter:blur(4px); white-space:nowrap;
+  }
+  #mission-toast {
+    position:absolute; bottom:110px; left:50%; transform:translateX(-50%);
+    background:rgba(43,179,163,.92); color:#fff; padding:12px 22px; border-radius:14px;
+    font-size:14px; font-weight:600; opacity:0; transition:opacity .25s;
+    box-shadow:0 6px 20px rgba(0,0,0,.25); white-space:nowrap; max-width:90vw;
+  }
+  #mission-count {
+    position:absolute; top:18px; right:16px;
+    background:rgba(30,45,58,.78); color:#ffd166; padding:8px 16px; border-radius:20px;
+    font-size:13px; font-weight:700;
+  }
+
+  /* 모바일 조이스틱 */
+  #joystick {
+    position:absolute; bottom:36px; left:36px; width:120px; height:120px;
+    border-radius:50%; background:rgba(255,255,255,.12); border:2px solid rgba(255,255,255,.3);
+    display:none; pointer-events:auto;
+  }
+  #joystick-knob {
+    position:absolute; top:50%; left:50%; width:52px; height:52px; border-radius:50%;
+    background:rgba(255,255,255,.55); transform:translate(-50%,-50%);
+  }
+  body.mobile #joystick { display:block; }
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <div class="cross"></div>
+  <h1>쌤버스 · 보건실</h1>
+  <p>1인칭 시점으로 보건실을 탐험하며 미션 포인트를 찾아보세요.<br>노란빛이 나는 곳에 가까이 가면 미션이 나타납니다.</p>
+  <div class="keys" id="pc-keys">
+    <span class="key">W A S D 이동</span>
+    <span class="key">마우스 시점</span>
+    <span class="key">Shift 달리기</span>
+    <span class="key">ESC 마우스 해제</span>
+  </div>
+  <button id="start-btn">입장하기</button>
+</div>
+
+<div id="hud">
+  <div id="crosshair"></div>
+  <div id="zone-label">보건실</div>
+  <div id="mission-count">미션 0 / 6</div>
+  <div id="mission-toast"></div>
+  <div id="joystick"><div id="joystick-knob"></div></div>
+</div>
+
+<div id="canvas-wrap"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+/* =========================================================
+   쌤버스 3D 보건실 맵
+   - 맵 크기: 36m x 24m (30명 동시 활동 가능)
+   - 1인칭 시점(PC: 포인터락 / 모바일: 조이스틱+드래그)
+   - AABB 충돌 처리, 근접 미션 포인트 6개
+   ========================================================= */
+
+// ---------- 기본 설정 ----------
+const ROOM_W = 36, ROOM_D = 24, WALL_H = 4.2;
+const HW = ROOM_W/2, HD = ROOM_D/2;
+const PLAYER_H = 1.6, PLAYER_R = 0.35;
+const IS_MOBILE = ('ontouchstart' in window) && matchMedia('(pointer:coarse)').matches;
+if (IS_MOBILE) document.body.classList.add('mobile');
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xdff0f5);
+scene.fog = new THREE.Fog(0xdff0f5, 30, 70);
+
+const camera = new THREE.PerspectiveCamera(72, innerWidth/innerHeight, 0.1, 120);
+camera.position.set(0, PLAYER_H, HD - 3);
+
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.getElementById('canvas-wrap').appendChild(renderer.domElement);
+
+// ---------- 조명 ----------
+scene.add(new THREE.HemisphereLight(0xffffff, 0xb8d4d0, 0.75));
+const sun = new THREE.DirectionalLight(0xfff4e0, 0.85);
+sun.position.set(12, 18, 8);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -25; sun.shadow.camera.right = 25;
+sun.shadow.camera.top = 25;   sun.shadow.camera.bottom = -25;
+scene.add(sun);
+// 실내 천장등 느낌의 포인트 라이트
+[[-12,0],[0,0],[12,0]].forEach(([x,z])=>{
+  const pl = new THREE.PointLight(0xffffff, 0.25, 28);
+  pl.position.set(x, WALL_H-0.5, z);
+  scene.add(pl);
+});
+
+// ---------- 재질 ----------
+const M = {
+  floor:  new THREE.MeshLambertMaterial({ color:0xeef4ee }),
+  floor2: new THREE.MeshLambertMaterial({ color:0xdcebe4 }),
+  wall:   new THREE.MeshLambertMaterial({ color:0xf6fbf9 }),
+  wallLo: new THREE.MeshLambertMaterial({ color:0xbfe3da }),
+  white:  new THREE.MeshLambertMaterial({ color:0xffffff }),
+  metal:  new THREE.MeshLambertMaterial({ color:0xb9c4cc }),
+  steel:  new THREE.MeshLambertMaterial({ color:0x8e9aa4 }),
+  wood:   new THREE.MeshLambertMaterial({ color:0xd8b78e }),
+  woodDk: new THREE.MeshLambertMaterial({ color:0xa9825c }),
+  mint:   new THREE.MeshLambertMaterial({ color:0x7fd1c5 }),
+  mintDk: new THREE.MeshLambertMaterial({ color:0x2bb3a3 }),
+  red:    new THREE.MeshLambertMaterial({ color:0xff6b6b }),
+  blanket:new THREE.MeshLambertMaterial({ color:0xa8d8ce }),
+  pillow: new THREE.MeshLambertMaterial({ color:0xffffff }),
+  curtain:new THREE.MeshLambertMaterial({ color:0xcfe9e2, transparent:true, opacity:0.85, side:THREE.DoubleSide }),
+  glass:  new THREE.MeshLambertMaterial({ color:0xa8d8ef, transparent:true, opacity:0.35 }),
+  navy:   new THREE.MeshLambertMaterial({ color:0x3a5a78 }),
+  yellow: new THREE.MeshLambertMaterial({ color:0xffd166 }),
+  green:  new THREE.MeshLambertMaterial({ color:0x74c69d }),
+  skin:   new THREE.MeshLambertMaterial({ color:0xf1e0c5 }),
+  black:  new THREE.MeshLambertMaterial({ color:0x37474f }),
+};
+
+// ---------- 충돌 박스 ----------
+const colliders = []; // {minX,maxX,minZ,maxZ}
+function addCollider(cx, cz, w, d, pad=0.05){
+  colliders.push({ minX:cx-w/2-pad, maxX:cx+w/2+pad, minZ:cz-d/2-pad, maxZ:cz+d/2+pad });
+}
+
+// ---------- 유틸 ----------
+function box(w,h,d,mat,x,y,z,shadow=true){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+  m.position.set(x,y,z);
+  m.castShadow = shadow; m.receiveShadow = true;
+  scene.add(m);
+  return m;
+}
+function cyl(rt,rb,h,mat,x,y,z,seg=16){
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg), mat);
+  m.position.set(x,y,z);
+  m.castShadow = true; m.receiveShadow = true;
+  scene.add(m);
+  return m;
+}
+function makeTextTexture(text, opt={}){
+  const c = document.createElement('canvas');
+  c.width = opt.w||512; c.height = opt.h||256;
+  const g = c.getContext('2d');
+  g.fillStyle = opt.bg||'#ffffff'; g.fillRect(0,0,c.width,c.height);
+  if (opt.border){ g.strokeStyle=opt.border; g.lineWidth=14; g.strokeRect(7,7,c.width-14,c.height-14); }
+  g.fillStyle = opt.color||'#2c3e50';
+  g.font = `bold ${opt.size||72}px 'Malgun Gothic',sans-serif`;
+  g.textAlign='center'; g.textBaseline='middle';
+  const lines = text.split('\n');
+  const lh = (opt.size||72)*1.25;
+  lines.forEach((ln,i)=> g.fillText(ln, c.width/2, c.height/2 + (i-(lines.length-1)/2)*lh));
+  const tx = new THREE.CanvasTexture(c);
+  return tx;
+}
+function sign(text, w, h, x, y, z, ry=0, opt={}){
+  const m = new THREE.Mesh(
+    new THREE.PlaneGeometry(w,h),
+    new THREE.MeshBasicMaterial({ map:makeTextTexture(text,opt) })
+  );
+  m.position.set(x,y,z); m.rotation.y = ry;
+  scene.add(m);
+  return m;
+}
+
+// =========================================================
+// 1. 방 구조 (바닥 / 벽 / 창문 / 문)
+// =========================================================
+(function buildRoom(){
+  // 체크무늬 바닥
+  const TILE = 3;
+  for(let ix=0; ix<ROOM_W/TILE; ix++){
+    for(let iz=0; iz<ROOM_D/TILE; iz++){
+      const t = new THREE.Mesh(new THREE.PlaneGeometry(TILE,TILE), (ix+iz)%2? M.floor : M.floor2);
+      t.rotation.x = -Math.PI/2;
+      t.position.set(-HW+TILE/2+ix*TILE, 0, -HD+TILE/2+iz*TILE);
+      t.receiveShadow = true;
+      scene.add(t);
+    }
+  }
+  // 천장
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W,ROOM_D), new THREE.MeshLambertMaterial({color:0xf9fcfb, side:THREE.DoubleSide}));
+  ceil.rotation.x = Math.PI/2; ceil.position.y = WALL_H;
+  scene.add(ceil);
+
+  // 벽 4면 (하단 민트 몰딩 포함)
+  const wallDefs = [
+    { x:0, z:-HD, w:ROOM_W, ry:0 },          // 북
+    { x:0, z: HD, w:ROOM_W, ry:Math.PI },    // 남
+    { x:-HW, z:0, w:ROOM_D, ry:Math.PI/2 },  // 서
+    { x: HW, z:0, w:ROOM_D, ry:-Math.PI/2 }, // 동
+  ];
+  wallDefs.forEach(wd=>{
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(wd.w, WALL_H), M.wall);
+    wall.position.set(wd.x, WALL_H/2, wd.z); wall.rotation.y = wd.ry;
+    wall.receiveShadow = true; scene.add(wall);
+    const lo = new THREE.Mesh(new THREE.PlaneGeometry(wd.w, 1.1), M.wallLo);
+    lo.position.set(wd.x, 0.55, wd.z); lo.rotation.y = wd.ry;
+    lo.position.add(new THREE.Vector3(Math.sin(wd.ry), 0, Math.cos(wd.ry)).multiplyScalar(0.01));
+    scene.add(lo);
+  });
+  // 벽 충돌 (경계)
+  colliders.push({minX:-HW-1, maxX:-HW, minZ:-HD-1, maxZ:HD+1});
+  colliders.push({minX: HW,  maxX: HW+1, minZ:-HD-1, maxZ:HD+1});
+  colliders.push({minX:-HW-1, maxX:HW+1, minZ:-HD-1, maxZ:-HD});
+  colliders.push({minX:-HW-1, maxX:HW+1, minZ: HD,  maxZ:HD+1});
+
+  // 북쪽 벽 창문 5개
+  for(let i=0;i<5;i++){
+    const wx = -14 + i*7;
+    box(4.2, 2.0, 0.08, M.glass, wx, 2.3, -HD+0.06, false);
+    box(4.4, 0.12, 0.14, M.white, wx, 1.28, -HD+0.07);
+    box(4.4, 0.12, 0.14, M.white, wx, 3.32, -HD+0.07);
+    box(0.12, 2.16, 0.14, M.white, wx-2.15, 2.3, -HD+0.07);
+    box(0.12, 2.16, 0.14, M.white, wx+2.15, 2.3, -HD+0.07);
+  }
+
+  // 남쪽 벽 출입문 2개 (미닫이 느낌)
+  [-10, 10].forEach(dx=>{
+    box(2.6, 2.6, 0.12, M.wood, dx, 1.3, HD-0.07);
+    box(0.35, 0.1, 0.2, M.steel, dx-0.9, 1.15, HD-0.16);
+    sign('출입구', 1.6, 0.5, dx, 2.85, HD-0.1, Math.PI, {bg:'#2bb3a3', color:'#ffffff', size:88});
+  });
+
+  // 보건실 안내판 (남쪽 중앙)
+  sign('🏥 보건실\nHealth Room', 5, 2, 0, 2.6, HD-0.08, Math.PI, {bg:'#ffffff', color:'#2bb3a3', border:'#2bb3a3', size:80});
+})();
+
+// =========================================================
+// 2. 침대 구역 (북쪽 벽, 침대 10개 + 커튼)
+// =========================================================
+(function buildBeds(){
+  const BED_W = 1.1, BED_L = 2.2, GAP = 3.3;
+  const startX = -HW + 3.2;
+  for(let i=0;i<10;i++){
+    const bx = startX + i*GAP;
+    const bz = -HD + 2.2;
+    // 프레임 + 매트리스
+    box(BED_W, 0.35, BED_L, M.steel, bx, 0.35, bz);
+    box(BED_W, 0.18, BED_L, M.white, bx, 0.6, bz);
+    // 베개 / 이불
+    box(0.7, 0.12, 0.4, M.pillow, bx, 0.75, bz - BED_L/2 + 0.35);
+    box(BED_W-0.05, 0.1, 1.3, M.blanket, bx, 0.73, bz + 0.35);
+    // 다리 4개
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{
+      cyl(0.04,0.04,0.36,M.steel, bx+sx*(BED_W/2-0.08), 0.18, bz+sz*(BED_L/2-0.1), 8);
+    });
+    // 헤드보드
+    box(BED_W, 0.55, 0.06, M.steel, bx, 0.85, bz - BED_L/2);
+    addCollider(bx, bz, BED_W, BED_L);
+
+    // 침대 사이 커튼 (레일 + 커튼)
+    if (i < 9){
+      const cx2 = bx + GAP/2;
+      cyl(0.025,0.025,3.0,M.steel, cx2, 2.5, -HD+1.8, 8).rotation.x = Math.PI/2;
+      const cur = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.9), M.curtain);
+      cur.position.set(cx2, 1.5, -HD+1.8);
+      cur.rotation.y = Math.PI/2;
+      scene.add(cur);
+    }
+    // 침대 옆 협탁 (짝수 침대에만)
+    if (i%2===0){
+      box(0.5,0.55,0.5,M.wood, bx+BED_W/2+0.4, 0.28, bz - 0.5);
+      cyl(0.09,0.06,0.18,M.mint, bx+BED_W/2+0.4, 0.65, bz-0.5, 10); // 컵
+      addCollider(bx+BED_W/2+0.4, bz-0.5, 0.5, 0.5);
+    }
+  }
+  sign('😴 침대 구역', 3.4, 0.9, 0, 3.5, -HD+0.09, 0, {bg:'#a8d8ce', color:'#1e3d38', size:76});
+})();
+
+// =========================================================
+// 3. 처치(치료) 구역 (서쪽)
+// =========================================================
+(function buildTreatment(){
+  const zx = -HW + 2.5;
+  // 처치대 2개
+  [ -2, 2 ].forEach(dz=>{
+    box(2.0, 0.85, 0.9, M.white, zx, 0.43, dz);
+    box(2.0, 0.06, 0.9, M.mint,  zx, 0.89, dz);
+    addCollider(zx, dz, 2.0, 0.9);
+  });
+  // 약품장 (유리문 캐비닛) 2개
+  [-5.5, 5.5].forEach(dz=>{
+    box(1.8, 2.2, 0.6, M.white, zx-0.5, 1.1, dz);
+    box(1.6, 1.4, 0.05, M.glass, zx+0.42, 1.4, dz, false);
+    // 선반 위 약품(색색 상자)
+    for(let r=0;r<3;r++) for(let c=0;c<4;c++){
+      const cols=[M.red,M.yellow,M.green,M.mintDk];
+      box(0.22,0.22,0.18, cols[(r+c)%4], zx-0.2+c*0.28-0.42, 0.85+r*0.42, dz-0.12+((r*c)%2)*0.2);
+    }
+    addCollider(zx-0.5, dz, 1.8, 0.7);
+  });
+  // 기구 트롤리 (바퀴달린 카트)
+  box(0.8, 0.06, 0.55, M.metal, zx+1.8, 0.85, 0);
+  box(0.8, 0.06, 0.55, M.metal, zx+1.8, 0.45, 0);
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{
+    cyl(0.02,0.02,0.85,M.steel, zx+1.8+sx*0.36, 0.45, sz*0.24, 6);
+  });
+  cyl(0.12,0.12,0.08,M.steel, zx+1.65, 0.93, -0.1, 12); // 트레이
+  box(0.18,0.05,0.3,M.white, zx+1.95, 0.91, 0.12);      // 거즈
+  addCollider(zx+1.8, 0, 0.9, 0.65);
+
+  // 세면대
+  box(1.4, 0.85, 0.6, M.white, zx, 0.43, -8.5);
+  cyl(0.3, 0.35, 0.18, M.metal, zx, 0.9, -8.5, 16);
+  cyl(0.03, 0.03, 0.3, M.steel, zx-0.15, 1.12, -8.7, 8);
+  addCollider(zx, -8.5, 1.4, 0.6);
+
+  // 손소독제 스탠드
+  cyl(0.18,0.22,0.05,M.steel, zx+2, 0.03, -8.5, 12);
+  cyl(0.03,0.03,1.1,M.steel, zx+2, 0.6, -8.5, 8);
+  box(0.18,0.28,0.14,M.white, zx+2, 1.25, -8.5);
+  addCollider(zx+2, -8.5, 0.4, 0.4);
+
+  // 약품 냉장고
+  box(1.0, 1.9, 0.7, M.white, zx-0.4, 0.95, 8.6);
+  box(0.06, 0.5, 0.06, M.steel, zx+0.12, 1.2, 8.95);
+  sign('약품냉장고', 0.8, 0.3, zx+0.12, 1.75, 8.96, 0, {bg:'#ffffff', color:'#3a5a78', size:64});
+  addCollider(zx-0.4, 8.6, 1.0, 0.75);
+
+  sign('🩹 처치 구역', 3.2, 0.9, -HW+0.09, 3.4, 0, Math.PI/2, {bg:'#ffd6d6', color:'#7a2e2e', size:76});
+})();
+
+// =========================================================
+// 4. 보건교사 데스크 + 상담 구역 (동쪽)
+// =========================================================
+(function buildDeskArea(){
+  const zx = HW - 3;
+  // ㄱ자 데스크
+  box(2.6, 0.75, 1.1, M.wood, zx, 0.38, -6);
+  box(1.1, 0.75, 1.8, M.wood, zx-1.4, 0.38, -6.9);
+  addCollider(zx, -6, 2.6, 1.1);
+  addCollider(zx-1.4, -6.9, 1.1, 1.8);
+  // 모니터 + 키보드
+  box(0.7, 0.45, 0.05, M.black, zx+0.3, 1.05, -6.2);
+  cyl(0.05,0.12,0.25,M.steel, zx+0.3, 0.85, -6.2, 8);
+  box(0.5, 0.03, 0.18, M.white, zx+0.2, 0.78, -5.75);
+  // 의자
+  box(0.55,0.1,0.55,M.navy, zx-0.2, 0.5, -4.9);
+  box(0.55,0.65,0.1,M.navy, zx-0.2, 0.9, -4.65);
+  cyl(0.05,0.05,0.4,M.steel, zx-0.2, 0.25, -4.9, 8);
+  addCollider(zx-0.2, -4.9, 0.6, 0.6);
+  // 서류 캐비닛
+  box(0.9, 1.6, 0.5, M.metal, zx+0.6, 0.8, -8.5);
+  for(let i=0;i<4;i++) box(0.7,0.04,0.05,M.steel, zx+0.6, 0.35+i*0.38, -8.24);
+  addCollider(zx+0.6, -8.5, 0.9, 0.55);
+
+  // 상담 테이블 (원형) + 의자 4개
+  const tx = zx-1.5, tz = 3;
+  cyl(1.0, 1.0, 0.07, M.wood, tx, 0.75, tz, 24);
+  cyl(0.08, 0.14, 0.75, M.steel, tx, 0.38, tz, 12);
+  addCollider(tx, tz, 2.1, 2.1);
+  [[1.6,0],[-1.6,0],[0,1.6],[0,-1.6]].forEach(([ox,oz])=>{
+    box(0.5,0.08,0.5,M.mint, tx+ox, 0.45, tz+oz);
+    cyl(0.04,0.04,0.45,M.steel, tx+ox, 0.22, tz+oz, 8);
+    addCollider(tx+ox, tz+oz, 0.55, 0.55);
+  });
+  sign('💬 상담 구역', 3.0, 0.9, HW-0.09, 3.4, 3, -Math.PI/2, {bg:'#d6e6ff', color:'#2e4a7a', size:76});
+  sign('👩‍⚕️ 보건교사', 3.0, 0.9, HW-0.09, 3.4, -6, -Math.PI/2, {bg:'#fff3d6', color:'#7a5f2e', size:76});
+})();
+
+// =========================================================
+// 5. 신체 측정 구역 (중앙 남쪽)
+// =========================================================
+(function buildMeasure(){
+  const mx = -6, mz = 6.5;
+  // 키 측정기
+  box(0.6, 0.08, 0.6, M.metal, mx, 0.04, mz);
+  box(0.1, 2.2, 0.1, M.steel, mx, 1.1, mz-0.22);
+  box(0.5, 0.04, 0.35, M.white, mx, 1.55, mz-0.05);
+  addCollider(mx, mz, 0.7, 0.7);
+  // 체중계
+  box(0.55, 0.1, 0.7, M.white, mx+1.6, 0.05, mz);
+  box(0.35, 0.02, 0.25, M.black, mx+1.6, 0.11, mz-0.15);
+  addCollider(mx+1.6, mz, 0.6, 0.75);
+  // 시력검사표 (남쪽 벽)
+  sign('시력검사\nC  O  C\nO  C  O\nC  O  C', 1.4, 2.0, -3, 1.9, HD-0.08, Math.PI, {bg:'#ffffff', color:'#2c3e50', border:'#3a5a78', size:52, h:512});
+  // 시력 측정 발판 표시
+  const dot = new THREE.Mesh(new THREE.CircleGeometry(0.3, 20), new THREE.MeshBasicMaterial({color:0x3a5a78}));
+  dot.rotation.x = -Math.PI/2; dot.position.set(-3, 0.02, HD-3.5);
+  scene.add(dot);
+  sign('📏 신체측정', 3.0, 0.9, mx+0.8, 3.0, HD-0.09, Math.PI, {bg:'#e0f5d6', color:'#3d6a2e', size:76});
+})();
+
+// =========================================================
+// 6. 기타 비품 (휠체어 / 이동식 침대 / AED / 파티션 / 대기 벤치 / 정수기)
+// =========================================================
+(function buildEtc(){
+  // 휠체어
+  (function(){
+    const wx = 6, wz = 7;
+    cyl(0.4,0.4,0.06,M.black, wx-0.35, 0.4, wz, 20).rotation.z = Math.PI/2;
+    cyl(0.4,0.4,0.06,M.black, wx+0.35, 0.4, wz, 20).rotation.z = Math.PI/2;
+    cyl(0.15,0.15,0.05,M.steel, wx-0.3, 0.15, wz-0.55, 12).rotation.z = Math.PI/2;
+    cyl(0.15,0.15,0.05,M.steel, wx+0.3, 0.15, wz-0.55, 12).rotation.z = Math.PI/2;
+    box(0.6,0.06,0.55,M.navy, wx, 0.5, wz-0.15);
+    box(0.6,0.55,0.06,M.navy, wx, 0.85, wz+0.25);
+    addCollider(wx, wz, 1.0, 1.3);
+  })();
+
+  // 이동식 침대(스트레처)
+  (function(){
+    const sx = 6, sz = -3;
+    box(0.75, 0.12, 2.0, M.white, sx, 0.85, sz);
+    box(0.7, 0.06, 1.9, M.blanket, sx, 0.93, sz);
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{
+      cyl(0.03,0.03,0.8,M.steel, sx+a*0.3, 0.42, sz+b*0.85, 6);
+      cyl(0.07,0.07,0.04,M.black, sx+a*0.3, 0.05, sz+b*0.85, 10).rotation.z = Math.PI/2;
+    });
+    addCollider(sx, sz, 0.85, 2.1);
+  })();
+
+  // AED (동쪽 벽)
+  box(0.45, 0.55, 0.18, M.red, HW-0.12, 1.5, 8);
+  sign('AED', 0.4, 0.22, HW-0.22, 1.5, 8, -Math.PI/2, {bg:'#ff6b6b', color:'#ffffff', size:110});
+
+  // 파티션 3개 (중앙, 처치 구역과 통행로 구분)
+  [-1.5, 1.5, 4.5].forEach(pz=>{
+    box(1.8, 1.7, 0.08, M.mint, -9.5, 0.9, pz);
+    addCollider(-9.5, pz, 1.8, 0.15);
+  });
+
+  // 대기 벤치 2개 (남쪽)
+  [-16, 15].forEach(bx=>{
+    box(3.0, 0.1, 0.6, M.wood, bx, 0.45, HD-1.5);
+    box(3.0, 0.5, 0.08, M.wood, bx, 0.75, HD-1.2);
+    [[-1.3],[0],[1.3]].forEach(([ox])=>{
+      box(0.08,0.45,0.55,M.woodDk, bx+ox, 0.22, HD-1.5);
+    });
+    addCollider(bx, HD-1.4, 3.0, 0.8);
+  });
+
+  // 정수기
+  box(0.55, 1.3, 0.5, M.white, 13, 0.65, HD-1.6);
+  box(0.4, 0.35, 0.3, M.glass, 13, 1.5, HD-1.6, false);
+  addCollider(13, HD-1.6, 0.6, 0.55);
+
+  // 관엽식물 (모서리)
+  [[-HW+1.2, HD-1.2],[HW-1.2, -HD+1.2]].forEach(([px,pz])=>{
+    cyl(0.3,0.24,0.4,M.woodDk, px, 0.2, pz, 12);
+    cyl(0.05,0.07,0.7,M.green, px, 0.7, pz, 8);
+    const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.45, 10, 8), M.green);
+    leaf.position.set(px, 1.25, pz); leaf.castShadow = true;
+    scene.add(leaf);
+    addCollider(px, pz, 0.6, 0.6);
+  });
+
+  // 보건 포스터 (벽면 장식)
+  sign('손씻기\n6단계', 1.4, 1.2, -12, 2.3, HD-0.08, Math.PI, {bg:'#e0f2ff', color:'#2e5a7a', size:80, h:384});
+  sign('올바른\n마스크 착용', 1.4, 1.2, 5, 2.3, HD-0.08, Math.PI, {bg:'#ffe9d6', color:'#7a4a2e', size:70, h:384});
+})();
+
+// =========================================================
+// 7. 미션 포인트 (근접 시 안내)
+// =========================================================
+const missions = [
+  { x:-6,      z:6.5,     r:1.6, name:'키·몸무게 측정하기',        zone:'신체측정 구역' },
+  { x:-HW+2.5, z:-2,      r:1.8, name:'처치대에서 상처 소독하기',   zone:'처치 구역' },
+  { x:-HW+2.0, z:-5.5,    r:1.8, name:'약품장에서 반창고 찾기',     zone:'처치 구역' },
+  { x:-HW+2.5, z:-8.5,    r:1.6, name:'세면대에서 손 씻기',        zone:'처치 구역' },
+  { x:HW-1.5,  z:8,       r:1.8, name:'AED 위치 확인하기',         zone:'응급 구역' },
+  { x:-3,      z:HD-3.5,  r:1.5, name:'시력 검사하기',             zone:'신체측정 구역' },
+];
+const missionMeshes = missions.map(ms=>{
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(ms.r*0.55, ms.r*0.72, 28),
+    new THREE.MeshBasicMaterial({ color:0xffd166, transparent:true, opacity:0.8, side:THREE.DoubleSide })
+  );
+  ring.rotation.x = -Math.PI/2;
+  ring.position.set(ms.x, 0.03, ms.z);
+  scene.add(ring);
+  const beam = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.06, 0.06, 2.6, 8, 1, true),
+    new THREE.MeshBasicMaterial({ color:0xffd166, transparent:true, opacity:0.35 })
+  );
+  beam.position.set(ms.x, 1.3, ms.z);
+  scene.add(beam);
+  return { ring, beam, done:false, ...ms };
+});
+
+// =========================================================
+// 8. 조작 (PC 포인터락 / 모바일 터치)
+// =========================================================
+let yaw = Math.PI, pitch = 0;
+const keys = {};
+let joyVec = { x:0, y:0 };
+let locked = false;
+let started = false;
+
+const overlay = document.getElementById('overlay');
+const hud = document.getElementById('hud');
+const startBtn = document.getElementById('start-btn');
+
+startBtn.addEventListener('click', ()=>{
+  started = true;
+  overlay.style.display = 'none';
+  hud.style.display = 'block';
+  if (!IS_MOBILE) renderer.domElement.requestPointerLock();
+});
+if (IS_MOBILE) document.getElementById('pc-keys').innerHTML =
+  '<span class="key">왼쪽 조이스틱 이동</span><span class="key">오른쪽 드래그 시점</span>';
+
+document.addEventListener('pointerlockchange', ()=>{
+  locked = document.pointerLockElement === renderer.domElement;
+});
+renderer.domElement.addEventListener('click', ()=>{
+  if (started && !IS_MOBILE && !locked) renderer.domElement.requestPointerLock();
+});
+document.addEventListener('mousemove', e=>{
+  if (!locked) return;
+  yaw   -= e.movementX * 0.0022;
+  pitch -= e.movementY * 0.0022;
+  pitch = Math.max(-1.35, Math.min(1.35, pitch));
+});
+addEventListener('keydown', e=> keys[e.code] = true);
+addEventListener('keyup',   e=> keys[e.code] = false);
+
+// 모바일: 왼쪽 조이스틱 + 오른쪽 시점 드래그
+(function mobileControls(){
+  if (!IS_MOBILE) return;
+  const joy = document.getElementById('joystick');
+  const knob = document.getElementById('joystick-knob');
+  let joyId = null, lookId = null, lookLast = null;
+  const joyCenter = ()=> {
+    const r = joy.getBoundingClientRect();
+    return { x:r.left+r.width/2, y:r.top+r.height/2, rad:r.width/2 };
+  };
+  addEventListener('touchstart', e=>{
+    for (const t of e.changedTouches){
+      if (t.clientX < innerWidth*0.45 && joyId===null){ joyId = t.identifier; }
+      else if (lookId===null){ lookId = t.identifier; lookLast = {x:t.clientX, y:t.clientY}; }
+    }
+  }, {passive:false});
+  addEventListener('touchmove', e=>{
+    e.preventDefault();
+    for (const t of e.changedTouches){
+      if (t.identifier === joyId){
+        const c = joyCenter();
+        let dx = (t.clientX-c.x)/c.rad, dy = (t.clientY-c.y)/c.rad;
+        const len = Math.hypot(dx,dy);
+        if (len>1){ dx/=len; dy/=len; }
+        joyVec = { x:dx, y:dy };
+        knob.style.transform = `translate(calc(-50% + ${dx*34}px), calc(-50% + ${dy*34}px))`;
+      } else if (t.identifier === lookId && lookLast){
+        yaw   -= (t.clientX - lookLast.x) * 0.005;
+        pitch -= (t.clientY - lookLast.y) * 0.005;
+        pitch = Math.max(-1.35, Math.min(1.35, pitch));
+        lookLast = {x:t.clientX, y:t.clientY};
+      }
+    }
+  }, {passive:false});
+  addEventListener('touchend', e=>{
+    for (const t of e.changedTouches){
+      if (t.identifier === joyId){ joyId=null; joyVec={x:0,y:0}; knob.style.transform='translate(-50%,-50%)'; }
+      if (t.identifier === lookId){ lookId=null; lookLast=null; }
+    }
+  });
+})();
+
+// ---------- 충돌 이동 ----------
+function collideMove(px, pz, nx, nz){
+  let rx = nx, rz = nz;
+  // X축 이동 검사
+  for (const c of colliders){
+    if (rx+PLAYER_R > c.minX && rx-PLAYER_R < c.maxX && pz+PLAYER_R > c.minZ && pz-PLAYER_R < c.maxZ){
+      rx = px; break;
+    }
+  }
+  // Z축 이동 검사
+  for (const c of colliders){
+    if (rx+PLAYER_R > c.minX && rx-PLAYER_R < c.maxX && rz+PLAYER_R > c.minZ && rz-PLAYER_R < c.maxZ){
+      rz = pz; break;
+    }
+  }
+  return [rx, rz];
+}
+
+// ---------- 구역 표시 ----------
+const zoneLabel = document.getElementById('zone-label');
+function currentZone(x, z){
+  if (z < -HD+4.5) return '😴 침대 구역';
+  if (x < -HW+5)   return '🩹 처치 구역';
+  if (x > HW-6 && z < 0) return '👩‍⚕️ 보건교사 데스크';
+  if (x > HW-6 && z >= 0) return '💬 상담 구역';
+  if (z > HD-4)    return '🚪 입구 · 대기 구역';
+  if (x > -8 && x < -3 && z > 4) return '📏 신체측정 구역';
+  return '🏥 보건실';
+}
+
+// ---------- 미션 처리 ----------
+const toast = document.getElementById('mission-toast');
+const countEl = document.getElementById('mission-count');
+let doneCount = 0, toastTimer = null;
+function checkMissions(x, z){
+  let near = null;
+  for (const m of missionMeshes){
+    const d = Math.hypot(x-m.x, z-m.z);
+    if (d < m.r){
+      near = m;
+      if (!m.done){
+        m.done = true;
+        doneCount++;
+        m.ring.material.color.set(0x74c69d);
+        m.beam.material.color.set(0x74c69d);
+        countEl.textContent = `미션 ${doneCount} / ${missions.length}`;
+        toast.textContent = `✅ 미션 완료: ${m.name}`;
+        toast.style.opacity = 1;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(()=> toast.style.opacity = 0, 2200);
+        if (doneCount === missions.length){
+          setTimeout(()=>{
+            toast.textContent = '🎉 모든 미션 완료! 보건실 탐험 성공!';
+            toast.style.opacity = 1;
+          }, 2400);
+        }
+      }
+      break;
+    }
+  }
+  return near;
+}
+
+// ---------- 메인 루프 ----------
+const clock = new THREE.Clock();
+let zoneTick = 0;
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+
+  if (started){
+    // 이동 입력
+    let mx = 0, mz = 0;
+    if (keys['KeyW']||keys['ArrowUp'])    mz -= 1;
+    if (keys['KeyS']||keys['ArrowDown'])  mz += 1;
+    if (keys['KeyA']||keys['ArrowLeft'])  mx -= 1;
+    if (keys['KeyD']||keys['ArrowRight']) mx += 1;
+    mx += joyVec.x; mz += joyVec.y;
+    const len = Math.hypot(mx, mz);
+    if (len > 0){
+      mx/=len; mz/=len;
+      const speed = (keys['ShiftLeft']||keys['ShiftRight']) ? 7.5 : 4.5;
+      const sin = Math.sin(yaw), cos = Math.cos(yaw);
+      const dx = (mx*cos - mz*sin) * speed * dt;
+      const dz = (-mx*sin - mz*cos) * speed * dt;
+      const [nx, nz] = collideMove(camera.position.x, camera.position.z,
+                                   camera.position.x + dx, camera.position.z + dz);
+      camera.position.x = nx;
+      camera.position.z = nz;
+      // 걷기 흔들림
+      camera.position.y = PLAYER_H + Math.sin(t*10)*0.03;
+    } else {
+      camera.position.y = PLAYER_H;
+    }
+    camera.rotation.order = 'YXZ';
+    camera.rotation.y = yaw;
+    camera.rotation.x = pitch;
+
+    // 미션/구역 (매 프레임은 과함 → 5프레임마다)
+    if (++zoneTick % 5 === 0){
+      zoneLabel.textContent = currentZone(camera.position.x, camera.position.z);
+      checkMissions(camera.position.x, camera.position.z);
+    }
+  }
+
+  // 미션 링 애니메이션
+  missionMeshes.forEach((m,i)=>{
+    m.ring.scale.setScalar(1 + Math.sin(t*3 + i)*0.08);
+    m.ring.material.opacity = m.done ? 0.5 : 0.55 + Math.sin(t*3+i)*0.25;
+  });
+
+  renderer.render(scene, camera);
+}
+animate();
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

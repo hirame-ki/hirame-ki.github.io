@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>쌤버스 3D - 자연숲 맵</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#1a2f1a; font-family:'Pretendard','Malgun Gothic',sans-serif; }
+  #canvas-wrap { position:fixed; inset:0; }
+  canvas { display:block; }
+
+  /* ── HUD ───────────────────────── */
+  #hud { position:fixed; inset:0; pointer-events:none; z-index:10; }
+
+  #crosshair {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:6px; height:6px; border-radius:50%;
+    background:rgba(255,255,255,.85); box-shadow:0 0 6px rgba(0,0,0,.5);
+  }
+
+  #top-bar {
+    position:absolute; top:12px; left:12px; display:flex; gap:8px; align-items:center;
+  }
+  .badge {
+    background:rgba(20,35,20,.75); backdrop-filter:blur(6px);
+    color:#e8f5e0; padding:7px 14px; border-radius:20px; font-size:13px; font-weight:600;
+    border:1px solid rgba(255,255,255,.12);
+  }
+  .badge b { color:#9be87a; }
+
+  #minimap {
+    position:absolute; top:12px; right:12px;
+    width:150px; height:150px; border-radius:12px;
+    border:2px solid rgba(255,255,255,.25);
+    background:rgba(15,28,15,.8); overflow:hidden;
+  }
+
+  #mission-toast {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-140%);
+    background:rgba(20,35,20,.9); backdrop-filter:blur(8px);
+    border:1px solid #9be87a; border-radius:14px;
+    padding:14px 20px; color:#fff; text-align:center; min-width:240px;
+    opacity:0; transition:opacity .25s; pointer-events:none;
+  }
+  #mission-toast.show { opacity:1; }
+  #mission-toast .m-title { font-size:16px; font-weight:700; color:#9be87a; margin-bottom:4px; }
+  #mission-toast .m-desc { font-size:13px; color:#d5e8cc; line-height:1.5; }
+  #mission-toast .m-key { font-size:11px; color:#8aa87f; margin-top:8px; }
+
+  #mission-panel {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:min(420px, 88vw);
+    background:rgba(18,30,18,.96); backdrop-filter:blur(10px);
+    border:1px solid #9be87a; border-radius:18px; padding:24px;
+    color:#fff; display:none; pointer-events:auto; z-index:30;
+  }
+  #mission-panel.open { display:block; }
+  #mission-panel h2 { font-size:19px; color:#9be87a; margin-bottom:10px; }
+  #mission-panel p { font-size:14px; line-height:1.6; color:#d5e8cc; margin-bottom:18px; }
+  #mission-panel .btn-row { display:flex; gap:10px; }
+  .btn {
+    flex:1; padding:11px 0; border:none; border-radius:10px; font-size:14px; font-weight:700;
+    cursor:pointer; font-family:inherit;
+  }
+  .btn-go { background:#6fbf44; color:#0d1a0a; }
+  .btn-close { background:rgba(255,255,255,.12); color:#cfe3c5; }
+
+  #controls-hint {
+    position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+    background:rgba(20,35,20,.7); color:#b9d4ab; font-size:12px;
+    padding:7px 16px; border-radius:16px; white-space:nowrap;
+    border:1px solid rgba(255,255,255,.1);
+  }
+
+  /* ── 시작 화면 ─────────────────── */
+  #start-screen {
+    position:fixed; inset:0; z-index:50; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:18px;
+    background:radial-gradient(ellipse at 50% 40%, #2c4a26 0%, #14240f 70%);
+  }
+  #start-screen h1 { color:#e9f7dd; font-size:30px; letter-spacing:-.5px; }
+  #start-screen h1 span { color:#9be87a; }
+  #start-screen p { color:#a8c496; font-size:14px; text-align:center; line-height:1.7; }
+  #start-btn {
+    padding:14px 44px; font-size:17px; font-weight:800; border:none; border-radius:14px;
+    background:#6fbf44; color:#0d1a0a; cursor:pointer; font-family:inherit;
+    box-shadow:0 6px 24px rgba(111,191,68,.35);
+  }
+  #start-btn:active { transform:scale(.97); }
+  #npc-toggle-wrap { display:flex; align-items:center; gap:8px; color:#a8c496; font-size:13px; }
+
+  /* ── 모바일 조작 ───────────────── */
+  #joy-zone { position:fixed; left:0; bottom:0; width:45%; height:45%; z-index:20; display:none; }
+  #look-zone { position:fixed; right:0; bottom:0; width:55%; height:60%; z-index:20; display:none; }
+  #joy-base {
+    position:absolute; width:110px; height:110px; border-radius:50%;
+    border:2px solid rgba(255,255,255,.35); background:rgba(255,255,255,.08);
+    display:none;
+  }
+  #joy-stick {
+    position:absolute; width:48px; height:48px; border-radius:50%;
+    background:rgba(255,255,255,.55); left:31px; top:31px;
+  }
+  body.touch #joy-zone, body.touch #look-zone { display:block; }
+  body.touch #controls-hint { display:none; }
+</style>
+</head>
+<body>
+
+<div id="canvas-wrap"></div>
+
+<div id="hud">
+  <div id="crosshair"></div>
+  <div id="top-bar">
+    <div class="badge">🌲 자연숲 맵</div>
+    <div class="badge">접속 <b id="player-count">1</b>명</div>
+    <div class="badge">미션 <b id="mission-count">0/5</b></div>
+  </div>
+  <canvas id="minimap" width="300" height="300"></canvas>
+  <div id="mission-toast">
+    <div class="m-title" id="toast-title"></div>
+    <div class="m-desc" id="toast-desc"></div>
+    <div class="m-key" id="toast-key">E 키를 눌러 미션 시작</div>
+  </div>
+  <div id="controls-hint">이동 WASD · 시점 마우스 · 미션 E · 마우스 해제 ESC</div>
+</div>
+
+<div id="mission-panel">
+  <h2 id="panel-title"></h2>
+  <p id="panel-desc"></p>
+  <div class="btn-row">
+    <button class="btn btn-go" id="panel-complete">미션 완료</button>
+    <button class="btn btn-close" id="panel-close">닫기</button>
+  </div>
+</div>
+
+<div id="start-screen">
+  <h1>쌤버스 <span>3D</span> · 자연숲</h1>
+  <p>1인칭 시점으로 숲속 교실을 탐험하세요.<br>빛기둥에 다가가면 미션을 수행할 수 있습니다.</p>
+  <div id="npc-toggle-wrap">
+    <input type="checkbox" id="npc-toggle" checked>
+    <label for="npc-toggle">데모 학생 30명 표시 (동시접속 시뮬레이션)</label>
+  </div>
+  <button id="start-btn">입장하기</button>
+</div>
+
+<div id="joy-zone"><div id="joy-base"><div id="joy-stick"></div></div></div>
+<div id="look-zone"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============================================================
+   쌤버스 3D · 자연숲 맵  (Three.js r128)
+   - 1인칭 시점 (포인터락 + 모바일 터치)
+   - 플레이 구역: 96 x 96 유닛 (타일 48x48, 1타일 = 2유닛)
+     → 30명 동시 활동에 충분한 크기
+   - 프로시저럴 숲: 나무/바위/풀 전부 코드 생성 (라이선스 無)
+   - 미션: 근접 트리거 방식 (기존 쌤버스 JSON 구조와 호환)
+   - Supabase 연동 훅: 하단 SsamverseAPI 참고
+   ============================================================ */
+
+// ── 설정 ─────────────────────────────────────────
+const CONFIG = {
+  TILE: 2,            // 1타일 = 2유닛 (기존 쌤버스 타일 좌표 변환용)
+  PLAY_HALF: 48,      // 플레이 구역 반경(±48) → 96x96
+  WORLD_HALF: 110,    // 배경 지형 포함 전체 크기
+  EYE: 1.6,
+  SPEED: 7.5,
+  PLAYER_R: 0.45,
+};
+
+// ── 미션 데이터 (기존 쌤버스 JSON 미션 구조 호환) ──
+const MISSIONS = [
+  { id:'m1', title:'🌸 벚꽃나무 관찰',   x:-30, z:-30, r:4, desc:'분홍 나무 아래에서 오늘의 학습 질문에 답해보세요.' },
+  { id:'m2', title:'💧 연못 탐구',       x: 32, z:-28, r:4, desc:'연못가에서 물의 순환에 대한 퀴즈를 풀어보세요.' },
+  { id:'m3', title:'🪨 바위 언덕 미션',  x: 34, z: 32, r:4, desc:'큰 바위 앞에서 모둠 토론 주제를 확인하세요.' },
+  { id:'m4', title:'🏕️ 캠프파이어 발표', x:-32, z: 30, r:4, desc:'모닥불 주위에 모여 조별 발표를 진행하세요.' },
+  { id:'m5', title:'🌳 중앙 광장 집합',  x:  0, z:  0, r:5, desc:'수업 시작! 중앙 광장에 모두 모이세요.' },
+];
+
+// ── 기본 셋업 ─────────────────────────────────────
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9fd4f0);
+scene.fog = new THREE.Fog(0x9fd4f0, 60, 170);
+
+const camera = new THREE.PerspectiveCamera(72, innerWidth/innerHeight, 0.1, 400);
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.getElementById('canvas-wrap').appendChild(renderer.domElement);
+
+// 조명
+scene.add(new THREE.HemisphereLight(0xcfe8ff, 0x3a5c2e, 0.75));
+const sun = new THREE.DirectionalLight(0xfff2d0, 1.05);
+sun.position.set(50, 80, 30);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -70; sun.shadow.camera.right = 70;
+sun.shadow.camera.top = 70;  sun.shadow.camera.bottom = -70;
+sun.shadow.camera.far = 220;
+scene.add(sun);
+
+// ── 지형 (중앙 평지 + 외곽 언덕) ──────────────────
+function terrainH(x, z) {
+  const d = Math.max(Math.abs(x), Math.abs(z));
+  if (d <= CONFIG.PLAY_HALF + 2) return 0;
+  const t = Math.min((d - CONFIG.PLAY_HALF - 2) / 40, 1);
+  const s = t * t * (3 - 2 * t); // smoothstep
+  const n = Math.sin(x * 0.11) * Math.cos(z * 0.13) * 2.2
+          + Math.sin(x * 0.05 + 3) * Math.sin(z * 0.06) * 3.5;
+  return s * (7 + n);
+}
+
+{
+  const seg = 110;
+  const g = new THREE.PlaneGeometry(CONFIG.WORLD_HALF*2, CONFIG.WORLD_HALF*2, seg, seg);
+  g.rotateX(-Math.PI/2);
+  const pos = g.attributes.position;
+  const colors = [];
+  const cGrass = new THREE.Color(0x69a84f), cGrass2 = new THREE.Color(0x5c9a44), cHill = new THREE.Color(0x4a7d38);
+  for (let i=0; i<pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i);
+    const h = terrainH(x, z);
+    pos.setY(i, h);
+    const mix = Math.min(h/8, 1);
+    const patch = (Math.sin(x*0.35)*Math.cos(z*0.3) > 0.4) ? cGrass2 : cGrass;
+    const c = patch.clone().lerp(cHill, mix);
+    colors.push(c.r, c.g, c.b);
+  }
+  g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  g.computeVertexNormals();
+  const ground = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors:true }));
+  ground.receiveShadow = true;
+  scene.add(ground);
+}
+
+// ── 충돌 시스템 ───────────────────────────────────
+const colliders = []; // {x, z, r}
+function addCollider(x, z, r) { colliders.push({x, z, r}); }
+
+function resolveCollision(px, pz) {
+  // 원형 콜라이더
+  for (const c of colliders) {
+    const dx = px - c.x, dz = pz - c.z;
+    const min = c.r + CONFIG.PLAYER_R;
+    const d2 = dx*dx + dz*dz;
+    if (d2 < min*min && d2 > 1e-6) {
+      const d = Math.sqrt(d2);
+      px = c.x + dx/d*min;
+      pz = c.z + dz/d*min;
+    }
+  }
+  // 맵 경계
+  const B = CONFIG.PLAY_HALF - CONFIG.PLAYER_R;
+  px = Math.max(-B, Math.min(B, px));
+  pz = Math.max(-B, Math.min(B, pz));
+  return [px, pz];
+}
+
+// ── 나무 (InstancedMesh, 3종) ─────────────────────
+const treeDots = []; // 미니맵용
+function rand(a,b){ return a + Math.random()*(b-a); }
+
+function scatterTrees() {
+  const dummy = new THREE.Object3D();
+  // 배치 위치 계산: 외곽 링 + 내부 산발
+  const spots = [];
+  // 경계 안쪽 링 (빽빽한 숲 벽)
+  for (let i=0; i<210; i++) {
+    const side = Math.floor(Math.random()*4);
+    const t = rand(-CONFIG.PLAY_HALF+2, CONFIG.PLAY_HALF-2);
+    const off = rand(CONFIG.PLAY_HALF-7, CONFIG.PLAY_HALF-1.5);
+    let x, z;
+    if (side===0){x=t; z=-off;} else if(side===1){x=t; z=off;}
+    else if (side===2){x=-off; z=t;} else {x=off; z=t;}
+    spots.push([x, z, true]);
+  }
+  // 플레이 구역 바깥 배경 숲
+  for (let i=0; i<260; i++) {
+    let x, z;
+    do { x = rand(-CONFIG.WORLD_HALF+5, CONFIG.WORLD_HALF-5); z = rand(-CONFIG.WORLD_HALF+5, CONFIG.WORLD_HALF-5); }
+    while (Math.max(Math.abs(x),Math.abs(z)) < CONFIG.PLAY_HALF+3);
+    spots.push([x, z, false]);
+  }
+  // 내부 산발 나무 (미션 지점·중앙 광장 피해서)
+  let placed = 0;
+  while (placed < 26) {
+    const x = rand(-CONFIG.PLAY_HALF+10, CONFIG.PLAY_HALF-10);
+    const z = rand(-CONFIG.PLAY_HALF+10, CONFIG.PLAY_HALF-10);
+    if (Math.hypot(x,z) < 12) continue;
+    if (MISSIONS.some(m => Math.hypot(x-m.x, z-m.z) < m.r+5)) continue;
+    spots.push([x, z, true]); placed++;
+  }
+
+  // 3종 분배
+  const groups = [[],[],[]];
+  spots.forEach(s => groups[Math.floor(Math.random()*3)].push(s));
+
+  // 종류1: 침엽수 (원뿔 2단)
+  makeTreeType(groups[0], () => {
+    const g = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.32,1.6,6), new THREE.MeshLambertMaterial({color:0x6b4a2f}));
+    trunk.position.y = 0.8; g.add(trunk);
+    const m = new THREE.MeshLambertMaterial({color:0x2e6b34});
+    const c1 = new THREE.Mesh(new THREE.ConeGeometry(1.7,2.6,7), m); c1.position.y=2.4; g.add(c1);
+    const c2 = new THREE.Mesh(new THREE.ConeGeometry(1.2,2.2,7), m); c2.position.y=3.9; g.add(c2);
+    return g;
+  }, 0.9, 1.5);
+
+  // 종류2: 활엽수 (구형 잎)
+  makeTreeType(groups[1], () => {
+    const g = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.38,2.1,6), new THREE.MeshLambertMaterial({color:0x7a5636}));
+    trunk.position.y = 1.05; g.add(trunk);
+    const leaf = new THREE.Mesh(new THREE.IcosahedronGeometry(1.8,0), new THREE.MeshLambertMaterial({color:0x4f9b3c, flatShading:true}));
+    leaf.position.y = 3.1; g.add(leaf);
+    return g;
+  }, 0.9, 1.6);
+
+  // 종류3: 연녹색 낮은 나무
+  makeTreeType(groups[2], () => {
+    const g = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.28,1.3,5), new THREE.MeshLambertMaterial({color:0x6b4a2f}));
+    trunk.position.y = 0.65; g.add(trunk);
+    const leaf = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5,0), new THREE.MeshLambertMaterial({color:0x7bc257, flatShading:true}));
+    leaf.position.y = 2.2; g.add(leaf);
+    return g;
+  }, 0.8, 1.3);
+
+  function makeTreeType(list, builder, sMin, sMax) {
+    if (!list.length) return;
+    const proto = builder();
+    proto.traverse(o => { if (o.isMesh) { o.castShadow = true; } });
+    // 그룹 → 병합 대신 각 메시별 InstancedMesh
+    proto.children.forEach(child => {
+      const inst = new THREE.InstancedMesh(child.geometry, child.material, list.length);
+      inst.castShadow = true;
+      const dummy2 = new THREE.Object3D();
+      list.forEach(([x,z,solid], i) => {
+        const s = rand(sMin, sMax);
+        const y = terrainH(x,z);
+        dummy2.position.set(x, y + child.position.y*s, z);
+        dummy2.scale.setScalar(s);
+        dummy2.rotation.y = Math.random()*Math.PI*2;
+        dummy2.updateMatrix();
+        inst.setMatrixAt(i, dummy2.matrix);
+      });
+      scene.add(inst);
+    });
+    list.forEach(([x,z,solid]) => {
+      if (solid) { addCollider(x, z, 0.6); treeDots.push([x,z]); }
+    });
+  }
+}
+scatterTrees();
+
+// ── 벚꽃나무 (미션1 랜드마크) ─────────────────────
+{
+  const g = new THREE.Group();
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.45,0.65,3.2,7), new THREE.MeshLambertMaterial({color:0x5e4030}));
+  trunk.position.y = 1.6; trunk.castShadow = true; g.add(trunk);
+  const pink = new THREE.MeshLambertMaterial({color:0xf6a8c8, flatShading:true});
+  [[0,4.6,0,2.6],[1.6,3.9,0.8,1.7],[-1.5,4.1,-0.7,1.6],[0.4,3.8,-1.6,1.5]].forEach(([x,y,z,r]) => {
+    const b = new THREE.Mesh(new THREE.IcosahedronGeometry(r,0), pink);
+    b.position.set(x,y,z); b.castShadow = true; g.add(b);
+  });
+  g.position.set(-30,-0,-30);
+  scene.add(g);
+  addCollider(-30,-30,0.9);
+}
+
+// ── 연못 (미션2) ──────────────────────────────────
+{
+  const water = new THREE.Mesh(
+    new THREE.CircleGeometry(7, 28),
+    new THREE.MeshLambertMaterial({color:0x4fa8d8, transparent:true, opacity:0.85})
+  );
+  water.rotation.x = -Math.PI/2;
+  water.position.set(32, 0.06, -22);
+  scene.add(water);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(7, 0.35, 6, 28), new THREE.MeshLambertMaterial({color:0xb9a27c}));
+  rim.rotation.x = Math.PI/2; rim.position.set(32, 0.15, -22);
+  scene.add(rim);
+  addCollider(32, -22, 7.4); // 연못은 못 들어감
+}
+
+// ── 바위 언덕 (미션3) + 산발 바위 ─────────────────
+function addRock(x, z, s) {
+  const r = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(s, 0),
+    new THREE.MeshLambertMaterial({color:0x8f8f8f, flatShading:true})
+  );
+  r.position.set(x, terrainH(x,z)+s*0.5, z);
+  r.rotation.set(Math.random(), Math.random()*3, Math.random());
+  r.castShadow = true; r.receiveShadow = true;
+  scene.add(r);
+  addCollider(x, z, s*0.95);
+  treeDots.push([x,z]);
+}
+addRock(34, 36, 2.4); addRock(37.5, 33, 1.5); addRock(31, 34.5, 1.2);
+addRock(-14, 18, 1.0); addRock(20, 8, 0.9); addRock(-8, -22, 1.1); addRock(12, -38, 1.0);
+
+// ── 캠프파이어 (미션4) ────────────────────────────
+{
+  const grp = new THREE.Group();
+  for (let i=0;i<6;i++){
+    const log = new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,1.6,5), new THREE.MeshLambertMaterial({color:0x5e4030}));
+    log.rotation.z = Math.PI/2.4; log.rotation.y = i*(Math.PI*2/6);
+    log.position.y = 0.35; grp.add(log);
+  }
+  const fire = new THREE.Mesh(new THREE.ConeGeometry(0.5,1.1,6), new THREE.MeshBasicMaterial({color:0xff8c2e}));
+  fire.position.y = 0.8; grp.add(fire);
+  const fire2 = new THREE.Mesh(new THREE.ConeGeometry(0.28,0.7,6), new THREE.MeshBasicMaterial({color:0xffd24a}));
+  fire2.position.y = 1.0; grp.add(fire2);
+  const light = new THREE.PointLight(0xff9c3e, 1.1, 16); light.position.y = 1.4; grp.add(light);
+  grp.position.set(-32, 0, 30);
+  scene.add(grp);
+  addCollider(-32, 30, 1.1);
+  grp.userData.fire = [fire, fire2];
+  window.__campfire = grp;
+  // 둘러앉는 통나무 의자
+  for (let i=0;i<5;i++){
+    const a = i*(Math.PI*2/5)+0.4;
+    const seat = new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.35,1.4,6), new THREE.MeshLambertMaterial({color:0x7a5636}));
+    seat.rotation.z = Math.PI/2; seat.rotation.y = a;
+    const sx = -32 + Math.cos(a)*3.4, sz = 30 + Math.sin(a)*3.4;
+    seat.position.set(sx, 0.35, sz); seat.castShadow = true;
+    scene.add(seat);
+    addCollider(sx, sz, 0.7);
+  }
+}
+
+// ── 중앙 광장 (미션5) ─────────────────────────────
+{
+  const plaza = new THREE.Mesh(new THREE.CircleGeometry(8, 32), new THREE.MeshLambertMaterial({color:0xd9c9a3}));
+  plaza.rotation.x = -Math.PI/2; plaza.position.y = 0.04;
+  scene.add(plaza);
+}
+
+// ── 풀/꽃 (InstancedMesh 장식) ────────────────────
+{
+  const grassGeo = new THREE.ConeGeometry(0.09, 0.55, 4);
+  const grassMat = new THREE.MeshLambertMaterial({color:0x58a83e});
+  const N = 700;
+  const inst = new THREE.InstancedMesh(grassGeo, grassMat, N);
+  const d = new THREE.Object3D();
+  for (let i=0;i<N;i++){
+    const x = rand(-CONFIG.PLAY_HALF+2, CONFIG.PLAY_HALF-2);
+    const z = rand(-CONFIG.PLAY_HALF+2, CONFIG.PLAY_HALF-2);
+    d.position.set(x, 0.25, z);
+    d.rotation.y = Math.random()*3;
+    d.scale.setScalar(rand(0.7,1.4));
+    d.updateMatrix();
+    inst.setMatrixAt(i, d.matrix);
+  }
+  scene.add(inst);
+
+  const flowerGeo = new THREE.SphereGeometry(0.12, 5, 4);
+  const colors = [0xffe066, 0xff8fb3, 0xffffff, 0xc79bff];
+  colors.forEach(col => {
+    const fi = new THREE.InstancedMesh(flowerGeo, new THREE.MeshLambertMaterial({color:col}), 45);
+    for (let i=0;i<45;i++){
+      d.position.set(rand(-46,46), 0.32, rand(-46,46));
+      d.scale.setScalar(rand(0.8,1.3));
+      d.updateMatrix();
+      fi.setMatrixAt(i, d.matrix);
+    }
+    scene.add(fi);
+  });
+}
+
+// ── 미션 마커 (빛기둥 + 라벨) ─────────────────────
+const missionMarkers = [];
+function makeLabel(text) {
+  const cv = document.createElement('canvas');
+  cv.width = 512; cv.height = 128;
+  const c = cv.getContext('2d');
+  c.font = 'bold 56px "Malgun Gothic", sans-serif';
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillStyle = 'rgba(15,30,12,0.7)';
+  const w = c.measureText(text).width + 60;
+  c.beginPath(); c.roundRect((512-w)/2, 14, w, 100, 22); c.fill();
+  c.fillStyle = '#fff';
+  c.fillText(text, 256, 66);
+  const tex = new THREE.CanvasTexture(cv);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true}));
+  sp.scale.set(8, 2, 1);
+  return sp;
+}
+
+MISSIONS.forEach(m => {
+  const beam = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.45, 0.45, 9, 10, 1, true),
+    new THREE.MeshBasicMaterial({color:0x9be87a, transparent:true, opacity:0.4, side:THREE.DoubleSide, depthWrite:false})
+  );
+  beam.position.set(m.x, 4.5, m.z);
+  scene.add(beam);
+
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(m.r-0.35, m.r, 36),
+    new THREE.MeshBasicMaterial({color:0x9be87a, transparent:true, opacity:0.55, side:THREE.DoubleSide})
+  );
+  ring.rotation.x = -Math.PI/2; ring.position.set(m.x, 0.08, m.z);
+  scene.add(ring);
+
+  const label = makeLabel(m.title);
+  label.position.set(m.x, 6.2, m.z);
+  scene.add(label);
+
+  missionMarkers.push({ m, beam, ring, done:false });
+});
+
+// ── 데모 NPC (30명 동시접속 시뮬레이션) ───────────
+// 실제 배포 시 Supabase Realtime의 원격 플레이어 렌더링으로 교체
+const NPC_COLORS = [0xff6b6b,0xffd93d,0x6bcb77,0x4d96ff,0xc780fa,0xff9f45,0x59d4e8,0xf473b9];
+const npcs = [];
+function makeChibi(color) {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.55,0.6,0.35), new THREE.MeshLambertMaterial({color}));
+  body.position.y = 0.55; body.castShadow = true; g.add(body);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.62,0.58,0.55), new THREE.MeshLambertMaterial({color:0xffdcb8}));
+  head.position.y = 1.18; head.castShadow = true; g.add(head);
+  const hair = new THREE.Mesh(new THREE.BoxGeometry(0.66,0.24,0.59), new THREE.MeshLambertMaterial({color:0x3a2a1e}));
+  hair.position.y = 1.42; g.add(hair);
+  // 눈
+  const eyeM = new THREE.MeshBasicMaterial({color:0x222222});
+  [[-0.14],[0.14]].forEach(([ex]) => {
+    const e = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.09,0.02), eyeM);
+    e.position.set(ex, 1.2, 0.285); g.add(e);
+  });
+  // 팔다리
+  const limbM = new THREE.MeshLambertMaterial({color});
+  [[-0.36],[0.36]].forEach(([ax]) => {
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.14,0.45,0.14), limbM);
+    arm.position.set(ax, 0.55, 0); g.add(arm);
+  });
+  const legM = new THREE.MeshLambertMaterial({color:0x4a5568});
+  [[-0.14],[0.14]].forEach(([lx]) => {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16,0.28,0.16), legM);
+    leg.position.set(lx, 0.14, 0); g.add(leg);
+  });
+  return g;
+}
+
+function spawnNPCs() {
+  for (let i=0;i<30;i++){
+    const mesh = makeChibi(NPC_COLORS[i%NPC_COLORS.length]);
+    let x, z;
+    do { x = rand(-42,42); z = rand(-42,42); }
+    while (colliders.some(c => Math.hypot(x-c.x,z-c.z) < c.r+1));
+    mesh.position.set(x, 0, z);
+    scene.add(mesh);
+    npcs.push({ mesh, x, z, tx:x, tz:z, wait: rand(0,4), speed: rand(1.6,3.2) });
+  }
+}
+
+function updateNPCs(dt) {
+  npcs.forEach(n => {
+    if (n.wait > 0) { n.wait -= dt; return; }
+    const dx = n.tx - n.x, dz = n.tz - n.z;
+    const d = Math.hypot(dx, dz);
+    if (d < 0.3) {
+      // 새 목표: 미션 지점 근처 또는 랜덤
+      if (Math.random() < 0.4) {
+        const m = MISSIONS[Math.floor(Math.random()*MISSIONS.length)];
+        n.tx = m.x + rand(-5,5); n.tz = m.z + rand(-5,5);
+      } else {
+        n.tx = rand(-42,42); n.tz = rand(-42,42);
+      }
+      n.wait = rand(1.5, 6);
+      return;
+    }
+    let nx = n.x + dx/d*n.speed*dt;
+    let nz = n.z + dz/d*n.speed*dt;
+    [nx, nz] = resolveCollision(nx, nz);
+    // 막히면 목표 재설정
+    if (Math.hypot(nx-n.x, nz-n.z) < n.speed*dt*0.2) { n.tx = rand(-42,42); n.tz = rand(-42,42); }
+    n.x = nx; n.z = nz;
+    n.mesh.position.set(nx, 0, nz);
+    n.mesh.rotation.y = Math.atan2(dx, dz);
+    n.mesh.position.y = Math.abs(Math.sin(performance.now()*0.012*n.speed))*0.06;
+  });
+}
+
+// ── 플레이어 & 1인칭 컨트롤 ───────────────────────
+const player = { x: 0, z: 14, yaw: Math.PI, pitch: 0 };
+const keys = {};
+let locked = false;
+const isTouch = ('ontouchstart' in window) && matchMedia('(pointer:coarse)').matches;
+if (isTouch) document.body.classList.add('touch');
+
+addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (e.code === 'KeyE') tryInteract();
+});
+addEventListener('keyup', e => keys[e.code] = false);
+
+// 포인터락 (데스크톱)
+renderer.domElement.addEventListener('click', () => {
+  if (!isTouch && started && !document.pointerLockElement) renderer.domElement.requestPointerLock();
+});
+document.addEventListener('pointerlockchange', () => { locked = !!document.pointerLockElement; });
+document.addEventListener('mousemove', e => {
+  if (!locked) return;
+  player.yaw   -= e.movementX * 0.0024;
+  player.pitch -= e.movementY * 0.0024;
+  player.pitch = Math.max(-1.35, Math.min(1.35, player.pitch));
+});
+
+// 모바일: 왼쪽 조이스틱 + 오른쪽 드래그
+const joy = { active:false, id:null, ox:0, oy:0, dx:0, dy:0 };
+const look = { id:null, lx:0, ly:0 };
+const joyZone = document.getElementById('joy-zone');
+const lookZone = document.getElementById('look-zone');
+const joyBase = document.getElementById('joy-base');
+const joyStick = document.getElementById('joy-stick');
+
+joyZone.addEventListener('touchstart', e => {
+  const t = e.changedTouches[0];
+  joy.active = true; joy.id = t.identifier;
+  joy.ox = t.clientX; joy.oy = t.clientY; joy.dx = 0; joy.dy = 0;
+  joyBase.style.display = 'block';
+  joyBase.style.left = (t.clientX-55)+'px';
+  joyBase.style.top = (t.clientY-55)+'px';
+}, {passive:true});
+joyZone.addEventListener('touchmove', e => {
+  for (const t of e.changedTouches) {
+    if (t.identifier !== joy.id) continue;
+    let dx = t.clientX - joy.ox, dy = t.clientY - joy.oy;
+    const d = Math.hypot(dx,dy), max = 45;
+    if (d > max) { dx = dx/d*max; dy = dy/d*max; }
+    joy.dx = dx/max; joy.dy = dy/max;
+    joyStick.style.left = (31+dx)+'px';
+    joyStick.style.top = (31+dy)+'px';
+  }
+}, {passive:true});
+joyZone.addEventListener('touchend', e => {
+  for (const t of e.changedTouches) {
+    if (t.identifier !== joy.id) continue;
+    joy.active = false; joy.dx = 0; joy.dy = 0;
+    joyBase.style.display = 'none';
+    joyStick.style.left = '31px'; joyStick.style.top = '31px';
+  }
+});
+
+lookZone.addEventListener('touchstart', e => {
+  const t = e.changedTouches[0];
+  look.id = t.identifier; look.lx = t.clientX; look.ly = t.clientY;
+}, {passive:true});
+lookZone.addEventListener('touchmove', e => {
+  for (const t of e.changedTouches) {
+    if (t.identifier !== look.id) continue;
+    player.yaw   -= (t.clientX - look.lx) * 0.005;
+    player.pitch -= (t.clientY - look.ly) * 0.005;
+    player.pitch = Math.max(-1.35, Math.min(1.35, player.pitch));
+    look.lx = t.clientX; look.ly = t.clientY;
+  }
+}, {passive:true});
+
+// 모바일 미션 버튼 (근접 시 토스트 탭)
+document.getElementById('mission-toast').style.pointerEvents = 'auto';
+document.getElementById('mission-toast').addEventListener('click', tryInteract);
+
+function movePlayer(dt) {
+  let fx = 0, fz = 0;
+  if (keys['KeyW'] || keys['ArrowUp']) fz += 1;
+  if (keys['KeyS'] || keys['ArrowDown']) fz -= 1;
+  if (keys['KeyA'] || keys['ArrowLeft']) fx -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) fx += 1;
+  if (joy.active) { fx += joy.dx; fz += -joy.dy; }
+
+  const len = Math.hypot(fx, fz);
+  if (len > 0.01) {
+    fx /= Math.max(len,1); fz /= Math.max(len,1);
+    const sin = Math.sin(player.yaw), cos = Math.cos(player.yaw);
+    const wx = (fx * cos - fz * sin);
+    const wz = (-fx * sin - fz * cos);
+    let nx = player.x + wx * CONFIG.SPEED * dt;
+    let nz = player.z + wz * CONFIG.SPEED * dt;
+    [nx, nz] = resolveCollision(nx, nz);
+    player.x = nx; player.z = nz;
+  }
+
+  camera.position.set(player.x, CONFIG.EYE, player.z);
+  camera.rotation.order = 'YXZ';
+  camera.rotation.y = player.yaw;
+  camera.rotation.x = player.pitch;
+}
+
+// ── 미션 근접 트리거 ──────────────────────────────
+let nearMission = null;
+let doneCount = 0;
+const toast = document.getElementById('mission-toast');
+const panel = document.getElementById('mission-panel');
+
+function checkMissions() {
+  let found = null;
+  for (const mm of missionMarkers) {
+    const d = Math.hypot(player.x - mm.m.x, player.z - mm.m.z);
+    if (d < mm.m.r) { found = mm; break; }
+  }
+  if (found !== nearMission) {
+    nearMission = found;
+    if (found) {
+      document.getElementById('toast-title').textContent = found.m.title + (found.done ? ' ✅' : '');
+      document.getElementById('toast-desc').textContent = found.m.desc;
+      document.getElementById('toast-key').textContent = isTouch ? '여기를 탭하여 미션 시작' : 'E 키를 눌러 미션 시작';
+      toast.classList.add('show');
+    } else {
+      toast.classList.remove('show');
+    }
+  }
+}
+
+function tryInteract() {
+  if (!nearMission || panel.classList.contains('open')) return;
+  document.getElementById('panel-title').textContent = nearMission.m.title;
+  document.getElementById('panel-desc').textContent = nearMission.m.desc;
+  panel.classList.add('open');
+  if (document.pointerLockElement) document.exitPointerLock();
+}
+document.getElementById('panel-close').addEventListener('click', () => panel.classList.remove('open'));
+document.getElementById('panel-complete').addEventListener('click', () => {
+  if (nearMission && !nearMission.done) {
+    nearMission.done = true;
+    nearMission.beam.material.color.set(0xffd24a);
+    nearMission.ring.material.color.set(0xffd24a);
+    doneCount++;
+    document.getElementById('mission-count').textContent = doneCount + '/' + MISSIONS.length;
+  }
+  panel.classList.remove('open');
+});
+
+// ── 미니맵 ────────────────────────────────────────
+const mmCanvas = document.getElementById('minimap');
+const mmCtx = mmCanvas.getContext('2d');
+function drawMinimap() {
+  const S = 300, half = CONFIG.PLAY_HALF + 4;
+  const toPx = v => (v + half) / (half*2) * S;
+  mmCtx.clearRect(0,0,S,S);
+  mmCtx.fillStyle = '#2c4a26'; mmCtx.fillRect(0,0,S,S);
+  // 나무/바위
+  mmCtx.fillStyle = '#1d3318';
+  treeDots.forEach(([x,z]) => mmCtx.fillRect(toPx(x)-2, toPx(z)-2, 4, 4));
+  // 미션
+  missionMarkers.forEach(mm => {
+    mmCtx.fillStyle = mm.done ? '#ffd24a' : '#9be87a';
+    mmCtx.beginPath(); mmCtx.arc(toPx(mm.m.x), toPx(mm.m.z), 7, 0, 7); mmCtx.fill();
+  });
+  // NPC
+  mmCtx.fillStyle = 'rgba(255,255,255,.6)';
+  npcs.forEach(n => { mmCtx.beginPath(); mmCtx.arc(toPx(n.x), toPx(n.z), 3, 0, 7); mmCtx.fill(); });
+  // 플레이어 (방향 삼각형)
+  mmCtx.save();
+  mmCtx.translate(toPx(player.x), toPx(player.z));
+  mmCtx.rotate(-player.yaw + Math.PI);
+  mmCtx.fillStyle = '#ff5b5b';
+  mmCtx.beginPath();
+  mmCtx.moveTo(0,-9); mmCtx.lineTo(6,7); mmCtx.lineTo(-6,7); mmCtx.closePath(); mmCtx.fill();
+  mmCtx.restore();
+}
+
+// ── Supabase 연동 훅 ──────────────────────────────
+// 기존 쌤버스 Realtime 채널에 연결할 때 사용:
+//   1) 위치 전송: setInterval(() => channel.send({event:'pos', payload: SsamverseAPI.getPlayerState()}), 100)
+//   2) 원격 렌더링: channel.on('broadcast', {event:'pos'}, p => SsamverseAPI.updateRemote(p.payload))
+//   ※ 타일 좌표 변환: tileX = Math.round(x / CONFIG.TILE) + 24 (48x48 타일 기준)
+const remotes = new Map();
+window.SsamverseAPI = {
+  getPlayerState() { return { x:+player.x.toFixed(2), z:+player.z.toFixed(2), yaw:+player.yaw.toFixed(2) }; },
+  updateRemote({ id, x, z, yaw, color }) {
+    let r = remotes.get(id);
+    if (!r) {
+      r = { mesh: makeChibi(color || 0x4d96ff) };
+      scene.add(r.mesh);
+      remotes.set(id, r);
+    }
+    r.mesh.position.set(x, 0, z);
+    r.mesh.rotation.y = yaw || 0;
+  },
+  removeRemote(id) {
+    const r = remotes.get(id);
+    if (r) { scene.remove(r.mesh); remotes.delete(id); }
+  }
+};
+
+// ── 시작 & 메인 루프 ──────────────────────────────
+let started = false;
+document.getElementById('start-btn').addEventListener('click', () => {
+  started = true;
+  if (document.getElementById('npc-toggle').checked) {
+    spawnNPCs();
+    document.getElementById('player-count').textContent = '31';
+  }
+  document.getElementById('start-screen').style.display = 'none';
+  if (!isTouch) renderer.domElement.requestPointerLock();
+});
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+const clock = new THREE.Clock();
+let mmTimer = 0;
+function loop() {
+  requestAnimationFrame(loop);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = performance.now() * 0.001;
+
+  if (started) {
+    movePlayer(dt);
+    updateNPCs(dt);
+    checkMissions();
+    mmTimer += dt;
+    if (mmTimer > 0.15) { drawMinimap(); mmTimer = 0; }
+  } else {
+    // 시작 전 소개 카메라
+    camera.position.set(Math.sin(t*0.1)*30, 14, Math.cos(t*0.1)*30);
+    camera.lookAt(0, 2, 0);
+  }
+
+  // 미션 빛기둥 애니메이션
+  missionMarkers.forEach((mm, i) => {
+    mm.beam.material.opacity = 0.3 + Math.sin(t*2 + i)*0.12;
+    mm.ring.rotation.z = t * 0.4;
+  });
+  // 모닥불
+  if (window.__campfire) {
+    window.__campfire.userData.fire.forEach((f, i) => {
+      f.scale.y = 1 + Math.sin(t*9 + i*2)*0.18;
+      f.rotation.y = t * (2+i);
+    });
+  }
+
+  renderer.render(scene, camera);
+}
+loop();
+</script>
+</body>
+</html>

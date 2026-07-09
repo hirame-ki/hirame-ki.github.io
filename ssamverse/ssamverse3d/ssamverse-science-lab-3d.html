@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>쌤버스 3D - 과학실</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#000;
+    font-family:'Segoe UI','Malgun Gothic',sans-serif; touch-action:none; }
+  #canvas-wrap { position:fixed; inset:0; }
+
+  /* ── 크로스헤어 ─────────────────────── */
+  #crosshair { position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:8px; height:8px; border:2px solid rgba(255,255,255,.85); border-radius:50%;
+    pointer-events:none; z-index:10; display:none; }
+
+  /* ── 시작 오버레이 ───────────────────── */
+  #start-overlay { position:fixed; inset:0; z-index:100;
+    background:linear-gradient(160deg,#0b1d2a 0%,#12324a 60%,#0d2436 100%);
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:20px; }
+  #start-card { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.15);
+    border-radius:16px; padding:36px 44px; text-align:center; color:#eaf4fb;
+    backdrop-filter:blur(6px); max-width:420px; width:90%; }
+  #start-card h1 { font-size:26px; margin-bottom:6px; letter-spacing:1px; }
+  #start-card h1 .flask { color:#7fd8c8; }
+  #start-card p.sub { font-size:13px; color:#9fc3d8; margin-bottom:22px; }
+  #start-card .keys { font-size:13px; line-height:2; color:#cfe6f2; text-align:left;
+    background:rgba(0,0,0,.25); border-radius:10px; padding:14px 18px; margin-bottom:22px; }
+  #start-card .keys b { color:#7fd8c8; display:inline-block; min-width:86px; }
+  #start-btn { background:#1f8f7a; color:#fff; border:none; border-radius:10px;
+    padding:13px 40px; font-size:16px; font-weight:700; cursor:pointer; letter-spacing:1px; }
+  #start-btn:hover { background:#25a98f; }
+
+  /* ── HUD ────────────────────────────── */
+  #hud-top { position:fixed; top:12px; left:12px; z-index:20; color:#fff;
+    background:rgba(10,25,35,.65); border:1px solid rgba(255,255,255,.15);
+    border-radius:10px; padding:8px 14px; font-size:13px; display:none; }
+  #hud-top .map-name { font-weight:700; color:#7fd8c8; }
+  #mission-count { color:#ffd97a; font-weight:700; }
+
+  /* ── 미션 프롬프트 / 팝업 ─────────────── */
+  #interact-hint { position:fixed; left:50%; bottom:18%; transform:translateX(-50%);
+    z-index:20; background:rgba(10,25,35,.8); color:#fff; border:1px solid #7fd8c8;
+    border-radius:10px; padding:10px 20px; font-size:14px; display:none; }
+  #interact-hint b { color:#7fd8c8; }
+  #mission-popup { position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+    z-index:60; background:rgba(12,30,42,.96); color:#eaf4fb; border:1px solid #7fd8c8;
+    border-radius:14px; padding:26px 30px; width:min(420px,92vw); display:none; }
+  #mission-popup h2 { font-size:18px; color:#7fd8c8; margin-bottom:10px; }
+  #mission-popup p { font-size:14px; line-height:1.6; color:#cfe6f2; margin-bottom:18px; }
+  #mission-popup .btn-row { display:flex; gap:10px; justify-content:flex-end; }
+  #mission-popup button { border:none; border-radius:8px; padding:9px 20px;
+    font-size:14px; font-weight:600; cursor:pointer; }
+  #mp-complete { background:#1f8f7a; color:#fff; }
+  #mp-close { background:rgba(255,255,255,.12); color:#cfe6f2; }
+
+  #toast { position:fixed; left:50%; top:70px; transform:translateX(-50%);
+    z-index:70; background:rgba(31,143,122,.92); color:#fff; border-radius:10px;
+    padding:10px 22px; font-size:14px; font-weight:600; display:none; }
+
+  /* ── 모바일 조이스틱 ─────────────────── */
+  #joystick { position:fixed; left:26px; bottom:26px; width:120px; height:120px;
+    border-radius:50%; background:rgba(255,255,255,.08);
+    border:2px solid rgba(255,255,255,.25); z-index:30; display:none; }
+  #joy-knob { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:52px; height:52px; border-radius:50%; background:rgba(127,216,200,.55);
+    border:2px solid rgba(255,255,255,.5); }
+  #btn-interact-mobile { position:fixed; right:26px; bottom:40px; width:74px; height:74px;
+    border-radius:50%; background:rgba(31,143,122,.75); border:2px solid rgba(255,255,255,.4);
+    color:#fff; font-size:13px; font-weight:700; z-index:30; display:none; }
+</style>
+</head>
+<body>
+
+<div id="canvas-wrap"></div>
+<div id="crosshair"></div>
+
+<div id="start-overlay">
+  <div id="start-card">
+    <h1><span class="flask">⚗</span> 쌤버스 3D · 과학실</h1>
+    <p class="sub">1인칭 시점으로 과학실을 탐험하며 미션을 수행하세요</p>
+    <div class="keys">
+      <b>이동</b> W A S D / 방향키<br>
+      <b>시점</b> 마우스 (클릭하여 시점 고정)<br>
+      <b>달리기</b> Shift<br>
+      <b>상호작용</b> E (미션 구역 근처에서)<br>
+      <b>모바일</b> 좌측 조이스틱 이동 · 우측 드래그 시점
+    </div>
+    <button id="start-btn">입장하기</button>
+  </div>
+</div>
+
+<div id="hud-top">
+  <span class="map-name">🧪 과학실</span> &nbsp;|&nbsp;
+  미션 <span id="mission-count">0 / 4</span>
+</div>
+<div id="interact-hint"><b>[E]</b> <span id="hint-text">조사하기</span></div>
+
+<div id="mission-popup">
+  <h2 id="mp-title"></h2>
+  <p id="mp-desc"></p>
+  <div class="btn-row">
+    <button id="mp-close">닫기</button>
+    <button id="mp-complete">미션 완료</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<div id="joystick"><div id="joy-knob"></div></div>
+<button id="btn-interact-mobile">E</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════════
+   쌤버스 3D 과학실 맵
+   - Three.js r128, 절차적 지오메트리만 사용 (라이선스 에셋 없음)
+   - 방 크기: 26m × 18m (교실보다 큰 과학실, 30명 동시 이동 가능)
+   - 1인칭 시점, AABB 충돌, 근접 미션 시스템(기존 쌤버스 구조 호환)
+   - [연동 포인트] 주석 검색 → Supabase Realtime 멀티플레이 연결 위치
+   ════════════════════════════════════════════════════════════════ */
+
+// ── 기본 설정 ─────────────────────────────────────────────
+const ROOM_W = 26;          // 가로(m)
+const ROOM_D = 18;          // 세로(m)
+const ROOM_H = 3.6;         // 천장 높이
+const EYE_H  = 1.6;         // 시점 높이
+const PLAYER_R = 0.35;      // 플레이어 충돌 반경
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xdfeef5);
+scene.fog = new THREE.Fog(0xdfeef5, 30, 60);
+
+const camera = new THREE.PerspectiveCamera(72, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0, EYE_H, ROOM_D/2 - 2.2);   // 뒷문 근처 스폰
+
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.getElementById('canvas-wrap').appendChild(renderer.domElement);
+
+// ── 조명 ─────────────────────────────────────────────────
+scene.add(new THREE.HemisphereLight(0xfaffff, 0x8a9aa5, 0.75));
+const sun = new THREE.DirectionalLight(0xfff4e0, 0.8);
+sun.position.set(-8, 12, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -18; sun.shadow.camera.right = 18;
+sun.shadow.camera.top = 14;  sun.shadow.camera.bottom = -14;
+scene.add(sun);
+// 천장 형광등 느낌의 포인트 라이트 2개 (성능 위해 그림자 없음)
+[[ -6,0 ],[ 6,0 ]].forEach(([x,z])=>{
+  const p = new THREE.PointLight(0xf2fbff, 0.35, 24);
+  p.position.set(x, ROOM_H-0.3, z);
+  scene.add(p);
+});
+
+// ── 충돌 박스 목록 ────────────────────────────────────────
+const colliders = [];  // {minX,maxX,minZ,maxZ}
+function addCollider(cx, cz, w, d, pad=0.05){
+  colliders.push({ minX:cx-w/2-pad, maxX:cx+w/2+pad, minZ:cz-d/2-pad, maxZ:cz+d/2+pad });
+}
+
+// ── 캔버스 텍스처 유틸 ────────────────────────────────────
+function canvasTexture(w, h, draw){
+  const c = document.createElement('canvas'); c.width=w; c.height=h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.anisotropy = 4;
+  return t;
+}
+
+// 바닥 타일 텍스처
+const floorTex = canvasTexture(512, 512, (g)=>{
+  g.fillStyle = '#cfd8dc'; g.fillRect(0,0,512,512);
+  g.strokeStyle = '#aeb9bf'; g.lineWidth = 3;
+  for(let i=0;i<=4;i++){
+    g.beginPath(); g.moveTo(i*128,0); g.lineTo(i*128,512); g.stroke();
+    g.beginPath(); g.moveTo(0,i*128); g.lineTo(512,i*128); g.stroke();
+  }
+  // 얼룩 느낌
+  g.fillStyle = 'rgba(255,255,255,.25)';
+  for(let i=0;i<40;i++) g.fillRect(Math.random()*512, Math.random()*512, 2, 2);
+});
+floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping;
+floorTex.repeat.set(ROOM_W/2, ROOM_D/2);
+
+// 주기율표 포스터
+const periodicTex = canvasTexture(512, 340, (g,w,h)=>{
+  g.fillStyle='#ffffff'; g.fillRect(0,0,w,h);
+  g.fillStyle='#123'; g.font='bold 26px sans-serif'; g.textAlign='center';
+  g.fillText('주기율표  Periodic Table', w/2, 34);
+  const colors=['#ef9a9a','#ffcc80','#fff59d','#a5d6a7','#90caf9','#ce93d8','#80cbc4'];
+  const syms=['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar'];
+  let idx=0;
+  for(let r=0;r<3;r++) for(let c=0;c<6;c++){
+    const x=30+c*76, y=56+r*84;
+    g.fillStyle=colors[(r*6+c)%colors.length]; g.fillRect(x,y,66,74);
+    g.strokeStyle='#456'; g.strokeRect(x,y,66,74);
+    g.fillStyle='#123'; g.font='bold 24px sans-serif';
+    g.fillText(syms[idx%syms.length], x+33, y+44); idx++;
+    g.font='11px sans-serif'; g.fillText(String(idx), x+33, y+16);
+  }
+});
+
+// 안전 수칙 포스터
+const safetyTex = canvasTexture(360, 460, (g,w,h)=>{
+  g.fillStyle='#fff8e1'; g.fillRect(0,0,w,h);
+  g.fillStyle='#e65100'; g.fillRect(0,0,w,64);
+  g.fillStyle='#fff'; g.font='bold 26px sans-serif'; g.textAlign='center';
+  g.fillText('실험실 안전 수칙', w/2, 42);
+  g.fillStyle='#3e2723'; g.font='17px sans-serif'; g.textAlign='left';
+  ['1. 보안경과 실험복을 착용한다','2. 약품 냄새를 직접 맡지 않는다',
+   '3. 실험 중 장난치지 않는다','4. 가열 기구 사용 시 주의한다',
+   '5. 폐액은 지정된 통에 버린다','6. 실험 후 손을 깨끗이 씻는다']
+   .forEach((s,i)=> g.fillText(s, 26, 110+i*54));
+});
+
+// 화이트보드
+const boardTex = canvasTexture(640, 300, (g,w,h)=>{
+  g.fillStyle='#f7fbfc'; g.fillRect(0,0,w,h);
+  g.fillStyle='#1a6b8f'; g.font='bold 34px sans-serif';
+  g.fillText('오늘의 실험', 30, 60);
+  g.fillStyle='#333'; g.font='24px sans-serif';
+  g.fillText('산과 염기의 중화 반응', 30, 112);
+  g.fillStyle='#c0392b'; g.font='22px sans-serif';
+  g.fillText('HCl + NaOH → NaCl + H₂O', 30, 160);
+  g.strokeStyle='#1a6b8f'; g.lineWidth=3;
+  g.strokeRect(400, 90, 200, 170);
+  g.fillStyle='#1a6b8f'; g.font='18px sans-serif';
+  g.fillText('지시약 색 변화 관찰', 410, 120);
+});
+
+// ── 재질 팔레트 ───────────────────────────────────────────
+const MAT = {
+  floor:  new THREE.MeshStandardMaterial({ map:floorTex, roughness:0.9 }),
+  wall:   new THREE.MeshStandardMaterial({ color:0xe8f1ec, roughness:0.95 }),
+  wain:   new THREE.MeshStandardMaterial({ color:0x9fb8ad, roughness:0.9 }),   // 벽 하단
+  ceil:   new THREE.MeshStandardMaterial({ color:0xf4f7f8, roughness:1 }),
+  top:    new THREE.MeshStandardMaterial({ color:0x22282c, roughness:0.35, metalness:0.1 }), // 실험대 상판(에폭시)
+  cab:    new THREE.MeshStandardMaterial({ color:0xd7e3e8, roughness:0.8 }),   // 실험대 하부장
+  wood:   new THREE.MeshStandardMaterial({ color:0x8d6e63, roughness:0.85 }),
+  woodD:  new THREE.MeshStandardMaterial({ color:0x5d4037, roughness:0.85 }),
+  glass:  new THREE.MeshPhongMaterial({ color:0xbfe3ea, transparent:true, opacity:0.28, shininess:90 }),
+  liquidB:new THREE.MeshPhongMaterial({ color:0x42a5f5, transparent:true, opacity:0.75 }),
+  liquidG:new THREE.MeshPhongMaterial({ color:0x66bb6a, transparent:true, opacity:0.75 }),
+  liquidP:new THREE.MeshPhongMaterial({ color:0xec407a, transparent:true, opacity:0.75 }),
+  liquidY:new THREE.MeshPhongMaterial({ color:0xffca28, transparent:true, opacity:0.75 }),
+  metal:  new THREE.MeshStandardMaterial({ color:0x8e979e, roughness:0.35, metalness:0.7 }),
+  metalD: new THREE.MeshStandardMaterial({ color:0x37474f, roughness:0.4, metalness:0.6 }),
+  white:  new THREE.MeshStandardMaterial({ color:0xf5f5f5, roughness:0.7 }),
+  stoolT: new THREE.MeshStandardMaterial({ color:0x37665a, roughness:0.7 }),
+  sink:   new THREE.MeshStandardMaterial({ color:0xc7d2d8, roughness:0.3, metalness:0.5 }),
+  hood:   new THREE.MeshStandardMaterial({ color:0xb0bec5, roughness:0.6, metalness:0.3 }),
+  ring:   new THREE.MeshBasicMaterial({ color:0x7fd8c8, transparent:true, opacity:0.55, side:THREE.DoubleSide }),
+  ringDone: new THREE.MeshBasicMaterial({ color:0xffd97a, transparent:true, opacity:0.4, side:THREE.DoubleSide }),
+};
+
+function box(w,h,d,mat,x,y,z,shadow=true,parent=scene){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+  m.position.set(x,y,z);
+  m.castShadow = shadow; m.receiveShadow = true;
+  parent.add(m);
+  return m;
+}
+function cyl(rt,rb,h,mat,x,y,z,parent=scene,seg=16){
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg), mat);
+  m.position.set(x,y,z);
+  m.castShadow = true; m.receiveShadow = true;
+  parent.add(m);
+  return m;
+}
+
+// ── 방 구조 (바닥/벽/천장) ─────────────────────────────────
+{
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D), MAT.floor);
+  floor.rotation.x = -Math.PI/2; floor.receiveShadow = true;
+  scene.add(floor);
+
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D), MAT.ceil);
+  ceil.rotation.x = Math.PI/2; ceil.position.y = ROOM_H;
+  scene.add(ceil);
+
+  // 벽 4면 + 하단 걸레받이
+  const wallDefs = [
+    { w:ROOM_W, x:0, z:-ROOM_D/2, ry:0 },        // 앞(칠판)
+    { w:ROOM_W, x:0, z: ROOM_D/2, ry:Math.PI },  // 뒤
+    { w:ROOM_D, x:-ROOM_W/2, z:0, ry:Math.PI/2 },// 좌
+    { w:ROOM_D, x: ROOM_W/2, z:0, ry:-Math.PI/2 } // 우
+  ];
+  wallDefs.forEach(def=>{
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(def.w, ROOM_H), MAT.wall);
+    wall.position.set(def.x, ROOM_H/2, def.z); wall.rotation.y = def.ry;
+    wall.receiveShadow = true; scene.add(wall);
+    const wain = new THREE.Mesh(new THREE.PlaneGeometry(def.w, 1.0), MAT.wain);
+    wain.position.set(def.x, 0.5, def.z); wain.rotation.y = def.ry;
+    wain.position.x += Math.sin(def.ry)*0.01; wain.position.z += Math.cos(def.ry)*0.01;
+    scene.add(wain);
+  });
+  // 벽 충돌
+  addCollider(0, -ROOM_D/2, ROOM_W, 0.4);
+  addCollider(0,  ROOM_D/2, ROOM_W, 0.4);
+  addCollider(-ROOM_W/2, 0, 0.4, ROOM_D);
+  addCollider( ROOM_W/2, 0, 0.4, ROOM_D);
+
+  // 천장 형광등(시각용)
+  for(let x=-8; x<=8; x+=8) for(let z=-5; z<=5; z+=5){
+    box(2.4, 0.08, 0.5, MAT.white, x, ROOM_H-0.05, z, false);
+  }
+  // 창문 (좌측 벽)
+  const skyMat = new THREE.MeshBasicMaterial({ color:0xaee3f5 });
+  for(let i=0;i<3;i++){
+    const win = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 1.5), skyMat);
+    win.position.set(-ROOM_W/2+0.03, 1.9, -5.5 + i*5.5);
+    win.rotation.y = Math.PI/2; scene.add(win);
+    const frame = box(0.06, 1.62, 3.34, MAT.white, -ROOM_W/2+0.02, 1.9, -5.5+i*5.5, false);
+  }
+  // 문 (뒤쪽 벽 양측)
+  [-9, 9].forEach(x=>{
+    box(1.1, 2.2, 0.08, MAT.woodD, x, 1.1, ROOM_D/2-0.06, false);
+    cyl(0.03,0.03,0.16, MAT.metal, x+0.42, 1.05, ROOM_D/2-0.14);
+  });
+}
+
+// ── 전면: 화이트보드 · 포스터 · 교사 시연대 ─────────────────
+{
+  const board = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 2.0),
+    new THREE.MeshBasicMaterial({ map:boardTex }));
+  board.position.set(0, 1.9, -ROOM_D/2+0.05); scene.add(board);
+  box(6.7, 2.2, 0.06, MAT.metalD, 0, 1.9, -ROOM_D/2+0.02, false);
+
+  const p1 = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.7),
+    new THREE.MeshBasicMaterial({ map:periodicTex }));
+  p1.position.set(-8.5, 2.0, -ROOM_D/2+0.04); scene.add(p1);
+
+  const p2 = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.95),
+    new THREE.MeshBasicMaterial({ map:safetyTex }));
+  p2.position.set(8.5, 2.0, -ROOM_D/2+0.04); scene.add(p2);
+
+  // 교사 시연대
+  const tx=0, tz=-ROOM_D/2+2.0;
+  box(4.4, 0.85, 1.3, MAT.cab, tx, 0.425, tz);
+  box(4.6, 0.06, 1.45, MAT.top, tx, 0.88, tz);
+  addCollider(tx, tz, 4.6, 1.45);
+  // 시연대 위 대형 플라스크 + 스탠드
+  makeFlask(tx-1.2, 0.91, tz, MAT.liquidP, 1.35);
+  makeStandClamp(tx-0.2, 0.91, tz);
+  makeBeaker(tx+0.9, 0.91, tz+0.2, MAT.liquidB, 1.2);
+  makeTestTubeRack(tx+1.6, 0.91, tz-0.2);
+}
+
+// ── 실험 기구 생성 함수들 ─────────────────────────────────
+function makeBeaker(x, y, z, liquid, s=1){
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.09*s, 0.085*s, 0.16*s, 14, 1, true), MAT.glass);
+  body.position.y = 0.08*s; g.add(body);
+  const bottom = new THREE.Mesh(new THREE.CircleGeometry(0.085*s, 14), MAT.glass);
+  bottom.rotation.x = -Math.PI/2; bottom.position.y = 0.002; g.add(bottom);
+  if(liquid){
+    const liq = cyl(0.082*s, 0.078*s, 0.08*s, liquid, 0, 0.045*s, 0, g);
+    liq.castShadow = false;
+  }
+  g.position.set(x,y,z); scene.add(g); return g;
+}
+function makeFlask(x, y, z, liquid, s=1){  // 삼각플라스크
+  const g = new THREE.Group();
+  const cone = new THREE.Mesh(new THREE.CylinderGeometry(0.035*s, 0.12*s, 0.18*s, 14, 1, true), MAT.glass);
+  cone.position.y = 0.09*s; g.add(cone);
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.035*s, 0.035*s, 0.07*s, 12, 1, true), MAT.glass);
+  neck.position.y = 0.215*s; g.add(neck);
+  if(liquid){
+    const liq = new THREE.Mesh(new THREE.CylinderGeometry(0.075*s, 0.115*s, 0.08*s, 14), liquid);
+    liq.position.y = 0.045*s; liq.castShadow=false; g.add(liq);
+  }
+  g.position.set(x,y,z); scene.add(g); return g;
+}
+function makeRoundFlask(x, y, z, liquid, s=1){ // 둥근바닥 플라스크(진열용)
+  const g = new THREE.Group();
+  const sph = new THREE.Mesh(new THREE.SphereGeometry(0.09*s, 14, 12), MAT.glass);
+  sph.position.y = 0.1*s; g.add(sph);
+  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.03*s, 0.03*s, 0.1*s, 10, 1, true), MAT.glass);
+  neck.position.y = 0.22*s; g.add(neck);
+  if(liquid){
+    const liq = new THREE.Mesh(new THREE.SphereGeometry(0.07*s, 12, 10), liquid);
+    liq.position.y = 0.09*s; liq.castShadow=false; g.add(liq);
+  }
+  g.position.set(x,y,z); scene.add(g); return g;
+}
+function makeTestTubeRack(x, y, z){
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.02, 0.1), MAT.wood);
+  base.position.y = 0.01; g.add(base);
+  const barT = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.02, 0.1), MAT.wood);
+  barT.position.y = 0.12; g.add(barT);
+  [[-0.16],[0.16]].forEach(([sx])=>{
+    const post = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.12, 0.1), MAT.wood);
+    post.position.set(sx, 0.06, 0); g.add(post);
+  });
+  const liquids=[MAT.liquidB, MAT.liquidG, MAT.liquidP, MAT.liquidY];
+  for(let i=0;i<4;i++){
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.016,0.016,0.14,10,1,true), MAT.glass);
+    tube.position.set(-0.11+i*0.073, 0.1, 0); g.add(tube);
+    const liq = new THREE.Mesh(new THREE.CylinderGeometry(0.013,0.013,0.05,8), liquids[i]);
+    liq.position.set(-0.11+i*0.073, 0.06, 0); liq.castShadow=false; g.add(liq);
+  }
+  g.position.set(x,y,z); scene.add(g); return g;
+}
+function makeMicroscope(x, y, z, ry=0){
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.03, 0.24), MAT.metalD);
+  base.position.y = 0.015; g.add(base);
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.26, 0.05), MAT.metalD);
+  arm.position.set(0, 0.15, -0.07); arm.rotation.x = 0.15; g.add(arm);
+  const stage = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.015, 0.14), MAT.metal);
+  stage.position.set(0, 0.13, 0.01); g.add(stage);
+  const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.12, 10), MAT.metal);
+  tube.position.set(0, 0.29, 0.0); tube.rotation.x = 0.35; g.add(tube);
+  const eye = new THREE.Mesh(new THREE.CylinderGeometry(0.017, 0.02, 0.05, 10), MAT.metalD);
+  eye.position.set(0, 0.345, 0.023); eye.rotation.x = 0.35; g.add(eye);
+  g.rotation.y = ry; g.position.set(x,y,z); scene.add(g); return g;
+}
+function makeAlcoholLamp(x, y, z){
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 8), MAT.glass);
+  body.scale.y = 0.7; body.position.y = 0.04; g.add(body);
+  const fuel = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), MAT.liquidY);
+  fuel.scale.y = 0.5; fuel.position.y = 0.035; fuel.castShadow=false; g.add(fuel);
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.022, 0.035, 10), MAT.metal);
+  cap.position.y = 0.09; g.add(cap);
+  g.position.set(x,y,z); scene.add(g); return g;
+}
+function makeStandClamp(x, y, z){  // 스탠드 + 클램프 + 둥근 플라스크
+  const g = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.02, 0.15), MAT.metalD);
+  base.position.y = 0.01; g.add(base);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.5, 8), MAT.metal);
+  pole.position.set(-0.07, 0.26, 0); g.add(pole);
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.015, 0.015), MAT.metal);
+  arm.position.set(0.0, 0.38, 0); g.add(arm);
+  const sph = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 10), MAT.glass);
+  sph.position.set(0.06, 0.32, 0); g.add(sph);
+  const liq = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), MAT.liquidG);
+  liq.position.set(0.06, 0.31, 0); liq.castShadow=false; g.add(liq);
+  g.position.set(x,y,z); scene.add(g); return g;
+}
+function makeStool(x, z){
+  const g = new THREE.Group();
+  const seat = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.04, 14), MAT.stoolT);
+  seat.position.y = 0.55; seat.castShadow = true; g.add(seat);
+  for(let i=0;i<4;i++){
+    const a = i*Math.PI/2 + Math.PI/4;
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.55,8), MAT.metalD);
+    leg.position.set(Math.cos(a)*0.12, 0.275, Math.sin(a)*0.12);
+    leg.rotation.z = Math.cos(a)*0.12; leg.rotation.x = -Math.sin(a)*0.12;
+    g.add(leg);
+  }
+  g.position.set(x,0,z); scene.add(g); return g;
+}
+
+// ── 긴 실험대 6대 (2열 × 3행) + 기구 배치 ──────────────────
+function makeLabTable(cx, cz){
+  const W=5.0, D=1.3;
+  box(W, 0.85, D, MAT.cab, cx, 0.425, cz);           // 하부장
+  box(W+0.15, 0.06, D+0.15, MAT.top, cx, 0.88, cz);  // 상판
+  // 하부장 손잡이
+  for(let i=-2;i<=2;i++) box(0.16,0.03,0.03, MAT.metal, cx+i*0.9, 0.6, cz+D/2+0.02, false);
+  addCollider(cx, cz, W+0.15, D+0.15);
+
+  const y = 0.91;
+  // 기구 배치 (테이블마다 약간 다르게)
+  makeBeaker(cx-2.0, y, cz-0.3, MAT.liquidB);
+  makeBeaker(cx-1.75, y, cz+0.25, MAT.liquidG, 0.8);
+  makeFlask(cx-1.1, y, cz+0.1, MAT.liquidP);
+  makeTestTubeRack(cx-0.3, y, cz-0.25);
+  makeMicroscope(cx+0.6, y, cz+0.15, Math.PI*0.9);
+  makeAlcoholLamp(cx+1.3, y, cz-0.25);
+  makeFlask(cx+1.9, y, cz+0.2, MAT.liquidY, 0.9);
+  // 트라이포드(삼발이) + 비커
+  const tri = new THREE.Group();
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.008, 8, 16), MAT.metalD);
+  ring.rotation.x = Math.PI/2; ring.position.y = 0.14; tri.add(ring);
+  for(let i=0;i<3;i++){
+    const a=i*2*Math.PI/3;
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.007,0.007,0.15,6), MAT.metalD);
+    leg.position.set(Math.cos(a)*0.06, 0.07, Math.sin(a)*0.06); tri.add(leg);
+  }
+  tri.position.set(cx+2.3, y, cz-0.2); scene.add(tri);
+
+  // 의자 (테이블 앞뒤로 밀어넣은 상태 — 충돌 없음, 시각용)
+  for(let i=-2;i<=2;i+=2){
+    makeStool(cx+i*1.0, cz+D/2+0.32);
+    makeStool(cx+i*1.0, cz-D/2-0.32);
+  }
+}
+// 배치: x = -5.5 / +5.5, z = -3.2 / 0.6 / 4.4  → 통로 폭 2m 이상 확보
+const tablePos = [];
+[-5.5, 5.5].forEach(x=> [-3.2, 0.6, 4.4].forEach(z=> tablePos.push([x,z])));
+tablePos.forEach(([x,z])=> makeLabTable(x,z));
+
+// ── 뒤쪽 벽: 유리 진열장 (실험도구 진열) ────────────────────
+function makeDisplayCabinet(cx){
+  const W=3.0, D=0.55, H=2.2, cz=ROOM_D/2-0.35;
+  box(W, H, D, MAT.cab, cx, H/2, cz);
+  addCollider(cx, cz, W, D+0.3);
+  // 유리문
+  const gl = new THREE.Mesh(new THREE.PlaneGeometry(W-0.15, H-0.5), MAT.glass);
+  gl.position.set(cx, H/2+0.15, cz-D/2-0.015); gl.rotation.y = Math.PI; scene.add(gl);
+  // 선반 3단 + 진열 기구
+  const liquids=[MAT.liquidB, MAT.liquidG, MAT.liquidP, MAT.liquidY, null];
+  for(let s=0;s<3;s++){
+    const sy = 0.55 + s*0.55;
+    box(W-0.2, 0.03, D-0.12, MAT.white, cx, sy, cz, false);
+    for(let i=0;i<5;i++){
+      const ix = cx - W/2 + 0.45 + i*0.52;
+      const kind = (s+i)%3;
+      const liq = liquids[(s*2+i)%liquids.length];
+      if(kind===0) makeBeaker(ix, sy+0.02, cz, liq, 0.85);
+      else if(kind===1) makeFlask(ix, sy+0.02, cz, liq, 0.8);
+      else makeRoundFlask(ix, sy+0.02, cz, liq, 0.75);
+    }
+  }
+}
+[-5.2, -1.6, 2.0, 5.6].forEach(x=> makeDisplayCabinet(x));
+
+// ── 우측 벽: 시약장 + 흄후드 + 개수대 ─────────────────────
+{
+  // 시약장(불투명, 라벨 느낌)
+  const cx = ROOM_W/2-0.45;
+  box(0.7, 2.2, 3.0, MAT.wood, cx, 1.1, -5.5);
+  addCollider(cx, -5.5, 1.0, 3.0);
+  const labelTex = canvasTexture(128,256,(g)=>{
+    g.fillStyle='#5d4037'; g.fillRect(0,0,128,256);
+    g.fillStyle='#ffe082'; g.font='bold 30px sans-serif'; g.textAlign='center';
+    g.fillText('시', 64, 70); g.fillText('약', 64, 130); g.fillText('장', 64, 190);
+  });
+  const lb = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 1.4),
+    new THREE.MeshBasicMaterial({ map:labelTex }));
+  lb.position.set(cx-0.36, 1.3, -5.5); lb.rotation.y = -Math.PI/2; scene.add(lb);
+
+  // 흄후드
+  const hz = 0.5;
+  box(1.6, 0.85, 0.9, MAT.hood, cx-0.1, 0.425, hz);
+  box(1.6, 1.2, 0.9, MAT.hood, cx-0.1, 2.0, hz);
+  const hgl = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.5), MAT.glass);
+  hgl.position.set(cx-0.56, 1.15, hz); hgl.rotation.y = -Math.PI/2; scene.add(hgl);
+  box(1.55, 0.05, 0.85, MAT.top, cx-0.1, 0.88, hz);
+  makeFlask(cx-0.15, 0.91, hz, MAT.liquidG, 1.1);
+  addCollider(cx-0.1, hz, 1.9, 0.9);
+
+  // 개수대 2조
+  [4.2, 6.6].forEach(z=>{
+    box(1.4, 0.85, 0.7, MAT.cab, cx-0.05, 0.425, z);
+    box(1.45, 0.05, 0.75, MAT.sink, cx-0.05, 0.88, z);
+    // 싱크 오목부(어두운 박스)
+    box(0.7, 0.04, 0.45, MAT.metalD, cx-0.05, 0.9, z, false);
+    // 수도꼭지
+    const f = new THREE.Group();
+    const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.25,8), MAT.metal);
+    p1.position.y=0.125; f.add(p1);
+    const p2 = new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.18,8), MAT.metal);
+    p2.rotation.z = Math.PI/2; p2.position.set(-0.09,0.25,0); f.add(p2);
+    f.position.set(cx+0.25, 0.9, z); scene.add(f);
+    addCollider(cx-0.05, z, 1.7, 0.75);
+  });
+}
+
+// ── 좌측 벽: 인체 모형대 + 사물함 ─────────────────────────
+{
+  const cx = -ROOM_W/2+0.5;
+  // 사물함
+  box(0.55, 1.8, 4.5, MAT.wain, cx, 0.9, 3.5);
+  addCollider(cx, 3.5, 0.9, 4.5);
+  for(let i=0;i<5;i++){
+    box(0.04, 0.5, 0.7, MAT.white, cx+0.28, 0.6+Math.floor(i/3)*0.6, 1.6+(i%3)*0.8, false);
+  }
+  // 지구본 + 받침대 (과학실 소품)
+  box(0.6, 1.0, 0.6, MAT.wood, cx+0.1, 0.5, -2.0);
+  addCollider(cx+0.1, -2.0, 0.8, 0.8);
+  const globe = new THREE.Mesh(new THREE.SphereGeometry(0.28, 18, 14),
+    new THREE.MeshStandardMaterial({ color:0x4fa3d1, roughness:0.6 }));
+  globe.position.set(cx+0.1, 1.35, -2.0); globe.castShadow = true; scene.add(globe);
+  // 대륙 느낌 패치
+  for(let i=0;i<6;i++){
+    const patch = new THREE.Mesh(new THREE.SphereGeometry(0.29, 10, 8, i*1.1, 0.8, 0.8+i*0.2, 0.5),
+      new THREE.MeshStandardMaterial({ color:0x7cb342, roughness:0.7 }));
+    patch.position.copy(globe.position); scene.add(patch);
+  }
+  // 인체 골격 모형(간단화)
+  const sk = new THREE.Group();
+  const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.3,0.05,14), MAT.metalD);
+  stand.position.y=0.025; sk.add(stand);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,1.7,8), MAT.metal);
+  pole.position.y=0.85; sk.add(pole);
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(0.11,12,10), MAT.white);
+  skull.position.y=1.62; sk.add(skull);
+  const rib = new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.1,0.4,10,1,true), MAT.white);
+  rib.position.y=1.25; sk.add(rib);
+  const pelvis = new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.08,0.12,10), MAT.white);
+  pelvis.position.y=0.95; sk.add(pelvis);
+  [[-0.06],[0.06]].forEach(([sx])=>{
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.015,0.8,8), MAT.white);
+    leg.position.set(sx,0.5,0); sk.add(leg);
+    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.012,0.55,8), MAT.white);
+    arm.position.set(sx*3.2,1.18,0); arm.rotation.z = sx>0?-0.15:0.15; sk.add(arm);
+  });
+  sk.position.set(cx+0.15, 0, -5.8); scene.add(sk);
+  addCollider(cx+0.15, -5.8, 0.8, 0.8);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   미션 시스템 — 기존 쌤버스와 동일한 근접 트리거 구조
+   missions 배열을 JSON으로 교체하면 그대로 재사용 가능
+   ════════════════════════════════════════════════════════════════ */
+const missions = [
+  { id:'m1', x:-5.5, z: 1.85, r:1.2, title:'현미경 관찰',
+    desc:'현미경으로 양파 표피 세포를 관찰하고, 세포벽과 핵의 위치를 기록하세요.' },
+  { id:'m2', x: 11.5, z: 0.5,  r:1.5, title:'흄후드 안전 점검',
+    desc:'흄후드의 유리문 높이를 확인하고, 환기 장치가 켜져 있는지 점검하세요.' },
+  { id:'m3', x: 0,   z:-6.2,  r:1.5, title:'중화 반응 실험',
+    desc:'교사 시연대에서 지시약의 색 변화를 관찰하고 중화점을 찾으세요.' },
+  { id:'m4', x: 2.0, z: 7.6,  r:1.4, title:'실험 기구 이름 맞히기',
+    desc:'진열장의 기구 중 삼각플라스크와 둥근바닥플라스크를 구분해 보세요.' },
+];
+const missionState = {};   // id → true(완료)
+const missionRings = {};
+missions.forEach(m=>{
+  const ring = new THREE.Mesh(new THREE.RingGeometry(m.r-0.15, m.r, 32), MAT.ring);
+  ring.rotation.x = -Math.PI/2; ring.position.set(m.x, 0.02, m.z);
+  scene.add(ring); missionRings[m.id] = ring;
+});
+
+// [연동 포인트] Supabase Realtime:
+//  - 다른 플레이어 위치 브로드캐스트: 아래 animate() 안에서
+//    camera.position / yaw 값을 channel.send()로 전송
+//  - 미션 완료 동기화: completeMission() 안에서 supabase.from('missions').update(...)
+//  - 다른 플레이어 아바타: 기존 쌤버스 치비 캐릭터를 Sprite(CanvasTexture)로 표시 가능
+
+// ── 1인칭 컨트롤 ─────────────────────────────────────────
+let yaw = 0;                // 앞쪽(칠판, -z 방향)을 바라보고 시작
+let pitch = 0;
+const keys = {};
+let locked = false;
+const isTouch = 'ontouchstart' in window;
+
+const startOverlay = document.getElementById('start-overlay');
+const crosshair = document.getElementById('crosshair');
+const hud = document.getElementById('hud-top');
+
+document.getElementById('start-btn').addEventListener('click', ()=>{
+  startOverlay.style.display = 'none';
+  hud.style.display = 'block';
+  if(isTouch){
+    document.getElementById('joystick').style.display = 'block';
+    document.getElementById('btn-interact-mobile').style.display = 'block';
+  } else {
+    crosshair.style.display = 'block';
+    renderer.domElement.requestPointerLock();
+  }
+});
+renderer.domElement.addEventListener('click', ()=>{
+  if(!isTouch && startOverlay.style.display === 'none' && !locked)
+    renderer.domElement.requestPointerLock();
+});
+document.addEventListener('pointerlockchange', ()=>{
+  locked = document.pointerLockElement === renderer.domElement;
+});
+document.addEventListener('mousemove', e=>{
+  if(!locked) return;
+  yaw   -= e.movementX * 0.0022;
+  pitch -= e.movementY * 0.0022;
+  pitch = Math.max(-1.35, Math.min(1.35, pitch));
+});
+addEventListener('keydown', e=>{
+  keys[e.code] = true;
+  if(e.code === 'KeyE') tryInteract();
+});
+addEventListener('keyup', e=> keys[e.code] = false);
+
+// ── 모바일 조이스틱 + 시점 드래그 ─────────────────────────
+const joy = { active:false, id:null, cx:0, cy:0, dx:0, dy:0 };
+const look = { active:false, id:null, lx:0, ly:0 };
+const joyEl = document.getElementById('joystick');
+const knob = document.getElementById('joy-knob');
+
+addEventListener('touchstart', e=>{
+  for(const t of e.changedTouches){
+    if(t.clientX < innerWidth/2 && !joy.active){
+      joy.active = true; joy.id = t.identifier;
+      const r = joyEl.getBoundingClientRect();
+      joy.cx = r.left + r.width/2; joy.cy = r.top + r.height/2;
+    } else if(!look.active){
+      look.active = true; look.id = t.identifier;
+      look.lx = t.clientX; look.ly = t.clientY;
+    }
+  }
+}, {passive:false});
+addEventListener('touchmove', e=>{
+  for(const t of e.changedTouches){
+    if(joy.active && t.identifier === joy.id){
+      let dx = t.clientX - joy.cx, dy = t.clientY - joy.cy;
+      const d = Math.hypot(dx,dy), max = 45;
+      if(d > max){ dx = dx/d*max; dy = dy/d*max; }
+      joy.dx = dx/max; joy.dy = dy/max;
+      knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    }
+    if(look.active && t.identifier === look.id){
+      yaw   -= (t.clientX - look.lx) * 0.005;
+      pitch -= (t.clientY - look.ly) * 0.005;
+      pitch = Math.max(-1.35, Math.min(1.35, pitch));
+      look.lx = t.clientX; look.ly = t.clientY;
+    }
+  }
+  e.preventDefault();
+}, {passive:false});
+addEventListener('touchend', e=>{
+  for(const t of e.changedTouches){
+    if(t.identifier === joy.id){ joy.active=false; joy.dx=joy.dy=0;
+      knob.style.transform = 'translate(-50%,-50%)'; }
+    if(t.identifier === look.id) look.active = false;
+  }
+});
+document.getElementById('btn-interact-mobile').addEventListener('touchstart', e=>{
+  e.stopPropagation(); tryInteract();
+});
+
+// ── 충돌 처리 (원 vs AABB, 축별 슬라이드) ──────────────────
+function collide(px, pz){
+  for(const c of colliders){
+    const nx = Math.max(c.minX, Math.min(px, c.maxX));
+    const nz = Math.max(c.minZ, Math.min(pz, c.maxZ));
+    if((px-nx)**2 + (pz-nz)**2 < PLAYER_R**2) return true;
+  }
+  return false;
+}
+
+// ── 미션 상호작용 ────────────────────────────────────────
+let nearMission = null;
+const hintEl = document.getElementById('interact-hint');
+const popup = document.getElementById('mission-popup');
+const toast = document.getElementById('toast');
+
+function tryInteract(){
+  if(!nearMission || popup.style.display === 'block') return;
+  document.getElementById('mp-title').textContent = '🧪 ' + nearMission.title;
+  document.getElementById('mp-desc').textContent = nearMission.desc;
+  popup.style.display = 'block';
+  if(!isTouch && locked) document.exitPointerLock();
+}
+document.getElementById('mp-close').addEventListener('click', closePopup);
+document.getElementById('mp-complete').addEventListener('click', ()=>{
+  if(nearMission && !missionState[nearMission.id]){
+    missionState[nearMission.id] = true;
+    missionRings[nearMission.id].material = MAT.ringDone;
+    updateMissionCount();
+    showToast('✅ 미션 완료: ' + nearMission.title);
+    // [연동 포인트] 여기서 Supabase에 완료 기록 전송
+  }
+  closePopup();
+});
+function closePopup(){
+  popup.style.display = 'none';
+  if(!isTouch) renderer.domElement.requestPointerLock();
+}
+function updateMissionCount(){
+  const done = Object.values(missionState).filter(Boolean).length;
+  document.getElementById('mission-count').textContent = `${done} / ${missions.length}`;
+  if(done === missions.length) showToast('🎉 모든 미션을 완료했습니다!');
+}
+let toastTimer;
+function showToast(msg){
+  toast.textContent = msg; toast.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> toast.style.display = 'none', 2500);
+}
+
+// ── 메인 루프 ────────────────────────────────────────────
+const clock = new THREE.Clock();
+let ringPulse = 0;
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+
+  // 이동 입력
+  let mx = 0, mz = 0;
+  if(keys['KeyW'] || keys['ArrowUp'])    mz -= 1;
+  if(keys['KeyS'] || keys['ArrowDown'])  mz += 1;
+  if(keys['KeyA'] || keys['ArrowLeft'])  mx -= 1;
+  if(keys['KeyD'] || keys['ArrowRight']) mx += 1;
+  if(joy.active){ mx += joy.dx; mz += joy.dy; }
+
+  const len = Math.hypot(mx, mz);
+  if(len > 0.01){
+    mx /= Math.max(len,1); mz /= Math.max(len,1);
+    const speed = (keys['ShiftLeft']||keys['ShiftRight']) ? 5.2 : 3.0;
+    const sin = Math.sin(yaw), cos = Math.cos(yaw);
+    const dx = (mx*cos + mz*sin) * speed * dt;
+    const dz = (mz*cos - mx*sin) * speed * dt;
+    // 축별 이동 → 벽에 붙어 미끄러지기
+    if(!collide(camera.position.x + dx, camera.position.z)) camera.position.x += dx;
+    if(!collide(camera.position.x, camera.position.z + dz)) camera.position.z += dz;
+  }
+
+  // 시점 적용
+  camera.rotation.order = 'YXZ';
+  camera.rotation.y = yaw;
+  camera.rotation.x = pitch;
+
+  // 미션 근접 판정
+  nearMission = null;
+  for(const m of missions){
+    const d = Math.hypot(camera.position.x - m.x, camera.position.z - m.z);
+    if(d < m.r){ nearMission = m; break; }
+  }
+  if(nearMission && popup.style.display !== 'block'){
+    hintEl.style.display = 'block';
+    document.getElementById('hint-text').textContent =
+      (missionState[nearMission.id] ? '다시 보기 · ' : '') + nearMission.title;
+  } else hintEl.style.display = 'none';
+
+  // 미션 링 펄스 애니메이션
+  ringPulse += dt * 2.2;
+  const s = 1 + Math.sin(ringPulse) * 0.06;
+  for(const id in missionRings){
+    if(!missionState[id]) missionRings[id].scale.set(s, s, 1);
+  }
+
+  renderer.render(scene, camera);
+}
+animate();
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

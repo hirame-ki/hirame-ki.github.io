@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>쌤버스 3D - 컴퓨터실</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#0d0f14; font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif; }
+  #canvas { display:block; width:100%; height:100%; }
+
+  /* 크로스헤어 */
+  #crosshair {
+    position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:6px; height:6px; border-radius:50%;
+    background:rgba(255,255,255,.85); box-shadow:0 0 6px rgba(0,0,0,.6);
+    pointer-events:none; z-index:10;
+  }
+
+  /* 시작 오버레이 */
+  #overlay {
+    position:fixed; inset:0; z-index:30;
+    background:rgba(10,12,18,.82); backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    color:#eaeef5; text-align:center; cursor:pointer;
+  }
+  #overlay h1 { font-size:28px; letter-spacing:2px; margin-bottom:8px; }
+  #overlay .sub { color:#8fd6ff; font-size:14px; margin-bottom:24px; letter-spacing:4px; }
+  #overlay .card {
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+    border-radius:14px; padding:20px 30px; line-height:1.9; font-size:14px;
+  }
+  #overlay .key { display:inline-block; background:#2a3242; border:1px solid #4a556b;
+    border-radius:6px; padding:1px 9px; margin:0 2px; font-size:12px; }
+  #overlay .start { margin-top:26px; font-size:15px; color:#ffd66e; animation:pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+  /* 위치 표시 */
+  #zone {
+    position:fixed; top:16px; left:50%; transform:translateX(-50%);
+    background:rgba(15,20,30,.72); border:1px solid rgba(140,180,255,.25);
+    color:#dce8ff; padding:7px 20px; border-radius:20px; font-size:14px;
+    letter-spacing:1px; z-index:10; pointer-events:none;
+    transition:opacity .3s;
+  }
+
+  /* 모바일 조이스틱 */
+  #joy {
+    position:fixed; left:26px; bottom:30px; width:120px; height:120px;
+    border-radius:50%; background:rgba(255,255,255,.07);
+    border:1.5px solid rgba(255,255,255,.22); z-index:20; display:none;
+    touch-action:none;
+  }
+  #joyKnob {
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:52px; height:52px; border-radius:50%;
+    background:rgba(255,255,255,.28); border:1.5px solid rgba(255,255,255,.4);
+  }
+  body.touch #joy { display:block; }
+  body.touch #crosshair { display:none; }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div id="crosshair"></div>
+<div id="zone">💻 컴퓨터실</div>
+
+<div id="overlay">
+  <h1>💻 컴퓨터실</h1>
+  <div class="sub">SSAMVERSE 3D MAP</div>
+  <div class="card">
+    <div><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> 이동 &nbsp;|&nbsp; <span class="key">Shift</span> 달리기 &nbsp;|&nbsp; 마우스 시점 회전</div>
+    <div>모바일: 왼쪽 조이스틱 이동, 오른쪽 화면 드래그 시점 회전</div>
+    <div style="margin-top:6px; color:#9fb2cc;">뒤쪽 문으로 <b style="color:#7fe3a0;">서버실</b> · <b style="color:#ffce7a;">교무실</b> 입장 가능</div>
+  </div>
+  <div class="start">화면을 클릭 / 터치하면 시작합니다</div>
+</div>
+
+<div id="joy"><div id="joyKnob"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============================================================
+   쌤버스 3D 맵 - 컴퓨터실 (Computer Lab)
+   구조
+   - 메인 컴퓨터실 : x -16~16, z -12~12  (32m x 24m, 학생용 책상 30개)
+   - 서버실       : x -14~-4, z 12~19   (뒷벽 왼쪽 문)
+   - 교무실       : x   4~14, z 12~19   (뒷벽 오른쪽 문)
+   - 스폰 지점    : (0, 0, 10)  → MAP_DATA.spawn
+   기존 쌤버스 미션 시스템 연동용 데이터는 MAP_DATA 참고
+   ============================================================ */
+
+const MAP_DATA = {
+  name: "computer-lab-3d",
+  spawn: { x: 0, z: 10 },
+  zones: [
+    { id: "lab",    label: "💻 컴퓨터실", minX:-16, maxX:16,  minZ:-12, maxZ:12 },
+    { id: "server", label: "🖥️ 서버실",   minX:-14, maxX:-4,  minZ:12,  maxZ:19 },
+    { id: "office", label: "📋 교무실",   minX:4,   maxX:14,  minZ:12,  maxZ:19 }
+  ],
+  // 미션 트리거 지점 예시 (proximity 기반) - 필요 시 쌤버스 미션 JSON과 연결
+  missionSpots: [
+    { id: "m1", x: -9,  z: 15.5, zone: "server", label: "서버 점검" },
+    { id: "m2", x: 9,   z: 15.5, zone: "office", label: "선생님께 제출" },
+    { id: "m3", x: 0,   z: -10,  zone: "lab",    label: "화면 공유" }
+  ]
+};
+
+// ---------- 기본 세팅 ----------
+const canvas = document.getElementById('canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x10141c);
+scene.fog = new THREE.Fog(0x10141c, 30, 70);
+
+const camera = new THREE.PerspectiveCamera(72, innerWidth/innerHeight, 0.1, 120);
+const EYE = 1.6;
+camera.position.set(MAP_DATA.spawn.x, EYE, MAP_DATA.spawn.z);
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// ---------- 조명 ----------
+scene.add(new THREE.HemisphereLight(0xbcd4ff, 0x30281e, 0.55));
+const sun = new THREE.DirectionalLight(0xfff2dd, 0.55);
+sun.position.set(-8, 14, -6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -25; sun.shadow.camera.right = 25;
+sun.shadow.camera.top = 25;   sun.shadow.camera.bottom = -25;
+scene.add(sun);
+
+function roomLight(x, z, color, intensity, dist) {
+  const l = new THREE.PointLight(color, intensity, dist, 1.6);
+  l.position.set(x, 2.9, z);
+  scene.add(l);
+}
+roomLight(-8, -5, 0xeef4ff, 0.5, 18);
+roomLight( 8, -5, 0xeef4ff, 0.5, 18);
+roomLight(-8,  6, 0xeef4ff, 0.5, 18);
+roomLight( 8,  6, 0xeef4ff, 0.5, 18);
+roomLight(-9, 15.5, 0x9fd8ff, 0.7, 12);  // 서버실 - 푸른빛
+roomLight( 9, 15.5, 0xffe6bd, 0.7, 12);  // 교무실 - 따뜻한 빛
+
+// ---------- 재질 ----------
+const MAT = {
+  floorLab:   new THREE.MeshStandardMaterial({ color:0x9aa4ad, roughness:.85 }),
+  floorSrv:   new THREE.MeshStandardMaterial({ color:0x3c4450, roughness:.7 }),
+  floorOff:   new THREE.MeshStandardMaterial({ color:0xb99b74, roughness:.9 }),
+  wall:       new THREE.MeshStandardMaterial({ color:0xe8e4da, roughness:.95 }),
+  wallLower:  new THREE.MeshStandardMaterial({ color:0x8fa3b0, roughness:.9 }),
+  ceiling:    new THREE.MeshStandardMaterial({ color:0xf2f0ea, roughness:1 }),
+  deskTop:    new THREE.MeshStandardMaterial({ color:0xd7c7a8, roughness:.7 }),
+  deskLeg:    new THREE.MeshStandardMaterial({ color:0x5a6068, roughness:.5, metalness:.5 }),
+  chairSeat:  new THREE.MeshStandardMaterial({ color:0x3e6ea8, roughness:.8 }),
+  chairLeg:   new THREE.MeshStandardMaterial({ color:0x444a52, metalness:.6, roughness:.4 }),
+  aluminum:   new THREE.MeshStandardMaterial({ color:0xd9dce1, metalness:.75, roughness:.3 }),
+  screenOn:   new THREE.MeshStandardMaterial({ color:0x0e1622, emissive:0x2a72c8, emissiveIntensity:.55, roughness:.35 }),
+  screenBezel:new THREE.MeshStandardMaterial({ color:0x14161a, roughness:.4 }),
+  whiteboard: new THREE.MeshStandardMaterial({ color:0xfbfbf9, roughness:.35 }),
+  frame:      new THREE.MeshStandardMaterial({ color:0x8b929c, metalness:.6, roughness:.4 }),
+  doorSrv:    new THREE.MeshStandardMaterial({ color:0x50606f, roughness:.6 }),
+  doorOff:    new THREE.MeshStandardMaterial({ color:0x8a6b4a, roughness:.7 }),
+  rack:       new THREE.MeshStandardMaterial({ color:0x1d2229, roughness:.5, metalness:.35 }),
+  rackFace:   new THREE.MeshStandardMaterial({ color:0x12161c, roughness:.45 }),
+  cabinet:    new THREE.MeshStandardMaterial({ color:0xa9b2ba, metalness:.4, roughness:.55 }),
+  teacherDesk:new THREE.MeshStandardMaterial({ color:0x7a5a3d, roughness:.75 }),
+  plantPot:   new THREE.MeshStandardMaterial({ color:0xb5563c, roughness:.9 }),
+  plantLeaf:  new THREE.MeshStandardMaterial({ color:0x3f8f4e, roughness:.9 }),
+  lightPanel: new THREE.MeshStandardMaterial({ color:0xffffff, emissive:0xf5f8ff, emissiveIntensity:.85 })
+};
+
+// ---------- 충돌 시스템 (AABB) ----------
+const colliders = [];
+function addCollider(minX, maxX, minZ, maxZ) { colliders.push({ minX, maxX, minZ, maxZ }); }
+const PLAYER_R = 0.32;
+function collide(x, z) {
+  for (const c of colliders) {
+    if (x > c.minX - PLAYER_R && x < c.maxX + PLAYER_R &&
+        z > c.minZ - PLAYER_R && z < c.maxZ + PLAYER_R) return true;
+  }
+  return false;
+}
+
+// ---------- 유틸 ----------
+function box(w, h, d, mat, x, y, z, opts = {}) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y, z);
+  if (opts.ry) m.rotation.y = opts.ry;
+  m.castShadow = opts.cast !== false;
+  m.receiveShadow = true;
+  scene.add(m);
+  if (opts.solid) addCollider(x - w/2, x + w/2, z - d/2, z + d/2);
+  return m;
+}
+
+function makeLabelSprite(text, color) {
+  const cv = document.createElement('canvas');
+  cv.width = 512; cv.height = 160;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = 'rgba(15,20,28,.85)';
+  const r = 34;
+  ctx.beginPath();
+  ctx.moveTo(r, 0); ctx.lineTo(512-r, 0); ctx.arcTo(512,0,512,r,r);
+  ctx.lineTo(512,160-r); ctx.arcTo(512,160,512-r,160,r);
+  ctx.lineTo(r,160); ctx.arcTo(0,160,0,160-r,r);
+  ctx.lineTo(0,r); ctx.arcTo(0,0,r,0,r); ctx.fill();
+  ctx.strokeStyle = color; ctx.lineWidth = 6; ctx.stroke();
+  ctx.fillStyle = '#f2f6fc';
+  ctx.font = 'bold 84px "Malgun Gothic", sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, 256, 86);
+  const tex = new THREE.CanvasTexture(cv);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true }));
+  sp.scale.set(3.2, 1.0, 1);
+  return sp;
+}
+
+// ============================================================
+// 1. 바닥 · 천장
+// ============================================================
+function floorPlane(w, d, mat, x, z) {
+  const f = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mat);
+  f.rotation.x = -Math.PI/2;
+  f.position.set(x, 0, z);
+  f.receiveShadow = true;
+  scene.add(f);
+}
+floorPlane(32, 24, MAT.floorLab, 0, 0);          // 컴퓨터실
+floorPlane(10, 7,  MAT.floorSrv, -9, 15.5);       // 서버실
+floorPlane(10, 7,  MAT.floorOff,  9, 15.5);       // 교무실
+
+function ceilingPlane(w, d, x, z, h) {
+  const c = new THREE.Mesh(new THREE.PlaneGeometry(w, d), MAT.ceiling);
+  c.rotation.x = Math.PI/2;
+  c.position.set(x, h, z);
+  scene.add(c);
+}
+const CEIL = 3.2;
+ceilingPlane(32, 24, 0, 0, CEIL);
+ceilingPlane(10, 7, -9, 15.5, CEIL);
+ceilingPlane(10, 7,  9, 15.5, CEIL);
+
+// 천장 형광등 패널
+for (let x = -12; x <= 12; x += 8) {
+  for (let z = -8; z <= 8; z += 8) {
+    box(2.4, 0.06, 1.2, MAT.lightPanel, x, CEIL - 0.05, z, { cast:false });
+  }
+}
+box(2.2, 0.06, 1.1, MAT.lightPanel, -9, CEIL - 0.05, 15.5, { cast:false });
+box(2.2, 0.06, 1.1, MAT.lightPanel,  9, CEIL - 0.05, 15.5, { cast:false });
+
+// ============================================================
+// 2. 벽 (문 개구부 포함)
+// ============================================================
+const WALL_H = 3.2, WT = 0.3;
+function wall(x1, x2, z1, z2) {
+  const w = Math.max(x2 - x1, WT), d = Math.max(z2 - z1, WT);
+  const cx = (x1 + x2) / 2, cz = (z1 + z2) / 2;
+  // 상부 벽
+  box(w, WALL_H, d, MAT.wall, cx, WALL_H/2, cz, { solid:true });
+  // 하부 몰딩
+  box(w + 0.02, 0.9, d + 0.02, MAT.wallLower, cx, 0.45, cz, { cast:false });
+}
+
+// 컴퓨터실 외벽
+wall(-16.3, -16,  -12.3, 12.3);   // 좌
+wall( 16,    16.3,-12.3, 12.3);   // 우
+wall(-16.3,  16.3,-12.3,-12);     // 앞 (화이트보드 벽)
+// 뒷벽 (문 2개 개구부: 서버실 x -9.9~-8.1 / 교무실 x 8.1~9.9)
+wall(-16.3, -9.9, 12, 12.3);
+wall(-8.1,   8.1, 12, 12.3);
+wall( 9.9,  16.3, 12, 12.3);
+// 문 상단 인방(문 높이 2.2m 위)
+box(1.8, WALL_H - 2.2, WT, MAT.wall, -9, 2.2 + (WALL_H-2.2)/2, 12.15, { cast:false });
+box(1.8, WALL_H - 2.2, WT, MAT.wall,  9, 2.2 + (WALL_H-2.2)/2, 12.15, { cast:false });
+
+// 서버실 벽
+wall(-14.3, -14, 12.3, 19.3);     // 좌
+wall(-4.3,  -4,  12.3, 19.3);     // 우
+wall(-14.3, -4,  19,   19.3);     // 뒤
+// 교무실 벽
+wall( 4,    4.3, 12.3, 19.3);     // 좌
+wall(14,   14.3, 12.3, 19.3);     // 우
+wall( 4,   14.3, 19,   19.3);     // 뒤
+
+// ---------- 문 (열린 상태, 통과 가능) ----------
+function doorway(x, doorMat, label, color) {
+  // 문틀
+  box(0.12, 2.25, 0.4, MAT.frame, x - 0.95, 1.12, 12.15, { cast:false });
+  box(0.12, 2.25, 0.4, MAT.frame, x + 0.95, 1.12, 12.15, { cast:false });
+  box(2.0,  0.12, 0.4, MAT.frame, x, 2.26, 12.15, { cast:false });
+  // 열린 문짝 (안쪽으로 열려 벽에 붙음)
+  const door = box(0.08, 2.15, 0.85, doorMat, x - 0.92, 1.08, 12.6, { cast:true });
+  addCollider(x - 0.98, x - 0.86, 12.18, 13.05);
+  // 문패
+  const sp = makeLabelSprite(label, color);
+  sp.position.set(x, 2.75, 11.6);
+  scene.add(sp);
+  return door;
+}
+doorway(-9, MAT.doorSrv, '🖥️ 서버실', '#7fe3a0');
+doorway( 9, MAT.doorOff, '📋 교무실', '#ffce7a');
+
+// ============================================================
+// 3. 컴퓨터실 - 학생 책상 30개 (6열 x 5행) + 애플형 PC
+// ============================================================
+function iMac(x, y, z) {
+  const g = new THREE.Group();
+  // 받침
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 0.02, 20), MAT.aluminum);
+  base.position.y = 0.01; g.add(base);
+  // 스탠드
+  const stand = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.16, 0.02), MAT.aluminum);
+  stand.position.set(0, 0.1, -0.02); stand.rotation.x = -0.18; g.add(stand);
+  // 본체(알루미늄 베젤)
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.34, 0.028), MAT.aluminum);
+  body.position.set(0, 0.33, 0); g.add(body);
+  // 화면
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.26), MAT.screenOn);
+  screen.position.set(0, 0.345, 0.016); g.add(screen);
+  // 턱(하단 베젤)
+  const chin = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.05, 0.005), MAT.screenBezel);
+  chin.position.set(0, 0.19, 0.015); g.add(chin);
+  // 키보드
+  const kb = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.012, 0.11), MAT.aluminum);
+  kb.position.set(0, 0.006, 0.22); g.add(kb);
+  // 마우스
+  const ms = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.015, 0.09), MAT.aluminum);
+  ms.position.set(0.22, 0.008, 0.23); g.add(ms);
+  g.position.set(x, y, z);
+  g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  scene.add(g);
+}
+
+function studentDesk(x, z) {
+  const TOP_Y = 0.74;
+  // 상판
+  box(1.4, 0.05, 0.7, MAT.deskTop, x, TOP_Y, z, { solid:true });
+  // 다리
+  box(0.06, TOP_Y, 0.06, MAT.deskLeg, x - 0.62, TOP_Y/2, z - 0.28, { cast:false });
+  box(0.06, TOP_Y, 0.06, MAT.deskLeg, x + 0.62, TOP_Y/2, z - 0.28, { cast:false });
+  box(0.06, TOP_Y, 0.06, MAT.deskLeg, x - 0.62, TOP_Y/2, z + 0.28, { cast:false });
+  box(0.06, TOP_Y, 0.06, MAT.deskLeg, x + 0.62, TOP_Y/2, z + 0.28, { cast:false });
+  // 애플형 PC (화면이 뒤쪽 학생을 향함 = +z)
+  iMac(x, TOP_Y + 0.025, z);
+  // 의자 (책상 뒤 +z, 앞쪽 화이트보드를 바라봄)
+  chair(x, z + 0.75, Math.PI);
+}
+
+function chair(x, z, ry) {
+  const g = new THREE.Group();
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.05, 0.44), MAT.chairSeat);
+  seat.position.y = 0.45; g.add(seat);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.42, 0.05), MAT.chairSeat);
+  back.position.set(0, 0.68, -0.2); g.add(back);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.35, 10), MAT.chairLeg);
+  pole.position.y = 0.25; g.add(pole);
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.03, 5), MAT.chairLeg);
+  foot.position.y = 0.03; g.add(foot);
+  g.position.set(x, 0, z);
+  g.rotation.y = ry;
+  g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  scene.add(g);
+  addCollider(x - 0.22, x + 0.22, z - 0.22, z + 0.22);
+}
+
+// 6열 x 5행 = 30석
+const COLS = [-12.5, -7.5, -2.5, 2.5, 7.5, 12.5];
+const ROWS = [-7, -3.5, 0, 3.5, 7];
+for (const cz of ROWS) for (const cx of COLS) studentDesk(cx, cz);
+
+// ---------- 화이트보드 · 교탁 (앞쪽) ----------
+box(8, 1.5, 0.06, MAT.whiteboard, 0, 1.7, -11.8, { cast:false });
+box(8.2, 0.08, 0.1, MAT.frame, 0, 0.92, -11.78, { cast:false });
+box(8.2, 0.08, 0.1, MAT.frame, 0, 2.48, -11.78, { cast:false });
+// 교탁
+box(1.1, 1.0, 0.6, MAT.teacherDesk, 0, 0.5, -10.3, { solid:true });
+
+// 벽시계
+const clock = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.05, 24), new THREE.MeshStandardMaterial({ color:0xf5f5f0 }));
+clock.rotation.x = Math.PI/2;
+clock.position.set(6.5, 2.6, -11.8);
+scene.add(clock);
+
+// ============================================================
+// 4. 서버실 (x -14~-4, z 12~19)
+// ============================================================
+const ledMats = [];
+function serverRack(x, z, ry) {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.1, 0.9), MAT.rack);
+  body.position.y = 1.05; g.add(body);
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 1.9), MAT.rackFace);
+  face.position.set(0, 1.05, 0.46); g.add(face);
+  // LED (깜빡임)
+  for (let i = 0; i < 7; i++) {
+    const on = Math.random() > 0.4;
+    const mat = new THREE.MeshStandardMaterial({
+      color:0x000000,
+      emissive: on ? 0x35e08a : 0xff8c42,
+      emissiveIntensity: 1.4
+    });
+    ledMats.push({ mat, t: Math.random() * 10, speed: 1.5 + Math.random() * 3 });
+    const led = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.05), mat);
+    led.position.set(-0.2 + (i % 3) * 0.12, 1.85 - Math.floor(i / 3) * 0.55, 0.465);
+    g.add(led);
+    // 슬롯 라인
+    const slot = new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.02),
+      new THREE.MeshStandardMaterial({ color:0x2c333d }));
+    slot.position.set(0, 1.7 - i * 0.22, 0.462);
+    g.add(slot);
+  }
+  g.position.set(x, 0, z);
+  g.rotation.y = ry;
+  g.traverse(o => { if (o.isMesh && o.geometry.type === 'BoxGeometry') { o.castShadow = true; o.receiveShadow = true; } });
+  scene.add(g);
+  addCollider(x - 0.5, x + 0.5, z - 0.5, z + 0.5);
+}
+// 좌우 벽에 랙 배치 (중앙 통로 확보)
+for (let i = 0; i < 4; i++) serverRack(-13.2, 13.6 + i * 1.35, Math.PI/2);
+for (let i = 0; i < 4; i++) serverRack(-4.8,  13.6 + i * 1.35, -Math.PI/2);
+// 뒤쪽 관리 콘솔 책상
+box(1.6, 0.05, 0.6, MAT.deskTop, -9, 0.74, 18.4, { solid:true });
+box(0.06, 0.74, 0.06, MAT.deskLeg, -9.7, 0.37, 18.4, { cast:false });
+box(0.06, 0.74, 0.06, MAT.deskLeg, -8.3, 0.37, 18.4, { cast:false });
+iMac(-9, 0.765, 18.4);
+chair(-9, 17.6, 0);
+
+// ============================================================
+// 5. 교무실 (x 4~14, z 12~19)
+// ============================================================
+// 교사 책상 (L자 느낌)
+box(2.0, 0.06, 0.9, MAT.teacherDesk, 9, 0.74, 17.8, { solid:true });
+box(0.5, 0.7, 0.85, MAT.teacherDesk, 8.2, 0.35, 17.8, { cast:false }); // 서랍부
+iMac(9.2, 0.77, 17.85);
+// 서류 더미
+box(0.3, 0.1, 0.22, new THREE.MeshStandardMaterial({ color:0xf0ead8 }), 8.3, 0.82, 17.6, { cast:false });
+// 교사 의자
+chair(9, 16.8, 0);
+// 캐비닛 3개 (오른쪽 벽)
+for (let i = 0; i < 3; i++) {
+  const cx2 = 13.5, cz2 = 13.4 + i * 1.3;
+  box(0.55, 1.85, 1.1, MAT.cabinet, cx2, 0.925, cz2, { solid:true });
+  // 손잡이
+  box(0.03, 0.25, 0.03, MAT.frame, cx2 - 0.29, 1.1, cz2 - 0.2, { cast:false });
+  box(0.03, 0.25, 0.03, MAT.frame, cx2 - 0.29, 1.1, cz2 + 0.2, { cast:false });
+}
+// 낮은 책장 (왼쪽 벽)
+box(1.6, 1.1, 0.4, MAT.cabinet, 4.6, 0.55, 14.2, { solid:true, ry:0 });
+// 화분
+(function plant(x, z) {
+  const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.14, 0.3, 12), MAT.plantPot);
+  pot.position.set(x, 0.15, z); pot.castShadow = true; scene.add(pot);
+  for (let i = 0; i < 5; i++) {
+    const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.55, 6), MAT.plantLeaf);
+    leaf.position.set(x + Math.cos(i * 1.26) * 0.1, 0.55 + (i % 2) * 0.12, z + Math.sin(i * 1.26) * 0.1);
+    leaf.rotation.set(Math.cos(i) * 0.3, 0, Math.sin(i) * 0.3);
+    leaf.castShadow = true; scene.add(leaf);
+  }
+  addCollider(x - 0.18, x + 0.18, z - 0.18, z + 0.18);
+})(5, 18.4);
+// 게시판
+box(2.2, 1.3, 0.05, new THREE.MeshStandardMaterial({ color:0x8fbc8f, roughness:.95 }), 9, 1.8, 18.95, { cast:false });
+
+// ============================================================
+// 6. 창문 느낌 (좌측 벽 발광 패널)
+// ============================================================
+const winMat = new THREE.MeshStandardMaterial({ color:0xbfe0ff, emissive:0x9cc8f0, emissiveIntensity:.5 });
+for (let z = -9; z <= 9; z += 4.5) {
+  const win = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.4), winMat);
+  win.position.set(-15.96, 1.9, z);
+  win.rotation.y = Math.PI/2;
+  scene.add(win);
+}
+
+// ============================================================
+// 7. 미션 지점 표시 (쌤버스 연동용)
+// ============================================================
+const missionMarkers = [];
+for (const m of MAP_DATA.missionSpots) {
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(0.35, 0.5, 24),
+    new THREE.MeshBasicMaterial({ color:0xffd66e, transparent:true, opacity:.75, side:THREE.DoubleSide })
+  );
+  ring.rotation.x = -Math.PI/2;
+  ring.position.set(m.x, 0.03, m.z);
+  scene.add(ring);
+  missionMarkers.push(ring);
+}
+
+// ============================================================
+// 8. 1인칭 컨트롤 (마우스 포인터락 + 모바일 터치)
+// ============================================================
+const overlay = document.getElementById('overlay');
+const zoneEl = document.getElementById('zone');
+const isTouch = 'ontouchstart' in window && matchMedia('(pointer:coarse)').matches;
+if (isTouch) document.body.classList.add('touch');
+
+let yaw = Math.PI;   // 스폰 시 -z(화이트보드) 방향
+let pitch = 0;
+const keys = {};
+let started = false;
+
+overlay.addEventListener('click', () => {
+  overlay.style.display = 'none';
+  started = true;
+  if (!isTouch) canvas.requestPointerLock && canvas.requestPointerLock();
+});
+canvas.addEventListener('click', () => {
+  if (started && !isTouch && document.pointerLockElement !== canvas) {
+    canvas.requestPointerLock && canvas.requestPointerLock();
+  }
+});
+document.addEventListener('mousemove', e => {
+  if (document.pointerLockElement === canvas) {
+    yaw   -= e.movementX * 0.0022;
+    pitch -= e.movementY * 0.0022;
+    pitch = Math.max(-1.35, Math.min(1.35, pitch));
+  }
+});
+addEventListener('keydown', e => keys[e.code] = true);
+addEventListener('keyup',   e => keys[e.code] = false);
+
+// --- 모바일: 조이스틱 + 시점 드래그 ---
+const joy = document.getElementById('joy');
+const knob = document.getElementById('joyKnob');
+let joyVec = { x:0, y:0 };
+let joyId = null, lookId = null, lastLook = null;
+
+function setKnob(dx, dy) {
+  const max = 40;
+  const len = Math.hypot(dx, dy);
+  if (len > max) { dx = dx/len*max; dy = dy/len*max; }
+  knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  joyVec.x = dx / max; joyVec.y = dy / max;
+}
+joy.addEventListener('touchstart', e => {
+  const t = e.changedTouches[0];
+  joyId = t.identifier;
+  e.preventDefault();
+}, { passive:false });
+
+addEventListener('touchmove', e => {
+  for (const t of e.changedTouches) {
+    if (t.identifier === joyId) {
+      const r = joy.getBoundingClientRect();
+      setKnob(t.clientX - (r.left + r.width/2), t.clientY - (r.top + r.height/2));
+    } else if (t.identifier === lookId && lastLook) {
+      yaw   -= (t.clientX - lastLook.x) * 0.005;
+      pitch -= (t.clientY - lastLook.y) * 0.005;
+      pitch = Math.max(-1.35, Math.min(1.35, pitch));
+      lastLook = { x:t.clientX, y:t.clientY };
+    }
+  }
+  if (e.target === joy || joyId !== null) e.preventDefault();
+}, { passive:false });
+
+addEventListener('touchstart', e => {
+  for (const t of e.changedTouches) {
+    if (t.target !== joy && !joy.contains(t.target) && lookId === null && t.clientX > innerWidth * 0.35) {
+      lookId = t.identifier;
+      lastLook = { x:t.clientX, y:t.clientY };
+    }
+  }
+});
+addEventListener('touchend', e => {
+  for (const t of e.changedTouches) {
+    if (t.identifier === joyId) { joyId = null; setKnob(0,0); joyVec.x = joyVec.y = 0; }
+    if (t.identifier === lookId) { lookId = null; lastLook = null; }
+  }
+});
+
+// ---------- 이동 ----------
+const pos = new THREE.Vector3(MAP_DATA.spawn.x, EYE, MAP_DATA.spawn.z);
+let bobT = 0;
+
+function move(dt) {
+  let fwd = 0, str = 0;
+  if (keys['KeyW'] || keys['ArrowUp'])    fwd += 1;
+  if (keys['KeyS'] || keys['ArrowDown'])  fwd -= 1;
+  if (keys['KeyA'] || keys['ArrowLeft'])  str -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) str += 1;
+  fwd += -joyVec.y;
+  str +=  joyVec.x;
+
+  const len = Math.hypot(fwd, str);
+  if (len > 1) { fwd /= len; str /= len; }
+
+  const run = keys['ShiftLeft'] || keys['ShiftRight'];
+  const speed = (run ? 6.2 : 3.6);
+
+  const sin = Math.sin(yaw), cos = Math.cos(yaw);
+  const dx = (-sin * fwd + cos * str) * speed * dt;
+  const dz = (-cos * fwd - sin * str) * speed * dt;
+
+  // 축 분리 충돌 (벽 슬라이드)
+  if (!collide(pos.x + dx, pos.z)) pos.x += dx;
+  if (!collide(pos.x, pos.z + dz)) pos.z += dz;
+
+  // 헤드 밥
+  const moving = Math.hypot(dx, dz) > 0.0005;
+  if (moving) bobT += dt * (run ? 11 : 8);
+  camera.position.set(pos.x, EYE + (moving ? Math.sin(bobT) * 0.03 : 0), pos.z);
+  camera.rotation.order = 'YXZ';
+  camera.rotation.y = yaw;
+  camera.rotation.x = pitch;
+}
+
+// ---------- 위치 표시 ----------
+let curZone = '';
+function updateZone() {
+  for (const z of MAP_DATA.zones) {
+    if (pos.x >= z.minX && pos.x <= z.maxX && pos.z >= z.minZ && pos.z <= z.maxZ) {
+      if (curZone !== z.id) { curZone = z.id; zoneEl.textContent = z.label; }
+      return;
+    }
+  }
+}
+
+// ---------- 루프 ----------
+const clock3 = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock3.getDelta(), 0.05);
+  const t = clock3.elapsedTime;
+
+  if (started) move(dt);
+  updateZone();
+
+  // 서버 LED 깜빡임
+  for (const l of ledMats) {
+    const v = Math.sin(t * l.speed + l.t);
+    l.mat.emissiveIntensity = v > 0 ? 1.5 : 0.15;
+  }
+  // 미션 링 애니메이션
+  for (const r of missionMarkers) {
+    r.scale.setScalar(1 + Math.sin(t * 2.5) * 0.12);
+    r.material.opacity = 0.55 + Math.sin(t * 2.5) * 0.2;
+  }
+  renderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>
