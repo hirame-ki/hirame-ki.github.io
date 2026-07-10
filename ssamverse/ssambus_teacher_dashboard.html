@@ -1875,40 +1875,43 @@ function switchLiveMap(mapId){
 }
 
 /* ===================== 3D 운동장 - 축구 시합 제어 ===================== */
+/* 주의: 이 버튼들은 "실시간 맵 보기" 모달 안에 있고, 그 모달은 __lmChannel이 이미
+   같은 topic(room:ROOM_ID)을 구독 중이다. 같은 소켓에서 동일 topic을 임시 채널로
+   또 join하면 Phoenix가 중복 join으로 처리해 전송이 유실됨 → 반드시 __lmChannel 재사용. */
+function __lmSendMatch(payload){
+  if(__lmChannel){
+    try{
+      __lmChannel.send({ type:'broadcast', event:'match', payload: payload });
+      return true;
+    }catch(e){ console.error('[축구시합] 브로드캐스트 전송 실패', e); }
+  }
+  return false;
+}
 async function startSoccerMatch(){
   if(!client) return;
   const startedAt = Date.now();
   try{
     const { error } = await client.from('room_settings').upsert(
-      { room_id: ROOM_ID, match_state: { map:'playground3d', active:true, scoreA:0, scoreB:0, startedAt: startedAt } },
+      { room_id: ROOM_ID, teacher_id: currentUserId,
+        match_state: { map:'playground3d', active:true, scoreA:0, scoreB:0, startedAt: startedAt } },
       { onConflict: 'room_id' }
     );
-    if(error){ console.error('[축구시합] DB 저장 실패', error); showToast('저장 실패(늦게 들어오는 학생은 강제선택이 안 될 수 있음): ' + error.message); }
-    const bCh = client.channel('room:' + ROOM_ID);
-    bCh.subscribe(st => {
-      if(st === 'SUBSCRIBED'){
-        bCh.send({ type:'broadcast', event:'match', payload:{ action:'start', startedAt: startedAt, scoreA:0, scoreB:0 } });
-        setTimeout(() => { try{ client.removeChannel(bCh); }catch(e){} }, 1500);
-      }
-    });
-    showToast('학생들에게 팀 선택 안내를 보냈습니다.');
+    if(error){ console.error('[축구시합] DB 저장 실패', error); showToast('저장 실패: ' + error.message); return; }
+    const sent = __lmSendMatch({ action:'start', startedAt: startedAt, scoreA:0, scoreB:0 });
+    showToast(sent ? '학생들에게 팀 선택 안내를 보냈습니다.'
+                   : '시합 시작 저장됨 (학생 화면에는 몇 초 내 자동 반영됩니다)');
   }catch(e){ console.error(e); showToast('시합 시작 실패: ' + (e.message||e)); }
 }
 async function resetSoccerMatch(){
   if(!client) return;
   try{
     const { error } = await client.from('room_settings').upsert(
-      { room_id: ROOM_ID, match_state: { map:'playground3d', active:false, scoreA:0, scoreB:0 } },
+      { room_id: ROOM_ID, teacher_id: currentUserId,
+        match_state: { map:'playground3d', active:false, scoreA:0, scoreB:0 } },
       { onConflict: 'room_id' }
     );
-    if(error){ console.error('[축구시합] DB 저장 실패', error); showToast('초기화 저장 실패: ' + error.message); }
-    const bCh = client.channel('room:' + ROOM_ID);
-    bCh.subscribe(st => {
-      if(st === 'SUBSCRIBED'){
-        bCh.send({ type:'broadcast', event:'match', payload:{ action:'reset' } });
-        setTimeout(() => { try{ client.removeChannel(bCh); }catch(e){} }, 1500);
-      }
-    });
+    if(error){ console.error('[축구시합] DB 저장 실패', error); showToast('초기화 저장 실패: ' + error.message); return; }
+    __lmSendMatch({ action:'reset' });
     showToast('시합이 초기화되었습니다.');
   }catch(e){ console.error(e); showToast('초기화 실패: ' + (e.message||e)); }
 }

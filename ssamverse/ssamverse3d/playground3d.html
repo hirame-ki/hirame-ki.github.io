@@ -1254,14 +1254,33 @@ window.__ssamOnMatch = function(p){
   }
 };
 
-// 새로고침/늦은 입장 대응: 저장된 방 상태를 조회해 시합이 진행 중이면 강제 선택 모드로 전환
+// 새로고침/늦은 입장 대응 + 브로드캐스트 유실 대비 폴링:
+// 실시간 신호(match broadcast)가 어떤 이유로든 안 오더라도 8초마다 DB 상태를 확인해
+// 시합 시작/재시작/초기화를 감지한다. (신호가 정상 수신되면 폴링은 이미 반영된 상태라 no-op)
+function __ssamCheckMatchFromDB(st){
+  const active = !!(st && st.active && (!st.map || st.map === 'playground3d'));
+  if (active){
+    if (!matchActive){
+      __ssamApplyMatchStart(st.startedAt, st.scoreA, st.scoreB);
+      showMatchToast('⚽ 축구 시합 시작! 팀을 선택하세요');
+    } else if (st.startedAt && st.startedAt !== __ssamCurrentMatchStartedAt){
+      // 교사가 시합을 재시작함 → 새 인스턴스로 갱신(팀 재선택 강제)
+      __ssamApplyMatchStart(st.startedAt, st.scoreA, st.scoreB);
+      showMatchToast('⚽ 시합이 다시 시작되었습니다! 팀을 선택하세요');
+    }
+  } else if (matchActive){
+    matchActive = false;
+    __ssamCurrentMatchStartedAt = null;
+    setTeam(null); score = { A:0, B:0 }; updateScoreUI();
+    showMatchToast('시합이 초기화되었습니다');
+  }
+}
 if (!TEACHER_VIEW){
   loadMatchState().then(st => {
     console.log('[축구시합] DB 상태 조회 결과:', st);
-    if (st && st.active && (!st.map || st.map === 'playground3d')){
-      __ssamApplyMatchStart(st.startedAt, st.scoreA, st.scoreB);
-    }
+    __ssamCheckMatchFromDB(st);
   });
+  setInterval(() => { loadMatchState().then(__ssamCheckMatchFromDB); }, 8000);
 }
 
 /* ── 시합용 UI 주입(팀 배지·점수·팀선택 오버레이·교사 버튼) ── */
