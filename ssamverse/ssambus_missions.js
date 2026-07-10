@@ -219,13 +219,15 @@ const MAP_FILES = {
   health:'ssambus_map_health.html',
   maze:'ssambus_map_maze.html',
   race:'ssambus_map_race.html',
-  modum_classroom:'ssambus_map_modum_classroom.html'
+  modum_classroom:'ssambus_map_modum_classroom.html',
+  classroom3d:'ssamverse3d/classroom3d.html'   // 3D 맵 (ssamverse3d/ 하위 폴더)
 };
 const MAP_LABELS = {
   classroom:'일반교실', library:'도서관', playground:'운동장',
   gym:'체육관', forest:'자연숲',
   music:'음악실', artroom:'미술실', computer:'컴퓨터실',
-  science:'과학실', cafeteria:'급식실', health:'보건실', maze:'미로', race:'경주 트랙', modum_classroom:'모둠교실'
+  science:'과학실', cafeteria:'급식실', health:'보건실', maze:'미로', race:'경주 트랙', modum_classroom:'모둠교실',
+  classroom3d:'3D 교실'
 };
 
 /* 교사가 순서를 설정하지 않았을 때 사용할 기본 맵 순서 */
@@ -536,6 +538,28 @@ function checkMission3D(x, z){
   return best;
 }
 
+/* 3D 맵 전용: 문(출구)에 도달했을 때 다음 맵으로 이동을 시도한다.
+   2D의 __msCheckExit는 그리드 EXIT_ZONES 기반이라 월드 좌표 3D 맵엔 맞지 않으므로 별도 경로.
+   3D 맵(classroom3d.html 등)이 매 프레임 "문 근처인지" 판정해 이 함수를 호출한다.
+   반환값:
+     'go'            - 필수 미션 완료 + 다음 맵 존재 → 이동 시작(배너 후 페이지 전환)
+     'incomplete'    - 필수 미션이 남아 이동 불가
+     'no_next'       - 이 맵 뒤에 미션 있는 맵이 없음(마지막 맵)
+     'no_missions'   - 이 맵에 등록된 미션이 없음 / 아직 로드 전
+     'transitioning' - 이미 이동 진행 중 */
+function requestMapExit3D(){
+  if(__msTransitioning) return 'transitioning';
+  if(__msMissions === null) return 'no_missions';
+  if(!__msMapsWithMissions || !__msMapsWithMissions.has(__msMapId)) return 'no_missions';
+  const teacher = !!window.__rtTeacherParticipant;
+  if(!teacher && !__msAllRequiredDone()) return 'incomplete';
+  const next = __msNextMap();
+  if(!next) return 'no_next';
+  __msTransitioning = true;
+  __msGoToMap(next);
+  return 'go';
+}
+
 function checkZoneOnMove(pos){
   if(__msMissions === null) return; // 미션 로드 전에는 판정하지 않음
   __msCheckExit(pos);
@@ -631,10 +655,17 @@ function __msCheckExit(pos){
   __msGoToMap(next);
 }
 
+/* MAP_FILES 경로는 저장소 루트 기준(2D 맵은 루트, 3D 맵은 ssamverse3d/ 하위).
+   현재 페이지가 ssamverse3d/ 하위(3D 맵)면 루트로 한 단계 올라가야 경로가 맞는다.
+   예: 3D 교실(.../ssamverse3d/classroom3d.html) → 2D 도서관은 '../ssambus_map_library.html' */
+function __msRepoBase(){
+  return /\/ssamverse3d\//.test(window.location.pathname) ? '../' : './';
+}
+
 function __msGoToMap(mapId){
   const file = MAP_FILES[mapId];
   if(!file){ __msTransitioning = false; return; }
-  const url = new URL(file, window.location.href);
+  const url = new URL(__msRepoBase() + file, window.location.href);
   url.searchParams.set('room', __msRoomId);
   const nickname = __msParam('nickname', null);
   if(nickname) url.searchParams.set('nickname', nickname);

@@ -155,7 +155,10 @@
       if(appearance && remotePos && typeof remotePos.dir === 'string'){
         var charFacingAngle = angleFromDirFacing(remotePos.dir, remotePos.facingRight);
         var angleToViewer = Math.atan2(myPos.x - worldX, myPos.z - worldZ) * 180 / Math.PI;
-        var picked = pickDirFromAngle(angleToViewer - charFacingAngle);
+        // 상대각의 부호를 뒤집어야 좌/우 프로필이 올바르게 나온다.
+        // (angleToViewer/charFacingAngle 모두 atan2(x,z) 시계방향 기준이라, 그대로 빼면
+        //  앞뒤는 맞지만 좌우가 뒤집혀 보임 — 이동방향과 반대편 프로필이 선택됨)
+        var picked = pickDirFromAngle(charFacingAngle - angleToViewer);
         var key = id + '|' + appearance.type + '|' + appearance.preset + '|' + appearance.skin
           + '|' + appearance.hcolor + '|' + appearance.hair + '|' + appearance.ccolor + '|' + appearance.cloth
           + '|' + appearance.gender + '|' + (appearance.acc || []).join(',') + '|' + picked.dir + '|' + picked.facingRight;

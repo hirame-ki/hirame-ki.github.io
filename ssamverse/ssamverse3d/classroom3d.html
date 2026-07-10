@@ -494,6 +494,15 @@ function makeDoor(z) {
 makeDoor(-ROOM.D/2 + 3);
 makeDoor(ROOM.D/2 - 3);
 
+/* ── 출구(문) 근접 판정 ──
+   오른쪽 벽(복도쪽)의 두 문 앞에 서면 다음 맵으로 이동. 좌표는 makeDoor 인자와 동일. */
+const EXIT_DOOR_ZS = [-ROOM.D/2 + 3, ROOM.D/2 - 3];
+function isAtExitDoor(x, z) {
+  if (x < ROOM.W/2 - 2.0) return false;               // 오른쪽 벽 근처만
+  return EXIT_DOOR_ZS.some(dz => Math.abs(z - dz) < 1.3);
+}
+let doorNoticeActive = false; // 문 앞 안내 배너 중복 방지(문에서 벗어나면 초기화)
+
 /* ── 미션 마커 (ssambus_missions.js가 불러온 __msMissions의 trigger_point 기준, 지연 로드 대응) ── */
 const missionMarkers = {}; // id -> {group, ring, beam, orb}
 let missionMarkersBuilt = false;
@@ -758,6 +767,21 @@ function animate() {
   } else {
     promptEl.style.display = 'none';
     actionBtn.classList.remove('pulse');
+  }
+
+  // 문(출구) 판정 — 필수 미션을 모두 완료했으면 다음 맵으로 자동 이동.
+  // (nearMission이 없을 때만 = 완료 안 된 미션이 근처에 없을 때만 출구 판정)
+  if (started && !modalOpen && !TEACHER_VIEW && !nearMission
+      && typeof requestMapExit3D === 'function'
+      && isAtExitDoor(camera.position.x, camera.position.z)) {
+    const exitStatus = requestMapExit3D(); // 'go'는 내부 __msTransitioning 게이트로 1회만 실제 이동
+    if (exitStatus === 'incomplete' && !doorNoticeActive) {
+      doorNoticeActive = true;
+      if (typeof __msShowBlockedNotice === 'function') __msShowBlockedNotice();
+    }
+    // 'go' → __msGoToMap이 배너 표시 후 페이지 이동. no_next/no_missions는 조용히 무시.
+  } else {
+    doorNoticeActive = false;
   }
 
   // 다른 학생 실시간 동기화(위치/외형/채팅) — 모달이 열려 있어도 계속 반영
