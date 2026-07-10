@@ -552,12 +552,20 @@ function requestMapExit3D(){
   if(__msMissions === null) return 'no_missions';
   if(!__msMapsWithMissions || !__msMapsWithMissions.has(__msMapId)) return 'no_missions';
   const teacher = !!window.__rtTeacherParticipant;
-  if(!teacher && !__msAllRequiredDone()) return 'incomplete';
+  if(!teacher && !__msAllRequiredDone3D()) return 'incomplete';
   const next = __msNextMap();
   if(!next) return 'no_next';
   __msTransitioning = true;
   __msGoToMap(next);
   return 'go';
+}
+
+/* 3D 맵에서는 발동 좌표(trigger_point)가 있는 미션만 실제로 수행할 수 있다.
+   좌표가 없는 미션(구역만 지정했거나 예전 테스트로 남은 미션 등)은 3D에서 마커도 안 생기고
+   발동도 되지 않으므로 출구 통과 조건에서 제외한다. 그렇지 않으면 수행 불가능한 미션 하나 때문에
+   나머지를 다 완료해도 문이 영구히 막힌다. (2D 맵의 __msAllRequiredDone과 의도적으로 분리) */
+function __msAllRequiredDone3D(){
+  return __msMissions.every(m => !m.required || !m.trigger_point || __msDone.has(m.id));
 }
 
 function checkZoneOnMove(pos){
