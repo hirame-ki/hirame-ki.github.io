@@ -220,14 +220,15 @@ const MAP_FILES = {
   maze:'ssambus_map_maze.html',
   race:'ssambus_map_race.html',
   modum_classroom:'ssambus_map_modum_classroom.html',
-  classroom3d:'ssamverse3d/classroom3d.html'   // 3D 맵 (ssamverse3d/ 하위 폴더)
+  classroom3d:'ssamverse3d/classroom3d.html',   // 3D 맵 (ssamverse3d/ 하위 폴더)
+  forest3d:'ssamverse3d/ssamverse-3d-forest.html'
 };
 const MAP_LABELS = {
   classroom:'일반교실', library:'도서관', playground:'운동장',
   gym:'체육관', forest:'자연숲',
   music:'음악실', artroom:'미술실', computer:'컴퓨터실',
   science:'과학실', cafeteria:'급식실', health:'보건실', maze:'미로', race:'경주 트랙', modum_classroom:'모둠교실',
-  classroom3d:'3D 교실'
+  classroom3d:'3D 교실', forest3d:'3D 자연숲'
 };
 
 /* 교사가 순서를 설정하지 않았을 때 사용할 기본 맵 순서 */

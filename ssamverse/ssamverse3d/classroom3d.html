@@ -590,7 +590,7 @@ document.getElementById('start-btn').addEventListener('click', () => {
   if (!isTouch) renderer.domElement.requestPointerLock();
 });
 renderer.domElement.addEventListener('click', () => {
-  if (started && !isTouch && !modalOpen && document.pointerLockElement !== renderer.domElement) {
+  if (started && !isTouch && !modalOpen && !TEACHER_VIEW && document.pointerLockElement !== renderer.domElement) {
     renderer.domElement.requestPointerLock();
   }
 });
@@ -709,6 +709,18 @@ if (!TEACHER_VIEW) {
   try { initMissionSystem('classroom3d'); } catch (e) { console.warn('[classroom3d] missions:', e); }
 }
 try { SsamAdapter3D.init({ THREE, scene, camera }); } catch (e) { console.warn('[classroom3d] adapter:', e); }
+
+/* ── 교사 실시간 맵 보기(teacherView=1) ──
+   입장 버튼 클릭 없이 자동 시작하고, 교실 전체가 보이는 고정 조감 시점으로 학생만 관찰한다.
+   (본인 이동/포인터락/미션/문 판정은 아래 애니메이션 루프에서 모두 !TEACHER_VIEW로 이미 비활성)
+   started=true 라야 SsamAdapter3D.update()가 돌아 원격 학생 스프라이트가 동기화된다. */
+if (TEACHER_VIEW) {
+  const ov = document.getElementById('overlay');
+  if (ov) ov.style.display = 'none';
+  started = true;
+  camera.position.set(0, 15, ROOM.D/2 + 4); // 남쪽 벽 위·뒤에서 교실 안쪽을 내려다봄
+  camera.lookAt(0, 1, 0);
+}
 
 /* ── 메인 루프 ── */
 const clock3 = new THREE.Clock();

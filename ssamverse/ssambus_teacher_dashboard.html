@@ -1060,7 +1060,8 @@ const MAP_FILES = {
   maze:'ssambus_map_maze.html',
   race:'ssambus_map_race.html',
   modum_classroom:'ssambus_map_modum_classroom.html',
-  classroom3d:'ssamverse3d/classroom3d.html'
+  classroom3d:'ssamverse3d/classroom3d.html',
+  forest3d:'ssamverse3d/ssamverse-3d-forest.html'
 };
 
 /* 각 맵의 실제 캔버스 픽셀 크기 (실시간 맵 보기에서 축소 표시용) */
@@ -1081,7 +1082,8 @@ const MAP_CANVAS_SIZE = {
   race:      { w:1920, h:5760 },
   modum_classroom: { w:1920, h:2112 },
   /* 3D 맵은 고정 캔버스가 아니라 WebGL 뷰포트 — 실시간 맵 보기에서 이 해상도로 렌더링 후 축소 표시 */
-  classroom3d: { w:1280, h:720 }
+  classroom3d: { w:1280, h:720 },
+  forest3d: { w:1280, h:720 }
 };
 
 const MAPS = [
@@ -1234,6 +1236,14 @@ const MAPS = [
     {id:'zone_F', label:'사물함(뒷벽)'},
     {id:'zone_G', label:'게시판(우측)'},
     {id:'zone_H', label:'뒷문 부근'}
+  ]},
+  { id:'forest3d', label:'🌲 3D 자연숲 (베타)', zones:[
+    {id:'zone_A', label:'중앙 광장'},
+    {id:'zone_B', label:'벚꽃나무(북서)'},
+    {id:'zone_C', label:'연못(북동)'},
+    {id:'zone_D', label:'바위 언덕(남동)'},
+    {id:'zone_E', label:'캠프파이어(남서)'},
+    {id:'zone_F', label:'출구 부근'}
   ]}
 ];
 
@@ -3632,6 +3642,17 @@ const MAP_3D_LAYOUTS = {
       { x:-4,   z:12.65, w:14,  d:0.6, label:'사물함' },
       { x:17.9, z:4,     w:0.3, d:6,   label:'게시판' },
       { x:-18,  z:0,     w:0.3, d:20,  label:'창가' }
+    ]
+  },
+  forest3d: {
+    w: 96, d: 96, // 플레이 구역 96×96 (PLAY_HALF=48), 원점 중심
+    furniture: [
+      { x:0,   z:0,   w:6, d:6, label:'중앙광장' },
+      { x:-30, z:-30, w:4, d:4, label:'벚꽃나무' },
+      { x:32,  z:-28, w:5, d:5, label:'연못' },
+      { x:34,  z:32,  w:5, d:5, label:'바위언덕' },
+      { x:-32, z:30,  w:4, d:4, label:'캠프파이어' },
+      { x:0,   z:44,  w:6, d:2, label:'출구' }
     ]
   }
 };

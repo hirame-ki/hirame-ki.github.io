@@ -269,6 +269,9 @@
 
   function updateOwnState(camPos){
     if(typeof pos === 'undefined' || typeof PLAYER === 'undefined') return;
+    // 교사 실시간 맵 보기에서는 관찰만 하므로 본인 위치를 방송하지 않는다
+    // (방송하면 교실에 유령 참가자가 생기거나 불필요한 네트워크 트래픽 발생)
+    if(window.TEACHER_VIEW) return;
 
     if(lastMoveX !== null){
       var dx = camPos.x - lastMoveX, dz = camPos.z - lastMoveZ;
