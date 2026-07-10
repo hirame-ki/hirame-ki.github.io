@@ -696,9 +696,9 @@ function movePlayer(dt) {
   }
 
   camera.position.set(player.x, CONFIG.EYE, player.z);
-  camera.rotation.order = 'YXZ';
-  camera.rotation.y = player.yaw;
-  camera.rotation.x = player.pitch;
+  // roll(z)을 항상 0으로 고정 — 개별 .x/.y 대입만 하면 시작 전 소개 카메라의 lookAt이
+  // 남긴 roll이 YXZ 순서로 적용돼 화면이 기울어짐(땅이 사선). classroom3d와 동일하게 set으로 0 고정.
+  camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
 }
 
 // ── 미션 근접 트리거 (checkMission3D — trigger_point 좌표 기반) ──

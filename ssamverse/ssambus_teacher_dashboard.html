@@ -1742,7 +1742,7 @@ function __spRender(state){
   table.style.display = 'table';
 
   tbody.innerHTML = rows.map(function(r){
-    const pct = r.mTotal > 0 ? Math.round(r.mDone / r.mTotal * 100) : 0;
+    const pct = r.mTotal > 0 ? Math.min(100, Math.round(r.mDone / r.mTotal * 100)) : 0;
     const mapLabel = (typeof MAPS !== 'undefined')
       ? (MAPS.find(function(m){ return m.id === r.map; }) || {}).label || r.map
       : r.map;

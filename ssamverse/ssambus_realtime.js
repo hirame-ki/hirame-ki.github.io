@@ -60,7 +60,11 @@ function __rtMyState(){
     acc: PLAYER.acc,
     nickname: __rtNickname,
     map: __rtMapId,
-    mDone: (typeof __msDone !== 'undefined') ? __msDone.size : 0,
+    // 완료 수는 "현재 맵의 필수 미션 중 완료된 것"만 세야 한다.
+    // __msDone.size는 방 전체(여러 맵) 누적 완료라 현재 맵 총계(mTotal)보다 커져
+    // "6 / 3" 처럼 표기되고 진행바가 100%를 넘어 테이블 밖으로 삐져나감.
+    mDone: (typeof __msMissions !== 'undefined' && __msMissions && typeof __msDone !== 'undefined')
+      ? __msMissions.filter(function(m){ return m.required && __msDone.has(m.id); }).length : 0,
     mTotal: (typeof __msMissions !== 'undefined' && __msMissions)
       ? __msMissions.filter(function(m){ return m.required; }).length : 0
   };
