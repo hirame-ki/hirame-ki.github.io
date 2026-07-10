@@ -91,16 +91,18 @@
   #npc-toggle-wrap { display:flex; align-items:center; gap:8px; color:#a8c496; font-size:13px; }
 
   /* ── 모바일 조작 ───────────────── */
-  #joy-zone { position:fixed; left:0; bottom:0; width:45%; height:45%; z-index:20; display:none; }
+  /* 모바일 방향 레버 — 교실맵과 동일: 좌하단에 항상 보이는 고정 원형 조이스틱
+     (bottom 오프셋은 하단 채팅바 #rt-chat-bar에 가리지 않도록 88px) */
+  #joy-zone { position:fixed; left:24px; bottom:88px; width:120px; height:120px; z-index:20; display:none; touch-action:none; }
   #look-zone { position:fixed; right:0; bottom:0; width:55%; height:60%; z-index:20; display:none; }
   #joy-base {
-    position:absolute; width:110px; height:110px; border-radius:50%;
+    position:absolute; inset:0; border-radius:50%;
     border:2px solid rgba(255,255,255,.35); background:rgba(255,255,255,.08);
-    display:none;
   }
   #joy-stick {
     position:absolute; width:48px; height:48px; border-radius:50%;
-    background:rgba(255,255,255,.55); left:31px; top:31px;
+    background:rgba(255,255,255,.55); left:36px; top:36px;
+    box-shadow:0 4px 12px rgba(0,0,0,.3);
   }
   body.touch #joy-zone, body.touch #look-zone { display:block; }
   body.touch #controls-hint { display:none; }
@@ -589,8 +591,8 @@ const player = { x: 0, z: 14, yaw: Math.PI, pitch: 0 };
 const keys = {};
 let locked = false;
 let modalOpen = false; // ssambus_missions.js 모달(#ms-overlay) 열림 여부
-const isTouch = ('ontouchstart' in window) &&
-  (matchMedia('(pointer:coarse)').matches || navigator.maxTouchPoints > 0);
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0
+  || matchMedia('(hover: none) and (pointer: coarse)').matches;
 if (isTouch) document.body.classList.add('touch');
 
 // #ms-overlay 표시 여부로 모달 상태 추적 (열려 있으면 이동/포인터락 정지)
@@ -621,40 +623,43 @@ document.addEventListener('mousemove', e => {
   player.pitch = Math.max(-1.35, Math.min(1.35, player.pitch));
 });
 
-// 모바일: 왼쪽 조이스틱 + 오른쪽 드래그
-const joy = { active:false, id:null, ox:0, oy:0, dx:0, dy:0 };
+// 모바일: 왼쪽 고정 조이스틱 + 오른쪽 드래그 (교실맵과 동일한 방식)
+const joy = { active:false, id:null, dx:0, dy:0 };
 const look = { id:null, lx:0, ly:0 };
 const joyZone = document.getElementById('joy-zone');
 const lookZone = document.getElementById('look-zone');
-const joyBase = document.getElementById('joy-base');
 const joyStick = document.getElementById('joy-stick');
+const JOY_MAX = 45;            // 노브 최대 이동 반경(px)
+const JOY_REST = 36;           // 노브 중앙 위치(zone 120 − knob 48)/2
 
+function joyUpdate(t) {
+  const r = joyZone.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  let dx = t.clientX - cx, dy = t.clientY - cy;
+  const d = Math.hypot(dx, dy);
+  if (d > JOY_MAX) { dx = dx / d * JOY_MAX; dy = dy / d * JOY_MAX; }
+  joy.dx = dx / JOY_MAX; joy.dy = dy / JOY_MAX;
+  joyStick.style.left = (JOY_REST + dx) + 'px';
+  joyStick.style.top  = (JOY_REST + dy) + 'px';
+}
+function joyReset() {
+  joy.active = false; joy.id = null; joy.dx = 0; joy.dy = 0;
+  joyStick.style.left = JOY_REST + 'px'; joyStick.style.top = JOY_REST + 'px';
+}
 joyZone.addEventListener('touchstart', e => {
+  if (joy.id !== null) return;
   const t = e.changedTouches[0];
   joy.active = true; joy.id = t.identifier;
-  joy.ox = t.clientX; joy.oy = t.clientY; joy.dx = 0; joy.dy = 0;
-  joyBase.style.display = 'block';
-  joyBase.style.left = (t.clientX-55)+'px';
-  joyBase.style.top = (t.clientY-55)+'px';
+  joyUpdate(t);
 }, {passive:true});
 joyZone.addEventListener('touchmove', e => {
-  for (const t of e.changedTouches) {
-    if (t.identifier !== joy.id) continue;
-    let dx = t.clientX - joy.ox, dy = t.clientY - joy.oy;
-    const d = Math.hypot(dx,dy), max = 45;
-    if (d > max) { dx = dx/d*max; dy = dy/d*max; }
-    joy.dx = dx/max; joy.dy = dy/max;
-    joyStick.style.left = (31+dx)+'px';
-    joyStick.style.top = (31+dy)+'px';
-  }
+  for (const t of e.changedTouches) { if (t.identifier === joy.id) joyUpdate(t); }
 }, {passive:true});
 joyZone.addEventListener('touchend', e => {
-  for (const t of e.changedTouches) {
-    if (t.identifier !== joy.id) continue;
-    joy.active = false; joy.dx = 0; joy.dy = 0;
-    joyBase.style.display = 'none';
-    joyStick.style.left = '31px'; joyStick.style.top = '31px';
-  }
+  for (const t of e.changedTouches) { if (t.identifier === joy.id) joyReset(); }
+});
+joyZone.addEventListener('touchcancel', e => {
+  for (const t of e.changedTouches) { if (t.identifier === joy.id) joyReset(); }
 });
 
 lookZone.addEventListener('touchstart', e => {
