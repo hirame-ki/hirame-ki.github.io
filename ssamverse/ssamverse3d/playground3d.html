@@ -1170,13 +1170,36 @@ function stepBall(dt){
 }
 
 /* ════════════════ 팀 시스템 (A/B 선택 + 옷 색) ════════════════ */
+// 시합 진행 여부(room_settings.match_state에 영속 저장 → 늦게 입장/재접속한 학생도 감지 가능)
+const __ssamRoomId = new URLSearchParams(window.location.search).get('room') || 'demo';
+const __ssamTeamStoreKey = 'ssambus_team_' + __ssamRoomId; // 새로고침 시 같은 팀 유지용
+let matchActive = false;   // 이 방에서 시합이 "진행 중"인지 (DB 로드 또는 실시간 브로드캐스트로 갱신)
+let forcedTeamPick = false; // 시합 중인데 아직 내 팀이 없으면 true → 강제 선택 모드(이동/미션 차단)
+
+// match_state 쓰기(시작/초기화/점수)는 교사 대시보드의 "실시간 맵 보기" 모달에서 처리한다
+// (이 3D 맵 iframe은 pointer-events:none 미리보기라 버튼 클릭이 불가능하고,
+//  room_settings 쓰기 권한도 teacher_id=auth.uid()인 대시보드 세션에만 있음). 학생은 읽기만 한다.
+function __ssamMatchClient(){ return (typeof __msGetClient === 'function') ? __msGetClient() : null; }
+async function loadMatchState(){
+  if (__ssamRoomId === 'demo') return null;
+  const client = __ssamMatchClient(); if (!client) return null;
+  try{
+    const { data } = await client.from('room_settings').select('match_state').eq('room_id', __ssamRoomId).maybeSingle();
+    return (data && data.match_state) || null;
+  }catch(e){ return null; }
+}
+function mustForceTeamPick(){ return matchActive && !TEACHER_VIEW && !myTeam(); }
+
 function setTeam(team){
   window.__ssamTeam = team;
   PLAYER.ccolor = team ? TEAM_COLORS[team] : ORIG_CCOLOR;
+  try{ if (team) localStorage.setItem(__ssamTeamStoreKey, team); else localStorage.removeItem(__ssamTeamStoreKey); }catch(e){}
   // 외형(옷 색) 변경을 다른 학생에게 반영 — presence track + 위치 방송
   try { if (typeof __rtTrackPresence === 'function') __rtTrackPresence(); } catch(e){}
   try { if (typeof __rtTrackNow === 'function') __rtTrackNow(); } catch(e){}
   updateTeamBadge();
+  const ov = document.getElementById('teamOverlay');
+  if (ov) ov.style.display = 'none';
 }
 function updateTeamBadge(){
   const b = document.getElementById('teamBadge');
@@ -1189,16 +1212,34 @@ function updateTeamBadge(){
     b.style.color = '#173049';
   } else b.style.display = 'none';
 }
-function showTeamOverlay(){
-  if (TEACHER_VIEW) return;
-  const ov = document.getElementById('teamOverlay');
-  if (ov) ov.style.display = 'flex';
-}
 window.__ssamOnMatch = function(p){
   if (!p) return;
-  if (p.action === 'start'){ if (!TEACHER_VIEW) showTeamOverlay(); showMatchToast('⚽ 축구 시합 시작! 팀을 선택하세요'); }
-  else if (p.action === 'reset'){ setTeam(null); score = {A:0,B:0}; updateScoreUI(); showMatchToast('시합이 초기화되었습니다'); }
+  if (p.action === 'start'){
+    matchActive = true;
+    if (typeof p.scoreA === 'number') score.A = p.scoreA;
+    if (typeof p.scoreB === 'number') score.B = p.scoreB;
+    updateScoreUI();
+    showMatchToast('⚽ 축구 시합 시작! 팀을 선택하세요');
+  } else if (p.action === 'reset'){
+    matchActive = false;
+    setTeam(null); score = { A:0, B:0 }; updateScoreUI();
+    showMatchToast('시합이 초기화되었습니다');
+  }
 };
+
+// 새로고침/늦은 입장 대응: 저장된 방 상태를 조회해 시합이 진행 중이면 강제 선택 모드로 전환
+if (!TEACHER_VIEW){
+  try{ const saved = localStorage.getItem(__ssamTeamStoreKey); if (saved) window.__ssamTeam = saved; }catch(e){}
+  loadMatchState().then(st => {
+    if (st && st.active && (!st.map || st.map === 'playground3d')){
+      matchActive = true;
+      if (typeof st.scoreA === 'number') score.A = st.scoreA;
+      if (typeof st.scoreB === 'number') score.B = st.scoreB;
+      if (myTeam()){ PLAYER.ccolor = TEAM_COLORS[myTeam()]; updateTeamBadge(); }
+      updateScoreUI();
+    }
+  });
+}
 
 /* ── 시합용 UI 주입(팀 배지·점수·팀선택 오버레이·교사 버튼) ── */
 function showMatchToast(msg){ showToast(msg); }
@@ -1241,24 +1282,8 @@ function updateScoreUI(){
   document.body.appendChild(ov);
   ov.querySelector('#pickA').addEventListener('click', () => { setTeam('A'); ov.style.display = 'none'; });
   ov.querySelector('#pickB').addEventListener('click', () => { setTeam('B'); ov.style.display = 'none'; });
-
-  // 교사(실시간 맵 보기) 전용 시합 제어 버튼
-  if (TEACHER_VIEW){
-    const bar = document.createElement('div');
-    bar.style.cssText = 'position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:10px;font-family:inherit;';
-    bar.innerHTML =
-      '<button id="matchStart" style="border:none;cursor:pointer;border-radius:12px;padding:11px 18px;font-weight:900;font-size:14px;color:#fff;background:#ff6b57;box-shadow:0 6px 14px rgba(0,0,0,.3);">⚽ 축구 시합 시작</button>'
-      + '<button id="matchReset" style="border:none;cursor:pointer;border-radius:12px;padding:11px 16px;font-weight:800;font-size:13px;color:#fff;background:#456;box-shadow:0 6px 14px rgba(0,0,0,.3);">시합 초기화</button>';
-    document.body.appendChild(bar);
-    bar.querySelector('#matchStart').addEventListener('click', () => {
-      if (typeof __ssamSendMatch === 'function') __ssamSendMatch({ action:'start' });
-      showToast('학생들에게 팀 선택 안내를 보냈습니다');
-    });
-    bar.querySelector('#matchReset').addEventListener('click', () => {
-      if (typeof __ssamSendMatch === 'function') __ssamSendMatch({ action:'reset' });
-      score = {A:0,B:0}; updateScoreUI();
-    });
-  }
+  // 시합 시작/초기화 버튼은 교사 대시보드의 "실시간 맵 보기" 모달에서 제어한다.
+  // (이 미리보기 iframe은 pointer-events:none이라 여기서는 버튼이 클릭되지 않음 — teamBadge/scoreChip으로 관전만 가능)
 })();
 
 /* ── 슛/패스 버튼 핸들러(모바일=touchstart, PC=click) ── */
@@ -1279,9 +1304,15 @@ function animate(){
   const dt = Math.min(clock.getDelta(), 0.05);
   const t = clock.elapsedTime;
 
+  // 시합 진행 중인데 아직 내 팀이 없으면 강제 선택 오버레이 표시 + 이동/미션 차단
+  forcedTeamPick = mustForceTeamPick();
+  const __teamOv = document.getElementById('teamOverlay');
+  if (__teamOv) __teamOv.style.display = forcedTeamPick ? 'flex' : 'none';
+  if (forcedTeamPick && document.pointerLockElement) document.exitPointerLock();
+
   // 모달 열림 추적 — 닫히면 포인터락 복원
   const wasModal = modalOpen;
-  modalOpen = isMsModalOpen();
+  modalOpen = isMsModalOpen() || forcedTeamPick;
   if (wasModal && !modalOpen && started && !IS_TOUCH && !TEACHER_VIEW) lockPointer();
 
   if (started && !modalOpen && !TEACHER_VIEW){

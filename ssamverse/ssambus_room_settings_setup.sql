@@ -44,3 +44,9 @@ alter table room_settings
 -- 키 = "행,열", 값 = 타일 타입 (20: 책상/가구, 21: 화분, 22: 책장, 23: 칸막이)
 alter table room_settings
   add column if not exists map_tiles jsonb;
+
+-- 3D 운동장 축구 시합 상태 컬럼 추가 (교사가 시합 시작/종료 시 저장 → 늦게 입장/새로고침한
+-- 학생도 시합 진행 여부를 감지해 팀 선택을 강제할 수 있도록)
+-- 형식: {"map":"playground3d","active":true,"scoreA":1,"scoreB":0,"startedAt":1730000000000}
+alter table room_settings
+  add column if not exists match_state jsonb;
