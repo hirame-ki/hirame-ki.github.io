@@ -110,6 +110,11 @@
     border-radius:50%; font-weight:900; color:#fff; box-shadow:0 6px 14px rgba(0,0,0,.3); }
   #jumpBtn { right:22px; bottom:96px; width:64px; height:64px;
     background:rgba(27,58,91,.85); font-size:13px; }
+  /* 운동장 전용 달리기 토글 버튼 (점프 버튼 위) */
+  #runBtn { right:22px; bottom:170px; width:64px; height:64px;
+    background:rgba(27,58,91,.85); font-size:13px; }
+  #runBtn.on { background:#ff6b57;
+    box-shadow:0 0 0 3px rgba(255,107,87,.45), 0 6px 14px rgba(0,0,0,.3); }
   #actBtn { right:100px; bottom:30px; width:72px; height:72px;
     background:#ff6b57; font-size:14px; }
 </style>
@@ -147,10 +152,11 @@
     <div class="mKey" id="mKey">E 키를 눌러 미션 수행</div>
   </div>
   <div id="toast"></div>
-  <div id="hintBar">ESC: 마우스 해제 · Shift: 달리기</div>
+  <div id="hintBar">ESC: 마우스 해제 · Shift: 달리기 · Space: 점프</div>
   <div id="joyZone"></div>
   <div id="joyBase"></div><div id="joyStick"></div>
   <div id="lookZone"></div>
+  <button class="mBtn" id="runBtn">달리기</button>
   <button class="mBtn" id="jumpBtn">점프</button>
   <button class="mBtn" id="actBtn">미션</button>
 </div>
@@ -772,9 +778,16 @@ if (IS_TOUCH){
     for (const t of e.changedTouches) if (t.identifier === lookId) lookId = null;
   });
   document.getElementById('jumpBtn').addEventListener('touchstart', () => {
-    if (player.onGround){ player.vy = 6.2; player.onGround = false; }
+    if (player.onGround && started && !modalOpen && !TEACHER_VIEW){ player.vy = 6.2; player.onGround = false; }
   }, {passive:true});
   document.getElementById('actBtn').addEventListener('touchstart', tryMission, {passive:true});
+  // 달리기 토글 (모바일: Shift 대신 버튼). 눌린 상태를 색으로 표시.
+  const runBtn = document.getElementById('runBtn');
+  runBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    running = !running;
+    runBtn.classList.toggle('on', running);
+  });
 }
 
 /* ── 이동 & 충돌 ── */
@@ -942,6 +955,8 @@ function animate(){
 
   // 미션 마커 색 갱신(로드 지연 대응) + 원격 학생 동기화 + HUD
   refreshMissionMarkers();
+  // 점프/계단 높이를 다른 학생에게도 보이도록 foot height를 pos.y로 전달(어댑터가 브로드캐스트)
+  pos.y = player.footY;
   if (started && typeof SsamAdapter3D !== 'undefined'){ try { SsamAdapter3D.update(dt, camera); } catch (e) {} }
   // HUD: 이 맵의 완료 수 / 이 맵의 미션 수 (__msDone.size는 방 전체 누적이라 맵 단위로 카운트)
   const __ids = Object.keys(missionMeshes);
@@ -1009,7 +1024,8 @@ document.getElementById('enterBtn').addEventListener('click', () => {
     document.getElementById('joyStick').style.display = 'block';
     document.getElementById('lookZone').style.display = 'block';
     document.getElementById('jumpBtn').style.display = 'block';
-    document.getElementById('hintBar').textContent = '왼쪽: 이동 · 오른쪽: 시점 · 계단으로 구령대/응원석 올라가기';
+    document.getElementById('runBtn').style.display = 'block';
+    document.getElementById('hintBar').textContent = '왼쪽: 이동 · 오른쪽: 시점 · 달리기/점프 버튼 · 계단으로 구령대·응원석 오르기';
     if (window.__pgJoyRest) window.__pgJoyRest(); // 노브를 레버 중앙에 배치
   } else {
     lockPointer();

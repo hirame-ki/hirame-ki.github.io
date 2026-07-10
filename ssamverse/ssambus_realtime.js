@@ -60,13 +60,14 @@ function __rtMyState(){
     acc: PLAYER.acc,
     nickname: __rtNickname,
     map: __rtMapId,
-    // 완료 수는 "현재 맵의 필수 미션 중 완료된 것"만 세야 한다.
-    // __msDone.size는 방 전체(여러 맵) 누적 완료라 현재 맵 총계(mTotal)보다 커져
-    // "6 / 3" 처럼 표기되고 진행바가 100%를 넘어 테이블 밖으로 삐져나감.
+    // 분자: "현재 맵의 필수 미션 중 완료된 것" 수 (__msDone.size는 방 전체 누적이라 맵 단위로 카운트)
     mDone: (typeof __msMissions !== 'undefined' && __msMissions && typeof __msDone !== 'undefined')
       ? __msMissions.filter(function(m){ return m.required && __msDone.has(m.id); }).length : 0,
-    mTotal: (typeof __msMissions !== 'undefined' && __msMissions)
-      ? __msMissions.filter(function(m){ return m.required; }).length : 0
+    // 분모: "수업(방) 전체의 필수 미션 수" (모든 맵 합산). 아직 집계 전이면 현재 맵 수로 폴백.
+    mTotal: (typeof __msRoomTotalRequired !== 'undefined' && __msRoomTotalRequired > 0)
+      ? __msRoomTotalRequired
+      : ((typeof __msMissions !== 'undefined' && __msMissions)
+          ? __msMissions.filter(function(m){ return m.required; }).length : 0)
   };
 }
 
@@ -296,6 +297,7 @@ function __rtTrackNow(){
       type: 'broadcast',
       event: 'pos',
       payload: { id: __rtStudentId, r: pos.r, c: pos.c,
+                 y: (typeof pos.y === 'number' ? pos.y : 0), // foot height (점프/계단 동기화용, 없으면 0)
                  dir: PLAYER.dir, facingRight: PLAYER._facingRight, map: __rtMapId }
     });
   }catch(e){}

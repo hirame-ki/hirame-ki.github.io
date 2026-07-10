@@ -148,10 +148,12 @@
         sprites.set(id, entry);
       }
 
-      entry.sprite.position.set(worldX, PIVOT_Y, worldZ);
-
       var appearance = __rtAvatarState[id];
       var remotePos = __rtRemotePos[id];
+      // 점프/계단 등 수직 위치 동기화: 브로드캐스트된 foot height(y)를 스프라이트 높이에 반영.
+      // (y가 없는 맵/구버전은 0 → 기존과 동일하게 지면에 붙음)
+      var footY = (remotePos && typeof remotePos.y === 'number') ? remotePos.y : 0;
+      entry.sprite.position.set(worldX, PIVOT_Y + footY, worldZ);
       if(appearance && remotePos && typeof remotePos.dir === 'string'){
         var charFacingAngle = angleFromDirFacing(remotePos.dir, remotePos.facingRight);
         var angleToViewer = Math.atan2(myPos.x - worldX, myPos.z - worldZ) * 180 / Math.PI;

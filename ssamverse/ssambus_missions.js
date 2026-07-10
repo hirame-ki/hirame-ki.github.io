@@ -498,17 +498,27 @@ async function __msLoadMapOrder(){
   return MAP_ORDER_DEFAULT.slice();
 }
 
+/* 이 수업(room) 전체(모든 맵)의 필수 미션 총 개수 — 진행현황 진행바의 분모로 사용.
+   __msLoadMapsWithMissions에서 함께 집계한다. (0 = 아직 로드 전/집계 실패) */
+let __msRoomTotalRequired = 0;
+
 /* 이 수업(room)에 실제로 미션이 등록된 맵 id 집합 (데모 미션은 포함하지 않음) */
 async function __msLoadMapsWithMissions(){
   const set = new Set();
+  __msRoomTotalRequired = 0;
   const client = __msGetClient();
   if(client){
     try{
       const { data, error } = await client
         .from('missions')
-        .select('map_id')
+        .select('map_id, required')
         .eq('room_id', __msRoomId);
-      if(!error && data) data.forEach(row => set.add(row.map_id));
+      if(!error && data){
+        data.forEach(row => {
+          set.add(row.map_id);
+          if(row.required !== false) __msRoomTotalRequired++; // 수업 전체 필수 미션 수
+        });
+      }
     }catch(e){ /* 조회 실패 시 빈 집합 - 자동 이동 없음 */ }
   }
   return set;
