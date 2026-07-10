@@ -872,9 +872,10 @@ function loop() {
     try { SsamAdapter3D.update(dt, camera); } catch (e) {}
   }
 
-  // HUD 진행률
-  document.getElementById('mission-count').textContent =
-    ((typeof __msDone !== 'undefined') ? __msDone.size : 0) + '/' + Object.keys(missionMarkers).length;
+  // HUD 진행률 (이 맵의 완료 수 / 이 맵의 미션 수 — __msDone.size는 방 전체 누적이라 맵 단위로 카운트)
+  const __fids = Object.keys(missionMarkers);
+  const __fdone = (typeof __msDone !== 'undefined') ? __fids.filter(id => __msDone.has(id)).length : 0;
+  document.getElementById('mission-count').textContent = __fdone + '/' + __fids.length;
 
   // 미니맵
   mmTimer += dt;

@@ -1061,7 +1061,8 @@ const MAP_FILES = {
   race:'ssambus_map_race.html',
   modum_classroom:'ssambus_map_modum_classroom.html',
   classroom3d:'ssamverse3d/classroom3d.html',
-  forest3d:'ssamverse3d/ssamverse-3d-forest.html'
+  forest3d:'ssamverse3d/ssamverse-3d-forest.html',
+  playground3d:'ssamverse3d/playground3d.html'
 };
 
 /* 각 맵의 실제 캔버스 픽셀 크기 (실시간 맵 보기에서 축소 표시용) */
@@ -1083,7 +1084,8 @@ const MAP_CANVAS_SIZE = {
   modum_classroom: { w:1920, h:2112 },
   /* 3D 맵은 고정 캔버스가 아니라 WebGL 뷰포트 — 실시간 맵 보기에서 이 해상도로 렌더링 후 축소 표시 */
   classroom3d: { w:1280, h:720 },
-  forest3d: { w:1280, h:720 }
+  forest3d: { w:1280, h:720 },
+  playground3d: { w:1280, h:720 }
 };
 
 const MAPS = [
@@ -1243,6 +1245,14 @@ const MAPS = [
     {id:'zone_C', label:'연못(북동)'},
     {id:'zone_D', label:'바위 언덕(남동)'},
     {id:'zone_E', label:'캠프파이어(남서)'},
+    {id:'zone_F', label:'출구 부근'}
+  ]},
+  { id:'playground3d', label:'🏟️ 3D 운동장 (베타)', zones:[
+    {id:'zone_A', label:'센터서클(중앙)'},
+    {id:'zone_B', label:'트랙'},
+    {id:'zone_C', label:'구령대(남측)'},
+    {id:'zone_D', label:'골대 앞'},
+    {id:'zone_E', label:'응원석(북측)'},
     {id:'zone_F', label:'출구 부근'}
   ]}
 ];
@@ -3653,6 +3663,17 @@ const MAP_3D_LAYOUTS = {
       { x:34,  z:32,  w:5, d:5, label:'바위언덕' },
       { x:-32, z:30,  w:4, d:4, label:'캠프파이어' },
       { x:0,   z:44,  w:6, d:2, label:'출구' }
+    ]
+  },
+  playground3d: {
+    w: 126, d: 84, // 이동 한계 BOUND_X±63 × BOUND_Z±42, 원점 중심
+    furniture: [
+      { x:0,  z:0,     w:60, d:40, label:'축구장' },
+      { x:0,  z:0,     w:4,  d:4,  label:'센터서클' },
+      { x:0,  z:-34.2, w:6,  d:2,  label:'구령대' },
+      { x:26, z:0,     w:2,  d:6,  label:'골대' },
+      { x:0,  z:33,    w:22, d:3,  label:'응원석' },
+      { x:0,  z:-38,   w:6,  d:2,  label:'출구' }
     ]
   }
 };
