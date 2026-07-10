@@ -117,6 +117,25 @@
     box-shadow:0 0 0 3px rgba(255,107,87,.45), 0 6px 14px rgba(0,0,0,.3); }
   #actBtn { right:100px; bottom:30px; width:72px; height:72px;
     background:#ff6b57; font-size:14px; }
+  /* 슛/패스 버튼 (공 근처일 때만 표시, PC·모바일 공용) */
+  .ballBtn { position:fixed; bottom:30px; width:92px; height:54px; border:none; border-radius:14px;
+    color:#fff; font-weight:900; font-size:16px; z-index:23; display:none; cursor:pointer;
+    box-shadow:0 6px 14px rgba(0,0,0,.3); font-family:inherit; pointer-events:auto; }
+  #passBtn  { left:50%; transform:translateX(-100px); background:#2a6a8f; }
+  #shootBtn { left:50%; transform:translateX(8px);    background:#ff6b57; }
+  #passBtn:active  { background:#1f5170; }
+  #shootBtn:active { background:#e85539; }
+
+  /* 체력(스태미나) 게이지 — 달리기 시 소모 */
+  #staminaWrap { position:absolute; top:52px; left:12px; width:150px; height:12px;
+    background:rgba(20,38,58,.55); border-radius:99px; overflow:hidden;
+    border:1px solid rgba(255,255,255,.25); }
+  #staminaBar { height:100%; width:100%; background:linear-gradient(90deg,#59c98f,#8fe0b0);
+    border-radius:99px; transition:width .1s linear; }
+  #staminaBar.low { background:linear-gradient(90deg,#e0a03a,#ffca5a); }
+  #staminaBar.empty { background:linear-gradient(90deg,#d0503a,#ff7a5a); }
+  #staminaLabel { position:absolute; top:52px; left:168px; font-size:11px; font-weight:700;
+    color:#dbe7f3; text-shadow:0 1px 2px rgba(0,0,0,.5); line-height:12px; }
 </style>
 </head>
 <body>
@@ -159,6 +178,10 @@
   <button class="mBtn" id="runBtn">달리기</button>
   <button class="mBtn" id="jumpBtn">점프</button>
   <button class="mBtn" id="actBtn">미션</button>
+  <button class="ballBtn" id="passBtn">패스</button>
+  <button class="ballBtn" id="shootBtn">슛!</button>
+  <div id="staminaWrap"><div id="staminaBar"></div></div>
+  <div id="staminaLabel">체력</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -704,12 +727,14 @@ function isMsModalOpen(){
 }
 
 // capture 단계 등록: ssambus_realtime.js의 "글자키 → 채팅창 자동포커스"가 이동키를 가로채지 않도록 선점 차단
-const MOVE_KEY_CODES = ['KeyW','KeyA','KeyS','KeyD','KeyE','Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight'];
+const MOVE_KEY_CODES = ['KeyW','KeyA','KeyS','KeyD','KeyE','KeyF','KeyQ','Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight'];
 addEventListener('keydown', e => {
   if (typeof SsamAdapter3D !== 'undefined' && SsamAdapter3D.isChatInputFocused()) return;
   keys[e.code] = true;
   if (e.code === 'Space' && player.onGround && started && !modalOpen && !TEACHER_VIEW){ player.vy = 6.2; player.onGround = false; }
   if (e.code === 'KeyE' && nearMission && !modalOpen && !TEACHER_VIEW) tryMission();
+  if (e.code === 'KeyF') shootBall();  // 슛
+  if (e.code === 'KeyQ') passBall();   // 패스
   if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') running = true;
   if (MOVE_KEY_CODES.includes(e.code)) e.stopPropagation();
 }, true);
@@ -894,6 +919,359 @@ if (TEACHER_VIEW) {
   camera.lookAt(0, 0, 0);
 }
 
+/* ════════════════════════════════════════════════════════════════
+   ⚽ 축구 시합 — 공유 축구공 + 팀(A/B) + 패스/스틸 + 스태미나
+   ════════════════════════════════════════════════════════════════ */
+/* ── 팀 색상 (구별용 옷 색) ── */
+const TEAM_COLORS = { A:'#9ecbf0', B:'#f4b6c8' }; // A=연파랑, B=연분홍
+const ORIG_CCOLOR = PLAYER.ccolor;
+window.__ssamTeam = window.__ssamTeam || null;
+function myId(){ return (typeof __rtStudentId !== 'undefined' && __rtStudentId) ? __rtStudentId : 'local'; }
+function myTeam(){ return window.__ssamTeam || null; }
+
+/* ── 축구공 ── */
+const BALL_R = 0.34;
+function makeBallTexture(){
+  const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+  const g = cv.getContext('2d');
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, 128, 128);
+  g.fillStyle = '#20242b';
+  function pent(cx, cy, r, rot){
+    g.beginPath();
+    for (let i = 0; i < 5; i++){
+      const a = -Math.PI/2 + rot + i*2*Math.PI/5;
+      const x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
+      i ? g.lineTo(x, y) : g.moveTo(x, y);
+    }
+    g.closePath(); g.fill();
+  }
+  pent(64, 64, 15, 0);
+  pent(64, 18, 9, Math.PI); pent(110, 52, 9, Math.PI);
+  pent(92, 108, 9, Math.PI); pent(36, 108, 9, Math.PI); pent(18, 52, 9, Math.PI);
+  return new THREE.CanvasTexture(cv);
+}
+const ballMesh = new THREE.Mesh(
+  new THREE.SphereGeometry(BALL_R, 22, 16),
+  new THREE.MeshStandardMaterial({ map: makeBallTexture(), roughness:0.55, metalness:0.03 })
+);
+ballMesh.castShadow = true;
+const ballShadow = new THREE.Mesh(
+  new THREE.CircleGeometry(BALL_R*0.95, 20),
+  new THREE.MeshBasicMaterial({ color:0x000000, transparent:true, opacity:0.22, depthWrite:false })
+);
+ballShadow.rotation.x = -Math.PI/2; ballShadow.position.y = 0.02;
+scene.add(ballMesh); scene.add(ballShadow);
+
+const BALL_START = { x:0, z:0 };
+const ball = { x:BALL_START.x, y:BALL_R, z:BALL_START.z, vx:0, vy:0, vz:0 };
+let ballOwner = null;       // 마지막으로 소유(찬/트랩)한 학생 id
+let ballOwnerTeam = null;   // 그 학생의 팀
+let ballOwnerT = 0;         // 소유권 타임스탬프(Date.now)
+let ballSendAt = 0;         // broadcast throttle
+const BALL_BOUND_X = 62, BALL_BOUND_Z = 41;
+const GOAL_HALF_Z = 2.6, GOAL_TOP_Y = 2.15, GOAL_X = FIELD_L/2; // 골 판정 영역
+let score = { A:0, B:0 };
+
+/* ── 원격 학생 위치/팀 목록 (같은 맵) ── */
+function remotesOnMap(){
+  const out = [];
+  if (typeof __rtRemotePos === 'undefined') return out;
+  for (const id in __rtRemotePos){
+    const p = __rtRemotePos[id];
+    if (!p) continue;
+    if (p.map && p.map !== 'playground3d') continue;
+    out.push({ id, x: p.c, z: p.r, team: p.team || null });
+  }
+  return out;
+}
+function nearestTeammate(fromX, fromZ){
+  const team = myTeam(); if (!team) return null;
+  let best = null, bd = Infinity;
+  for (const r of remotesOnMap()){
+    if (r.team !== team) continue;
+    const d = Math.hypot(r.x - fromX, r.z - fromZ);
+    if (d < bd){ bd = d; best = r; }
+  }
+  return best;
+}
+
+/* ── 소유권/브로드캐스트 ── */
+function claimBall(trap){
+  ballOwner = myId(); ballOwnerTeam = myTeam(); ballOwnerT = Date.now();
+  if (trap){ ball.vx *= 0.14; ball.vz *= 0.14; ball.vy *= 0.3; }
+}
+function sendBall(force){
+  const now = Date.now();
+  if (!force && now - ballSendAt < 60) return;
+  ballSendAt = now;
+  if (typeof __ssamSendBall !== 'function') return;
+  __ssamSendBall({
+    owner: ballOwner, ownerTeam: ballOwnerTeam, ownerT: ballOwnerT,
+    x:+ball.x.toFixed(2), y:+ball.y.toFixed(2), z:+ball.z.toFixed(2),
+    vx:+ball.vx.toFixed(2), vy:+ball.vy.toFixed(2), vz:+ball.vz.toFixed(2),
+    scoreA: score.A, scoreB: score.B
+  });
+}
+window.__ssamOnBall = function(p){
+  if (!p) return;
+  // 점수 동기화(항상 최신 반영)
+  if (typeof p.scoreA === 'number') score.A = p.scoreA;
+  if (typeof p.scoreB === 'number') score.B = p.scoreB;
+  updateScoreUI();
+  // 내가 최신 소유자이면 남의 오래된 패킷 무시
+  if (p.ownerT && p.ownerT < ballOwnerT) return;
+  if (p.owner === myId() && p.ownerT === ballOwnerT) return; // 내 방송 에코
+  ballOwner = p.owner || null; ballOwnerTeam = p.ownerTeam || null; ballOwnerT = p.ownerT || 0;
+  ball.x = p.x; ball.y = p.y; ball.z = p.z;
+  ball.vx = p.vx; ball.vy = p.vy; ball.vz = p.vz;
+};
+
+/* ── 차기(공통) ── */
+function kickBall(dirx, dirz, power, lift){
+  const d = Math.hypot(dirx, dirz) || 1;
+  ball.vx = dirx/d*power; ball.vz = dirz/d*power; ball.vy = lift;
+  // 공을 플레이어 몸 밖으로 살짝 밀어 즉시 재충돌 방지
+  ball.x += dirx/d*(player.radius + BALL_R + 0.05);
+  ball.z += dirz/d*(player.radius + BALL_R + 0.05);
+  claimBall(false); sendBall(true);
+}
+function nearBall(){ return Math.hypot(player.x - ball.x, player.z - ball.z) < 2.6; }
+function shootBall(){
+  if (!started || modalOpen || TEACHER_VIEW || !nearBall()) return;
+  const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
+  kickBall(fx, fz, 15, 3.8);
+  showToast('⚽ 슛!');
+}
+function passBall(){
+  if (!started || modalOpen || TEACHER_VIEW || !nearBall()) return;
+  const mate = nearestTeammate(ball.x, ball.z);
+  if (mate){
+    const dx = mate.x - ball.x, dz = mate.z - ball.z;
+    const dist = Math.hypot(dx, dz);
+    const power = Math.max(7, Math.min(16, dist*1.15));
+    kickBall(dx, dz, power, 1.2);
+    showToast('🎯 패스!');
+  } else {
+    // 같은 팀원이 없으면 바라보는 방향으로 전진 패스
+    const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
+    kickBall(fx, fz, 10, 1.2);
+    showToast('🎯 패스!');
+  }
+}
+
+/* ── 원형 충돌체(골대 기둥 등) 반사 ── */
+function ballBounceCircle(c){
+  const dx = ball.x - c.x, dz = ball.z - c.z, rr = c.r + BALL_R;
+  const d2 = dx*dx + dz*dz;
+  if (d2 < rr*rr && d2 > 1e-6){
+    const d = Math.sqrt(d2), nx = dx/d, nz = dz/d;
+    ball.x = c.x + nx*rr; ball.z = c.z + nz*rr;
+    const dot = ball.vx*nx + ball.vz*nz;
+    ball.vx = (ball.vx - 2*dot*nx) * 0.6;
+    ball.vz = (ball.vz - 2*dot*nz) * 0.6;
+  }
+}
+function pointSegDist(px, pz, ax, az, bx, bz){
+  const dx = bx-ax, dz = bz-az, l2 = dx*dx + dz*dz;
+  if (l2 < 1e-9) return Math.hypot(px-ax, pz-az);
+  let t = ((px-ax)*dx + (pz-az)*dz) / l2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px - (ax+dx*t), pz - (az+dz*t));
+}
+
+function resetBallToCenter(scoringTeam){
+  ball.x = 0; ball.z = 0; ball.y = BALL_R; ball.vx = ball.vy = ball.vz = 0;
+  ballOwner = null; ballOwnerTeam = null; ballOwnerT = Date.now();
+  if (scoringTeam){ score[scoringTeam] = (score[scoringTeam]||0) + 1; }
+  updateScoreUI();
+  sendBall(true);
+}
+
+/* ── 공 물리 (서브스텝으로 관통 방지) ── */
+function stepBall(dt){
+  const N = 3, sub = dt/N;
+  for (let s = 0; s < N; s++){
+    const px = ball.x, pz = ball.z; // 이 서브스텝 시작 위치(스윕 충돌용)
+    // 중력/적분
+    ball.vy -= 20 * sub;
+    ball.x += ball.vx * sub;
+    ball.y += ball.vy * sub;
+    ball.z += ball.vz * sub;
+    // 바닥
+    if (ball.y <= BALL_R){
+      ball.y = BALL_R;
+      if (ball.vy < -0.4){ ball.vy = -ball.vy * 0.45; } else { ball.vy = 0; }
+      const gd = Math.exp(-1.9 * sub);          // 구름 마찰
+      ball.vx *= gd; ball.vz *= gd;
+      if (Math.hypot(ball.vx, ball.vz) < 0.05){ ball.vx = 0; ball.vz = 0; }
+    } else {
+      const ad = Math.exp(-0.15 * sub);         // 공기 저항(약)
+      ball.vx *= ad; ball.vz *= ad;
+    }
+    // 경계 반사
+    if (ball.x >  BALL_BOUND_X){ ball.x =  BALL_BOUND_X; ball.vx = -Math.abs(ball.vx)*0.6; }
+    if (ball.x < -BALL_BOUND_X){ ball.x = -BALL_BOUND_X; ball.vx =  Math.abs(ball.vx)*0.6; }
+    if (ball.z >  BALL_BOUND_Z){ ball.z =  BALL_BOUND_Z; ball.vz = -Math.abs(ball.vz)*0.6; }
+    if (ball.z < -BALL_BOUND_Z){ ball.z = -BALL_BOUND_Z; ball.vz =  Math.abs(ball.vz)*0.6; }
+    // 골대 기둥 등
+    for (const c of circleColliders) ballBounceCircle(c);
+    // 골 판정(소유자 클라이언트에서만 집계 → 중복 방지)
+    if (ballOwner === myId() && ball.y < GOAL_TOP_Y && Math.abs(ball.z) < GOAL_HALF_Z){
+      if (ball.x > GOAL_X){ resetBallToCenter('A'); showMatchToast('⚽ 골! A팀 득점'); return; }
+      if (ball.x < -GOAL_X){ resetBallToCenter('B'); showMatchToast('⚽ 골! B팀 득점'); return; }
+    }
+    // ── 로컬 플레이어 접촉(드리블/스틸) — 스윕 검사로 빠른 공도 포착 ──
+    if (started && !TEACHER_VIEW){
+      const reach = player.radius + BALL_R + 0.05;
+      const segd = pointSegDist(player.x, player.z, px, pz, ball.x, ball.z);
+      const closeNow = Math.hypot(player.x - ball.x, player.z - ball.z);
+      if ((segd < reach || closeNow < reach) && ball.y < 1.7){
+        const mine = myTeam(), owT = ballOwnerTeam;
+        // 상대팀 소유 공을 건드리면 스틸(트랩), 그 외엔 드리블 킥
+        let nx = ball.x - player.x, nz = ball.z - player.z;
+        const nd = Math.hypot(nx, nz) || 1; nx /= nd; nz /= nd;
+        ball.x = player.x + nx*reach; ball.z = player.z + nz*reach;
+        if (mine && owT && owT !== mine && ballOwner !== myId()){
+          claimBall(true);                 // 스틸: 공을 발밑에 트랩
+          showMatchToast('🦶 스틸!');
+        } else {
+          const kp = 4.5 + (running ? 2.5 : 0);
+          ball.vx = nx*kp; ball.vz = nz*kp; if (ball.vy < 0.5) ball.vy = 0.6;
+          claimBall(false);
+        }
+        sendBall(false);
+      }
+      // 원격 몸통 통과 방지(소유자 클라이언트에서만 밀어냄 → 충돌 다툼 최소화)
+      if (ballOwner === myId()){
+        for (const r of remotesOnMap()){
+          const rr = 0.42 + BALL_R;
+          const dx = ball.x - r.x, dz = ball.z - r.z, d2 = dx*dx + dz*dz;
+          if (d2 < rr*rr && d2 > 1e-6 && ball.y < 1.7){
+            const d = Math.sqrt(d2), ux = dx/d, uz = dz/d;
+            ball.x = r.x + ux*rr; ball.z = r.z + uz*rr;
+            const dot = ball.vx*ux + ball.vz*uz;
+            ball.vx = (ball.vx - 2*dot*ux) * 0.5;
+            ball.vz = (ball.vz - 2*dot*uz) * 0.5;
+          }
+        }
+      }
+    }
+  }
+  // 메시 반영 + 굴러가는 회전
+  ballMesh.position.set(ball.x, ball.y, ball.z);
+  ballShadow.position.set(ball.x, 0.02, ball.z);
+  const sp = Math.hypot(ball.vx, ball.vz);
+  if (sp > 0.01){
+    const axis = new THREE.Vector3(ball.vz, 0, -ball.vx).normalize();
+    ballMesh.rotateOnWorldAxis(axis, (sp*dt)/BALL_R);
+  }
+  // 소유자면 주기적으로 방송
+  if (ballOwner === myId()) sendBall(false);
+}
+
+/* ════════════════ 팀 시스템 (A/B 선택 + 옷 색) ════════════════ */
+function setTeam(team){
+  window.__ssamTeam = team;
+  PLAYER.ccolor = team ? TEAM_COLORS[team] : ORIG_CCOLOR;
+  // 외형(옷 색) 변경을 다른 학생에게 반영 — presence track + 위치 방송
+  try { if (typeof __rtTrackPresence === 'function') __rtTrackPresence(); } catch(e){}
+  try { if (typeof __rtTrackNow === 'function') __rtTrackNow(); } catch(e){}
+  updateTeamBadge();
+}
+function updateTeamBadge(){
+  const b = document.getElementById('teamBadge');
+  if (!b) return;
+  const t = myTeam();
+  if (t){
+    b.style.display = 'inline-block';
+    b.textContent = (t === 'A' ? '🔵 A팀' : '🔴 B팀');
+    b.style.background = TEAM_COLORS[t];
+    b.style.color = '#173049';
+  } else b.style.display = 'none';
+}
+function showTeamOverlay(){
+  if (TEACHER_VIEW) return;
+  const ov = document.getElementById('teamOverlay');
+  if (ov) ov.style.display = 'flex';
+}
+window.__ssamOnMatch = function(p){
+  if (!p) return;
+  if (p.action === 'start'){ if (!TEACHER_VIEW) showTeamOverlay(); showMatchToast('⚽ 축구 시합 시작! 팀을 선택하세요'); }
+  else if (p.action === 'reset'){ setTeam(null); score = {A:0,B:0}; updateScoreUI(); showMatchToast('시합이 초기화되었습니다'); }
+};
+
+/* ── 시합용 UI 주입(팀 배지·점수·팀선택 오버레이·교사 버튼) ── */
+function showMatchToast(msg){ showToast(msg); }
+function updateScoreUI(){
+  const s = document.getElementById('scoreChip');
+  if (!s) return;
+  if (score.A || score.B){
+    s.style.display = 'inline-block';
+    s.textContent = '🔵 ' + score.A + ' : ' + score.B + ' 🔴';
+  }
+}
+(function injectMatchUI(){
+  // 팀 배지 + 점수 칩 (상단 바)
+  const topBar = document.getElementById('topBar');
+  if (topBar){
+    const badge = document.createElement('span');
+    badge.id = 'teamBadge'; badge.className = 'chip';
+    badge.style.display = 'none'; badge.style.fontWeight = '900';
+    topBar.appendChild(badge);
+    const sc = document.createElement('span');
+    sc.id = 'scoreChip'; sc.className = 'chip'; sc.style.display = 'none';
+    sc.style.fontWeight = '900';
+    topBar.appendChild(sc);
+  }
+  // 팀 선택 오버레이(학생)
+  const ov = document.createElement('div');
+  ov.id = 'teamOverlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;'
+    + 'background:rgba(8,18,30,.72);backdrop-filter:blur(3px);font-family:inherit;';
+  ov.innerHTML =
+    '<div style="background:#15304a;border-radius:22px;padding:26px 24px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.5);max-width:88vw;">'
+    + '<div style="color:#fff;font-size:20px;font-weight:900;margin-bottom:4px;">⚽ 팀을 선택하세요</div>'
+    + '<div style="color:#bcd2e6;font-size:13px;margin-bottom:20px;">같은 팀끼리 패스하고 골을 넣으세요!</div>'
+    + '<div style="display:flex;gap:16px;justify-content:center;">'
+    + '<button id="pickA" style="border:none;cursor:pointer;border-radius:16px;padding:20px 26px;font-weight:900;font-size:17px;'
+    +   'color:#173049;background:' + TEAM_COLORS.A + ';box-shadow:0 6px 16px rgba(0,0,0,.3);">🔵 A팀<br><span style="font-size:12px;font-weight:700;">(연파랑)</span></button>'
+    + '<button id="pickB" style="border:none;cursor:pointer;border-radius:16px;padding:20px 26px;font-weight:900;font-size:17px;'
+    +   'color:#173049;background:' + TEAM_COLORS.B + ';box-shadow:0 6px 16px rgba(0,0,0,.3);">🔴 B팀<br><span style="font-size:12px;font-weight:700;">(연분홍)</span></button>'
+    + '</div></div>';
+  document.body.appendChild(ov);
+  ov.querySelector('#pickA').addEventListener('click', () => { setTeam('A'); ov.style.display = 'none'; });
+  ov.querySelector('#pickB').addEventListener('click', () => { setTeam('B'); ov.style.display = 'none'; });
+
+  // 교사(실시간 맵 보기) 전용 시합 제어 버튼
+  if (TEACHER_VIEW){
+    const bar = document.createElement('div');
+    bar.style.cssText = 'position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:10px;font-family:inherit;';
+    bar.innerHTML =
+      '<button id="matchStart" style="border:none;cursor:pointer;border-radius:12px;padding:11px 18px;font-weight:900;font-size:14px;color:#fff;background:#ff6b57;box-shadow:0 6px 14px rgba(0,0,0,.3);">⚽ 축구 시합 시작</button>'
+      + '<button id="matchReset" style="border:none;cursor:pointer;border-radius:12px;padding:11px 16px;font-weight:800;font-size:13px;color:#fff;background:#456;box-shadow:0 6px 14px rgba(0,0,0,.3);">시합 초기화</button>';
+    document.body.appendChild(bar);
+    bar.querySelector('#matchStart').addEventListener('click', () => {
+      if (typeof __ssamSendMatch === 'function') __ssamSendMatch({ action:'start' });
+      showToast('학생들에게 팀 선택 안내를 보냈습니다');
+    });
+    bar.querySelector('#matchReset').addEventListener('click', () => {
+      if (typeof __ssamSendMatch === 'function') __ssamSendMatch({ action:'reset' });
+      score = {A:0,B:0}; updateScoreUI();
+    });
+  }
+})();
+
+/* ── 슛/패스 버튼 핸들러(모바일=touchstart, PC=click) ── */
+(function wireBallButtons(){
+  const sb = document.getElementById('shootBtn'), pb = document.getElementById('passBtn');
+  const ev = IS_TOUCH ? 'touchstart' : 'click';
+  if (sb) sb.addEventListener(ev, (e) => { e.preventDefault(); shootBall(); });
+  if (pb) pb.addEventListener(ev, (e) => { e.preventDefault(); passBall(); });
+})();
+
+/* ── 스태미나 ── */
+let stamina = 1; // 0~1
+
 /* ════════════════ 메인 루프 ════════════════ */
 const clock = new THREE.Clock();
 function animate(){
@@ -916,7 +1294,16 @@ function animate(){
     fw += -joyVec.y; sd += joyVec.x;
     const L = Math.hypot(fw, sd);
     if (L > 1){ fw /= L; sd /= L; }
-    const speed = (running ? 7.2 : 4.3);
+    // 체력(스태미나): 달리는 동안 서서히 감소 + 속도도 감소, 멈추면 회복
+    const WALK = 4.3, RUN = 7.6;
+    const moving = L > 0.05;
+    const wantRun = running && moving;
+    if (wantRun && stamina > 0) stamina = Math.max(0, stamina - dt * 0.16);   // 약 6초에 소진
+    else                        stamina = Math.min(1, stamina + dt * 0.11);   // 약 9초에 회복
+    if (stamina <= 0.001 && running){ running = false; const rb = document.getElementById('runBtn'); if (rb) rb.classList.remove('on'); }
+    const canRun = running && stamina > 0.02;
+    const runFactor = 0.55 + 0.45 * stamina;   // 체력 낮을수록 느려짐(최저 55%)
+    const speed = canRun ? (WALK + (RUN - WALK) * runFactor) : WALK;
     const sin = Math.sin(player.yaw), cos = Math.cos(player.yaw);
     const dx = (-sin*fw + cos*sd) * speed * dt;
     const dz = (-cos*fw - sin*sd) * speed * dt;
@@ -952,6 +1339,23 @@ function animate(){
       exitNoticeActive = false;
     }
   }
+
+  // ⚽ 축구공 물리(모달/교사뷰 포함 항상 진행 — 관전자도 공을 본다)
+  if (started) stepBall(dt);
+
+  // 스태미나 게이지 UI
+  const __sbar = document.getElementById('staminaBar');
+  if (__sbar){
+    __sbar.style.width = (stamina * 100).toFixed(1) + '%';
+    __sbar.classList.toggle('low', stamina < 0.5 && stamina >= 0.2);
+    __sbar.classList.toggle('empty', stamina < 0.2);
+  }
+
+  // 슛/패스 버튼: 공 근처 + 플레이어일 때만 표시
+  const __showBall = started && !modalOpen && !TEACHER_VIEW && nearBall();
+  const __sBtn = document.getElementById('shootBtn'), __pBtn = document.getElementById('passBtn');
+  if (__sBtn) __sBtn.style.display = __showBall ? 'block' : 'none';
+  if (__pBtn) __pBtn.style.display = __showBall ? 'block' : 'none';
 
   // 미션 마커 색 갱신(로드 지연 대응) + 원격 학생 동기화 + HUD
   refreshMissionMarkers();

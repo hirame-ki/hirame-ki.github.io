@@ -58,6 +58,7 @@ function __rtMyState(){
     cloth: PLAYER.cloth,
     gender: PLAYER.gender,
     acc: PLAYER.acc,
+    team: (window.__ssamTeam || null), // 축구 시합 팀(A/B)
     nickname: __rtNickname,
     map: __rtMapId,
     // 분자: "현재 맵의 필수 미션 중 완료된 것" 수 (__msDone.size는 방 전체 누적이라 맵 단위로 카운트)
@@ -132,6 +133,16 @@ function __rtConnect(){
           }
         }catch(e){}
       }
+    });
+
+    // 공유 오브젝트(운동장 축구공 등) 상태 릴레이 — 맵이 window.__ssamOnBall를 정의하면 전달
+    _thisChannel.on('broadcast', { event: 'ball' }, ({ payload }) => {
+      if(payload && typeof window.__ssamOnBall === 'function') window.__ssamOnBall(payload);
+    });
+
+    // 축구 시합 제어(교사 시작/종료 → 학생 팀 선택) 릴레이 — 맵이 window.__ssamOnMatch를 정의하면 전달
+    _thisChannel.on('broadcast', { event: 'match' }, ({ payload }) => {
+      if(payload && typeof window.__ssamOnMatch === 'function') window.__ssamOnMatch(payload);
     });
 
     _thisChannel.on('broadcast', { event: 'bad_words_update' }, ({ payload }) => {
@@ -298,6 +309,7 @@ function __rtTrackNow(){
       event: 'pos',
       payload: { id: __rtStudentId, r: pos.r, c: pos.c,
                  y: (typeof pos.y === 'number' ? pos.y : 0), // foot height (점프/계단 동기화용, 없으면 0)
+                 team: (window.__ssamTeam || null), // 축구 시합 팀(A/B), 없으면 null
                  dir: PLAYER.dir, facingRight: PLAYER._facingRight, map: __rtMapId }
     });
   }catch(e){}
@@ -307,6 +319,18 @@ function __rtTrackNow(){
 function __rtTrackPresence(){
   if(!__rtChannel || __rtTeacherView) return;
   try{ __rtChannel.track(__rtMyState()); }catch(e){}
+}
+
+// 공유 오브젝트(축구공 등) 상태를 방 전체에 전송 — 맵에서 호출
+function __ssamSendBall(payload){
+  if(!__rtChannel) return;
+  try{ __rtChannel.send({ type:'broadcast', event:'ball', payload:payload }); }catch(e){}
+}
+
+// 축구 시합 제어 신호 전송(교사 시작/종료 버튼 등) — 맵에서 호출
+function __ssamSendMatch(payload){
+  if(!__rtChannel) return;
+  try{ __rtChannel.send({ type:'broadcast', event:'match', payload:payload }); }catch(e){}
 }
 
 function broadcastMyPosition(){
