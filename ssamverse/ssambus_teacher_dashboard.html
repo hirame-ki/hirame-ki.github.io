@@ -1877,15 +1877,17 @@ function switchLiveMap(mapId){
 /* ===================== 3D 운동장 - 축구 시합 제어 ===================== */
 async function startSoccerMatch(){
   if(!client) return;
+  const startedAt = Date.now();
   try{
-    await client.from('room_settings').upsert(
-      { room_id: ROOM_ID, match_state: { map:'playground3d', active:true, scoreA:0, scoreB:0, startedAt: Date.now() } },
+    const { error } = await client.from('room_settings').upsert(
+      { room_id: ROOM_ID, match_state: { map:'playground3d', active:true, scoreA:0, scoreB:0, startedAt: startedAt } },
       { onConflict: 'room_id' }
     );
+    if(error){ console.error('[축구시합] DB 저장 실패', error); showToast('저장 실패(늦게 들어오는 학생은 강제선택이 안 될 수 있음): ' + error.message); }
     const bCh = client.channel('room:' + ROOM_ID);
     bCh.subscribe(st => {
       if(st === 'SUBSCRIBED'){
-        bCh.send({ type:'broadcast', event:'match', payload:{ action:'start' } });
+        bCh.send({ type:'broadcast', event:'match', payload:{ action:'start', startedAt: startedAt, scoreA:0, scoreB:0 } });
         setTimeout(() => { try{ client.removeChannel(bCh); }catch(e){} }, 1500);
       }
     });
@@ -1895,10 +1897,11 @@ async function startSoccerMatch(){
 async function resetSoccerMatch(){
   if(!client) return;
   try{
-    await client.from('room_settings').upsert(
+    const { error } = await client.from('room_settings').upsert(
       { room_id: ROOM_ID, match_state: { map:'playground3d', active:false, scoreA:0, scoreB:0 } },
       { onConflict: 'room_id' }
     );
+    if(error){ console.error('[축구시합] DB 저장 실패', error); showToast('초기화 저장 실패: ' + error.message); }
     const bCh = client.channel('room:' + ROOM_ID);
     bCh.subscribe(st => {
       if(st === 'SUBSCRIBED'){

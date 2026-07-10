@@ -117,8 +117,9 @@
     box-shadow:0 0 0 3px rgba(255,107,87,.45), 0 6px 14px rgba(0,0,0,.3); }
   #actBtn { right:100px; bottom:30px; width:72px; height:72px;
     background:#ff6b57; font-size:14px; }
-  /* 슛/패스 버튼 (공 근처일 때만 표시, PC·모바일 공용) */
-  .ballBtn { position:fixed; bottom:30px; width:92px; height:54px; border:none; border-radius:14px;
+  /* 슛/패스 버튼 (공 근처일 때만 표시, PC·모바일 공용)
+     bottom:96px — 하단 채팅바(#rt-chat-bar, 높이 약 54px)에 가려지지 않도록 조이스틱과 같은 높이로 배치 */
+  .ballBtn { position:fixed; bottom:96px; width:92px; height:54px; border:none; border-radius:14px;
     color:#fff; font-weight:900; font-size:16px; z-index:23; display:none; cursor:pointer;
     box-shadow:0 6px 14px rgba(0,0,0,.3); font-family:inherit; pointer-events:auto; }
   #passBtn  { left:50%; transform:translateX(-100px); background:#2a6a8f; }
@@ -154,7 +155,9 @@
       <div class="ctrlItem"><b>이동</b><span>W A S D / 방향키<br>(모바일: 왼쪽 조이스틱)</span></div>
       <div class="ctrlItem"><b>시점</b><span>마우스 이동<br>(모바일: 오른쪽 드래그)</span></div>
       <div class="ctrlItem"><b>점프</b><span>Space<br>구령대·응원석 계단 이용 가능</span></div>
+      <div class="ctrlItem"><b>달리기</b><span>Shift (누르고 있기)<br>체력 게이지 소모(모바일: 버튼)</span></div>
       <div class="ctrlItem"><b>미션</b><span>노란 링 근처에서 <b style="display:inline;color:#ff6b57">E</b><br>미션 4곳 완료 도전!</span></div>
+      <div class="ctrlItem"><b>슛 / 패스</b><span>공 근처에서 <b style="display:inline;color:#ff6b57">F</b>=슛 · <b style="display:inline;color:#ff6b57">Q</b>=패스<br>(모바일: 공 근처에서 버튼 표시)</span></div>
     </div>
     <button id="enterBtn">운동장 입장하기</button>
   </div>
@@ -171,7 +174,7 @@
     <div class="mKey" id="mKey">E 키를 눌러 미션 수행</div>
   </div>
   <div id="toast"></div>
-  <div id="hintBar">ESC: 마우스 해제 · Shift: 달리기 · Space: 점프</div>
+  <div id="hintBar">ESC: 마우스 해제 · Shift: 달리기 · Space: 점프 · F: 슛 · Q: 패스</div>
   <div id="joyZone"></div>
   <div id="joyBase"></div><div id="joyStick"></div>
   <div id="lookZone"></div>
@@ -1190,10 +1193,36 @@ async function loadMatchState(){
 }
 function mustForceTeamPick(){ return matchActive && !TEACHER_VIEW && !myTeam(); }
 
+// 저장된 팀은 "이 시합 인스턴스(startedAt)"에 한해서만 유효 — 시합이 초기화/재시작되면
+// 예전에 골랐던 팀이 자동복원돼서 강제선택 창이 안 뜨는 버그를 막기 위함
+let __ssamCurrentMatchStartedAt = null;
+function __ssamLoadStoredTeam(){
+  try{ const raw = localStorage.getItem(__ssamTeamStoreKey); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+}
+function __ssamApplyMatchStart(startedAt, scoreA, scoreB){
+  matchActive = true;
+  __ssamCurrentMatchStartedAt = startedAt || __ssamCurrentMatchStartedAt || Date.now();
+  if (typeof scoreA === 'number') score.A = scoreA;
+  if (typeof scoreB === 'number') score.B = scoreB;
+  updateScoreUI();
+  const stored = __ssamLoadStoredTeam();
+  if (stored && stored.startedAt === __ssamCurrentMatchStartedAt && stored.team){
+    window.__ssamTeam = stored.team;
+    PLAYER.ccolor = TEAM_COLORS[stored.team];
+  } else {
+    window.__ssamTeam = null; // 새 시합 인스턴스 → 강제 재선택
+  }
+  updateTeamBadge();
+  console.log('[축구시합] 시작 감지 startedAt=' + __ssamCurrentMatchStartedAt + ' 내팀=' + (window.__ssamTeam || '(미선택)'));
+}
+
 function setTeam(team){
   window.__ssamTeam = team;
   PLAYER.ccolor = team ? TEAM_COLORS[team] : ORIG_CCOLOR;
-  try{ if (team) localStorage.setItem(__ssamTeamStoreKey, team); else localStorage.removeItem(__ssamTeamStoreKey); }catch(e){}
+  try{
+    if (team) localStorage.setItem(__ssamTeamStoreKey, JSON.stringify({ startedAt: __ssamCurrentMatchStartedAt, team: team }));
+    else localStorage.removeItem(__ssamTeamStoreKey);
+  }catch(e){}
   // 외형(옷 색) 변경을 다른 학생에게 반영 — presence track + 위치 방송
   try { if (typeof __rtTrackPresence === 'function') __rtTrackPresence(); } catch(e){}
   try { if (typeof __rtTrackNow === 'function') __rtTrackNow(); } catch(e){}
@@ -1215,13 +1244,11 @@ function updateTeamBadge(){
 window.__ssamOnMatch = function(p){
   if (!p) return;
   if (p.action === 'start'){
-    matchActive = true;
-    if (typeof p.scoreA === 'number') score.A = p.scoreA;
-    if (typeof p.scoreB === 'number') score.B = p.scoreB;
-    updateScoreUI();
+    __ssamApplyMatchStart(p.startedAt, p.scoreA, p.scoreB);
     showMatchToast('⚽ 축구 시합 시작! 팀을 선택하세요');
   } else if (p.action === 'reset'){
     matchActive = false;
+    __ssamCurrentMatchStartedAt = null;
     setTeam(null); score = { A:0, B:0 }; updateScoreUI();
     showMatchToast('시합이 초기화되었습니다');
   }
@@ -1229,14 +1256,10 @@ window.__ssamOnMatch = function(p){
 
 // 새로고침/늦은 입장 대응: 저장된 방 상태를 조회해 시합이 진행 중이면 강제 선택 모드로 전환
 if (!TEACHER_VIEW){
-  try{ const saved = localStorage.getItem(__ssamTeamStoreKey); if (saved) window.__ssamTeam = saved; }catch(e){}
   loadMatchState().then(st => {
+    console.log('[축구시합] DB 상태 조회 결과:', st);
     if (st && st.active && (!st.map || st.map === 'playground3d')){
-      matchActive = true;
-      if (typeof st.scoreA === 'number') score.A = st.scoreA;
-      if (typeof st.scoreB === 'number') score.B = st.scoreB;
-      if (myTeam()){ PLAYER.ccolor = TEAM_COLORS[myTeam()]; updateTeamBadge(); }
-      updateScoreUI();
+      __ssamApplyMatchStart(st.startedAt, st.scoreA, st.scoreB);
     }
   });
 }
@@ -1460,7 +1483,7 @@ document.getElementById('enterBtn').addEventListener('click', () => {
     document.getElementById('lookZone').style.display = 'block';
     document.getElementById('jumpBtn').style.display = 'block';
     document.getElementById('runBtn').style.display = 'block';
-    document.getElementById('hintBar').textContent = '왼쪽: 이동 · 오른쪽: 시점 · 달리기/점프 버튼 · 계단으로 구령대·응원석 오르기';
+    document.getElementById('hintBar').textContent = '왼쪽: 이동 · 오른쪽: 시점 · 달리기/점프 버튼 · 공 근처: 슛/패스 버튼';
     if (window.__pgJoyRest) window.__pgJoyRest(); // 노브를 레버 중앙에 배치
   } else {
     lockPointer();
