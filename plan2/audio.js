@@ -10,7 +10,7 @@
   const Lux = {
     ctx:null, master:null, musicGain:null, sfxGain:null,
     musicOn:false, sfxOn:true, _started:false, _musicNodes:[],
-    _reverb:null,
+    _reverb:null, _stopTimer:null, _musicTimer:null, _bellTimer:null,
   };
 
   function ensure(){
@@ -100,6 +100,12 @@
     ensure();
     if(Lux.ctx.state==='suspended') Lux.ctx.resume();
     stopMusic();
+    // ★ 직전 stopMusic의 지연 정리 타이머가 새 노드까지 멈추지 않도록 즉시 정리
+    clearTimeout(Lux._stopTimer);
+    Lux._musicNodes.forEach(n=>{ try{n.stop();}catch(e){} });
+    Lux._musicNodes = [];
+    Lux.musicGain.gain.cancelScheduledValues(Lux.ctx.currentTime);
+    Lux.musicGain.gain.setValueAtTime(0.18, Lux.ctx.currentTime);
     Lux.musicOn = true;
 
     const chords = [
@@ -181,7 +187,8 @@
       Lux.musicGain.gain.setValueAtTime(Lux.musicGain.gain.value, t);
       Lux.musicGain.gain.linearRampToValueAtTime(0, t+0.6);
     }
-    setTimeout(()=>{
+    clearTimeout(Lux._stopTimer);
+    Lux._stopTimer = setTimeout(()=>{
       Lux._musicNodes.forEach(n=>{ try{n.stop();}catch(e){} });
       Lux._musicNodes = [];
       if(Lux.musicGain) Lux.musicGain.gain.value = 0.18;
