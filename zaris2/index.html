@@ -1350,43 +1350,38 @@ function assignSeat(){
     // 성별 모드
     const gm=S.genderMode;
     if(gm==='alternate'){
-      // 남녀 교차: 열 기준 MFMF...
-      const ms=freeN.filter(n=>S.genders[n]==='M');
-      const fs=freeN.filter(n=>S.genders[n]==='F');
-      const us=freeN.filter(n=>!S.genders[n]);
-      shuf(ms);shuf(fs);shuf(us);
-      const sorted=[];let mi=0,fi=0,ui=0;
-      // 열 번호에 따라 M/F 교대
-      const seatsByCol=[...freeS].sort((a,b)=>a.r===b.r?a.c-b.c:a.r-b.r);
-      for(const seat of seatsByCol){
-        const wantM=seat.c%2===1;
-        if(wantM&&mi<ms.length)sorted.push({seat,name:ms[mi++]});
-        else if(!wantM&&fi<fs.length)sorted.push({seat,name:fs[fi++]});
-        else if(mi<ms.length)sorted.push({seat,name:ms[mi++]});
-        else if(fi<fs.length)sorted.push({seat,name:fs[fi++]});
-        else if(ui<us.length)sorted.push({seat,name:us[ui++]});
-      }
-      for(const{seat,name}of sorted)map[K(seat.r,seat.c)]=name;
-    }else if(gm==='separate'){
-      // 남녀 분리: 왼쪽 남, 오른쪽 여 (넘치는 학생은 남은 자리에 배치)
+      // 남녀 교차: 홀수 열=남, 짝수 열=여. 미지정/초과 인원은 열 패턴을 유지하며 빈칸을 메움
       const ms=shuf(freeN.filter(n=>S.genders[n]==='M'));
       const fs=shuf(freeN.filter(n=>S.genders[n]==='F'));
       const us=shuf(freeN.filter(n=>!S.genders[n]));
-      const seatsByCol=[...freeS].sort((a,b)=>a.c===b.c?a.r-b.r:a.c-b.c);
-      const half=Math.ceil(seatsByCol.length/2);
-      const leftSeats=seatsByCol.slice(0,half);
-      const rightSeats=seatsByCol.slice(half);
-      const overflow=[];
-      let idx=0;
-      for(const n of ms){if(idx<leftSeats.length)map[K(leftSeats[idx].r,leftSeats[idx].c)]=n;else overflow.push(n);idx++;}
-      idx=0;
-      for(const n of fs){if(idx<rightSeats.length)map[K(rightSeats[idx].r,rightSeats[idx].c)]=n;else overflow.push(n);idx++;}
-      // 미지정 + 넘친 학생: 남은 자리에
-      const usedAfter=new Set(Object.keys(map));
-      const remaining=allSeats.filter(s=>!usedAfter.has(K(s.r,s.c))&&!used.has(K(s.r,s.c)));
-      shuf(remaining);let ri=0;
-      const unplaced=[...overflow,...us];
-      for(const n of unplaced){if(ri<remaining.length)map[K(remaining[ri].r,remaining[ri].c)]=n;ri++;}
+      const byCol=[...freeS].sort((a,b)=>a.c===b.c?a.r-b.r:a.c-b.c);
+      const oddSeats=byCol.filter(s=>s.c%2===1); // 남 열
+      const evenSeats=byCol.filter(s=>s.c%2===0);// 여 열
+      let mi=0,fi=0,ui=0;
+      const put=(s,n)=>{if(n!=null)map[K(s.r,s.c)]=n;};
+      // 1차: 목표 성별을 각 열에 위→아래로 채움
+      for(const s of oddSeats){if(mi<ms.length)put(s,ms[mi++]);}
+      for(const s of evenSeats){if(fi<fs.length)put(s,fs[fi++]);}
+      // 2차: 남은 남열엔 미지정→초과 여→초과 남 순으로 메움
+      for(const s of oddSeats){if(map[K(s.r,s.c)])continue; if(ui<us.length)put(s,us[ui++]); else if(fi<fs.length)put(s,fs[fi++]); else if(mi<ms.length)put(s,ms[mi++]);}
+      // 남은 여열엔 미지정→초과 남→초과 여 순으로 메움
+      for(const s of evenSeats){if(map[K(s.r,s.c)])continue; if(ui<us.length)put(s,us[ui++]); else if(mi<ms.length)put(s,ms[mi++]); else if(fi<fs.length)put(s,fs[fi++]);}
+    }else if(gm==='separate'){
+      // 남녀 구역 분리: 열 경계로 좌(남)/우(여) 분할. 초과 인원은 구역 가장자리부터 메움
+      const ms=shuf(freeN.filter(n=>S.genders[n]==='M'));
+      const fs=shuf(freeN.filter(n=>S.genders[n]==='F'));
+      const us=shuf(freeN.filter(n=>!S.genders[n]));
+      const splitCol=Math.ceil(S.cols/2); // 1..splitCol = 남 구역
+      const byRowCol=(a,b)=>a.c===b.c?a.r-b.r:a.c-b.c;
+      const leftSeats=[...freeS].filter(s=>s.c<=splitCol).sort(byRowCol);
+      const rightSeats=[...freeS].filter(s=>s.c>splitCol).sort(byRowCol);
+      let mi=0,fi=0,ui=0;
+      const put=(s,n)=>{if(n!=null)map[K(s.r,s.c)]=n;};
+      for(const s of leftSeats){if(mi<ms.length)put(s,ms[mi++]);}
+      for(const s of rightSeats){if(fi<fs.length)put(s,fs[fi++]);}
+      // 남은 남구역엔 미지정→초과 여, 남은 여구역엔 미지정→초과 남
+      for(const s of leftSeats){if(map[K(s.r,s.c)])continue; if(ui<us.length)put(s,us[ui++]); else if(fi<fs.length)put(s,fs[fi++]);}
+      for(const s of rightSeats){if(map[K(s.r,s.c)])continue; if(ui<us.length)put(s,us[ui++]); else if(mi<ms.length)put(s,ms[mi++]);}
     }else{
       if(S.desk===2&&rpbBanned.size>0){
         // desk=2 + 짝꿍 금지: 쌍 슬롯 단위로 배정하되 이전 짝꿍이 같은 슬롯에 오지 않도록 유도
