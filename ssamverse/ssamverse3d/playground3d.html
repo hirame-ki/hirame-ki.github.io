@@ -409,20 +409,21 @@ function heightAt(x, z){
 }
 
 /* ════════════════ 축구 골대 ════════════════ */
-function buildGoal(sideX){
+function buildGoal(sideX, teamColor){
   const g = new THREE.Group();
   const white = new THREE.MeshLambertMaterial({ color:0xf7f7f2 });
-  const postGeo = new THREE.CylinderGeometry(0.09, 0.09, 2.3, 8);
-  const barGeo  = new THREE.CylinderGeometry(0.09, 0.09, 6.2, 8);
+  const frame = new THREE.MeshLambertMaterial({ color: teamColor }); // 팀색 프레임(A/B 진영 구분)
+  const postGeo = new THREE.CylinderGeometry(0.11, 0.11, 2.3, 8);
+  const barGeo  = new THREE.CylinderGeometry(0.11, 0.11, 6.2, 8);
   for (const z of [-3, 3]){
-    const p = new THREE.Mesh(postGeo, white);
+    const p = new THREE.Mesh(postGeo, frame);
     p.position.set(0, 1.15, z); p.castShadow = true; g.add(p);
     const back = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,2.55,6), white);
-    back.position.set(-sideX/Math.abs(sideX)*0 + (sideX>0?0.9:-0.9), 1.0, z);
+    back.position.set((sideX>0?0.9:-0.9), 1.0, z);
     back.rotation.z = (sideX>0?1:-1) * 0.68;
     g.add(back);
   }
-  const bar = new THREE.Mesh(barGeo, white);
+  const bar = new THREE.Mesh(barGeo, frame);
   bar.rotation.x = Math.PI/2; bar.position.set(0, 2.3, 0); bar.castShadow = true;
   g.add(bar);
   // 그물
@@ -431,19 +432,30 @@ function buildGoal(sideX){
   const netBack = new THREE.Mesh(new THREE.PlaneGeometry(6, 2.4, 12, 6), netMat);
   netBack.position.set(sideX>0 ? 1.4 : -1.4, 1.05, 0);
   netBack.rotation.y = Math.PI/2;
-  netBack.rotation.x = 0;
   g.add(netBack);
   const netTop = new THREE.Mesh(new THREE.PlaneGeometry(6, 1.6, 12, 4), netMat);
-  netTop.rotation.x = Math.PI/2; netTop.rotation.y = 0;
+  netTop.rotation.x = Math.PI/2;
   netTop.position.set(sideX>0 ? 0.7 : -0.7, 2.15, 0);
   netTop.rotation.z = Math.PI/2;
   g.add(netTop);
+  // 골대 뒤 팀색 배너 — 멀리서도 어느 팀 진영인지 한눈에 보이게
+  const banner = new THREE.Mesh(new THREE.PlaneGeometry(8, 2.6),
+    new THREE.MeshLambertMaterial({ color: teamColor, side: THREE.DoubleSide }));
+  banner.position.set(sideX>0 ? 2.6 : -2.6, 3.6, 0);
+  banner.rotation.y = Math.PI/2;
+  g.add(banner);
+  const bpMat = new THREE.MeshLambertMaterial({ color:0xf7f7f2 });
+  for (const bz of [-4.2, 4.2]){
+    const bp = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,5,6), bpMat);
+    bp.position.set(sideX>0 ? 2.6 : -2.6, 2.5, bz); bp.castShadow = true; g.add(bp);
+  }
   g.position.set(sideX, 0, 0);
   scene.add(g);
   circleColliders.push({ x:sideX, z:-3, r:0.3 }, { x:sideX, z:3, r:0.3 });
 }
-buildGoal(-FIELD_L/2);
-buildGoal(FIELD_L/2);
+// 왼쪽(x-) = A팀 진영(연파랑) — B팀이 이 골에 넣으면 득점 / 오른쪽(x+) = B팀 진영(연분홍) — A팀이 넣으면 득점
+buildGoal(-FIELD_L/2, 0x9ecbf0);
+buildGoal(FIELD_L/2, 0xf4b6c8);
 
 /* ════════════════ 구령대 (남측) ════════════════ */
 (function buildPodium(){
@@ -1109,6 +1121,15 @@ function resetBallToCenter(scoringTeam){
   sendBall(true);
 }
 
+/* 코너킥/골킥 등: 지정 위치에 공을 정지시켜 다시 찰 수 있게 함(소유권은 비움) */
+function restartBallDead(x, z){
+  ball.x = x; ball.z = z; ball.y = BALL_R; ball.vx = ball.vy = ball.vz = 0;
+  ballOwner = null; ballOwnerTeam = null; ballOwnerT = Date.now();
+  ballMesh.position.set(ball.x, ball.y, ball.z);
+  ballShadow.position.set(ball.x, 0.02, ball.z);
+  sendBall(true);
+}
+
 /* ── 공 물리 (서브스텝으로 관통 방지) ── */
 function stepBall(dt){
   const N = 3, sub = dt/N;
@@ -1137,15 +1158,32 @@ function stepBall(dt){
       if (ball.x > GOAL_X){ resetBallToCenter('A'); showMatchToast('⚽ 골! A팀 득점'); return; }
       if (ball.x < -GOAL_X){ resetBallToCenter('B'); showMatchToast('⚽ 골! B팀 득점'); return; }
     }
-    // ── 아웃라인: 필드 밖으로 나가면 튕겨 멀리 굴러가지 않고 라인 위에 "멈춰" 다시 찰 수 있게 함 ──
-    //    골 문 영역(골라인 x=±FIELD_L/2, |z|<골너비, 크로스바 아래)은 예외로 통과시켜 위 골 판정이 되게 둔다.
+    // ── 아웃라인 처리 ──
     const OUT_X = FIELD_L/2, OUT_Z = FIELD_W/2;
     const inGoalMouth = Math.abs(ball.z) < GOAL_HALF_Z && ball.y < GOAL_TOP_Y;
+    // 좌우 터치라인(z) → 스로인: 라인에 멈춰 다시 찰 수 있게 함
     if (ball.z >  OUT_Z){ ball.z =  OUT_Z; ball.vx = ball.vy = ball.vz = 0; }
     if (ball.z < -OUT_Z){ ball.z = -OUT_Z; ball.vx = ball.vy = ball.vz = 0; }
-    if (!inGoalMouth){
-      if (ball.x >  OUT_X){ ball.x =  OUT_X; ball.vx = ball.vy = ball.vz = 0; }
-      if (ball.x < -OUT_X){ ball.x = -OUT_X; ball.vx = ball.vy = ball.vz = 0; }
+    // 골라인(x, 골 문 밖) → 마지막 터치 팀에 따라 코너킥/골킥
+    if (!inGoalMouth && (ball.x > OUT_X || ball.x < -OUT_X)){
+      const end = ball.x > 0 ? 1 : -1;                 // +1=오른쪽(B팀 진영), -1=왼쪽(A팀 진영)
+      ball.x = end * OUT_X; ball.vx = ball.vy = ball.vz = 0; // 모든 클라 공통 안전 정지
+      // 판정·재배치는 마지막으로 찬 사람(소유자) 클라이언트만 → 중복 방지
+      if (ballOwner === myId() && ballOwnerTeam){
+        const defTeam = end > 0 ? 'B' : 'A';           // 그 진영을 지키는 팀(골대 색과 동일)
+        if (ballOwnerTeam === defTeam){
+          // 수비팀이 마지막 터치 → 공격팀 코너킥(공이 나간 쪽 코너)
+          const atk = defTeam === 'A' ? 'B' : 'A';
+          const zc = (ball.z >= 0 ? 1 : -1) * (OUT_Z - 1.5);
+          restartBallDead(end * (OUT_X - 1.5), zc);
+          showMatchToast('🚩 코너킥 · ' + atk + '팀 공격');
+        } else {
+          // 공격팀이 마지막 터치 → 수비팀 골킥(골 앞)
+          restartBallDead(end * (OUT_X - 6), 0);
+          showMatchToast('🥅 골킥 · ' + defTeam + '팀');
+        }
+        return;
+      }
     }
     // ── 로컬 플레이어 접촉(드리블/스틸) — 스윕 검사로 빠른 공도 포착 ──
     if (started && !TEACHER_VIEW){
