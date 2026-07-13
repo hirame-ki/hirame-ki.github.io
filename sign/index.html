@@ -182,6 +182,8 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .training-item.signed-done .training-meta { color: var(--brand); font-weight: 600; }
+  .training-item.time-blocked { opacity: .55; cursor: default; }
+  .training-item.time-blocked .training-meta { color: var(--ink3); font-weight: 600; }
   .training-chev { color: var(--ink3); flex-shrink: 0; }
   .training-item.selected .training-chev { color: var(--brand); }
 
@@ -1021,7 +1023,7 @@
       </button>
     </div>
     <h1 class="org-name" id="headerOrg">연수 전자서명</h1>
-    <div class="header-sub">연수 참여 전자서명</div>
+    <div class="header-sub" id="headerSub">연수 참여 전자서명</div>
   </header>
 
   <!-- ── 안내문 배너 (관리자 패널 > 기관 설정에서 입력 시 표시) ── -->
@@ -1224,6 +1226,15 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modalTimeBlocked" onclick="this.classList.remove('show')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap warn"><svg width="26" height="26"><use href="#i-lock"/></svg></div>
+    <div class="modal-title">지금은 서명할 수 없어요</div>
+    <div class="modal-msg" id="modalTimeBlockedMsg">—</div>
+    <button class="modal-btn" onclick="document.getElementById('modalTimeBlocked').classList.remove('show')">확인</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalError" onclick="this.classList.remove('show')">
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="modal-icon-wrap warn"><svg width="26" height="26"><use href="#i-warn"/></svg></div>
@@ -1313,6 +1324,10 @@
         <input type="text" class="adm-input" id="admOrgName" maxlength="40" placeholder="예: ○○고등학교" autocomplete="off">
       </div>
       <div class="adm-field">
+        <label class="adm-label" for="admSubTitle">부제목 <span class="opt">(선택 · 기관명 아래 작은 문구, 비우면 "연수 참여 전자서명")</span></label>
+        <input type="text" class="adm-input" id="admSubTitle" maxlength="40" placeholder="연수 참여 전자서명" autocomplete="off">
+      </div>
+      <div class="adm-field">
         <label class="adm-label" for="admNotice">안내문 <span class="opt">(선택 · 서명 화면 상단에 배너로 표시)</span></label>
         <input type="text" class="adm-input" id="admNotice" maxlength="120" placeholder="예: 서명 후 설문에도 참여해 주세요" autocomplete="off">
       </div>
@@ -1358,7 +1373,7 @@
              autocomplete="off" style="display:none;margin-top:8px">
     </div>
     <div class="adm-field">
-      <label class="adm-label" for="tfTimeStart">연수 시간 <span class="opt">(선택)</span></label>
+      <label class="adm-label" for="tfTimeStart">서명 가능 시간 <span class="opt">(선택 · 설정하면 이 시간에만 서명 가능)</span></label>
       <div style="display:flex;align-items:center;gap:8px;">
         <input type="time" class="adm-input" id="tfTimeStart" style="flex:1;min-width:0">
         <span style="color:var(--ink3);font-weight:700;flex-shrink:0">~</span>
@@ -1581,6 +1596,7 @@ var API_STORAGE_KEY  = 'esign_api_url';
 var PIN_SESSION_KEY  = 'esign_print_pin';
 var ORG_KEY          = '';   // API_URL 배포 ID = Supabase 기관 식별자(org_key)
 var orgName          = '';
+var DEFAULT_SUB_TITLE = '연수 참여 전자서명';
 var trainings        = [];
 var selectedTraining = null;
 var selectedIndex    = -1;
@@ -1768,7 +1784,8 @@ function showAdminModal() {
   if (!API_URL) {
     if (adminTrainings.length === 0) {
       adminTrainings = trainings.map(function(t, i) {
-        return { id: i + 1, active: true, title: t.title, content: t.content || '', date: todayStr() };
+        return { id: i + 1, active: true, title: t.title, content: t.content || '', date: todayStr(),
+                 startTime: t.startTime || null, endTime: t.endTime || null };
       });
     }
     if (adminStaff.length === 0) {
@@ -1780,6 +1797,7 @@ function showAdminModal() {
       });
     }
     document.getElementById('admOrgName').value    = orgName;
+    document.getElementById('admSubTitle').value   = document.getElementById('headerSub').textContent || '';
     document.getElementById('admNotice').value     = document.getElementById('noticeText').textContent || '';
     document.getElementById('admBrandColor').value = '#1f4d3a';
     document.getElementById('admCurPin').value  = '';
@@ -1870,6 +1888,7 @@ function fetchAdminData() {
       adminTrainings = res.trainings || [];
       adminStaff     = res.staff || [];
       document.getElementById('admOrgName').value    = res.orgName || '';
+      document.getElementById('admSubTitle').value   = res.subTitle || '';
       document.getElementById('admNotice').value     = res.notice || '';
       document.getElementById('admBrandColor').value = /^#[0-9a-fA-F]{6}$/.test(res.brandColor) ? res.brandColor : '#1f4d3a';
       document.getElementById('admCurPin').value  = '';
@@ -1995,8 +2014,8 @@ function openTrainingForm(idx) {
   var parsed = parseTrainingContent(isEdit ? adminTrainings[idx].content : '');
   populateTfTargetOptions(parsed.target);
   document.getElementById('tfTargetCustom').value = '';
-  document.getElementById('tfTimeStart').value = parsed.start;
-  document.getElementById('tfTimeEnd').value   = parsed.end;
+  document.getElementById('tfTimeStart').value = isEdit ? (adminTrainings[idx].startTime || '') : '';
+  document.getElementById('tfTimeEnd').value   = isEdit ? (adminTrainings[idx].endTime || '') : '';
 
   var dv = isEdit ? String(adminTrainings[idx].date || '') : todayStr();
   document.getElementById('tfDate').value = /^\d{4}-\d{2}-\d{2}$/.test(dv) ? dv : todayStr();
@@ -2058,12 +2077,14 @@ function submitTrainingForm() {
           adminTrainings[i].title = title;
           adminTrainings[i].content = content;
           adminTrainings[i].date = date;
+          adminTrainings[i].startTime = ts || null;
+          adminTrainings[i].endTime = te || null;
         }
         tfDone();
       } else {
         var maxId = 0;
         adminTrainings.forEach(function(t) { if (t.id > maxId) maxId = t.id; });
-        adminTrainings.push({ id: maxId + 1, active: true, title: title, content: content, date: date });
+        adminTrainings.push({ id: maxId + 1, active: true, title: title, content: content, date: date, startTime: ts || null, endTime: te || null });
         tfDone();
       }
     }, 350);
@@ -2078,7 +2099,9 @@ function submitTrainingForm() {
     p_title   : title,
     p_content : content,
     p_date    : date,
-    p_active  : idx > -1 ? adminTrainings[idx].active : true
+    p_active  : idx > -1 ? adminTrainings[idx].active : true,
+    p_start_time : ts || null,
+    p_end_time   : te || null
   }).then(function(res) {
     if (res.success) { adminTrainings = res.trainings || adminTrainings; tfDone(); }
     else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showTfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
@@ -2694,9 +2717,10 @@ function deleteAdminRecord(i) {
 
 /* ── 기관 설정 (기관명/부서목록/안내문/대표색상) ── */
 function submitOrgSettings() {
-  var name   = document.getElementById('admOrgName').value.trim();
-  var notice = document.getElementById('admNotice').value.trim();
-  var color  = document.getElementById('admBrandColor').value;
+  var name     = document.getElementById('admOrgName').value.trim();
+  var subTitle = document.getElementById('admSubTitle').value.trim();
+  var notice   = document.getElementById('admNotice').value.trim();
+  var color    = document.getElementById('admBrandColor').value;
   document.getElementById('admSettingsErr').classList.remove('show');
 
   var btn = document.getElementById('admSettingsBtn');
@@ -2706,6 +2730,7 @@ function submitOrgSettings() {
     setTimeout(function() {
       orgName = name;
       document.getElementById('headerOrg').textContent = orgName || '연수 전자서명';
+      document.getElementById('headerSub').textContent = subTitle || DEFAULT_SUB_TITLE;
       applyBrandColor(color);
       btn.disabled = false; btn.textContent = '✓ 저장되었습니다';
       setTimeout(function() { btn.textContent = '저장하기'; }, 1200);
@@ -2715,7 +2740,8 @@ function submitOrgSettings() {
 
   rpc('update_org_settings', {
     p_org_key: ORG_KEY, p_pin: adminPin,
-    p_org_name: name, p_dept_list: null, p_notice: notice, p_brand_color: color
+    p_org_name: name, p_dept_list: null, p_notice: notice, p_brand_color: color,
+    p_sub_title: subTitle
   }).then(function(res) {
     if (res.success) {
       btn.textContent = '✓ 저장되었습니다';
@@ -2810,7 +2836,7 @@ function refreshDemoFromAdmin() {
   var today = todayStr();
   trainings = adminTrainings
     .filter(function(t) { return t.active && (t.date === today || t.date === '매일'); })
-    .map(function(t) { return { title: t.title, content: t.content }; });
+    .map(function(t) { return { title: t.title, content: t.content, startTime: t.startTime, endTime: t.endTime }; });
   renderTrainings(trainings);
 }
 
@@ -3015,9 +3041,10 @@ function loadDemoData() {
   setTimeout(function() {
     onPageDataLoaded({
       orgName: '○○기관 (미리보기)',
+      subTitle: '',
       notice: '오늘 연수 종료 후 만족도 설문에도 참여해 주세요. (데모 안내문 — 관리자 패널 > 기관 설정에서 입력)',
       trainings: [
-        { title: '학교폭력 예방교육', content: '전 구성원 · 09:00 ~ 09:40' },
+        { title: '학교폭력 예방교육', content: '전 구성원 · 09:00 ~ 09:40', startTime: '09:00', endTime: '09:40' },
         { title: 'AI 활용 수업 설계 워크숍', content: '자율 참여' },
         { title: '심폐소생술(CPR) 응급처치 교육', content: '보건 담당 주관' }
       ],
@@ -3037,6 +3064,7 @@ function onPageDataLoaded(data) {
     document.getElementById('headerOrg').textContent = orgName;
     document.title = orgName + ' · 연수 전자서명';
   }
+  document.getElementById('headerSub').textContent = String(data.subTitle || '').trim() || DEFAULT_SUB_TITLE;
 
   // Supabase는 구성원을 평평한 목록으로 반환 → 부서별로 그룹핑 (등록 순서 유지)
   staffByDept = {}; deptOrder = [];
@@ -3112,17 +3140,27 @@ function renderEmpty(isError) {
   }
 }
 
+// 'HH:MM' 문자열 비교로 서명 가능 시간대를 벗어났는지 확인 (없으면 하루 종일 허용)
+// 최종 방어선은 서버(submit_signature)의 now() 검사 — 기기 시각은 UX 안내용일 뿐
+function trainingTimeGateMsg(t) {
+  var now = nowTimeStr().slice(0, 5);
+  if (t.startTime && now < t.startTime) return '서명 가능 시간이 아니에요 (' + t.startTime + '부터)';
+  if (t.endTime && now > t.endTime) return '서명 가능 시간이 종료됐어요 (' + t.endTime + '까지)';
+  return '';
+}
+
 function renderTrainings(list) {
   var container = document.getElementById('trainingContainer');
   if (!list || list.length === 0) { renderEmpty(false); return; }
 
   var html = '<div class="training-list">';
   list.forEach(function(t, i) {
-    html += '<div class="training-item" id="ti' + i + '" onclick="selectTraining(' + i + ')">' +
+    var blockedMsg = trainingTimeGateMsg(t);
+    html += '<div class="training-item' + (blockedMsg ? ' time-blocked' : '') + '" id="ti' + i + '" onclick="selectTraining(' + i + ')">' +
       '<div class="training-icon"><svg width="18" height="18"><use href="#i-book"/></svg></div>' +
       '<div class="training-body">' +
         '<div class="training-name">' + esc(t.title) + '</div>' +
-        '<div class="training-meta">' + (t.content ? esc(t.content) : '연수 참여 서명') + '</div>' +
+        '<div class="training-meta">' + esc(blockedMsg || t.content || '연수 참여 서명') + '</div>' +
       '</div>' +
       '<span class="training-chev"><svg width="16" height="16"><use href="#i-chev-r"/></svg></span>' +
     '</div>';
@@ -3137,6 +3175,12 @@ function selectTraining(idx) {
   if (localStorage.getItem('signed_' + training.title)) {
     document.getElementById('modalSignedTitle').textContent = training.title;
     document.getElementById('modalAlreadySigned').classList.add('show');
+    return;
+  }
+  var blockedMsg = trainingTimeGateMsg(training);
+  if (blockedMsg) {
+    document.getElementById('modalTimeBlockedMsg').textContent = blockedMsg;
+    document.getElementById('modalTimeBlocked').classList.add('show');
     return;
   }
   document.querySelectorAll('.training-item').forEach(function(el) {

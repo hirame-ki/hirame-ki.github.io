@@ -15,12 +15,16 @@ create table if not exists institutions (
   org_key         text primary key,        -- Apps Script 배포 ID (연결 URL에서 추출)
   apps_script_url text not null,           -- 이미지 업로드용 배포 URL (전체)
   org_name        text not null default '',
+  sub_title       text not null default '', -- 기관명 아래 작은 부제목, 비어있으면 화면에서 기본값('연수 참여 전자서명') 표시
   dept_list       text not null default '', -- 구성원명단이 비어있을 때 폴백용, 쉼표 구분
   notice          text not null default '',
   brand_color     text not null default '',
   admin_pin       text not null default '', -- 비어있으면 "최초 생성 필요" 상태
   created_at      timestamptz not null default now()
 );
+
+-- 기존 설치본에는 sub_title 컬럼이 없을 수 있으므로 안전하게 추가.
+alter table institutions add column if not exists sub_title text not null default '';
 
 create table if not exists staff (
   id       bigserial primary key,
@@ -44,6 +48,10 @@ create table if not exists trainings (
 -- 비어있는 값은 등록 순서(id)로 초기화한다.
 alter table trainings add column if not exists sort_order integer;
 update trainings set sort_order = id where sort_order is null;
+
+-- 서명 가능 시간대(선택). 둘 다 NULL이면 시간 제한 없이 하루 종일 서명 가능.
+alter table trainings add column if not exists start_time time;
+alter table trainings add column if not exists end_time   time;
 
 create table if not exists signatures (
   id             bigserial primary key,
@@ -108,11 +116,12 @@ declare
 begin
   select * into v_inst from institutions where org_key = p_org_key;
   if not found then
-    return jsonb_build_object('orgName','','staff','[]'::jsonb,'trainings','[]'::jsonb,'notice','','brandColor','','printPinSet',false);
+    return jsonb_build_object('orgName','','subTitle','','staff','[]'::jsonb,'trainings','[]'::jsonb,'notice','','brandColor','','printPinSet',false);
   end if;
 
   return jsonb_build_object(
     'orgName',     v_inst.org_name,
+    'subTitle',    v_inst.sub_title,
     'deptList',    v_inst.dept_list,
     'notice',      v_inst.notice,
     'brandColor',  v_inst.brand_color,
@@ -122,7 +131,10 @@ begin
       from staff where org_key = p_org_key
     ),
     'trainings', (
-      select coalesce(jsonb_agg(jsonb_build_object('title', title, 'content', content) order by sort_order, id), '[]'::jsonb)
+      select coalesce(jsonb_agg(jsonb_build_object(
+        'title', title, 'content', content,
+        'startTime', to_char(start_time, 'HH24:MI'), 'endTime', to_char(end_time, 'HH24:MI')
+      ) order by sort_order, id), '[]'::jsonb)
       from trainings
       where org_key = p_org_key and active
         and (training_date = v_today or training_date = '매일')
@@ -131,7 +143,8 @@ begin
 end;
 $$;
 
--- 서명 제출 (중복이면 duplicate:true 반환, UNIQUE 제약이 최종 방어선)
+-- 서명 제출 (중복이면 duplicate:true, 서명 가능 시간이 아니면 timeBlocked:true 반환
+-- UNIQUE 제약 + 서버 시각(now()) 기준 시간대 검사가 최종 방어선 — 클라이언트 시각은 신뢰하지 않는다)
 create or replace function submit_signature(
   p_org_key text, p_sign_date date, p_sign_time time,
   p_training_title text, p_department text, p_name text,
@@ -142,7 +155,27 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_start time;
+  v_end   time;
+  v_now   time := (now() at time zone 'Asia/Seoul')::time;
 begin
+  select start_time, end_time into v_start, v_end
+  from trainings
+  where org_key = p_org_key and title = p_training_title and active
+    and (training_date = p_sign_date::text or training_date = '매일')
+  order by (training_date = p_sign_date::text) desc
+  limit 1;
+
+  if v_start is not null and v_now < v_start then
+    return jsonb_build_object('success', false, 'timeBlocked', true,
+      'message', '[' || p_training_title || '] 아직 서명 가능 시간이 아닙니다. (' || to_char(v_start, 'HH24:MI') || '부터)');
+  end if;
+  if v_end is not null and v_now > v_end then
+    return jsonb_build_object('success', false, 'timeBlocked', true,
+      'message', '[' || p_training_title || '] 서명 가능 시간이 종료되었습니다. (' || to_char(v_end, 'HH24:MI') || '까지)');
+  end if;
+
   insert into signatures (org_key, sign_date, sign_time, training_title, department, name, image_file_id, image_url)
   values (p_org_key, p_sign_date, p_sign_time, p_training_title, p_department, p_name, p_image_file_id, p_image_url);
   return jsonb_build_object('success', true);
@@ -284,7 +317,8 @@ security definer
 set search_path = public
 as $$
   select coalesce(jsonb_agg(jsonb_build_object(
-    'id', id, 'active', active, 'title', title, 'content', content, 'date', training_date
+    'id', id, 'active', active, 'title', title, 'content', content, 'date', training_date,
+    'startTime', to_char(start_time, 'HH24:MI'), 'endTime', to_char(end_time, 'HH24:MI')
   ) order by sort_order, id), '[]'::jsonb)
   from trainings where org_key = p_org_key;
 $$;
@@ -319,7 +353,7 @@ begin
 
   return jsonb_build_object(
     'success', true,
-    'orgName', v_inst.org_name, 'deptList', v_inst.dept_list,
+    'orgName', v_inst.org_name, 'subTitle', v_inst.sub_title, 'deptList', v_inst.dept_list,
     'notice', v_inst.notice, 'brandColor', v_inst.brand_color,
     'staff', _staff_json(p_org_key),
     'trainings', _trainings_json(p_org_key)
@@ -327,16 +361,24 @@ begin
 end;
 $$;
 
+-- 재배포 시 시그니처 충돌(오버로드 모호성) 방지: 구버전 함수 명시적 제거
+drop function if exists save_training(text, text, bigint, text, text, text, boolean);
+
 -- 연수 추가/수정 (id가 NULL이면 추가, 있으면 수정)
+-- p_start_time/p_end_time: 'HH:MM' 형식, 둘 다 비우면 하루 종일 서명 가능
 create or replace function save_training(
   p_org_key text, p_pin text, p_id bigint,
-  p_title text, p_content text, p_date text, p_active boolean
+  p_title text, p_content text, p_date text, p_active boolean,
+  p_start_time text default null, p_end_time text default null
 )
 returns jsonb
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_start time;
+  v_end   time;
 begin
   begin
     perform _check_admin_pin(p_org_key, p_pin);
@@ -351,10 +393,23 @@ begin
     return jsonb_build_object('success', false, 'message', '연수 날짜를 선택해 주세요.');
   end if;
 
+  begin
+    v_start := nullif(trim(p_start_time), '')::time;
+    v_end   := nullif(trim(p_end_time), '')::time;
+  exception when others then
+    return jsonb_build_object('success', false, 'message', '서명 가능 시간 형식이 올바르지 않습니다.');
+  end;
+  if v_end is not null and v_start is null then
+    return jsonb_build_object('success', false, 'message', '시작 시간을 입력해 주세요.');
+  end if;
+  if v_start is not null and v_end is not null and v_end <= v_start then
+    return jsonb_build_object('success', false, 'message', '종료 시간이 시작 시간보다 빨라요.');
+  end if;
+
   if p_id is null then
-    insert into trainings (org_key, active, title, content, training_date, sort_order)
+    insert into trainings (org_key, active, title, content, training_date, start_time, end_time, sort_order)
     values (
-      p_org_key, coalesce(p_active, true), p_title, coalesce(p_content,''), p_date,
+      p_org_key, coalesce(p_active, true), p_title, coalesce(p_content,''), p_date, v_start, v_end,
       coalesce((select max(sort_order) from trainings where org_key = p_org_key), 0) + 1
     );
   else
@@ -362,7 +417,9 @@ begin
       active = coalesce(p_active, true),
       title = p_title,
       content = coalesce(p_content, ''),
-      training_date = p_date
+      training_date = p_date,
+      start_time = v_start,
+      end_time = v_end
     where id = p_id and org_key = p_org_key;
   end if;
 
@@ -539,9 +596,13 @@ end;
 $$;
 
 -- 기관 설정(기관명/부서목록/안내문/대표색상) 수정
+-- 재배포 시 시그니처 충돌(오버로드 모호성) 방지: 구버전 함수 명시적 제거
+drop function if exists update_org_settings(text, text, text, text, text, text);
+
 create or replace function update_org_settings(
   p_org_key text, p_pin text,
-  p_org_name text, p_dept_list text, p_notice text, p_brand_color text
+  p_org_name text, p_dept_list text, p_notice text, p_brand_color text,
+  p_sub_title text default null
 )
 returns jsonb
 language plpgsql
@@ -557,6 +618,7 @@ begin
 
   update institutions set
     org_name    = coalesce(p_org_name, org_name),
+    sub_title   = coalesce(p_sub_title, sub_title),
     dept_list   = coalesce(p_dept_list, dept_list),
     notice      = coalesce(p_notice, notice),
     brand_color = coalesce(p_brand_color, brand_color)
@@ -618,14 +680,14 @@ revoke execute on function
   _trainings_json(text),
   _staff_json(text),
   get_admin_data(text, text),
-  save_training(text, text, bigint, text, text, text, boolean),
+  save_training(text, text, bigint, text, text, text, boolean, text, text),
   delete_training(text, text, bigint),
   move_training(text, text, bigint, text),
   save_staff(text, text, bigint, text, text),
   delete_staff(text, text, bigint),
   bulk_add_staff(text, text, text, text[]),
   rename_dept(text, text, text, text),
-  update_org_settings(text, text, text, text, text, text),
+  update_org_settings(text, text, text, text, text, text, text),
   delete_signature(text, text, bigint),
   archive_old_signatures(text, date)
 from public, anon, authenticated;
@@ -638,14 +700,14 @@ grant execute on function
   set_admin_pin(text, text),
   change_admin_pin(text, text, text),
   get_admin_data(text, text),
-  save_training(text, text, bigint, text, text, text, boolean),
+  save_training(text, text, bigint, text, text, text, boolean, text, text),
   delete_training(text, text, bigint),
   move_training(text, text, bigint, text),
   save_staff(text, text, bigint, text, text),
   delete_staff(text, text, bigint),
   bulk_add_staff(text, text, text, text[]),
   rename_dept(text, text, text, text),
-  update_org_settings(text, text, text, text, text, text),
+  update_org_settings(text, text, text, text, text, text, text),
   delete_signature(text, text, bigint)
 to anon, authenticated;
 
