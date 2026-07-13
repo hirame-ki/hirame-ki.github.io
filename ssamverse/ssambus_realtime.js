@@ -61,9 +61,12 @@ function __rtMyState(){
     team: (window.__ssamTeam || null), // 축구 시합 팀(A/B)
     nickname: __rtNickname,
     map: __rtMapId,
-    // 분자: "현재 맵의 필수 미션 중 완료된 것" 수 (__msDone.size는 방 전체 누적이라 맵 단위로 카운트)
-    mDone: (typeof __msMissions !== 'undefined' && __msMissions && typeof __msDone !== 'undefined')
-      ? __msMissions.filter(function(m){ return m.required && __msDone.has(m.id); }).length : 0,
+    // 분자: "수업(방) 전체에서 완료한 필수 미션" 수 (분모와 같은 범위 — 방 전체 합산).
+    // __msRoomRequiredIds(방 전체 필수 미션 id 집합) 로드 전이면 현재 맵 기준으로 폴백.
+    mDone: (typeof __msRoomRequiredIds !== 'undefined' && __msRoomRequiredIds.size > 0 && typeof __msDone !== 'undefined')
+      ? Array.from(__msDone).filter(function(id){ return __msRoomRequiredIds.has(id); }).length
+      : ((typeof __msMissions !== 'undefined' && __msMissions && typeof __msDone !== 'undefined')
+          ? __msMissions.filter(function(m){ return m.required && __msDone.has(m.id); }).length : 0),
     // 분모: "수업(방) 전체의 필수 미션 수" (모든 맵 합산). 아직 집계 전이면 현재 맵 수로 폴백.
     mTotal: (typeof __msRoomTotalRequired !== 'undefined' && __msRoomTotalRequired > 0)
       ? __msRoomTotalRequired
