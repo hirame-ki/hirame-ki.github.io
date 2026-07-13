@@ -9,6 +9,9 @@
 --     함수 안에서 PIN을 검증합니다.)
 -- ============================================================
 
+-- pgcrypto: qr_secret 랜덤 생성 및 매일갱신 QR 토큰(sha256 해시)에 사용
+create extension if not exists pgcrypto;
+
 -- ── 테이블 ──────────────────────────────────────────────────
 
 create table if not exists institutions (
@@ -20,11 +23,18 @@ create table if not exists institutions (
   notice          text not null default '',
   brand_color     text not null default '',
   admin_pin       text not null default '', -- 비어있으면 "최초 생성 필요" 상태
+  qr_rotate_daily boolean not null default false, -- true면 공유 QR/링크가 매일 자동갱신(미참석자 원격 서명 방지용)
+  qr_secret       text not null default encode(gen_random_bytes(16), 'hex'), -- 매일갱신 토큰 계산용 기관별 비밀값(클라이언트에 절대 노출 안 함)
   created_at      timestamptz not null default now()
 );
 
 -- 기존 설치본에는 sub_title 컬럼이 없을 수 있으므로 안전하게 추가.
 alter table institutions add column if not exists sub_title text not null default '';
+
+-- 기존 설치본에는 매일갱신 QR 관련 컬럼이 없을 수 있으므로 안전하게 추가.
+-- (qr_secret은 default 표현식이 volatile이라 ADD COLUMN 시 기존 행마다 각자 다른 랜덤값이 채워짐)
+alter table institutions add column if not exists qr_rotate_daily boolean not null default false;
+alter table institutions add column if not exists qr_secret text not null default encode(gen_random_bytes(16), 'hex');
 
 create table if not exists staff (
   id       bigserial primary key,
@@ -103,8 +113,26 @@ begin
 end;
 $$;
 
+-- 내부 헬퍼: 기관의 '오늘자' 매일갱신 QR 토큰 계산 (qr_secret은 클라이언트에 절대 노출되지 않음)
+-- ※ Supabase는 pgcrypto를 public이 아닌 extensions 스키마에 설치하므로 search_path에 포함시켜야 digest()를 찾을 수 있다.
+create or replace function _qr_token_for(p_org_key text, p_date text)
+returns text
+language sql
+security definer
+set search_path = public, extensions
+as $$
+  select substr(encode(digest(qr_secret || p_date, 'sha256'), 'hex'), 1, 10)
+  from institutions where org_key = p_org_key;
+$$;
+
+-- 재배포 시 시그니처 충돌(오버로드 모호성) 방지: 구버전 함수 명시적 제거
+drop function if exists get_page_data(text);
+
 -- 서명 화면 진입 시 필요한 공개 정보 한 번에 반환 (기존 getPageData 대응)
-create or replace function get_page_data(p_org_key text)
+-- p_token: 기관이 '매일 자동갱신' QR 모드일 때 '?d=' 파라미터로 전달되는 오늘자 토큰
+--          (미참석자가 예전에 유출된 QR/링크로 원격 접속하는 것을 막기 위한 최종 방어선)
+-- p_pin: 관리자가 이미 인증된 상태(캐시된 PIN)로 접속할 때는 토큰 없이도 통과시키기 위함
+create or replace function get_page_data(p_org_key text, p_token text default null, p_pin text default null)
 returns jsonb
 language plpgsql
 security definer
@@ -119,6 +147,12 @@ begin
     return jsonb_build_object('orgName','','subTitle','','staff','[]'::jsonb,'trainings','[]'::jsonb,'notice','','brandColor','','printPinSet',false);
   end if;
 
+  if v_inst.qr_rotate_daily
+     and not (v_inst.admin_pin <> '' and coalesce(p_pin, '') = v_inst.admin_pin)
+     and coalesce(p_token, '') <> _qr_token_for(p_org_key, v_today) then
+    return jsonb_build_object('qrExpired', true, 'orgName', v_inst.org_name);
+  end if;
+
   return jsonb_build_object(
     'orgName',     v_inst.org_name,
     'subTitle',    v_inst.sub_title,
@@ -126,6 +160,7 @@ begin
     'notice',      v_inst.notice,
     'brandColor',  v_inst.brand_color,
     'printPinSet', (v_inst.admin_pin <> ''),
+    'qrRotateDaily', v_inst.qr_rotate_daily,
     'staff', (
       select coalesce(jsonb_agg(jsonb_build_object('dept', dept, 'name', name) order by id), '[]'::jsonb)
       from staff where org_key = p_org_key
@@ -143,12 +178,18 @@ begin
 end;
 $$;
 
--- 서명 제출 (중복이면 duplicate:true, 서명 가능 시간이 아니면 timeBlocked:true 반환
--- UNIQUE 제약 + 서버 시각(now()) 기준 시간대 검사가 최종 방어선 — 클라이언트 시각은 신뢰하지 않는다)
+-- 재배포 시 시그니처 충돌(오버로드 모호성) 방지: 구버전 함수 명시적 제거
+drop function if exists submit_signature(text, date, time, text, text, text, text, text);
+
+-- 서명 제출 (중복이면 duplicate:true, 서명 가능 시간이 아니면 timeBlocked:true,
+-- 매일갱신 QR 모드에서 토큰이 오늘자가 아니면 qrExpired:true 반환
+-- UNIQUE 제약 + 서버 시각(now()) 기준 시간대 검사 + 오늘자 토큰 검사가 최종 방어선
+-- — 클라이언트가 보낸 값은 전혀 신뢰하지 않고 전부 서버에서 재검증한다)
 create or replace function submit_signature(
   p_org_key text, p_sign_date date, p_sign_time time,
   p_training_title text, p_department text, p_name text,
-  p_image_file_id text, p_image_url text
+  p_image_file_id text, p_image_url text,
+  p_token text default null
 )
 returns jsonb
 language plpgsql
@@ -159,7 +200,14 @@ declare
   v_start time;
   v_end   time;
   v_now   time := (now() at time zone 'Asia/Seoul')::time;
+  v_rotate boolean;
 begin
+  select qr_rotate_daily into v_rotate from institutions where org_key = p_org_key;
+  if v_rotate and coalesce(p_token, '') <> _qr_token_for(p_org_key, to_char(now() at time zone 'Asia/Seoul', 'YYYY-MM-DD')) then
+    return jsonb_build_object('success', false, 'qrExpired', true,
+      'message', '이 QR/링크가 만료되었습니다. 최신 QR로 다시 접속한 뒤 서명해 주세요.');
+  end if;
+
   select start_time, end_time into v_start, v_end
   from trainings
   where org_key = p_org_key and title = p_training_title and active
@@ -235,6 +283,36 @@ begin
 
   delete from signatures where id = p_id and org_key = p_org_key;
   return jsonb_build_object('success', true);
+end;
+$$;
+
+-- 관리자가 공유 모달을 열 때 '오늘자' 공유 토큰을 조회 (매일갱신 모드가 아니면 PIN 없이도 조회 가능)
+-- 매일갱신 모드일 때만 PIN 검증 — qr_secret 기반 토큰이 그 자체로 민감정보이기 때문
+create or replace function get_share_token(p_org_key text, p_pin text default '')
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_inst institutions;
+begin
+  select * into v_inst from institutions where org_key = p_org_key;
+  if not found then
+    return jsonb_build_object('success', false);
+  end if;
+  if not v_inst.qr_rotate_daily then
+    return jsonb_build_object('success', true, 'rotateDaily', false);
+  end if;
+
+  begin
+    perform _check_admin_pin(p_org_key, p_pin);
+  exception when others then
+    return jsonb_build_object('success', false, 'needPin', true);
+  end;
+
+  return jsonb_build_object('success', true, 'rotateDaily', true,
+    'token', _qr_token_for(p_org_key, to_char(now() at time zone 'Asia/Seoul', 'YYYY-MM-DD')));
 end;
 $$;
 
@@ -354,7 +432,7 @@ begin
   return jsonb_build_object(
     'success', true,
     'orgName', v_inst.org_name, 'subTitle', v_inst.sub_title, 'deptList', v_inst.dept_list,
-    'notice', v_inst.notice, 'brandColor', v_inst.brand_color,
+    'notice', v_inst.notice, 'brandColor', v_inst.brand_color, 'qrRotateDaily', v_inst.qr_rotate_daily,
     'staff', _staff_json(p_org_key),
     'trainings', _trainings_json(p_org_key)
   );
@@ -595,14 +673,16 @@ begin
 end;
 $$;
 
--- 기관 설정(기관명/부서목록/안내문/대표색상) 수정
+-- 기관 설정(기관명/부서목록/안내문/대표색상/매일갱신 QR 여부) 수정
 -- 재배포 시 시그니처 충돌(오버로드 모호성) 방지: 구버전 함수 명시적 제거
 drop function if exists update_org_settings(text, text, text, text, text, text);
+drop function if exists update_org_settings(text, text, text, text, text, text, text);
 
 create or replace function update_org_settings(
   p_org_key text, p_pin text,
   p_org_name text, p_dept_list text, p_notice text, p_brand_color text,
-  p_sub_title text default null
+  p_sub_title text default null,
+  p_qr_rotate_daily boolean default null
 )
 returns jsonb
 language plpgsql
@@ -617,11 +697,12 @@ begin
   end;
 
   update institutions set
-    org_name    = coalesce(p_org_name, org_name),
-    sub_title   = coalesce(p_sub_title, sub_title),
-    dept_list   = coalesce(p_dept_list, dept_list),
-    notice      = coalesce(p_notice, notice),
-    brand_color = coalesce(p_brand_color, brand_color)
+    org_name        = coalesce(p_org_name, org_name),
+    sub_title       = coalesce(p_sub_title, sub_title),
+    dept_list       = coalesce(p_dept_list, dept_list),
+    notice          = coalesce(p_notice, notice),
+    brand_color     = coalesce(p_brand_color, brand_color),
+    qr_rotate_daily = coalesce(p_qr_rotate_daily, qr_rotate_daily)
   where org_key = p_org_key;
 
   return jsonb_build_object('success', true);
@@ -671,14 +752,16 @@ revoke select (admin_pin) on institutions from anon, authenticated;
 --    명시적으로 회수해야 한다. 그 뒤 필요한 함수만 다시 부여.
 revoke execute on function
   register_institution(text, text),
-  get_page_data(text),
-  submit_signature(text, date, time, text, text, text, text, text),
+  get_page_data(text, text, text),
+  submit_signature(text, date, time, text, text, text, text, text, text),
   get_signature_records(text, text, date, text),
   set_admin_pin(text, text),
   change_admin_pin(text, text, text),
   _check_admin_pin(text, text),
   _trainings_json(text),
   _staff_json(text),
+  _qr_token_for(text, text),
+  get_share_token(text, text),
   get_admin_data(text, text),
   save_training(text, text, bigint, text, text, text, boolean, text, text),
   delete_training(text, text, bigint),
@@ -687,18 +770,19 @@ revoke execute on function
   delete_staff(text, text, bigint),
   bulk_add_staff(text, text, text, text[]),
   rename_dept(text, text, text, text),
-  update_org_settings(text, text, text, text, text, text, text),
+  update_org_settings(text, text, text, text, text, text, text, boolean),
   delete_signature(text, text, bigint),
   archive_old_signatures(text, date)
 from public, anon, authenticated;
 
 grant execute on function
   register_institution(text, text),
-  get_page_data(text),
-  submit_signature(text, date, time, text, text, text, text, text),
+  get_page_data(text, text, text),
+  submit_signature(text, date, time, text, text, text, text, text, text),
   get_signature_records(text, text, date, text),
   set_admin_pin(text, text),
   change_admin_pin(text, text, text),
+  get_share_token(text, text),
   get_admin_data(text, text),
   save_training(text, text, bigint, text, text, text, boolean, text, text),
   delete_training(text, text, bigint),
@@ -707,11 +791,11 @@ grant execute on function
   delete_staff(text, text, bigint),
   bulk_add_staff(text, text, text, text[]),
   rename_dept(text, text, text, text),
-  update_org_settings(text, text, text, text, text, text, text),
+  update_org_settings(text, text, text, text, text, text, text, boolean),
   delete_signature(text, text, bigint)
 to anon, authenticated;
 
--- _check_admin_pin / _trainings_json / _staff_json 은 내부 헬퍼일 뿐이라
--- anon/authenticated에게 부여하지 않음 (PIN 없이 전체 목록이 새어나가는 것을 방지).
+-- _check_admin_pin / _trainings_json / _staff_json / _qr_token_for 는 내부 헬퍼일 뿐이라
+-- anon/authenticated에게 부여하지 않음 (PIN·비밀값 없이 정보가 새어나가는 것을 방지).
 -- archive_old_signatures는 service_role(GitHub Actions 등 서버 환경) 전용.
 grant execute on function archive_old_signatures(text, date) to service_role;

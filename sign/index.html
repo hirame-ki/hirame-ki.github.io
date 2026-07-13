@@ -1035,24 +1035,38 @@
   <!-- ── 시스템 연결 (최초 1회) ── -->
   <div class="gate" id="gate">
     <div class="gate-card">
-      <div class="gate-icon"><svg width="30" height="30"><use href="#i-shield"/></svg></div>
-      <div class="gate-title">시스템 연결이 필요해요</div>
-      <div class="gate-desc">
-        관리자에게 받은 <b>접속 링크</b>로 접속하시거나,<br>
-        아래에 <b>웹앱 배포 URL</b>을 입력해 주세요.
+      <div id="gateNormal">
+        <div class="gate-icon"><svg width="30" height="30"><use href="#i-shield"/></svg></div>
+        <div class="gate-title">시스템 연결이 필요해요</div>
+        <div class="gate-desc">
+          관리자에게 받은 <b>접속 링크</b>로 접속하시거나,<br>
+          아래에 <b>웹앱 배포 URL</b>을 입력해 주세요.
+        </div>
+        <input type="url" class="gate-input" id="gateInput"
+               placeholder="https://script.google.com/macros/s/…/exec"
+               autocomplete="off" spellcheck="false">
+        <div class="gate-err" id="gateErr"></div>
+        <button class="gate-btn" id="gateBtn" onclick="connectApi()">연결하기</button>
+        <div class="gate-note">
+          <svg width="11" height="11"><use href="#i-lock"/></svg>
+          입력한 주소는 이 기기에만 저장됩니다
+        </div>
+        <button class="modal-btn ghost" style="margin-top:14px" onclick="startDemo()">
+          배포 URL 없이 데모 체험하기
+        </button>
       </div>
-      <input type="url" class="gate-input" id="gateInput"
-             placeholder="https://script.google.com/macros/s/…/exec"
-             autocomplete="off" spellcheck="false">
-      <div class="gate-err" id="gateErr"></div>
-      <button class="gate-btn" id="gateBtn" onclick="connectApi()">연결하기</button>
-      <div class="gate-note">
-        <svg width="11" height="11"><use href="#i-lock"/></svg>
-        입력한 주소는 이 기기에만 저장됩니다
+      <div id="gateExpired" style="display:none">
+        <div class="gate-icon"><svg width="30" height="30"><use href="#i-lock"/></svg></div>
+        <div class="gate-title">이 QR/링크는 만료됐어요</div>
+        <div class="gate-desc">
+          <b id="gateExpiredOrg">이 기관</b>은 미참석자의 원격 서명을 막기 위해<br>
+          공유 QR/링크가 <b>매일 자동으로 갱신</b>되도록 설정되어 있어요.<br><br>
+          오늘 새로 공유된 QR/링크로 다시 접속해 주세요.
+        </div>
+        <button class="modal-btn ghost" style="margin-top:14px" onclick="retryGateWithPin()">
+          관리자이신가요? PIN으로 접속하기
+        </button>
       </div>
-      <button class="modal-btn ghost" style="margin-top:14px" onclick="startDemo()">
-        배포 URL 없이 데모 체험하기
-      </button>
     </div>
   </div>
 
@@ -1256,7 +1270,7 @@
            placeholder="비밀번호 확인" style="display:none">
     <div class="adm-err" id="apErr" style="text-align:center"></div>
     <button class="modal-btn" id="apBtn" onclick="submitAdminPin()" style="margin-top:6px">확인</button>
-    <button class="modal-btn ghost" onclick="document.getElementById('modalAdminPin').classList.remove('show')">취소</button>
+    <button class="modal-btn ghost" onclick="pendingPinPurpose='admin';document.getElementById('modalAdminPin').classList.remove('show')">취소</button>
   </div>
 </div>
 
@@ -1335,6 +1349,24 @@
         <label class="adm-label" for="admBrandColor">대표 색상</label>
         <input type="color" class="adm-input" id="admBrandColor" style="height:46px;padding:4px;">
       </div>
+
+      <div class="adm-field">
+        <label class="adm-label">공유 QR 방식</label>
+        <div class="pf-hint" style="margin:-2px 0 10px;">
+          연수에 참석하지 않은 사람이 다른 사람에게 전달받은 QR로 원격 서명하는 것을 막기 위한 설정이에요.
+          "매일 자동 갱신"을 선택하면 공유 QR/링크가 매일 새로 바뀌어, 예전에 카톡 등으로 전달된 QR은
+          다음 날부터 사용할 수 없게 돼요. (그만큼 관리자가 매일 새 QR을 다시 공유해야 해요)
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;">
+          <input type="radio" name="admQrMode" value="fixed" style="margin-top:3px" checked>
+          <span>항상 고정된 공유 QR<span class="opt" style="display:block;font-weight:500;margin-top:2px;">한 번 공유하면 계속 그대로 사용 (기존 방식)</span></span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;">
+          <input type="radio" name="admQrMode" value="rotate" style="margin-top:3px">
+          <span>매일 자동 갱신되는 공유 QR<span class="opt" style="display:block;font-weight:500;margin-top:2px;">매일 새 QR로 바뀌어, 어제 이전의 QR로는 접속할 수 없어요</span></span>
+        </label>
+      </div>
+
       <div class="adm-err" id="admSettingsErr"></div>
       <button class="modal-btn" id="admSettingsBtn" onclick="submitOrgSettings()">저장하기</button>
 
@@ -1465,6 +1497,10 @@
     </div>
     <div class="share-box" id="shareLinkBox">—</div>
     <div class="share-short-status" id="shareShortStatus"></div>
+    <div class="pf-hint" id="shareRotateNote" style="display:none;margin:2px 0 12px;">
+      ⏰ 매일 자정에 자동으로 갱신되는 QR이에요 — 미참석자의 원격 서명을 막기 위해서예요.
+      매일 아침 이 화면을 다시 열어 새 QR로 공유해 주세요 (어제 QR은 오늘부터 안 돼요).
+    </div>
     <button class="modal-btn" id="copyShareBtn" onclick="copyShareLink()">
       링크 복사하기
     </button>
@@ -1595,6 +1631,7 @@ var API_URL          = '';   // 기관 Apps Script 배포 URL — 서명 이미�
 var API_STORAGE_KEY  = 'esign_api_url';
 var PIN_SESSION_KEY  = 'esign_print_pin';
 var ORG_KEY          = '';   // API_URL 배포 ID = Supabase 기관 식별자(org_key)
+var QR_TOKEN         = '';   // '?d=' 파라미터로 받은 오늘자 매일갱신 QR 토큰(해당 기관이 그 모드일 때만 사용)
 var orgName          = '';
 var DEFAULT_SUB_TITLE = '연수 참여 전자서명';
 var trainings        = [];
@@ -1626,6 +1663,8 @@ window.addEventListener('load', function() {
   var params   = new URLSearchParams(location.search);
   var sParam   = params.get('s');    // 압축형 접속 링크: 배포 ID만 전달
   var apiParam = params.get('api');  // 전체 URL형 (구버전 링크 호환)
+  var dParam   = params.get('d');    // 매일갱신 QR 모드일 때만 쓰이는 오늘자 토큰 (일부러 저장소에 남기지 않음)
+  QR_TOKEN = dParam || '';
 
   if (sParam && /^[\w-]+$/.test(sParam)) {
     localStorage.setItem(API_STORAGE_KEY,
@@ -1697,11 +1736,11 @@ function connectApi() {
       API_URL = url; ORG_KEY = orgKey;
       localStorage.setItem(API_STORAGE_KEY, url);
       document.body.classList.remove('gate-active');
-      return rpc('get_page_data', { p_org_key: ORG_KEY });
+      return rpc('get_page_data', { p_org_key: ORG_KEY, p_token: QR_TOKEN, p_pin: adminPin || '' });
     })
     .then(function(data) {
       onPageDataLoaded(data);
-      showShareModal();
+      if (!data.qrExpired) showShareModal();
     })
     .catch(function() {
       document.body.classList.add('gate-active');   // 중간 단계 실패 시 게이트 화면 복귀
@@ -1780,6 +1819,7 @@ function nowTimeStr() {
 
 /* 진입: ⚙️ 버튼 */
 function showAdminModal() {
+  pendingPinPurpose = 'admin';
   // 데모 모드: 비밀번호 없이 패널 진입 (화면 목록으로 시뮬레이션)
   if (!API_URL) {
     if (adminTrainings.length === 0) {
@@ -1800,6 +1840,7 @@ function showAdminModal() {
     document.getElementById('admSubTitle').value   = document.getElementById('headerSub').textContent || '';
     document.getElementById('admNotice').value     = document.getElementById('noticeText').textContent || '';
     document.getElementById('admBrandColor').value = '#1f4d3a';
+    setAdmQrModeUi(false);
     document.getElementById('admCurPin').value  = '';
     document.getElementById('admNewPin').value  = '';
     document.getElementById('admNewPin2').value = '';
@@ -1872,6 +1913,21 @@ function submitAdminPin() {
   }
 
   adminPin = pin;
+  if (pendingPinPurpose === 'share') {
+    pendingPinPurpose = 'admin';
+    sessionStorage.setItem(ADMIN_PIN_KEY, pin);
+    document.getElementById('modalAdminPin').classList.remove('show');
+    showShareModal();   // 캐시된 adminPin으로 다시 시도 → 이번엔 오늘자 토큰을 받아옴
+    return;
+  }
+  if (pendingPinPurpose === 'reconnect') {
+    pendingPinPurpose = 'admin';
+    sessionStorage.setItem(ADMIN_PIN_KEY, pin);
+    document.getElementById('modalAdminPin').classList.remove('show');
+    document.body.classList.remove('gate-active');
+    loadPageData();   // 이번엔 p_pin으로 오늘자 토큰 검사를 건너뜀
+    return;
+  }
   fetchAdminData();
 }
 
@@ -1891,6 +1947,7 @@ function fetchAdminData() {
       document.getElementById('admSubTitle').value   = res.subTitle || '';
       document.getElementById('admNotice').value     = res.notice || '';
       document.getElementById('admBrandColor').value = /^#[0-9a-fA-F]{6}$/.test(res.brandColor) ? res.brandColor : '#1f4d3a';
+      setAdmQrModeUi(!!res.qrRotateDaily);
       document.getElementById('admCurPin').value  = '';
       document.getElementById('admNewPin').value  = '';
       document.getElementById('admNewPin2').value = '';
@@ -2715,12 +2772,20 @@ function deleteAdminRecord(i) {
     .catch(function() { showRecErr('서버에 연결할 수 없어요.'); });
 }
 
-/* ── 기관 설정 (기관명/부서목록/안내문/대표색상) ── */
+/* ── 기관 설정 (기관명/부서목록/안내문/대표색상/공유 QR 방식) ── */
+function setAdmQrModeUi(rotateDaily) {
+  var sel = rotateDaily ? 'rotate' : 'fixed';
+  document.querySelectorAll('input[name="admQrMode"]').forEach(function(el) {
+    el.checked = (el.value === sel);
+  });
+}
+
 function submitOrgSettings() {
   var name     = document.getElementById('admOrgName').value.trim();
   var subTitle = document.getElementById('admSubTitle').value.trim();
   var notice   = document.getElementById('admNotice').value.trim();
   var color    = document.getElementById('admBrandColor').value;
+  var qrRotateDaily = document.querySelector('input[name="admQrMode"]:checked').value === 'rotate';
   document.getElementById('admSettingsErr').classList.remove('show');
 
   var btn = document.getElementById('admSettingsBtn');
@@ -2741,7 +2806,7 @@ function submitOrgSettings() {
   rpc('update_org_settings', {
     p_org_key: ORG_KEY, p_pin: adminPin,
     p_org_name: name, p_dept_list: null, p_notice: notice, p_brand_color: color,
-    p_sub_title: subTitle
+    p_sub_title: subTitle, p_qr_rotate_daily: qrRotateDaily
   }).then(function(res) {
     if (res.success) {
       btn.textContent = '✓ 저장되었습니다';
@@ -2844,11 +2909,12 @@ function refreshDemoFromAdmin() {
 /* ── 공유 링크 ── */
 var currentShareLink = '';
 
-function buildShareLink() {
+function buildShareLink(token) {
   // 배포 URL 전체 대신 배포 ID만 담아 링크를 절반 이하로 압축 (QR 단순화)
   var m = String(API_URL).match(/\/macros\/s\/([\w-]+)\/exec/);
-  if (m) return location.origin + location.pathname + '?s=' + m[1];
-  return location.origin + location.pathname + '?api=' + encodeURIComponent(API_URL);
+  var base = m ? (location.origin + location.pathname + '?s=' + m[1])
+                : (location.origin + location.pathname + '?api=' + encodeURIComponent(API_URL));
+  return token ? (base + '&d=' + encodeURIComponent(token)) : base;
 }
 
 function setShareUi(link) {
@@ -2858,9 +2924,33 @@ function setShareUi(link) {
     'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=' + encodeURIComponent(link);
 }
 
+/* 공유 모달을 열 때, 그 기관이 '매일 자동갱신' 모드면 PIN 인증 후 오늘자 토큰을 받아와야 함
+   (토큰 계산에 쓰이는 qr_secret은 서버 밖으로 절대 나가지 않으므로, 공유 링크를 만들려면
+   반드시 서버에 물어봐야 한다 — 그리고 그 요청 자체를 PIN으로 보호해 QR 유출 창구를 최소화함) */
+var pendingPinPurpose = 'admin';   // 'admin' | 'share' — PIN 모달 확인 성공 후 이어갈 동작
+
 function showShareModal() {
-  var link = buildShareLink();
+  if (!API_URL) {   // 데모 모드: 서버가 없으므로 고정 링크만 보여줌
+    openShareModalWithToken(null);
+    return;
+  }
+  rpc('get_share_token', { p_org_key: ORG_KEY, p_pin: adminPin || '' })
+    .then(function(res) {
+      if (res.needPin) {
+        var wasWrong = !!adminPin;   // 이미 한 번 시도했던 PIN인데도 실패했다면 "틀림" 안내
+        pendingPinPurpose = 'share';
+        showAdminPinModal(false, wasWrong);
+        return;
+      }
+      openShareModalWithToken(res.rotateDaily ? res.token : null);
+    })
+    .catch(function() { openShareModalWithToken(null); });
+}
+
+function openShareModalWithToken(token) {
+  var link = buildShareLink(token);
   setShareUi(link);
+  document.getElementById('shareRotateNote').style.display = token ? 'block' : 'none';
   document.getElementById('modalShare').classList.add('show');
 
   // 단축 URL 생성 시도 → 성공하면 짧은 주소로 링크·QR 교체 (QR이 훨씬 단순해짐)
@@ -3025,9 +3115,23 @@ function fallbackCopy(text, done) {
    데이터 로드
 ═══════════════════════════════════════════ */
 function loadPageData() {
-  rpc('get_page_data', { p_org_key: ORG_KEY })
+  rpc('get_page_data', { p_org_key: ORG_KEY, p_token: QR_TOKEN, p_pin: adminPin || '' })
     .then(function(data) { onPageDataLoaded(data); })
     .catch(function() { renderEmpty(true); });
+}
+
+/* 매일갱신 QR 모드에서 오늘자 토큰이 없거나 만료된 경우 — 전체 화면 차단 */
+function showQrExpired(org) {
+  document.getElementById('gateNormal').style.display  = 'none';
+  document.getElementById('gateExpired').style.display = 'block';
+  document.getElementById('gateExpiredOrg').textContent = org || '이 기관';
+  document.body.classList.add('gate-active');
+}
+
+/* 만료 화면에서 관리자가 PIN으로 재접속(주로 배포 URL을 재입력한 직후, 오늘자 QR 토큰이 없는 경우) */
+function retryGateWithPin() {
+  pendingPinPurpose = 'reconnect';
+  showAdminPinModal(false);
 }
 
 /* 게이트 화면에서 데모 시작 (배포 URL 불필요) */
@@ -3059,6 +3163,8 @@ function loadDemoData() {
 }
 
 function onPageDataLoaded(data) {
+  if (data.qrExpired) { showQrExpired(data.orgName); return; }
+
   orgName = String(data.orgName || '').trim();
   if (orgName) {
     document.getElementById('headerOrg').textContent = orgName;
@@ -3447,7 +3553,8 @@ function doSubmit() {
         p_department     : payload.department,
         p_name           : payload.name,
         p_image_file_id  : imgRes.fileId,
-        p_image_url      : imgRes.imageUrl
+        p_image_url      : imgRes.imageUrl,
+        p_token          : QR_TOKEN
       });
     })
     .then(function(res) {
