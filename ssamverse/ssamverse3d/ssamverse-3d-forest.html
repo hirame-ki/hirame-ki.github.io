@@ -590,6 +590,7 @@ function refreshMissionMarkers() {
 const player = { x: 0, z: 14, yaw: Math.PI, pitch: 0 };
 const keys = {};
 let locked = false;
+let skipLook = false; // 포인터락 진입 직후 첫 mousemove는 movementX/Y가 비정상적으로 커서 시점이 튐 → 1회 무시
 let modalOpen = false; // ssambus_missions.js 모달(#ms-overlay) 열림 여부
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0
   || matchMedia('(hover: none) and (pointer: coarse)').matches;
@@ -612,12 +613,22 @@ addEventListener('keydown', e => {
 addEventListener('keyup', e => keys[e.code] = false);
 
 // 포인터락 (데스크톱) — 교사뷰/모달 열림 시 제외
+// unadjustedMovement(OS 마우스 가속 우회)로 요청 — Windows+Chrome movementX/Y 스파이크(시점 튐) 방지. 미지원 시 폴백
+function lockPtr(el){
+  try {
+    const p = el.requestPointerLock({ unadjustedMovement: true });
+    if (p && p.catch) p.catch(() => { try { el.requestPointerLock(); } catch(e){} });
+  } catch(e) { try { el.requestPointerLock(); } catch(e2){} }
+}
 renderer.domElement.addEventListener('click', () => {
-  if (!isTouch && started && !modalOpen && !TEACHER_VIEW && !document.pointerLockElement) renderer.domElement.requestPointerLock();
+  if (!isTouch && started && !modalOpen && !TEACHER_VIEW && !document.pointerLockElement) lockPtr(renderer.domElement);
 });
-document.addEventListener('pointerlockchange', () => { locked = !!document.pointerLockElement; });
+document.addEventListener('pointerlockchange', () => { locked = !!document.pointerLockElement; if (locked) skipLook = true; });
 document.addEventListener('mousemove', e => {
   if (!locked) return;
+  if (skipLook) { skipLook = false; return; }
+  // 스파이크 필터: 한 이벤트에 200px 이상 델타는 물리적으로 불가능(Chrome/Windows 포인터락 버그) → 무시
+  if (Math.abs(e.movementX) > 200 || Math.abs(e.movementY) > 200) return;
   player.yaw   -= e.movementX * 0.0024;
   player.pitch -= e.movementY * 0.0024;
   player.pitch = Math.max(-1.35, Math.min(1.35, player.pitch));
@@ -675,10 +686,6 @@ lookZone.addEventListener('touchmove', e => {
     look.lx = t.clientX; look.ly = t.clientY;
   }
 }, {passive:true});
-
-// 모바일 미션 버튼 (근접 시 토스트 탭)
-document.getElementById('mission-toast').style.pointerEvents = 'auto';
-document.getElementById('mission-toast').addEventListener('click', tryInteract);
 
 function movePlayer(dt) {
   let fx = 0, fz = 0;
@@ -805,7 +812,7 @@ let started = false;
 document.getElementById('start-btn').addEventListener('click', () => {
   started = true;
   document.getElementById('start-screen').style.display = 'none';
-  if (!isTouch) renderer.domElement.requestPointerLock();
+  if (!isTouch) lockPtr(renderer.domElement);
 });
 
 // 교사 실시간 맵 보기(teacherView=1): 버튼 없이 자동 시작 + 조감 시점 고정(관찰 전용)
@@ -833,7 +840,7 @@ function loop() {
   // 모달 열림 추적 — 닫히면 포인터락 복원
   const wasModal = modalOpen;
   modalOpen = isMsModalOpen();
-  if (wasModal && !modalOpen && started && !isTouch && !TEACHER_VIEW) renderer.domElement.requestPointerLock();
+  if (wasModal && !modalOpen && started && !isTouch && !TEACHER_VIEW) lockPtr(renderer.domElement);
 
   if (started && !modalOpen && !TEACHER_VIEW) {
     movePlayer(dt);

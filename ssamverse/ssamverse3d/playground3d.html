@@ -748,10 +748,25 @@ addEventListener('keyup', e => {
 
 // 포인터락 (PC)
 const appEl = document.getElementById('app');
-function lockPointer(){ if (!IS_TOUCH) appEl.requestPointerLock && appEl.requestPointerLock(); }
+// unadjustedMovement(OS 마우스 가속 우회)로 요청 — Windows+Chrome movementX/Y 스파이크(시점 튐) 방지. 미지원 시 폴백
+function lockPointer(){
+  if (IS_TOUCH || !appEl.requestPointerLock) return;
+  try {
+    const p = appEl.requestPointerLock({ unadjustedMovement: true });
+    if (p && p.catch) p.catch(() => { try { appEl.requestPointerLock(); } catch(e){} });
+  } catch(e) { try { appEl.requestPointerLock(); } catch(e2){} }
+}
 appEl.addEventListener('click', () => { if (started && !modalOpen && !TEACHER_VIEW) lockPointer(); });
+// 포인터락 진입 직후 첫 mousemove는 movementX/Y가 비정상적으로 커서(브라우저 버그) 시점이 튐 → 1회 무시
+let skipLook = false;
+document.addEventListener('pointerlockchange', () => {
+  if (document.pointerLockElement === appEl) skipLook = true;
+});
 addEventListener('mousemove', e => {
   if (document.pointerLockElement !== appEl) return;
+  if (skipLook) { skipLook = false; return; }
+  // 스파이크 필터: 한 이벤트에 200px 이상 델타는 물리적으로 불가능(Chrome/Windows 포인터락 버그) → 무시
+  if (Math.abs(e.movementX) > 200 || Math.abs(e.movementY) > 200) return;
   player.yaw -= e.movementX * 0.0023;
   player.pitch -= e.movementY * 0.0023;
   player.pitch = Math.max(-1.35, Math.min(1.35, player.pitch));

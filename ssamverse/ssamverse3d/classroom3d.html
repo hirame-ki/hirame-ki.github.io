@@ -565,7 +565,7 @@ let modalOpen = false;
 // ("글자 키를 누르면 채팅창에 자동 포커스") 가 WASD/E 키에는 절대 발동하지 않는다.
 // (ssambus_realtime.js는 2D 맵의 화살표 키 이동 방식을 전제로 만들어진 기능이라
 //  WASD로 이동하는 3D 맵과 충돌함 — realtime.js 자체는 수정하지 않고 여기서 선점 차단)
-const MOVE_KEY_CODES = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyE'];
+const MOVE_KEY_CODES = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyE', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight'];
 addEventListener('keydown', e => {
   if (typeof SsamAdapter3D !== 'undefined' && SsamAdapter3D.isChatInputFocused()) return;
   keys[e.code] = true;
@@ -584,18 +584,35 @@ if (isTouch) {
   document.getElementById('joystick-zone').style.display = 'block';
   document.getElementById('action-btn').style.display = 'block';
 }
+// 포인터락 요청: unadjustedMovement(OS 마우스 가속 우회)로 요청해야
+// Windows+Chrome에서 movementX/Y가 간헐적으로 거대한 값으로 튀는(시점이 천장/바닥으로 처박히는) 버그가 사라짐.
+// 미지원 브라우저는 옵션 없이 폴백.
+function lockPtr(el){
+  try {
+    const p = el.requestPointerLock({ unadjustedMovement: true });
+    if (p && p.catch) p.catch(() => { try { el.requestPointerLock(); } catch(e){} });
+  } catch(e) { try { el.requestPointerLock(); } catch(e2){} }
+}
 document.getElementById('start-btn').addEventListener('click', () => {
   document.getElementById('overlay').style.display = 'none';
   started = true;
-  if (!isTouch) renderer.domElement.requestPointerLock();
+  if (!isTouch) lockPtr(renderer.domElement);
 });
 renderer.domElement.addEventListener('click', () => {
   if (started && !isTouch && !modalOpen && !TEACHER_VIEW && document.pointerLockElement !== renderer.domElement) {
-    renderer.domElement.requestPointerLock();
+    lockPtr(renderer.domElement);
   }
+});
+// 포인터락 진입 직후 첫 mousemove는 movementX/Y가 비정상적으로 커서(브라우저 버그) 시점이 천장/바닥으로 튐 → 1회 무시
+let skipLook = false;
+document.addEventListener('pointerlockchange', () => {
+  if (document.pointerLockElement === renderer.domElement) skipLook = true;
 });
 addEventListener('mousemove', e => {
   if (document.pointerLockElement === renderer.domElement) {
+    if (skipLook) { skipLook = false; return; }
+    // 스파이크 필터: 한 이벤트에 200px 이상 델타는 물리적으로 불가능(Chrome/Windows 포인터락 버그) → 무시
+    if (Math.abs(e.movementX) > 200 || Math.abs(e.movementY) > 200) return;
     player.yaw   -= e.movementX * 0.0022;
     player.pitch -= e.movementY * 0.0022;
     player.pitch = Math.max(-1.35, Math.min(1.35, player.pitch));
@@ -733,7 +750,7 @@ function animate() {
   const wasModalOpen = modalOpen;
   modalOpen = isMsModalOpen();
   if (wasModalOpen && !modalOpen && started && !isTouch && !TEACHER_VIEW) {
-    renderer.domElement.requestPointerLock();
+    lockPtr(renderer.domElement);
   }
 
   if (started && !modalOpen && !TEACHER_VIEW) {
@@ -801,10 +818,11 @@ function animate() {
     try { SsamAdapter3D.update(dt, camera); } catch (e) {}
   }
 
-  // HUD 진행률
-  document.getElementById('mission-count').textContent =
-    (typeof __msDone !== 'undefined') ? __msDone.size : 0;
-  document.getElementById('mission-total').textContent = Object.keys(missionMarkers).length;
+  // HUD 진행률 (이 맵의 완료 수 / 이 맵의 미션 수 — __msDone.size는 방 전체 누적이라 맵 단위로 카운트)
+  const __cids = Object.keys(missionMarkers);
+  const __cdone = (typeof __msDone !== 'undefined') ? __cids.filter(id => __msDone.has(id)).length : 0;
+  document.getElementById('mission-count').textContent = __cdone;
+  document.getElementById('mission-total').textContent = __cids.length;
 
   renderer.render(scene, camera);
 }

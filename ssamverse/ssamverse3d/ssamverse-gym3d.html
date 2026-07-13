@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>쌤버스 3D — 체육관</title>
+<title>쌤버스 3D - 체육관</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  html, body { width:100%; height:100%; overflow:hidden; background:#111; touch-action:none; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#111; font-family:'Pretendard','Malgun Gothic',sans-serif; }
   #canvas-wrap { position:fixed; inset:0; }
   canvas { display:block; }
 
@@ -32,6 +32,15 @@
     pointer-events:none;
   }
   #hud-top small { display:block; font-weight:400; opacity:.75; margin-top:2px; }
+  #hud-top b { color:#ffd166; }
+
+  #char-btn {
+    position:fixed; top:12px; right:12px; z-index:10; display:none;
+    background:rgba(41,128,185,.85); color:#fff; backdrop-filter:blur(6px);
+    padding:8px 14px; border-radius:12px; font-size:13px; font-weight:700;
+    border:1px solid rgba(255,255,255,.12); text-decoration:none;
+    font-family:inherit;
+  }
 
   /* ---------- 시작 오버레이 ---------- */
   #start-overlay {
@@ -62,53 +71,60 @@
   }
   #start-btn:active { transform:scale(.98); }
 
-  /* ---------- 모바일 컨트롤 ---------- */
-  #joystick-zone {
-    position:fixed; left:0; bottom:0; width:45%; height:45%;
-    z-index:20; display:none;
-  }
+  /* ---------- 모바일 컨트롤 ----------
+     교실맵식 좌하단 고정 원형 조이스틱(항상 표시).
+     bottom 오프셋은 하단 채팅바(#rt-chat-bar, 약 54px)에 가리지 않게 88px. */
+  #joy-zone { position:fixed; left:24px; bottom:88px; width:120px; height:120px; z-index:20; display:none; touch-action:none; }
+  #look-zone { position:fixed; right:0; bottom:0; width:55%; height:60%; z-index:20; display:none; }
   #joy-base {
-    position:absolute; width:110px; height:110px; border-radius:50%;
-    background:rgba(255,255,255,.12); border:2px solid rgba(255,255,255,.3);
-    display:none;
+    position:absolute; inset:0; border-radius:50%;
+    border:2px solid rgba(255,255,255,.35); background:rgba(255,255,255,.08);
   }
   #joy-stick {
     position:absolute; width:48px; height:48px; border-radius:50%;
-    background:rgba(255,255,255,.55);
-    left:31px; top:31px;
+    background:rgba(255,255,255,.55); left:36px; top:36px;
+    box-shadow:0 4px 12px rgba(0,0,0,.3);
   }
-  #btn-interact {
-    position:fixed; right:22px; bottom:96px; z-index:20;
-    width:64px; height:64px; border-radius:50%;
+  #action-btn {
+    position:fixed; right:28px; bottom:112px; width:74px; height:74px;
+    border-radius:50%; z-index:21; display:none;
     border:2px solid rgba(255,255,255,.4);
     background:rgba(255,138,61,.85); color:#1a1a1a;
-    font:800 15px 'Pretendard',sans-serif;
-    display:none;
+    font:800 15px 'Pretendard','Malgun Gothic',sans-serif;
   }
-  .mobile #joystick-zone { display:block; }
+  #action-btn.pulse { animation:pulse 1s infinite; background:rgba(60,179,113,.9); color:#fff; }
+  @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.1); } }
+  body.touch #joy-zone, body.touch #look-zone, body.touch #action-btn { display:block; }
+
+  /* ssambus_missions.js의 기본 진행률 배지는 숨기고 HUD(#mission-count)만 사용 */
+  #ms-progress { display:none !important; }
 </style>
 </head>
 <body>
 <div id="canvas-wrap"></div>
 
+<!-- ssambus_realtime.js가 평소처럼 DOM에 쓰도록 두는 숨김 요소 (3D 어댑터가 매 프레임 읽어 미러링) -->
+<div id="player" style="display:none"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
+<div id="remote-players" style="display:none"></div>
+<a id="char-btn" href="#">← 캐릭터 변경</a>
+
 <div id="crosshair"></div>
 <div id="interact-hint"></div>
-<div id="hud-top">🏫 쌤버스 3D — 체육관<small id="hud-sub">WASD 이동 · 마우스 시점 · E 상호작용</small></div>
+<div id="hud-top">🏀 쌤버스 3D — 체육관 · 미션 <b id="mission-count">0/0</b><small id="hud-sub">WASD 이동 · 마우스 시점 · E 미션/문 · Shift 달리기</small></div>
 
-<div id="joystick-zone">
-  <div id="joy-base"><div id="joy-stick"></div></div>
-</div>
-<button id="btn-interact">열기</button>
+<div id="joy-zone"><div id="joy-base"><div id="joy-stick"></div></div></div>
+<div id="look-zone"></div>
+<button id="action-btn">미션</button>
 
 <div id="start-overlay">
   <div id="start-card">
     <h1>🏀 쌤버스 체육관</h1>
-    <div class="sub">1인칭 시점으로 체육관을 탐험해 보세요</div>
+    <div class="sub">1인칭 시점으로 체육관을 탐험하고 미션을 수행하세요</div>
     <div class="keys" id="keys-desc">
       <div><b>W A S D</b> 이동</div>
       <div><b>마우스</b> 시점 회전</div>
       <div><b>Shift</b> 달리기</div>
-      <div><b>E</b> 문 열기 / 닫기</div>
+      <div><b>E</b> 미션 수행 / 창고 문 열기</div>
       <div><b>ESC</b> 마우스 잠금 해제</div>
     </div>
     <button id="start-btn">입장하기</button>
@@ -116,27 +132,65 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../ssambus_supabase_config.js"></script>
+<script src="../ssambus_character_render.js"></script>
+<script src="../ssambus_realtime.js"></script>
+<script src="../ssambus_missions.js"></script>
+<script src="ssambus_3d_adapter.js"></script>
 <script>
-(function(){
-'use strict';
-
 /* ==========================================================
-   기본 설정
-   - 체육관: 40m × 24m, 높이 9m (30명 동시 활동 여유 크기)
-   - 창고:   10m × 8m, 높이 4m (체육관 +Z 벽 바깥쪽에 부착)
+   쌤버스 3D · 체육관 (Three.js r128)
+   - 체육관: 40m × 24m, 높이 9m / 창고: 10m × 8m (+Z 벽 바깥 부착)
+   - 쌤버스 공용 시스템 통합: 실시간 멀티(ssambus_realtime.js)
+     + 미션(ssambus_missions.js, trigger_point) + 3D 어댑터
    ========================================================== */
 const GYM = { W:40, D:24, H:9 };                 // x: -20~20, z: -12~12
 const STORE = { x1:8, x2:18, z1:GYM.D/2, z2:GYM.D/2+8, H:4 }; // 창고 영역
 const DOOR = { x:13, z:GYM.D/2, w:1.6, h:2.4 };  // 창고 문 위치(벽 중앙)
 
-const IS_MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1);
-if (IS_MOBILE) {
-  document.body.classList.add('mobile');
-  document.getElementById('hud-sub').textContent = '왼쪽 조이스틱 이동 · 오른쪽 드래그 시점';
+/* ── 쌤버스 통합: URL 파라미터 + 캐릭터 외형 + 위치(r/c=z/x, TS=1) ── */
+var TEACHER_VIEW = new URLSearchParams(window.location.search).get('teacherView') === '1';
+var TS = 1;
+var __savedChar = (function(){
+  try{
+    var _cp = new URLSearchParams(window.location.search).get('c');
+    if(_cp) return JSON.parse(_cp);
+    return JSON.parse(localStorage.getItem('ssambus_player_character'));
+  }catch(e){ return null; }
+})();
+var PLAYER = Object.assign({
+  type:'student', skin:'#FDEBD0', hcolor:'#1a1008', hair:'short',
+  ccolor:'#1a3a6b', cloth:'suit', gender:'male', acc:[], dir:'down'
+}, __savedChar || {});
+var pos = { r: 0, c: 0 }; // ssambus_3d_adapter.js가 매 프레임 camera 위치로 갱신
+
+/* ── 캐릭터 변경 버튼 (2D 맵의 #char-btn과 동일 동작, teacherMode 유지) ── */
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var room = params.get('room');
+  if(!room || TEACHER_VIEW) return;
+  var btn = document.getElementById('char-btn');
+  if(!btn) return;
+  var nickname = params.get('nickname') || '';
+  try{ nickname = nickname || sessionStorage.getItem('ssambus_nickname') || ''; }catch(e){}
+  var q = 'room=' + encodeURIComponent(room) + '&map=' + encodeURIComponent('ssamverse3d/ssamverse-gym3d.html');
+  if(nickname) q += '&nickname=' + encodeURIComponent(nickname);
+  if(params.get('teacherMode') === '1') q += '&teacherMode=1'; // 애니 캐릭터 잠금 면제 유지
+  btn.href = '../ssambus_characters.html?' + q;
+  btn.style.display = 'inline-block';
+})();
+
+/* ── 터치 판정: OR 판정(미디어쿼리 단독은 일부 기기 오탐) ── */
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0
+  || matchMedia('(hover: none) and (pointer: coarse)').matches;
+if (isTouch) {
+  document.body.classList.add('touch');
+  document.getElementById('hud-sub').textContent = '왼쪽 레버 이동 · 오른쪽 드래그 시점';
   document.getElementById('keys-desc').innerHTML =
-    '<div><b>왼쪽 화면</b> 조이스틱으로 이동</div>' +
+    '<div><b>왼쪽 레버</b> 이동</div>' +
     '<div><b>오른쪽 화면</b> 드래그로 시점 회전</div>' +
-    '<div><b>열기 버튼</b> 문 열기 / 닫기</div>';
+    '<div><b>버튼</b> 미션 수행 / 문 열기</div>';
 }
 
 /* ---------- 렌더러 / 씬 / 카메라 ---------- */
@@ -153,8 +207,6 @@ scene.fog = new THREE.Fog(0x1c2430, 55, 90);
 
 const camera = new THREE.PerspectiveCamera(72, window.innerWidth/window.innerHeight, 0.1, 200);
 const EYE = 1.6;
-camera.position.set(0, EYE, 8);
-let yaw = Math.PI, pitch = 0;   // 시작 시 코트 중앙(-Z 방향) 바라봄
 
 /* ---------- 조명 ---------- */
 scene.add(new THREE.HemisphereLight(0xdde6ff, 0x3a3228, 0.55));
@@ -320,10 +372,11 @@ wall(-GYM.W/2, PAD+(GYM.H-PAD)/2, 0, T, GYM.H-PAD, GYM.D, wallMatGym, false);
 wall(GYM.W/2, PAD/2, 0, T, PAD, GYM.D, wallMatLow);
 wall(GYM.W/2, PAD+(GYM.H-PAD)/2, 0, T, GYM.H-PAD, GYM.D, wallMatGym, false);
 
-/* ---------- 체육관 천장 + 트러스 ---------- */
+/* ---------- 체육관 천장 + 트러스 ----------
+   천장은 단면(아래에서만 보임) — DoubleSide로 두면 교사 실시간 맵 보기(위에서 조감)가 막힘 */
 const ceil = new THREE.Mesh(
   new THREE.PlaneGeometry(GYM.W, GYM.D),
-  new THREE.MeshStandardMaterial({ color:0x9aa3ad, roughness:.95, side:THREE.DoubleSide })
+  new THREE.MeshStandardMaterial({ color:0x9aa3ad, roughness:.95 })
 );
 ceil.rotation.x = Math.PI/2;
 ceil.position.y = GYM.H;
@@ -353,8 +406,9 @@ for(let x=-16; x<=16; x+=8){
   wall(cxm, STORE.H/2, STORE.z2, cw, STORE.H, T, wallMatStore);            // 뒤벽
   wall(STORE.x1, STORE.H/2, czm, T, STORE.H, cd, wallMatStore);            // 좌벽
   wall(STORE.x2, STORE.H/2, czm, T, STORE.H, cd, wallMatStore);            // 우벽
+  // 창고 천장도 단면(아래에서만 보임) — 교사 조감뷰에서 창고 안 학생이 보이도록
   const sc = new THREE.Mesh(new THREE.PlaneGeometry(cw, cd),
-    new THREE.MeshStandardMaterial({ color:0x7d7668, side:THREE.DoubleSide }));
+    new THREE.MeshStandardMaterial({ color:0x7d7668 }));
   sc.rotation.x = Math.PI/2;
   sc.position.set(cxm, STORE.H, czm);
   scene.add(sc);
@@ -663,92 +717,214 @@ for(let row=0; row<3; row++){
 addCollider(-17, 5, -GYM.D/2+0.4, -GYM.D/2+3.4);
 
 /* ==========================================================
+   라벨 스프라이트 (미션 마커 / 출구 포털 공용)
+   ========================================================== */
+function makeLabel(text) {
+  const cv = document.createElement('canvas');
+  cv.width = 512; cv.height = 128;
+  const c = cv.getContext('2d');
+  c.font = 'bold 56px "Malgun Gothic", sans-serif';
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillStyle = 'rgba(12,18,28,0.72)';
+  const w = c.measureText(text).width + 60;
+  c.beginPath(); c.roundRect((512-w)/2, 14, w, 100, 22); c.fill();
+  c.fillStyle = '#fff';
+  c.fillText(text, 256, 66);
+  const tex = new THREE.CanvasTexture(cv);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true}));
+  sp.scale.set(6, 1.5, 1);
+  return sp;
+}
+
+/* ── 미션 마커 (ssambus_missions.js가 불러온 __msMissions의 trigger_point 기준, 지연 로드 대응) ── */
+const missionMarkers = {}; // id -> {data, group, ring, beam, orb}
+let missionMarkersBuilt = false;
+function buildMissionMarkers(){
+  if (missionMarkersBuilt) return;
+  if (typeof __msMissions === 'undefined' || __msMissions === null) return;
+  missionMarkersBuilt = true;
+  __msMissions.forEach(m => {
+    if (!m.trigger_point) return;
+    const group = new THREE.Group();
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.55, 0.75, 32),
+      new THREE.MeshBasicMaterial({ color: 0x7dd87d, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
+    );
+    ring.rotation.x = -Math.PI/2;
+    ring.position.y = 0.03;
+    group.add(ring);
+    const beam = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12, 0.3, 2.6, 12, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0x7dd87d, transparent: true, opacity: 0.25 })
+    );
+    beam.position.y = 1.3;
+    group.add(beam);
+    const orb = new THREE.Mesh(
+      new THREE.SphereGeometry(0.2, 16, 16),
+      new THREE.MeshBasicMaterial({ color: 0xaef0ae })
+    );
+    orb.position.y = 1.6;
+    group.add(orb);
+    const label = makeLabel(m.title || '미션');
+    label.position.y = 2.6;
+    group.add(label);
+    group.position.set(m.trigger_point.x, 0, m.trigger_point.z);
+    scene.add(group);
+    missionMarkers[m.id] = { data: m, group, ring, beam, orb };
+  });
+}
+function refreshMissionMarkers(){
+  buildMissionMarkers();
+  if (typeof __msDone === 'undefined') return;
+  for (const id in missionMarkers) {
+    const mk = missionMarkers[id];
+    const done = __msDone.has(id);
+    mk.beam.visible = !done;
+    mk.ring.material.color.set(done ? 0xaaaaaa : 0x7dd87d);
+    mk.orb.material.color.set(done ? 0xcccccc : 0xaef0ae);
+  }
+}
+
+/* ── 출구 포털 (필수 미션 완료 후 다가가면 다음 맵으로 이동) ── */
+const EXIT_POS = { x: 16, z: -9 };
+(function makeExitPortal(){
+  const g = new THREE.Group();
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(1.6, 0.18, 12, 40),
+    new THREE.MeshBasicMaterial({ color:0x4da6ff })
+  );
+  ring.position.y = 2.0; g.add(ring);
+  const glow = new THREE.Mesh(
+    new THREE.CircleGeometry(1.45, 32),
+    new THREE.MeshBasicMaterial({ color:0x8fd0ff, transparent:true, opacity:0.35, side:THREE.DoubleSide })
+  );
+  glow.position.y = 2.0; g.add(glow);
+  const label = makeLabel('🚪 출구');
+  label.position.y = 4.2; g.add(label);
+  g.position.set(EXIT_POS.x, 0, EXIT_POS.z);
+  scene.add(g);
+  window.__exitPortal = g;
+})();
+function isAtExit(x, z) {
+  return Math.hypot(x - EXIT_POS.x, z - EXIT_POS.z) < 2.4;
+}
+let exitNoticeActive = false;
+
+/* ==========================================================
    플레이어 이동 / 시점
    ========================================================== */
 const PLAYER_R = 0.35;
-const player = { x:0, z:8 };
+const player = { x:0, z:8, yaw:0, pitch:0 };  // yaw 0 = -Z(코트 중앙) 방향
 const keys = {};
-let pointerLocked = false;
+let started = false;
+let modalOpen = false; // ssambus_missions.js 모달(#ms-overlay) 열림 여부
 
-addEventListener('keydown', e=>{
-  keys[e.code] = true;
-  if (e.code === 'KeyE') tryInteract();
-});
-addEventListener('keyup', e=> keys[e.code] = false);
-
-// 포인터 락
-const startOverlay = document.getElementById('start-overlay');
-document.getElementById('start-btn').addEventListener('click', ()=>{
-  startOverlay.style.display = 'none';
-  if (!IS_MOBILE) renderer.domElement.requestPointerLock();
-});
-renderer.domElement.addEventListener('click', ()=>{
-  if (!IS_MOBILE && !pointerLocked && startOverlay.style.display === 'none')
-    renderer.domElement.requestPointerLock();
-});
-document.addEventListener('pointerlockchange', ()=>{
-  pointerLocked = document.pointerLockElement === renderer.domElement;
-});
-document.addEventListener('mousemove', e=>{
-  if (!pointerLocked) return;
-  yaw   -= e.movementX * 0.0022;
-  pitch -= e.movementY * 0.0022;
-  pitch = Math.max(-Math.PI/2+0.05, Math.min(Math.PI/2-0.05, pitch));
-});
-
-/* ---------- 모바일: 조이스틱 + 시점 드래그 ---------- */
-const joy = { active:false, id:null, cx:0, cy:0, dx:0, dy:0 };
-const look = { active:false, id:null, lx:0, ly:0 };
-const joyBase = document.getElementById('joy-base');
-const joyStick = document.getElementById('joy-stick');
-
-if (IS_MOBILE){
-  addEventListener('touchstart', e=>{
-    for (const t of e.changedTouches){
-      if (t.clientX < innerWidth*0.45 && !joy.active){
-        joy.active = true; joy.id = t.identifier;
-        joy.cx = t.clientX; joy.cy = t.clientY; joy.dx = joy.dy = 0;
-        joyBase.style.display = 'block';
-        joyBase.style.left = (joy.cx-55)+'px';
-        joyBase.style.top  = (joy.cy-55)+'px';
-      } else if (!look.active){
-        look.active = true; look.id = t.identifier;
-        look.lx = t.clientX; look.ly = t.clientY;
-      }
-    }
-  }, {passive:true});
-  addEventListener('touchmove', e=>{
-    for (const t of e.changedTouches){
-      if (joy.active && t.identifier === joy.id){
-        let dx = t.clientX - joy.cx, dy = t.clientY - joy.cy;
-        const len = Math.hypot(dx,dy), max = 50;
-        if (len > max){ dx *= max/len; dy *= max/len; }
-        joy.dx = dx/max; joy.dy = dy/max;
-        joyStick.style.left = (31+dx)+'px';
-        joyStick.style.top  = (31+dy)+'px';
-      } else if (look.active && t.identifier === look.id){
-        yaw   -= (t.clientX - look.lx) * 0.005;
-        pitch -= (t.clientY - look.ly) * 0.005;
-        pitch = Math.max(-Math.PI/2+0.05, Math.min(Math.PI/2-0.05, pitch));
-        look.lx = t.clientX; look.ly = t.clientY;
-      }
-    }
-  }, {passive:true});
-  addEventListener('touchend', e=>{
-    for (const t of e.changedTouches){
-      if (t.identifier === joy.id){
-        joy.active = false; joy.dx = joy.dy = 0;
-        joyBase.style.display = 'none';
-        joyStick.style.left = '31px'; joyStick.style.top = '31px';
-      }
-      if (t.identifier === look.id) look.active = false;
-    }
-  }, {passive:true});
+// #ms-overlay 표시 여부로 모달 상태 추적 (열려 있으면 이동/포인터락 정지)
+function isMsModalOpen() {
+  const ov = document.getElementById('ms-overlay');
+  return !!(ov && !ov.classList.contains('hidden'));
 }
 
-/* ---------- 충돌 처리 ---------- */
+// capture 단계 등록: ssambus_realtime.js의 "글자키 → 채팅창 자동포커스"가 WASD/E를 가로채지 않도록 선점 차단
+const MOVE_KEY_CODES = ['KeyW','KeyA','KeyS','KeyD','KeyE','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight'];
+addEventListener('keydown', e => {
+  if (typeof SsamAdapter3D !== 'undefined' && SsamAdapter3D.isChatInputFocused()) return;
+  keys[e.code] = true;
+  if (e.code === 'KeyE' && !modalOpen && !TEACHER_VIEW) tryInteract();
+  if (MOVE_KEY_CODES.includes(e.code)) e.stopPropagation();
+}, true);
+addEventListener('keyup', e => keys[e.code] = false);
+
+// 포인터락 (데스크톱) — 교사뷰/모달 열림 시 제외
+const startOverlay = document.getElementById('start-overlay');
+// unadjustedMovement(OS 마우스 가속 우회)로 요청 — Windows+Chrome movementX/Y 스파이크(시점 튐) 방지. 미지원 시 폴백
+function lockPtr(el){
+  try {
+    const p = el.requestPointerLock({ unadjustedMovement: true });
+    if (p && p.catch) p.catch(() => { try { el.requestPointerLock(); } catch(e){} });
+  } catch(e) { try { el.requestPointerLock(); } catch(e2){} }
+}
+document.getElementById('start-btn').addEventListener('click', ()=>{
+  started = true;
+  startOverlay.style.display = 'none';
+  if (!isTouch) lockPtr(renderer.domElement);
+});
+renderer.domElement.addEventListener('click', ()=>{
+  if (!isTouch && started && !modalOpen && !TEACHER_VIEW && !document.pointerLockElement)
+    lockPtr(renderer.domElement);
+});
+let locked = false;
+let skipLook = false; // 포인터락 진입 직후 첫 mousemove는 movementX/Y가 비정상적으로 커서 시점이 튐 → 1회 무시
+document.addEventListener('pointerlockchange', ()=>{ locked = !!document.pointerLockElement; if (locked) skipLook = true; });
+document.addEventListener('mousemove', e=>{
+  if (!locked) return;
+  if (skipLook) { skipLook = false; return; }
+  // 스파이크 필터: 한 이벤트에 200px 이상 델타는 물리적으로 불가능(Chrome/Windows 포인터락 버그) → 무시
+  if (Math.abs(e.movementX) > 200 || Math.abs(e.movementY) > 200) return;
+  player.yaw   -= e.movementX * 0.0022;
+  player.pitch -= e.movementY * 0.0022;
+  player.pitch = Math.max(-1.35, Math.min(1.35, player.pitch));
+});
+
+/* ---------- 모바일: 좌하단 고정 조이스틱 + 오른쪽 드래그 (교실맵과 동일 방식) ---------- */
+const joy = { active:false, id:null, dx:0, dy:0 };
+const look = { id:null, lx:0, ly:0 };
+const joyZone = document.getElementById('joy-zone');
+const lookZone = document.getElementById('look-zone');
+const joyStick = document.getElementById('joy-stick');
+const JOY_MAX = 45;            // 노브 최대 이동 반경(px)
+const JOY_REST = 36;           // 노브 중앙 위치(zone 120 − knob 48)/2
+
+function joyUpdate(t) {
+  const r = joyZone.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  let dx = t.clientX - cx, dy = t.clientY - cy;
+  const d = Math.hypot(dx, dy);
+  if (d > JOY_MAX) { dx = dx / d * JOY_MAX; dy = dy / d * JOY_MAX; }
+  joy.dx = dx / JOY_MAX; joy.dy = dy / JOY_MAX;
+  joyStick.style.left = (JOY_REST + dx) + 'px';
+  joyStick.style.top  = (JOY_REST + dy) + 'px';
+}
+function joyReset() {
+  joy.active = false; joy.id = null; joy.dx = 0; joy.dy = 0;
+  joyStick.style.left = JOY_REST + 'px'; joyStick.style.top = JOY_REST + 'px';
+}
+joyZone.addEventListener('touchstart', e => {
+  if (joy.id !== null) return;
+  const t = e.changedTouches[0];
+  joy.active = true; joy.id = t.identifier;
+  joyUpdate(t);
+}, {passive:true});
+joyZone.addEventListener('touchmove', e => {
+  for (const t of e.changedTouches) { if (t.identifier === joy.id) joyUpdate(t); }
+}, {passive:true});
+joyZone.addEventListener('touchend', e => {
+  for (const t of e.changedTouches) { if (t.identifier === joy.id) joyReset(); }
+});
+joyZone.addEventListener('touchcancel', e => {
+  for (const t of e.changedTouches) { if (t.identifier === joy.id) joyReset(); }
+});
+
+lookZone.addEventListener('touchstart', e => {
+  const t = e.changedTouches[0];
+  look.id = t.identifier; look.lx = t.clientX; look.ly = t.clientY;
+}, {passive:true});
+lookZone.addEventListener('touchmove', e => {
+  for (const t of e.changedTouches) {
+    if (t.identifier !== look.id) continue;
+    player.yaw   -= (t.clientX - look.lx) * 0.005;
+    player.pitch -= (t.clientY - look.ly) * 0.005;
+    player.pitch = Math.max(-1.35, Math.min(1.35, player.pitch));
+    look.lx = t.clientX; look.ly = t.clientY;
+  }
+}, {passive:true});
+
+document.getElementById('action-btn').addEventListener('click', ()=>{
+  if (!modalOpen && !TEACHER_VIEW) tryInteract();
+});
+
+/* ---------- 충돌 처리 (축별 분리 이동) ---------- */
 function collide(nx, nz){
-  // 축별 분리 이동
   let x = nx, z = player.z;
   for (const c of colliders){
     if (!c.enabled) continue;
@@ -768,17 +944,63 @@ function collide(nx, nz){
   player.x = x; player.z = z;
 }
 
-/* ---------- 상호작용 (문) ---------- */
+/* ---------- 이동 ---------- */
+function movePlayer(dt){
+  let fx = 0, fz = 0;
+  if (keys['KeyW'] || keys['ArrowUp'])    fz -= 1;
+  if (keys['KeyS'] || keys['ArrowDown'])  fz += 1;
+  if (keys['KeyA'] || keys['ArrowLeft'])  fx -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) fx += 1;
+  fx += joy.dx; fz += joy.dy;
+
+  const len = Math.hypot(fx, fz);
+  if (len > 0.01){
+    fx /= Math.max(len,1); fz /= Math.max(len,1);
+    const speed = (keys['ShiftLeft'] || keys['ShiftRight']) ? 6.5 : 3.6;
+    const sin = Math.sin(player.yaw), cos = Math.cos(player.yaw);
+    const wx = (fx * cos + fz * sin) * speed * dt;
+    const wz = (-fx * sin + fz * cos) * speed * dt;
+    collide(player.x + wx, player.z + wz);
+  }
+
+  camera.position.set(player.x, EYE, player.z);
+  // roll(z)을 항상 0으로 고정 — 개별 .x/.y 대입만 하면 lookAt 등이 남긴 roll이
+  // YXZ 순서로 적용돼 화면이 기울어질 수 있음(forest3d에서 발견된 버그 패턴).
+  camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
+}
+
+/* ---------- 상호작용 (미션 우선, 그 다음 창고 문) ---------- */
 const hintEl = document.getElementById('interact-hint');
-const btnInteract = document.getElementById('btn-interact');
-btnInteract.addEventListener('click', tryInteract);
+const actionBtn = document.getElementById('action-btn');
+let nearMission = null; // checkMission3D()가 반환한 ssambus 미션 객체(또는 null)
 
 function nearDoor(){
   const dx = player.x - DOOR.x, dz = player.z - DOOR.z;
   return (dx*dx + dz*dz) < 2.2*2.2;
 }
 function tryInteract(){
+  if (nearMission){
+    if (document.pointerLockElement) document.exitPointerLock();
+    __msOpenMission([nearMission]); // ssambus 모달로 문제 표시/채점/완료
+    return;
+  }
   if (nearDoor()) toggleDoor();
+}
+
+/* ── 쌤버스 통합 초기화 (실시간 멀티플레이어 + 미션 + 3D 어댑터) ── */
+try { initRealtime('gym3d'); } catch (e) { console.warn('[gym3d] realtime:', e); }
+if (!TEACHER_VIEW) {
+  try { initMissionSystem('gym3d'); } catch (e) { console.warn('[gym3d] missions:', e); }
+}
+try { SsamAdapter3D.init({ THREE, scene, camera }); } catch (e) { console.warn('[gym3d] adapter:', e); }
+
+/* ── 교사 실시간 맵 보기(teacherView=1): 자동 시작 + 조감 시점 고정(관찰 전용) ──
+   started=true 라야 SsamAdapter3D.update()가 돌아 원격 학생 스프라이트가 동기화된다. */
+if (TEACHER_VIEW) {
+  startOverlay.style.display = 'none';
+  started = true;
+  camera.position.set(0, 30, 26); // 남쪽(+Z) 위에서 코트+창고를 내려다봄
+  camera.lookAt(0, 0, 2);
 }
 
 /* ---------- 메인 루프 ---------- */
@@ -786,24 +1008,15 @@ const clock = new THREE.Clock();
 function animate(){
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.05);
+  const t = performance.now() * 0.001;
 
-  // 이동 입력
-  let mx = 0, mz = 0;
-  if (keys['KeyW'] || keys['ArrowUp'])    mz -= 1;
-  if (keys['KeyS'] || keys['ArrowDown'])  mz += 1;
-  if (keys['KeyA'] || keys['ArrowLeft'])  mx -= 1;
-  if (keys['KeyD'] || keys['ArrowRight']) mx += 1;
-  if (IS_MOBILE){ mx += joy.dx; mz += joy.dy; }
+  // 모달 열림 추적 — 닫히면 포인터락 복원
+  const wasModal = modalOpen;
+  modalOpen = isMsModalOpen();
+  if (wasModal && !modalOpen && started && !isTouch && !TEACHER_VIEW) lockPtr(renderer.domElement);
 
-  const len = Math.hypot(mx, mz);
-  if (len > 0.01){
-    mx /= Math.max(len,1); mz /= Math.max(len,1);
-    const speed = (keys['ShiftLeft'] || keys['ShiftRight']) ? 6.5 : 3.6;
-    // 카메라 yaw 기준 이동
-    const sin = Math.sin(yaw), cos = Math.cos(yaw);
-    const wx = (mx * cos - mz * sin) * speed * dt;
-    const wz = (-mx * sin - mz * cos) * speed * dt;
-    collide(player.x + wx, player.z + wz);
+  if (started && !modalOpen && !TEACHER_VIEW) {
+    movePlayer(dt);
   }
 
   // 문 애니메이션
@@ -813,26 +1026,61 @@ function animate(){
     doorGroup.rotation.y = -doorAnim * Math.PI * 0.55;  // 창고 쪽으로 열림
   }
 
-  // 상호작용 힌트
-  if (nearDoor()){
+  // 미션 마커 갱신(완료색) + 부유/회전 애니메이션
+  refreshMissionMarkers();
+  for (const id in missionMarkers) {
+    const mk = missionMarkers[id];
+    mk.orb.position.y = 1.6 + Math.sin(t * 2.2 + mk.group.position.x) * 0.12;
+    mk.ring.rotation.z = t * 0.8;
+  }
+  // 출구 포털 회전
+  if (window.__exitPortal) window.__exitPortal.rotation.y = t * 0.6;
+
+  // 근접 미션 판정 (Supabase에 교사가 배치한 trigger_point 기준)
+  nearMission = (started && !modalOpen && !TEACHER_VIEW && typeof checkMission3D === 'function')
+    ? checkMission3D(player.x, player.z)
+    : null;
+
+  // 상호작용 힌트 (미션 우선, 그 다음 창고 문)
+  if (started && !modalOpen && !TEACHER_VIEW && nearMission){
     hintEl.style.display = 'block';
-    hintEl.textContent = IS_MOBILE
+    hintEl.textContent = isTouch ? ('버튼 — ' + (nearMission.title || '미션') + ' 수행') : ('E — ' + (nearMission.title || '미션') + ' 수행');
+    actionBtn.textContent = '미션';
+    actionBtn.classList.add('pulse');
+  } else if (started && !modalOpen && !TEACHER_VIEW && nearDoor()){
+    hintEl.style.display = 'block';
+    hintEl.textContent = isTouch
       ? (doorOpen ? '버튼으로 문 닫기' : '버튼으로 문 열기')
       : (doorOpen ? 'E — 문 닫기' : 'E — 문 열기');
-    if (IS_MOBILE){
-      btnInteract.style.display = 'block';
-      btnInteract.textContent = doorOpen ? '닫기' : '열기';
-    }
+    actionBtn.textContent = doorOpen ? '닫기' : '열기';
+    actionBtn.classList.remove('pulse');
   } else {
     hintEl.style.display = 'none';
-    if (IS_MOBILE) btnInteract.style.display = 'none';
+    actionBtn.textContent = '미션';
+    actionBtn.classList.remove('pulse');
   }
 
-  // 카메라 갱신
-  camera.position.set(player.x, EYE, player.z);
-  camera.rotation.order = 'YXZ';
-  camera.rotation.y = yaw;
-  camera.rotation.x = pitch;
+  // 출구 판정 — 필수 미션 완료 시 다음 맵으로 자동 이동
+  if (started && !modalOpen && !TEACHER_VIEW && !nearMission
+      && typeof requestMapExit3D === 'function' && isAtExit(player.x, player.z)) {
+    const st = requestMapExit3D();
+    if (st === 'incomplete' && !exitNoticeActive) {
+      exitNoticeActive = true;
+      if (typeof __msShowBlockedNotice === 'function') __msShowBlockedNotice();
+    }
+  } else {
+    exitNoticeActive = false;
+  }
+
+  // 원격 학생 실시간 동기화 (모달 열려 있어도 계속)
+  if (started && typeof SsamAdapter3D !== 'undefined') {
+    try { SsamAdapter3D.update(dt, camera); } catch (e) {}
+  }
+
+  // HUD 진행률 (이 맵의 완료 수 / 이 맵의 미션 수 — __msDone.size는 방 전체 누적이라 맵 단위로 카운트)
+  const __gids = Object.keys(missionMarkers);
+  const __gdone = (typeof __msDone !== 'undefined') ? __gids.filter(id => __msDone.has(id)).length : 0;
+  document.getElementById('mission-count').textContent = __gdone + '/' + __gids.length;
 
   renderer.render(scene, camera);
 }
@@ -843,7 +1091,6 @@ addEventListener('resize', ()=>{
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
 });
-})();
 </script>
 </body>
 </html>

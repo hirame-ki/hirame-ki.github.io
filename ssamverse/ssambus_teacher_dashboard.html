@@ -1069,7 +1069,11 @@ const MAP_FILES = {
   modum_classroom:'ssambus_map_modum_classroom.html',
   classroom3d:'ssamverse3d/classroom3d.html',
   forest3d:'ssamverse3d/ssamverse-3d-forest.html',
-  playground3d:'ssamverse3d/playground3d.html'
+  playground3d:'ssamverse3d/playground3d.html',
+  gym3d:'ssamverse3d/ssamverse-gym3d.html',
+  science3d:'ssamverse3d/ssamverse-science-lab-3d.html',
+  health3d:'ssamverse3d/health-room-3d.html',
+  computer3d:'ssamverse3d/ssamverse-3d-lab.html'
 };
 
 /* 각 맵의 실제 캔버스 픽셀 크기 (실시간 맵 보기에서 축소 표시용) */
@@ -1092,7 +1096,11 @@ const MAP_CANVAS_SIZE = {
   /* 3D 맵은 고정 캔버스가 아니라 WebGL 뷰포트 — 실시간 맵 보기에서 이 해상도로 렌더링 후 축소 표시 */
   classroom3d: { w:1280, h:720 },
   forest3d: { w:1280, h:720 },
-  playground3d: { w:1280, h:720 }
+  playground3d: { w:1280, h:720 },
+  gym3d: { w:1280, h:720 },
+  science3d: { w:1280, h:720 },
+  health3d: { w:1280, h:720 },
+  computer3d: { w:1280, h:720 }
 };
 
 const MAPS = [
@@ -1261,6 +1269,42 @@ const MAPS = [
     {id:'zone_D', label:'골대 앞'},
     {id:'zone_E', label:'응원석(북측)'},
     {id:'zone_F', label:'출구 부근'}
+  ]},
+  { id:'gym3d', label:'🏀 3D 체육관 (베타)', zones:[
+    {id:'zone_A', label:'코트 중앙(센터서클)'},
+    {id:'zone_B', label:'농구골대(서쪽)'},
+    {id:'zone_C', label:'농구골대(동쪽)'},
+    {id:'zone_D', label:'배구 네트'},
+    {id:'zone_E', label:'관중석 벤치(북측)'},
+    {id:'zone_F', label:'창고(남동)'},
+    {id:'zone_G', label:'출구 포털 부근'}
+  ]},
+  { id:'science3d', label:'🧪 3D 과학실 (베타)', zones:[
+    {id:'zone_A', label:'화이트보드·시연대(앞)'},
+    {id:'zone_B', label:'실험대(좌측 열)'},
+    {id:'zone_C', label:'실험대(우측 열)'},
+    {id:'zone_D', label:'유리 진열장(뒷벽)'},
+    {id:'zone_E', label:'시약장·흄후드(우측)'},
+    {id:'zone_F', label:'개수대(우측 뒤)'},
+    {id:'zone_G', label:'사물함·모형(좌측)'},
+    {id:'zone_H', label:'뒷문(출구) 부근'}
+  ]},
+  { id:'health3d', label:'🏥 3D 보건실 (베타)', zones:[
+    {id:'zone_A', label:'침대 구역(북쪽)'},
+    {id:'zone_B', label:'처치 구역(서쪽)'},
+    {id:'zone_C', label:'보건교사 데스크(동쪽)'},
+    {id:'zone_D', label:'상담 구역(동남)'},
+    {id:'zone_E', label:'신체측정 구역(중앙 남쪽)'},
+    {id:'zone_F', label:'입구·대기 벤치(남쪽)'},
+    {id:'zone_G', label:'출입문(출구) 부근'}
+  ]},
+  { id:'computer3d', label:'💻 3D 컴퓨터실 (베타)', zones:[
+    {id:'zone_A', label:'화이트보드·교탁(앞)'},
+    {id:'zone_B', label:'학생 책상열(중앙)'},
+    {id:'zone_C', label:'서버실(뒤 왼쪽)'},
+    {id:'zone_D', label:'교무실(뒤 오른쪽)'},
+    {id:'zone_E', label:'창가(좌측)'},
+    {id:'zone_F', label:'출구 포털 부근'}
   ]}
 ];
 
@@ -3727,6 +3771,58 @@ const MAP_3D_LAYOUTS = {
       { x:0,  z:33,    w:22, d:3,  label:'응원석' },
       { x:0,  z:-38,   w:6,  d:2,  label:'출구' }
     ]
+  },
+  gym3d: {
+    w: 40, d: 40, // 체육관 x±20 × z-12~12 + 창고 z12~20 (좌표계는 원점 중심 40×40으로 표현)
+    furniture: [
+      { x:0,     z:0,     w:36,  d:19,  label:'코트' },
+      { x:-18.9, z:0,     w:2,   d:2,   label:'골대' },
+      { x:18.9,  z:0,     w:2,   d:2,   label:'골대' },
+      { x:0,     z:0,     w:0.6, d:10,  label:'네트' },
+      { x:-6,    z:-10.2, w:22,  d:3,   label:'관중석' },
+      { x:13,    z:16,    w:10,  d:8,   label:'창고' },
+      { x:16,    z:-9,    w:4,   d:4,   label:'출구' }
+    ]
+  },
+  science3d: {
+    w: 26, d: 18, // ROOM_W × ROOM_D (미터), 원점 중심
+    furniture: [
+      { x:0,     z:-7,   w:4.6, d:1.5, label:'시연대' },
+      { x:-5.5,  z:0.6,  w:5,   d:9,   label:'실험대' },
+      { x:5.5,   z:0.6,  w:5,   d:9,   label:'실험대' },
+      { x:0.2,   z:8.65, w:14,  d:0.6, label:'진열장' },
+      { x:12.5,  z:-5.5, w:1,   d:3,   label:'시약장' },
+      { x:12.4,  z:0.5,  w:2,   d:1,   label:'흄후드' },
+      { x:12.5,  z:5.4,  w:1.5, d:3.5, label:'개수대' },
+      { x:-12.5, z:3.5,  w:1,   d:4.5, label:'사물함' },
+      { x:-9,    z:8.5,  w:1.5, d:1,   label:'출구' },
+      { x:9,     z:8.5,  w:1.5, d:1,   label:'출구' }
+    ]
+  },
+  health3d: {
+    w: 36, d: 24, // ROOM_W × ROOM_D (미터), 원점 중심
+    furniture: [
+      { x:0,     z:-9.8,  w:33,  d:3.2, label:'침대 구역' },
+      { x:-15.7, z:-1,    w:4,   d:15,  label:'처치 구역' },
+      { x:15,    z:-6,    w:4,   d:5,   label:'보건교사' },
+      { x:13.5,  z:3,     w:4.5, d:4.5, label:'상담' },
+      { x:-5.2,  z:6.5,   w:4,   d:2,   label:'신체측정' },
+      { x:-16,   z:10.6,  w:3,   d:1,   label:'벤치' },
+      { x:15,    z:10.6,  w:3,   d:1,   label:'벤치' },
+      { x:-10,   z:11.5,  w:2.6, d:1,   label:'출구' },
+      { x:10,    z:11.5,  w:2.6, d:1,   label:'출구' }
+    ]
+  },
+  computer3d: {
+    w: 32, d: 40, // 컴퓨터실 x±16 × z-12~12 + 서버실/교무실 z12~19 (좌표계는 원점 중심 32×40으로 표현)
+    furniture: [
+      { x:0,   z:0,     w:28,  d:15,  label:'책상열(30석)' },
+      { x:0,   z:-11.8, w:8,   d:0.6, label:'화이트보드' },
+      { x:0,   z:-10.3, w:1.4, d:0.8, label:'교탁' },
+      { x:-9,  z:15.5,  w:10,  d:7,   label:'서버실' },
+      { x:9,   z:15.5,  w:10,  d:7,   label:'교무실' },
+      { x:14,  z:-10,   w:4,   d:4,   label:'출구' }
+    ]
   }
 };
 
@@ -6023,6 +6119,6 @@ function showToast(msg){
   toastTimer = setTimeout(()=> el.style.display = 'none', 2000);
 }
 </script>
-<div id="creator-credit" style="position:fixed;bottom:8px;right:10px;z-index:9999;font-family:'Noto Sans KR',sans-serif;opacity:.5;transition:opacity .2s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.5'"><a href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;font-size:11px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.4);padding:3px 8px;border-radius:6px;backdrop-filter:blur(4px)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>황성재 · @hirame.ki</a></div>
+<div id="creator-credit" style="position:fixed;bottom:8px;right:10px;z-index:9999;font-family:'Noto Sans KR',sans-serif;opacity:.5;transition:opacity .2s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.5'"><a href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;font-size:11px;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.4);padding:3px 8px;border-radius:6px;backdrop-filter:blur(4px)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>@hirame.ki</a></div>
 </body>
 </html>

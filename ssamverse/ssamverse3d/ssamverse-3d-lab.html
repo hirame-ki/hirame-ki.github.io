@@ -2,11 +2,11 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>쌤버스 3D - 컴퓨터실</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  html, body { width:100%; height:100%; overflow:hidden; background:#0d0f14; font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#0d0f14; font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif; }
   #canvas { display:block; width:100%; height:100%; }
 
   /* 크로스헤어 */
@@ -32,10 +32,10 @@
   }
   #overlay .key { display:inline-block; background:#2a3242; border:1px solid #4a556b;
     border-radius:6px; padding:1px 9px; margin:0 2px; font-size:12px; }
-  #overlay .start { margin-top:26px; font-size:15px; color:#ffd66e; animation:pulse 1.6s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+  #overlay .start { margin-top:26px; font-size:15px; color:#ffd66e; animation:blink 1.6s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.45} }
 
-  /* 위치 표시 */
+  /* 위치 표시 + 미션 카운트 */
   #zone {
     position:fixed; top:16px; left:50%; transform:translateX(-50%);
     background:rgba(15,20,30,.72); border:1px solid rgba(140,180,255,.25);
@@ -43,42 +43,90 @@
     letter-spacing:1px; z-index:10; pointer-events:none;
     transition:opacity .3s;
   }
+  #mission-count {
+    position:fixed; top:16px; left:16px; z-index:10; pointer-events:none;
+    background:rgba(15,20,30,.72); border:1px solid rgba(140,180,255,.25);
+    color:#ffd66e; padding:7px 16px; border-radius:20px; font-size:13px; font-weight:700;
+  }
+  #interact-hint {
+    position:fixed; left:50%; bottom:18%; transform:translateX(-50%);
+    z-index:10; background:rgba(15,20,30,.85); color:#fff; border:1px solid #8fd6ff;
+    border-radius:10px; padding:10px 20px; font-size:14px; display:none; pointer-events:none;
+    white-space:nowrap;
+  }
+  #interact-hint b { color:#8fd6ff; }
 
-  /* 모바일 조이스틱 */
-  #joy {
-    position:fixed; left:26px; bottom:30px; width:120px; height:120px;
-    border-radius:50%; background:rgba(255,255,255,.07);
-    border:1.5px solid rgba(255,255,255,.22); z-index:20; display:none;
-    touch-action:none;
+  #char-btn {
+    position:fixed; top:16px; right:16px; z-index:20; display:none;
+    background:rgba(41,128,185,.85); color:#fff; backdrop-filter:blur(6px);
+    padding:8px 14px; border-radius:12px; font-size:13px; font-weight:700;
+    border:1px solid rgba(255,255,255,.12); text-decoration:none;
+    font-family:inherit;
   }
-  #joyKnob {
-    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-    width:52px; height:52px; border-radius:50%;
-    background:rgba(255,255,255,.28); border:1.5px solid rgba(255,255,255,.4);
+
+  /* 모바일 컨트롤 — 교실맵식 좌하단 고정 원형 조이스틱(항상 표시).
+     bottom 오프셋은 하단 채팅바(#rt-chat-bar, 약 54px)에 가리지 않게 88px. */
+  #joy-zone { position:fixed; left:24px; bottom:88px; width:120px; height:120px; z-index:20; display:none; touch-action:none; }
+  #look-zone { position:fixed; right:0; bottom:0; width:55%; height:60%; z-index:20; display:none; }
+  #joy-base {
+    position:absolute; inset:0; border-radius:50%;
+    border:1.5px solid rgba(255,255,255,.35); background:rgba(255,255,255,.08);
   }
-  body.touch #joy { display:block; }
+  #joy-stick {
+    position:absolute; width:48px; height:48px; border-radius:50%;
+    background:rgba(255,255,255,.4); left:36px; top:36px;
+    border:1.5px solid rgba(255,255,255,.5);
+    box-shadow:0 4px 12px rgba(0,0,0,.3);
+  }
+  #action-btn {
+    position:fixed; right:28px; bottom:112px; width:74px; height:74px;
+    border-radius:50%; z-index:21; display:none;
+    background:rgba(42,114,200,.8); color:#fff; border:2px solid rgba(255,255,255,.4);
+    font-size:15px; font-weight:800; font-family:inherit;
+  }
+  #action-btn.pulse { animation:pulse 1s infinite; background:rgba(60,179,113,.9); }
+  @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.1); } }
+  body.touch #joy-zone, body.touch #look-zone, body.touch #action-btn { display:block; }
   body.touch #crosshair { display:none; }
+
+  /* ssambus_missions.js의 기본 진행률 배지는 숨기고 HUD(#mission-count)만 사용 */
+  #ms-progress { display:none !important; }
 </style>
 </head>
 <body>
 <canvas id="canvas"></canvas>
 <div id="crosshair"></div>
 <div id="zone">💻 컴퓨터실</div>
+<div id="mission-count">미션 0/0</div>
+<div id="interact-hint"><b>[E]</b> <span id="hint-text">미션 수행하기</span></div>
+
+<!-- ssambus_realtime.js가 평소처럼 DOM에 쓰도록 두는 숨김 요소 (3D 어댑터가 매 프레임 읽어 미러링) -->
+<div id="player" style="display:none"><svg viewBox="0 0 60 76"><g id="cg_p"></g></svg></div>
+<div id="remote-players" style="display:none"></div>
+<a id="char-btn" href="#">← 캐릭터 변경</a>
 
 <div id="overlay">
   <h1>💻 컴퓨터실</h1>
   <div class="sub">SSAMVERSE 3D MAP</div>
   <div class="card">
-    <div><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> 이동 &nbsp;|&nbsp; <span class="key">Shift</span> 달리기 &nbsp;|&nbsp; 마우스 시점 회전</div>
-    <div>모바일: 왼쪽 조이스틱 이동, 오른쪽 화면 드래그 시점 회전</div>
+    <div><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> 이동 &nbsp;|&nbsp; <span class="key">Shift</span> 달리기 &nbsp;|&nbsp; <span class="key">E</span> 미션 &nbsp;|&nbsp; 마우스 시점 회전</div>
+    <div>모바일: 왼쪽 레버 이동, 오른쪽 화면 드래그 시점 회전</div>
     <div style="margin-top:6px; color:#9fb2cc;">뒤쪽 문으로 <b style="color:#7fe3a0;">서버실</b> · <b style="color:#ffce7a;">교무실</b> 입장 가능</div>
   </div>
   <div class="start">화면을 클릭 / 터치하면 시작합니다</div>
 </div>
 
-<div id="joy"><div id="joyKnob"></div></div>
+<div id="joy-zone"><div id="joy-base"><div id="joy-stick"></div></div></div>
+<div id="look-zone"></div>
+<button id="action-btn">미션</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="../ssambus_supabase_config.js"></script>
+<script src="../ssambus_character_render.js"></script>
+<script src="../ssambus_realtime.js"></script>
+<script src="../ssambus_missions.js"></script>
+<script src="ssambus_3d_adapter.js"></script>
 <script>
 /* ============================================================
    쌤버스 3D 맵 - 컴퓨터실 (Computer Lab)
@@ -86,25 +134,59 @@
    - 메인 컴퓨터실 : x -16~16, z -12~12  (32m x 24m, 학생용 책상 30개)
    - 서버실       : x -14~-4, z 12~19   (뒷벽 왼쪽 문)
    - 교무실       : x   4~14, z 12~19   (뒷벽 오른쪽 문)
-   - 스폰 지점    : (0, 0, 10)  → MAP_DATA.spawn
-   기존 쌤버스 미션 시스템 연동용 데이터는 MAP_DATA 참고
+   - 스폰 지점    : (0, 10)
+   - 쌤버스 공용 시스템 통합: 실시간 멀티(ssambus_realtime.js)
+     + 미션(ssambus_missions.js, trigger_point) + 3D 어댑터
    ============================================================ */
 
 const MAP_DATA = {
-  name: "computer-lab-3d",
+  name: "computer3d",
   spawn: { x: 0, z: 10 },
   zones: [
     { id: "lab",    label: "💻 컴퓨터실", minX:-16, maxX:16,  minZ:-12, maxZ:12 },
     { id: "server", label: "🖥️ 서버실",   minX:-14, maxX:-4,  minZ:12,  maxZ:19 },
     { id: "office", label: "📋 교무실",   minX:4,   maxX:14,  minZ:12,  maxZ:19 }
-  ],
-  // 미션 트리거 지점 예시 (proximity 기반) - 필요 시 쌤버스 미션 JSON과 연결
-  missionSpots: [
-    { id: "m1", x: -9,  z: 15.5, zone: "server", label: "서버 점검" },
-    { id: "m2", x: 9,   z: 15.5, zone: "office", label: "선생님께 제출" },
-    { id: "m3", x: 0,   z: -10,  zone: "lab",    label: "화면 공유" }
   ]
 };
+
+/* ── 쌤버스 통합: URL 파라미터 + 캐릭터 외형 + 위치(r/c=z/x, TS=1) ──
+   주의: 원본이 플레이어 위치로 쓰던 `const pos`(Vector3)는 realtime.js의
+   전역 pos(r/c 객체)와 이름이 충돌해서 player 객체로 교체함 */
+var TEACHER_VIEW = new URLSearchParams(window.location.search).get('teacherView') === '1';
+var TS = 1;
+var __savedChar = (function(){
+  try{
+    var _cp = new URLSearchParams(window.location.search).get('c');
+    if(_cp) return JSON.parse(_cp);
+    return JSON.parse(localStorage.getItem('ssambus_player_character'));
+  }catch(e){ return null; }
+})();
+var PLAYER = Object.assign({
+  type:'student', skin:'#FDEBD0', hcolor:'#1a1008', hair:'short',
+  ccolor:'#1a3a6b', cloth:'suit', gender:'male', acc:[], dir:'down'
+}, __savedChar || {});
+var pos = { r: 0, c: 0 }; // ssambus_3d_adapter.js가 매 프레임 camera 위치로 갱신
+
+/* ── 캐릭터 변경 버튼 (2D 맵의 #char-btn과 동일 동작, teacherMode 유지) ── */
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var room = params.get('room');
+  if(!room || TEACHER_VIEW) return;
+  var btn = document.getElementById('char-btn');
+  if(!btn) return;
+  var nickname = params.get('nickname') || '';
+  try{ nickname = nickname || sessionStorage.getItem('ssambus_nickname') || ''; }catch(e){}
+  var q = 'room=' + encodeURIComponent(room) + '&map=' + encodeURIComponent('ssamverse3d/ssamverse-3d-lab.html');
+  if(nickname) q += '&nickname=' + encodeURIComponent(nickname);
+  if(params.get('teacherMode') === '1') q += '&teacherMode=1'; // 애니 캐릭터 잠금 면제 유지
+  btn.href = '../ssambus_characters.html?' + q;
+  btn.style.display = 'inline-block';
+})();
+
+/* ── 터치 판정: OR 판정(미디어쿼리 단독은 일부 기기 오탐) ── */
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0
+  || matchMedia('(hover: none) and (pointer: coarse)').matches;
+if (isTouch) document.body.classList.add('touch');
 
 // ---------- 기본 세팅 ----------
 const canvas = document.getElementById('canvas');
@@ -239,6 +321,7 @@ floorPlane(32, 24, MAT.floorLab, 0, 0);          // 컴퓨터실
 floorPlane(10, 7,  MAT.floorSrv, -9, 15.5);       // 서버실
 floorPlane(10, 7,  MAT.floorOff,  9, 15.5);       // 교무실
 
+// 천장은 단면(아래에서만 보임) — 교사 실시간 맵 보기(위에서 조감)가 가능
 function ceilingPlane(w, d, x, z, h) {
   const c = new THREE.Mesh(new THREE.PlaneGeometry(w, d), MAT.ceiling);
   c.rotation.x = Math.PI/2;
@@ -387,10 +470,10 @@ box(8.2, 0.08, 0.1, MAT.frame, 0, 2.48, -11.78, { cast:false });
 box(1.1, 1.0, 0.6, MAT.teacherDesk, 0, 0.5, -10.3, { solid:true });
 
 // 벽시계
-const clock = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.05, 24), new THREE.MeshStandardMaterial({ color:0xf5f5f0 }));
-clock.rotation.x = Math.PI/2;
-clock.position.set(6.5, 2.6, -11.8);
-scene.add(clock);
+const wallClock = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.05, 24), new THREE.MeshStandardMaterial({ color:0xf5f5f0 }));
+wallClock.rotation.x = Math.PI/2;
+wallClock.position.set(6.5, 2.6, -11.8);
+scene.add(wallClock);
 
 // ============================================================
 // 4. 서버실 (x -14~-4, z 12~19)
@@ -484,147 +567,269 @@ for (let z = -9; z <= 9; z += 4.5) {
 }
 
 // ============================================================
-// 7. 미션 지점 표시 (쌤버스 연동용)
+// 7. 미션 마커 — Supabase missions의 trigger_point로 동적 생성
+//    (교사가 대시보드 "3D 좌표 지정"으로 배치한 미션만 마커가 생김)
 // ============================================================
-const missionMarkers = [];
-for (const m of MAP_DATA.missionSpots) {
-  const ring = new THREE.Mesh(
-    new THREE.RingGeometry(0.35, 0.5, 24),
-    new THREE.MeshBasicMaterial({ color:0xffd66e, transparent:true, opacity:.75, side:THREE.DoubleSide })
-  );
-  ring.rotation.x = -Math.PI/2;
-  ring.position.set(m.x, 0.03, m.z);
-  scene.add(ring);
-  missionMarkers.push(ring);
+const missionMarkers = {}; // id -> {data, group, ring, beam, orb}
+let missionMarkersBuilt = false;
+function buildMissionMarkers(){
+  if (missionMarkersBuilt) return;
+  if (typeof __msMissions === 'undefined' || __msMissions === null) return;
+  missionMarkersBuilt = true;
+  __msMissions.forEach(m => {
+    if (!m.trigger_point) return;
+    const group = new THREE.Group();
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(0.55, 0.75, 32),
+      new THREE.MeshBasicMaterial({ color: 0xffd66e, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
+    );
+    ring.rotation.x = -Math.PI/2;
+    ring.position.y = 0.03;
+    group.add(ring);
+    const beam = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12, 0.3, 2.2, 12, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0xffd66e, transparent: true, opacity: 0.25 })
+    );
+    beam.position.y = 1.1;
+    group.add(beam);
+    const orb = new THREE.Mesh(
+      new THREE.SphereGeometry(0.18, 16, 16),
+      new THREE.MeshBasicMaterial({ color: 0xffe6a8 })
+    );
+    orb.position.y = 1.4;
+    group.add(orb);
+    const label = makeLabelSprite(m.title || '미션', '#ffd66e');
+    label.position.y = 2.4;
+    group.add(label);
+    group.position.set(m.trigger_point.x, 0, m.trigger_point.z);
+    scene.add(group);
+    missionMarkers[m.id] = { data: m, group, ring, beam, orb };
+  });
 }
+function refreshMissionMarkers(){
+  buildMissionMarkers();
+  if (typeof __msDone === 'undefined') return;
+  for (const id in missionMarkers) {
+    const mk = missionMarkers[id];
+    const done = __msDone.has(id);
+    mk.beam.visible = !done;
+    mk.ring.material.color.set(done ? 0x7fe3a0 : 0xffd66e);
+    mk.orb.material.color.set(done ? 0xbdf5d0 : 0xffe6a8);
+  }
+}
+
+/* ── 출구 포털 (필수 미션 완료 후 다가가면 다음 맵으로 이동) ── */
+const EXIT_POS = { x: 14, z: -10 };
+(function makeExitPortal(){
+  const g = new THREE.Group();
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(1.3, 0.15, 12, 40),
+    new THREE.MeshBasicMaterial({ color:0x4da6ff })
+  );
+  ring.position.y = 1.7; g.add(ring);
+  const glow = new THREE.Mesh(
+    new THREE.CircleGeometry(1.15, 32),
+    new THREE.MeshBasicMaterial({ color:0x8fd0ff, transparent:true, opacity:0.35, side:THREE.DoubleSide })
+  );
+  glow.position.y = 1.7; g.add(glow);
+  const label = makeLabelSprite('🚪 출구', '#4da6ff');
+  label.position.y = 2.9; g.add(label);
+  g.position.set(EXIT_POS.x, 0, EXIT_POS.z);
+  scene.add(g);
+  window.__exitPortal = g;
+})();
+function isAtExit(x, z) {
+  return Math.hypot(x - EXIT_POS.x, z - EXIT_POS.z) < 2.2;
+}
+let exitNoticeActive = false;
 
 // ============================================================
 // 8. 1인칭 컨트롤 (마우스 포인터락 + 모바일 터치)
 // ============================================================
 const overlay = document.getElementById('overlay');
 const zoneEl = document.getElementById('zone');
-const isTouch = 'ontouchstart' in window && matchMedia('(pointer:coarse)').matches;
-if (isTouch) document.body.classList.add('touch');
 
-let yaw = Math.PI;   // 스폰 시 -z(화이트보드) 방향
-let pitch = 0;
+const player = { x: MAP_DATA.spawn.x, z: MAP_DATA.spawn.z, yaw: 0, pitch: 0 }; // yaw 0 = -Z(화이트보드) 방향
 const keys = {};
 let started = false;
+let modalOpen = false; // ssambus_missions.js 모달(#ms-overlay) 열림 여부
+let bobT = 0;
 
+// #ms-overlay 표시 여부로 모달 상태 추적 (열려 있으면 이동/포인터락 정지)
+function isMsModalOpen() {
+  const ov = document.getElementById('ms-overlay');
+  return !!(ov && !ov.classList.contains('hidden'));
+}
+
+// unadjustedMovement(OS 마우스 가속 우회)로 요청 — Windows+Chrome movementX/Y 스파이크(시점 튐) 방지. 미지원 시 폴백
+function lockPtr(el){
+  if (!el.requestPointerLock) return;
+  try {
+    const p = el.requestPointerLock({ unadjustedMovement: true });
+    if (p && p.catch) p.catch(() => { try { el.requestPointerLock(); } catch(e){} });
+  } catch(e) { try { el.requestPointerLock(); } catch(e2){} }
+}
 overlay.addEventListener('click', () => {
   overlay.style.display = 'none';
   started = true;
-  if (!isTouch) canvas.requestPointerLock && canvas.requestPointerLock();
+  if (!isTouch) lockPtr(canvas);
 });
 canvas.addEventListener('click', () => {
-  if (started && !isTouch && document.pointerLockElement !== canvas) {
-    canvas.requestPointerLock && canvas.requestPointerLock();
+  if (started && !isTouch && !modalOpen && !TEACHER_VIEW && document.pointerLockElement !== canvas) {
+    lockPtr(canvas);
   }
+});
+// 포인터락 진입 직후 첫 mousemove는 movementX/Y가 비정상적으로 커서(브라우저 버그) 시점이 튐 → 1회 무시
+let skipLook = false;
+document.addEventListener('pointerlockchange', () => {
+  if (document.pointerLockElement === canvas) skipLook = true;
 });
 document.addEventListener('mousemove', e => {
   if (document.pointerLockElement === canvas) {
-    yaw   -= e.movementX * 0.0022;
-    pitch -= e.movementY * 0.0022;
-    pitch = Math.max(-1.35, Math.min(1.35, pitch));
+    if (skipLook) { skipLook = false; return; }
+    // 스파이크 필터: 한 이벤트에 200px 이상 델타는 물리적으로 불가능(Chrome/Windows 포인터락 버그) → 무시
+    if (Math.abs(e.movementX) > 200 || Math.abs(e.movementY) > 200) return;
+    player.yaw   -= e.movementX * 0.0022;
+    player.pitch -= e.movementY * 0.0022;
+    player.pitch = Math.max(-1.35, Math.min(1.35, player.pitch));
   }
 });
-addEventListener('keydown', e => keys[e.code] = true);
-addEventListener('keyup',   e => keys[e.code] = false);
 
-// --- 모바일: 조이스틱 + 시점 드래그 ---
-const joy = document.getElementById('joy');
-const knob = document.getElementById('joyKnob');
-let joyVec = { x:0, y:0 };
-let joyId = null, lookId = null, lastLook = null;
+// capture 단계 등록: ssambus_realtime.js의 "글자키 → 채팅창 자동포커스"가 WASD/E를 가로채지 않도록 선점 차단
+const MOVE_KEY_CODES = ['KeyW','KeyA','KeyS','KeyD','KeyE','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight'];
+addEventListener('keydown', e => {
+  if (typeof SsamAdapter3D !== 'undefined' && SsamAdapter3D.isChatInputFocused()) return;
+  keys[e.code] = true;
+  if (e.code === 'KeyE' && nearMission && !modalOpen && !TEACHER_VIEW) tryInteract();
+  if (MOVE_KEY_CODES.includes(e.code)) e.stopPropagation();
+}, true);
+addEventListener('keyup', e => keys[e.code] = false);
 
-function setKnob(dx, dy) {
-  const max = 40;
-  const len = Math.hypot(dx, dy);
-  if (len > max) { dx = dx/len*max; dy = dy/len*max; }
-  knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-  joyVec.x = dx / max; joyVec.y = dy / max;
+/* ── 모바일: 좌하단 고정 조이스틱 + 오른쪽 드래그 (교실맵과 동일 방식) ── */
+const joy = { active:false, id:null, dx:0, dy:0 };
+const look = { id:null, lx:0, ly:0 };
+const joyZone = document.getElementById('joy-zone');
+const lookZone = document.getElementById('look-zone');
+const joyStick = document.getElementById('joy-stick');
+const JOY_MAX = 45;            // 노브 최대 이동 반경(px)
+const JOY_REST = 36;           // 노브 중앙 위치(zone 120 − knob 48)/2
+
+function joyUpdate(t) {
+  const r = joyZone.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  let dx = t.clientX - cx, dy = t.clientY - cy;
+  const d = Math.hypot(dx, dy);
+  if (d > JOY_MAX) { dx = dx / d * JOY_MAX; dy = dy / d * JOY_MAX; }
+  joy.dx = dx / JOY_MAX; joy.dy = dy / JOY_MAX;
+  joyStick.style.left = (JOY_REST + dx) + 'px';
+  joyStick.style.top  = (JOY_REST + dy) + 'px';
 }
-joy.addEventListener('touchstart', e => {
+function joyReset() {
+  joy.active = false; joy.id = null; joy.dx = 0; joy.dy = 0;
+  joyStick.style.left = JOY_REST + 'px'; joyStick.style.top = JOY_REST + 'px';
+}
+joyZone.addEventListener('touchstart', e => {
+  if (joy.id !== null) return;
   const t = e.changedTouches[0];
-  joyId = t.identifier;
-  e.preventDefault();
-}, { passive:false });
-
-addEventListener('touchmove', e => {
-  for (const t of e.changedTouches) {
-    if (t.identifier === joyId) {
-      const r = joy.getBoundingClientRect();
-      setKnob(t.clientX - (r.left + r.width/2), t.clientY - (r.top + r.height/2));
-    } else if (t.identifier === lookId && lastLook) {
-      yaw   -= (t.clientX - lastLook.x) * 0.005;
-      pitch -= (t.clientY - lastLook.y) * 0.005;
-      pitch = Math.max(-1.35, Math.min(1.35, pitch));
-      lastLook = { x:t.clientX, y:t.clientY };
-    }
-  }
-  if (e.target === joy || joyId !== null) e.preventDefault();
-}, { passive:false });
-
-addEventListener('touchstart', e => {
-  for (const t of e.changedTouches) {
-    if (t.target !== joy && !joy.contains(t.target) && lookId === null && t.clientX > innerWidth * 0.35) {
-      lookId = t.identifier;
-      lastLook = { x:t.clientX, y:t.clientY };
-    }
-  }
+  joy.active = true; joy.id = t.identifier;
+  joyUpdate(t);
+}, {passive:true});
+joyZone.addEventListener('touchmove', e => {
+  for (const t of e.changedTouches) { if (t.identifier === joy.id) joyUpdate(t); }
+}, {passive:true});
+joyZone.addEventListener('touchend', e => {
+  for (const t of e.changedTouches) { if (t.identifier === joy.id) joyReset(); }
 });
-addEventListener('touchend', e => {
+joyZone.addEventListener('touchcancel', e => {
+  for (const t of e.changedTouches) { if (t.identifier === joy.id) joyReset(); }
+});
+
+lookZone.addEventListener('touchstart', e => {
+  const t = e.changedTouches[0];
+  look.id = t.identifier; look.lx = t.clientX; look.ly = t.clientY;
+}, {passive:true});
+lookZone.addEventListener('touchmove', e => {
   for (const t of e.changedTouches) {
-    if (t.identifier === joyId) { joyId = null; setKnob(0,0); joyVec.x = joyVec.y = 0; }
-    if (t.identifier === lookId) { lookId = null; lastLook = null; }
+    if (t.identifier !== look.id) continue;
+    player.yaw   -= (t.clientX - look.lx) * 0.005;
+    player.pitch -= (t.clientY - look.ly) * 0.005;
+    player.pitch = Math.max(-1.35, Math.min(1.35, player.pitch));
+    look.lx = t.clientX; look.ly = t.clientY;
   }
+}, {passive:true});
+
+document.getElementById('action-btn').addEventListener('click', () => {
+  if (nearMission && !modalOpen && !TEACHER_VIEW) tryInteract();
 });
 
 // ---------- 이동 ----------
-const pos = new THREE.Vector3(MAP_DATA.spawn.x, EYE, MAP_DATA.spawn.z);
-let bobT = 0;
+function movePlayer(dt) {
+  let mx = 0, mz = 0;
+  if (keys['KeyW'] || keys['ArrowUp'])    mz -= 1;
+  if (keys['KeyS'] || keys['ArrowDown'])  mz += 1;
+  if (keys['KeyA'] || keys['ArrowLeft'])  mx -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) mx += 1;
+  mx += joy.dx; mz += joy.dy;
 
-function move(dt) {
-  let fwd = 0, str = 0;
-  if (keys['KeyW'] || keys['ArrowUp'])    fwd += 1;
-  if (keys['KeyS'] || keys['ArrowDown'])  fwd -= 1;
-  if (keys['KeyA'] || keys['ArrowLeft'])  str -= 1;
-  if (keys['KeyD'] || keys['ArrowRight']) str += 1;
-  fwd += -joyVec.y;
-  str +=  joyVec.x;
-
-  const len = Math.hypot(fwd, str);
-  if (len > 1) { fwd /= len; str /= len; }
-
+  const len = Math.hypot(mx, mz);
   const run = keys['ShiftLeft'] || keys['ShiftRight'];
-  const speed = (run ? 6.2 : 3.6);
-
-  const sin = Math.sin(yaw), cos = Math.cos(yaw);
-  const dx = (-sin * fwd + cos * str) * speed * dt;
-  const dz = (-cos * fwd - sin * str) * speed * dt;
-
-  // 축 분리 충돌 (벽 슬라이드)
-  if (!collide(pos.x + dx, pos.z)) pos.x += dx;
-  if (!collide(pos.x, pos.z + dz)) pos.z += dz;
+  let moving = false;
+  if (len > 0.01) {
+    mx /= Math.max(len,1); mz /= Math.max(len,1);
+    const speed = (run ? 6.2 : 3.6);
+    const sin = Math.sin(player.yaw), cos = Math.cos(player.yaw);
+    const dx = (mx*cos + mz*sin) * speed * dt;
+    const dz = (mz*cos - mx*sin) * speed * dt;
+    // 축 분리 충돌 (벽 슬라이드)
+    if (!collide(player.x + dx, player.z)) player.x += dx;
+    if (!collide(player.x, player.z + dz)) player.z += dz;
+    moving = true;
+  }
 
   // 헤드 밥
-  const moving = Math.hypot(dx, dz) > 0.0005;
   if (moving) bobT += dt * (run ? 11 : 8);
-  camera.position.set(pos.x, EYE + (moving ? Math.sin(bobT) * 0.03 : 0), pos.z);
-  camera.rotation.order = 'YXZ';
-  camera.rotation.y = yaw;
-  camera.rotation.x = pitch;
+  camera.position.set(player.x, EYE + (moving ? Math.sin(bobT) * 0.03 : 0), player.z);
+  // roll(z)을 항상 0으로 고정 — 개별 .x/.y 대입만 하면 lookAt 등이 남긴 roll이
+  // YXZ 순서로 적용돼 화면이 기울어질 수 있음(forest3d에서 발견된 버그 패턴).
+  camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
 }
 
 // ---------- 위치 표시 ----------
 let curZone = '';
 function updateZone() {
   for (const z of MAP_DATA.zones) {
-    if (pos.x >= z.minX && pos.x <= z.maxX && pos.z >= z.minZ && pos.z <= z.maxZ) {
+    if (player.x >= z.minX && player.x <= z.maxX && player.z >= z.minZ && player.z <= z.maxZ) {
       if (curZone !== z.id) { curZone = z.id; zoneEl.textContent = z.label; }
       return;
     }
   }
+}
+
+// ---------- 미션 상호작용 (ssambus_missions.js의 #ms-overlay 모달 사용) ----------
+let nearMission = null; // checkMission3D()가 반환한 ssambus 미션 객체(또는 null)
+const hintEl = document.getElementById('interact-hint');
+const actionBtn = document.getElementById('action-btn');
+
+function tryInteract() {
+  if (!nearMission || modalOpen) return;
+  if (document.pointerLockElement) document.exitPointerLock();
+  __msOpenMission([nearMission]); // ssambus 모달로 문제 표시/채점/완료
+}
+
+/* ── 쌤버스 통합 초기화 (실시간 멀티플레이어 + 미션 + 3D 어댑터) ── */
+try { initRealtime('computer3d'); } catch (e) { console.warn('[computer3d] realtime:', e); }
+if (!TEACHER_VIEW) {
+  try { initMissionSystem('computer3d'); } catch (e) { console.warn('[computer3d] missions:', e); }
+}
+try { SsamAdapter3D.init({ THREE, scene, camera }); } catch (e) { console.warn('[computer3d] adapter:', e); }
+
+/* ── 교사 실시간 맵 보기(teacherView=1): 자동 시작 + 조감 시점 고정(관찰 전용) ──
+   started=true 라야 SsamAdapter3D.update()가 돌아 원격 학생 스프라이트가 동기화된다. */
+if (TEACHER_VIEW) {
+  overlay.style.display = 'none';
+  started = true;
+  camera.position.set(0, 24, 18); // 남쪽(+Z) 위에서 컴퓨터실+서버실+교무실을 내려다봄
+  camera.lookAt(0, 0, 3);
 }
 
 // ---------- 루프 ----------
@@ -634,19 +839,70 @@ function animate() {
   const dt = Math.min(clock3.getDelta(), 0.05);
   const t = clock3.elapsedTime;
 
-  if (started) move(dt);
-  updateZone();
+  // 모달 열림 추적 — 닫히면 포인터락 복원
+  const wasModal = modalOpen;
+  modalOpen = isMsModalOpen();
+  if (wasModal && !modalOpen && started && !isTouch && !TEACHER_VIEW) {
+    lockPtr(canvas);
+  }
+
+  if (started && !modalOpen && !TEACHER_VIEW) {
+    movePlayer(dt);
+    updateZone();
+  }
 
   // 서버 LED 깜빡임
   for (const l of ledMats) {
     const v = Math.sin(t * l.speed + l.t);
     l.mat.emissiveIntensity = v > 0 ? 1.5 : 0.15;
   }
-  // 미션 링 애니메이션
-  for (const r of missionMarkers) {
-    r.scale.setScalar(1 + Math.sin(t * 2.5) * 0.12);
-    r.material.opacity = 0.55 + Math.sin(t * 2.5) * 0.2;
+
+  // 미션 마커 갱신(완료색) + 부유/회전 애니메이션
+  refreshMissionMarkers();
+  for (const id in missionMarkers) {
+    const mk = missionMarkers[id];
+    mk.orb.position.y = 1.4 + Math.sin(t * 2.2 + mk.group.position.x) * 0.1;
+    mk.ring.rotation.z = t * 0.8;
   }
+  // 출구 포털 회전
+  if (window.__exitPortal) window.__exitPortal.rotation.y = t * 0.6;
+
+  // 근접 미션 판정 (Supabase에 교사가 배치한 trigger_point 기준)
+  nearMission = (started && !modalOpen && !TEACHER_VIEW && typeof checkMission3D === 'function')
+    ? checkMission3D(player.x, player.z)
+    : null;
+
+  if (started && !modalOpen && nearMission) {
+    hintEl.style.display = 'block';
+    document.getElementById('hint-text').textContent = (nearMission.title || '미션') + ' 수행하기';
+    actionBtn.classList.add('pulse');
+  } else {
+    hintEl.style.display = 'none';
+    actionBtn.classList.remove('pulse');
+  }
+
+  // 출구 판정 — 필수 미션 완료 시 다음 맵으로 자동 이동
+  if (started && !modalOpen && !TEACHER_VIEW && !nearMission
+      && typeof requestMapExit3D === 'function' && isAtExit(player.x, player.z)) {
+    const st = requestMapExit3D();
+    if (st === 'incomplete' && !exitNoticeActive) {
+      exitNoticeActive = true;
+      if (typeof __msShowBlockedNotice === 'function') __msShowBlockedNotice();
+    }
+  } else {
+    exitNoticeActive = false;
+  }
+
+  // 원격 학생 실시간 동기화 (모달 열려 있어도 계속)
+  if (started && typeof SsamAdapter3D !== 'undefined') {
+    try { SsamAdapter3D.update(dt, camera); } catch (e) {}
+  }
+
+  // HUD 진행률 (이 맵의 완료 수 / 이 맵의 미션 수 — __msDone.size는 방 전체 누적이라 맵 단위로 카운트)
+  const __cids = Object.keys(missionMarkers);
+  const __cdone = (typeof __msDone !== 'undefined') ? __cids.filter(id => __msDone.has(id)).length : 0;
+  document.getElementById('mission-count').textContent = '미션 ' + __cdone + '/' + __cids.length;
+
   renderer.render(scene, camera);
 }
 animate();
