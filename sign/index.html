@@ -895,6 +895,9 @@
     body.print-mode { background: #fff; }
     body.print-mode #app,
     body.print-mode .modal-overlay { display: none !important; }
+    /* 관리자 패널(adminOverlay)도 .print-overlay 라서, 인쇄 시 뒤에 남아있으면
+       서명등록부 위에 관리자 UI·조회 표가 함께 찍힘 → 인쇄 대상(printOverlay)만 남기고 숨김 */
+    body.print-mode #adminOverlay { display: none !important; }
     body.print-mode .print-overlay {
       position: static; background: #fff; overflow: visible;
     }
