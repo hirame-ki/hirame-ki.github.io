@@ -840,14 +840,15 @@ function _buildSeatMap(allSeats){
     const half=Math.ceil(seatsByCol.length/2);
     const leftSeats=seatsByCol.slice(0,half);
     const rightSeats=seatsByCol.slice(half);
+    const overflow=[];
     let idx=0;
-    for(const n of ms){if(idx<leftSeats.length)map[K(leftSeats[idx].r,leftSeats[idx].c)]=n;idx++;}
+    for(const n of ms){if(idx<leftSeats.length)map[K(leftSeats[idx].r,leftSeats[idx].c)]=n;else overflow.push(n);idx++;}
     idx=0;
-    for(const n of fs){if(idx<rightSeats.length)map[K(rightSeats[idx].r,rightSeats[idx].c)]=n;idx++;}
+    for(const n of fs){if(idx<rightSeats.length)map[K(rightSeats[idx].r,rightSeats[idx].c)]=n;else overflow.push(n);idx++;}
     const usedAfter=new Set(Object.keys(map));
-    const remaining=allSeats.filter(s=>!usedAfter.has(K(s.r,s.c))&&!used.has(K(s.r,s.c)));
-    shuf(remaining);let ri=0;
-    for(const n of us){if(ri<remaining.length)map[K(remaining[ri].r,remaining[ri].c)]=n;ri++;}
+    const remaining=shuf(allSeats.filter(s=>!usedAfter.has(K(s.r,s.c))&&!used.has(K(s.r,s.c))));
+    let ri=0;
+    for(const n of[...overflow,...us]){if(ri<remaining.length)map[K(remaining[ri].r,remaining[ri].c)]=n;ri++;}
   }else{
     shuf(freeN);
     for(let i=0;i<freeN.length&&i<freeS.length;i++)map[K(freeS[i].r,freeS[i].c)]=freeN[i];
