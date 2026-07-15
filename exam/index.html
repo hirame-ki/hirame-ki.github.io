@@ -5,14 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>정기고사 관리 시스템</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%93%9D</text></svg>">
-<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&display=swap">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg:#f7f5f0;--surface:#fff;--surface2:#f1efe7;--border:#e6e1d3;
@@ -199,6 +195,30 @@
     .card{box-shadow:none;}
     .main{max-width:none;width:100%;padding:0;margin:0;}
   }
+
+  /* 고사 시간표 편집기 */
+  .tt-help{font-size:12.5px;color:var(--text2);background:var(--surface2);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;line-height:1.65;}
+  .tt-help b{color:var(--text);}
+  .tt-times-table{border-collapse:collapse;font-size:12px;margin:6px 0 4px;}
+  .tt-times-table th,.tt-times-table td{border:1px solid var(--border);padding:3px 6px;text-align:center;}
+  .tt-times-table th{background:var(--surface2);font-weight:700;}
+  .tt-times-table select{width:78px;text-align:center;padding:4px 2px;font-size:12px;border:1px solid var(--border);border-radius:5px;background:#fff;}
+  .tt-date-block{margin-bottom:16px;}
+  .tt-date-block h4{font-size:13px;font-weight:700;color:var(--primary);margin:0 0 6px;padding:4px 10px;background:var(--primary-light);border-radius:6px;display:inline-block;}
+  .tt-grid{width:100%;border-collapse:collapse;table-layout:fixed;min-width:520px;}
+  .tt-grid th,.tt-grid td{border:1px solid var(--border);padding:5px;vertical-align:top;}
+  .tt-grid th{background:var(--surface2);font-size:12px;font-weight:700;padding:6px 4px;}
+  .tt-grid .tt-period-cell{width:92px;text-align:center;font-size:11px;color:var(--text2);background:var(--surface2);}
+  .tt-grid .tt-period-cell b{display:block;color:var(--text);font-size:12.5px;margin-bottom:2px;}
+  .tt-cell{min-height:42px;line-height:1.4;}
+  .tt-chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:3px 7px;border-radius:12px;margin:2px;cursor:pointer;border:1px solid transparent;line-height:1.2;}
+  .tt-chip small{font-weight:500;opacity:0.75;}
+  .tt-chip.type-공통{background:#e8f0ff;color:#1c4fb3;border-color:#b9cdf5;}
+  .tt-chip.type-선택{background:#fff2e0;color:#a8621a;border-color:#f0cfa0;}
+  .tt-chip .tt-x{font-weight:800;opacity:0.55;padding:0 1px;}
+  .tt-chip .tt-x:hover{opacity:1;}
+  .tt-add-btn{font-size:11px;color:var(--text3);background:none;border:1px dashed var(--border);border-radius:10px;padding:2px 8px;cursor:pointer;margin:2px;}
+  .tt-add-btn:hover{color:var(--primary);border-color:var(--primary);}
 </style>
 </head>
 <body>
@@ -302,6 +322,59 @@
     <div class="card">
       <div class="card-title"><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="12"></line><line x1="12" y1="20" x2="12" y2="6"></line><line x1="19" y1="20" x2="19" y2="14"></line><line x1="2.5" y1="20" x2="21.5" y2="20"></line></svg>등록 현황</div>
       <div id="studentSummary"><div class="empty-state"><div class="icon"><svg class="icon" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.2"></circle><path d="M2.5 20a5.5 5.5 0 0 1 11 0"></path><circle cx="17" cy="9" r="2.4"></circle><path d="M14.8 20a4.6 4.6 0 0 1 7.2-3.8"></path></svg></div><p>등록된 학생이 없습니다</p></div></div>
+    </div>
+
+    <div class="section-title"><svg class="icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="16" rx="2"></rect><line x1="3.5" y1="9.5" x2="20.5" y2="9.5"></line><line x1="8" y1="13" x2="8" y2="13.01"></line><line x1="12" y1="13" x2="12" y2="13.01"></line><line x1="16" y1="13" x2="16" y2="13.01"></line><line x1="8" y1="17" x2="8" y2="17.01"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>고사 시간표</div>
+    <div class="card">
+      <div class="tt-help">
+        <b>여기서 하는 일:</b> 학년별로 <b>날짜 · 교시</b>마다 어떤 과목을 시험 보는지 미리 입력합니다. 한 칸에 <b>[+ 과목]</b>으로 여러 과목을 넣을 수 있고(같은 교시에 선택과목이 여러 개인 경우), 각 과목은 <b>공통</b>(반 전체가 자기 교실에서 응시) 또는 <b>선택</b>(별실에서 응시)으로 구분합니다. 비워두면 그 교시는 <b>자습</b>이 됩니다.<br>
+        <b>같은 교시에 반마다 다른 공통과목을 보는 경우</b>(예: 1~2반은 기술가정, 3~4반은 한문)에는 두 과목 모두 <b>공통</b>으로 각각 추가한 뒤, 과목마다 <b>적용 학급</b>에서 해당하는 반만 체크하세요. 개인 시간표에는 그 반 학생에게 해당하는 과목만 표시됩니다.<br>
+        이 시간표가 아래 <b>선택과목 응시자 명단</b>과 합쳐져 → <b>자리배치표 일괄 생성</b>과 <b>학생별 개인 시간표</b>의 바탕이 됩니다. (먼저 위에서 <b>고사 날짜</b>와 <b>학급</b>을 등록하세요)<br>
+        <b>선택과목의 호실이 여러 개로 나뉘거나 학생마다 다르면</b>(정원 초과로 방을 여러 개 쓰는 경우, 일부는 본인 교실에 남는 경우 등) 여기서는 호실을 비워두고, 아래 <b>선택과목 응시자 명단</b> 엑셀의 "호실" 열에 학생 한 명 한 명의 호실을 직접 입력하세요. 여기 입력한 호실은 응시자 명단에 호실을 안 채운 학생에게만 기본값으로 적용됩니다.<br>
+        <span style="color:var(--danger);font-weight:600">⚠ 과목명은 응시자 명단·개인 시간표와 자동으로 연결되므로, 띄어쓰기와 특수문자(·, /, 숫자 등)까지 항상 <b>똑같은 이름</b>으로 정확히 입력하세요. (예: "세계시민과 지리", "기술·가정/한문")</span>
+      </div>
+      <div id="ttEditor" style="overflow-x:auto"></div>
+      <div style="margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="saveTimetable()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M8 3v5h8V3"></path><rect x="7" y="13" width="10" height="7"></rect></svg>고사 시간표 저장</button>
+        <span id="ttSaveStatus" style="font-size:13px"></span>
+      </div>
+    </div>
+
+    <div class="section-title"><svg class="icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="M9 12l2 2 4-4"></path></svg>선택과목 응시자 명단</div>
+    <div class="card">
+      <div class="tt-help">
+        <b>여기서 하는 일:</b> 학생별 선택과목 현황(어떤 학생이 어떤 선택과목을 보는지)을 엑셀로 한 번에 등록합니다. <b>공통과목은 반 전체가 응시</b>하므로 입력할 필요가 없고, <b>선택과목만</b> 넣으면 됩니다.<br>
+        <b>호실(선택 입력)</b> 열에 학생 한 명 한 명이 실제로 가는 호실을 적으면 그대로 저장됩니다(비워두면 고사 시간표에 적은 그 과목의 기본 호실 적용). 같은 과목이라도 학생마다 다른 호실을 적을 수 있어, <b>한 과목이 여러 방으로 나뉘는 경우</b>나 <b>일부 학생만 본인 교실에 남는 경우</b>를 그대로 반영할 수 있습니다. 이 호실 값은 자리배치 탭의 "시간표 기반 일괄 배치"에서 같은 과목이라도 호실별로 배치표를 따로 만드는 기준이 되고, 학생별 개인 시간표에도 그대로 표시됩니다.<br>
+        <span style="color:var(--danger);font-weight:600">⚠ 엑셀의 <b>과목명</b>은 위 고사 시간표에 적은 선택과목명과 <b>띄어쓰기·특수문자까지 완전히 똑같이</b> 입력해야 매칭됩니다. 한 글자라도 다르면 해당 과목이 연결되지 않습니다.</span>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>학년</label><select id="enrollGrade"></select></div>
+        <div class="form-group"><label>&nbsp;</label><button class="btn btn-outline btn-sm" onclick="downloadEnrollmentTemplate()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"></path><polyline points="15 2 15 7 20 7"></polyline><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="16" x2="14" y2="16"></line></svg>양식 다운로드</button></div>
+      </div>
+      <div class="dropzone" id="enrollDropzone"
+        onclick="document.getElementById('enrollUploadInput').click()"
+        ondragover="event.preventDefault();this.classList.add('dragover')"
+        ondragleave="this.classList.remove('dragover')"
+        ondrop="handleEnrollmentDrop(event)">
+        <div style="font-size:13px;color:var(--text2);display:flex;align-items:center;justify-content:center;gap:6px"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><polyline points="7 10 12 15 17 10"></polyline><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>과목명/반/번호/이름/호실 엑셀을 여기로 끌어다 놓거나 클릭해서 선택하세요</div>
+        <input type="file" id="enrollUploadInput" accept=".xlsx,.xls" onchange="handleEnrollmentUpload(event)" style="display:none" />
+      </div>
+      <div id="enrollUploadStatus" style="margin-top:8px;font-size:13px"></div>
+      <hr class="divider" />
+      <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:8px">등록된 선택과목 응시 현황</div>
+      <div id="enrollSummary"></div>
+    </div>
+
+    <div class="section-title"><svg class="icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><line x1="4" y1="9" x2="20" y2="9"></line><line x1="9" y1="9" x2="9" y2="20"></line></svg>학생별 개인 시간표</div>
+    <div class="card">
+      <div class="tt-help">
+        <b>여기서 하는 일:</b> 위 <b>고사 시간표</b> + <b>선택과목 응시자 명단</b>을 학생 기준으로 합쳐, 학생마다 제각각인 개인 고사 시간표(날짜·교시·시간·과목·장소)를 A4로 인쇄합니다. 선택과목을 신청하지 않은 교시는 <b>자습</b>으로 표시됩니다. (학급을 "전체"로 두면 그 학년 전원이 한 번에 출력됩니다)
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <div class="form-group"><label>학년</label><select id="pttGrade" onchange="onPttGradeChange()"></select></div>
+        <div class="form-group"><label>학급</label><select id="pttClass"></select></div>
+        <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary" onclick="printStudentTimetables()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"></path><rect x="4" y="9" width="16" height="8" rx="1"></rect><path d="M6 14h12v7H6z"></path></svg>개인 시간표 인쇄</button></div>
+      </div>
     </div>
   </div>
 
@@ -454,6 +527,14 @@
         <span style="display:inline-flex;align-items:center;gap:8px"><span class="step-badge">3</span>별실 응시자 설정</span>
         <button type="button" class="btn btn-outline btn-sm" onclick="openSeatChartListModal()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5"></path><path d="M4.6 15a8 8 0 1 0 2-8.4L4 9"></path></svg>저장된 배치표 불러오기</button>
       </div>
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;border:1px dashed var(--primary)">
+        <div style="font-weight:800;font-size:13px;color:var(--primary);display:flex;align-items:center;gap:6px;margin-bottom:6px"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><line x1="8" y1="8" x2="16" y2="8"></line><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="16" x2="13" y2="16"></line></svg>시간표 기반 일괄 배치 (권장)</div>
+        <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:10px">설정 탭의 <b>고사 시간표</b>에 입력된 이 학년의 모든 <b>선택과목</b>과 <b>선택과목 응시자 명단</b>을 읽어, 과목별 배치표를 한 번에 만들어 저장합니다. 위 <b>2단계의 좌석 설정</b>(행·열·방향·좌석 편집)이 모든 과목에 공통 적용되며, 과목별 호실은 시간표에 입력한 값이 쓰입니다. (개별 교실 크기 조정은 저장 후 '저장된 배치표 불러오기'에서 가능)</p>
+        <button type="button" class="btn btn-primary btn-sm" onclick="generateBatchSeatCharts()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>이 학년 선택과목 일괄 배치 생성·저장</button>
+        <div id="batchSeatStatus" style="margin-top:8px;font-size:12.5px"></div>
+      </div>
+      <hr class="divider" style="margin:4px 0 14px" />
+      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:10px">또는 — 과목 하나씩 직접 배치</div>
       <div class="form-row">
         <div class="form-group" style="flex:1"><label>과목명</label><input type="text" id="subjectName" placeholder="예: 경제" /></div>
         <div class="form-group" style="flex:1"><label>별실 호실</label><input type="text" id="roomName" placeholder="예: 3-1교실" /></div>
@@ -528,7 +609,7 @@
 
   </div><!-- /main -->
 </div><!-- /appScreen -->
-<a class="credit-chip no-print" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener">제작:@hirame.ki 문의는 클릭</a>
+<a class="credit-chip no-print" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener">제작 @hirame.ki</a>
 <div class="toast" id="toast"></div>
 <div class="modal-overlay no-print" id="seatChartListModal" style="display:none" onclick="if(event.target===this)closeSeatChartListModal()">
   <div class="modal-box">
@@ -537,6 +618,34 @@
       <button type="button" class="modal-close" onclick="closeSeatChartListModal()"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></button>
     </div>
     <div class="modal-body" id="seatChartListBody"></div>
+  </div>
+</div>
+<div class="modal-overlay no-print" id="ttSubjectModal" style="display:none" onclick="if(event.target===this)closeTtSubjectModal()">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-header">
+      <span id="ttSubjectModalTitle">과목 추가</span>
+      <button type="button" class="modal-close" onclick="closeTtSubjectModal()"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>과목명 (띄어쓰기·특수문자까지 정확히)</label><input type="text" id="ttSubjName" placeholder="예: 세계시민과 지리" onkeydown="if(event.key==='Enter')saveTtSubject()" /></div>
+      <div class="form-group"><label>구분</label>
+        <select id="ttSubjType" onchange="toggleTtRoomField()">
+          <option value="공통">공통 — 반 전체가 자기 교실에서 응시</option>
+          <option value="선택">선택 — 별실에서 응시</option>
+        </select>
+      </div>
+      <div class="form-group" id="ttClassField" style="display:none">
+        <label>적용 학급 (모두 선택 = 학년 전체)</label>
+        <div id="ttClassChecks" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;border:1px solid var(--border);border-radius:8px"></div>
+        <span style="font-size:11.5px;color:var(--text3);line-height:1.5">반마다 보는 공통과목이 다르면(예: 앞반 기술가정 / 뒷반 한문) 이 과목을 볼 반만 체크하세요. 같은 교시에 다른 반이 볼 과목을 <b>[+ 과목]</b>으로 하나 더 추가하고 나머지 반을 체크하면 됩니다.</span>
+      </div>
+      <div class="form-group" id="ttRoomField" style="display:none">
+        <label>별실 호실 (기본값 — 여러 호실로 나뉘면 비워두세요)</label>
+        <input type="text" id="ttSubjRoom" placeholder="예: 3-1교실 (호실이 하나뿐일 때만 입력)" onkeydown="if(event.key==='Enter')saveTtSubject()" />
+        <span style="font-size:11.5px;color:var(--text3);line-height:1.5">이 과목이 호실 하나로 끝나면 여기 입력하세요. 여러 호실로 나뉘거나 학생마다 다르면 여기는 비워두고, 아래 <b>선택과목 응시자 명단</b> 엑셀의 "호실" 열에서 학생별로 지정하세요.</span>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="saveTtSubject()">확인</button>
+    </div>
   </div>
 </div>
 
@@ -552,11 +661,37 @@ let disabledSeats={sep:new Set(),own:new Set()};
 let hqChannel=null,currentHQPeriod=null,hqAllAbsences=[],hqAllCompletions=[];
 let periodReportRows=[];
 let currentSeatChartId=null,lastChartParams=null,savedSeatCharts=[];
+let examTimetable=[],subjectEnrollment=[],ttData={},ttTimes={},ttPeriodCount=3,ttModalCtx=null;
 const ABSENCE_REASONS=['인정','미인정','질병','기타'];
 const REASON_COLORS={'인정':'#2d6be4','미인정':'#d63384','질병':'#f4a228','기타':'#4a5060'};
 function reasonColor(r){return REASON_COLORS[r]||REASON_COLORS['미인정'];}
 const ICONPATH={x:'<line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line>',check:'<polyline points="4 12.5 9.5 18 20 6"></polyline>',checkCircle:'<circle cx="12" cy="12" r="9"></circle><polyline points="7.5 12.5 10.5 15.5 16.5 8.5"></polyline>',users:'<circle cx="8" cy="8" r="3.2"></circle><path d="M2.5 20a5.5 5.5 0 0 1 11 0"></path><circle cx="17" cy="9" r="2.4"></circle><path d="M14.8 20a4.6 4.6 0 0 1 7.2-3.8"></path>',clipboard:'<rect x="6" y="4" width="12" height="17" rx="2"></rect><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"></path><line x1="9" y1="10" x2="15" y2="10"></line><line x1="9" y1="14" x2="15" y2="14"></line><line x1="9" y1="18" x2="13" y2="18"></line>',save:'<path d="M5 3h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M8 3v5h8V3"></path><rect x="7" y="13" width="10" height="7"></rect>',printer:'<path d="M6 9V3h12v6"></path><rect x="4" y="9" width="16" height="8" rx="1"></rect><path d="M6 14h12v7H6z"></path>'};
 function icon(name,size){size=size||16;return '<svg class="icon" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONPATH[name]||'')+'</svg>';}
+// HTML 이스케이프 — 이름·과목명 등 사용자 입력을 innerHTML에 넣을 때 반드시 통과시킬 것
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+
+// 엑셀/PDF 라이브러리는 실제 사용 시점에만 로딩 (초기 로딩 경량화)
+const LIB_URLS={
+  exceljs:'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js',
+  xlsx:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+  html2canvas:'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+  jspdf:'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js'
+};
+const _libCache={};
+function loadLib(name){
+  if(!_libCache[name])_libCache[name]=new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.src=LIB_URLS[name];
+    s.onload=resolve;
+    s.onerror=()=>{delete _libCache[name];reject(new Error(name+' 로딩 실패'));};
+    document.head.appendChild(s);
+  });
+  return _libCache[name];
+}
+async function ensureLibs(...names){
+  try{await Promise.all(names.map(loadLib));return true;}
+  catch(e){showToast('기능에 필요한 파일을 불러오지 못했습니다. 네트워크 연결을 확인해주세요');return false;}
+}
 
 let idleTimer=null;
 const IDLE_LIMIT_MS=5*60*1000;
@@ -585,6 +720,7 @@ async function doLogin(silent=false){
   const errEl=document.getElementById('loginError');
   errEl.style.display='none';
   if(!code){errEl.textContent='학교코드를 입력하세요';errEl.style.display='block';return;}
+  if(typeof supabase==='undefined'){errEl.textContent='페이지 로딩 중입니다. 잠시 후 다시 시도해주세요';errEl.style.display='block';return;}
   try{
     sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
     const{error}=await sb.from('classes').select('id').limit(1);
@@ -614,6 +750,7 @@ function showPage(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   document.getElementById('tab-'+name).classList.add('active');
+  if(name==='setup')renderSetupExtras();
   if(name==='input')populateInputSelects();
   if(name==='hq'){populateDateSelects();populateHQFilters();loadHQData();populateReportFilters();}
   if(name==='seat')populateSeatSelects();
@@ -635,6 +772,17 @@ function setupRealtime(){
     });
 }
 
+// Supabase는 한 번에 최대 1000행만 반환하므로, 큰 데이터는 나눠서 모두 가져온다
+async function fetchAll(buildQuery){
+  const out=[];const CHUNK=1000;
+  for(let from=0;;from+=CHUNK){
+    const{data,error}=await buildQuery().range(from,from+CHUNK-1);
+    if(error)return{data:out,error};
+    out.push(...(data||[]));
+    if(!data||data.length<CHUNK)break;
+  }
+  return{data:out,error:null};
+}
 async function loadAllData(){
   if(!sb)return;
   const{data:cls}=await sb.from('classes').select('*').eq('school_code',SCHOOL_CODE).order('grade').order('class_num');
@@ -642,12 +790,26 @@ async function loadAllData(){
   students={};
   classes.forEach(c=>students[c.id]=[]);
   if(classes.length){
-    const{data:sts}=await sb.from('students').select('*').in('class_id',classes.map(c=>c.id)).order('number');
-    (sts||[]).forEach(s=>{if(!students[s.class_id])students[s.class_id]=[];students[s.class_id].push(s);});
+    const{data:sts}=await fetchAll(()=>sb.from('students').select('*').in('class_id',classes.map(c=>c.id)).order('number').order('id'));
+    // 삭제 실패 후 재삽입 등으로 DB에 같은 학생이 중복 저장된 경우 화면에는 한 번만 표시
+    const seenDup=new Set();
+    (sts||[]).forEach(s=>{
+      const dk=s.class_id+'|'+s.number+'|'+s.name;
+      if(seenDup.has(dk))return;
+      seenDup.add(dk);
+      if(!students[s.class_id])students[s.class_id]=[];
+      students[s.class_id].push(s);
+    });
   }
   const{data:edRows}=await sb.from('exam_dates').select('exam_date').eq('school_code',SCHOOL_CODE).order('exam_date');
   examDates=(edRows||[]).map(r=>r.exam_date);
+  const{data:ttRows}=await sb.from('exam_timetable').select('*').eq('school_code',SCHOOL_CODE).order('exam_date').order('period');
+  examTimetable=ttRows||[];
+  const{data:enRows}=await fetchAll(()=>sb.from('subject_enrollment').select('*').eq('school_code',SCHOOL_CODE).order('id'));
+  subjectEnrollment=enRows||[];
+  buildTtFromRows();
   renderClassList();renderStudentSummary();renderStudentClassSelect();renderClassStudentRoster();populateDateSelects();
+  renderSetupExtras();
 }
 
 async function addExamDate(){
@@ -656,13 +818,14 @@ async function addExamDate(){
   const{error}=await sb.from('exam_dates').upsert({school_code:SCHOOL_CODE,exam_date:d},{onConflict:'school_code,exam_date'});
   if(error){showToast('오류: '+error.message);return;}
   examDates.push(d);examDates.sort();
-  renderExamDates();populateDateSelects();
+  renderExamDates();populateDateSelects();renderTimetableEditor();
 }
 async function removeExamDate(d){
+  if(!confirm(fmtDate(d)+' 날짜를 삭제할까요? (이 날짜의 시간표 입력 칸이 사라집니다)'))return;
   const{error}=await sb.from('exam_dates').delete().eq('school_code',SCHOOL_CODE).eq('exam_date',d);
   if(error){showToast('오류: '+error.message);return;}
   examDates=examDates.filter(x=>x!==d);
-  renderExamDates();populateDateSelects();
+  renderExamDates();populateDateSelects();renderTimetableEditor();
 }
 function renderExamDates(){
   const el=document.getElementById('examDateList');
@@ -674,13 +837,16 @@ function populateDateSelects(){
   renderExamDates();
   ['inputDate','hqDate','sepDate','ownDate'].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;
+    const prev=el.value;
     el.innerHTML=examDates.length?examDates.map(d=>`<option value="${d}">${fmtDate(d)}</option>`).join(''):'<option value="">날짜 없음</option>';
+    if(examDates.includes(prev))el.value=prev;
   });
 }
 
 async function addClass(){
   const grade=parseInt(document.getElementById('newGrade').value);
   const num=parseInt(document.getElementById('newClassNum').value);
+  if(!grade||!num||num<1){showToast('반 번호를 입력하세요');return;}
   const{error}=await sb.from('classes').upsert({school_code:SCHOOL_CODE,grade,class_num:num},{onConflict:'school_code,grade,class_num'});
   if(error){showToast('오류: '+error.message);return;}
   showToast(grade+'-'+num+'반 추가됨');await loadAllData();
@@ -701,21 +867,24 @@ async function saveStudents(){
     return m?{class_id:classId,number:parseInt(m[1]),name:m[2].trim()}:null;
   }).filter(Boolean);
   if(!parsed.length){showToast('형식 오류. 예: 1. 홍길동');return;}
-  await sb.from('students').delete().eq('class_id',classId);
+  const{error:delErr}=await sb.from('students').delete().eq('class_id',classId);
+  if(delErr){showToast('기존 명단 삭제 실패: '+delErr.message+' — 저장을 중단했습니다');return;}
   const{error}=await sb.from('students').insert(parsed);
   if(error){showToast('오류: '+error.message);return;}
   document.getElementById('studentSaveStatus').innerHTML=`<span class="badge badge-success">${icon('checkCircle',12)}${parsed.length}명 저장됨</span>`;
   document.getElementById('studentListInput').value='';await loadAllData();
 }
 async function downloadExcelTemplate(){
+  if(!await ensureLibs('exceljs'))return;
   const wb=new ExcelJS.Workbook();
   const ws=wb.addWorksheet('학생명단');
   ws.columns=[{key:'grade',width:10},{key:'class_num',width:10},{key:'number',width:10},{key:'name',width:16}];
 
+  const FONT='맑은 고딕';
   ws.mergeCells('A1:D1');
   const noteCell=ws.getCell('A1');
   noteCell.value='학년 / 반 / 번호 / 이름 칸에 텍스트만 정확히 입력하면 자동으로 인식됩니다. (제목 글자는 그대로 두세요)';
-  noteCell.font={italic:true,size:10,color:{argb:'FF8A6D3B'}};
+  noteCell.font={name:FONT,italic:true,size:10,color:{argb:'FF8A6D3B'}};
   noteCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF6E8'}};
   noteCell.alignment={vertical:'middle',wrapText:true};
   ws.getRow(1).height=34;
@@ -724,7 +893,7 @@ async function downloadExcelTemplate(){
   headerRow.values=['학년','반','번호','이름'];
   headerRow.height=24;
   headerRow.eachCell(cell=>{
-    cell.font={bold:true,color:{argb:'FFFFFFFF'},size:12};
+    cell.font={name:FONT,bold:true,color:{argb:'FFFFFFFF'},size:12};
     cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2D6BE4'}};
     cell.alignment={horizontal:'center',vertical:'middle'};
     cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
@@ -737,6 +906,7 @@ async function downloadExcelTemplate(){
   sample.forEach((s,i)=>{
     const row=ws.addRow(s);
     row.eachCell(cell=>{
+      cell.font={name:FONT};
       cell.alignment={horizontal:'center',vertical:'middle'};
       cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
       cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?'FFEEF2FD':'FFFFFFFF'}};
@@ -764,6 +934,7 @@ async function processExcelFile(file){
   const statusEl=document.getElementById('excelUploadStatus');
   if(!/\.(xlsx|xls)$/i.test(file.name)){statusEl.innerHTML='<span class="badge badge-danger">엑셀 파일(.xlsx, .xls)만 업로드할 수 있습니다</span>';return;}
   statusEl.textContent='읽는 중...';
+  if(!await ensureLibs('xlsx')){statusEl.textContent='';return;}
   try{
     const buf=await file.arrayBuffer();
     const wb=XLSX.read(buf,{type:'array'});
@@ -795,7 +966,7 @@ async function processExcelFile(file){
     const classKey=r=>r.grade+'-'+r.class_num;
     const uniqClasses=[...new Map(parsed.map(r=>[classKey(r),{school_code:SCHOOL_CODE,grade:r.grade,class_num:r.class_num}])).values()];
     const{error:clsErr}=await sb.from('classes').upsert(uniqClasses,{onConflict:'school_code,grade,class_num'});
-    if(clsErr){statusEl.innerHTML='<span class="badge badge-danger">학급 저장 오류: '+clsErr.message+'</span>';return;}
+    if(clsErr){statusEl.innerHTML='<span class="badge badge-danger">학급 저장 오류: '+esc(clsErr.message)+'</span>';return;}
 
     const{data:allCls}=await sb.from('classes').select('*').eq('school_code',SCHOOL_CODE);
     const clsMap={};(allCls||[]).forEach(c=>clsMap[c.grade+'-'+c.class_num]=c.id);
@@ -809,18 +980,19 @@ async function processExcelFile(file){
 
     const affectedClassIds=Object.keys(byClass).map(Number);
     if(affectedClassIds.length){
-      await sb.from('students').delete().in('class_id',affectedClassIds);
+      const{error:delErr}=await sb.from('students').delete().in('class_id',affectedClassIds);
+      if(delErr){statusEl.innerHTML='<span class="badge badge-danger">기존 명단 삭제 실패: '+esc(delErr.message)+' — 업로드를 중단했습니다. 다시 시도해주세요</span>';return;}
     }
     const studentRows=Object.values(byClass).flat();
     const{error:stErr}=await sb.from('students').insert(studentRows);
-    if(stErr){statusEl.innerHTML='<span class="badge badge-danger">학생 저장 오류: '+stErr.message+'</span>';return;}
+    if(stErr){statusEl.innerHTML='<span class="badge badge-danger">학생 저장 오류: '+esc(stErr.message)+'</span>';return;}
 
     statusEl.innerHTML=`<span class="badge badge-success">${icon('checkCircle',12)}학급 ${Object.keys(byClass).length}개 / 학생 ${studentRows.length}명 업로드 완료</span>`;
     showToast('엑셀 업로드 완료');
     await loadAllData();
   }catch(err){
     console.error(err);
-    statusEl.innerHTML='<span class="badge badge-danger">업로드 실패: '+err.message+'</span>';
+    statusEl.innerHTML='<span class="badge badge-danger">업로드 실패: '+esc(err.message)+'</span>';
   }
 }
 function renderClassList(){
@@ -848,7 +1020,7 @@ function renderClassStudentRoster(){
   el.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">
     ${sts.map(s=>`<div style="display:flex;align-items:center;gap:8px;border:1.5px solid var(--border);border-radius:8px;padding:6px 8px">
       <input type="number" value="${s.number}" id="ser-num-${s.id}" style="width:60px" />
-      <input type="text" value="${s.name.replace(/"/g,'&quot;')}" id="ser-name-${s.id}" style="flex:1;min-width:0" />
+      <input type="text" value="${esc(s.name)}" id="ser-name-${s.id}" style="flex:1;min-width:0" />
       <button type="button" class="btn btn-outline btn-sm" onclick="updateStudent(${s.id},${classId})">저장</button>
       <button type="button" class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger)" onclick="deleteStudent(${s.id},${classId})">삭제</button>
     </div>`).join('')}
@@ -882,7 +1054,7 @@ function renderStudentSummary(){
     ${cs.map(c=>{const sts=students[c.id]||[];return`<div style="border:1px solid var(--border);border-radius:8px;padding:10px">
       <div style="font-weight:700;font-size:14px;margin-bottom:3px">${c.grade}-${c.class_num}반</div>
       <div style="font-size:12px;color:var(--text3)">${sts.length}명 등록</div>
-      ${sts.length?`<div style="font-size:11px;color:var(--text3);margin-top:3px">${sts.slice(0,3).map(s=>s.name).join(', ')}${sts.length>3?` 외 ${sts.length-3}명`:''}</div>`:''}
+      ${sts.length?`<div style="font-size:11px;color:var(--text3);margin-top:3px">${sts.slice(0,3).map(s=>esc(s.name)).join(', ')}${sts.length>3?` 외 ${sts.length-3}명`:''}</div>`:''}
     </div>`;}).join('')}
     </div></div>`).join('');
 }
@@ -896,6 +1068,8 @@ async function loadStudentsForInput(){
   const classId=parseInt(document.getElementById('inputClass').value);
   const date=document.getElementById('inputDate').value;
   const period=parseInt(document.getElementById('inputPeriod').value);
+  if(!date){showToast('먼저 설정 탭에서 고사 날짜를 등록하세요');return;}
+  if(!classId){showToast('먼저 설정 탭에서 학급을 등록하세요');return;}
   const sts=students[classId]||[];
   if(!sts.length){showToast('등록된 학생이 없습니다');return;}
   const{data}=await sb.from('absences').select('student_id,reason,reason_detail')
@@ -920,14 +1094,14 @@ function renderInputList(classId,date,period){
     const info=currentAbsenceInfo[s.id]||{reason:'미인정',detail:''};
     return`<div class="absence-row ${absent?'absent':''}" id="si-${s.id}">
       <div class="absence-row-head" onclick="toggleAbsent(${s.id},${classId},'${date}',${period})">
-        <span class="student-num">${s.number}</span><span style="flex:1">${s.name}</span>
+        <span class="student-num">${s.number}</span><span style="flex:1">${esc(s.name)}</span>
         <span class="badge ${absent?'badge-danger':'badge-success'}">${absent?'결시':'출석'}</span>
       </div>
       ${absent?`<div class="absence-reason">
         <select onchange="updateAbsenceReason(${s.id},${classId},'${date}',${period},this.value)">
           ${ABSENCE_REASONS.map(r=>`<option value="${r}" ${info.reason===r?'selected':''}>${r}</option>`).join('')}
         </select>
-        <input type="text" placeholder="사유 직접 입력" value="${(info.detail||'').replace(/"/g,'&quot;')}"
+        <input type="text" placeholder="사유 직접 입력" value="${esc(info.detail||'')}"
           style="${info.reason==='기타'?'':'display:none'}"
           onchange="updateAbsenceDetail(${s.id},'${date}',${period},this.value)" />
       </div>`:''}
@@ -936,11 +1110,13 @@ function renderInputList(classId,date,period){
 }
 async function toggleAbsent(sid,cid,date,period){
   if(currentAbsents.has(sid)){
-    await sb.from('absences').delete().eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('student_id',sid);
+    const{error}=await sb.from('absences').delete().eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('student_id',sid);
+    if(error){showToast('저장 실패: '+error.message+' — 다시 시도해주세요');return;}
     currentAbsents.delete(sid);delete currentAbsenceInfo[sid];
   }else{
     const reason='미인정';
-    await sb.from('absences').upsert({school_code:SCHOOL_CODE,exam_date:date,period,class_id:cid,student_id:sid,reason},{onConflict:'school_code,exam_date,period,student_id'});
+    const{error}=await sb.from('absences').upsert({school_code:SCHOOL_CODE,exam_date:date,period,class_id:cid,student_id:sid,reason},{onConflict:'school_code,exam_date,period,student_id'});
+    if(error){showToast('저장 실패: '+error.message+' — 다시 시도해주세요');return;}
     currentAbsents.add(sid);currentAbsenceInfo[sid]={reason,detail:''};
   }
   renderInputList(cid,date,period);
@@ -950,15 +1126,17 @@ async function toggleAbsent(sid,cid,date,period){
 async function updateAbsenceReason(sid,cid,date,period,reason){
   const detail=reason==='기타'?(currentAbsenceInfo[sid]?.detail||''):'';
   currentAbsenceInfo[sid]={reason,detail};
-  await sb.from('absences').update({reason,reason_detail:reason==='기타'?(detail||null):null})
+  const{error}=await sb.from('absences').update({reason,reason_detail:reason==='기타'?(detail||null):null})
     .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('student_id',sid);
+  if(error)showToast('사유 저장 실패: '+error.message+' — 다시 시도해주세요');
   renderInputList(cid,date,period);
   markInputDirty();
 }
 async function updateAbsenceDetail(sid,date,period,detail){
   if(currentAbsenceInfo[sid])currentAbsenceInfo[sid].detail=detail;
-  await sb.from('absences').update({reason_detail:detail||null})
+  const{error}=await sb.from('absences').update({reason_detail:detail||null})
     .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('student_id',sid);
+  if(error)showToast('사유 저장 실패: '+error.message+' — 다시 시도해주세요');
   markInputDirty();
 }
 function updateAbsentCount(){document.getElementById('absentCountBadge').textContent=currentAbsents.size+'명 결시';}
@@ -974,14 +1152,15 @@ function updateCompleteButton(){
     btn.classList.remove('btn-success');btn.classList.add('btn-primary');
   }
 }
-function markInputDirty(){
+async function markInputDirty(){
   if(!inputCompleted)return;
   inputCompleted=false;updateCompleteButton();
   const classId=parseInt(document.getElementById('inputClass').value);
   const date=document.getElementById('inputDate').value;
   const period=parseInt(document.getElementById('inputPeriod').value);
-  sb.from('input_completions').delete()
+  const{error}=await sb.from('input_completions').delete()
     .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('class_id',classId);
+  if(error)showToast('제출 상태 갱신 실패: '+error.message);
 }
 async function completeInput(){
   const classId=parseInt(document.getElementById('inputClass').value);
@@ -1097,7 +1276,9 @@ function renderHQSummary(){
   const scopeIds=new Set(scope.map(c=>c.id));
   const totalEnrolled=scope.reduce((s,c)=>s+(students[c.id]||[]).length,0);
   const scopedAbsences=hqAllAbsences.filter(a=>scopeIds.has(a.class_id));
-  const periods=[...new Set(scopedAbsences.map(a=>a.period))].sort((a,b)=>a-b);
+  const scopedCompletions=hqAllCompletions.filter(c=>scopeIds.has(c.class_id));
+  // 결시가 0명이어도 제출 완료 기록이 있는 교시는 요약에 표시
+  const periods=[...new Set([...scopedAbsences.map(a=>a.period),...scopedCompletions.map(c=>c.period)])].sort((a,b)=>a-b);
 
   const lines=periods.map(p=>{
     const pAbs=scopedAbsences.filter(a=>a.period===p);
@@ -1147,7 +1328,7 @@ function renderHQContent(period){
             <div class="hq-class-header"><div class="hq-class-name">${cls.grade}-${cls.classNum}반</div>
             ${sorted.length?`<span class="badge badge-danger">${sorted.length}명</span>`:'<span class="badge badge-success">'+icon('check',12)+'</span>'}</div>
             <div class="hq-absent-list">
-              ${sorted.length?sorted.map(s=>{const col=reasonColor(s.reason);return`<span class="absent-chip" style="background:${col}1c;color:${col};border-color:${col}66">${s.number}번 ${s.name} · ${s.reason}${s.reason==='기타'&&s.detail?`(${s.detail})`:''}</span>`;}).join(''):'<span style="font-size:13px;color:var(--text3)">결시 없음</span>'}
+              ${sorted.length?sorted.map(s=>{const col=reasonColor(s.reason);return`<span class="absent-chip" style="background:${col}1c;color:${col};border-color:${col}66">${s.number}번 ${esc(s.name)} · ${s.reason}${s.reason==='기타'&&s.detail?`(${esc(s.detail)})`:''}</span>`;}).join(''):'<span style="font-size:13px;color:var(--text3)">결시 없음</span>'}
             </div>
           </div>`;}).join('')}
       </div>
@@ -1196,6 +1377,7 @@ async function downloadHQExcel(){
   if(!date){showToast('날짜를 선택하세요');return;}
   if(!hqAllAbsences.length){showToast('이 날짜에 입력된 결시 데이터가 없습니다');return;}
 
+  if(!await ensureLibs('exceljs'))return;
   const periods=[...new Set(hqAllAbsences.map(a=>a.period))].sort((a,b)=>a-b);
   const grades=[...new Set(classes.map(c=>c.grade))].sort((a,b)=>a-b);
   const totalEnrolled=classes.reduce((s,c)=>s+(students[c.id]||[]).length,0);
@@ -1341,9 +1523,9 @@ async function loadPeriodReport(){
   const end=document.getElementById('reportEndDate').value;
   if(!start||!end){showToast('시작일과 종료일을 선택하세요');return;}
   if(start>end){showToast('시작일이 종료일보다 늦을 수 없습니다');return;}
-  const{data,error}=await sb.from('absences')
+  const{data,error}=await fetchAll(()=>sb.from('absences')
     .select('*,classes(grade,class_num),students(number,name)')
-    .eq('school_code',SCHOOL_CODE).gte('exam_date',start).lte('exam_date',end);
+    .eq('school_code',SCHOOL_CODE).gte('exam_date',start).lte('exam_date',end).order('id'));
   if(error){showToast('조회 실패: '+error.message);return;}
   const grade=document.getElementById('reportGrade').value;
   const classId=document.getElementById('reportClass').value;
@@ -1396,7 +1578,7 @@ function renderPeriodReport(start,end){
     <div style="display:flex;flex-direction:column;gap:6px">
       ${studentRows.map(s=>`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px">
         <span style="min-width:90px;color:var(--text3)">${s.grade}-${s.classNum}반 ${s.number}번</span>
-        <span style="font-weight:700;flex:1">${s.name}</span>
+        <span style="font-weight:700;flex:1">${esc(s.name)}</span>
         <span class="badge badge-danger">총 ${s.total}건</span>
         <span style="color:var(--text3);font-size:12px">${ABSENCE_REASONS.filter(r=>s.reasons[r]).map(r=>`${r} ${s.reasons[r]}`).join(' · ')}</span>
       </div>`).join('')}
@@ -1407,6 +1589,7 @@ async function downloadPeriodReportExcel(){
   const end=document.getElementById('reportEndDate').value;
   if(!start||!end){showToast('시작일과 종료일을 선택하세요');return;}
   if(!periodReportRows.length){showToast('먼저 조회를 눌러 데이터를 불러오세요');return;}
+  if(!await ensureLibs('exceljs'))return;
 
   const reasonCounts={};ABSENCE_REASONS.forEach(r=>reasonCounts[r]=0);
   periodReportRows.forEach(a=>{const r=a.reason||'미인정';reasonCounts[r]=(reasonCounts[r]||0)+1;});
@@ -1583,7 +1766,7 @@ function loadSeatGradeGrid(){
       <div class="grade-title">${cn}반 (${sts.length}명)</div>
       <div class="student-grid">
         ${sts.map(s=>`<div class="student-item" id="seat-si-${s.id}" onclick="toggleExaminee(${s.id},this)">
-          <span class="student-num">${s.number}</span><span>${s.name}</span></div>`).join('')}
+          <span class="student-num">${s.number}</span><span>${esc(s.name)}</span></div>`).join('')}
       </div>
     </div>`;
   }).join(''):'<p style="font-size:13px;color:var(--text3)">등록된 학생이 없습니다</p>';
@@ -1593,14 +1776,16 @@ function toggleExaminee(id,el){
   else{selectedExamineeIds.add(id);el.classList.add('selected');}
 }
 async function downloadSeatExamineeTemplate(){
+  if(!await ensureLibs('exceljs'))return;
   const wb=new ExcelJS.Workbook();
   const ws=wb.addWorksheet('응시자명단');
   ws.columns=[{key:'class_num',width:10},{key:'number',width:10},{key:'name',width:16}];
 
+  const FONT='맑은 고딕';
   ws.mergeCells('A1:C1');
   const noteCell=ws.getCell('A1');
   noteCell.value='반 / 번호 / 이름 칸에 이 과목 응시자만 입력하세요. (학년은 화면에서 선택한 학년이 자동 적용됩니다. 제목 글자는 그대로 두세요)';
-  noteCell.font={italic:true,size:10,color:{argb:'FF8A6D3B'}};
+  noteCell.font={name:FONT,italic:true,size:10,color:{argb:'FF8A6D3B'}};
   noteCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF6E8'}};
   noteCell.alignment={vertical:'middle',wrapText:true};
   ws.getRow(1).height=34;
@@ -1609,7 +1794,7 @@ async function downloadSeatExamineeTemplate(){
   headerRow.values=['반','번호','이름'];
   headerRow.height=24;
   headerRow.eachCell(cell=>{
-    cell.font={bold:true,color:{argb:'FFFFFFFF'},size:12};
+    cell.font={name:FONT,bold:true,color:{argb:'FFFFFFFF'},size:12};
     cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2D6BE4'}};
     cell.alignment={horizontal:'center',vertical:'middle'};
     cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
@@ -1622,6 +1807,7 @@ async function downloadSeatExamineeTemplate(){
   sample.forEach((s,i)=>{
     const row=ws.addRow(s);
     row.eachCell(cell=>{
+      cell.font={name:FONT};
       cell.alignment={horizontal:'center',vertical:'middle'};
       cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
       cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?'FFEEF2FD':'FFFFFFFF'}};
@@ -1651,6 +1837,7 @@ async function processSeatExamineeExcel(file){
   if(!grade){statusEl.innerHTML='<span class="badge badge-danger">먼저 학년을 선택하세요</span>';return;}
   if(!/\.(xlsx|xls)$/i.test(file.name)){statusEl.innerHTML='<span class="badge badge-danger">엑셀 파일(.xlsx, .xls)만 업로드할 수 있습니다</span>';return;}
   statusEl.textContent='읽는 중...';
+  if(!await ensureLibs('xlsx')){statusEl.textContent='';return;}
   try{
     const buf=await file.arrayBuffer();
     const wb=XLSX.read(buf,{type:'array'});
@@ -1696,13 +1883,13 @@ async function processSeatExamineeExcel(file){
     });
 
     let msg=`<span class="badge badge-success">${icon('checkCircle',12)}${matched.size}명 선택됨</span>`;
-    if(notFound.length)msg+=`<div style="margin-top:6px;color:var(--danger)">매칭 실패 ${notFound.length}건: ${notFound.slice(0,5).join(', ')}${notFound.length>5?' 외 '+(notFound.length-5)+'건':''}</div>`;
-    if(nameMismatch.length)msg+=`<div style="margin-top:4px;color:var(--warning)">이름 불일치 ${nameMismatch.length}건(반/번호 기준으로는 선택됨): ${nameMismatch.slice(0,5).join(', ')}${nameMismatch.length>5?' 외 '+(nameMismatch.length-5)+'건':''}</div>`;
+    if(notFound.length)msg+=`<div style="margin-top:6px;color:var(--danger)">매칭 실패 ${notFound.length}건: ${esc(notFound.slice(0,5).join(', '))}${notFound.length>5?' 외 '+(notFound.length-5)+'건':''}</div>`;
+    if(nameMismatch.length)msg+=`<div style="margin-top:4px;color:var(--warning)">이름 불일치 ${nameMismatch.length}건(반/번호 기준으로는 선택됨): ${esc(nameMismatch.slice(0,5).join(', '))}${nameMismatch.length>5?' 외 '+(nameMismatch.length-5)+'건':''}</div>`;
     statusEl.innerHTML=msg;
     showToast(`엑셀로 ${matched.size}명 선택 완료`);
   }catch(err){
     console.error(err);
-    statusEl.innerHTML='<span class="badge badge-danger">업로드 실패: '+err.message+'</span>';
+    statusEl.innerHTML='<span class="badge badge-danger">업로드 실패: '+esc(err.message)+'</span>';
   }
 }
 function loadOwnStudentGrid(){
@@ -1711,7 +1898,7 @@ function loadOwnStudentGrid(){
   const sts=students[classId]||[];ownExamineeIds=new Set();
   document.getElementById('ownStudentGrid').innerHTML=sts.length?sts.map(s=>
     `<div class="student-item" id="own-si-${s.id}" onclick="toggleOwnExaminee(${s.id},this)">
-      <span class="student-num">${s.number}</span><span>${s.name}</span></div>`).join('')
+      <span class="student-num">${s.number}</span><span>${esc(s.name)}</span></div>`).join('')
     :'<p style="font-size:13px;color:var(--text3)">등록된 학생이 없습니다</p>';
 }
 function toggleOwnExaminee(id,el){
@@ -1809,7 +1996,7 @@ async function generateOwnSeatChart(){
 
 function setSeatResultTitle(subject,roomLabel){
   document.getElementById('seatResultTitle').innerHTML=
-    `<div class="seat-subject">${subject}</div><div class="seat-room">${roomLabel}</div>`;
+    `<div class="seat-subject">${esc(subject)}</div><div class="seat-room">${esc(roomLabel)}</div>`;
 }
 function updateSaveSeatChartBtnLabel(){
   const el=document.getElementById('saveSeatChartBtnLabel');
@@ -1835,6 +2022,7 @@ async function exportSeatChartPDF(){
   const card=document.querySelector('#seatResult .card');
   if(!card)return;
   showToast('PDF 생성 중...');
+  if(!await ensureLibs('html2canvas','jspdf'))return;
   try{
     const canvas=await html2canvas(card,{
       scale:2,backgroundColor:'#ffffff',
@@ -1870,7 +2058,7 @@ async function openSeatChartListModal(){
   const{data,error}=await sb.from('seat_charts').select('*')
     .eq('school_code',SCHOOL_CODE).eq('mode',currentSeatMode)
     .order('exam_date',{ascending:false}).order('period',{ascending:false}).order('id',{ascending:false});
-  if(error){body.innerHTML='<p style="font-size:13px;color:var(--danger)">불러오기 실패: '+error.message+'</p>';return;}
+  if(error){body.innerHTML='<p style="font-size:13px;color:var(--danger)">불러오기 실패: '+esc(error.message)+'</p>';return;}
   savedSeatCharts=data||[];
   if(!savedSeatCharts.length){body.innerHTML='<p style="font-size:13px;color:var(--text3)">저장된 배치표가 없습니다</p>';return;}
   body.innerHTML=savedSeatCharts.map(c=>{
@@ -1881,7 +2069,7 @@ async function openSeatChartListModal(){
       const clsLabel=cls?`${cls.grade}-${cls.class_num}반`:'학급 정보 없음';
       return`<div class="saved-chart-item" style="display:flex;align-items:flex-start;gap:10px">
         <div style="flex:1;cursor:pointer" onclick="applySavedSeatChartById(${c.id})">
-          <div class="sci-title">${c.subject_name||'과목명 없음'} · ${clsLabel}</div>
+          <div class="sci-title">${esc(c.subject_name||'과목명 없음')} · ${clsLabel}</div>
           <div class="sci-meta">${dateLabel} · 응시자 ${(c.student_ids||[]).length}명</div>
         </div>
         ${deleteBtn}
@@ -1890,7 +2078,7 @@ async function openSeatChartListModal(){
     const gradeLabel=c.grade?`${c.grade}학년 · `:'';
     return`<div class="saved-chart-item" style="display:flex;align-items:flex-start;gap:10px">
       <div style="flex:1;cursor:pointer" onclick="applySavedSeatChartById(${c.id})">
-        <div class="sci-title">${c.subject_name||'과목명 없음'} · ${c.room_name||'호실 미지정'}</div>
+        <div class="sci-title">${esc(c.subject_name||'과목명 없음')} · ${esc(c.room_name||'호실 미지정')}</div>
         <div class="sci-meta">${gradeLabel}${dateLabel} · 응시자 ${(c.student_ids||[]).length}명</div>
       </div>
       ${deleteBtn}
@@ -1995,7 +2183,7 @@ function drawSeats(examinees,nonExam,rows,cols,startSide,showClassInfo=false,dis
       const numLabel=showClassInfo?`${s.grade}-${s.class_num} ${s.number}번`:`${s.number}번`;
       if(s.isAbsent)return`<div class="seat absent-seat"><div class="seat-num">${numLabel}</div><div class="seat-name">결시</div></div>`;
       const cls=s.isExaminee?'present':'non-exam';
-      return`<div class="seat ${cls}"><div class="seat-num">${numLabel}</div><div class="seat-name">${s.name}</div></div>`;
+      return`<div class="seat ${cls}"><div class="seat-num">${numLabel}</div><div class="seat-name">${esc(s.name)}</div></div>`;
     }).join('')}</div>`).join('');
   return true;
 }
@@ -2019,9 +2207,465 @@ function drawSeatsRoster(roster,rows,cols,startSide,disabledSet=new Set()){
       if(!s)return`<div class="seat empty-seat"></div>`;
       if(s.isAbsent)return`<div class="seat absent-seat"><div class="seat-num">${s.number}번</div><div class="seat-name">결시</div></div>`;
       const cls=s.isExaminee?'present':'non-exam';
-      return`<div class="seat ${cls}"><div class="seat-num">${s.number}번</div><div class="seat-name">${s.name}</div></div>`;
+      return`<div class="seat ${cls}"><div class="seat-num">${s.number}번</div><div class="seat-name">${esc(s.name)}</div></div>`;
     }).join('')}</div>`).join('');
   return true;
+}
+
+/* ===== 고사 시간표 / 선택과목 응시자 / 개인 시간표 ===== */
+function getGrades(){return[...new Set(classes.map(c=>c.grade))].sort((a,b)=>a-b);}
+function renderSetupExtras(){
+  populateEnrollGrade();
+  renderTimetableEditor();
+  renderEnrollmentSummary();
+  populatePttFilters();
+}
+function persistTtTimes(){try{localStorage.setItem('ttTimes_'+SCHOOL_CODE,JSON.stringify({count:ttPeriodCount,times:ttTimes}));}catch(e){}}
+function loadTtTimesLocal(){try{const raw=localStorage.getItem('ttTimes_'+SCHOOL_CODE);if(raw){const o=JSON.parse(raw);if(o.count)ttPeriodCount=o.count;if(o.times)ttTimes=o.times;}}catch(e){}}
+function buildTtFromRows(){
+  ttData={};ttTimes={};ttPeriodCount=3;
+  loadTtTimesLocal();
+  examTimetable.forEach(r=>{
+    ttData[r.grade+'|'+r.exam_date+'|'+r.period]=Array.isArray(r.subjects)?r.subjects:[];
+    if(r.period>ttPeriodCount)ttPeriodCount=r.period;
+    if(r.prep_bell||r.ready_bell||r.start_time||r.end_time){
+      ttTimes[r.period]={prep:r.prep_bell||'',ready:r.ready_bell||'',start:r.start_time||'',end:r.end_time||''};
+    }
+  });
+}
+// 5분 단위 08:00~17:00 시간 선택 옵션. 기존에 직접입력으로 저장된 5분 단위/범위 밖의 값도 보존해서 선택지에 포함
+function ttTimeOptions(selected){
+  selected=selected||'';
+  let opts='<option value="">--:--</option>';
+  let matched=false;
+  for(let h=8;h<=17;h++){
+    for(let m=0;m<60;m+=5){
+      if(h===17&&m>0)break;
+      const v=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+      if(v===selected)matched=true;
+      opts+=`<option value="${v}"${v===selected?' selected':''}>${v}</option>`;
+    }
+  }
+  if(selected&&!matched)opts+=`<option value="${esc(selected)}" selected>${esc(selected)}</option>`;
+  return opts;
+}
+function renderTimetableEditor(){
+  const el=document.getElementById('ttEditor');if(!el)return;
+  const grades=getGrades();
+  if(!examDates.length||!grades.length){el.innerHTML='<p style="font-size:13px;color:var(--text3)">먼저 위에서 <b>고사 날짜</b>와 <b>학급</b>을 등록하면 여기에 시간표 입력표가 나타납니다.</p>';return;}
+  let timesHtml='<table class="tt-times-table"><thead><tr><th>교시</th><th>예비령</th><th>준비령</th><th>시작</th><th>종료</th></tr></thead><tbody>';
+  for(let p=1;p<=ttPeriodCount;p++){
+    const t=ttTimes[p]||{};
+    timesHtml+=`<tr><td><b>${p}교시</b></td>`+
+      `<td><select onchange="updateTtTime(${p},'prep',this.value)">${ttTimeOptions(t.prep)}</select></td>`+
+      `<td><select onchange="updateTtTime(${p},'ready',this.value)">${ttTimeOptions(t.ready)}</select></td>`+
+      `<td><select onchange="updateTtTime(${p},'start',this.value)">${ttTimeOptions(t.start)}</select></td>`+
+      `<td><select onchange="updateTtTime(${p},'end',this.value)">${ttTimeOptions(t.end)}</select></td></tr>`;
+  }
+  timesHtml+='</tbody></table>';
+  let gridHtml='';
+  examDates.forEach(date=>{
+    gridHtml+=`<div class="tt-date-block"><h4>${fmtDate(date)}</h4><table class="tt-grid"><thead><tr><th class="tt-period-cell">교시</th>${grades.map(g=>`<th>${g}학년</th>`).join('')}</tr></thead><tbody>`;
+    for(let p=1;p<=ttPeriodCount;p++){
+      const t=ttTimes[p]||{};
+      const timeLabel=(t.start||'')+(t.end?'~'+t.end:'');
+      gridHtml+=`<tr><td class="tt-period-cell"><b>${p}교시</b>${timeLabel?'<span>'+timeLabel+'</span>':''}</td>`;
+      grades.forEach(g=>{gridHtml+=`<td class="tt-cell">${renderTtCell(g,date,p)}</td>`;});
+      gridHtml+='</tr>';
+    }
+    gridHtml+='</tbody></table></div>';
+  });
+  el.innerHTML=`<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px">교시 수 · 시간 (모든 날짜 공통)</div>`+
+    `<label style="font-size:12px;color:var(--text3)">교시 수 <input type="number" min="1" max="9" value="${ttPeriodCount}" style="width:56px;padding:3px;text-align:center" onchange="setTtPeriodCount(this.value)"></label>${timesHtml}</div>${gridHtml}`;
+}
+function renderTtCell(g,date,p){
+  const key=g+'|'+date+'|'+p;
+  const subs=ttData[key]||[];
+  let h=subs.map((s,i)=>{
+    let extra='';
+    if(s.type==='선택'&&s.room)extra='·'+esc(s.room);
+    else if(s.type==='공통'&&s.classes&&s.classes.length)extra='·'+s.classes.slice().sort((a,b)=>a-b).map(c=>c+'반').join(',');
+    return`<span class="tt-chip type-${s.type}" title="클릭해서 편집" onclick="openTtSubjectModal(${g},'${date}',${p},${i})">${esc(s.name)}<small>(${s.type}${extra})</small><span class="tt-x" title="삭제" onclick="event.stopPropagation();removeTtSubject(${g},'${date}',${p},${i})">×</span></span>`;
+  }).join('');
+  h+=`<button class="tt-add-btn" onclick="openTtSubjectModal(${g},'${date}',${p},-1)">+ 과목</button>`;
+  return h;
+}
+function openTtSubjectModal(g,date,p,index){
+  ttModalCtx={g,date,p,index};
+  const existing=index>=0?(ttData[g+'|'+date+'|'+p]||[])[index]:null;
+  document.getElementById('ttSubjectModalTitle').textContent=existing?'과목 편집':'과목 추가';
+  document.getElementById('ttSubjName').value=existing?existing.name:'';
+  document.getElementById('ttSubjType').value=existing?existing.type:'공통';
+  document.getElementById('ttSubjRoom').value=existing&&existing.room?existing.room:'';
+  renderTtClassChecks(g,existing&&existing.classes?existing.classes:null);
+  toggleTtRoomField();
+  document.getElementById('ttSubjectModal').style.display='flex';
+  setTimeout(()=>document.getElementById('ttSubjName').focus(),40);
+}
+// 공통 과목의 "적용 학급" 체크박스 렌더. checkedList가 null이면(신규 입력) 전체 반 기본 체크
+function renderTtClassChecks(g,checkedList){
+  const el=document.getElementById('ttClassChecks');if(!el)return;
+  const cls=classes.filter(c=>c.grade===g).sort((a,b)=>a.class_num-b.class_num);
+  const checkedSet=checkedList&&checkedList.length?new Set(checkedList):null;
+  el.innerHTML=cls.length?cls.map(c=>{
+    const checked=checkedSet?checkedSet.has(c.class_num):true;
+    return`<label style="display:inline-flex;align-items:center;gap:4px;font-size:13px;cursor:pointer"><input type="checkbox" value="${c.class_num}" ${checked?'checked':''}>${c.class_num}반</label>`;
+  }).join(''):'<span style="font-size:12px;color:var(--text3)">이 학년에 등록된 학급이 없습니다</span>';
+}
+function toggleTtRoomField(){
+  const type=document.getElementById('ttSubjType').value;
+  document.getElementById('ttRoomField').style.display=type==='선택'?'block':'none';
+  document.getElementById('ttClassField').style.display=type==='공통'?'block':'none';
+}
+function closeTtSubjectModal(){document.getElementById('ttSubjectModal').style.display='none';ttModalCtx=null;}
+function saveTtSubject(){
+  if(!ttModalCtx)return;
+  const name=document.getElementById('ttSubjName').value.trim();
+  if(!name){showToast('과목명을 입력하세요');return;}
+  const type=document.getElementById('ttSubjType').value;
+  const room=type==='선택'?document.getElementById('ttSubjRoom').value.trim():'';
+  const{g,date,p,index}=ttModalCtx;
+  const key=g+'|'+date+'|'+p;
+  if(!ttData[key])ttData[key]=[];
+  const obj={name,type,room};
+  if(type==='공통'){
+    const totalClasses=classes.filter(c=>c.grade===g).length;
+    const checkedNums=[...document.querySelectorAll('#ttClassChecks input:checked')].map(el=>parseInt(el.value));
+    if(totalClasses&&!checkedNums.length){showToast('적용 학급을 1개 이상 선택하세요');return;}
+    // 전체 반이 체크된 경우 "학년 전체 적용"으로 간주해 classes를 비워둠(기존 데이터와 호환)
+    obj.classes=checkedNums.length<totalClasses?checkedNums:[];
+  }
+  if(index>=0)ttData[key][index]=obj;else ttData[key].push(obj);
+  closeTtSubjectModal();
+  renderTimetableEditor();
+}
+function removeTtSubject(g,date,p,index){
+  const key=g+'|'+date+'|'+p;
+  if(ttData[key]){ttData[key].splice(index,1);renderTimetableEditor();}
+}
+function setTtPeriodCount(v){ttPeriodCount=Math.max(1,Math.min(9,parseInt(v)||1));persistTtTimes();renderTimetableEditor();}
+function updateTtTime(p,field,value){ttTimes[p]=ttTimes[p]||{};ttTimes[p][field]=value.trim();persistTtTimes();if(field==='start'||field==='end')renderTimetableEditor();}
+async function saveTimetable(){
+  if(!SCHOOL_CODE)return;
+  const grades=getGrades();
+  const rows=[];
+  grades.forEach(g=>examDates.forEach(date=>{
+    for(let p=1;p<=ttPeriodCount;p++){
+      const subs=ttData[g+'|'+date+'|'+p];
+      if(subs&&subs.length){
+        const t=ttTimes[p]||{};
+        rows.push({school_code:SCHOOL_CODE,grade:g,exam_date:date,period:p,
+          prep_bell:t.prep||null,ready_bell:t.ready||null,start_time:t.start||null,end_time:t.end||null,
+          subjects:subs,updated_at:new Date().toISOString()});
+      }
+    }
+  }));
+  const st=document.getElementById('ttSaveStatus');
+  st.textContent='저장 중...';
+  // 삭제 전 기존 시간표를 백업해두고, 새 데이터 저장 실패 시 복구한다
+  const{data:backup,error:bakErr}=await sb.from('exam_timetable').select('*').eq('school_code',SCHOOL_CODE);
+  if(bakErr){st.innerHTML='<span class="badge badge-danger">저장 실패: '+esc(bakErr.message)+'</span>';return;}
+  const{error:delErr}=await sb.from('exam_timetable').delete().eq('school_code',SCHOOL_CODE);
+  if(delErr){st.innerHTML='<span class="badge badge-danger">저장 실패: '+esc(delErr.message)+'</span>';return;}
+  if(rows.length){
+    const{error}=await sb.from('exam_timetable').insert(rows);
+    if(error){
+      let msg='저장 실패: '+esc(error.message);
+      if(backup&&backup.length){
+        const{error:restoreErr}=await sb.from('exam_timetable').insert(backup);
+        msg+=restoreErr?' (기존 시간표 복구도 실패했습니다 — 네트워크 확인 후 다시 저장해주세요)':' (기존 시간표는 그대로 유지됩니다)';
+      }
+      st.innerHTML='<span class="badge badge-danger">'+msg+'</span>';return;
+    }
+  }
+  examTimetable=rows.map(r=>({...r}));
+  persistTtTimes();
+  st.innerHTML=`<span class="badge badge-success">${icon('checkCircle',12)}시간표 저장 완료 (${rows.length}칸)</span>`;
+  showToast('고사 시간표를 저장했습니다');
+}
+
+/* ---- 선택과목 응시자 명단 ---- */
+function populateEnrollGrade(){
+  const grades=getGrades();
+  const el=document.getElementById('enrollGrade');
+  if(el)el.innerHTML=grades.length?grades.map(g=>`<option value="${g}">${g}학년</option>`).join(''):'<option value="">학급 없음</option>';
+}
+async function downloadEnrollmentTemplate(){
+  if(!await ensureLibs('exceljs'))return;
+  const wb=new ExcelJS.Workbook();
+  const ws=wb.addWorksheet('선택과목응시자');
+  const FONT='맑은 고딕';
+  // 호실 열은 "2-1"처럼 입력하면 엑셀이 날짜로 자동 변환해버리므로, 텍스트 서식으로 고정해 방지
+  ws.columns=[{key:'subject',width:20},{key:'class_num',width:8},{key:'number',width:8},{key:'name',width:16},{key:'room',width:16,style:{numFmt:'@'}}];
+  ws.mergeCells('A1:E1');
+  const note=ws.getCell('A1');
+  note.value='과목명 / 반 / 번호 / 이름 / 호실을 입력하세요. 같은 과목 응시자는 여러 줄로 나눠 적습니다. 학년은 화면에서 선택합니다. ※ 과목명은 고사 시간표의 선택과목명과 띄어쓰기·특수문자까지 똑같이 입력하세요. ※ 호실은 한 과목이 여러 방으로 나뉘거나 학생마다 다른 경우에 채우세요(본인 교실 유지 시 "본인 교실"처럼 적어도 됨) — 비워두면 고사 시간표에 입력한 해당 과목의 기본 호실이 적용됩니다.';
+  note.font={name:FONT,italic:true,size:10,color:{argb:'FF8A6D3B'}};
+  note.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF6E8'}};
+  note.alignment={vertical:'middle',wrapText:true};
+  ws.getRow(1).height=58;
+  const hr=ws.getRow(2);hr.values=['과목명','반','번호','이름','호실(선택 입력)'];hr.height=24;
+  hr.eachCell(c=>{c.font={name:FONT,bold:true,color:{argb:'FFFFFFFF'},size:12};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFB08A4E'}};c.alignment={horizontal:'center',vertical:'middle'};c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};});
+  const sample=[
+    {subject:'경제',class_num:1,number:3,name:'홍길동',room:'3-1교실'},
+    {subject:'경제',class_num:2,number:5,name:'이영희',room:'시청각실'},
+    {subject:'정치와 법',class_num:1,number:7,name:'김철수',room:''}
+  ];
+  sample.forEach((s,i)=>{const row=ws.addRow(s);row.eachCell(c=>{c.font={name:FONT};c.alignment={horizontal:'center',vertical:'middle'};c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?'FFF6EFE2':'FFFFFFFF'}};});});
+  ws.views=[{state:'frozen',ySplit:2}];
+  const buf=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='선택과목_응시자명단_양식.xlsx';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
+function handleEnrollmentUpload(e){const f=e.target.files[0];if(f)processEnrollmentExcel(f);e.target.value='';}
+function handleEnrollmentDrop(e){e.preventDefault();e.currentTarget.classList.remove('dragover');const f=e.dataTransfer.files[0];if(f)processEnrollmentExcel(f);}
+async function processEnrollmentExcel(file){
+  const st=document.getElementById('enrollUploadStatus');
+  const grade=parseInt(document.getElementById('enrollGrade').value);
+  if(!grade){st.innerHTML='<span class="badge badge-danger">먼저 학년을 선택하세요</span>';return;}
+  if(!/\.(xlsx|xls)$/i.test(file.name)){st.innerHTML='<span class="badge badge-danger">엑셀 파일(.xlsx, .xls)만 업로드할 수 있습니다</span>';return;}
+  st.textContent='읽는 중...';
+  if(!await ensureLibs('xlsx')){st.textContent='';return;}
+  try{
+    // cellDates:true — 호실 칸에 "2-1"처럼 입력하면 엑셀이 자동으로 날짜로 바꿔버리는 경우가 있어(예: 02-01),
+    // 이를 진짜 날짜(Date 객체)로 읽어서 아래에서 원래 입력한 월-일 형태로 복원하기 위함
+    const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array',cellDates:true});
+    let aoa=null,colIdx={},headerRowIdx=-1;
+    for(const sheetName of wb.SheetNames){
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:''});
+      for(let r=0;r<Math.min(rows.length,10);r++){
+        const idx={};(rows[r]||[]).forEach((v,ci)=>{const s=String(v).trim();if(s)idx[s]=ci;});
+        if(['과목명','반','번호','이름'].every(k=>k in idx)){aoa=rows;colIdx=idx;headerRowIdx=r;break;}
+      }
+      if(aoa)break;
+    }
+    if(!aoa){st.innerHTML='<span class="badge badge-danger">형식 오류: 과목명/반/번호/이름 열을 확인하세요</span>';return;}
+    const hasRoomCol='호실' in colIdx||'호실(선택 입력)' in colIdx;
+    const roomColKey='호실' in colIdx?'호실':'호실(선택 입력)';
+    // 엑셀이 "2-1" 같은 입력을 날짜로 자동 변환했다면(Date 객체로 읽힘) 월-일 형태(예: 2-1)로 되돌림
+    const roomText=v=>{
+      if(v instanceof Date)return(v.getMonth()+1)+'-'+v.getDate();
+      return String(v||'').trim();
+    };
+    const gStudents=gradeStudents(grade);const byKey={};gStudents.forEach(s=>{byKey[s.class_num+'-'+s.number]=s;});
+    const enroll=[],seen=new Set(),notFound=[],mismatch=[],subjSet={};
+    for(let r=headerRowIdx+1;r<aoa.length;r++){
+      const row=aoa[r]||[];
+      const subject=String(row[colIdx['과목명']]||'').trim();
+      const class_num=parseInt(row[colIdx['반']]);const number=parseInt(row[colIdx['번호']]);const name=String(row[colIdx['이름']]||'').trim();
+      const room=hasRoomCol?roomText(row[colIdx[roomColKey]]):'';
+      if(!subject||!class_num||!number)continue;
+      const s=byKey[class_num+'-'+number];
+      if(!s){notFound.push(`${subject}: ${class_num}반 ${number}번 (등록된 학생 없음)`);continue;}
+      if(name&&s.name!==name)mismatch.push(`${class_num}반 ${number}번: 명단 "${name}" ↔ 등록 "${s.name}"`);
+      const k=subject+'|'+s.id;if(seen.has(k))continue;seen.add(k);
+      enroll.push({school_code:SCHOOL_CODE,grade,subject_name:subject,student_id:s.id,room:room||null});
+      subjSet[subject]=(subjSet[subject]||0)+1;
+    }
+    if(!enroll.length){st.innerHTML='<span class="badge badge-danger">매칭된 응시자가 없습니다 (반/번호가 등록 학생과 일치하는지 확인하세요)</span>';return;}
+    const{error:delErr}=await sb.from('subject_enrollment').delete().eq('school_code',SCHOOL_CODE).eq('grade',grade);
+    if(delErr){st.innerHTML='<span class="badge badge-danger">기존 명단 삭제 실패: '+esc(delErr.message)+' — 업로드를 중단했습니다. 다시 시도해주세요</span>';return;}
+    const{error}=await sb.from('subject_enrollment').insert(enroll);
+    if(error){st.innerHTML='<span class="badge badge-danger">저장 실패: '+esc(error.message)+'</span>';return;}
+    subjectEnrollment=subjectEnrollment.filter(e=>e.grade!==grade).concat(enroll);
+    renderEnrollmentSummary();
+    let msg=`<span class="badge badge-success">${icon('checkCircle',12)}${grade}학년 ${Object.keys(subjSet).length}개 과목 · 총 ${enroll.length}명 저장됨</span>`;
+    if(notFound.length)msg+=`<div style="margin-top:6px;color:var(--danger)">매칭 실패 ${notFound.length}건: ${esc(notFound.slice(0,5).join(', '))}${notFound.length>5?' 외 '+(notFound.length-5)+'건':''}</div>`;
+    if(mismatch.length)msg+=`<div style="margin-top:4px;color:var(--warning)">이름 불일치 ${mismatch.length}건(반/번호 기준 저장됨): ${esc(mismatch.slice(0,5).join(', '))}${mismatch.length>5?' 외 '+(mismatch.length-5)+'건':''}</div>`;
+    st.innerHTML=msg;
+    showToast(`${grade}학년 선택과목 응시자 ${enroll.length}명 저장`);
+  }catch(err){console.error(err);st.innerHTML='<span class="badge badge-danger">업로드 실패: '+esc(err.message)+'</span>';}
+}
+function renderEnrollmentSummary(){
+  const el=document.getElementById('enrollSummary');if(!el)return;
+  if(!subjectEnrollment.length){el.innerHTML='<p style="font-size:13px;color:var(--text3)">아직 업로드된 선택과목 응시자 명단이 없습니다.</p>';return;}
+  const grades=[...new Set(subjectEnrollment.map(e=>e.grade))].sort((a,b)=>a-b);
+  el.innerHTML=grades.map(g=>{
+    const subs={};
+    subjectEnrollment.filter(e=>e.grade===g).forEach(e=>{
+      if(!subs[e.subject_name])subs[e.subject_name]={total:0,rooms:{}};
+      subs[e.subject_name].total++;
+      const r=(e.room||'').trim()||'호실 미지정';
+      subs[e.subject_name].rooms[r]=(subs[e.subject_name].rooms[r]||0)+1;
+    });
+    const cards=Object.keys(subs).sort().map(name=>{
+      const info=subs[name];
+      const roomKeys=Object.keys(info.rooms);
+      const multiRoom=roomKeys.length>1;
+      const hasUnassigned=!!info.rooms['호실 미지정'];
+      const roomDetail=(multiRoom||hasUnassigned)
+        ?`<div style="font-size:11.5px;color:var(--text3);margin-top:3px">${roomKeys.sort().map(r=>`<span${r==='호실 미지정'?' style="color:var(--warning);font-weight:600"':''}>${esc(r)} ${info.rooms[r]}명</span>`).join(' · ')}</div>`
+        :'';
+      return`<div style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px">
+        <div style="font-size:13px;font-weight:700">${esc(name)} <span style="color:var(--text3);font-weight:400">${info.total}명</span></div>
+        ${roomDetail}
+      </div>`;
+    }).join('');
+    return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px"><span class="grade-title" style="margin:0">${g}학년</span><button type="button" class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger)" onclick="clearEnrollment(${g})">이 학년 명단 삭제</button></div><div style="display:flex;flex-wrap:wrap;gap:8px">${cards}</div></div>`;
+  }).join('');
+}
+async function clearEnrollment(g){
+  if(!confirm(`${g}학년 선택과목 응시자 명단을 모두 삭제할까요?`))return;
+  const{error}=await sb.from('subject_enrollment').delete().eq('school_code',SCHOOL_CODE).eq('grade',g);
+  if(error){showToast('삭제 실패: '+error.message);return;}
+  subjectEnrollment=subjectEnrollment.filter(e=>e.grade!==g);
+  renderEnrollmentSummary();showToast('삭제되었습니다');
+}
+
+/* ---- 시간표 기반 일괄 자리배치 (질문1) ---- */
+async function generateBatchSeatCharts(){
+  const grade=parseInt(document.getElementById('sepGrade').value);
+  if(!grade){showToast('먼저 2단계에서 학년을 선택하세요');return;}
+  const rows=parseInt(document.getElementById('sepRows').value)||6;
+  const cols=parseInt(document.getElementById('sepCols').value)||5;
+  const startSide=document.getElementById('sepStartSide').value;
+  const disabled=[...disabledSeats.sep];
+  const st=document.getElementById('batchSeatStatus');
+  const jobs=[];
+  examTimetable.filter(r=>r.grade===grade).forEach(r=>{
+    (r.subjects||[]).filter(s=>s.type==='선택').forEach(s=>{jobs.push({date:r.exam_date,period:r.period,name:s.name,room:s.room||''});});
+  });
+  if(!jobs.length){st.innerHTML='<span class="badge badge-danger">시간표에 이 학년 선택과목이 없습니다. 설정 탭에서 고사 시간표를 먼저 입력·저장하세요.</span>';return;}
+  // 학생별로 지정된 호실이 있으면 그 호실로, 없으면 과목의 기본 호실로 묶는다 (한 과목 = 여러 호실 가능)
+  const enBySubject={};
+  subjectEnrollment.filter(e=>e.grade===grade).forEach(e=>{
+    (enBySubject[e.subject_name]=enBySubject[e.subject_name]||[]).push({id:e.student_id,room:(e.room||'').trim()});
+  });
+  const gIds=new Set(gradeStudents(grade).map(s=>s.id));
+  const slotCount=seatFillSlots(rows,cols,startSide,disabledSeats.sep).length;
+  // 실제 생성될 (과목,호실) 조합 수를 미리 계산해서 확인창에 정확히 안내
+  let groupCount=0;
+  jobs.forEach(job=>{
+    const enrolled=(enBySubject[job.name]||[]).filter(x=>gIds.has(x.id));
+    const rooms=new Set(enrolled.map(x=>x.room||job.room||''));
+    groupCount+=rooms.size||0;
+  });
+  if(!confirm(`${grade}학년 선택과목 ${jobs.length}개(호실 기준 ${groupCount}개 배치표)를 생성·저장합니다.\n같은 과목·호실·날짜·교시로 이미 저장된 배치표는 갱신됩니다.\n(좌석: ${rows}행 ${cols}열, 사용가능 ${slotCount}석)\n진행할까요?`))return;
+  st.textContent='생성 중...';
+  const{data:existing}=await sb.from('seat_charts').select('id,exam_date,period,subject_name,room_name').eq('school_code',SCHOOL_CODE).eq('mode','separate').eq('grade',grade);
+  const exMap={};(existing||[]).forEach(c=>{exMap[c.exam_date+'|'+c.period+'|'+c.subject_name+'|'+(c.room_name||'')]=c.id;});
+  let created=0,updated=0;const skipped=[];
+  for(const job of jobs){
+    const enrolled=(enBySubject[job.name]||[]).filter(x=>gIds.has(x.id));
+    if(!enrolled.length){skipped.push(`${job.name}(응시자 명단 없음)`);continue;}
+    const byRoom={};
+    enrolled.forEach(x=>{
+      const room=x.room||job.room||'';
+      (byRoom[room]=byRoom[room]||[]).push(x.id);
+    });
+    for(const[room,ids] of Object.entries(byRoom)){
+      const label=room?`${job.name}(${room})`:job.name;
+      if(ids.length>slotCount){skipped.push(`${label}: ${ids.length}명 > 좌석 ${slotCount}석`);continue;}
+      const payload={school_code:SCHOOL_CODE,mode:'separate',exam_date:job.date,period:job.period,grade,class_id:null,
+        rows,cols,start_side:startSide,subject_name:job.name,room_name:room||null,
+        disabled_seats:disabled,student_ids:ids,updated_at:new Date().toISOString()};
+      const exId=exMap[job.date+'|'+job.period+'|'+job.name+'|'+room];
+      if(exId){const{error}=await sb.from('seat_charts').update(payload).eq('id',exId);if(!error)updated++;else skipped.push(label+'(저장오류)');}
+      else{const{error}=await sb.from('seat_charts').insert(payload);if(!error)created++;else skipped.push(label+'(저장오류)');}
+    }
+  }
+  let msg=`<span class="badge badge-success">${icon('checkCircle',12)}완료: 신규 ${created}개 · 갱신 ${updated}개</span>`;
+  if(skipped.length)msg+=`<div style="margin-top:6px;color:var(--warning)">건너뜀 ${skipped.length}개: ${esc(skipped.join(', '))}</div>`;
+  msg+=`<div style="margin-top:6px;color:var(--text3);font-size:12px">한 과목이 여러 호실로 나뉜 경우 호실별로 배치표가 따로 생성됩니다. 위 '저장된 배치표 불러오기'에서 각 배치표를 확인·인쇄·개별 조정할 수 있습니다.</div>`;
+  st.innerHTML=msg;
+  showToast(`일괄 배치 완료 (신규 ${created} · 갱신 ${updated})`);
+}
+
+/* ---- 학생별 개인 시간표 (질문2) ---- */
+function populatePttFilters(){
+  const grades=getGrades();
+  const gEl=document.getElementById('pttGrade');
+  if(gEl)gEl.innerHTML=grades.length?grades.map(g=>`<option value="${g}">${g}학년</option>`).join(''):'<option value="">학급 없음</option>';
+  onPttGradeChange();
+}
+function onPttGradeChange(){
+  const grade=parseInt(document.getElementById('pttGrade').value);
+  const cEl=document.getElementById('pttClass');if(!cEl)return;
+  const cls=classes.filter(c=>c.grade===grade).sort((a,b)=>a.class_num-b.class_num);
+  cEl.innerHTML='<option value="all">전체 학급</option>'+cls.map(c=>`<option value="${c.id}">${c.grade}-${c.class_num}반</option>`).join('');
+}
+function printStudentTimetables(){
+  const grade=parseInt(document.getElementById('pttGrade').value);
+  if(!grade){showToast('학년을 선택하세요');return;}
+  const classSel=document.getElementById('pttClass').value;
+  const ttRows=examTimetable.filter(r=>r.grade===grade);
+  if(!ttRows.length){showToast('이 학년 고사 시간표가 없습니다. 먼저 고사 시간표를 입력·저장하세요');return;}
+  // 세로축=교시, 가로축=날짜인 그리드로 구성
+  const dates=[...new Set(ttRows.map(r=>r.exam_date))].sort();
+  const periods=[...new Set(ttRows.map(r=>r.period))].sort((a,b)=>a-b);
+  const timeByPeriod={};
+  ttRows.forEach(r=>{if(!timeByPeriod[r.period]&&(r.start_time||r.end_time))timeByPeriod[r.period]={start:r.start_time,end:r.end_time};});
+  const subjByKey={};
+  ttRows.forEach(r=>{subjByKey[r.exam_date+'|'+r.period]=r.subjects||[];});
+  // 학생별 { 과목명: 호실(개인 지정 없으면 빈 문자열) }
+  const enByStudent={};
+  subjectEnrollment.filter(e=>e.grade===grade).forEach(e=>{
+    (enByStudent[e.student_id]=enByStudent[e.student_id]||{})[e.subject_name]=(e.room||'').trim();
+  });
+  let sts;
+  if(classSel==='all'){sts=gradeStudents(grade);}
+  else{const cid=parseInt(classSel);const c=classes.find(x=>x.id===cid);if(!c){showToast('학급 정보를 찾을 수 없습니다');return;}sts=(students[cid]||[]).map(s=>({...s,grade:c.grade,class_num:c.class_num}));}
+  if(!sts.length){showToast('출력할 학생이 없습니다');return;}
+  const headerHtml=dates.map(d=>`<th>${fmtDate(d)}</th>`).join('');
+  const cards=sts.map(s=>{
+    const enrolled=enByStudent[s.id]||{};
+    const rowsHtml=periods.map(p=>{
+      const t=timeByPeriod[p];
+      const timeLabel=t?((t.start||'')+(t.end?'~'+t.end:'')):'';
+      const cellsHtml=dates.map(date=>{
+        const subs=subjByKey[date+'|'+p]||[];
+        const applicable=[];
+        subs.forEach(su=>{
+          if(su.type==='공통'){
+            // classes가 비어있으면 학년 전체 적용, 있으면 그 반 학생에게만 적용(반마다 다른 공통과목 대응)
+            if(!su.classes||!su.classes.length||su.classes.includes(s.class_num))
+              applicable.push({name:su.name,place:'본인 교실('+s.grade+'-'+s.class_num+'반)'});
+          }
+          else if(su.name in enrolled)applicable.push({name:su.name,place:enrolled[su.name]||su.room||'별실'});
+        });
+        if(!applicable.length)return`<td class="free">자습</td>`;
+        const inner=applicable.map(a=>`<div class="subj">${esc(a.name)}</div><div class="place">${esc(a.place)}</div>`).join('');
+        return`<td>${inner}</td>`;
+      }).join('');
+      return`<tr><td class="stt-period"><b>${p}교시</b>${timeLabel?'<span>'+esc(timeLabel)+'</span>':''}</td>${cellsHtml}</tr>`;
+    }).join('');
+    return`<div class="stt-card"><div class="stt-head"><span class="stt-name">${s.grade}-${s.class_num} ${s.number}번 ${esc(s.name)}</span><span class="stt-sub">개인 고사 시간표</span></div>`+
+      `<table class="stt-table"><thead><tr><th></th>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+  });
+  // 절취선으로 자를 수 있게 A4 한 장에 2열×5행(10명씩) 배치, 10명 단위로 페이지 구분
+  const CARDS_PER_PAGE=10;
+  const pagesHtml=[];
+  for(let i=0;i<cards.length;i+=CARDS_PER_PAGE)pagesHtml.push(`<div class="stt-page">${cards.slice(i,i+CARDS_PER_PAGE).join('')}</div>`);
+  const win=window.open('','_blank','width=900,height=920');
+  if(!win){showToast('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요');return;}
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>개인 고사 시간표</title>
+<style>
+  @page{size:A4 portrait;margin:10mm;}
+  *{box-sizing:border-box;}
+  body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;margin:0;padding:0;color:#1c2430;}
+  .stt-page{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(5,1fr);width:190mm;height:277mm;page-break-after:always;}
+  .stt-page:last-child{page-break-after:auto;}
+  .stt-card{border:1px dashed #999;padding:4px 6px;display:flex;flex-direction:column;overflow:hidden;page-break-inside:avoid;}
+  .stt-head{display:flex;flex-direction:column;border-bottom:1.5px solid #1c2430;padding-bottom:2px;margin-bottom:3px;}
+  .stt-name{font-size:12px;font-weight:800;}
+  .stt-sub{font-size:8px;color:#888;}
+  table.stt-table{width:100%;height:100%;border-collapse:collapse;table-layout:fixed;flex:1;}
+  .stt-table th,.stt-table td{border:1px solid #888;padding:2px 1px;text-align:center;font-size:7.5px;line-height:1.25;overflow:hidden;}
+  .stt-table th{background:#eef1f5;font-weight:700;font-size:8px;}
+  .stt-table th:first-child{width:30px;}
+  .stt-table td.stt-period{background:#eef1f5;}
+  .stt-table td.stt-period b{display:block;font-size:7.5px;}
+  .stt-table td.stt-period span{display:block;font-size:6px;color:#666;font-weight:400;}
+  .stt-table td .subj{font-weight:700;font-size:7.5px;}
+  .stt-table td .place{font-size:6.5px;color:#555;}
+  .stt-table td.free{color:#aaa;background:#fafafa;font-weight:400;}
+  .print-btn{display:block;margin:16px auto;padding:10px 22px;font-size:14px;cursor:pointer;}
+  @media print{.print-btn{display:none;}}
+</style></head><body>
+${pagesHtml.join('')}
+<button class="print-btn" onclick="window.print()">인쇄</button>
+</body></html>`);
+  win.document.close();win.focus();win.onload=()=>win.print();
 }
 
 function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${m}월 ${day}일`;}

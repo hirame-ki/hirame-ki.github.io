@@ -23,8 +23,15 @@ exam-system/
 - [x] Supabase SQL Editor에서 `exam_dates` 테이블 생성 SQL 실행 완료
 - [x] Supabase SQL Editor에서 `seat_charts` 테이블 생성 SQL 실행 완료 (자리배치표 저장/불러오기 정상 작동 확인)
 - [x] Supabase SQL Editor에서 `input_completions` 테이블 생성 SQL 실행 완료 (결시 입력 "저장하기" → 응시현황표 출력 전환 및 고사본부 실시간 반영 확인)
+- [x] Supabase SQL Editor에서 `exam_timetable`, `subject_enrollment` 테이블 생성 SQL 실행 완료 (고사 시간표 입력 / 선택과목 응시자 명단 / 시간표 기반 일괄 자리배치 / 학생별 개인 시간표 기능)
+- [x] (2026-07) Supabase SQL Editor에서 **중복 학생 정리 + `students` UNIQUE(class_id, number) 제약 추가** SQL 실행 완료 (아래 1번 섹션 "중복 학생 정리" 참고 — "한 반 인원이 2배로 표시되던" 문제의 재발 방지)
+- [x] (2026-07) 코드 안정화 일괄 수정 완료: 삭제 실패 시 재삽입 중단(중복 저장 방지), `markInputDirty` 미실행 쿼리 수정(제출완료 해제가 실제 반영되도록), 결시 저장 실패 시 오류 표시, 1,000행 초과 데이터 페이지네이션(`fetchAll`), HTML 이스케이프 전면 적용, 시간표 저장 실패 시 백업 자동 복구, 엑셀/PDF 라이브러리 지연 로딩(초기 로딩 경량화), 고사본부 요약에 결시 0명 교시 표시, 탭 이동 시 날짜 선택 유지 등
+- [ ] (2026-07) **선택과목 1과목=1호실 제한 해제 (학생별 호실 직접 지정)** 코드 반영 완료, **Supabase에 `ALTER TABLE subject_enrollment ADD COLUMN IF NOT EXISTS room TEXT;` 실행 필요** (아래 "선택과목 호실이 여러 개로 나뉘는 경우" 참고)
 
 ### 확인 필요 (운영 작업, 코드 아님)
+- [ ] **수정된 `index.html`을 GitHub Pages에 재업로드(배포)** — 2026-07 안정화 수정(중복 방지·이스케이프·지연 로딩 등)은 배포해야 실사용에 반영됨
+- [ ] 중복 학생이 있었던 학년의 **저장된 자리배치표는 다시 생성·저장** 권장 (배치표가 삭제된 중복 id를 참조하고 있을 수 있음)
+- [ ] 배포 후 실사용 점검: 설정 탭에서 ①시간표 한두 칸 입력 → 저장, ②선택과목 응시자 명단 엑셀 업로드, ③자리배치 탭에서 "시간표 기반 일괄 배치" 생성, ④학생별 개인 시간표 인쇄가 정상 동작하는지 (브라우저 실사용 테스트는 아직 미실시)
 - [ ] 동료 교사에게 URL + 학교코드 공유 완료 여부 확인
 - [ ] 실제 고사 기간에 전체 교사 대상 실사용 테스트
 
@@ -102,6 +109,35 @@ CREATE TABLE IF NOT EXISTS seat_charts (
 -- 이미 seat_charts를 만든 경우 (mode='separate'만 지원하던 구버전) 아래를 추가로 실행
 ALTER TABLE seat_charts ADD COLUMN IF NOT EXISTS class_id INT REFERENCES classes(id) ON DELETE CASCADE;
 
+-- 고사 시간표 (학년별 날짜/교시 → 과목) — 개인 시간표·일괄 배치의 바탕
+CREATE TABLE IF NOT EXISTS exam_timetable (
+  id SERIAL PRIMARY KEY,
+  school_code TEXT NOT NULL,
+  grade INT NOT NULL,
+  exam_date DATE NOT NULL,
+  period INT NOT NULL,
+  prep_bell TEXT,        -- 예비령
+  ready_bell TEXT,       -- 준비령
+  start_time TEXT,       -- 교시 시작
+  end_time TEXT,         -- 교시 종료
+  subjects JSONB DEFAULT '[]',  -- [{name, type:'공통'|'선택', room}]
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(school_code, grade, exam_date, period)
+);
+
+-- 선택과목 응시자 명단 (학생 ↔ 선택과목, subject_name이 시간표와 매칭 키)
+CREATE TABLE IF NOT EXISTS subject_enrollment (
+  id SERIAL PRIMARY KEY,
+  school_code TEXT NOT NULL,
+  grade INT NOT NULL,
+  subject_name TEXT NOT NULL,
+  student_id INT REFERENCES students(id) ON DELETE CASCADE,
+  room TEXT,  -- 학생별 개인 호실(선택 입력). 비어있으면 exam_timetable의 그 과목 기본 호실을 따름. 한 과목이 여러 호실로 나뉠 때 사용
+  UNIQUE(school_code, grade, subject_name, student_id)
+);
+-- 이미 subject_enrollment를 만든 경우 (호실 컬럼 없던 구버전) 아래를 추가로 실행
+ALTER TABLE subject_enrollment ADD COLUMN IF NOT EXISTS room TEXT;
+
 -- 결시 입력 제출 완료 기록 (고사본부 미제출 학급 현황판용)
 CREATE TABLE IF NOT EXISTS input_completions (
   id SERIAL PRIMARY KEY,
@@ -116,6 +152,51 @@ CREATE TABLE IF NOT EXISTS input_completions (
 -- Realtime 활성화
 ALTER PUBLICATION supabase_realtime ADD TABLE absences;
 ALTER PUBLICATION supabase_realtime ADD TABLE input_completions;
+```
+
+### 중복 학생 정리 + 재발 방지 제약 (2026-07 실행 완료)
+
+`students`에만 UNIQUE 제약이 없어 "삭제 실패 후 재삽입" 등으로 같은 학생이 중복 저장될 수 있었음(한 반 인원이 2배로 표시되던 원인). 아래 SQL로 기존 중복을 정리하고 제약을 추가함 — **이미 실행 완료된 상태이며, 새 Supabase 프로젝트를 만들 때는 ⑤만 실행하면 됨.**
+
+```sql
+-- ① 중복 확인
+SELECT class_id, number, name, COUNT(*) AS cnt, array_agg(id ORDER BY id) AS ids
+FROM students GROUP BY class_id, number, name HAVING COUNT(*) > 1;
+
+-- ②③ 중복 행에 붙은 결시 기록·선택과목 명단을 남길 행(가장 오래된 id)으로 이전
+WITH dups AS (
+  SELECT id, MIN(id) OVER (PARTITION BY class_id, number, name) AS keep_id FROM students
+)
+UPDATE absences a SET student_id = d.keep_id
+FROM dups d
+WHERE a.student_id = d.id AND d.id <> d.keep_id
+  AND NOT EXISTS (
+    SELECT 1 FROM absences a2
+    WHERE a2.student_id = d.keep_id AND a2.school_code = a.school_code
+      AND a2.exam_date = a.exam_date AND a2.period = a.period
+  );
+
+WITH dups AS (
+  SELECT id, MIN(id) OVER (PARTITION BY class_id, number, name) AS keep_id FROM students
+)
+UPDATE subject_enrollment e SET student_id = d.keep_id
+FROM dups d
+WHERE e.student_id = d.id AND d.id <> d.keep_id
+  AND NOT EXISTS (
+    SELECT 1 FROM subject_enrollment e2
+    WHERE e2.student_id = d.keep_id AND e2.school_code = e.school_code
+      AND e2.grade = e.grade AND e2.subject_name = e.subject_name
+  );
+
+-- ④ 중복 행 삭제 (남은 참조는 CASCADE로 함께 정리됨)
+DELETE FROM students s
+USING (
+  SELECT id, MIN(id) OVER (PARTITION BY class_id, number, name) AS keep_id FROM students
+) d
+WHERE s.id = d.id AND d.id <> d.keep_id;
+
+-- ⑤ 재발 방지: 한 학급 안에서 같은 번호 중복 금지
+ALTER TABLE students ADD CONSTRAINT students_class_number_unique UNIQUE (class_id, number);
 ```
 
 > ⚠️ **보안 참고**: RLS(행 단위 보안)를 켜지 않아 anon key만 알면 누구나 데이터에 접근 가능합니다. 학교코드로만 데이터를 구분하는 구조라 실질적인 보안 경계는 없습니다. 학생 이름/결시 기록 수준이라 지금은 문제없지만, 더 민감한 데이터를 다루게 되면 RLS 정책 추가를 고려해야 합니다.
@@ -178,14 +259,23 @@ ALTER PUBLICATION supabase_realtime ADD TABLE input_completions;
 
 > **제출 현황판의 한계**: 교시는 담임이 결시 입력 시 직접 입력하는 자유 숫자라, 그 날짜에 "몇 교시까지 시험이 있는지"를 시스템이 미리 알지 못합니다. 따라서 교시 탭은 **누군가 그 교시로 최초 입력(또는 반영 완료)한 순간부터** 생성되며, 그 전에는 "1교시가 아직 하나도 없다"는 것 자체를 표시할 수 없습니다. 고사 당일 일정을 미리 등록해두고 그 기준으로 처음부터 미제출을 표시하려면 별도의 "교시 일정" 기능이 필요합니다.
 
+### 고사 시간표 / 선택과목 응시자 / 학생별 개인 시간표 (설정 탭, 고사 담당자용)
+선택과목이 학생마다 달라 개인 고사 시간표가 제각각인 상황을 위한 기능. **과목명이 시간표 ↔ 응시자명단 ↔ 배치표를 잇는 키**이므로, 세 곳 모두 과목명을 띄어쓰기·특수문자까지 똑같이 입력해야 매칭됨(입력 UI에 경고 문구로 고지).
+
+1. **고사 시간표 입력** — 상단에서 교시 수와 교시별 시간(예비령/준비령/시작/종료)을 한 번만 설정하면 모든 날짜에 공통 적용됨. 시간은 06:00~22:00 5분 단위 드롭다운으로 선택(기존 직접입력 값이 5분 단위를 벗어나 있으면 그 값도 선택지에 보존됨). 그 아래 **학년(열) × 날짜·교시(행) 격자**의 각 칸에 `+ 과목`으로 과목을 추가(한 칸에 여러 과목 가능), 과목마다 **공통**(반 전체가 자기 교실 응시) / **선택**(별실 응시)을 지정. 선택과목의 "별실 호실"은 **그 과목이 호실 하나로 끝날 때만** 입력하는 기본값 — 한 과목이 여러 호실로 나뉘거나 학생마다 다른 호실로 가면 여기는 비워두고 아래 "선택과목 응시자 명단"에서 학생별로 지정. 비운 칸은 자습. "고사 시간표 저장" → `exam_timetable`. (교시 시간은 localStorage에도 캐시되어 저장 전에도 유지됨. 저장은 학교 전체 시간표를 삭제 후 재삽입하는 방식이며, 삽입 실패 시 저장 전 상태로 자동 복구됨)
+2. **선택과목 응시자 명단** — 학년 선택 후 양식(과목명/반/번호/이름/호실) 다운로드 → 선택과목 응시자만 채워 드래그앤드롭 업로드. 반+번호로 등록 학생과 매칭해 `subject_enrollment`에 저장(그 학년 명단 전체 교체). 공통과목은 반 전체라 입력 불필요. **호실 열은 선택 입력** — 학생마다 실제로 가는 호실을 직접 적으면(예: 일부는 "3-1교실"에 남고 일부는 "시청각실"로 이동) 그대로 저장되고, 비워두면 고사 시간표에 입력한 그 과목의 기본 호실이 적용됨. 매칭 실패/이름 불일치는 경고로 표시, 반+번호 일치 시 이름 달라도 저장. 아래 요약 카드에 학년별 과목·인원과 함께 **호실별 인원 분포**(여러 호실이거나 미지정 학생이 있을 때만 표시, 미지정은 주황 강조)가 나타나고, "이 학년 명단 삭제" 버튼 제공.
+3. **학생별 개인 시간표** — 학년/학급(전체 가능) 선택 후 "개인 시간표 인쇄" → 시간표+응시자명단을 학생 기준으로 합쳐 학생마다 `날짜·교시·시간·과목·장소` 표를 새 창에 세로 A4로 모아 출력(학생별 page-break). 공통=본인 교실, 선택=**그 학생에게 지정된 호실**(개인 호실 없으면 과목 기본 호실), 신청 안 한 교시=자습(회색). 팝업 자동 인쇄.
+
 ### 자리배치표
 **1단계 — 시험 방식 선택**: 별실 시험 / 각자교실 시험
 
 **별실 시험** (여러 학급 학생이 한 방에 모여 응시, 예: 선택과목)
 1. 2단계: **날짜 / 학년 / 교시** 순으로 선택 / 교실 행·열 수 / 앞번호 시작 방향(창가·복도) / **좌석 편집**(없는 자리 클릭해서 제외 — 기둥, 사물함 등 불규칙한 교실 구조 대응). 좌석 편집 칸 위에 **"칠판" 표시 바**와 좌우에 **"← 창가" / "복도 →" 라벨**이 있어 실제 배치 결과와 같은 방향 감각으로 편집 가능
-2. 3단계: 과목명 / 별실 호실 입력 → 선택한 **학년 전체 학생**이 반별로 그룹핑되어 나열됨(1반 전체, 2반 전체 순) → 응시자를 클릭해서 선택
-3. 배치표 생성 → 선택된 학생이 **반-번호 순**으로 자동 배치, 좌석 칸에 **학년-반-번호-이름**까지 표시. 이때 선택한 날짜/교시 기준으로 `absences` 테이블을 조회해서, 선택한 응시자 중 이미 결시 처리된 학생은 **자리를 그대로 유지한 채**(다른 학생이 당겨 앉지 않음) 빨간 점선 + "결시"로 표시됨(각자교실과 동일한 방식) — 결시생도 반드시 자기 자리에 배치되고 빈자리로 스킵되지 않음
-4. 인쇄 버튼 옆 **현재 자리배치 저장** 버튼 → 날짜/교시/학년/과목명/호실/좌석 설정/선택 학생을 `seat_charts` 테이블에 저장. "3단계" 카드 우측 상단 **저장된 배치표 불러오기**로 목록을 열어 클릭하면 해당 설정이 그대로 복원되고 배치표가 즉시 재생성됨. 불러온 뒤 내용을 수정하고 다시 저장하면 새 항목이 아니라 **같은 저장 항목이 갱신**됨(버튼 라벨이 "다시 저장"으로 바뀜). 학년을 바꾸거나 다른 시험 방식으로 전환하면 새 저장으로 취급됨. 목록의 각 항목 옆 **삭제** 버튼으로 더 이상 필요 없는 저장 항목을 제거 가능(확인창 후 즉시 삭제, 되돌리기 불가). 현재 불러와 편집 중인 항목을 삭제하면 "저장" 버튼은 갱신이 아닌 새 저장으로 전환됨
+2. 3단계 상단 **시간표 기반 일괄 배치(권장)**: 설정 탭의 고사 시간표에 입력된 그 학년 **선택과목 전체** + 선택과목 응시자 명단을 읽어, **과목×호실 조합별로** 배치표를 **한 번에 생성·저장**(2단계 좌석 설정을 공통 그리드로 적용). 응시자 명단에 학생별 호실이 지정돼 있으면 그 호실별로 각각 배치표가 나뉘어 생성되고(같은 과목이라도 호실이 다르면 별개 배치표), 호실 미지정 학생은 시간표에 입력한 그 과목의 기본 호실로 묶임. 확인창에 "과목 N개(호실 기준 M개 배치표)"로 실제 생성될 개수를 미리 안내. 같은 과목·호실·날짜·교시로 이미 저장된 항목은 갱신, 응시자 명단 없음/좌석 부족(호실 단위로 판단)은 건너뜀(경고 표시). 생성 후 '저장된 배치표 불러오기'에서 개별 확인·인쇄·조정. 그 아래는 종전대로 **과목 하나씩 직접 배치**하는 흐름:
+3. 3단계: 과목명 / 별실 호실 입력 → 선택한 **학년 전체 학생**이 반별로 그룹핑되어 나열됨(1반 전체, 2반 전체 순) → 응시자를 클릭해서 선택
+   - **엑셀로 응시자 일괄 등록**(신규): 학생 선택 목록 위에 **양식 다운로드**(반/번호/이름 열, 학년은 2단계에서 고른 학년이 자동 적용됨) → 해당 과목 응시자만 채운 엑셀을 **드래그앤드롭(또는 클릭)** 하면 반+번호 기준으로 등록 학생과 자동 매칭되어 그 학생들만 선택 상태로 전환됨. 매칭 안 되는 행(등록 안 된 반/번호)이나 이름이 다른 행은 업로드 상태 메시지에 경고로 표시되지만, 반+번호가 일치하면 이름이 달라도 선택은 반영됨. 업로드 후에도 아래 학생 목록에서 클릭으로 개별 추가·해제 가능(수동 선택과 병행)
+4. 배치표 생성 → 선택된 학생이 **반-번호 순**(=학번 순)으로 자동 배치, 좌석 칸에 **학년-반-번호-이름**까지 표시. 이때 선택한 날짜/교시 기준으로 `absences` 테이블을 조회해서, 선택한 응시자 중 이미 결시 처리된 학생은 **자리를 그대로 유지한 채**(다른 학생이 당겨 앉지 않음) 빨간 점선 + "결시"로 표시됨(각자교실과 동일한 방식) — 결시생도 반드시 자기 자리에 배치되고 빈자리로 스킵되지 않음
+5. 인쇄 버튼 옆 **현재 자리배치 저장** 버튼 → 날짜/교시/학년/과목명/호실/좌석 설정/선택 학생을 `seat_charts` 테이블에 저장. "3단계" 카드 우측 상단 **저장된 배치표 불러오기**로 목록을 열어 클릭하면 해당 설정이 그대로 복원되고 배치표가 즉시 재생성됨. 불러온 뒤 내용을 수정하고 다시 저장하면 새 항목이 아니라 **같은 저장 항목이 갱신**됨(버튼 라벨이 "다시 저장"으로 바뀜). 학년을 바꾸거나 다른 시험 방식으로 전환하면 새 저장으로 취급됨. 목록의 각 항목 옆 **삭제** 버튼으로 더 이상 필요 없는 저장 항목을 제거 가능(확인창 후 즉시 삭제, 되돌리기 불가). 현재 불러와 편집 중인 항목을 삭제하면 "저장" 버튼은 갱신이 아닌 새 저장으로 전환됨
 
 **각자교실 시험** (자기 반 교실에서 그대로 응시)
 1. 2단계: **날짜 / 학급 / 교시** 순으로 선택 / 교실 행·열 수 / 앞번호 시작 방향 / 좌석 편집(별실과 동일하게 칠판·창가·복도 표시 포함)
@@ -219,10 +309,17 @@ ALTER PUBLICATION supabase_realtime ADD TABLE input_completions;
 | absences | school_code | 결시 기록(사유 포함), Realtime 구독 |
 | exam_dates | school_code | 고사 날짜 — DB 저장으로 전환, 담당자가 저장하면 다른 교사도 접속 시 동일하게 보임 |
 | seat_charts | school_code | 자리배치표 저장(별실/각자교실 공용, mode='separate'\|'own') — separate는 grade, own은 class_id로 대상 식별. 좌석 설정 + 선택 학생 id 목록(JSONB) 저장, 불러오기 시 재적용 |
+| exam_timetable | school_code | 고사 시간표(학년별 날짜/교시 → 과목 목록 JSONB + 교시 시각). 개인 시간표·일괄 배치의 바탕. 저장 시 학교 전체 삭제 후 재삽입 |
+| subject_enrollment | school_code | 선택과목 응시자(학생↔과목). subject_name이 exam_timetable·seat_charts와 잇는 키. `room`(학생별 개인 호실, 선택)으로 한 과목을 여러 호실로 분할 가능 — 비어있으면 exam_timetable의 과목 기본 호실 사용. 업로드 시 해당 학년 전체 교체 |
 | input_completions | school_code | 결시 입력 "반영 완료" 기록(학급/날짜/교시 단위), 고사본부 제출 현황판의 근거 데이터. absences와 함께 Realtime 구독 |
 
 - Realtime 채널: 로그인 시 1회 생성(`abs-{SCHOOL_CODE}`), 로그아웃 또는 5분 유휴 시 해제. 같은 채널에 Presence를 붙여 헤더의 접속자 수 표시에 사용, absences/input_completions 변경 시 고사본부 자동 새로고침
-- 엑셀 처리: 템플릿 생성(스타일링)은 ExcelJS, 업로드 파일 읽기는 SheetJS 사용 (용도별로 라이브러리 분리)
+- 엑셀 처리: 템플릿 생성(스타일링)은 ExcelJS, 업로드 파일 읽기는 SheetJS 사용 (용도별로 라이브러리 분리). ExcelJS·SheetJS·html2canvas·jsPDF는 **초기 로딩에서 제외되고 해당 기능을 처음 사용할 때 지연 로딩**됨(`loadLib`/`ensureLibs`, 이후 캐시 재사용). 용도별로 별개 템플릿/함수로 분리되어 있음:
+  - 학생 등록용(학년/반/번호/이름 → `students` DB 저장)
+  - 별실 응시자 **선택용**(반/번호/이름 → 화면 선택 상태만 반영, DB 미저장) — 자리배치 탭 3단계의 과목 하나씩 직접 배치 흐름
+  - 선택과목 응시자 **명단용**(과목명/반/번호/이름 → `subject_enrollment` DB 저장) — 설정 탭, 일괄 배치·개인 시간표의 바탕
+- 과목명 매칭: `exam_timetable`의 선택과목명 · `subject_enrollment.subject_name` · `seat_charts.subject_name`이 **문자열 완전 일치**로 연결됨(띄어쓰기·특수문자 포함). 입력 UI 3곳(시간표/명단 업로드/양식 안내)에 정확 입력 경고 문구가 있음
+- **선택과목 호실이 여러 개로 나뉘는 경우** (2026-07 도입): 한 별실에 학년 전체가 못 들어가거나, 같은 과목 응시자 중 일부만 별실로 이동하고 일부는 본인 교실에 남는 등 "과목=호실 1개" 가정이 안 맞는 학교가 있어, 호실을 **학생 단위**로 지정하도록 변경. `exam_timetable`의 과목별 호실은 "호실이 하나뿐일 때의 기본값"으로 남고, `subject_enrollment.room`에 학생별 실제 호실을 넣으면 그 값이 우선 적용됨(개인 시간표 표시, 일괄 자리배치의 그룹 분할 기준 모두 동일). 시간표 기반 일괄 배치는 이제 "과목" 단위가 아니라 "과목×호실" 단위로 배치표를 생성 — 같은 과목이라도 호실이 다르면 별개의 `seat_charts` 행으로 저장됨(매칭 키에 `room_name` 포함)
 
 ---
 
@@ -231,14 +328,15 @@ ALTER PUBLICATION supabase_realtime ADD TABLE input_completions;
 - [ ] **RLS(행 단위 보안) 미적용** — 의도적으로 비활성화된 상태 (위 1번 섹션 참고), 민감도가 높아지면 정책 추가 필요. 진짜 격리를 하려면 Supabase Auth 등 개별 로그인 도입이 선행되어야 함(현재는 학교코드가 학교 전체가 공유하는 통행증이라 "누가 입력/저장했는지" 자체도 구분 안 됨 — 결시 입력 담당자 추적, 자리배치표 저장 목록도 같은 이유로 학교 내 전 교사에게 공유됨)
 - [ ] **전체 학교 합산 동시 접속자 수는 표시 불가** — Supabase 클라이언트 SDK로는 프로젝트 전체의 실시간 연결 수를 조회할 수 없음(Supabase 대시보드에서만 확인 가능). 현재는 **우리 학교 접속자 수**만 헤더에 표시됨. 200명 한도에 근접했을 때 앱이 자동으로 경고하는 기능은 없음
 
-### 검토 후 보류하기로 결정한 아이디어
-- **교시별 과목명 고정 설정(시험 시간표 입력)** — 별실 시험은 담당자 1명이 1회성으로 입력·인쇄하는 흐름이라 자동완성의 이득이 거의 없고, 각자교실 시험(여러 담임이 같은 교시를 반복 입력 — 자동완성 이득이 있는 쪽)은 보통 한 교시에 과목이 갈리지 않아 다과목 매핑이 필요 없음. 반대로 다과목 매핑이 필요한 쪽(별실, 선택과목으로 한 교시에 2과목 이상)은 자동완성 이득이 없는 쪽이라, 두 필요가 서로 겹치지 않아 이 기능 전체의 실익이 낮다고 판단해 보류함. 각자교실 한정으로 "교시=과목 1:1" 단순 매핑 정도는 추후 요청 시 고려 가능
+### 구현됨 (과거 보류 → 방향을 바꿔 도입)
+- **고사 시간표 입력** — 과거엔 "교시별 과목명 자동완성" 관점에서 실익이 낮다고 보류했으나, 요청 방향이 바뀌어 **학년별 시간표를 authoritative 데이터로 미리 입력**하고 이를 바탕으로 ①선택과목 일괄 자리배치 ②학생별 개인 시간표를 만드는 형태로 도입됨(`exam_timetable`/`subject_enrollment` 테이블, 설정 탭). 위 "사용 방법" 참고
 
 ---
 
 ## 6. 향후 개선 아이디어 (선택 사항)
 
 우선순위 높은 순:
+- [ ] **개인 시간표에 좌석 위치 표시** — 현재 개인 시간표는 과목·장소(호실)까지만 표시. 저장된 별실 배치표(`seat_charts`)와 매칭해 "몇 행 몇 열/○번 자리"까지 넣으려면 좌석 번호 체계 정의가 선행 필요(지금 좌석은 행·열 격자만 있고 번호가 없음)
 - [ ] **개별 좌석표(책상 이름표) 인쇄** — 지금은 교실 전체가 한 장에 나오는 배치도만 있음. 책상에 붙이는 개인용 이름표(학년-반-번호-이름) 형식으로 별도 인쇄하는 옵션
 - [ ] **배치표에서 학생 검색** — 좌석 수가 많을 때 이름으로 검색해서 좌석 위치를 하이라이트
 - [ ] 좌석 편집 결과(제외한 자리)를 학급/교실별로 저장해 재사용
