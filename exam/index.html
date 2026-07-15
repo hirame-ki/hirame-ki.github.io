@@ -376,6 +376,18 @@
         <div class="form-group"><label>&nbsp;</label><button class="btn btn-primary" onclick="printStudentTimetables()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"></path><rect x="4" y="9" width="16" height="8" rx="1"></rect><path d="M6 14h12v7H6z"></path></svg>개인 시간표 인쇄</button></div>
       </div>
     </div>
+
+    <div class="section-title" style="--sec-accent:var(--danger)"><svg class="icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path><path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>오래된 데이터 정리</div>
+    <div class="card">
+      <div class="tt-help" style="background:var(--danger-light);color:var(--danger)">
+        <b>주의:</b> 기준 날짜 <b>이전</b>의 결시 기록, 고사 시간표, 자리배치표, 결시 입력 제출완료 기록, 고사 날짜 자체를 <b>완전히 삭제</b>합니다. 학급·학생 명단, 선택과목 응시자 명단은 영향받지 않습니다. <b>삭제 후에는 되돌릴 수 없으니</b> 지난 학기 등 더 이상 필요 없는 과거 기록에만 사용하세요. Supabase 무료 플랜 저장 용량이 부족해질 때 여유 공간을 확보하는 용도입니다.
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>이 날짜 이전 기록 삭제</label><input type="date" id="cleanupCutoffDate" /></div>
+        <div class="form-group"><label>&nbsp;</label><button class="btn" style="background:var(--danger);color:#fff" onclick="cleanupOldData()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"></path><path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"></path></svg>정리하기</button></div>
+      </div>
+      <div id="cleanupStatus" style="margin-top:8px;font-size:13px"></div>
+    </div>
   </div>
 
   <!-- 결시 입력 -->
@@ -843,13 +855,29 @@ function populateDateSelects(){
   });
 }
 
+// 학급 관련 화면만 다시 그림(loadAllData처럼 학생/날짜/시간표/선택과목까지 전부 재조회하지 않음)
+function renderClassesUI(){
+  renderClassList();renderStudentSummary();renderStudentClassSelect();renderClassStudentRoster();
+  renderSetupExtras();
+}
+// classes 테이블만 다시 조회 — 학급 추가/삭제처럼 학생 명단 자체는 안 바뀌는 작업에 사용
+async function reloadClasses(){
+  if(!sb)return;
+  const{data:cls}=await sb.from('classes').select('*').eq('school_code',SCHOOL_CODE).order('grade').order('class_num');
+  const newClasses=cls||[];
+  const newIds=new Set(newClasses.map(c=>c.id));
+  Object.keys(students).forEach(cid=>{if(!newIds.has(Number(cid)))delete students[cid];});
+  newClasses.forEach(c=>{if(!(c.id in students))students[c.id]=[];});
+  classes=newClasses;
+  renderClassesUI();
+}
 async function addClass(){
   const grade=parseInt(document.getElementById('newGrade').value);
   const num=parseInt(document.getElementById('newClassNum').value);
   if(!grade||!num||num<1){showToast('반 번호를 입력하세요');return;}
   const{error}=await sb.from('classes').upsert({school_code:SCHOOL_CODE,grade,class_num:num},{onConflict:'school_code,grade,class_num'});
   if(error){showToast('오류: '+error.message);return;}
-  showToast(grade+'-'+num+'반 추가됨');await loadAllData();
+  showToast(grade+'-'+num+'반 추가됨');await reloadClasses();
 }
 async function removeClass(id){
   const c=classes.find(x=>x.id===id);
@@ -857,7 +885,7 @@ async function removeClass(id){
   if(!confirm(`${label}과 등록된 학생 명단을 모두 삭제할까요?`))return;
   const{error}=await sb.from('classes').delete().eq('id',id);
   if(error){showToast('오류: '+error.message);return;}
-  showToast(label+' 삭제됨');await loadAllData();
+  showToast(label+' 삭제됨');await reloadClasses();
 }
 async function saveStudents(){
   const classId=parseInt(document.getElementById('studentClassSel').value);
@@ -869,10 +897,12 @@ async function saveStudents(){
   if(!parsed.length){showToast('형식 오류. 예: 1. 홍길동');return;}
   const{error:delErr}=await sb.from('students').delete().eq('class_id',classId);
   if(delErr){showToast('기존 명단 삭제 실패: '+delErr.message+' — 저장을 중단했습니다');return;}
-  const{error}=await sb.from('students').insert(parsed);
+  const{data,error}=await sb.from('students').insert(parsed).select();
   if(error){showToast('오류: '+error.message);return;}
+  students[classId]=(data||[]).slice().sort((a,b)=>a.number-b.number);
   document.getElementById('studentSaveStatus').innerHTML=`<span class="badge badge-success">${icon('checkCircle',12)}${parsed.length}명 저장됨</span>`;
-  document.getElementById('studentListInput').value='';await loadAllData();
+  document.getElementById('studentListInput').value='';
+  renderClassesUI();
 }
 async function downloadExcelTemplate(){
   if(!await ensureLibs('exceljs'))return;
@@ -968,8 +998,10 @@ async function processExcelFile(file){
     const{error:clsErr}=await sb.from('classes').upsert(uniqClasses,{onConflict:'school_code,grade,class_num'});
     if(clsErr){statusEl.innerHTML='<span class="badge badge-danger">학급 저장 오류: '+esc(clsErr.message)+'</span>';return;}
 
-    const{data:allCls}=await sb.from('classes').select('*').eq('school_code',SCHOOL_CODE);
-    const clsMap={};(allCls||[]).forEach(c=>clsMap[c.grade+'-'+c.class_num]=c.id);
+    const{data:allCls}=await sb.from('classes').select('*').eq('school_code',SCHOOL_CODE).order('grade').order('class_num');
+    classes=allCls||[];
+    classes.forEach(c=>{if(!(c.id in students))students[c.id]=[];});
+    const clsMap={};classes.forEach(c=>clsMap[c.grade+'-'+c.class_num]=c.id);
 
     const byClass={};
     parsed.forEach(r=>{
@@ -984,12 +1016,15 @@ async function processExcelFile(file){
       if(delErr){statusEl.innerHTML='<span class="badge badge-danger">기존 명단 삭제 실패: '+esc(delErr.message)+' — 업로드를 중단했습니다. 다시 시도해주세요</span>';return;}
     }
     const studentRows=Object.values(byClass).flat();
-    const{error:stErr}=await sb.from('students').insert(studentRows);
+    const{data:insertedStudents,error:stErr}=await sb.from('students').insert(studentRows).select();
     if(stErr){statusEl.innerHTML='<span class="badge badge-danger">학생 저장 오류: '+esc(stErr.message)+'</span>';return;}
+    affectedClassIds.forEach(cid=>{students[cid]=[];});
+    (insertedStudents||[]).forEach(s=>{(students[s.class_id]=students[s.class_id]||[]).push(s);});
+    affectedClassIds.forEach(cid=>{(students[cid]||[]).sort((a,b)=>a.number-b.number);});
 
     statusEl.innerHTML=`<span class="badge badge-success">${icon('checkCircle',12)}학급 ${Object.keys(byClass).length}개 / 학생 ${studentRows.length}명 업로드 완료</span>`;
     showToast('엑셀 업로드 완료');
-    await loadAllData();
+    renderClassesUI();
   }catch(err){
     console.error(err);
     statusEl.innerHTML='<span class="badge badge-danger">업로드 실패: '+esc(err.message)+'</span>';
@@ -1033,7 +1068,10 @@ async function updateStudent(sid,classId){
   const{error}=await sb.from('students').update({number,name}).eq('id',sid);
   if(error){showToast('오류: '+error.message);return;}
   showToast('학생 정보가 수정되었습니다');
-  await loadAllData();
+  const list=students[classId]||[];
+  const idx=list.findIndex(s=>s.id===sid);
+  if(idx>=0){list[idx]={...list[idx],number,name};list.sort((a,b)=>a.number-b.number);}
+  renderClassesUI();
 }
 async function deleteStudent(sid,classId){
   const s=(students[classId]||[]).find(x=>x.id===sid);
@@ -1042,7 +1080,8 @@ async function deleteStudent(sid,classId){
   const{error}=await sb.from('students').delete().eq('id',sid);
   if(error){showToast('오류: '+error.message);return;}
   showToast(label+' 삭제됨');
-  await loadAllData();
+  students[classId]=(students[classId]||[]).filter(x=>x.id!==sid);
+  renderClassesUI();
 }
 function renderStudentSummary(){
   const el=document.getElementById('studentSummary');
@@ -2668,6 +2707,36 @@ ${pagesHtml.join('')}
   win.document.close();win.focus();win.onload=()=>win.print();
 }
 
+/* ---- 오래된 데이터 정리 (Supabase 무료 플랜 용량 관리) ---- */
+async function cleanupOldData(){
+  const cutoff=document.getElementById('cleanupCutoffDate').value;
+  if(!cutoff){showToast('기준 날짜를 선택하세요');return;}
+  const st=document.getElementById('cleanupStatus');
+  st.textContent='대상 확인 중...';
+  const tables=['absences','exam_timetable','seat_charts','input_completions','exam_dates'];
+  const counts=await Promise.all(tables.map(t=>
+    sb.from(t).select('id',{count:'exact',head:true}).eq('school_code',SCHOOL_CODE).lt('exam_date',cutoff)
+  ));
+  const countErr=counts.find(r=>r.error);
+  if(countErr){st.innerHTML='<span class="badge badge-danger">확인 실패: '+esc(countErr.error.message)+'</span>';return;}
+  const[absN,ttN,seatN,compN,dateN]=counts.map(r=>r.count||0);
+  const total=absN+ttN+seatN+compN+dateN;
+  if(!total){st.innerHTML='<span style="color:var(--text3)">'+fmtDate(cutoff)+' 이전 기록이 없습니다</span>';return;}
+  if(!confirm(`${fmtDate(cutoff)} 이전 기록을 삭제합니다.\n\n결시 ${absN}건 · 시간표 ${ttN}칸 · 자리배치표 ${seatN}개 · 제출완료 ${compN}건 · 고사 날짜 ${dateN}개\n\n삭제된 데이터는 되돌릴 수 없습니다. 계속할까요?`))return;
+  st.textContent='삭제 중...';
+  const results=await Promise.all(tables.map(t=>
+    sb.from(t).delete().eq('school_code',SCHOOL_CODE).lt('exam_date',cutoff)
+  ));
+  const errs=results.map(r=>r.error).filter(Boolean);
+  if(errs.length){
+    st.innerHTML='<span class="badge badge-danger">일부 삭제 실패: '+esc(errs.map(e=>e.message).join('; '))+' — 새로고침 후 남은 데이터를 확인해주세요</span>';
+  }else{
+    st.innerHTML=`<span class="badge badge-success">${icon('checkCircle',12)}${fmtDate(cutoff)} 이전 기록 삭제 완료</span>`;
+    showToast('오래된 데이터를 정리했습니다');
+  }
+  document.getElementById('cleanupCutoffDate').value='';
+  await loadAllData();
+}
 function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${m}월 ${day}일`;}
 function showToast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
