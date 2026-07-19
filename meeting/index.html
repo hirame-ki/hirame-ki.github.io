@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>협의회 정리 도우미</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<style>
+:root{
+  --navy-deep:#0d1b2e; --navy:#13233c; --navy-card:#1a2d4a; --navy-line:#2a3f60;
+  --gold:#d4af5f; --gold-soft:#e8ce93; --gold-dim:rgba(212,175,95,.14);
+  --ink:#e9edf4; --ink-dim:#93a3bc; --ink-faint:#5f7191;
+  --ok:#6fce9a; --err:#e77d7d;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Pretendard Variable',Pretendard,'Noto Sans KR',sans-serif;background:var(--navy-deep);color:var(--ink);line-height:1.6;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(900px 400px at 80% -10%, rgba(212,175,95,.07), transparent 60%),
+  radial-gradient(700px 500px at -10% 100%, rgba(50,90,160,.12), transparent 60%);
+  pointer-events:none}
+.wrap{max-width:860px;margin:0 auto;padding:36px 20px 110px;position:relative}
+
+/* header */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+h1{font-size:1.7rem;font-weight:800;letter-spacing:-.02em}
+h1 .mark{color:var(--gold)}
+.sub{color:var(--ink-dim);font-size:.92rem;margin-bottom:10px}
+.conn-pill{border:1px solid var(--navy-line);background:var(--navy);color:var(--ink-dim);border-radius:999px;padding:7px 16px;font-size:.85rem;cursor:pointer;font-family:inherit;transition:all .15s}
+.conn-pill:hover{border-color:var(--gold)}
+.conn-pill.ok{color:var(--ok);border-color:rgba(111,206,154,.5)}
+.consent{margin:12px 0 24px;padding:10px 14px;border:1px solid var(--navy-line);border-left:3px solid var(--gold);border-radius:8px;font-size:.85rem;color:var(--ink-dim);background:var(--navy)}
+.consent b{color:var(--gold-soft)}
+
+/* api panel */
+#apiPanel{display:none;background:var(--navy);border:1px solid var(--gold);border-radius:var(--radius);padding:22px;margin-bottom:20px}
+#apiPanel.open{display:block}
+.api-title{font-weight:700;color:var(--gold-soft);margin-bottom:14px;font-size:1rem}
+.guide{background:var(--navy-deep);border:1px solid var(--navy-line);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+.guide h4{font-size:.88rem;color:var(--gold-soft);margin-bottom:8px}
+.guide ol{margin-left:18px;font-size:.84rem;color:var(--ink-dim)}
+.guide ol li{margin-bottom:4px}
+.guide a{color:var(--gold);text-decoration:none;border-bottom:1px dotted var(--gold)}
+.api-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.api-row label{flex:none;width:110px;font-size:.85rem;color:var(--ink-dim);padding-top:9px}
+.api-row input,.api-row select{flex:1;min-width:200px;background:var(--navy-deep);border:1px solid var(--navy-line);border-radius:8px;padding:9px 12px;color:var(--ink);font-size:.88rem;font-family:inherit}
+.api-row input:focus,.api-row select:focus{outline:none;border-color:var(--gold)}
+.btn{background:var(--gold);color:#1a1408;border:none;border-radius:8px;padding:9px 18px;font-weight:700;font-size:.88rem;cursor:pointer;font-family:inherit;transition:filter .15s}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.btn.small{padding:6px 12px;font-size:.8rem}
+.conn{font-size:.85rem;margin:4px 0 12px}
+.conn.ok{color:var(--ok)}
+.conn.err{color:var(--err)}
+.remember{font-size:.8rem;color:var(--ink-faint);display:flex;align-items:center;gap:6px;margin-top:6px}
+
+/* step frame */
+.step{background:var(--navy);border:1px solid var(--navy-line);border-radius:var(--radius);padding:22px;margin-bottom:18px}
+.step-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.step-n{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--gold);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;flex:none}
+.step-t{font-weight:700;font-size:1.02rem}
+
+/* chips */
+.opt-group{margin-bottom:16px}
+.opt-group:last-child{margin-bottom:0}
+.opt-label{font-size:.82rem;color:var(--ink-dim);margin-bottom:8px;letter-spacing:.02em}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--navy-line);background:var(--navy-deep);color:var(--ink-dim);border-radius:999px;padding:7px 16px;font-size:.86rem;cursor:pointer;font-family:inherit;transition:all .15s;text-align:left}
+.chip:hover{border-color:var(--gold);color:var(--ink)}
+.chip.on{background:var(--gold-dim);border-color:var(--gold);color:var(--gold-soft);font-weight:600}
+.chip .tiny{font-size:.72rem;opacity:.75;display:block;line-height:1.2}
+
+/* drop */
+.drop{border:2px dashed var(--navy-line);border-radius:var(--radius);padding:40px 20px;text-align:center;cursor:pointer;transition:all .2s;color:var(--ink-dim);display:block}
+.drop:hover,.drop.over{border-color:var(--gold);background:var(--gold-dim);color:var(--ink)}
+.drop .big{font-size:2rem;margin-bottom:8px}
+.drop .fname{color:var(--gold-soft);font-weight:600;word-break:break-all}
+.drop input{display:none}
+
+/* progress */
+.prog-wrap{display:none;margin-top:16px}
+.prog-bar{height:10px;background:var(--navy-deep);border:1px solid var(--navy-line);border-radius:999px;overflow:hidden}
+.prog-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--gold-soft));transition:width .3s;border-radius:999px}
+.prog-txt{font-size:.83rem;color:var(--ink-dim);margin-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+
+/* result */
+#resultSec{display:none}
+.rcard{background:var(--navy-card);border:1px solid var(--navy-line);border-radius:var(--radius);margin-bottom:14px;overflow:hidden}
+.rcard-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 18px;border-bottom:1px solid var(--navy-line)}
+.rcard-t{font-weight:700;color:var(--gold-soft);font-size:.95rem;display:flex;align-items:center;gap:8px}
+.rcard-t::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none}
+.rcard-body{padding:16px 18px}
+.rcard-body[contenteditable]{outline:none;white-space:pre-wrap;font-size:.9rem;min-height:40px}
+.rcard-body[contenteditable]:focus{background:rgba(212,175,95,.04)}
+.editable-note{font-size:.72rem;color:var(--ink-faint)}
+details.transcript{border-top:0}
+details.transcript summary{padding:12px 18px;cursor:pointer;font-size:.86rem;color:var(--ink-dim);list-style:none;user-select:none}
+details.transcript summary::before{content:'▸ ';color:var(--gold)}
+details.transcript[open] summary::before{content:'▾ '}
+details.transcript .rcard-body{border-top:1px solid var(--navy-line);max-height:420px;overflow-y:auto}
+.export-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.err-box{display:none;margin-top:14px;padding:12px 16px;border:1px solid var(--err);border-radius:10px;color:var(--err);font-size:.86rem;background:rgba(231,125,125,.06);white-space:pre-wrap}
+
+/* Q&A */
+#qaSec{display:none}
+.qa-log{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;max-height:440px;overflow-y:auto}
+.qa-msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:.89rem;white-space:pre-wrap}
+.qa-msg.user{align-self:flex-end;background:var(--gold-dim);border:1px solid var(--gold);color:var(--gold-soft);border-bottom-right-radius:4px}
+.qa-msg.ai{align-self:flex-start;background:var(--navy-card);border:1px solid var(--navy-line);border-bottom-left-radius:4px}
+.qa-msg.ai.thinking{color:var(--ink-faint);font-style:italic}
+.qa-input-row{display:flex;gap:8px}
+.qa-input-row input{flex:1;background:var(--navy-deep);border:1px solid var(--navy-line);border-radius:8px;padding:10px 14px;color:var(--ink);font-size:.9rem;font-family:inherit}
+.qa-input-row input:focus{outline:none;border-color:var(--gold)}
+.qa-ex{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.qa-ex .chip{font-size:.78rem;padding:5px 12px}
+
+/* toast + creator */
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--gold);color:#1a1408;padding:10px 22px;border-radius:999px;font-weight:700;font-size:.86rem;transition:transform .3s;z-index:99}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.creator{position:fixed;right:16px;bottom:16px;z-index:98;display:inline-flex;align-items:center;gap:7px;background:var(--navy);border:1px solid var(--gold);color:var(--gold-soft);border-radius:999px;padding:7px 15px;font-size:.82rem;font-weight:600;text-decoration:none;box-shadow:0 4px 16px rgba(0,0,0,.4);transition:all .15s}
+.creator:hover{background:var(--gold-dim)}
+.creator svg{width:14px;height:14px;fill:currentColor}
+@media(max-width:560px){.api-row label{width:100%;padding-top:0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <h1>협의회 <span class="mark">정리</span> 도우미</h1>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="conn-pill" id="connPill">API 연결 필요 — 눌러서 설정</button>
+    <button class="conn-pill" id="resetKeysBtn" title="저장된 키를 지우고 다시 설정" style="display:none">키 재설정</button>
+  </div>
+</div>
+<div class="sub">녹음 드래그 한 번 → 전사 · 안건별 정리 · 결과에 질문까지</div>
+<div class="consent">⚠️ 회의 녹음은 <b>참석자 동의 하에</b> 사용하세요. 오디오는 브라우저에서 분할된 뒤 STT API(Groq)로 전송됩니다. 완전 로컬 처리가 아닙니다.</div>
+
+<!-- API PANEL (최초 1회) -->
+<section id="apiPanel">
+  <div class="api-title">🔑 API 연결 (최초 1회)</div>
+
+  <div class="guide">
+    <h4>① Groq 키 발급 — 전사(음성→텍스트)용 · Whisper Large v3 (Groq 최고 정확도 모델) 자동 사용</h4>
+    <ol>
+      <li><a href="https://console.groq.com" target="_blank" rel="noopener">console.groq.com</a> 접속 → 구글 계정으로 로그인</li>
+      <li>왼쪽 메뉴 <b>API Keys</b> → <b>Create API Key</b> 클릭</li>
+      <li>이름은 아무거나 입력(예: 협의회) → 생성된 <b>gsk_...</b> 키를 복사 (이 화면을 닫으면 다시 못 봅니다)</li>
+      <li>아래 칸에 붙여넣고 <b>검증</b></li>
+    </ol>
+  </div>
+  <div class="api-row">
+    <label for="groqKey">Groq 키</label>
+    <input type="password" id="groqKey" placeholder="gsk_..." autocomplete="off">
+    <button class="btn small" id="groqTest">검증</button>
+  </div>
+  <div class="conn" id="groqStat"></div>
+
+  <div class="guide">
+    <h4>② NVIDIA 키 발급 — AI 정리·질문용</h4>
+    <ol>
+      <li><a href="https://build.nvidia.com" target="_blank" rel="noopener">build.nvidia.com</a> 접속 → 오른쪽 위 로그인(이메일 인증)</li>
+      <li>아무 모델이나 클릭 → 오른쪽 코드 영역의 <b>Get API Key</b> 버튼 클릭</li>
+      <li>생성된 <b>nvapi-...</b> 키를 복사해 아래 칸에 붙여넣고 <b>검증</b></li>
+    </ol>
+  </div>
+  <div class="api-row">
+    <label for="nvKey">NVIDIA 키</label>
+    <input type="password" id="nvKey" placeholder="nvapi-..." autocomplete="off">
+    <button class="btn small" id="nvTest">검증</button>
+  </div>
+  <div class="api-row">
+    <label for="nvModel">정리 모델</label>
+    <select id="nvModel">
+      <option value="nvidia/nemotron-3-super-120b-a12b">Nemotron 3 Super (1순위·최고 성능)</option>
+      <option value="deepseek-ai/deepseek-v4-flash">DeepSeek V4 Flash</option>
+      <option value="meta/llama-3.3-70b-instruct">Llama 3.3 70B</option>
+      <option value="qwen/qwen3-235b-a22b">Qwen3 235B</option>
+    </select>
+  </div>
+  <div class="conn" id="nvStat"></div>
+  <div style="font-size:.78rem;color:var(--ink-faint);margin-bottom:6px">선택한 모델이 응답하지 않으면 목록의 다른 모델로 자동 전환됩니다.</div>
+
+  <label class="remember"><input type="checkbox" id="saveKeys" checked> 이 브라우저에 키 저장 (다음부터 자동 연결 · 공용 PC에서는 해제)</label>
+  <div style="text-align:right;margin-top:10px"><button class="btn" id="apiDone">연결 완료</button></div>
+</section>
+
+<!-- STEP 1 : 파일 -->
+<section class="step">
+  <div class="step-h"><div class="step-n">1</div><div class="step-t">녹음 파일 선택</div></div>
+  <label class="drop" id="drop">
+    <div class="big">🎙️</div>
+    <div id="dropTxt">여기에 녹음 파일을 드래그하거나 클릭해서 선택<br><span style="font-size:.8rem;color:var(--ink-faint)">mp3 · m4a · wav · ogg — 긴 파일도 자동 분할됩니다</span></div>
+    <input type="file" id="fileInput" accept="audio/*,.m4a">
+  </label>
+</section>
+
+<!-- STEP 2 : 옵션 -->
+<section class="step">
+  <div class="step-h"><div class="step-n">2</div><div class="step-t">결과물 옵션</div></div>
+
+  <div class="opt-group">
+    <div class="opt-label">결과 유형</div>
+    <div class="chips" id="chipsMode">
+      <button class="chip on" data-v="summary">AI 정리만<span class="tiny">안건·결정·후속조치</span></button>
+      <button class="chip" data-v="transcript">전문 전사만<span class="tiny">말한 그대로 텍스트</span></button>
+      <button class="chip" data-v="both">둘 다<span class="tiny">정리 + 전사 원문</span></button>
+    </div>
+  </div>
+
+  <div class="opt-group" id="grpStyle">
+    <div class="opt-label">정리 문체</div>
+    <div class="chips" id="chipsStyle">
+      <button class="chip on" data-v="개조식">개조식<span class="tiny">~함 · ~임 · ~하기로 함</span></button>
+      <button class="chip" data-v="격식">회의록 격식체<span class="tiny">~하였음 · ~하기로 결정함</span></button>
+      <button class="chip" data-v="서술">서술형<span class="tiny">~했습니다 문장체</span></button>
+    </div>
+  </div>
+
+  <div class="opt-group" id="grpFormat">
+    <div class="opt-label">정리 형식</div>
+    <div class="chips" id="chipsFormat">
+      <button class="chip on" data-v="안건별">안건별 구조화<span class="tiny">개요·안건·결정·후속조치</span></button>
+      <button class="chip" data-v="시간순">시간순 요약<span class="tiny">회의 흐름대로</span></button>
+      <button class="chip" data-v="핵심만">핵심만 간략<span class="tiny">결정사항 위주</span></button>
+    </div>
+  </div>
+
+  <div class="prog-wrap" id="progWrap">
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-txt"><span id="progLabel">준비 중…</span><span id="progPct">0%</span></div>
+  </div>
+  <div class="err-box" id="errBox"></div>
+  <div style="margin-top:16px;text-align:right"><button class="btn" id="startBtn" disabled>정리 시작</button></div>
+</section>
+
+<!-- RESULT -->
+<section class="step" id="resultSec">
+  <div class="step-h"><div class="step-n">✓</div><div class="step-t">결과</div></div>
+  <div id="resultCards"></div>
+  <div class="export-row">
+    <button class="btn ghost small" id="copyBtn">전체 복사</button>
+    <button class="btn ghost small" id="dlMd">.md 다운로드</button>
+    <button class="btn ghost small" id="dlTxt">.txt 다운로드</button>
+    <button class="btn small" id="resetBtn">새 파일 정리</button>
+  </div>
+</section>
+
+<!-- STEP 3 : Q&A -->
+<section class="step" id="qaSec">
+  <div class="step-h"><div class="step-n">3</div><div class="step-t">회의 내용에 질문하기</div></div>
+  <div class="qa-ex" id="qaEx">
+    <button class="chip">이 회의의 결정사항만 다시 알려줘</button>
+    <button class="chip">내가 해야 할 후속조치는?</button>
+    <button class="chip">가정통신문용 안내문으로 바꿔줘</button>
+  </div>
+  <div class="qa-log" id="qaLog"></div>
+  <div class="qa-input-row">
+    <input type="text" id="qaInput" placeholder="예: 예산 관련 논의만 요약해줘">
+    <button class="btn" id="qaSend">질문</button>
+  </div>
+</section>
+
+</div>
+
+<a class="creator" href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener" aria-label="제작자 인스타그램">
+  <svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.06 1.8.25 2.2.42.56.22.96.48 1.38.9.42.42.68.82.9 1.38.17.42.36 1.05.42 2.23.06 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.06 1.18-.25 1.81-.42 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.17-1.05.36-2.23.42-1.27.06-1.65.07-4.85.07s-3.58 0-4.85-.07c-1.18-.06-1.81-.25-2.23-.42a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.17-.42-.36-1.05-.42-2.23C2.2 15.6 2.2 15.2 2.2 12s0-3.58.07-4.85c.06-1.18.25-1.81.42-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.17 1.05-.36 2.23-.42C8.4 2.2 8.8 2.2 12 2.2m0 3.66a6.14 6.14 0 1 0 0 12.28 6.14 6.14 0 0 0 0-12.28m0 10.12a3.99 3.99 0 1 1 0-7.97 3.99 3.99 0 0 1 0 7.97m7.83-10.37a1.43 1.43 0 1 1-2.87 0 1.43 1.43 0 0 1 2.87 0"/></svg>
+  @hirame.ki
+</a>
+<div class="toast" id="toast">복사되었습니다</div>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+let audioFile=null, transcriptText='', summaryText='';
+let groqOk=false, nvOk=false;
+const LS='hirameki_council_keys';
+
+/* ---------- api panel / persistence ---------- */
+function pillUpdate(){
+  const p=$('connPill');
+  if(groqOk&&nvOk){p.textContent='● API 연결됨';p.classList.add('ok');}
+  else if(groqOk){p.textContent='● Groq만 연결됨 (정리·질문엔 NVIDIA 키 필요)';p.classList.remove('ok');}
+  else{p.textContent='API 연결 필요 — 눌러서 설정';p.classList.remove('ok');}
+  $('resetKeysBtn').style.display=(groqOk||nvOk)?'inline-flex':'none';
+  checkReady();
+}
+$('connPill').addEventListener('click',()=>$('apiPanel').classList.toggle('open'));
+$('resetKeysBtn').addEventListener('click',()=>{
+  if(!confirm('저장된 API 키를 지우고 새로 연결하시겠습니까?'))return;
+  try{localStorage.removeItem(LS);}catch(e){}
+  groqOk=false; nvOk=false;
+  $('groqKey').value=''; $('nvKey').value='';
+  $('groqStat').textContent=''; $('groqStat').className='conn';
+  $('nvStat').textContent=''; $('nvStat').className='conn';
+  $('apiPanel').classList.add('open');
+  pillUpdate();
+  $('apiPanel').scrollIntoView({behavior:'smooth'});
+});
+$('apiDone').addEventListener('click',()=>{
+  if(!groqOk){alert('Groq 키를 먼저 검증해 주세요. (전사에 필수)');return;}
+  if($('saveKeys').checked){
+    try{localStorage.setItem(LS,JSON.stringify({g:$('groqKey').value.trim(),n:$('nvKey').value.trim(),m:$('nvModel').value}));}catch(e){}
+  }else{try{localStorage.removeItem(LS);}catch(e){}}
+  $('apiPanel').classList.remove('open');
+  pillUpdate();
+});
+
+async function testGroq(silent){
+  const k=$('groqKey').value.trim(); const s=$('groqStat');
+  if(!k){if(!silent){s.textContent='키를 입력하세요';s.className='conn err';}return;}
+  s.textContent='확인 중…';s.className='conn';
+  try{
+    const r=await fetch('https://api.groq.com/openai/v1/models',{headers:{Authorization:'Bearer '+k}});
+    if(!r.ok)throw 0;
+    groqOk=true; s.textContent='● 연결됨';s.className='conn ok';
+  }catch(e){groqOk=false; s.textContent='연결 실패 — 키를 확인하세요';s.className='conn err';}
+  pillUpdate();
+}
+async function testNv(silent){
+  const k=$('nvKey').value.trim(); const s=$('nvStat');
+  if(!k){if(!silent){s.textContent='키를 입력하세요';s.className='conn err';}return;}
+  s.textContent='확인 중… (몇 초 걸릴 수 있음)';s.className='conn';
+  try{
+    const r=await fetch('https://integrate.api.nvidia.com/v1/chat/completions',{
+      method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+k},
+      body:JSON.stringify({model:$('nvModel').value,max_tokens:5,messages:[{role:'user',content:'hi'}]})
+    });
+    if(!r.ok)throw 0;
+    nvOk=true; s.textContent='● 연결됨';s.className='conn ok';
+  }catch(e){nvOk=false; s.textContent='연결 실패 — 키 또는 브라우저 차단(CORS) 문제일 수 있습니다';s.className='conn err';}
+  pillUpdate();
+}
+$('groqTest').addEventListener('click',()=>testGroq(false));
+$('nvTest').addEventListener('click',()=>testNv(false));
+
+/* restore saved keys → auto validate → 가려진 상태 유지 */
+(async function restore(){
+  let saved=null;
+  try{saved=JSON.parse(localStorage.getItem(LS)||'null');}catch(e){}
+  if(saved&&saved.g){
+    $('groqKey').value=saved.g;
+    if(saved.n)$('nvKey').value=saved.n;
+    if(saved.m)$('nvModel').value=saved.m;
+    await testGroq(true);
+    if(saved.n)await testNv(true);
+  }else{
+    $('apiPanel').classList.add('open');
+  }
+})();
+
+/* ---------- chips ---------- */
+function chipGroup(el){
+  el.addEventListener('click',e=>{
+    const c=e.target.closest('.chip'); if(!c)return;
+    el.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');
+    if(el.id==='chipsMode'){updateModeUI();checkReady();}
+  });
+}
+chipGroup($('chipsMode')); chipGroup($('chipsStyle')); chipGroup($('chipsFormat'));
+const getChip=el=>el.querySelector('.chip.on').dataset.v;
+function updateModeUI(){
+  const show=getChip($('chipsMode'))!=='transcript';
+  $('grpStyle').style.display=show?'':'none';
+  $('grpFormat').style.display=show?'':'none';
+}
+updateModeUI();
+
+function checkReady(){
+  const mode=getChip($('chipsMode'));
+  const need = mode==='transcript' ? groqOk : (groqOk && nvOk);
+  $('startBtn').disabled = !(need && audioFile);
+}
+
+/* ---------- file ---------- */
+const drop=$('drop');
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over');});
+drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');
+  if(e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);});
+$('fileInput').addEventListener('change',e=>{if(e.target.files[0])setFile(e.target.files[0]);});
+function setFile(f){
+  audioFile=f;
+  $('dropTxt').innerHTML='<span class="fname">'+f.name+'</span><br><span style="font-size:.8rem;color:var(--ink-faint)">'+(f.size/1048576).toFixed(1)+' MB — 다른 파일로 바꾸려면 다시 드래그</span>';
+  checkReady();
+}
+
+/* ---------- progress ---------- */
+function prog(pct,label){
+  $('progWrap').style.display='block';
+  $('progFill').style.width=pct+'%';
+  $('progPct').textContent=Math.round(pct)+'%';
+  $('progLabel').textContent=label;
+}
+function showErr(msg){$('errBox').style.display='block';$('errBox').textContent=msg;}
+
+/* ---------- audio: decode + chunk to 16kHz mono WAV ---------- */
+const CHUNK_SEC=480, OVERLAP_SEC=3, SR=16000;
+async function decodeAudio(file){
+  const buf=await file.arrayBuffer();
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const decoded=await ctx.decodeAudioData(buf);
+  ctx.close();
+  return decoded;
+}
+function resampleMono(decoded){
+  const len=decoded.length, ch=decoded.numberOfChannels;
+  const mono=new Float32Array(len);
+  for(let c=0;c<ch;c++){const d=decoded.getChannelData(c);for(let i=0;i<len;i++)mono[i]+=d[i]/ch;}
+  const ratio=decoded.sampleRate/SR;
+  const outLen=Math.floor(len/ratio);
+  const out=new Float32Array(outLen);
+  for(let i=0;i<outLen;i++){
+    const p=i*ratio, i0=Math.floor(p), i1=Math.min(i0+1,len-1), t=p-i0;
+    out[i]=mono[i0]*(1-t)+mono[i1]*t;
+  }
+  return out;
+}
+function toWav(samples){
+  const n=samples.length, buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');v.setUint32(4,36+n*2,true);ws(8,'WAVE');ws(12,'fmt ');
+  v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,SR,true);v.setUint32(28,SR*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);
+  ws(36,'data');v.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++){const s=Math.max(-1,Math.min(1,samples[i]));v.setInt16(44+i*2,s<0?s*0x8000:s*0x7FFF,true);}
+  return new Blob([buf],{type:'audio/wav'});
+}
+function chunkSamples(samples){
+  const per=CHUNK_SEC*SR, ov=OVERLAP_SEC*SR, chunks=[];
+  let start=0;
+  while(start<samples.length){
+    const end=Math.min(start+per,samples.length);
+    chunks.push(samples.subarray(start,end));
+    if(end>=samples.length)break;
+    start=end-ov;
+  }
+  return chunks;
+}
+
+/* ---------- STT (Groq Whisper) ---------- */
+async function sttChunk(wavBlob){
+  const fd=new FormData();
+  fd.append('file',wavBlob,'chunk.wav');
+  fd.append('model','whisper-large-v3');
+  fd.append('language','ko');
+  fd.append('response_format','json');
+  const r=await fetch('https://api.groq.com/openai/v1/audio/transcriptions',{
+    method:'POST',headers:{Authorization:'Bearer '+$('groqKey').value.trim()},body:fd});
+  if(!r.ok){const t=await r.text();throw new Error('STT 오류 ('+r.status+'): '+t.slice(0,200));}
+  const j=await r.json();
+  return (j.text||'').trim();
+}
+
+/* ---------- LLM (NVIDIA) ---------- */
+/* 선택 모델 실패 시 다른 모델로 자동 전환 (폴백 체인) */
+let lastModelUsed='';
+function modelChain(){
+  const sel=$('nvModel').value;
+  const all=[...$('nvModel').options].map(o=>o.value);
+  return [sel,...all.filter(v=>v!==sel)];
+}
+async function nvChatOnce(model,messages,maxTokens){
+  const r=await fetch('https://integrate.api.nvidia.com/v1/chat/completions',{
+    method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+$('nvKey').value.trim()},
+    body:JSON.stringify({model,temperature:0.2,max_tokens:maxTokens||4096,messages})});
+  if(!r.ok){const t=await r.text();const e=new Error('LLM 오류 ('+r.status+'): '+t.slice(0,160));e.status=r.status;throw e;}
+  const j=await r.json();
+  return (j.choices?.[0]?.message?.content||'').trim();
+}
+async function nvChat(messages,maxTokens){
+  const chain=modelChain();
+  let lastErr=null;
+  for(const m of chain){
+    try{
+      const out=await nvChatOnce(m,messages,maxTokens);
+      if(lastModelUsed && lastModelUsed!==m){/* keep */}
+      if(m!==chain[0] && lastModelUsed!==m) toastMsg('대체 모델로 전환: '+m.split('/').pop());
+      lastModelUsed=m;
+      return out;
+    }catch(e){
+      lastErr=e;
+      if(e.status===401){break;} /* 키 문제는 폴백 무의미 */
+    }
+  }
+  throw new Error((lastErr?lastErr.message:'알 수 없는 오류')+'\n(등록된 모든 모델 시도 실패)');
+}
+const STYLE_RULE={
+  '개조식':'모든 문장을 개조식으로 작성한다. 어미는 "~함", "~임", "~하기로 함", "~예정" 등을 사용하고 완결된 경어체 문장을 쓰지 않는다.',
+  '격식':'공식 회의록 격식체로 작성한다. 어미는 "~하였음", "~하기로 결정함", "~할 것을 요청함" 등을 사용한다.',
+  '서술':'자연스러운 서술형 존댓말 문장("~했습니다", "~하기로 했습니다")으로 작성한다.'
+};
+const FORMAT_RULE={
+  '안건별':'다음 마크다운 구조를 정확히 따른다:\n## 회의 개요\n(일시·주제 등 추론 가능한 범위만)\n## 안건별 논의\n(안건마다 소제목 + 핵심 논의 3~5줄)\n## 결정사항\n(확정된 내용만 불릿)\n## 후속조치\n([담당] 할 일 (기한) 형식. 명시되지 않으면 "담당 미지정")',
+  '시간순':'회의 진행 흐름(시간순)대로 "## 회의 개요" 뒤에 논의 순서대로 소제목을 나누어 요약하고, 마지막에 "## 결정사항"과 "## 후속조치"를 정리한다.',
+  '핵심만':'"## 핵심 요약"(5줄 이내), "## 결정사항", "## 후속조치"만 간략히 작성한다. 논의 과정 설명은 생략한다.'
+};
+async function summarize(text){
+  const style=getChip($('chipsStyle')), fmt=getChip($('chipsFormat'));
+  const sys='당신은 학교 회의록 정리 전문가다. 사용자가 제공하는 회의 전사문을 한국어로 정리한다.\n'
+    +FORMAT_RULE[fmt]+'\n문체 규칙: '+STYLE_RULE[style]
+    +'\n절대 규칙: 전사문에 없는 내용을 창작하지 않는다. 불분명한 부분은 "(녹음에서 불명확)"으로 표기한다. 마크다운 외 다른 말은 출력하지 않는다.';
+  return nvChat([{role:'system',content:sys},{role:'user',content:'다음 회의 전사문을 정리하라:\n\n'+text}]);
+}
+async function summarizeLong(text){
+  if(text.length<=12000) return summarize(text);
+  const parts=[];
+  for(let i=0;i<text.length;i+=10000) parts.push(text.slice(i,i+10000));
+  const partials=[];
+  for(let i=0;i<parts.length;i++){
+    prog(70+(i/parts.length)*20,'정리 중… (구간 '+(i+1)+'/'+parts.length+')');
+    partials.push(await nvChat([
+      {role:'system',content:'회의 전사문 일부를 정보 손실 없이 한국어 개조식으로 압축 요약하라. 논의·결정·할 일을 빠뜨리지 마라.'},
+      {role:'user',content:parts[i]}],2048));
+  }
+  prog(92,'최종 통합 정리 중…');
+  return summarize(partials.join('\n\n---\n\n'));
+}
+
+/* ---------- run ---------- */
+$('startBtn').addEventListener('click',async()=>{
+  $('errBox').style.display='none';
+  $('startBtn').disabled=true;
+  const mode=getChip($('chipsMode'));
+  try{
+    prog(2,'오디오 디코딩 중… (큰 파일은 시간이 걸립니다)');
+    const decoded=await decodeAudio(audioFile);
+    prog(8,'변환·분할 중…');
+    const mono=resampleMono(decoded);
+    const chunks=chunkSamples(mono);
+    const texts=[];
+    for(let i=0;i<chunks.length;i++){
+      prog(10+(i/chunks.length)*55,'전사 중… ('+(i+1)+'/'+chunks.length+')');
+      texts.push(await sttChunk(toWav(chunks[i])));
+    }
+    transcriptText=texts.join('\n');
+    summaryText='';
+    if(mode!=='transcript'){
+      prog(70,'AI 정리 중…');
+      summaryText=await summarizeLong(transcriptText);
+    }
+    prog(100,'완료');
+    renderResult(mode);
+  }catch(e){
+    showErr('처리 중 오류가 발생했습니다.\n'+e.message+'\n\n· NVIDIA 오류가 계속되면 브라우저 CORS 차단일 수 있습니다.\n· 파일이 매우 크면 짧게 잘라 다시 시도해 보세요.');
+    prog(0,'중단됨');
+  }
+  $('startBtn').disabled=false;
+});
+
+/* ---------- result ---------- */
+function renderResult(mode){
+  const box=$('resultCards'); box.innerHTML='';
+  if(summaryText){
+    box.insertAdjacentHTML('beforeend',
+      '<div class="rcard"><div class="rcard-h"><div class="rcard-t">AI 정리 결과</div><span class="editable-note">클릭해서 바로 수정 가능</span></div>'
+      +'<div class="rcard-body" contenteditable="true" id="sumBody"></div></div>');
+    $('sumBody').textContent=summaryText;
+    $('sumBody').addEventListener('input',()=>summaryText=$('sumBody').innerText);
+  }
+  if(mode!=='summary'){
+    const openAttr = mode==='transcript' ? ' open' : '';
+    box.insertAdjacentHTML('beforeend',
+      '<div class="rcard"><details class="transcript"'+openAttr+'><summary>전사 원문 (말한 그대로)</summary>'
+      +'<div class="rcard-body" contenteditable="true" id="trBody"></div></details></div>');
+    $('trBody').textContent=transcriptText;
+    $('trBody').addEventListener('input',()=>transcriptText=$('trBody').innerText);
+  }
+  $('resultSec').style.display='block';
+  if(nvOk) $('qaSec').style.display='block';
+  $('resultSec').scrollIntoView({behavior:'smooth'});
+}
+function fullText(){
+  let t='';
+  if(summaryText) t+=summaryText+'\n\n';
+  if(getChip($('chipsMode'))!=='summary') t+='---\n\n## 전사 원문\n\n'+transcriptText;
+  return t.trim();
+}
+function toastMsg(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+$('copyBtn').addEventListener('click',async()=>{await navigator.clipboard.writeText(fullText());toastMsg('복사되었습니다');});
+function dl(ext){
+  const blob=new Blob([fullText()],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='협의회정리_'+new Date().toISOString().slice(0,10)+'.'+ext;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+$('dlMd').addEventListener('click',()=>dl('md'));
+$('dlTxt').addEventListener('click',()=>dl('txt'));
+$('resetBtn').addEventListener('click',()=>{
+  audioFile=null;transcriptText='';summaryText='';
+  $('resultSec').style.display='none';$('qaSec').style.display='none';
+  $('qaLog').innerHTML='';qaHistory.length=0;
+  $('progWrap').style.display='none';
+  $('dropTxt').innerHTML='여기에 녹음 파일을 드래그하거나 클릭해서 선택<br><span style="font-size:.8rem;color:var(--ink-faint)">mp3 · m4a · wav · ogg — 긴 파일도 자동 분할됩니다</span>';
+  $('fileInput').value='';
+  checkReady();
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ---------- Q&A ---------- */
+const qaHistory=[];
+function qaAdd(role,text,thinking){
+  const d=document.createElement('div');
+  d.className='qa-msg '+(role==='user'?'user':'ai')+(thinking?' thinking':'');
+  d.textContent=text;
+  $('qaLog').appendChild(d);
+  $('qaLog').scrollTop=$('qaLog').scrollHeight;
+  return d;
+}
+async function qaAsk(q){
+  if(!q.trim())return;
+  if(!nvOk){qaAdd('ai','질문 기능은 NVIDIA 키 연결이 필요합니다. 상단의 연결 버튼에서 설정해 주세요.');return;}
+  qaAdd('user',q);
+  $('qaInput').value='';
+  const th=qaAdd('ai','생각 중…',true);
+  try{
+    const ctx = transcriptText || summaryText;
+    const sys='당신은 학교 회의 기록 보조자다. 아래 회의 기록을 근거로만 한국어로 답한다. 기록에 없는 내용은 "회의 기록에 없는 내용입니다"라고 말한다. 간결하게 답한다.\n\n[회의 기록]\n'
+      + ctx.slice(0,24000) + (summaryText&&transcriptText?'\n\n[AI 정리본]\n'+summaryText.slice(0,6000):'');
+    const msgs=[{role:'system',content:sys},...qaHistory.slice(-6),{role:'user',content:q}];
+    const ans=await nvChat(msgs,2048);
+    th.classList.remove('thinking'); th.textContent=ans;
+    qaHistory.push({role:'user',content:q},{role:'assistant',content:ans});
+  }catch(e){
+    th.classList.remove('thinking'); th.textContent='오류: '+e.message;
+  }
+}
+$('qaSend').addEventListener('click',()=>qaAsk($('qaInput').value));
+$('qaInput').addEventListener('keydown',e=>{if(e.key==='Enter')qaAsk($('qaInput').value);});
+$('qaEx').addEventListener('click',e=>{const c=e.target.closest('.chip');if(c)qaAsk(c.textContent);});
+})();
+</script>
+</body>
+</html>
