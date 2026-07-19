@@ -162,6 +162,30 @@
   }
   .chip:hover{background:rgba(201,162,75,.28)}
 
+  .depth{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .depth-label{color:var(--muted);font-size:.82rem;font-weight:700}
+  .dchip{
+    background:var(--gold-dim);border:1px solid var(--line);color:var(--gold-soft);
+    border-radius:99px;padding:5px 12px;font-size:.78rem;cursor:pointer;transition:background .2s;
+  }
+  .dchip:hover{background:rgba(201,162,75,.28)}
+  .dchip.sel{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:var(--navy-900);border-color:var(--gold);font-weight:800}
+  .depth-note{color:var(--muted);font-size:.75rem;flex-basis:100%;margin-top:-2px}
+
+  /* ---- 제작자 칩 (항상 우하단 고정) ---- */
+  .creator-chip{
+    position:fixed;right:16px;bottom:16px;z-index:1000;
+    display:inline-flex;align-items:center;gap:7px;
+    background:linear-gradient(180deg,rgba(20,36,64,.96),rgba(11,26,51,.96));
+    border:1px solid var(--line);color:var(--gold-soft);
+    border-radius:99px;padding:8px 14px;font-size:.8rem;font-weight:700;
+    text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.35);
+    backdrop-filter:blur(4px);transition:background .2s,transform .2s,box-shadow .2s;
+  }
+  .creator-chip:hover{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:var(--navy-900);transform:translateY(-1px);box-shadow:0 8px 22px rgba(201,162,75,.35)}
+  .creator-chip svg{flex:none}
+  @media (max-width:520px){ .creator-chip{right:12px;bottom:12px;padding:7px 12px;font-size:.75rem} }
+
   /* ---- Answer ---- */
   #answer{margin-top:22px;display:none}
   #answer.show{display:block}
@@ -284,6 +308,13 @@
     <p class="hint">사례나 상황을 적으면, 관련 조항을 찾아 근거와 함께 답변합니다.</p>
 
     <textarea id="question" placeholder="예) 학생 A가 다른 학생을 지속적으로 따돌린 정황이 있습니다. 전담기구 심의 대상인지, 어떤 절차를 밟아야 하는지 규정 근거와 함께 알려주세요."></textarea>
+    <div class="depth" id="depth">
+      <span class="depth-label">근거 조항 수</span>
+      <span class="dchip sel" data-k="3">3개 · 핵심만</span>
+      <span class="dchip" data-k="5">5개</span>
+      <span class="dchip" data-k="8">8개 · 폭넓게</span>
+      <span class="depth-note">많이 볼수록 근거는 폭넓어지지만, 답변 로딩이 길어질 수 있어요.</span>
+    </div>
     <div class="row">
       <div class="examples" id="examples">
         <span class="chip">이 사례가 규정에 어긋나는 점은?</span>
@@ -313,6 +344,11 @@
   <footer>규정나침반 · NVIDIA NIM 무료 API 기반 · 문서 분석·답변 생성은 <b>NVIDIA 서버</b>에서 이뤄지며, 내용은 중계 서버를 거쳐 전달됩니다(저장 안 함) — by <b>@hirame.ki</b></footer>
 </div>
 
+<a class="creator-chip" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener" aria-label="제작자 인스타그램 @hirame.ki">
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
+  <span>제작 @hirame.ki</span>
+</a>
+
 <script>
 // ▼▼▼ 배포한 Cloudflare Worker 주소로 바꾸세요 (끝에 /v1 포함) ▼▼▼
 // 예: const BASE = "https://regchart-proxy.내계정.workers.dev/v1";
@@ -324,7 +360,7 @@ const CHAT_LABEL  = "Llama 3.3 70B";
 const DB_KEY  = "regchart_chunks_v1";
 const KEY_KEY = "regchart_apikey_v1";
 
-let state = { apiKey:"", chunks:[] }; // chunks: {id,file,loc,text,vec}
+let state = { apiKey:"", chunks:[], topK:3 }; // chunks: {id,file,loc,text,vec}; topK: 검색 근거 조항 수
 
 /* ---------- storage ----------
    임베딩 벡터가 커서 localStorage(약 5MB) 한도를 넘기므로 IndexedDB에 저장한다.
@@ -620,6 +656,12 @@ $("#examples").querySelectorAll(".chip").forEach(ch=>{
   ch.onclick=()=>{ const q=$("#question"); q.value=(q.value?q.value+"\n":"")+ch.textContent; q.focus(); };
 });
 
+/* ---------- 근거 조항 수 선택 ---------- */
+const depthChips=document.querySelectorAll("#depth .dchip");
+depthChips.forEach(ch=>{
+  ch.onclick=()=>{ state.topK=+ch.dataset.k; depthChips.forEach(c=>c.classList.toggle("sel", c===ch)); };
+});
+
 /* ---------- ask ---------- */
 $("#askBtn").onclick=ask;
 $("#question").addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){ e.preventDefault(); ask(); } });
@@ -637,7 +679,7 @@ async function ask(){
   try{
     const [qv]=await embed([q], "query");
     const scored=state.chunks.map(c=>({c,s:cosine(qv,c.vec)})).sort((a,b)=>b.s-a.s);
-    const top=scored.slice(0,3).filter(x=>x.s>0.15);
+    const top=scored.slice(0, state.topK||3).filter(x=>x.s>0.15);
     if(!top.length){ ansBody.innerHTML='<p>등록된 규정에서 관련 조항을 찾지 못했습니다. 질문을 더 구체적으로 바꾸거나, 해당 규정 문서가 등록됐는지 확인해 주세요.</p>'; btn.disabled=false; btn.textContent="질의"; return; }
 
     btn.innerHTML='<span class="spinner"></span> 근거 정리 중';
