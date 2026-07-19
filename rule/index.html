@@ -313,7 +313,7 @@
       <span class="dchip sel" data-k="3">3개 · 핵심만</span>
       <span class="dchip" data-k="5">5개</span>
       <span class="dchip" data-k="8">8개 · 폭넓게</span>
-      <span class="depth-note">많이 볼수록 근거는 폭넓어지지만, 답변 로딩이 길어질 수 있어요.</span>
+      <span class="depth-note">근거 수는 답변의 폭을 조절합니다. 핵심만 빠르게 보려면 3개, 여러 조항을 두루 검토하려면 8개를 권해요. (로딩 시간은 주로 서버 혼잡도에 따라 달라집니다)</span>
     </div>
     <div class="row">
       <div class="examples" id="examples">
@@ -341,7 +341,7 @@
     </div>
   </section>
 
-  <footer>규정나침반 · NVIDIA NIM 무료 API 기반 · 문서 분석·답변 생성은 <b>NVIDIA 서버</b>에서 이뤄지며, 내용은 중계 서버를 거쳐 전달됩니다(저장 안 함) — by <b>@hirame.ki</b></footer>
+  <footer>규정나침반 · NVIDIA NIM 무료 API 기반 · 문서 분석·답변 생성은 <b>NVIDIA 서버</b>에서 이뤄지며, 내용은 중계 서버를 거쳐 전달됩니다(저장 안 함)</footer>
 </div>
 
 <a class="creator-chip" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener" aria-label="제작자 인스타그램 @hirame.ki">
@@ -708,6 +708,13 @@ async function ask(){
 
 반드시 순수 한글로만(한자·일본어 문자 금지), 사실 위주로 간결하게. 법적·행정적 최종 판단은 사람과 담당 기구의 몫이며, 당신은 근거를 가리키는 역할입니다.`;
     const user=`[근거 조항]\n${context}\n\n[질문/사례]\n${q}\n\n위 근거 조항만 사용해 형식에 맞춰 답하세요. 답변은 한자·일본어 문자 없이 순수 한글로만 작성하세요.`;
+    ansBody.innerHTML=
+      '<p style="color:var(--gold-soft)"><span class="spinner"></span> 관련 조항을 찾았습니다. 답변을 작성하고 있어요…</p>'
+      +'<div style="color:var(--muted);font-size:.82rem;line-height:1.65;margin-top:10px;border:1px dashed var(--line);border-radius:8px;padding:12px 14px">'
+      +'💡 <b>왜 조금 기다리게 되나요?</b><br>'
+      +'이 서비스는 <b>엔비디아(NVIDIA)의 무료 AI 서버</b>로 답변을 만듭니다. 무료로 개방된 서버라, 전 세계 이용자가 몰리는 시간대에는 내 요청이 <b>대기열에서 순서를 기다리게</b> 돼요. 그래서 첫 문장이 나타나기까지 보통 몇 초, 혼잡할 땐 <b>30초~1분 이상</b> 걸리기도 합니다.<br>'
+      +'화면이 멈춘 것이 아니며, 순서가 오면 아래에 답변이 <b>한 글자씩 실시간</b>으로 나타납니다. 잠시만 기다려 주세요.'
+      +'</div>';
     const raw=await chat([{role:"system",content:sys},{role:"user",content:user}], (partial)=>{
       if(partial) ansBody.innerHTML=renderMd(partial);
     });
