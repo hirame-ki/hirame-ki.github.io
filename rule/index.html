@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>규정나침반 · 근거로 답하는 규정 도우미</title>
+<style>
+  :root{
+    --navy-900:#0b1a33;
+    --navy-800:#10254a;
+    --navy-700:#16305c;
+    --navy-600:#1d3d70;
+    --gold:#c9a24b;
+    --gold-soft:#e2c988;
+    --gold-dim:rgba(201,162,75,.16);
+    --paper:#f5f2ea;
+    --paper-dim:#e8e3d6;
+    --ink:#12233f;
+    --muted:#7f8ba0;
+    --line:rgba(201,162,75,.24);
+    --ok:#3f9d6d;
+    --warn:#c96a4b;
+    --shadow:0 18px 50px -20px rgba(6,16,34,.55);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Pretendard","Noto Sans KR","Malgun Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(201,162,75,.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(29,61,112,.4), transparent 55%),
+      var(--navy-900);
+    color:var(--paper);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px 80px}
+
+  /* ---- Header ---- */
+  header{padding:44px 0 26px;text-align:center;position:relative}
+  .crest{
+    width:56px;height:56px;margin:0 auto 16px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    border:1.5px solid var(--gold);
+    background:radial-gradient(circle at 50% 35%, rgba(201,162,75,.25), transparent 70%);
+    box-shadow:0 0 0 6px rgba(201,162,75,.06), inset 0 0 20px rgba(201,162,75,.12);
+  }
+  .crest svg{width:30px;height:30px}
+  h1{
+    font-size:2.05rem;font-weight:800;letter-spacing:.06em;
+    background:linear-gradient(180deg,#fff,var(--gold-soft));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .sub{color:var(--gold-soft);font-size:.82rem;letter-spacing:.34em;margin-top:8px;text-transform:uppercase;font-weight:600}
+  .tag{color:var(--muted);font-size:.92rem;margin-top:14px}
+  .rule{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:28px auto 0;max-width:220px;opacity:.7}
+
+  /* ---- Card ---- */
+  .card{
+    background:linear-gradient(180deg,var(--navy-800),var(--navy-700));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:26px;margin-top:22px;
+  }
+  .card h2{
+    font-size:1rem;font-weight:700;letter-spacing:.02em;
+    display:flex;align-items:center;gap:10px;margin-bottom:4px;color:#fff;
+  }
+  .card h2 .n{
+    width:24px;height:24px;flex:0 0 24px;border-radius:6px;
+    background:var(--gold-dim);border:1px solid var(--line);
+    color:var(--gold-soft);font-size:.8rem;font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .card .hint{color:var(--muted);font-size:.86rem;margin:6px 0 18px;padding-left:34px}
+
+  /* ---- API connect ---- */
+  .field{display:flex;gap:10px;flex-wrap:wrap}
+  input[type=password],input[type=text],select{
+    flex:1;min-width:180px;
+    background:var(--navy-900);border:1px solid var(--line);
+    color:var(--paper);border-radius:10px;padding:12px 14px;font-size:.95rem;
+    font-family:inherit;outline:none;transition:border-color .2s,box-shadow .2s;
+  }
+  input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,75,.15)}
+  select option{background:var(--navy-800)}
+  .btn{
+    background:linear-gradient(180deg,var(--gold-soft),var(--gold));
+    color:#2a1f06;border:none;border-radius:10px;padding:12px 22px;
+    font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit;
+    transition:transform .12s,filter .2s;white-space:nowrap;
+  }
+  .btn:hover{filter:brightness(1.06)}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.5;cursor:not-allowed;filter:grayscale(.4)}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--gold-soft)}
+
+  .guide{margin-top:16px;border-top:1px dashed var(--line);padding-top:16px}
+  .guide ol{list-style:none;counter-reset:s}
+  .guide li{counter-increment:s;position:relative;padding:6px 0 6px 34px;color:#cdd6e6;font-size:.9rem}
+  .guide li::before{
+    content:counter(s);position:absolute;left:0;top:6px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--gold-dim);border:1px solid var(--line);color:var(--gold-soft);
+    font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;
+  }
+  .guide a{color:var(--gold-soft);text-decoration:underline;text-underline-offset:2px}
+
+  /* connected pill */
+  .connected{
+    display:none;align-items:center;gap:12px;
+    background:rgba(63,157,109,.10);border:1px solid rgba(63,157,109,.4);
+    border-radius:10px;padding:14px 18px;
+  }
+  .connected.show{display:flex}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(63,157,109,.2);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .connected .txt{font-weight:700;color:#bfe7cf;font-size:.95rem}
+  .connected .model{color:var(--muted);font-size:.82rem;margin-left:auto}
+  .connected .unlink{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.82rem;text-decoration:underline}
+  .collapsible.hidden{display:none}
+
+  /* ---- Upload ---- */
+  .drop{
+    border:1.5px dashed var(--line);border-radius:12px;padding:30px 20px;text-align:center;
+    background:rgba(11,26,51,.5);cursor:pointer;transition:border-color .2s,background .2s;
+  }
+  .drop:hover,.drop.over{border-color:var(--gold);background:rgba(201,162,75,.06)}
+  .drop svg{width:34px;height:34px;opacity:.7;margin-bottom:8px}
+  .drop .big{font-weight:600;color:#dfe6f1}
+  .drop .small{color:var(--muted);font-size:.84rem;margin-top:4px}
+  .files{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .file{
+    display:flex;align-items:center;gap:12px;background:var(--navy-900);
+    border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:.9rem;
+  }
+  .file .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#dfe6f1}
+  .file .meta{color:var(--muted);font-size:.8rem}
+  .file .st{font-size:.78rem;font-weight:700}
+  .file .st.done{color:var(--ok)}
+  .file .st.proc{color:var(--gold-soft)}
+  .file .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;line-height:1}
+
+  .progress{height:6px;background:var(--navy-900);border-radius:99px;overflow:hidden;margin-top:14px;display:none}
+  .progress.show{display:block}
+  .progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold-soft));transition:width .3s}
+  .status-line{color:var(--muted);font-size:.84rem;margin-top:8px;min-height:1.2em}
+
+  /* ---- Ask ---- */
+  .ask textarea{
+    width:100%;background:var(--navy-900);border:1px solid var(--line);color:var(--paper);
+    border-radius:10px;padding:14px;font-size:.98rem;font-family:inherit;resize:vertical;min-height:92px;outline:none;
+  }
+  .ask textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,75,.15)}
+  .ask .row{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:12px}
+  .examples{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{
+    background:var(--gold-dim);border:1px solid var(--line);color:var(--gold-soft);
+    border-radius:99px;padding:6px 13px;font-size:.8rem;cursor:pointer;transition:background .2s;
+  }
+  .chip:hover{background:rgba(201,162,75,.28)}
+
+  /* ---- Answer ---- */
+  #answer{margin-top:22px;display:none}
+  #answer.show{display:block}
+  .ans-card{
+    background:linear-gradient(180deg,var(--navy-800),var(--navy-700));
+    border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;
+  }
+  .ans-head{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;background:rgba(201,162,75,.05)}
+  .ans-head .lbl{font-weight:700;color:var(--gold-soft);letter-spacing:.04em}
+  .ans-body{padding:22px}
+  .ans-body h3{color:#fff;font-size:1.02rem;margin:16px 0 8px}
+  .ans-body h3:first-child{margin-top:0}
+  .ans-body p{color:#dbe2ee;margin-bottom:10px}
+  .ans-body strong{color:var(--gold-soft)}
+  .ans-body ul{margin:6px 0 12px 18px;color:#dbe2ee}
+  .ans-body li{margin-bottom:5px}
+  .sources{border-top:1px solid var(--line);padding:18px 22px;background:rgba(11,26,51,.4)}
+  .sources .sh{font-size:.82rem;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;font-weight:700}
+  .src{
+    border-left:3px solid var(--gold);background:var(--navy-900);
+    border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:10px;
+  }
+  .src .loc{color:var(--gold-soft);font-size:.82rem;font-weight:700;margin-bottom:5px}
+  .src .txt{color:#c3ccdb;font-size:.86rem;line-height:1.55;max-height:4.6em;overflow:hidden;transition:max-height .3s}
+  .src .txt.open{max-height:600px}
+  .src .more{background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;margin-top:6px;text-decoration:underline}
+  .disclaimer{
+    margin-top:16px;background:rgba(201,106,75,.08);border:1px solid rgba(201,106,75,.3);
+    border-radius:10px;padding:12px 16px;color:#e6b8a6;font-size:.83rem;display:flex;gap:10px;
+  }
+  .disclaimer svg{width:18px;height:18px;flex:0 0 18px;margin-top:2px}
+
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(201,162,75,.3);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .locked{opacity:.4;pointer-events:none;filter:grayscale(.5)}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:40px;letter-spacing:.02em}
+  footer b{color:var(--gold-soft)}
+
+  @media (max-width:560px){
+    h1{font-size:1.6rem}
+    .card{padding:20px}
+    .connected .model{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="crest">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.6">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 3v2M12 19v2M3 12h2M19 12h2" stroke-width="1.2"/>
+        <path d="M12 12l4-6-6 4z" fill="#c9a24b" stroke="none"/>
+        <path d="M12 12l-4 6 6-4z" fill="#e2c988" stroke="none"/>
+        <circle cx="12" cy="12" r="1.2" fill="#0b1a33" stroke="none"/>
+      </svg>
+    </div>
+    <h1>규정나침반</h1>
+    <div class="sub">Compass for Regulations</div>
+    <p class="tag">규정을 올려두면, 근거 조항을 찾아 방향을 가리켜 드립니다.</p>
+    <div class="rule"></div>
+  </header>
+
+  <!-- STEP 1: API -->
+  <section class="card" id="apiCard">
+    <h2><span class="n">1</span> API 연결</h2>
+    <p class="hint">엔비디아 무료 API 키를 연결하세요. 키는 이 브라우저에만 저장되며, NVIDIA 호출 시 중계 서버를 거쳐 전달됩니다(서버에 저장·기록되지 않음). 공용 PC에서는 사용 후 <b>해제</b>를 눌러 주세요.</p>
+
+    <div class="collapsible" id="apiForm">
+      <div class="field">
+        <input type="password" id="apiKey" placeholder="nvapi-... 형식의 API 키를 붙여넣으세요" autocomplete="off">
+        <button class="btn" id="connectBtn">연결</button>
+      </div>
+      <div class="status-line" id="apiStatus"></div>
+
+      <div class="guide">
+        <ol>
+          <li><a href="https://build.nvidia.com" target="_blank" rel="noopener">build.nvidia.com</a> 접속 후 무료 가입 (신용카드 불필요)</li>
+          <li>아무 모델이나 열고 우측 <b>Get API Key</b> 클릭</li>
+          <li><b>nvapi-</b> 로 시작하는 키 복사 (한 번만 표시되니 꼭 저장)</li>
+          <li>위 칸에 붙여넣고 <b>연결</b> — 이 안내는 자동으로 닫힙니다</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="connected" id="connectedPill">
+      <span class="dot"></span>
+      <span class="txt">연결됨</span>
+      <span class="model" id="modelLabel"></span>
+      <button class="unlink" id="unlinkBtn">해제</button>
+    </div>
+  </section>
+
+  <!-- STEP 2: Upload -->
+  <section class="card locked" id="uploadCard">
+    <h2><span class="n">2</span> 규정 문서 등록</h2>
+    <p class="hint">내게 해당되는 규정·지침·매뉴얼을 올려두세요 (PDF · TXT). 처음 한 번만 분석하며, 이후엔 저장됩니다.</p>
+    <p class="hint" style="color:var(--warn)">⚠ 올린 문서의 내용은 분석·답변을 위해 NVIDIA 서버로 전송됩니다. 개인정보·기밀이 담긴 문서는 올리지 마세요.</p>
+
+    <div class="drop" id="drop">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.4">
+        <path d="M12 16V4M12 4l-4 4M12 4l4 4"/>
+        <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
+      </svg>
+      <div class="big">파일을 여기로 끌어다 놓거나 클릭해서 선택</div>
+      <div class="small">PDF · TXT · 여러 개 한꺼번에 가능</div>
+      <input type="file" id="fileInput" accept=".pdf,.txt" multiple hidden>
+    </div>
+
+    <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
+    <div class="status-line" id="uploadStatus"></div>
+    <div class="files" id="fileList"></div>
+  </section>
+
+  <!-- STEP 3: Ask -->
+  <section class="card locked ask" id="askCard">
+    <h2><span class="n">3</span> 규정 질의</h2>
+    <p class="hint">사례나 상황을 적으면, 관련 조항을 찾아 근거와 함께 답변합니다.</p>
+
+    <textarea id="question" placeholder="예) 학생 A가 다른 학생을 지속적으로 따돌린 정황이 있습니다. 전담기구 심의 대상인지, 어떤 절차를 밟아야 하는지 규정 근거와 함께 알려주세요."></textarea>
+    <div class="row">
+      <div class="examples" id="examples">
+        <span class="chip">이 사례가 규정에 어긋나는 점은?</span>
+        <span class="chip">필요한 절차와 기한은?</span>
+        <span class="chip">근거 조항 원문 보여줘</span>
+      </div>
+      <button class="btn" id="askBtn">질의</button>
+    </div>
+  </section>
+
+  <!-- Answer -->
+  <section id="answer">
+    <div class="ans-card">
+      <div class="ans-head">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#e2c988" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 12l4-6-6 4z" fill="#e2c988" stroke="none"/></svg>
+        <span class="lbl">규정나침반의 답변</span>
+      </div>
+      <div class="ans-body" id="ansBody"></div>
+      <div class="sources" id="sources"></div>
+    </div>
+    <div class="disclaimer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
+      <span>이 답변은 등록된 문서에서 찾은 근거를 정리한 <b>참고 자료</b>입니다. 실제 판단·처분은 반드시 원문 조항과 담당 기구의 검토를 거치세요.</span>
+    </div>
+  </section>
+
+  <footer>규정나침반 · NVIDIA NIM 무료 API 기반 · 문서 분석·답변 생성은 <b>NVIDIA 서버</b>에서 이뤄지며, 내용은 중계 서버를 거쳐 전달됩니다(저장 안 함) — by <b>@hirame.ki</b></footer>
+</div>
+
+<script>
+// ▼▼▼ 배포한 Cloudflare Worker 주소로 바꾸세요 (끝에 /v1 포함) ▼▼▼
+// 예: const BASE = "https://regchart-proxy.내계정.workers.dev/v1";
+// (NVIDIA는 브라우저 직접 호출을 막으므로, worker.js 프록시를 반드시 거쳐야 합니다.)
+const BASE = "https://YOUR-WORKER-NAME.workers.dev/v1";
+const EMBED_MODEL = "nvidia/llama-nemotron-embed-1b-v2";
+const CHAT_MODEL  = "nvidia/nemotron-3-super-120b-a12b";
+const CHAT_LABEL  = "Nemotron 3 Super 120B";
+const DB_KEY  = "regchart_chunks_v1";
+const KEY_KEY = "regchart_apikey_v1";
+
+let state = { apiKey:"", chunks:[] }; // chunks: {id,file,loc,text,vec}
+
+/* ---------- storage ---------- */
+function saveDB(){
+  try{ localStorage.setItem(DB_KEY, JSON.stringify(state.chunks)); }
+  catch(e){
+    const us=$("#uploadStatus");
+    if(us){ us.style.color="var(--warn)"; us.textContent="⚠ 저장 공간이 가득 찼습니다. 이 문서는 이번 방문에서만 사용 가능하며, 재방문 시 다시 등록해야 합니다. (불필요한 문서를 삭제해 주세요)"; }
+  }
+}
+function loadDB(){ try{ const d=localStorage.getItem(DB_KEY); if(d) state.chunks=JSON.parse(d); }catch(e){} }
+function saveKey(k){ try{ localStorage.setItem(KEY_KEY,k); }catch(e){} }
+function loadKey(){ try{ return localStorage.getItem(KEY_KEY)||""; }catch(e){ return ""; } }
+function clearKey(){ try{ localStorage.removeItem(KEY_KEY); }catch(e){} }
+
+/* ---------- API calls (429 자동 재시도 공통 처리) ---------- */
+async function apiFetch(path, body, tag){
+  const MAX_RETRY=3;
+  for(let attempt=0;;attempt++){
+    const res = await fetch(BASE+path,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+state.apiKey},
+      body:JSON.stringify(body)
+    });
+    if(res.status===429 && attempt<MAX_RETRY){ await sleep(4000*(attempt+1)); continue; }
+    if(!res.ok){ throw new Error(tag+" "+res.status+": "+(await res.text()).slice(0,160)); }
+    return res.json();
+  }
+}
+async function embed(texts, input_type){
+  const j = await apiFetch("/embeddings",
+    { model:EMBED_MODEL, input:texts, input_type, encoding_format:"float", truncate:"END" }, "embed");
+  // 순서 보장: index 기준 정렬 후 반환
+  return j.data.slice().sort((a,b)=>a.index-b.index).map(d=>d.embedding);
+}
+async function chat(messages){
+  const j = await apiFetch("/chat/completions",
+    { model:CHAT_MODEL, messages, temperature:0.2, top_p:0.9, max_tokens:2048 }, "chat");
+  let content = j.choices?.[0]?.message?.content ?? "";
+  // thinking 지원 모델의 추론 블록 제거 (닫힘 태그 누락 시에도 대응)
+  content = content.replace(/<think>[\s\S]*?<\/think>/g,"").replace(/^[\s\S]*?<\/think>/,"").trim();
+  if(!content) throw new Error("빈 응답이 반환되었습니다. 잠시 후 다시 시도해 주세요.");
+  return content;
+}
+function cosine(a,b){ let d=0,na=0,nb=0; for(let i=0;i<a.length;i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];} return d/(Math.sqrt(na)*Math.sqrt(nb)+1e-9); }
+
+/* ---------- PDF text extraction (pdf.js) ---------- */
+let pdfjsReady=null;
+function loadPdfjs(){
+  if(pdfjsReady) return pdfjsReady;
+  pdfjsReady = new Promise((resolve,reject)=>{
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    s.onload=()=>{ pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; resolve(); };
+    s.onerror=()=>reject(new Error("pdf.js 로드 실패"));
+    document.head.appendChild(s);
+  });
+  return pdfjsReady;
+}
+async function extractPdf(file){
+  await loadPdfjs();
+  const buf=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  const pages=[];
+  for(let p=1;p<=pdf.numPages;p++){
+    const page=await pdf.getPage(p);
+    const c=await page.getTextContent();
+    const txt=c.items.map(i=>i.str).join(" ").replace(/\s+/g," ").trim();
+    pages.push({page:p,text:txt});
+  }
+  return pages;
+}
+
+/* ---------- chunking ---------- */
+function chunkPages(fileName, pages){
+  const out=[]; const MAX=700;
+  const push=(page,t)=>{ t=t.trim(); if(!t) return;
+    // 문장 경계가 없어 과도하게 긴 조각은 강제 분할 (임베딩 입력 한도 보호)
+    for(let i=0;i<t.length;i+=MAX) out.push({file:fileName, loc:`p.${page}`, text:t.slice(i,i+MAX)});
+  };
+  for(const {page,text} of pages){
+    if(!text) continue;
+    const parts = text.split(/(?<=[.。!?？])\s+|(?<=다\.)\s+/);
+    let buf="";
+    for(const seg of parts){
+      if((buf+seg).length>MAX && buf){ push(page,buf); buf=""; }
+      buf+=seg+" ";
+    }
+    push(page,buf);
+  }
+  return out;
+}
+function chunkText(fileName, raw){
+  const out=[]; const MAX=700;
+  const paras=raw.split(/\n\s*\n/);
+  paras.forEach((para,idx)=>{
+    const t=para.replace(/\s+/g," ").trim();
+    if(!t) return;
+    for(let i=0;i<t.length;i+=MAX){
+      out.push({file:fileName, loc:`단락 ${idx+1}`, text:t.slice(i,i+MAX)});
+    }
+  });
+  return out;
+}
+
+/* ---------- UI refs ---------- */
+const $=s=>document.querySelector(s);
+const apiForm=$("#apiForm"), connectedPill=$("#connectedPill"), modelLabel=$("#modelLabel");
+
+/* ---------- connect ---------- */
+async function tryConnect(key, silent){
+  const st=$("#apiStatus");
+  if(!key.startsWith("nvapi-")){
+    if(!silent){ st.style.color="var(--warn)"; st.textContent="nvapi- 로 시작하는 키를 입력해 주세요."; }
+    return false;
+  }
+  if(!silent){ st.style.color="var(--gold-soft)"; st.innerHTML='<span class="spinner"></span> 연결 확인 중…'; }
+  state.apiKey=key;
+  try{
+    await embed(["연결 확인"], "query"); // validate
+    saveKey(key); // 다음 방문 시 자동 연결
+    apiForm.classList.add("hidden");
+    connectedPill.classList.add("show");
+    modelLabel.textContent = CHAT_LABEL;
+    st.textContent="";
+    $("#uploadCard").classList.remove("locked");
+    if(state.chunks.length) unlockAsk();
+    renderFiles();
+    return true;
+  }catch(e){
+    state.apiKey="";
+    if(!silent){ st.style.color="var(--warn)"; st.textContent="연결 실패: 키를 다시 확인해 주세요. ("+e.message+")"; }
+    else { st.style.color="var(--warn)"; st.textContent="저장된 키로 자동 연결에 실패했습니다. 키를 다시 입력해 주세요."; }
+    return false;
+  }
+}
+$("#connectBtn").onclick=()=>tryConnect($("#apiKey").value.trim(), false);
+$("#apiKey").addEventListener("keydown",e=>{ if(e.key==="Enter") tryConnect($("#apiKey").value.trim(), false); });
+$("#unlinkBtn").onclick=()=>{
+  state.apiKey="";
+  clearKey();
+  connectedPill.classList.remove("show");
+  apiForm.classList.remove("hidden");
+  $("#apiKey").value="";
+  $("#apiStatus").textContent="";
+  $("#uploadCard").classList.add("locked");
+  $("#askCard").classList.add("locked");
+};
+
+/* ---------- upload ---------- */
+const drop=$("#drop"), fileInput=$("#fileInput");
+drop.onclick=()=>fileInput.click();
+drop.ondragover=e=>{e.preventDefault();drop.classList.add("over");};
+drop.ondragleave=()=>drop.classList.remove("over");
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove("over");handleFiles(e.dataTransfer.files);};
+fileInput.onchange=e=>handleFiles(e.target.files);
+
+async function handleFiles(fileList){
+  if(!state.apiKey){ return; }
+  const files=[...fileList];
+  const prog=$("#progress"), bar=$("#bar"), us=$("#uploadStatus");
+  prog.classList.add("show");
+  for(const file of files){
+    us.textContent=`『${file.name}』 텍스트 추출 중…`;
+    let newChunks=[];
+    try{
+      if(file.name.toLowerCase().endsWith(".pdf")){
+        const pages=await extractPdf(file);
+        newChunks=chunkPages(file.name, pages);
+      }else{
+        const raw=await file.text();
+        newChunks=chunkText(file.name, raw);
+      }
+    }catch(e){ us.style.color="var(--warn)"; us.textContent=`『${file.name}』 처리 실패: ${e.message}`; continue; }
+    if(!newChunks.length){ us.style.color="var(--warn)"; us.textContent=`『${file.name}』 에서 추출할 텍스트가 없습니다 (스캔본일 수 있음).`; continue; }
+
+    // 같은 파일명 재등록 시: 기존 조항을 제거하고 새 내용으로 교체 (중복 방지)
+    const hadBefore = state.chunks.some(c=>c.file===file.name);
+    if(hadBefore) state.chunks = state.chunks.filter(c=>c.file!==file.name);
+
+    // embed in batches (한 요청에 여러 청크 → 요청 수 절감; 429는 apiFetch에서 자동 재시도)
+    const BATCH=32; let done=0; let failed=false;
+    for(let i=0;i<newChunks.length;i+=BATCH){
+      const slice=newChunks.slice(i,i+BATCH);
+      us.style.color="var(--muted)";
+      us.textContent=`『${file.name}』 의미 분석 중… (${done}/${newChunks.length} 조항)${hadBefore?" · 기존 등록본 갱신":""}`;
+      let vecs;
+      try{ vecs=await embed(slice.map(c=>c.text), "passage"); }
+      catch(e){
+        us.style.color="var(--warn)";
+        us.textContent=`『${file.name}』 분석 실패: ${e.message}`;
+        // 부분 등록 상태로 남기지 않음 — 이 파일의 조항 전부 롤백
+        state.chunks = state.chunks.filter(c=>c.file!==file.name);
+        failed=true; break;
+      }
+      slice.forEach((c,k)=>{ c.id=Date.now()+"-"+i+"-"+k; c.vec=vecs[k]; state.chunks.push(c); });
+      done+=slice.length;
+      bar.style.width=Math.round(done/newChunks.length*100)+"%";
+    }
+    if(failed){ renderFiles(); continue; }
+    saveDB();
+  }
+  bar.style.width="100%";
+  us.style.color="var(--ok)";
+  us.textContent=`완료 · 총 ${state.chunks.length}개 조항이 등록되었습니다.`;
+  setTimeout(()=>{prog.classList.remove("show");bar.style.width="0";},1200);
+  renderFiles();
+  unlockAsk();
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function renderFiles(){
+  const map={};
+  state.chunks.forEach(c=>{map[c.file]=(map[c.file]||0)+1;});
+  const list=$("#fileList");
+  list.innerHTML="";
+  Object.entries(map).forEach(([name,n])=>{
+    const el=document.createElement("div");
+    el.className="file";
+    el.innerHTML=`<span class="name">📄 ${escapeHtml(name)}</span><span class="meta">${n} 조항</span><span class="st done">등록됨</span><button class="rm" title="삭제">×</button>`;
+    el.querySelector(".rm").onclick=()=>{ state.chunks=state.chunks.filter(c=>c.file!==name); saveDB(); renderFiles(); if(!state.chunks.length) $("#askCard").classList.add("locked"); };
+    list.appendChild(el);
+  });
+}
+function unlockAsk(){ if(state.chunks.length && state.apiKey) $("#askCard").classList.remove("locked"); }
+
+/* ---------- examples ---------- */
+$("#examples").querySelectorAll(".chip").forEach(ch=>{
+  ch.onclick=()=>{ const q=$("#question"); q.value=(q.value?q.value+"\n":"")+ch.textContent; q.focus(); };
+});
+
+/* ---------- ask ---------- */
+$("#askBtn").onclick=ask;
+$("#question").addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){ e.preventDefault(); ask(); } });
+async function ask(){
+  const q=$("#question").value.trim();
+  if(!q) return;
+  if(!state.chunks.length){ return; }
+  const btn=$("#askBtn"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 조항 검색 중';
+  const ansWrap=$("#answer"), ansBody=$("#ansBody"), srcBox=$("#sources");
+  ansWrap.classList.add("show");
+  ansBody.innerHTML='<p style="color:var(--muted)"><span class="spinner"></span> 관련 규정을 찾고 있습니다…</p>';
+  srcBox.innerHTML="";
+  ansWrap.scrollIntoView({behavior:"smooth",block:"start"});
+
+  try{
+    const [qv]=await embed([q], "query");
+    const scored=state.chunks.map(c=>({c,s:cosine(qv,c.vec)})).sort((a,b)=>b.s-a.s);
+    const top=scored.slice(0,8).filter(x=>x.s>0.15);
+    if(!top.length){ ansBody.innerHTML='<p>등록된 규정에서 관련 조항을 찾지 못했습니다. 질문을 더 구체적으로 바꾸거나, 해당 규정 문서가 등록됐는지 확인해 주세요.</p>'; btn.disabled=false; btn.textContent="질의"; return; }
+
+    btn.innerHTML='<span class="spinner"></span> 근거 정리 중';
+    const context=top.map((x,i)=>`[근거 ${i+1}] (${x.c.file} ${x.c.loc})\n${x.c.text}`).join("\n\n");
+    const sys=`당신은 학교 규정 문서에서 근거 조항을 찾아 정리해 주는 보조자입니다. 규정 해석은 정확성이 최우선이며, 아래 규칙을 반드시 지키세요.
+
+[절대 규칙 — 위반 금지]
+1. 반드시 아래 제공된 '근거 조항'의 텍스트만을 바탕으로 답하세요. 당신의 일반 지식, 다른 학교의 규정, 법령에 대한 기억은 사용하지 마세요.
+2. 근거에 없는 내용은 어떤 경우에도 추측하지 말고 "제공된 규정에서 확인되지 않습니다"라고 명시하세요. 일부만 확인되면 확인된 부분과 확인되지 않은 부분을 구분해서 쓰세요.
+3. 조항 번호(제○조, ○항 등)는 근거 텍스트에 실제로 적혀 있는 경우에만 인용하세요. 근거에 번호가 없으면 번호를 만들어 붙이지 마세요.
+4. 규정 문구를 인용할 때는 근거 텍스트의 표현을 그대로 옮기고, 요약할 때는 의미를 바꾸지 마세요. 숫자·기한·기간은 절대 바꾸거나 어림하지 마세요.
+5. 서로 다른 근거가 충돌하거나 다르게 읽힐 수 있으면, 그 사실을 숨기지 말고 "근거 간 해석 여지가 있음"을 명시하고 양쪽을 모두 제시하세요.
+6. 근거 조항이 질문과 관련이 낮다고 판단되면 억지로 연결하지 말고 관련 조항이 부족함을 밝히세요.
+7. 결론이 불확실하면 단정하지 마세요. "규정상 ~로 보이나, 최종 확인 필요"처럼 확신 수준을 정직하게 표현하세요.
+
+[답변 형식]
+1) **핵심 답변** — 질문에 대한 결론을 2~3문장으로. 근거가 불충분하면 그 사실이 곧 결론입니다.
+2) **규정과의 대조** — 제시된 사례가 규정에 부합하는지/어긋나는지, 어긋난다면 어느 지점인지. 모든 판단 문장 끝에 (근거 N) 표기. 근거 없이 쓰는 문장은 금지.
+3) **필요한 절차·유의사항** — 규정상 밟아야 할 절차·기한·담당 기구가 근거에 있으면 정리. 없으면 "절차 관련 조항은 제공된 근거에서 확인되지 않습니다"라고 쓰세요.
+
+반드시 한국어로, 사실 위주로 간결하게. 법적·행정적 최종 판단은 사람과 담당 기구의 몫이며, 당신은 근거를 가리키는 역할입니다.`;
+    const user=`[근거 조항]\n${context}\n\n[질문/사례]\n${q}\n\n위 근거 조항만 사용해 형식에 맞춰 답하세요.`;
+    const raw=await chat([{role:"system",content:sys},{role:"user",content:user}]);
+
+    let lowRelNote="";
+    if(top[0].s<0.35){
+      lowRelNote='<p style="color:var(--gold-soft);font-size:.86rem;border:1px dashed var(--line);border-radius:8px;padding:10px 14px;margin-bottom:14px">⚠ 검색된 조항의 관련도가 낮습니다. 답변보다 아래 <b>근거 원문</b>을 직접 확인하는 것을 권장합니다.</p>';
+    }
+    ansBody.innerHTML=lowRelNote+renderMd(raw)
+      +'<div style="margin-top:14px;text-align:right"><button class="btn ghost" id="copyBtn" style="padding:8px 16px;font-size:.85rem">답변 복사</button></div>';
+    const cb=$("#copyBtn");
+    cb.onclick=async()=>{
+      const srcTxt=top.map((x,i)=>`[근거 ${i+1}] ${x.c.file} ${x.c.loc} (관련도 ${(x.s*100).toFixed(0)}%)\n${x.c.text}`).join("\n\n");
+      try{
+        await navigator.clipboard.writeText(`[질문]\n${q}\n\n[답변]\n${raw}\n\n[인용 근거]\n${srcTxt}\n\n※ 참고 자료입니다. 최종 판단은 원문 조항과 담당 기구 검토 필요.`);
+        cb.textContent="복사됨 ✓"; setTimeout(()=>cb.textContent="답변 복사",1500);
+      }catch(e){ cb.textContent="복사 실패"; }
+    };
+    srcBox.innerHTML=`<div class="sh">인용된 근거 조항</div>`+top.map((x,i)=>`
+      <div class="src">
+        <div class="loc">근거 ${i+1} · ${x.c.file} ${x.c.loc} · 관련도 ${(x.s*100).toFixed(0)}%</div>
+        <div class="txt" id="src${i}">${escapeHtml(x.c.text)}</div>
+        <button class="more" data-i="${i}">원문 전체 보기</button>
+      </div>`).join("");
+    srcBox.querySelectorAll(".more").forEach(b=>{
+      b.onclick=()=>{ const t=$("#src"+b.dataset.i); t.classList.toggle("open"); b.textContent=t.classList.contains("open")?"접기":"원문 전체 보기"; };
+    });
+  }catch(e){
+    ansBody.innerHTML=`<p style="color:var(--warn)">답변 생성 중 오류가 발생했습니다: ${escapeHtml(e.message)}<br>잠시 후 다시 시도하거나 API 연결을 확인해 주세요.</p>`;
+  }
+  btn.disabled=false; btn.textContent="질의";
+}
+
+/* ---------- tiny markdown ---------- */
+function escapeHtml(s){return s.replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));}
+function renderMd(md){
+  let h=escapeHtml(md);
+  h=h.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  const lines=h.split("\n"); let out=[],inList=false;
+  for(let ln of lines){
+    if(/^\s*[-*]\s+/.test(ln)){ if(!inList){out.push("<ul>");inList=true;} out.push("<li>"+ln.replace(/^\s*[-*]\s+/,"")+"</li>"); continue; }
+    if(inList){out.push("</ul>");inList=false;}
+    if(/^\s*\d+\)\s*\*\*/.test(ln)||/^\s*###?\s+/.test(ln)){ out.push("<h3>"+ln.replace(/^\s*###?\s+/,"").replace(/^\s*\d+\)\s*/,"")+"</h3>"); continue; }
+    if(ln.trim()==="") out.push("");
+    else out.push("<p>"+ln+"</p>");
+  }
+  if(inList)out.push("</ul>");
+  return out.join("");
+}
+
+/* ---------- init ---------- */
+loadDB();
+if(state.chunks.length) renderFiles();
+(function(){
+  const saved=loadKey();
+  if(saved){ $("#apiKey").value=saved; tryConnect(saved, true); }
+})();
+</script>
+</body>
+</html>
