@@ -67,8 +67,15 @@ export default {
       return json(502, { error: "NVIDIA 서버 연결에 실패했습니다." });
     }
 
-    // 5) NVIDIA 응답을 그대로 돌려주되 CORS 헤더만 부착
-    const headers = new Headers(res.headers);
+    // 5) NVIDIA 응답을 그대로 돌려주되 CORS 헤더만 부착.
+    //    스트리밍(text/event-stream)을 그대로 흘려보내야 하므로, 스트림과 어긋날 수
+    //    있는 content-encoding/length/transfer-encoding 헤더는 제외한다.
+    const headers = new Headers();
+    res.headers.forEach((v, k) => {
+      const kl = k.toLowerCase();
+      if (kl === "content-encoding" || kl === "content-length" || kl === "transfer-encoding") return;
+      headers.set(k, v);
+    });
     for (const [k, v] of Object.entries(corsHeaders())) headers.set(k, v);
     // 브라우저 캐시가 인증된 응답을 저장하지 않도록
     headers.set("Cache-Control", "no-store");
