@@ -35,7 +35,7 @@
     line-height:1.6;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:960px;margin:0 auto;padding:0 20px 80px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px 80px}
 
   /* ---- Header ---- */
   header{padding:44px 0 26px;text-align:center;position:relative}
@@ -64,6 +64,11 @@
     box-shadow:var(--shadow);
     padding:26px;margin-top:22px;
   }
+  /* 좌우 2열: 왼쪽=API 연결+문서 등록, 오른쪽=질의+답변 */
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start;margin-top:22px}
+  .col{display:flex;flex-direction:column;gap:22px;min-width:0}
+  .col .card{margin-top:0}
+  @media (max-width:900px){ .cols{grid-template-columns:1fr} }
   .card h2{
     font-size:1rem;font-weight:700;letter-spacing:.02em;
     display:flex;align-items:center;gap:10px;margin-bottom:4px;color:#fff;
@@ -123,8 +128,7 @@
   .collapsible.hidden{display:none}
 
   /* ---- Upload ---- */
-  .upload-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:16px;align-items:start}
-  @media (max-width:640px){ .upload-grid{grid-template-columns:1fr} }
+  .upload-grid{display:flex;flex-direction:column;gap:14px}
   .drop{
     border:1.5px dashed var(--line);border-radius:12px;padding:18px 14px;text-align:center;
     background:rgba(11,26,51,.5);cursor:pointer;transition:border-color .2s,background .2s;
@@ -258,6 +262,9 @@
     <div class="rule"></div>
   </header>
 
+  <div class="cols">
+  <div class="col">
+
   <!-- STEP 1: API -->
   <section class="card" id="apiCard">
     <h2><span class="n">1</span> API 연결</h2>
@@ -315,6 +322,9 @@
     </div>
   </section>
 
+  </div>
+  <div class="col">
+
   <!-- STEP 3: Ask -->
   <section class="card locked ask" id="askCard">
     <h2><span class="n">3</span> 규정 질의</h2>
@@ -354,6 +364,9 @@
     </div>
   </section>
 
+  </div>
+  </div>
+
   <footer>규정나침반 · NVIDIA NIM 무료 API 기반 · 문서 분석·답변 생성은 <b>NVIDIA 서버</b>에서 이뤄지며, 내용은 중계 서버를 거쳐 전달됩니다(저장 안 함)</footer>
 </div>
 
@@ -368,8 +381,8 @@
 // (NVIDIA는 브라우저 직접 호출을 막으므로, worker.js 프록시를 반드시 거쳐야 합니다.)
 const BASE = "https://hirameki.esquire0.workers.dev/v1";
 const EMBED_MODEL = "nvidia/llama-nemotron-embed-1b-v2";
-const CHAT_MODEL  = "meta/llama-3.3-70b-instruct";
-const CHAT_LABEL  = "Llama 3.3 70B";
+const CHAT_MODEL  = "qwen/qwen3-next-80b-a3b-instruct";
+const CHAT_LABEL  = "Qwen3-Next 80B";
 const DB_KEY  = "regchart_chunks_v1";
 const KEY_KEY = "regchart_apikey_v1";
 
