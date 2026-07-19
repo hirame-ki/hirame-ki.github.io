@@ -319,22 +319,57 @@
 // (NVIDIA는 브라우저 직접 호출을 막으므로, worker.js 프록시를 반드시 거쳐야 합니다.)
 const BASE = "https://hirameki.esquire0.workers.dev/v1";
 const EMBED_MODEL = "nvidia/llama-nemotron-embed-1b-v2";
-const CHAT_MODEL  = "nvidia/nemotron-3-super-120b-a12b";
-const CHAT_LABEL  = "Nemotron 3 Super 120B";
+const CHAT_MODEL  = "meta/llama-3.3-70b-instruct";
+const CHAT_LABEL  = "Llama 3.3 70B";
 const DB_KEY  = "regchart_chunks_v1";
 const KEY_KEY = "regchart_apikey_v1";
 
 let state = { apiKey:"", chunks:[] }; // chunks: {id,file,loc,text,vec}
 
-/* ---------- storage ---------- */
-function saveDB(){
-  try{ localStorage.setItem(DB_KEY, JSON.stringify(state.chunks)); }
+/* ---------- storage ----------
+   임베딩 벡터가 커서 localStorage(약 5MB) 한도를 넘기므로 IndexedDB에 저장한다.
+   IndexedDB는 용량이 훨씬 커서 여러 규정 문서를 넣어도 새로고침 후 유지된다. */
+const IDB_NAME="regchart", IDB_STORE="kv", CHUNK_KEY="chunks_v1";
+function idbOpen(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(IDB_NAME,1);
+    r.onupgradeneeded=()=>{ r.result.createObjectStore(IDB_STORE); };
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  });
+}
+function idbSet(key,val){
+  return idbOpen().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction(IDB_STORE,"readwrite");
+    tx.objectStore(IDB_STORE).put(val,key);
+    tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error);
+  }));
+}
+function idbGet(key){
+  return idbOpen().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction(IDB_STORE,"readonly");
+    const rq=tx.objectStore(IDB_STORE).get(key);
+    rq.onsuccess=()=>res(rq.result); rq.onerror=()=>rej(rq.error);
+  }));
+}
+async function saveDB(){
+  try{ await idbSet(CHUNK_KEY, state.chunks); }
   catch(e){
     const us=$("#uploadStatus");
-    if(us){ us.style.color="var(--warn)"; us.textContent="⚠ 저장 공간이 가득 찼습니다. 이 문서는 이번 방문에서만 사용 가능하며, 재방문 시 다시 등록해야 합니다. (불필요한 문서를 삭제해 주세요)"; }
+    if(us){ us.style.color="var(--warn)"; us.textContent="⚠ 저장에 실패했습니다. 이 문서는 이번 방문에서만 사용되며, 재방문 시 다시 등록해야 합니다. ("+(e&&e.message||e)+")"; }
   }
 }
-function loadDB(){ try{ const d=localStorage.getItem(DB_KEY); if(d) state.chunks=JSON.parse(d); }catch(e){} }
+async function loadDB(){
+  try{
+    let d=await idbGet(CHUNK_KEY);
+    if(!Array.isArray(d)){
+      // 예전 localStorage 저장분이 있으면 IndexedDB로 이전
+      const old=localStorage.getItem(DB_KEY);
+      if(old){ try{ d=JSON.parse(old); await idbSet(CHUNK_KEY,d); localStorage.removeItem(DB_KEY); }catch(_){} }
+    }
+    if(Array.isArray(d)) state.chunks=d;
+  }catch(e){}
+}
 function saveKey(k){ try{ localStorage.setItem(KEY_KEY,k); }catch(e){} }
 function loadKey(){ try{ return localStorage.getItem(KEY_KEY)||""; }catch(e){ return ""; } }
 function clearKey(){ try{ localStorage.removeItem(KEY_KEY); }catch(e){} }
@@ -361,7 +396,7 @@ async function embed(texts, input_type){
 }
 async function chat(messages){
   const j = await apiFetch("/chat/completions",
-    { model:CHAT_MODEL, messages, temperature:0.2, top_p:0.9, max_tokens:2048 }, "chat");
+    { model:CHAT_MODEL, messages, temperature:0.1, top_p:0.8, max_tokens:2048 }, "chat");
   let content = j.choices?.[0]?.message?.content ?? "";
   // thinking 지원 모델의 추론 블록 제거 (닫힘 태그 누락 시에도 대응)
   content = content.replace(/<think>[\s\S]*?<\/think>/g,"").replace(/^[\s\S]*?<\/think>/,"").trim();
@@ -579,6 +614,12 @@ async function ask(){
     const context=top.map((x,i)=>`[근거 ${i+1}] (${x.c.file} ${x.c.loc})\n${x.c.text}`).join("\n\n");
     const sys=`당신은 학교 규정 문서에서 근거 조항을 찾아 정리해 주는 보조자입니다. 규정 해석은 정확성이 최우선이며, 아래 규칙을 반드시 지키세요.
 
+[언어 규칙 — 최우선, 예외 없음]
+- 답변은 처음부터 끝까지 100% 한글로만 작성하세요.
+- 한자(漢字), 일본어 가나(かな·カナ), 중국어 간체자 등 어떤 외국 문자도 단 한 글자도 섞지 마세요.
+- 한자어도 반드시 한글로 표기하세요. (예: '學校'가 아니라 '학교', '第3條'가 아니라 '제3조', '規定'이 아니라 '규정')
+- 근거 조항 원문에 한자가 들어 있더라도, 답변에 옮길 때는 한글로 바꿔 쓰세요.
+
 [절대 규칙 — 위반 금지]
 1. 반드시 아래 제공된 '근거 조항'의 텍스트만을 바탕으로 답하세요. 당신의 일반 지식, 다른 학교의 규정, 법령에 대한 기억은 사용하지 마세요.
 2. 근거에 없는 내용은 어떤 경우에도 추측하지 말고 "제공된 규정에서 확인되지 않습니다"라고 명시하세요. 일부만 확인되면 확인된 부분과 확인되지 않은 부분을 구분해서 쓰세요.
@@ -593,8 +634,8 @@ async function ask(){
 2) **규정과의 대조** — 제시된 사례가 규정에 부합하는지/어긋나는지, 어긋난다면 어느 지점인지. 모든 판단 문장 끝에 (근거 N) 표기. 근거 없이 쓰는 문장은 금지.
 3) **필요한 절차·유의사항** — 규정상 밟아야 할 절차·기한·담당 기구가 근거에 있으면 정리. 없으면 "절차 관련 조항은 제공된 근거에서 확인되지 않습니다"라고 쓰세요.
 
-반드시 한국어로, 사실 위주로 간결하게. 법적·행정적 최종 판단은 사람과 담당 기구의 몫이며, 당신은 근거를 가리키는 역할입니다.`;
-    const user=`[근거 조항]\n${context}\n\n[질문/사례]\n${q}\n\n위 근거 조항만 사용해 형식에 맞춰 답하세요.`;
+반드시 순수 한글로만(한자·일본어 문자 금지), 사실 위주로 간결하게. 법적·행정적 최종 판단은 사람과 담당 기구의 몫이며, 당신은 근거를 가리키는 역할입니다.`;
+    const user=`[근거 조항]\n${context}\n\n[질문/사례]\n${q}\n\n위 근거 조항만 사용해 형식에 맞춰 답하세요. 답변은 한자·일본어 문자 없이 순수 한글로만 작성하세요.`;
     const raw=await chat([{role:"system",content:sys},{role:"user",content:user}]);
 
     let lowRelNote="";
@@ -644,8 +685,9 @@ function renderMd(md){
 }
 
 /* ---------- init ---------- */
-loadDB();
-if(state.chunks.length) renderFiles();
+loadDB().then(()=>{
+  if(state.chunks.length){ renderFiles(); unlockAsk(); }
+});
 (function(){
   const saved=loadKey();
   if(saved){ $("#apiKey").value=saved; tryConnect(saved, true); }
