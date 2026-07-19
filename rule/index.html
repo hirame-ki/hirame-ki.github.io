@@ -123,27 +123,34 @@
   .collapsible.hidden{display:none}
 
   /* ---- Upload ---- */
+  .upload-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:16px;align-items:start}
+  @media (max-width:640px){ .upload-grid{grid-template-columns:1fr} }
   .drop{
-    border:1.5px dashed var(--line);border-radius:12px;padding:30px 20px;text-align:center;
+    border:1.5px dashed var(--line);border-radius:12px;padding:18px 14px;text-align:center;
     background:rgba(11,26,51,.5);cursor:pointer;transition:border-color .2s,background .2s;
   }
   .drop:hover,.drop.over{border-color:var(--gold);background:rgba(201,162,75,.06)}
-  .drop svg{width:34px;height:34px;opacity:.7;margin-bottom:8px}
-  .drop .big{font-weight:600;color:#dfe6f1}
-  .drop .small{color:var(--muted);font-size:.84rem;margin-top:4px}
-  .files{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .drop svg{width:26px;height:26px;opacity:.7;margin-bottom:6px}
+  .drop .big{font-weight:600;color:#dfe6f1;font-size:.9rem}
+  .drop .small{color:var(--muted);font-size:.78rem;margin-top:3px}
+  .files-head{display:flex;align-items:baseline;gap:8px;color:#dfe6f1;font-size:.86rem;font-weight:700;margin-bottom:8px}
+  .files-head span{color:var(--muted);font-size:.75rem;font-weight:400}
+  .files{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto}
+  .files .empty{color:var(--muted);font-size:.82rem;padding:8px 2px}
   .file{
-    display:flex;align-items:center;gap:12px;background:var(--navy-900);
-    border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:.9rem;
+    display:flex;align-items:center;gap:10px;background:var(--navy-900);
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:.9rem;
   }
+  .file.off{opacity:.5}
+  .file .pick{width:16px;height:16px;flex:none;accent-color:var(--gold);cursor:pointer;margin:0}
   .file .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#dfe6f1}
-  .file .meta{color:var(--muted);font-size:.8rem}
+  .file .meta{color:var(--muted);font-size:.8rem;flex:none}
   .file .st{font-size:.78rem;font-weight:700}
   .file .st.done{color:var(--ok)}
   .file .st.proc{color:var(--gold-soft)}
-  .file .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;line-height:1}
+  .file .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;line-height:1;flex:none}
 
-  .progress{height:6px;background:var(--navy-900);border-radius:99px;overflow:hidden;margin-top:14px;display:none}
+  .progress{height:6px;background:var(--navy-900);border-radius:99px;overflow:hidden;margin-top:12px;display:none}
   .progress.show{display:block}
   .progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold-soft));transition:width .3s}
   .status-line{color:var(--muted);font-size:.84rem;margin-top:8px;min-height:1.2em}
@@ -287,19 +294,25 @@
     <p class="hint">내게 해당되는 규정·지침·매뉴얼을 올려두세요 (PDF · TXT). 처음 한 번만 분석하며, 이후엔 저장됩니다.</p>
     <p class="hint" style="color:var(--warn)">⚠ 올린 문서의 내용은 분석·답변을 위해 NVIDIA 서버로 전송됩니다. 개인정보·기밀이 담긴 문서는 올리지 마세요.</p>
 
-    <div class="drop" id="drop">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.4">
-        <path d="M12 16V4M12 4l-4 4M12 4l4 4"/>
-        <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
-      </svg>
-      <div class="big">파일을 여기로 끌어다 놓거나 클릭해서 선택</div>
-      <div class="small">PDF · TXT · 여러 개 한꺼번에 가능</div>
-      <input type="file" id="fileInput" accept=".pdf,.txt" multiple hidden>
+    <div class="upload-grid">
+      <div class="upload-left">
+        <div class="drop" id="drop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.4">
+            <path d="M12 16V4M12 4l-4 4M12 4l4 4"/>
+            <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
+          </svg>
+          <div class="big">파일 끌어다 놓기 · 클릭해서 선택</div>
+          <div class="small">PDF · TXT · 여러 개 가능</div>
+          <input type="file" id="fileInput" accept=".pdf,.txt" multiple hidden>
+        </div>
+        <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
+        <div class="status-line" id="uploadStatus"></div>
+      </div>
+      <div class="upload-right">
+        <div class="files-head">등록된 문서 <span>체크한 문서에서만 답변합니다</span></div>
+        <div class="files" id="fileList"></div>
+      </div>
     </div>
-
-    <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
-    <div class="status-line" id="uploadStatus"></div>
-    <div class="files" id="fileList"></div>
   </section>
 
   <!-- STEP 3: Ask -->
@@ -360,7 +373,7 @@ const CHAT_LABEL  = "Llama 3.3 70B";
 const DB_KEY  = "regchart_chunks_v1";
 const KEY_KEY = "regchart_apikey_v1";
 
-let state = { apiKey:"", chunks:[], topK:3 }; // chunks: {id,file,loc,text,vec}; topK: 검색 근거 조항 수
+let state = { apiKey:"", chunks:[], topK:3, deselected:new Set() }; // chunks: {id,file,loc,text,vec}; topK: 근거 조항 수; deselected: 답변에서 제외한 파일명(기본 전부 포함)
 
 /* ---------- storage ----------
    임베딩 벡터가 커서 localStorage(약 5MB) 한도를 넘기므로 IndexedDB에 저장한다.
@@ -604,6 +617,9 @@ async function handleFiles(fileList){
     // 같은 파일명 재등록 시: 기존 조항을 제거하고 새 내용으로 교체 (중복 방지)
     const hadBefore = state.chunks.some(c=>c.file===file.name);
     if(hadBefore) state.chunks = state.chunks.filter(c=>c.file!==file.name);
+    state.deselected.delete(file.name); // 새로 올린 문서는 기본 선택 상태로
+
+
 
     // embed in batches (한 요청에 여러 청크 → 요청 수 절감; 429는 apiFetch에서 자동 재시도)
     const BATCH=32; let done=0; let failed=false;
@@ -641,11 +657,21 @@ function renderFiles(){
   state.chunks.forEach(c=>{map[c.file]=(map[c.file]||0)+1;});
   const list=$("#fileList");
   list.innerHTML="";
-  Object.entries(map).forEach(([name,n])=>{
+  const names=Object.keys(map);
+  if(!names.length){ list.innerHTML='<div class="empty">아직 등록된 문서가 없습니다. 왼쪽에서 파일을 올려주세요.</div>'; return; }
+  names.forEach((name)=>{
+    const on=!state.deselected.has(name);
     const el=document.createElement("div");
-    el.className="file";
-    el.innerHTML=`<span class="name">📄 ${escapeHtml(name)}</span><span class="meta">${n} 조항</span><span class="st done">등록됨</span><button class="rm" title="삭제">×</button>`;
-    el.querySelector(".rm").onclick=()=>{ state.chunks=state.chunks.filter(c=>c.file!==name); saveDB(); renderFiles(); if(!state.chunks.length) $("#askCard").classList.add("locked"); };
+    el.className="file"+(on?"":" off");
+    el.innerHTML=`<input type="checkbox" class="pick" ${on?"checked":""} title="이 문서를 답변에 사용">`
+      +`<span class="name">📄 ${escapeHtml(name)}</span>`
+      +`<span class="meta">${map[name]} 조항</span>`
+      +`<button class="rm" title="삭제">×</button>`;
+    el.querySelector(".pick").onchange=(e)=>{
+      if(e.target.checked) state.deselected.delete(name); else state.deselected.add(name);
+      el.classList.toggle("off", !e.target.checked);
+    };
+    el.querySelector(".rm").onclick=()=>{ state.chunks=state.chunks.filter(c=>c.file!==name); state.deselected.delete(name); saveDB(); renderFiles(); if(!state.chunks.length) $("#askCard").classList.add("locked"); };
     list.appendChild(el);
   });
 }
@@ -677,8 +703,10 @@ async function ask(){
   ansWrap.scrollIntoView({behavior:"smooth",block:"start"});
 
   try{
+    const pool=state.chunks.filter(c=>!state.deselected.has(c.file));
+    if(!pool.length){ ansBody.innerHTML='<p>선택된 문서가 없습니다. 위 <b>등록된 문서</b> 목록에서 답변에 사용할 문서를 하나 이상 체크해 주세요.</p>'; btn.disabled=false; btn.textContent="질의"; return; }
     const [qv]=await embed([q], "query");
-    const scored=state.chunks.map(c=>({c,s:cosine(qv,c.vec)})).sort((a,b)=>b.s-a.s);
+    const scored=pool.map(c=>({c,s:cosine(qv,c.vec)})).sort((a,b)=>b.s-a.s);
     const top=scored.slice(0, state.topK||3).filter(x=>x.s>0.15);
     if(!top.length){ ansBody.innerHTML='<p>등록된 규정에서 관련 조항을 찾지 못했습니다. 질문을 더 구체적으로 바꾸거나, 해당 규정 문서가 등록됐는지 확인해 주세요.</p>'; btn.disabled=false; btn.textContent="질의"; return; }
 
