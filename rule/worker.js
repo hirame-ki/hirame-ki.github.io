@@ -6,26 +6,25 @@
  *   NVIDIA 서버가 CORS 헤더를 주지 않아 브라우저가 응답을 차단하기 때문입니다.
  *   이 Worker가 사이에서 요청을 그대로 중계하고 CORS 헤더만 붙여 줍니다.
  *
- * 개인정보 원칙 (의도적으로 이렇게 설계됨):
- *   - 저장 안 함: KV/DB/캐시 등 어떤 저장소도 쓰지 않습니다.
- *   - 로그 안 함: API 키·요청 본문·응답을 어디에도 기록하지 않습니다.
- *   - 목적지 고정: 오직 NVIDIA로만 전달합니다 (임의 URL 중계 불가).
- *   - 경로 제한: 임베딩/채팅 엔드포인트만 허용합니다.
- *   즉, 키와 내용은 이 Worker를 "지나가기만" 하고 남지 않습니다.
+ * 524(타임아웃) 방지:
+ *   채팅 응답은 모델이 첫 토큰을 내기까지 오래 걸릴 수 있고, 그동안 아무 데이터도
+ *   흐르지 않으면 Cloudflare가 연결을 끊고 524를 냅니다. 그래서 채팅 경로는
+ *   즉시 스트리밍 응답을 반환하고, 첫 토큰이 올 때까지 5초마다 keep-alive 주석
+ *   (": ..." — 클라이언트가 무시하는 SSE 코멘트)을 흘려 연결을 유지합니다.
+ *   추가로 429/일시적 5xx는 프록시 안에서 자동 재시도합니다.
+ *
+ * 개인정보 원칙:
+ *   저장 안 함 / 로그 안 함 / 목적지 NVIDIA 고정 / 허용 경로 제한.
+ *   키·내용은 이 Worker를 "지나가기만" 하고 남지 않습니다.
  */
 
 const NVIDIA_ORIGIN = "https://integrate.api.nvidia.com";
-
-// 이 두 경로만 통과시킵니다. 그 외 요청은 거부.
-const ALLOWED_PATHS = new Set([
-  "/v1/embeddings",
-  "/v1/chat/completions",
-]);
+const CHAT_PATH = "/v1/chat/completions";
+const ALLOWED_PATHS = new Set(["/v1/embeddings", CHAT_PATH]);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function corsHeaders() {
   return {
-    // 각 사용자가 자기 키를 들고 오므로 모든 출처에서의 호출을 허용합니다.
-    // (credentials 모드가 아니므로 '*'로 충분하며 file:// 에서도 동작)
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Authorization, Content-Type",
@@ -33,60 +32,128 @@ function corsHeaders() {
   };
 }
 
-export default {
-  async fetch(request) {
-    // 1) CORS preflight
-    if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders() });
-    }
-
-    // 2) POST 만 허용
-    if (request.method !== "POST") {
-      return json(405, { error: "POST 요청만 허용됩니다." });
-    }
-
-    // 3) 경로 검증 (목적지·엔드포인트 고정)
-    const url = new URL(request.url);
-    if (!ALLOWED_PATHS.has(url.pathname)) {
-      return json(404, { error: "허용되지 않은 경로입니다." });
-    }
-
-    // 4) NVIDIA 로 그대로 중계 (Authorization·Content-Type만 전달, 나머지 헤더는 버림)
-    const upstream = NVIDIA_ORIGIN + url.pathname;
-    const auth = request.headers.get("Authorization") || "";
-    const contentType = request.headers.get("Content-Type") || "application/json";
-
-    let res;
-    try {
-      res = await fetch(upstream, {
-        method: "POST",
-        headers: { "Authorization": auth, "Content-Type": contentType },
-        body: request.body,
-      });
-    } catch (e) {
-      return json(502, { error: "NVIDIA 서버 연결에 실패했습니다." });
-    }
-
-    // 5) NVIDIA 응답을 그대로 돌려주되 CORS 헤더만 부착.
-    //    스트리밍(text/event-stream)을 그대로 흘려보내야 하므로, 스트림과 어긋날 수
-    //    있는 content-encoding/length/transfer-encoding 헤더는 제외한다.
-    const headers = new Headers();
-    res.headers.forEach((v, k) => {
-      const kl = k.toLowerCase();
-      if (kl === "content-encoding" || kl === "content-length" || kl === "transfer-encoding") return;
-      headers.set(k, v);
-    });
-    for (const [k, v] of Object.entries(corsHeaders())) headers.set(k, v);
-    // 브라우저 캐시가 인증된 응답을 저장하지 않도록
-    headers.set("Cache-Control", "no-store");
-
-    return new Response(res.body, { status: res.status, headers });
-  },
-};
-
 function json(status, obj) {
   return new Response(JSON.stringify(obj), {
     status,
     headers: { "Content-Type": "application/json", ...corsHeaders() },
   });
+}
+
+export default {
+  async fetch(request, env, ctx) {
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders() });
+    }
+    if (request.method !== "POST") {
+      return json(405, { error: "POST 요청만 허용됩니다." });
+    }
+
+    const url = new URL(request.url);
+    if (!ALLOWED_PATHS.has(url.pathname)) {
+      return json(404, { error: "허용되지 않은 경로입니다." });
+    }
+
+    const auth = request.headers.get("Authorization") || "";
+    const contentType = request.headers.get("Content-Type") || "application/json";
+    const upstreamUrl = NVIDIA_ORIGIN + url.pathname;
+    const fwd = (body) => fetch(upstreamUrl, {
+      method: "POST",
+      headers: { "Authorization": auth, "Content-Type": contentType },
+      body,
+    });
+
+    // ── 임베딩 등 비스트리밍 경로: 단순 통과 ──
+    if (url.pathname !== CHAT_PATH) {
+      let res;
+      try { res = await fwd(request.body); }
+      catch (e) { return json(502, { error: "NVIDIA 서버 연결에 실패했습니다." }); }
+      return new Response(res.body, { status: res.status, headers: passHeaders(res) });
+    }
+
+    // ── 채팅 경로: keep-alive 스트리밍 ──
+    const bodyText = await request.text();
+    const { readable, writable } = new TransformStream();
+    const writer = writable.getWriter();
+    const enc = new TextEncoder();
+    const ka = enc.encode(": keep-alive\n\n");
+    const KEEPALIVE_MS = 5000;
+
+    const pump = async () => {
+      try {
+        // 1) 업스트림 헤더를 받을 때까지 — 진행하며 주기적으로 keep-alive.
+        //    429/일시적 5xx는 최대 3회 재시도.
+        let res = null, attempt = 0;
+        let fetchP = fwd(bodyText);
+        while (res === null) {
+          const w = await Promise.race([
+            fetchP.then((r) => ({ r }), (e) => ({ err: e })),
+            sleep(KEEPALIVE_MS).then(() => ({ tick: 1 })),
+          ]);
+          if (w.tick) { await writer.write(ka); continue; }
+          if (w.err) throw w.err;
+          const r = w.r;
+          if ((r.status === 429 || r.status >= 500) && attempt < 3) {
+            attempt++;
+            await writer.write(ka);
+            await sleep(2000 * attempt);
+            fetchP = fwd(bodyText);
+            continue;
+          }
+          res = r;
+        }
+
+        // 2) 오류 응답이면 SSE 형태로 오류를 전달(클라이언트가 파싱)
+        if (!res.ok) {
+          const t = await res.text();
+          await writeErr(writer, enc, res.status, t.slice(0, 200));
+          return;
+        }
+
+        // 3) 본문 스트리밍 — read를 기다리는 동안에도 주기적으로 keep-alive
+        const reader = res.body.getReader();
+        let readP = reader.read();
+        while (true) {
+          const w = await Promise.race([
+            readP.then((v) => ({ v }), (e) => ({ err: e })),
+            sleep(KEEPALIVE_MS).then(() => ({ tick: 1 })),
+          ]);
+          if (w.tick) { await writer.write(ka); continue; }
+          if (w.err) throw w.err;
+          const { value, done } = w.v;
+          if (done) break;
+          await writer.write(value);
+          readP = reader.read();
+        }
+      } catch (e) {
+        try { await writeErr(writer, enc, 502, String((e && e.message) || e).slice(0, 200)); } catch (_) {}
+      } finally {
+        try { await writer.close(); } catch (_) {}
+      }
+    };
+
+    const p = pump();
+    if (ctx && ctx.waitUntil) ctx.waitUntil(p);
+
+    return new Response(readable, {
+      status: 200,
+      headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-store", ...corsHeaders() },
+    });
+  },
+};
+
+// 스트림과 어긋날 수 있는 인코딩/길이 헤더는 제외하고 CORS만 부착
+function passHeaders(res) {
+  const headers = new Headers();
+  res.headers.forEach((v, k) => {
+    const kl = k.toLowerCase();
+    if (kl === "content-encoding" || kl === "content-length" || kl === "transfer-encoding") return;
+    headers.set(k, v);
+  });
+  for (const [k, v] of Object.entries(corsHeaders())) headers.set(k, v);
+  headers.set("Cache-Control", "no-store");
+  return headers;
+}
+
+function writeErr(writer, enc, status, message) {
+  return writer.write(enc.encode("data: " + JSON.stringify({ error: { status, message } }) + "\n\n"));
 }

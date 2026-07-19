@@ -421,10 +421,11 @@ async function chat(messages, onDelta){
         if(!line.startsWith("data:")) continue;
         const data=line.slice(5).trim();
         if(data==="[DONE]") continue;
-        try{
-          const delta=JSON.parse(data).choices?.[0]?.delta?.content||"";
-          if(delta){ full+=delta; if(onDelta) onDelta(stripThink(full)); }
-        }catch(_){}
+        let obj;
+        try{ obj=JSON.parse(data); }catch(_){ continue; }
+        if(obj.error){ throw new Error("chat "+(obj.error.status||"")+": "+String(obj.error.message||"오류").slice(0,160)); }
+        const delta=obj.choices?.[0]?.delta?.content||"";
+        if(delta){ full+=delta; if(onDelta) onDelta(stripThink(full)); }
       }
     }
     const content=stripThink(full);
@@ -636,7 +637,7 @@ async function ask(){
   try{
     const [qv]=await embed([q], "query");
     const scored=state.chunks.map(c=>({c,s:cosine(qv,c.vec)})).sort((a,b)=>b.s-a.s);
-    const top=scored.slice(0,8).filter(x=>x.s>0.15);
+    const top=scored.slice(0,3).filter(x=>x.s>0.15);
     if(!top.length){ ansBody.innerHTML='<p>등록된 규정에서 관련 조항을 찾지 못했습니다. 질문을 더 구체적으로 바꾸거나, 해당 규정 문서가 등록됐는지 확인해 주세요.</p>'; btn.disabled=false; btn.textContent="질의"; return; }
 
     btn.innerHTML='<span class="spinner"></span> 근거 정리 중';
