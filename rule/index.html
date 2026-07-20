@@ -858,7 +858,8 @@ async function handleFiles(fileList){
   const files=[...fileList];
   const prog=$("#progress"), bar=$("#bar"), us=$("#uploadStatus");
   prog.classList.add("show");
-  const failures=[]; // 실패한 파일명 — 마지막 완료 메시지가 실패를 덮지 않도록 기록
+  const failures=[]; // {name, reason} — 마지막 완료 메시지가 실패 사유를 덮지 않도록 기록
+  let okCount=0;
   for(const file of files){
     us.textContent=`『${file.name}』 텍스트 추출 중…`;
     let newChunks=[];
@@ -877,8 +878,8 @@ async function handleFiles(fileList){
         const raw=await file.text();
         newChunks=chunkText(file.name, raw);
       }
-    }catch(e){ us.style.color="var(--warn)"; us.textContent=`『${file.name}』 처리 실패: ${e.message}`; failures.push(file.name); continue; }
-    if(!newChunks.length){ us.style.color="var(--warn)"; us.textContent=`『${file.name}』 에서 추출할 텍스트가 없습니다 (스캔본일 수 있음).`; failures.push(file.name); continue; }
+    }catch(e){ failures.push({name:file.name, reason:e.message}); continue; }
+    if(!newChunks.length){ failures.push({name:file.name, reason:"추출할 텍스트가 없습니다 (스캔본일 수 있음)"}); continue; }
 
     // 같은 파일명 재등록 시: 기존 조항을 제거하고 새 내용으로 교체 (중복 방지)
     const hadBefore = state.chunks.some(c=>c.file===file.name);
@@ -886,7 +887,7 @@ async function handleFiles(fileList){
     state.deselected.delete(file.name); // 새로 올린 문서는 기본 선택 상태로
 
     // embed in batches (한 요청에 여러 청크 → 요청 수 절감; 429는 apiFetch에서 자동 재시도)
-    const BATCH=32; let done=0; let failed=false;
+    const BATCH=32; let done=0; let failMsg="";
     for(let i=0;i<newChunks.length;i+=BATCH){
       const slice=newChunks.slice(i,i+BATCH);
       us.style.color="var(--muted)";
@@ -894,23 +895,25 @@ async function handleFiles(fileList){
       let vecs;
       try{ vecs=await embed(slice.map(c=>c.text), "passage"); }
       catch(e){
-        us.style.color="var(--warn)";
-        us.textContent=`『${file.name}』 분석 실패: ${e.message}`;
+        failMsg=`분석 실패: ${e.message}`;
         // 부분 등록 상태로 남기지 않음 — 이 파일의 조항 전부 롤백
         state.chunks = state.chunks.filter(c=>c.file!==file.name);
-        failed=true; break;
+        break;
       }
       slice.forEach((c,k)=>{ c.id=Date.now()+"-"+i+"-"+k; c.vec=vecs[k]; state.chunks.push(c); });
       done+=slice.length;
       bar.style.width=Math.round(done/newChunks.length*100)+"%";
     }
-    if(failed){ failures.push(file.name); renderFiles(); continue; }
+    if(failMsg){ failures.push({name:file.name, reason:failMsg}); renderFiles(); continue; }
+    okCount++;
     saveDB();
   }
   bar.style.width="100%";
   if(failures.length){
     us.style.color="var(--warn)";
-    us.textContent=`⚠ ${failures.length}개 파일 등록 실패: ${failures.join(", ")} · 성공한 문서는 총 ${state.chunks.length}개 조항으로 등록되었습니다.`;
+    // 실패 사유를 파일별로 그대로 보여준다 (요약 문구가 사유를 덮지 않도록)
+    us.innerHTML=failures.map(f=>`⚠ 『${escapeHtml(f.name)}』 ${escapeHtml(f.reason)}`).join("<br>")
+      +(okCount?`<br><span style="color:var(--ok)">나머지 ${okCount}개 파일은 등록 완료 · 현재 총 ${state.chunks.length}개 조항</span>`:"");
   }else{
     us.style.color="var(--ok)";
     us.textContent=`완료 · 총 ${state.chunks.length}개 조항이 등록되었습니다.`;
