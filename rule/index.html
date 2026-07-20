@@ -65,11 +65,23 @@
     box-shadow:var(--shadow);
     padding:26px;margin-top:22px;
   }
-  /* 좌우 2열: 왼쪽=문서 등록, 오른쪽=질의+답변 (API 연결은 모달) */
-  .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start;margin-top:22px}
+  /* 좌우 2열: 왼쪽=문서 등록+규정 질의, 오른쪽=답변+추가 질문 채팅 (API 연결은 모달) */
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) 1px minmax(0,1fr);gap:22px;align-items:stretch;margin-top:22px}
   .col{display:flex;flex-direction:column;gap:22px;min-width:0}
   .col .card,.col #answer{margin-top:0}
-  @media (max-width:900px){ .cols{grid-template-columns:1fr} }
+  .divider{width:1px;align-self:stretch;background:linear-gradient(180deg,transparent,var(--gold) 18%,var(--gold) 82%,transparent);opacity:.35}
+  @media (max-width:900px){ .cols{grid-template-columns:1fr} .divider{display:none} }
+
+  /* ---- 결과 안내 (답변 전 표시) ---- */
+  #resultPlaceholder{
+    border:1.5px dashed var(--line);border-radius:var(--radius);
+    background:rgba(11,26,51,.4);box-shadow:none;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:48px 26px;min-height:260px;
+  }
+  #resultPlaceholder svg{width:38px;height:38px;opacity:.55;margin-bottom:14px}
+  #resultPlaceholder .ph-title{color:var(--gold-soft);font-weight:700;font-size:.98rem;letter-spacing:.03em}
+  #resultPlaceholder .ph-sub{color:var(--muted);font-size:.85rem;margin-top:8px;line-height:1.7}
   .card h2{
     font-size:1rem;font-weight:700;letter-spacing:.02em;
     display:flex;align-items:center;gap:10px;margin-bottom:4px;color:#fff;
@@ -242,6 +254,46 @@
   }
   .disclaimer svg{width:18px;height:18px;flex:0 0 18px;margin-top:2px}
 
+  /* ---- 질의 기록 ---- */
+  #historyCard{display:none}
+  #historyCard.show{display:block}
+  .hist-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .hist-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto}
+  .hist-item{
+    display:flex;align-items:center;gap:10px;background:var(--navy-900);
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+    cursor:pointer;transition:border-color .2s,background .2s;
+  }
+  .hist-item:hover{border-color:var(--gold)}
+  .hist-item.sel{border-color:var(--gold);background:rgba(201,162,75,.08)}
+  .hist-item .hq{flex:1;color:#dfe6f1;font-size:.86rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hist-item .hd{color:var(--muted);font-size:.72rem;flex:none}
+  .hist-item .rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.05rem;line-height:1;flex:none}
+  .hist-item .rm:hover{color:var(--warn)}
+
+  /* ---- 추가 질문 채팅 ---- */
+  #chatCard{display:none}
+  #chatCard.show{display:block}
+  .chat-log{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow-y:auto;margin-bottom:14px;padding-right:4px}
+  .chat-log:empty{display:none}
+  .msg{padding:10px 14px;border-radius:12px;font-size:.9rem;line-height:1.65;max-width:90%;word-break:break-word}
+  .msg.user{align-self:flex-end;background:var(--gold-dim);border:1px solid var(--line);color:#f0e6cf;border-bottom-right-radius:4px}
+  .msg.ai{align-self:flex-start;background:var(--navy-900);border:1px solid var(--line);color:#dbe2ee;border-bottom-left-radius:4px}
+  .msg.ai h3{color:#fff;font-size:.95rem;margin:10px 0 6px}
+  .msg.ai h3:first-child{margin-top:0}
+  .msg.ai p{margin-bottom:8px}
+  .msg.ai p:last-child{margin-bottom:0}
+  .msg.ai ul{margin:4px 0 8px 18px}
+  .msg.ai strong{color:var(--gold-soft)}
+  .chat-row{display:flex;gap:10px;align-items:flex-end}
+  .chat-row textarea{
+    flex:1;background:var(--navy-900);border:1px solid var(--line);color:var(--paper);
+    border-radius:10px;padding:11px 13px;font-size:.92rem;font-family:inherit;resize:none;
+    min-height:46px;max-height:140px;outline:none;transition:border-color .2s,box-shadow .2s;
+  }
+  .chat-row textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,75,.15)}
+  .chat-note{color:var(--muted);font-size:.76rem;margin-top:8px}
+
   .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(201,162,75,.3);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
   @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -280,7 +332,7 @@
   <!-- STEP 1: Upload -->
   <section class="card locked" id="uploadCard">
     <h2><span class="n">1</span> 규정 문서 등록</h2>
-    <p class="hint">내게 해당되는 규정·지침·매뉴얼을 올려두세요 (PDF · TXT). 처음 한 번만 분석하며, 이후엔 저장됩니다.</p>
+    <p class="hint">내게 해당되는 규정·지침·매뉴얼을 올려두세요 (PDF · DOCX · HWPX · TXT). 처음 한 번만 분석하며, 이후엔 저장됩니다. 구형 HWP는 한글에서 PDF·HWPX로 저장 후 올려주세요.</p>
     <p class="hint" style="color:var(--warn)">⚠ 올린 문서의 내용은 분석·답변을 위해 NVIDIA 서버로 전송됩니다. 개인정보·기밀이 담긴 문서는 올리지 마세요.</p>
 
     <div class="upload-grid">
@@ -291,8 +343,8 @@
             <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
           </svg>
           <div class="big">파일 끌어다 놓기 · 클릭해서 선택</div>
-          <div class="small">PDF · TXT · 여러 개 가능</div>
-          <input type="file" id="fileInput" accept=".pdf,.txt" multiple hidden>
+          <div class="small">PDF · DOCX · HWPX · TXT · 여러 개 가능</div>
+          <input type="file" id="fileInput" accept=".pdf,.txt,.docx,.hwpx,.hwp" multiple hidden>
         </div>
         <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
         <div class="status-line" id="uploadStatus"></div>
@@ -303,9 +355,6 @@
       </div>
     </div>
   </section>
-
-  </div>
-  <div class="col">
 
   <!-- STEP 2: Ask -->
   <section class="card locked ask" id="askCard">
@@ -330,6 +379,34 @@
     </div>
   </section>
 
+  <!-- 질의 기록 -->
+  <section class="card" id="historyCard">
+    <div class="hist-head">
+      <h2 style="margin-bottom:0"><span class="n">🕘</span> 질의 기록</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost" id="histExportBtn" style="padding:6px 13px;font-size:.8rem">내보내기</button>
+        <button class="btn ghost" id="histClearBtn" style="padding:6px 13px;font-size:.8rem">전체 삭제</button>
+      </div>
+    </div>
+    <p class="hint">이 브라우저에 저장된 지난 질의입니다. 클릭하면 답변·근거·추가 채팅까지 다시 불러옵니다.</p>
+    <div class="hist-list" id="histList"></div>
+  </section>
+
+  </div>
+  <div class="divider" aria-hidden="true"></div>
+  <div class="col">
+
+  <!-- 결과 안내 (답변 전) -->
+  <section class="card" id="resultPlaceholder">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.4">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 12l4-6-6 4z" fill="#c9a24b" stroke="none"/>
+      <path d="M12 12l-4 6 6-4z" fill="#e2c988" stroke="none"/>
+    </svg>
+    <div class="ph-title">질의 결과가 여기에 표시됩니다</div>
+    <div class="ph-sub">왼쪽에서 규정 문서를 등록하고 질문을 입력하면,<br>관련 조항을 찾아 근거와 함께 답변을 정리해 드립니다.</div>
+  </section>
+
   <!-- Answer -->
   <section id="answer">
     <div class="ans-card">
@@ -344,6 +421,18 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
       <span>이 답변은 등록된 문서에서 찾은 근거를 정리한 <b>참고 자료</b>입니다. 실제 판단·처분은 반드시 원문 조항과 담당 기구의 검토를 거치세요.</span>
     </div>
+  </section>
+
+  <!-- 추가 질문 채팅 -->
+  <section class="card" id="chatCard">
+    <h2><span class="n">＋</span> 추가 질문</h2>
+    <p class="hint">위 답변에 대해 더 궁금한 점을 이어서 물어보세요. 인용된 규정 근거와 답변 내용을 바탕으로 답합니다.</p>
+    <div class="chat-log" id="chatLog"></div>
+    <div class="chat-row">
+      <textarea id="chatInput" rows="1" placeholder="예) 그 기한을 넘기면 어떻게 되나요?"></textarea>
+      <button class="btn" id="chatBtn">보내기</button>
+    </div>
+    <div class="chat-note">Enter 전송 · Shift+Enter 줄바꿈 · 새 질의를 하면 채팅이 초기화됩니다</div>
   </section>
 
   </div>
@@ -512,6 +601,16 @@ async function chat(messages, onDelta){
   }
 }
 function cosine(a,b){ let d=0,na=0,nb=0; for(let i=0;i<a.length;i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];} return d/(Math.sqrt(na)*Math.sqrt(nb)+1e-9); }
+// 키워드 일치 점수(0~1): 질문의 단어("제15조", 고유명사 등)가 조각에 그대로 들어 있으면 가산.
+// 의미검색(임베딩)이 정확한 조항 번호·명칭을 놓치는 약점을 보완한다.
+function kwScore(q, text){
+  const terms=(q.toLowerCase().match(/[가-힣a-z0-9]{2,}/g)||[]).filter((w,i,a)=>a.indexOf(w)===i);
+  if(!terms.length) return 0;
+  const t=text.toLowerCase();
+  let hit=0;
+  for(const w of terms) if(t.includes(w)) hit++;
+  return hit/terms.length;
+}
 
 /* ---------- PDF text extraction (pdf.js) ---------- */
 let pdfjsReady=null;
@@ -538,6 +637,49 @@ async function extractPdf(file){
     pages.push({page:p,text:txt});
   }
   return pages;
+}
+
+/* ---------- DOCX / HWPX text extraction ----------
+   pdf.js처럼 필요할 때만 CDN에서 로드한다. 구형 HWP(바이너리)는 브라우저 파싱 불가 → 안내만. */
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src=src; s.onload=res; s.onerror=()=>rej(new Error("라이브러리 로드 실패 (인터넷 연결 확인)"));
+    document.head.appendChild(s);
+  });
+}
+let mammothReady=null, jszipReady=null;
+function loadMammoth(){ return mammothReady||(mammothReady=loadScript("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js")); }
+function loadJSZip(){ return jszipReady||(jszipReady=loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js")); }
+
+async function extractDocx(file){
+  await loadMammoth();
+  const r=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});
+  return r.value||"";
+}
+// HWPX = zip 안의 Contents/section*.xml. 문단(<hp:p>) 단위로 텍스트(<hp:t>)를 모은다.
+async function extractHwpx(file){
+  await loadJSZip();
+  const zip=await JSZip.loadAsync(await file.arrayBuffer());
+  const names=Object.keys(zip.files).filter(n=>/^Contents\/section\d+\.xml$/i.test(n)).sort();
+  if(!names.length) throw new Error("본문을 찾지 못했습니다. 한글에서 'HWPX' 형식으로 다시 저장해 보세요");
+  const paras=[];
+  for(const n of names){
+    const xml=await zip.files[n].async("string");
+    const doc=new DOMParser().parseFromString(xml,"application/xml");
+    const ps=doc.getElementsByTagNameNS("*","p");
+    if(ps.length){
+      for(const p of ps){
+        const ts=p.getElementsByTagNameNS("*","t");
+        let s=""; for(const t of ts) s+=t.textContent;
+        s=s.trim(); if(s) paras.push(s);
+      }
+    }else{
+      const s=xml.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
+      if(s) paras.push(s);
+    }
+  }
+  return paras.join("\n\n");
 }
 
 /* ---------- chunking ---------- */
@@ -637,9 +779,16 @@ async function handleFiles(fileList){
     us.textContent=`『${file.name}』 텍스트 추출 중…`;
     let newChunks=[];
     try{
-      if(file.name.toLowerCase().endsWith(".pdf")){
+      const lower=file.name.toLowerCase();
+      if(lower.endsWith(".pdf")){
         const pages=await extractPdf(file);
         newChunks=chunkPages(file.name, pages);
+      }else if(lower.endsWith(".docx")){
+        newChunks=chunkText(file.name, await extractDocx(file));
+      }else if(lower.endsWith(".hwpx")){
+        newChunks=chunkText(file.name, await extractHwpx(file));
+      }else if(lower.endsWith(".hwp")){
+        throw new Error("구형 HWP는 브라우저에서 읽을 수 없습니다. 한글(한컴오피스)에서 '다른 이름으로 저장' → PDF 또는 HWPX로 저장한 뒤 올려주세요");
       }else{
         const raw=await file.text();
         newChunks=chunkText(file.name, raw);
@@ -732,30 +881,9 @@ async function copyText(btn, text, label){
 }
 
 /* ---------- ask ---------- */
-$("#askBtn").onclick=ask;
-$("#question").addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){ e.preventDefault(); ask(); } });
-async function ask(){
-  const q=$("#question").value.trim();
-  if(!q) return;
-  if(!state.chunks.length){ return; }
-  const btn=$("#askBtn"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 조항 검색 중';
-  const ansWrap=$("#answer"), ansBody=$("#ansBody"), srcBox=$("#sources");
-  ansWrap.classList.add("show");
-  ansBody.innerHTML='<p style="color:var(--muted)"><span class="spinner"></span> 관련 규정을 찾고 있습니다…</p>';
-  srcBox.innerHTML="";
-  ansWrap.scrollIntoView({behavior:"smooth",block:"start"});
-
-  try{
-    const pool=state.chunks.filter(c=>!state.deselected.has(c.file));
-    if(!pool.length){ ansBody.innerHTML='<p>선택된 문서가 없습니다. 위 <b>등록된 문서</b> 목록에서 답변에 사용할 문서를 하나 이상 체크해 주세요.</p>'; btn.disabled=false; btn.textContent="질의"; return; }
-    const [qv]=await embed([q], "query");
-    const scored=pool.map(c=>({c,s:cosine(qv,c.vec)})).sort((a,b)=>b.s-a.s);
-    const top=scored.slice(0, state.topK||3).filter(x=>x.s>0.15);
-    if(!top.length){ ansBody.innerHTML='<p>등록된 규정에서 관련 조항을 찾지 못했습니다. 질문을 더 구체적으로 바꾸거나, 해당 규정 문서가 등록됐는지 확인해 주세요.</p>'; btn.disabled=false; btn.textContent="질의"; return; }
-
-    btn.innerHTML='<span class="spinner"></span> 근거 정리 중';
-    const context=top.map((x,i)=>`[근거 ${i+1}] (${x.c.file} ${x.c.loc})\n${x.c.text}`).join("\n\n");
-    const sys=`당신은 규정 문서에서 근거 조항을 찾아 정리해 주는 보조자입니다. 규정 해석은 정확성이 최우선이며, 아래 규칙을 반드시 지키세요.
+// 질의·다시 생성이 같은 프롬프트를 쓰도록 분리
+function buildAskMessages(context, q){
+  const sys=`당신은 규정 문서에서 근거 조항을 찾아 정리해 주는 보조자입니다. 규정 해석은 정확성이 최우선이며, 아래 규칙을 반드시 지키세요.
 
 [언어 규칙 — 최우선, 예외 없음]
 - 답변은 처음부터 끝까지 100% 한글로만 작성하세요.
@@ -778,7 +906,35 @@ async function ask(){
 3) **필요한 절차·유의사항** — 규정상 밟아야 할 절차·기한·담당 기구가 근거에 있으면 정리. 없으면 "절차 관련 조항은 제공된 근거에서 확인되지 않습니다"라고 쓰세요.
 
 반드시 순수 한글로만(한자·일본어 문자 금지), 사실 위주로 간결하게. 법적·행정적 최종 판단은 사람과 담당 기구의 몫이며, 당신은 근거를 가리키는 역할입니다.`;
-    const user=`[근거 조항]\n${context}\n\n[질문/사례]\n${q}\n\n위 근거 조항만 사용해 형식에 맞춰 답하세요. 답변은 한자·일본어 문자 없이 순수 한글로만 작성하세요.`;
+  const user=`[근거 조항]\n${context}\n\n[질문/사례]\n${q}\n\n위 근거 조항만 사용해 형식에 맞춰 답하세요. 답변은 한자·일본어 문자 없이 순수 한글로만 작성하세요.`;
+  return [{role:"system",content:sys},{role:"user",content:user}];
+}
+$("#askBtn").onclick=ask;
+$("#question").addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey)&&e.key==="Enter"){ e.preventDefault(); ask(); } });
+async function ask(){
+  const q=$("#question").value.trim();
+  if(!q) return;
+  if(!state.chunks.length){ return; }
+  const btn=$("#askBtn"); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 조항 검색 중';
+  const ansWrap=$("#answer"), ansBody=$("#ansBody"), srcBox=$("#sources");
+  $("#resultPlaceholder").style.display="none";
+  resetChat(); // 새 질의가 시작되면 이전 답변 기준의 채팅은 초기화
+  ansWrap.classList.add("show");
+  ansBody.innerHTML='<p style="color:var(--muted)"><span class="spinner"></span> 관련 규정을 찾고 있습니다…</p>';
+  srcBox.innerHTML="";
+  ansWrap.scrollIntoView({behavior:"smooth",block:"start"});
+
+  try{
+    const pool=state.chunks.filter(c=>!state.deselected.has(c.file));
+    if(!pool.length){ ansBody.innerHTML='<p>선택된 문서가 없습니다. 위 <b>등록된 문서</b> 목록에서 답변에 사용할 문서를 하나 이상 체크해 주세요.</p>'; btn.disabled=false; btn.textContent="질의"; return; }
+    const [qv]=await embed([q], "query");
+    // 하이브리드: 의미 유사도 + 키워드 일치 가산(최대 0.15). 기존 임계값(0.15/0.35)과 호환되도록 가산형으로.
+    const scored=pool.map(c=>({c, s:Math.min(.99, cosine(qv,c.vec) + kwScore(q,c.text)*.15)})).sort((a,b)=>b.s-a.s);
+    const top=scored.slice(0, state.topK||3).filter(x=>x.s>0.15);
+    if(!top.length){ ansBody.innerHTML='<p>등록된 규정에서 관련 조항을 찾지 못했습니다. 질문을 더 구체적으로 바꾸거나, 해당 규정 문서가 등록됐는지 확인해 주세요.</p>'; btn.disabled=false; btn.textContent="질의"; return; }
+
+    btn.innerHTML='<span class="spinner"></span> 근거 정리 중';
+    const context=top.map((x,i)=>`[근거 ${i+1}] (${x.c.file} ${x.c.loc})\n${x.c.text}`).join("\n\n");
     ansBody.innerHTML=
       '<p style="color:var(--gold-soft)"><span class="spinner"></span> 관련 조항을 찾았습니다. 답변을 작성하고 있어요…</p>'
       +'<div style="color:var(--muted);font-size:.82rem;line-height:1.65;margin-top:10px;border:1px dashed var(--line);border-radius:8px;padding:12px 14px">'
@@ -786,7 +942,7 @@ async function ask(){
       +'이 서비스는 <b>엔비디아(NVIDIA)의 무료 AI 서버</b>로 답변을 만듭니다. 무료로 개방된 서버라, 전 세계 이용자가 몰리는 시간대에는 내 요청이 <b>대기열에서 순서를 기다리게</b> 돼요. 그래서 첫 문장이 나타나기까지 보통 몇 초, 혼잡할 땐 <b>30초~1분 이상</b> 걸리기도 합니다.<br>'
       +'화면이 멈춘 것이 아니며, 순서가 오면 아래에 답변이 <b>한 글자씩 실시간</b>으로 나타납니다. 잠시만 기다려 주세요.'
       +'</div>';
-    const raw=await chat([{role:"system",content:sys},{role:"user",content:user}], (partial)=>{
+    const raw=await chat(buildAskMessages(context, q), (partial)=>{
       if(partial) ansBody.innerHTML=renderMd(partial);
     });
 
@@ -794,25 +950,230 @@ async function ask(){
     if(top[0].s<0.35){
       lowRelNote='<p style="color:var(--gold-soft);font-size:.86rem;border:1px dashed var(--line);border-radius:8px;padding:10px 14px;margin-bottom:14px">⚠ 검색된 조항의 관련도가 낮습니다. 답변보다 아래 <b>근거 원문</b>을 직접 확인하는 것을 권장합니다.</p>';
     }
-    ansBody.innerHTML=lowRelNote+renderMd(raw)
-      +'<div style="margin-top:14px;text-align:right"><button class="btn ghost" id="copyBtn" style="padding:8px 16px;font-size:.85rem">답변 복사</button></div>';
-    const srcTxt=top.map((x,i)=>`[근거 ${i+1}] ${x.c.file} ${x.c.loc} (관련도 ${(x.s*100).toFixed(0)}%)\n${x.c.text}`).join("\n\n");
-    $("#copyBtn").onclick=e=>copyText(e.currentTarget, `[질문]\n${q}\n\n[답변]\n${raw}`, "답변 복사");
-    srcBox.innerHTML=`<div class="src-head"><span class="sh">인용된 근거 조항</span><button class="btn ghost" id="copySrcBtn" style="padding:6px 13px;font-size:.8rem">근거 복사</button></div>`+top.map((x,i)=>`
-      <div class="src">
-        <div class="loc">근거 ${i+1} · ${x.c.file} ${x.c.loc} · 관련도 ${(x.s*100).toFixed(0)}%</div>
-        <div class="txt" id="src${i}">${escapeHtml(x.c.text)}</div>
-        <button class="more" data-i="${i}">원문 전체 보기</button>
-      </div>`).join("");
-    $("#copySrcBtn").onclick=e=>copyText(e.currentTarget, srcTxt, "근거 복사");
-    srcBox.querySelectorAll(".more").forEach(b=>{
-      b.onclick=()=>{ const t=$("#src"+b.dataset.i); t.classList.toggle("open"); b.textContent=t.classList.contains("open")?"접기":"원문 전체 보기"; };
-    });
+    // 질의 기록으로 저장 — 근거 원문을 기록 안에 복사해 두므로, 나중에 문서를 삭제해도 다시 볼 수 있다
+    const rec={ id:Date.now(), ts:Date.now(), q, answer:raw, context, lowRel:top[0].s<0.35,
+      top:top.map(x=>({file:x.c.file, loc:x.c.loc, text:x.c.text, s:x.s})), chat:[] };
+    histAdd(rec);
+    renderResult(rec, lowRelNote);
   }catch(e){
     ansBody.innerHTML=`<p style="color:var(--warn)">답변 생성 중 오류가 발생했습니다: ${escapeHtml(e.message)}<br>잠시 후 다시 시도하거나 API 연결을 확인해 주세요.</p>`;
   }
   btn.disabled=false; btn.textContent="질의";
 }
+
+/* ---------- 질의 기록 ----------
+   질문·답변·근거 원문·추가 채팅을 IndexedDB에 저장한다.
+   근거 원문을 통째로 복사해 두므로 원본 문서를 삭제해도 기록은 그대로 열람 가능. */
+const HIST_KEY="history_v1", HIST_MAX=50;
+let histRecs=[], currentRecId=null;
+
+async function loadHistory(){ try{ const d=await idbGet(HIST_KEY); if(Array.isArray(d)) histRecs=d; }catch(e){} }
+function saveHistory(){ idbSet(HIST_KEY, histRecs).catch(()=>{}); }
+function histAdd(rec){
+  histRecs.unshift(rec);
+  if(histRecs.length>HIST_MAX) histRecs=histRecs.slice(0,HIST_MAX);
+  saveHistory();
+}
+function fmtDate(ts){
+  const d=new Date(ts), p=n=>String(n).padStart(2,"0");
+  return `${d.getMonth()+1}.${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function renderHistory(){
+  const card=$("#historyCard"), list=$("#histList");
+  card.classList.toggle("show", histRecs.length>0);
+  list.innerHTML="";
+  histRecs.forEach(rec=>{
+    const el=document.createElement("div");
+    el.className="hist-item"+(rec.id===currentRecId?" sel":"");
+    el.innerHTML=`<span class="hq">${escapeHtml(rec.q)}</span><span class="hd">${fmtDate(rec.ts)}</span><button class="rm" title="이 기록 삭제">×</button>`;
+    el.onclick=()=>renderResult(rec);
+    el.querySelector(".rm").onclick=(e)=>{
+      e.stopPropagation(); // 삭제 버튼이 기록 열기로 이어지지 않도록
+      histRecs=histRecs.filter(r=>r.id!==rec.id);
+      if(currentRecId===rec.id) currentRecId=null;
+      saveHistory(); renderHistory();
+    };
+    list.appendChild(el);
+  });
+}
+// 내보내기: 전체 기록(질문·답변·근거·추가 채팅)을 마크다운 파일로 다운로드
+function exportHistory(){
+  if(!histRecs.length) return;
+  const body=histRecs.map(rec=>{
+    let s=`## ${fmtDate(rec.ts)} · ${rec.q}\n\n### 답변\n\n${rec.answer}\n\n### 인용 근거\n\n`;
+    s+=rec.top.map((x,i)=>`- **근거 ${i+1}** · ${x.file} ${x.loc} · 관련도 ${(x.s*100).toFixed(0)}%\n  > ${x.text}`).join("\n");
+    if(rec.chat&&rec.chat.length){
+      s+="\n\n### 추가 질문\n\n"+rec.chat.map(t=>`**Q. ${t.q}**\n\n${t.a}`).join("\n\n");
+    }
+    return s;
+  }).join("\n\n---\n\n");
+  const d=new Date(), p=n=>String(n).padStart(2,"0");
+  const stamp=`${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
+  const head=`# 규정나침반 질의 기록\n\n내보낸 시각: ${d.toLocaleString("ko-KR")} · 총 ${histRecs.length}건\n\n> 이 기록은 등록된 문서에서 찾은 근거를 정리한 참고 자료입니다. 실제 판단·처분은 원문 조항과 담당 기구의 검토를 거치세요.\n\n---\n\n`;
+  const blob=new Blob([head+body],{type:"text/markdown;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`규정나침반_질의기록_${stamp}.md`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+$("#histExportBtn").onclick=exportHistory;
+
+// 전체 삭제: 모달(confirm)은 쓰지 않고 버튼 2번 클릭으로 확인
+$("#histClearBtn").onclick=e=>{
+  const b=e.currentTarget;
+  if(b.dataset.arm){
+    histRecs=[]; currentRecId=null; saveHistory(); renderHistory();
+    delete b.dataset.arm; b.textContent="전체 삭제";
+  }else{
+    b.dataset.arm="1"; b.textContent="한 번 더 누르면 삭제";
+    setTimeout(()=>{ delete b.dataset.arm; b.textContent="전체 삭제"; },2500);
+  }
+};
+
+/* 답변·근거·채팅을 오른쪽 패널에 그린다 (새 질의 완료 시 + 기록 클릭 시 공용) */
+function renderResult(rec, lowRelNote){
+  if(lowRelNote===undefined){
+    lowRelNote = rec.lowRel
+      ? '<p style="color:var(--gold-soft);font-size:.86rem;border:1px dashed var(--line);border-radius:8px;padding:10px 14px;margin-bottom:14px">⚠ 검색된 조항의 관련도가 낮습니다. 답변보다 아래 <b>근거 원문</b>을 직접 확인하는 것을 권장합니다.</p>'
+      : "";
+  }
+  const ansBody=$("#ansBody"), srcBox=$("#sources");
+  $("#resultPlaceholder").style.display="none";
+  $("#answer").classList.add("show");
+  ansBody.innerHTML=lowRelNote+renderMd(rec.answer)
+    +'<div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">'
+    +'<button class="btn ghost" id="regenBtn" style="padding:8px 16px;font-size:.85rem" title="같은 질문·근거로 답변을 다시 작성">다시 생성</button>'
+    +'<button class="btn ghost" id="copyBtn" style="padding:8px 16px;font-size:.85rem">답변 복사</button></div>';
+  $("#regenBtn").onclick=()=>regenerate(rec);
+  $("#copyBtn").onclick=e=>copyText(e.currentTarget, `[질문]\n${rec.q}\n\n[답변]\n${rec.answer}`, "답변 복사");
+  const srcTxt=rec.top.map((x,i)=>`[근거 ${i+1}] ${x.file} ${x.loc} (관련도 ${(x.s*100).toFixed(0)}%)\n${x.text}`).join("\n\n");
+  srcBox.innerHTML=`<div class="src-head"><span class="sh">인용된 근거 조항</span><button class="btn ghost" id="copySrcBtn" style="padding:6px 13px;font-size:.8rem">근거 복사</button></div>`+rec.top.map((x,i)=>`
+    <div class="src">
+      <div class="loc">근거 ${i+1} · ${x.file} ${x.loc} · 관련도 ${(x.s*100).toFixed(0)}%</div>
+      <div class="txt" id="src${i}">${escapeHtml(x.text)}</div>
+      <button class="more" data-i="${i}">원문 전체 보기</button>
+    </div>`).join("");
+  $("#copySrcBtn").onclick=e=>copyText(e.currentTarget, srcTxt, "근거 복사");
+  srcBox.querySelectorAll(".more").forEach(b=>{
+    b.onclick=()=>{ const t=$("#src"+b.dataset.i); t.classList.toggle("open"); b.textContent=t.classList.contains("open")?"접기":"원문 전체 보기"; };
+  });
+  // 추가 질문 채팅 활성화 + 저장된 채팅 복원
+  openChat(rec.q, rec.answer, rec.context);
+  (rec.chat||[]).forEach(t=>{
+    addMsg("user", escapeHtml(t.q));
+    addMsg("ai", renderMd(t.a));
+    chatHistory.push({role:"user",content:t.q},{role:"assistant",content:t.a});
+  });
+  if(chatHistory.length>10) chatHistory=chatHistory.slice(-10);
+  currentRecId=rec.id;
+  renderHistory(); // 선택 표시 갱신
+}
+
+/* 다시 생성: 임베딩 검색 없이 같은 질문·근거로 답변만 재작성 (요청 1회) */
+async function regenerate(rec){
+  const btn=$("#regenBtn"), ansBody=$("#ansBody");
+  if(!state.apiKey){
+    if(btn){ btn.textContent="API 연결 필요"; setTimeout(()=>{ btn.textContent="다시 생성"; },2000); }
+    return;
+  }
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 작성 중'; }
+  resetChat(); // 답변이 바뀌므로 기존 답변 기준의 채팅 문맥은 무효
+  ansBody.innerHTML='<p style="color:var(--gold-soft)"><span class="spinner"></span> 같은 근거로 답변을 다시 작성하고 있어요…</p>';
+  try{
+    const raw=await chat(buildAskMessages(rec.context, rec.q), (partial)=>{
+      if(partial) ansBody.innerHTML=renderMd(partial);
+    });
+    rec.answer=raw;
+    rec.chat=[]; // 이전 답변 기준의 추가 채팅은 비운다
+    saveHistory();
+    renderResult(rec);
+  }catch(e){
+    ansBody.innerHTML=`<p style="color:var(--warn)">다시 생성 중 오류가 발생했습니다: ${escapeHtml(e.message)}</p>`
+      +'<p style="color:var(--muted);font-size:.85rem">왼쪽 질의 기록에서 이 질문을 클릭하면 기존 답변을 다시 볼 수 있습니다.</p>';
+  }
+}
+
+/* ---------- 추가 질문 채팅 ----------
+   직전 질의의 근거 조항 + 답변을 문맥으로 넣어, 후속 질문에도 근거 기반으로만 답하게 한다. */
+let chatCtx=null;      // {q, answer, context}
+let chatHistory=[];    // [{role,content}] — system 제외한 대화 누적
+const chatCard=document.getElementById("chatCard"), chatLog=document.getElementById("chatLog");
+
+function resetChat(){
+  chatCtx=null; chatHistory=[];
+  chatLog.innerHTML="";
+  chatCard.classList.remove("show");
+  if(currentRecId!==null){ currentRecId=null; renderHistory(); }
+}
+function openChat(q, answer, context){
+  chatCtx={q, answer, context};
+  chatHistory=[];
+  chatLog.innerHTML="";
+  chatCard.classList.add("show");
+}
+function addMsg(role, html){
+  const el=document.createElement("div");
+  el.className="msg "+role;
+  el.innerHTML=html;
+  chatLog.appendChild(el);
+  chatLog.scrollTop=chatLog.scrollHeight;
+  return el;
+}
+function chatSys(){
+  return `당신은 규정 문서 근거를 바탕으로 답하는 보조자입니다. 사용자는 아래 [기존 답변]을 읽고 추가 질문을 이어가는 중입니다.
+
+[언어 규칙 — 최우선, 예외 없음]
+- 답변은 처음부터 끝까지 100% 한글로만 작성하세요. 한자·일본어 가나·중국어 간체자 등 외국 문자는 단 한 글자도 금지입니다.
+- 한자어도 한글로 표기하세요. (예: '第3條'가 아니라 '제3조')
+
+[절대 규칙]
+1. 반드시 아래 [근거 조항]과 [기존 답변]의 내용만 바탕으로 답하세요. 일반 지식·다른 규정·법령 기억은 사용 금지.
+2. 근거에 없는 내용은 추측하지 말고 "제공된 규정에서 확인되지 않습니다"라고 명시하세요.
+3. 조항 번호는 근거 텍스트에 실제로 적힌 경우에만 인용하고, 숫자·기한·기간은 바꾸거나 어림하지 마세요.
+4. 판단 문장에는 (근거 N) 표기를 붙이고, 불확실하면 확신 수준을 정직하게 표현하세요.
+5. 간결하게, 사실 위주로 답하세요. 최종 판단은 담당 기구의 몫입니다.
+
+[근거 조항]
+${chatCtx.context}
+
+[원래 질문]
+${chatCtx.q}
+
+[기존 답변]
+${chatCtx.answer}`;
+}
+async function sendChat(){
+  const input=$("#chatInput"), btn=$("#chatBtn");
+  const msg=input.value.trim();
+  if(!msg || !chatCtx || btn.disabled) return;
+  input.value="";
+  addMsg("user", escapeHtml(msg));
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
+  const aiEl=addMsg("ai",'<p style="color:var(--muted)"><span class="spinner"></span> 답변 작성 중…</p>');
+  try{
+    const messages=[{role:"system",content:chatSys()}, ...chatHistory, {role:"user",content:msg}];
+    const raw=await chat(messages,(partial)=>{
+      if(partial){ aiEl.innerHTML=renderMd(partial); chatLog.scrollTop=chatLog.scrollHeight; }
+    });
+    aiEl.innerHTML=renderMd(raw);
+    chatHistory.push({role:"user",content:msg},{role:"assistant",content:raw});
+    // 문맥이 무한히 길어지지 않도록 최근 5턴(10개)만 유지
+    if(chatHistory.length>10) chatHistory=chatHistory.slice(-10);
+    // 추가 채팅도 현재 질의 기록에 저장 (기록을 다시 열면 채팅까지 복원)
+    const rec=histRecs.find(r=>r.id===currentRecId);
+    if(rec){ (rec.chat=rec.chat||[]).push({q:msg, a:raw}); saveHistory(); }
+  }catch(e){
+    aiEl.innerHTML=`<p style="color:var(--warn)">오류가 발생했습니다: ${escapeHtml(e.message)}<br>잠시 후 다시 시도해 주세요.</p>`;
+  }
+  chatLog.scrollTop=chatLog.scrollHeight;
+  btn.disabled=false; btn.textContent="보내기";
+  input.focus();
+}
+$("#chatBtn").onclick=sendChat;
+$("#chatInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendChat(); }
+});
 
 /* ---------- tiny markdown ---------- */
 function escapeHtml(s){return s.replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));}
@@ -835,6 +1196,7 @@ function renderMd(md){
 loadDB().then(()=>{
   if(state.chunks.length){ renderFiles(); unlockAsk(); }
 });
+loadHistory().then(renderHistory);
 (function(){
   const saved=loadKey();
   if(saved){ $("#apiKey").value=saved; tryConnect(saved, true).then(ok=>{ if(!ok) openModal(); }); }
