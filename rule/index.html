@@ -207,6 +207,36 @@
   .dchip.sel{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:var(--navy-900);border-color:var(--gold);font-weight:800}
   .depth-note{color:var(--muted);font-size:.75rem;flex-basis:100%;margin-top:-2px}
 
+  /* ---- 사용법·팁 칩 (항상 좌하단 고정) + 모달 ---- */
+  .help-chip{
+    position:fixed;left:16px;bottom:16px;z-index:1000;
+    display:inline-flex;align-items:center;gap:7px;
+    background:linear-gradient(180deg,rgba(20,36,64,.96),rgba(11,26,51,.96));
+    border:1px solid var(--line);color:var(--gold-soft);
+    border-radius:99px;padding:8px 14px;font-size:.8rem;font-weight:700;
+    cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(0,0,0,.35);
+    backdrop-filter:blur(4px);transition:background .2s,transform .2s,box-shadow .2s;
+  }
+  .help-chip:hover{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:var(--navy-900);transform:translateY(-1px);box-shadow:0 8px 22px rgba(201,162,75,.35)}
+  @media (max-width:520px){ .help-chip{left:12px;bottom:12px;padding:7px 12px;font-size:.75rem} }
+
+  .help-modal{max-width:560px;max-height:82vh;overflow-y:auto;position:relative}
+  .help-modal .close-x{
+    position:absolute;top:14px;right:14px;background:none;border:none;
+    color:var(--muted);font-size:1.5rem;line-height:1;cursor:pointer;padding:4px;
+  }
+  .help-modal .close-x:hover{color:var(--gold-soft)}
+  .help-modal h3{color:var(--gold-soft);font-size:.95rem;margin:20px 0 8px;display:flex;align-items:center;gap:8px}
+  .help-modal p,.help-modal li{color:#cdd6e6;font-size:.88rem;line-height:1.7}
+  .help-modal ul{list-style:none;margin:0}
+  .help-modal ul li{position:relative;padding-left:18px;margin-bottom:6px}
+  .help-modal ul li::before{content:"·";position:absolute;left:4px;color:var(--gold);font-weight:800}
+  .help-modal .trust{
+    margin-top:4px;background:var(--gold-dim);border:1px solid var(--line);
+    border-radius:10px;padding:12px 16px;color:#e8dfc8;font-size:.86rem;line-height:1.7;
+  }
+  .help-modal .trust b{color:var(--gold-soft)}
+
   /* ---- 제작자 칩 (항상 우하단 고정) ---- */
   .creator-chip{
     position:fixed;right:16px;bottom:16px;z-index:1000;
@@ -477,6 +507,55 @@
   </div>
 </div>
 
+<!-- 좌하단 사용법·팁 칩 -->
+<button class="help-chip" id="helpChip" aria-label="사용법과 팁 보기">
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 .3c0 1.7-2.5 2-2.5 3.7"/><circle cx="12" cy="16.8" r=".1" stroke-width="2.2"/></svg>
+  <span>사용법 · 팁</span>
+</button>
+
+<!-- 사용법·팁 모달 -->
+<div class="modal-overlay hidden" id="helpModal">
+  <div class="modal help-modal">
+    <button class="close-x" id="helpClose" aria-label="닫기">×</button>
+    <div class="modal-crest">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.6">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 12l4-6-6 4z" fill="#c9a24b" stroke="none"/>
+        <path d="M12 12l-4 6 6-4z" fill="#e2c988" stroke="none"/>
+      </svg>
+    </div>
+    <h2>규정나침반 사용법</h2>
+
+    <div class="trust">
+      이 서비스의 문서 분석과 답변 생성은 세계적 AI 기업 <b>엔비디아(NVIDIA)의 공식 AI 서버(NIM)</b>에서 이뤄집니다. 별도 프로그램 설치 없이, 엔비디아가 무료로 개방한 최신 AI 모델을 그대로 사용합니다. API 키와 문서는 이 브라우저에만 저장되며, 중계 서버에 기록되지 않습니다.
+    </div>
+
+    <h3>🧭 3단계로 끝나는 사용법</h3>
+    <ul>
+      <li><b>API 연결</b> — 처음 한 번, 엔비디아 무료 키(nvapi-)를 발급받아 연결합니다. 신용카드가 필요 없고, 키는 자동 저장되어 다음 방문부터는 바로 시작됩니다.</li>
+      <li><b>문서 등록</b> — 왼쪽에 내 규정·지침 파일(PDF · DOCX · HWPX · TXT)을 끌어다 놓습니다. 처음 한 번만 분석하며 이후엔 저장됩니다.</li>
+      <li><b>질의</b> — 상황이나 질문을 적고 [질의]를 누르면, 오른쪽에 근거 조항과 함께 답변이 나타납니다. 답변 아래 채팅창에서 이어서 질문할 수 있습니다.</li>
+    </ul>
+
+    <h3>💡 더 잘 쓰는 팁</h3>
+    <ul>
+      <li><b>질문은 구체적으로</b> — "연차 규정 알려줘"보다 "연차는 며칠 전까지 누구에게 신청해야 하나요?"처럼 물으면 정확한 조항을 찾습니다. 조항 번호("제15조")로 바로 물어도 됩니다.</li>
+      <li><b>근거 조항 수</b> — 핵심만 빠르게 보려면 3개, 여러 조항을 두루 검토하려면 8개를 선택하세요.</li>
+      <li><b>문서 체크박스</b> — 등록된 문서 중 체크한 문서에서만 답을 찾습니다. 질문과 관련된 규정집만 켜두면 더 정확해집니다.</li>
+      <li><b>질의 기록</b> — 모든 질의는 자동 저장됩니다. 왼쪽 기록을 클릭하면 답변·근거·채팅까지 복원되고, [내보내기]로 마크다운 파일로 받을 수 있습니다.</li>
+      <li><b>다시 생성</b> — 답변이 아쉬우면 답변 아래 [다시 생성]으로 같은 근거에서 다시 작성합니다.</li>
+      <li><b>첫 답변이 느릴 때</b> — 무료 개방 서버라 혼잡 시간엔 첫 문장까지 30초~1분 걸릴 수 있습니다. 멈춘 게 아니니 잠시 기다려 주세요.</li>
+    </ul>
+
+    <h3>⚠ 꼭 알아두세요</h3>
+    <ul>
+      <li>올린 문서 내용과 질문은 답변 생성을 위해 엔비디아 서버로 전송됩니다. <b>개인정보·기밀 문서는 올리지 마세요.</b></li>
+      <li>답변은 근거를 정리한 참고 자료입니다. 최종 판단·처분은 반드시 원문과 담당 기구의 검토를 거치세요.</li>
+      <li>스캔(이미지) PDF와 구형 HWP는 지원하지 않습니다. HWP는 한글에서 PDF·HWPX로 저장 후 올려주세요.</li>
+    </ul>
+  </div>
+</div>
+
 <a class="creator-chip" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener" aria-label="제작자 인스타그램 @hirame.ki">
   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
   <span>제작 @hirame.ki</span>
@@ -667,13 +746,18 @@ async function extractHwpx(file){
   for(const n of names){
     const xml=await zip.files[n].async("string");
     const doc=new DOMParser().parseFromString(xml,"application/xml");
-    const ps=doc.getElementsByTagNameNS("*","p");
-    if(ps.length){
-      for(const p of ps){
-        const ts=p.getElementsByTagNameNS("*","t");
-        let s=""; for(const t of ts) s+=t.textContent;
-        s=s.trim(); if(s) paras.push(s);
+    const ts=doc.getElementsByTagNameNS("*","t");
+    if(ts.length){
+      // 표(tbl) 안의 문단은 바깥 문단(<hp:p>) 안에 중첩되므로, 문단별로 t를 모으면 중복된다.
+      // 대신 t를 문서 순서대로 훑으며 "가장 가까운 p 조상"이 바뀔 때마다 문단을 끊는다.
+      let curP=null, buf="";
+      for(const t of ts){
+        let p=t.parentNode;
+        while(p && p.localName!=="p") p=p.parentNode;
+        if(p!==curP){ if(buf.trim()) paras.push(buf.trim()); buf=""; curP=p; }
+        buf+=t.textContent;
       }
+      if(buf.trim()) paras.push(buf.trim());
     }else{
       const s=xml.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
       if(s) paras.push(s);
@@ -1191,6 +1275,13 @@ function renderMd(md){
   if(inList)out.push("</ul>");
   return out.join("");
 }
+
+/* ---------- 사용법·팁 모달 ---------- */
+const helpModal=$("#helpModal");
+$("#helpChip").onclick=()=>helpModal.classList.remove("hidden");
+$("#helpClose").onclick=()=>helpModal.classList.add("hidden");
+helpModal.addEventListener("click",e=>{ if(e.target===helpModal) helpModal.classList.add("hidden"); }); // 바깥 클릭으로 닫기
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") helpModal.classList.add("hidden"); });
 
 /* ---------- init ---------- */
 loadDB().then(()=>{
