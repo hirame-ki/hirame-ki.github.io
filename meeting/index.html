@@ -38,7 +38,8 @@
   .wrap{max-width:1180px;margin:0 auto;padding:0 20px 90px}
 
   /* ---- Header (한 화면에 좌측 2개 카드가 들어가도록 압축) ---- */
-  header{padding:18px 0 8px;text-align:center;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+  header{padding:18px 0 8px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+  .title-row{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:nowrap}
   .crest{
     width:42px;height:42px;border-radius:50%;flex:none;
     display:flex;align-items:center;justify-content:center;
@@ -47,7 +48,6 @@
     box-shadow:0 0 0 5px rgba(201,162,75,.06), inset 0 0 16px rgba(201,162,75,.12);
   }
   .crest svg{width:22px;height:22px}
-  .head-txt{text-align:left}
   h1{
     font-size:1.45rem;font-weight:800;letter-spacing:.04em;line-height:1.3;
     background:linear-gradient(180deg,#fff,var(--gold-soft));
@@ -115,8 +115,16 @@
   .modal{position:relative;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;background:linear-gradient(180deg,var(--navy-800),var(--navy-700));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px}
   .modal-x{position:absolute;top:12px;right:12px;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:.9rem;font-family:inherit;transition:color .2s,border-color .2s}
   .modal-x:hover{color:var(--gold-soft);border-color:var(--gold)}
-  .tip-chip{border:1px solid var(--line);background:var(--gold-dim);color:var(--gold-soft);border-radius:99px;padding:7px 14px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s;white-space:nowrap}
-  .tip-chip:hover{background:rgba(201,162,75,.28)}
+  .tip-chip{
+    position:fixed;left:16px;bottom:16px;z-index:1000;
+    border:1px solid var(--line);background:linear-gradient(180deg,rgba(20,36,64,.96),rgba(11,26,51,.96));
+    color:var(--gold-soft);border-radius:99px;padding:8px 14px;font-size:.8rem;font-weight:700;
+    cursor:pointer;font-family:inherit;white-space:nowrap;
+    box-shadow:0 6px 18px rgba(0,0,0,.35);backdrop-filter:blur(4px);
+    transition:background .2s,transform .2s;
+  }
+  .tip-chip:hover{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:var(--navy-900);transform:translateY(-1px)}
+  @media (max-width:520px){ .tip-chip{left:12px;bottom:12px;padding:7px 12px;font-size:.75rem} }
   .tip-sec{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px}
   .tip-sec.first{border-top:none;margin-top:6px;padding-top:0}
   .tip-sec h3{font-size:.9rem;color:var(--gold-soft);margin-bottom:8px;font-weight:700}
@@ -186,6 +194,48 @@
   .file-note{margin-top:10px;border-top:1px dashed var(--line);padding-top:9px;color:var(--muted);font-size:.74rem;line-height:1.6}
   .file-note b{color:var(--gold-soft)}
 
+  /* ---- 브라우저 직접 녹음 ---- */
+  .or-div{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.72rem;margin:12px 0 10px}
+  .or-div::before,.or-div::after{content:'';flex:1;border-top:1px dashed var(--line)}
+  .rec-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .rec-row .rec-perm{font-size:.72rem;color:var(--muted)}
+  .rec-row .rec-perm b{color:var(--gold-soft)}
+  .rec-live{display:none;align-items:center;gap:10px;flex-wrap:wrap}
+  .rec-live.on{display:flex}
+  .rec-dot{width:10px;height:10px;border-radius:50%;background:#e05d5d;box-shadow:0 0 0 4px rgba(224,93,93,.2);animation:pulse 1.2s infinite;flex:none}
+  .rec-time{font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums;font-size:.95rem}
+  .rec-live .rec-warn{font-size:.72rem;color:var(--muted);flex-basis:100%}
+  .rec-meter{flex-basis:100%;height:8px;background:var(--navy-900);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+  .rec-meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--gold));transition:width .08s}
+  .rec-preview{margin-top:10px;display:none}
+  .rec-preview.on{display:block}
+  .rec-preview .cap{font-size:.72rem;color:var(--muted);margin-bottom:4px;line-height:1.5}
+  .rec-preview .cap b{color:var(--gold-soft)}
+  .rec-preview audio{width:100%;height:34px}
+
+  /* ---- 회의 정보 ---- */
+  .mi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+  .mi-grid input{width:100%;padding:9px 12px;font-size:.85rem}
+  @media (max-width:560px){.mi-grid{grid-template-columns:1fr}}
+
+  /* ---- 화자 이름 바꾸기 ---- */
+  .spk-panel{display:none;background:var(--navy-900);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0 2px}
+  .spk-t{font-weight:700;color:var(--gold-soft);font-size:.88rem;margin-bottom:4px}
+  .spk-s{color:var(--muted);font-size:.75rem;margin-bottom:10px;line-height:1.5}
+  .spk-rows{display:flex;gap:8px 14px;flex-wrap:wrap;margin-bottom:10px}
+  .spk-row{display:flex;align-items:center;gap:6px}
+  .spk-row label{font-size:.78rem;color:var(--muted);white-space:nowrap}
+  .spk-row input{width:110px;padding:7px 10px;font-size:.84rem}
+
+  /* ---- 전사 원문 검색 ---- */
+  .search-row{display:flex;align-items:center;gap:8px;padding:2px 18px 12px}
+  .search-row input{flex:1;min-width:0;padding:8px 12px;font-size:.85rem}
+  .search-cnt{color:var(--muted);font-size:.78rem;white-space:nowrap;min-width:3em;text-align:center}
+  .search-nav{background:transparent;border:1px solid var(--line);color:var(--gold-soft);border-radius:8px;width:30px;height:30px;flex:none;cursor:pointer;font-family:inherit;font-size:.8rem;transition:border-color .2s}
+  .search-nav:hover{border-color:var(--gold)}
+  mark.hl{background:rgba(201,162,75,.35);color:#fff;border-radius:3px;padding:0 1px}
+  mark.hl.cur{background:var(--gold);color:#2a1f06}
+
   /* ---- Chips ---- */
   .opt-group{margin-bottom:10px}
   .opt-label{font-size:.76rem;color:var(--muted);margin-bottom:6px;font-weight:700;letter-spacing:.02em}
@@ -204,7 +254,18 @@
   .prog-bar{height:8px;background:var(--navy-900);border:1px solid var(--line);border-radius:99px;overflow:hidden}
   .prog-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--gold-soft));transition:width .3s;border-radius:99px}
   .prog-txt{font-size:.82rem;color:var(--muted);margin-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
-  .err-box{display:none;margin-top:14px;padding:12px 16px;border:1px solid rgba(201,106,75,.5);border-radius:10px;color:#e6b8a6;font-size:.85rem;background:rgba(201,106,75,.08);white-space:pre-wrap}
+  /* 오류는 발생 위치와 무관하게 항상 보이도록 화면 상단 고정 배너로 표시 */
+  .err-box{
+    display:none;position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:1600;
+    width:min(680px,calc(100vw - 32px));padding:14px 42px 14px 18px;
+    border:1px solid rgba(201,106,75,.6);border-radius:12px;
+    color:#eec3b2;font-size:.85rem;line-height:1.65;white-space:pre-wrap;
+    background:linear-gradient(180deg,rgba(64,28,20,.97),rgba(45,20,15,.97));
+    box-shadow:0 14px 34px rgba(0,0,0,.5);backdrop-filter:blur(3px);
+  }
+  .err-box b{color:#f4d5c8}
+  .err-x{position:absolute;top:8px;right:8px;background:transparent;border:1px solid rgba(201,106,75,.4);color:#e6b8a6;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:.85rem;font-family:inherit;transition:border-color .2s,color .2s}
+  .err-x:hover{border-color:#e6b8a6;color:#fff}
 
   /* ---- Result ---- */
   #resultSec{display:none}
@@ -219,7 +280,7 @@
   details.transcript summary{padding:12px 18px;cursor:pointer;font-size:.86rem;color:var(--muted);list-style:none;user-select:none}
   details.transcript summary::before{content:'▸ ';color:var(--gold)}
   details.transcript[open] summary::before{content:'▾ '}
-  details.transcript .rcard-body{border-top:1px solid var(--line);max-height:420px;overflow-y:auto}
+  details.transcript .rcard-body{border-top:1px solid var(--line);max-height:420px;overflow-y:auto;position:relative}
   .export-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
 
   /* ---- Q&A ---- */
@@ -258,17 +319,16 @@
 <div class="wrap">
 
   <header>
-    <div class="crest">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.6">
-        <rect x="9" y="3" width="6" height="11" rx="3"/>
-        <path d="M5 11a7 7 0 0014 0M12 18v3M8.5 21h7"/>
-      </svg>
-    </div>
-    <div class="head-txt">
+    <div class="title-row">
+      <div class="crest">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.6">
+          <rect x="9" y="3" width="6" height="11" rx="3"/>
+          <path d="M5 11a7 7 0 0014 0M12 18v3M8.5 21h7"/>
+        </svg>
+      </div>
       <h1>협의회 정리 도우미</h1>
-      <p class="tag">녹음·기록을 올리면 전사부터 안건별 정리·질문까지 한 번에</p>
     </div>
-    <button class="tip-chip" id="tipBtn">💡 사용법 · 팁</button>
+    <p class="tag">녹음·기록을 올리면 전사부터 안건별 정리·질문까지 한 번에</p>
   </header>
   <div class="consent">⚠️ 회의 녹음은 <b>참석자 동의 하에</b> 사용하세요. 파일은 내 브라우저에서 AI 서버(전사: Deepgram · 정리: Groq)로 암호화되어 바로 전송·처리되며, 이 도구는 회의 내용을 <b>어디에도 저장하지 않습니다</b>.</div>
 
@@ -284,10 +344,27 @@
         <div class="small" id="dropSub">🎙️ mp3 · m4a · wav · ogg — 화자 구분과 함께 통째로 전사<br>📄 txt · md — 스마트폰에서 변환한 텍스트도 그대로 인식</div>
         <input type="file" id="fileInput" accept="audio/*,.m4a,.mp3,.wav,.ogg,.txt,.md">
       </label>
+      <div class="or-div"><span>또는 회의 현장에서 바로 녹음</span></div>
+      <div class="rec-row" id="recIdle">
+        <button class="btn ghost small" id="recStart">🔴 브라우저에서 바로 녹음</button>
+        <span class="rec-perm">처음엔 브라우저의 마이크 권한 요청에서 <b>허용</b>을 눌러주세요</span>
+      </div>
+      <div class="rec-live" id="recLive">
+        <span class="rec-dot" id="recDot"></span>
+        <span class="rec-time" id="recTime">00:00</span>
+        <button class="btn ghost small" id="recPause">일시정지</button>
+        <button class="btn small" id="recStop">녹음 완료</button>
+        <div class="rec-meter"><i id="recLevel"></i></div>
+        <span class="rec-warn">🎚️ 말하면 위 막대가 움직여야 정상 — 안 움직이면 마이크가 소리를 못 받는 상태예요 (윈도우 설정 → 시스템 → 소리 → 입력 확인)</span>
+        <span class="rec-warn">🔒 화면 꺼짐을 자동으로 막고 있어요 · 녹음 완료 전에 창을 닫으면 녹음이 사라집니다</span>
+      </div>
+      <div class="rec-preview" id="recPreview">
+        <div class="cap">🎧 <b>방금 녹음 미리 듣기</b> — 소리가 안 들리면 전사도 비게 됩니다. 윈도우 설정 → 시스템 → 소리 → 입력에서 마이크·볼륨을 확인하세요.</div>
+        <audio controls id="recAudio"></audio>
+      </div>
       <div class="file-note">
         <b>📱 스마트폰의 "녹음 → 텍스트 변환" 활용:</b> 변환된 txt 파일을 올리면 전사 단계를 건너뛰어 훨씬 빠릅니다.
-        안드로이드 갤럭시폰은 음성녹음의 <b>'텍스트 변환'</b> 또는 <b>클로바노트앱(무료 플랜 한도 있음)</b>,
-        아이폰은 기본 음성메모가 아직 한국어 변환을 지원하지 않아 <b>클로바노트 앱</b>을 추천해요.
+        안드로이드 갤럭시폰은 음성녹음의 <b>'텍스트 변환'</b>, 아이폰은 기본 음성메모가 아직 한국어 변환을 지원하지 않습니다.
       </div>
     </section>
 
@@ -323,11 +400,20 @@
         </div>
       </div>
 
+      <div class="opt-group">
+        <div class="opt-label">회의 정보 (선택 — 회의록 머리말·파일명에 자동 반영)</div>
+        <div class="mi-grid">
+          <input type="text" id="miTitle" placeholder="회의명 · 예: 7월 학년협의회">
+          <input type="text" id="miDate" placeholder="일시 · 예: 2026. 7. 20.(월) 15:00">
+          <input type="text" id="miPlace" placeholder="장소 · 예: 2학년 연구실">
+          <input type="text" id="miAttendees" placeholder="참석자 · 예: 김OO 부장 외 4명">
+        </div>
+      </div>
+
       <div class="prog-wrap" id="progWrap">
         <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
         <div class="prog-txt"><span id="progLabel">준비 중…</span><span id="progPct">0%</span></div>
       </div>
-      <div class="err-box" id="errBox"></div>
       <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
         <span style="font-size:.72rem;color:var(--muted)">무료 한도에 걸리면 자동으로 대기 후 이어서 진행합니다</span>
         <button class="btn" id="startBtn" disabled>정리 시작</button>
@@ -347,6 +433,12 @@
     <!-- 결과 -->
     <section class="card" id="resultSec">
       <h2><span class="n">✓</span> 결과</h2>
+      <div class="spk-panel" id="spkPanel">
+        <div class="spk-t">🏷️ 화자 이름 바꾸기</div>
+        <div class="spk-s">전사문의 "화자1 · 화자2…"를 실제 이름으로 입력하고 적용을 누르면 정리본과 전사 원문에 한 번에 반영됩니다. (비워두면 그대로 유지)</div>
+        <div class="spk-rows" id="spkRows"></div>
+        <button class="btn ghost small" id="spkApply">이름 일괄 적용</button>
+      </div>
       <div id="resultCards" style="margin-top:12px"></div>
       <div class="export-row">
         <button class="btn ghost small" id="copyBtn">전체 복사</button>
@@ -396,7 +488,7 @@
       <h3>간단 사용법 — 딸각 세 번</h3>
       <ul>
         <li><b>① 최초 1회만:</b> 무료 API 키 2개 연결 (발급 방법은 연결 창에 단계별 안내 · 카드 등록 없음)</li>
-        <li><b>② 파일 올리기:</b> 녹음 파일(mp3·m4a·wav·ogg)이나 텍스트 파일(txt·md)을 끌어다 놓기</li>
+        <li><b>② 파일 올리기 또는 바로 녹음:</b> 녹음 파일(mp3·m4a·wav·ogg)·텍스트 파일(txt·md)을 끌어다 놓거나, <b>🔴 브라우저에서 바로 녹음</b> 버튼으로 회의 현장에서 직접 녹음</li>
         <li><b>③ 정리 시작:</b> 결과 유형·문체를 고르고 버튼 클릭 — 완료되면 회의 내용에 <b>질문</b>도 할 수 있어요</li>
       </ul>
     </div>
@@ -409,6 +501,40 @@
         <li><b>앱 → 변환 → 재업로드 과정이 없음:</b> 클로바노트처럼 앱에서 변환한 텍스트를 내보내 다시 올릴 필요 없이, 브라우저에 녹음 파일 하나만 올리면 전사부터 정리까지 한 번에 끝납니다.</li>
         <li><b>원하는 형태로 정리:</b> 안건별 · 시간순 · 핵심만 / 개조식 · 회의록 격식체 · 서술형을 골라 바로 공문·회의록에 쓸 수 있는 형태로 나옵니다.</li>
         <li><b>저장 없음:</b> 회의 내용은 어디에도 저장되지 않으며, API 키는 내 브라우저에만 보관됩니다.</li>
+      </ul>
+    </div>
+
+    <div class="tip-sec">
+      <h3>클로바노트 앱과 뭐가 다른가요?</h3>
+      <ul>
+        <li><b>현장에서 바로 끝:</b> 이 도구는 브라우저 하나에서 <b>녹음 → 전사 → 정리 → 질문</b>까지 한 번에 됩니다. 클로바노트는 앱에서 녹음·변환한 뒤 텍스트를 내보내 다른 도구로 옮겨야 정리가 가능해요.</li>
+        <li><b>무료 한도가 훨씬 큼:</b> 클로바노트 무료 플랜은 <b>매월 전사 시간 한도</b>(약 300분 수준)가 있지만, 이 도구는 Deepgram $200 크레딧으로 <b>약 700시간</b>(20분 회의 약 2,000회) — 주 1회 사용 기준 수년치이고, AI 정리는 매일 리셋되는 Groq 무료 한도로 사실상 제한 없이 씁니다.</li>
+        <li><b>정리 성능·자유도:</b> 클로바노트의 AI 요약은 형식이 고정돼 있고 무료 횟수 제한이 있지만, 여기서는 <b>안건별·시간순·핵심만 × 개조식·격식체·서술형</b>을 골라 공문·회의록에 바로 쓰는 형태로 나오고, 화자 구분이 정리에까지 반영되며(누가 결정했는지), 회의 내용에 <b>추가 질문</b>도 할 수 있어요.</li>
+        <li><b>저장 정책:</b> 클로바노트는 녹음·전사가 네이버 서버 계정에 보관되지만, 이 도구는 회의 내용을 <b>어디에도 저장하지 않습니다</b>.</li>
+      </ul>
+    </div>
+
+    <div class="tip-sec">
+      <h3>🔴 브라우저에서 바로 녹음하기 — 설정 방법</h3>
+      <ul>
+        <li><b>시작:</b> 파일 카드의 <b>브라우저에서 바로 녹음</b> 버튼 클릭 → 브라우저가 묻는 마이크 권한에서 <b>허용</b> 클릭 (최초 1회만)</li>
+        <li><b>권한을 실수로 차단했다면 (인터넷 주소로 연 경우):</b> 주소창 왼쪽 <b>자물쇠(사이트 정보) 아이콘 → 마이크 → 허용</b>으로 바꾼 뒤 새로고침</li>
+        <li><b>내 컴퓨터의 파일로 직접 연 경우 (주소가 file:// · 자물쇠 없음):</b> 녹음 버튼을 누른 직후 <b>주소창 오른쪽 끝의 마이크(차단) 아이콘</b> 클릭 → 허용 · 안 보이면 브라우저 설정의 <b>쿠키 및 사이트 권한 → 마이크</b> 차단 목록에서 삭제 후 새로고침</li>
+        <li><b>소리가 잘 담기는지 확인:</b> 녹음 중 <b>초록 입력 레벨 막대</b>가 말소리에 맞춰 움직여야 정상 · 녹음 완료 후 <b>🎧 미리 듣기</b>로 재생 확인</li>
+        <li><b>막대가 안 움직이면 (노트북 설정 문제):</b> 윈도우 <b>설정 → 시스템 → 소리 → 입력</b>에서 사용할 마이크가 선택돼 있고 볼륨이 0이 아닌지, <b>설정 → 개인 정보 및 보안 → 마이크</b>에서 브라우저 접근이 켜져 있는지 확인</li>
+        <li><b>긴 회의 팁:</b> 녹음 중에는 화면 꺼짐을 자동으로 막아 주지만, 노트북은 <b>전원을 연결</b>하고 이 탭을 켜 둔 채로 두세요</li>
+        <li><b>일시정지·완료:</b> 쉬는 시간엔 일시정지했다가 이어서 녹음 가능 — <b>녹음 완료</b>를 누르면 파일이 자동으로 올라가고 바로 정리 시작을 누르면 됩니다</li>
+        <li><b>주의:</b> 녹음 완료 전에 창을 닫으면 녹음이 사라집니다 (닫으려 하면 경고가 뜸) · 녹음은 어디에도 저장되지 않고 완료 즉시 내 브라우저 안에서 파일로만 준비됩니다</li>
+      </ul>
+    </div>
+
+    <div class="tip-sec">
+      <h3>결과를 회의록답게 다듬기</h3>
+      <ul>
+        <li><b>회의 정보 입력:</b> 옵션 카드에 회의명·일시·장소·참석자를 적어두면 회의록 머리말과 다운로드 파일명에 자동으로 들어갑니다</li>
+        <li><b>화자 이름 바꾸기:</b> 결과 화면 상단에서 "화자1 → 김OO"처럼 입력하고 <b>이름 일괄 적용</b>을 누르면 정리본·전사 원문에 한 번에 반영됩니다</li>
+        <li><b>전사 원문 검색:</b> 전사 원문 카드를 펼치면 검색창이 있어요 — 키워드를 입력하고 ▲▼로 이동하며 특정 발언을 빠르게 찾을 수 있습니다</li>
+        <li><b>실수 방지:</b> 정리 진행 중이거나 녹음 중일 때 창을 닫으려 하면 경고를 띄워 결과를 잃지 않게 지켜줍니다</li>
       </ul>
     </div>
 
@@ -474,11 +600,16 @@
   </div>
 </div>
 
+<button class="tip-chip" id="tipBtn">💡 사용법 · 팁</button>
 <a class="creator-chip" href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener" aria-label="제작자 인스타그램 @hirame.ki">
   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
   <span>제작 @hirame.ki</span>
 </a>
 <div class="toast" id="toast">복사되었습니다</div>
+<div class="err-box" id="errBox" role="alert">
+  <button class="err-x" id="errClose" aria-label="오류 닫기">✕</button>
+  <div id="errMsg"></div>
+</div>
 
 <script>
 (function(){
@@ -500,7 +631,14 @@ const LLM_CHAIN=[
 /* 한자·가나 혼입 감지 (규정나침반에서 프롬프트만으로는 재발했던 문제 → 코드로 검사) */
 const CJK_RE=/[぀-ヿ㐀-䶿一-鿿豈-﫿]/;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const reEsc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 function toastMsg(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+
+/* ---------- 창 닫기 보호 (처리 중 · 녹음 중) ---------- */
+let busyProcessing=false, isRecording=false;
+window.addEventListener('beforeunload',e=>{
+  if(busyProcessing||isRecording){e.preventDefault();e.returnValue='';}
+});
 
 /* ---------- 연결 (모달) ---------- */
 function openModal(){ $('apiModal').classList.remove('hidden'); setTimeout(()=>$('apiKey').focus(),50); }
@@ -614,6 +752,7 @@ function looksText(f){
 function setFile(f){
   audioFile=f;
   isTextFile=looksText(f);
+  $('recPreview').classList.remove('on'); /* 새 파일 선택 시 이전 녹음 미리 듣기 숨김 (녹음 완료 직후에는 onstop이 다시 켬) */
   $('dropIcon').textContent=isTextFile?'📄':'🎙️';
   $('dropTxt').innerHTML='<span class="fname">'+f.name+'</span>';
   $('dropSub').innerHTML=(f.size/1048576).toFixed(1)+' MB · '
@@ -625,6 +764,114 @@ function setFile(f){
   checkReady();
 }
 
+/* ---------- 브라우저 직접 녹음 (MediaRecorder) ---------- */
+let mediaRec=null,recStream=null,recChunks=[],recTimer=null,recSec=0,wakeLock=null;
+/* 입력 레벨 미터 — 마이크가 실제로 소리를 받는지 녹음 중에 눈으로 확인 (무음 녹음 사고 방지) */
+let meterCtx=null,meterRAF=0;
+function startMeter(stream){
+  try{
+    meterCtx=new (window.AudioContext||window.webkitAudioContext)();
+    /* 최신 브라우저는 AudioContext를 만들어도 'suspended' 상태로 시작할 수 있어
+       resume()을 명시적으로 호출하지 않으면 스트림은 정상인데 미터만 죽은 채로 남는다 */
+    if(meterCtx.state==='suspended')meterCtx.resume().catch(()=>{});
+    const an=meterCtx.createAnalyser();an.fftSize=512;
+    meterCtx.createMediaStreamSource(stream).connect(an);
+    const data=new Uint8Array(an.fftSize);
+    const tick=()=>{
+      if(meterCtx&&meterCtx.state==='suspended')meterCtx.resume().catch(()=>{});
+      an.getByteTimeDomainData(data);
+      let max=0;
+      for(let i=0;i<data.length;i++){const v=Math.abs(data[i]-128);if(v>max)max=v;}
+      $('recLevel').style.width=Math.min(100,Math.round(max/128*160))+'%';
+      meterRAF=requestAnimationFrame(tick);
+    };
+    tick();
+  }catch(e){}
+}
+function stopMeter(){
+  cancelAnimationFrame(meterRAF);meterRAF=0;
+  try{if(meterCtx){meterCtx.close();meterCtx=null;}}catch(e){}
+  $('recLevel').style.width='0';
+}
+const fmtT=s=>{const m=Math.floor(s/60),ss=s%60;return (m<10?'0':'')+m+':'+(ss<10?'0':'')+ss;};
+/* 녹음 중 화면이 꺼지면 모바일에서 녹음이 끊길 수 있어 Wake Lock으로 방지 (미지원 브라우저는 조용히 무시) */
+async function reqWake(){try{if('wakeLock' in navigator)wakeLock=await navigator.wakeLock.request('screen');}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(isRecording&&document.visibilityState==='visible')reqWake();});
+$('recStart').addEventListener('click',async()=>{
+  $('errBox').style.display='none';
+  if(!dgKey){
+    showErr('브라우저 녹음을 전사하려면 Deepgram API 키가 필요합니다.\n우상단 "초기화" 버튼을 눌러 Deepgram 키를 연결해 주세요.');
+    return;
+  }
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){
+    showErr('이 브라우저 환경에서는 마이크 기능을 쓸 수 없습니다.\n최신 크롬·엣지에서 열어 주세요.');
+    return;
+  }
+  try{
+    recStream=await navigator.mediaDevices.getUserMedia({audio:true});
+  }catch(e){
+    /* 로컬 파일(file://)로 열면 주소창에 자물쇠가 없으므로 해제 방법을 다르게 안내 */
+    const local=location.protocol==='file:';
+    if(e&&(e.name==='NotFoundError'||e.name==='DevicesNotFoundError')){
+      showErr('사용할 수 있는 마이크 장치를 찾지 못했습니다.\n윈도우 설정 → 시스템 → 소리 → "입력"에 마이크가 표시되는지 확인해 주세요. (외장 마이크라면 연결 상태 확인)');
+    }else if(local){
+      showErr('마이크 사용이 차단되어 있습니다.\n지금은 이 페이지를 내 컴퓨터의 파일로 직접 열었기 때문에(주소가 file://) 주소창에 자물쇠 아이콘이 없습니다. 대신 이렇게 해제하세요.\n\n① 녹음 버튼을 누른 직후 주소창 오른쪽 끝에 나타나는 마이크(차단) 아이콘을 클릭 → "허용" 선택\n② 위 아이콘이 안 보이면: 주소창에 edge://settings/content/microphone (크롬은 chrome://settings/content/microphone) 입력 → "차단" 목록에서 file:// 항목을 삭제한 뒤 이 페이지 새로고침\n③ 그래도 안 되면: 윈도우 설정 → 개인 정보 및 보안 → 마이크에서 브라우저 접근 허용 확인');
+    }else{
+      showErr('마이크 사용이 차단되어 있습니다.\n주소창 왼쪽 자물쇠(사이트 정보) 아이콘 → 마이크 → "허용"으로 바꾼 뒤 새로고침하세요.\n그래도 안 되면: 윈도우 설정 → 개인 정보 및 보안 → 마이크에서 브라우저 접근 허용을 확인해 주세요.');
+    }
+    return;
+  }
+  const mime=(window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))?'audio/webm;codecs=opus'
+    :((window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported('audio/mp4'))?'audio/mp4':'');
+  try{
+    mediaRec=new MediaRecorder(recStream,mime?{mimeType:mime}:undefined);
+  }catch(e){
+    recStream.getTracks().forEach(t=>t.stop());
+    showErr('이 브라우저는 녹음을 지원하지 않습니다. 최신 크롬·엣지 브라우저에서 다시 시도해 주세요.');
+    return;
+  }
+  recChunks=[];recSec=0;isRecording=true;
+  mediaRec.ondataavailable=e=>{if(e.data&&e.data.size)recChunks.push(e.data);};
+  mediaRec.onstop=()=>{
+    recStream.getTracks().forEach(t=>t.stop());
+    isRecording=false;clearInterval(recTimer);
+    stopMeter();
+    try{if(wakeLock){wakeLock.release();wakeLock=null;}}catch(e){}
+    const type=(mediaRec&&mediaRec.mimeType)||'audio/webm';
+    const ext=type.indexOf('mp4')>-1?'m4a':'webm';
+    const d=new Date(),z=n=>(n<10?'0':'')+n;
+    const blob=new Blob(recChunks,{type});
+    const f=new File([blob],
+      '녹음_'+d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'_'+z(d.getHours())+z(d.getMinutes())+'.'+ext,{type});
+    recChunks=[];
+    $('recIdle').style.display='';$('recLive').classList.remove('on');
+    $('recPause').textContent='일시정지';$('recDot').style.animationPlayState='';
+    setFile(f);
+    const au=$('recAudio');
+    if(au.src)URL.revokeObjectURL(au.src);
+    au.src=URL.createObjectURL(blob);
+    $('recPreview').classList.add('on');
+    toastMsg('녹음이 파일로 준비되었습니다 — 미리 듣기로 확인 후 정리 시작');
+  };
+  mediaRec.start(1000);
+  startMeter(recStream);
+  reqWake();
+  $('recIdle').style.display='none';$('recLive').classList.add('on');
+  $('recTime').textContent='00:00';
+  recTimer=setInterval(()=>{
+    if(mediaRec&&mediaRec.state==='recording'){recSec++;$('recTime').textContent=fmtT(recSec);}
+  },1000);
+});
+$('recPause').addEventListener('click',()=>{
+  if(!mediaRec)return;
+  if(mediaRec.state==='recording'){
+    mediaRec.pause();$('recPause').textContent='이어서 녹음';$('recDot').style.animationPlayState='paused';
+  }else if(mediaRec.state==='paused'){
+    mediaRec.resume();$('recPause').textContent='일시정지';$('recDot').style.animationPlayState='';
+  }
+});
+$('recStop').addEventListener('click',()=>{if(mediaRec&&mediaRec.state!=='inactive')mediaRec.stop();});
+
 /* ---------- 진행/오류 ---------- */
 /* pct에 null을 주면 퍼센트는 그대로 두고 문구만 갱신 (한도 대기 안내용) */
 let lastPct=0;
@@ -635,7 +882,8 @@ function prog(pct,label){
   $('progPct').textContent=Math.round(pct)+'%';
   $('progLabel').textContent=label;
 }
-function showErr(msg){$('errBox').style.display='block';$('errBox').textContent=msg;}
+function showErr(msg){$('errBox').style.display='block';$('errMsg').textContent=msg;}
+$('errClose').addEventListener('click',()=>$('errBox').style.display='none');
 
 /* ---------- STT (Deepgram) — 원본 파일 통째로 전송 · 화자 분리 포함 ---------- */
 const DG_PARAMS='model=nova-2&language=ko&diarize=true&utterances=true&smart_format=true&punctuate=true';
@@ -644,7 +892,9 @@ function dgUpload(file){
     const xhr=new XMLHttpRequest();
     xhr.open('POST','https://api.deepgram.com/v1/listen?'+DG_PARAMS);
     xhr.setRequestHeader('Authorization','Token '+dgKey);
-    xhr.setRequestHeader('Content-Type',file.type||'application/octet-stream');
+    /* MediaRecorder 산출물의 "audio/webm;codecs=opus" 같은 codecs 파라미터가
+       형식 인식을 방해할 수 있어 기본 MIME만 전송 (Deepgram은 내용으로 자동 감지) */
+    xhr.setRequestHeader('Content-Type',(file.type||'application/octet-stream').split(';')[0]);
     xhr.upload.onprogress=e=>{
       if(!e.lengthComputable)return;
       if(e.loaded>=e.total)prog(42,'전사 중… (화자 구분 처리)');
@@ -775,11 +1025,32 @@ const FORMAT_RULE={
 };
 const KO_ONLY='출력은 반드시 순수 한글로만 작성한다. 한자(漢字)·일본어 가나(かな·カナ)·중국어 간체자 등 외국 문자를 단 한 글자도 섞지 않는다. 한자어도 한글로 표기한다(예: "第3條"가 아니라 "제3조").';
 const SPEAKER_RULE='전사문에 "[시각] 화자N:" 또는 화자 이름 형식의 화자 라벨이 있으면 이를 활용해 누가 발언·결정·제안했는지 구분해 정리한다. 화자 라벨이 없으면 이 규칙은 무시한다.';
+/* ---------- 회의 정보 (선택 입력) ---------- */
+function miVals(){
+  return {t:$('miTitle').value.trim(),d:$('miDate').value.trim(),p:$('miPlace').value.trim(),a:$('miAttendees').value.trim()};
+}
+function miHeader(){
+  const v=miVals();
+  if(!(v.t||v.d||v.p||v.a))return '';
+  const lines=['# '+(v.t||'회의록')];
+  if(v.d)lines.push('- 일시: '+v.d);
+  if(v.p)lines.push('- 장소: '+v.p);
+  if(v.a)lines.push('- 참석자: '+v.a);
+  return lines.join('\n')+'\n\n';
+}
+function miPromptLine(){
+  const v=miVals();
+  if(!(v.t||v.d||v.p||v.a))return '';
+  return '\n사용자가 입력한 회의 정보: '
+    +[v.t&&('회의명='+v.t),v.d&&('일시='+v.d),v.p&&('장소='+v.p),v.a&&('참석자='+v.a)].filter(Boolean).join(', ')
+    +' — 이 정보를 회의 개요에 그대로 반영한다. 단, 참석자 명단과 화자 라벨(화자N)을 근거 없이 짝짓지 않는다.';
+}
 async function summarize(text){
   const style=getChip($('chipsStyle')), fmt=getChip($('chipsFormat'));
   const sys='당신은 학교 회의록 정리 전문가다. 사용자가 제공하는 회의 전사문을 한국어로 정리한다.\n'
     +FORMAT_RULE[fmt]+'\n문체 규칙: '+STYLE_RULE[style]
     +'\n'+SPEAKER_RULE
+    +miPromptLine()
     +'\n'+KO_ONLY
     +'\n절대 규칙: 전사문에 없는 내용을 창작하지 않는다. 불분명한 부분은 "(녹음에서 불명확)"으로 표기한다. 마크다운 외 다른 말은 출력하지 않는다.';
   return llmChat([{role:'system',content:sys},{role:'user',content:'다음 회의 전사문을 정리하라:\n\n'+text}],4096);
@@ -808,6 +1079,7 @@ async function summarizeLong(text){
 $('startBtn').addEventListener('click',async()=>{
   $('errBox').style.display='none';
   $('startBtn').disabled=true;
+  busyProcessing=true;
   const mode=getChip($('chipsMode'));
   try{
     if(isTextFile){
@@ -819,7 +1091,7 @@ $('startBtn').addEventListener('click',async()=>{
       if(!dgKey)throw new Error('녹음 파일 전사에는 Deepgram API 키가 필요합니다. 우상단 초기화 버튼을 눌러 두 키를 모두 연결해 주세요.');
       if(audioFile.size>2147483648)throw new Error('파일이 2GB를 넘습니다. 파일을 나누어 다시 시도해 주세요.');
       transcriptText=(await sttDeepgram(audioFile)).trim();
-      if(!transcriptText)throw new Error('전사 결과가 비어 있습니다. 녹음 상태를 확인해 주세요.');
+      if(!transcriptText)throw new Error('전사 결과가 비어 있습니다 — 녹음에 소리가 담기지 않았을 가능성이 큽니다.\n\n① 방금 브라우저에서 녹음했다면: 파일 카드의 "🎧 미리 듣기"를 재생해 소리가 들리는지 확인\n② 소리가 안 들리면: 윈도우 설정 → 시스템 → 소리 → "입력"에서 사용할 마이크가 선택돼 있는지, 볼륨이 0이 아닌지 확인\n③ 윈도우 설정 → 개인 정보 및 보안 → 마이크에서 브라우저의 마이크 접근이 켜져 있는지 확인\n④ 녹음 중 초록 입력 레벨 막대가 움직이는지 보면서 다시 짧게 테스트해 보세요');
     }
     summaryText='';
     if(mode!=='transcript'){
@@ -827,11 +1099,13 @@ $('startBtn').addEventListener('click',async()=>{
       summaryText=await summarizeLong(transcriptText);
     }
     prog(100,'완료');
+    spkMap={};
     renderResult(mode);
   }catch(e){
     showErr('처리 중 오류가 발생했습니다.\n'+e.message);
     prog(0,'중단됨');
   }
+  busyProcessing=false;
   $('startBtn').disabled=false;
 });
 
@@ -849,17 +1123,100 @@ function renderResult(mode){
     const openAttr=mode==='transcript'?' open':'';
     box.insertAdjacentHTML('beforeend',
       '<div class="rcard"><details class="transcript"'+openAttr+'><summary>'+(isTextFile?'기록 원문':'전사 원문 (화자 구분 포함)')+'</summary>'
+      +'<div class="search-row"><input type="text" id="trSearch" placeholder="원문에서 검색 (예: 예산)"><span class="search-cnt" id="trCnt"></span>'
+      +'<button class="search-nav" id="trPrev" title="이전 결과">▲</button><button class="search-nav" id="trNext" title="다음 결과">▼</button></div>'
       +'<div class="rcard-body" contenteditable="true" id="trBody"></div></details></div>');
     $('trBody').textContent=transcriptText;
     $('trBody').addEventListener('input',()=>transcriptText=$('trBody').innerText);
+    wireSearch();
   }
+  buildSpeakerPanel(mode);
   $('placeholderSec').style.display='none';
   $('resultSec').style.display='block';
   $('qaSec').style.display='block';
   $('resultSec').scrollIntoView({behavior:'smooth'});
 }
+
+/* ---------- 화자 이름 바꾸기 ---------- */
+let spkMap={}; /* 화자 번호 → 현재 적용된 이름 (초기값 "화자N") */
+function buildSpeakerPanel(mode){
+  /* "AI 정리만" 모드에서는 전사 원문이 화면에 없으므로 화자 이름 바꾸기를 표시하지 않음 */
+  if(mode==='summary'){$('spkPanel').style.display='none';return;}
+  const rows=$('spkRows');rows.innerHTML='';
+  const nums=new Set();
+  const re=/화자(\d+)(?!\d)/g;let m;
+  while((m=re.exec(transcriptText)))nums.add(m[1]);
+  Object.keys(spkMap).forEach(n=>nums.add(n));
+  const list=[...nums].sort((a,b)=>a-b);
+  if(!list.length){$('spkPanel').style.display='none';return;}
+  for(const n of list){
+    if(!spkMap[n])spkMap[n]='화자'+n;
+    const d=document.createElement('div');d.className='spk-row';
+    const lb=document.createElement('label');lb.textContent='화자'+n+' →';
+    const inp=document.createElement('input');
+    inp.type='text';inp.dataset.n=n;inp.placeholder='화자'+n;
+    if(spkMap[n]!=='화자'+n)inp.value=spkMap[n];
+    d.appendChild(lb);d.appendChild(inp);rows.appendChild(d);
+  }
+  $('spkPanel').style.display='block';
+}
+$('spkApply').addEventListener('click',()=>{
+  let changed=0;
+  $('spkRows').querySelectorAll('input').forEach(inp=>{
+    const n=inp.dataset.n;
+    const name=inp.value.trim()||('화자'+n);
+    const old=spkMap[n];
+    if(name===old)return;
+    /* "화자1"을 바꿀 때 "화자10"이 부분 치환되지 않도록 숫자 경계 보호 */
+    const re=/^화자\d+$/.test(old)?new RegExp(reEsc(old)+'(?!\\d)','g'):new RegExp(reEsc(old),'g');
+    transcriptText=transcriptText.replace(re,name);
+    if(summaryText)summaryText=summaryText.replace(re,name);
+    spkMap[n]=name;changed++;
+  });
+  if(!changed){toastMsg('바뀐 이름이 없습니다');return;}
+  if($('sumBody'))$('sumBody').textContent=summaryText;
+  if($('trBody')){
+    $('trBody').textContent=transcriptText;
+    if($('trSearch')){$('trSearch').value='';$('trCnt').textContent='';}
+  }
+  toastMsg('화자 이름을 적용했습니다');
+});
+
+/* ---------- 전사 원문 검색 ---------- */
+function wireSearch(){
+  const inp=$('trSearch'),body=$('trBody'),cnt=$('trCnt');
+  let marks=[],cur=-1,deb=null;
+  const escHtml=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  function focusMark(){
+    marks.forEach((el,i)=>el.classList.toggle('cur',i===cur));
+    cnt.textContent=marks.length?((cur+1)+'/'+marks.length):'0건';
+    if(cur>=0){const mk=marks[cur];body.scrollTop=Math.max(0,mk.offsetTop-body.clientHeight/2);}
+  }
+  function paint(){
+    const q=inp.value.trim();
+    if(!q){body.textContent=transcriptText;marks=[];cur=-1;cnt.textContent='';return;}
+    const text=transcriptText;
+    const re=new RegExp(reEsc(q),'gi');
+    let html='',last=0,m;
+    while((m=re.exec(text))){
+      html+=escHtml(text.slice(last,m.index))+'<mark class="hl">'+escHtml(m[0])+'</mark>';
+      last=m.index+m[0].length;
+    }
+    html+=escHtml(text.slice(last));
+    body.innerHTML=html;
+    marks=Array.prototype.slice.call(body.querySelectorAll('mark.hl'));
+    cur=marks.length?0:-1;
+    focusMark();
+  }
+  inp.addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(paint,250);});
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&marks.length){e.preventDefault();cur=(cur+1)%marks.length;focusMark();}
+  });
+  $('trNext').addEventListener('click',()=>{if(marks.length){cur=(cur+1)%marks.length;focusMark();}});
+  $('trPrev').addEventListener('click',()=>{if(marks.length){cur=(cur-1+marks.length)%marks.length;focusMark();}});
+}
 function fullText(){
-  let t='';
+  let t=miHeader();
   if(summaryText)t+=summaryText+'\n\n';
   if(getChip($('chipsMode'))!=='summary')t+='---\n\n## 전사 원문\n\n'+transcriptText;
   return t.trim();
@@ -869,13 +1226,17 @@ function dl(ext){
   const blob=new Blob([fullText()],{type:'text/plain;charset=utf-8'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='협의회정리_'+new Date().toISOString().slice(0,10)+'.'+ext;
+  const base=(miVals().t||'협의회정리').replace(/[\\/:*?"<>|]/g,'_');
+  a.download=base+'_'+new Date().toISOString().slice(0,10)+'.'+ext;
   a.click();URL.revokeObjectURL(a.href);
 }
 $('dlMd').addEventListener('click',()=>dl('md'));
 $('dlTxt').addEventListener('click',()=>dl('txt'));
 $('resetBtn').addEventListener('click',()=>{
   audioFile=null;isTextFile=false;transcriptText='';summaryText='';
+  spkMap={};$('spkPanel').style.display='none';$('spkRows').innerHTML='';
+  $('recPreview').classList.remove('on');
+  $('miTitle').value='';$('miDate').value='';$('miPlace').value='';$('miAttendees').value='';
   $('resultSec').style.display='none';$('qaSec').style.display='none';
   $('placeholderSec').style.display='';
   $('qaLog').innerHTML='';qaHistory.length=0;
