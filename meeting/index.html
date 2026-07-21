@@ -361,13 +361,15 @@
       <label class="drop" id="drop">
         <div class="icon" id="dropIcon">🎙️</div>
         <div class="big" id="dropTxt">녹음 파일이나 텍스트 파일을 끌어다 놓기 · 클릭해서 선택</div>
-        <div class="small" id="dropSub">🎙️ mp3 · m4a · wav · ogg — 화자 구분과 함께 통째로 전사<br>📄 txt · md — 스마트폰에서 변환한 텍스트도 그대로 인식</div>
-        <input type="file" id="fileInput" accept="audio/*,.m4a,.mp3,.wav,.ogg,.txt,.md">
+        <div class="small" id="dropSub">🎙️ mp3 · m4a · wav · ogg · 영상(mp4 · mov) — 화자 구분과 함께 통째로 전사<br>📄 txt · md — 스마트폰에서 변환한 텍스트도 그대로 인식</div>
+        <input type="file" id="fileInput" accept="audio/*,video/*,.m4a,.mp3,.wav,.ogg,.mp4,.mov,.m4v,.webm,.txt,.md">
       </label>
       <div class="or-div"><span id="orDivTxt">또는 회의 현장에서 바로 녹음</span></div>
       <div class="rec-row" id="recIdle">
-        <button class="btn ghost small" id="recStart">🔴 브라우저에서 바로 녹음</button>
-        <span class="rec-perm">처음엔 브라우저의 마이크 권한 요청에서 <b>허용</b>을 눌러주세요</span>
+        <button class="btn ghost small" id="recMic">🎙️ 음성 녹음</button>
+        <button class="btn ghost small" id="recMedia">🔊 미디어 소리만</button>
+        <button class="btn ghost small" id="recBoth">🎙️+🔊 음성 + 미디어</button>
+        <span class="rec-perm" id="recPerm">🎙️ 마이크 권한 요청에서 <b>허용</b>을 눌러주세요 · 🔊 미디어는 공유 창에서 <b>"시스템 오디오 공유"</b> 체크 필수</span>
       </div>
       <div class="rec-live" id="recLive">
         <span class="rec-dot" id="recDot"></span>
@@ -375,7 +377,7 @@
         <button class="btn ghost small" id="recPause">일시정지</button>
         <button class="btn small" id="recStop">녹음 완료</button>
         <div class="rec-meter"><i id="recLevel"></i></div>
-        <span class="rec-warn">🎚️ 말하면 위 막대가 움직여야 정상 — 안 움직이면 마이크가 소리를 못 받는 상태예요 (윈도우 설정 → 시스템 → 소리 → 입력 확인)</span>
+        <span class="rec-warn" id="recWarnLevel">🎚️ 말하면 위 막대가 움직여야 정상 — 안 움직이면 마이크가 소리를 못 받는 상태예요 (윈도우 설정 → 시스템 → 소리 → 입력 확인)</span>
         <span class="rec-warn">🔒 화면 꺼짐을 자동으로 막고 있어요 · 녹음 완료 전에 창을 닫으면 녹음이 사라집니다</span>
         <span class="rec-warn" id="recMobileWarn" style="display:none">📱 휴대폰·태블릿은 화면을 끄거나 다른 앱으로 이동하면 녹음이 끊길 수 있어요 — 녹음 중엔 이 화면을 켜 둔 채 두세요 (다른 작업이 필요하면 기본 녹음 앱으로 녹음 후 파일 올리기를 추천)</span>
       </div>
@@ -509,7 +511,7 @@
       <h3>사용법 — 딸각 세 번</h3>
       <ul>
         <li><b>① 모드 선택:</b> 상단에서 <b>회의 · 상담 · 수업</b> 중 하나</li>
-        <li><b>② 파일 올리기 또는 바로 녹음:</b> mp3·m4a·wav·ogg·txt·md를 끌어다 놓거나 <b>🔴 바로 녹음</b> 버튼</li>
+        <li><b>② 파일 올리기 또는 바로 녹음:</b> mp3·m4a·wav·ogg·mp4·txt·md를 끌어다 놓거나 <b>음성 / 미디어 / 음성+미디어</b> 녹음 버튼</li>
         <li><b>③ 정리 시작:</b> 옵션 고르고 클릭 — 결과에 <b>질문</b>도 가능</li>
         <li><span class="dim">최초 1회만 무료 API 키 2개 연결이 필요합니다 (연결 창에 발급 안내 · 카드 등록 없음)</span></li>
       </ul>
@@ -548,8 +550,13 @@
     </div>
 
     <div class="tip-sec">
-      <h3>🔴 바로 녹음하기</h3>
+      <h3>🔴 바로 녹음하기 — 3가지 방식</h3>
       <ul>
+        <li><b>🎙️ 음성 녹음:</b> 마이크만 — 일반 회의·상담·수업</li>
+        <li><b>🔊 미디어 소리만:</b> 컴퓨터에서 나는 소리만 — 영상 자료·온라인 강의 <span class="dim">(PC 크롬·엣지 전용)</span></li>
+        <li><b>🎙️+🔊 음성 + 미디어:</b> 내 목소리와 미디어 소리를 한 파일로 — 영상을 틀며 설명하는 수업 <span class="dim">(소리 겹침 방지를 위해 이어폰 권장)</span></li>
+        <li><b>⚠️ 미디어 녹음 시 필수:</b> 화면 공유 창에서 <b>"시스템 오디오 공유"</b>(전체 화면) 또는 <b>"탭 오디오 공유"</b>(크롬 탭)를 반드시 체크 — 안 하면 소리가 안 담깁니다 · 창(window) 공유는 소리 캡처 불가 · 맥은 탭 공유만 가능</li>
+        <li><b>휴대폰·태블릿:</b> 미디어 소리 녹음은 브라우저가 지원하지 않아요 — 기기의 <b>화면 녹화</b>로 녹화한 뒤 그 영상 파일(mp4·mov)을 올리면 됩니다</li>
         <li><b>시작:</b> 녹음 버튼 클릭 → 마이크 권한 <b>허용</b> (최초 1회)</li>
         <li><b>확인:</b> 녹음 중 <b>초록 막대</b>가 움직여야 정상 · 완료 후 <b>🎧 미리 듣기</b>로 재생 확인</li>
         <li><b>막대가 안 움직이면:</b> 윈도우 <b>설정 → 시스템 → 소리 → 입력</b>에서 마이크·볼륨 확인, <b>개인 정보 및 보안 → 마이크</b>에서 브라우저 접근 허용</li>
@@ -815,6 +822,10 @@ let mediaRec=null,recStream=null,recChunks=[],recTimer=null,recSec=0,wakeLock=nu
 let recWallStart=0,recPausedMs=0,pauseStart=0,recMutedMs=0,muteStart=0;
 /* 휴대폰·태블릿 감지 (아이패드는 데스크톱 UA를 쓰므로 터치 지점 수로 보조 판별) */
 const IS_MOBILE=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Mac/i.test(navigator.userAgent));
+/* 미디어(시스템·탭) 소리 캡처용 소스 스트림과 믹싱 컨텍스트 — 종료 시 모두 정리해야 함 */
+let micStream=null,dispStream=null,mixCtx=null,recKind='mic';
+/* 화면 공유 API는 모바일 브라우저가 지원하지 않음 (iOS·안드로이드 모두) */
+const CAN_DISPLAY=!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia)&&!IS_MOBILE;
 /* 입력 레벨 미터 — 마이크가 실제로 소리를 받는지 녹음 중에 눈으로 확인 (무음 녹음 사고 방지) */
 let meterCtx=null,meterRAF=0;
 function startMeter(stream){
@@ -848,33 +859,87 @@ async function reqWake(){try{if('wakeLock' in navigator)wakeLock=await navigator
 document.addEventListener('visibilitychange',()=>{
   if(isRecording&&document.visibilityState==='visible'){
     reqWake();
-    /* 백그라운드에 다녀온 뒤 마이크가 죽어 있으면 즉시 종료 처리 (그때까지의 녹음은 파일로 살림) */
-    const t=recStream&&recStream.getAudioTracks()[0];
-    if(t&&t.readyState==='ended'&&mediaRec&&mediaRec.state!=='inactive')mediaRec.stop();
+    /* 백그라운드에 다녀온 뒤 소스가 죽어 있으면 즉시 종료 처리 (그때까지의 녹음은 파일로 살림) */
+    const dead=[micStream,dispStream].some(s=>s&&s.getTracks().some(t=>t.readyState==='ended'));
+    if(dead&&mediaRec&&mediaRec.state!=='inactive')mediaRec.stop();
   }
 });
-$('recStart').addEventListener('click',async()=>{
+/* 마이크 거부·부재 시 안내 (file://은 주소창에 자물쇠가 없어 해제 방법이 다름) */
+function micErrMsg(e){
+  if(e&&(e.name==='NotFoundError'||e.name==='DevicesNotFoundError'))
+    return '사용할 수 있는 마이크 장치를 찾지 못했습니다.\n윈도우 설정 → 시스템 → 소리 → "입력"에 마이크가 표시되는지 확인해 주세요. (외장 마이크라면 연결 상태 확인)';
+  if(location.protocol==='file:')
+    return '마이크 사용이 차단되어 있습니다.\n지금은 이 페이지를 내 컴퓨터의 파일로 직접 열었기 때문에(주소가 file://) 주소창에 자물쇠 아이콘이 없습니다. 대신 이렇게 해제하세요.\n\n① 녹음 버튼을 누른 직후 주소창 오른쪽 끝에 나타나는 마이크(차단) 아이콘을 클릭 → "허용" 선택\n② 위 아이콘이 안 보이면: 주소창에 edge://settings/content/microphone (크롬은 chrome://settings/content/microphone) 입력 → "차단" 목록에서 file:// 항목을 삭제한 뒤 이 페이지 새로고침\n③ 그래도 안 되면: 윈도우 설정 → 개인 정보 및 보안 → 마이크에서 브라우저 접근 허용 확인';
+  return '마이크 사용이 차단되어 있습니다.\n주소창 왼쪽 자물쇠(사이트 정보) 아이콘 → 마이크 → "허용"으로 바꾼 뒤 새로고침하세요.\n그래도 안 되면: 윈도우 설정 → 개인 정보 및 보안 → 마이크에서 브라우저 접근 허용을 확인해 주세요.';
+}
+/* 소스 스트림·믹싱 컨텍스트 일괄 정리 */
+function cleanupRec(){
+  [micStream,dispStream].forEach(s=>{if(s)s.getTracks().forEach(t=>{try{t.stop();}catch(e){}});});
+  try{if(mixCtx){mixCtx.close();mixCtx=null;}}catch(e){}
+  micStream=null;dispStream=null;
+}
+const REC_WARN={
+  mic:'🎚️ 말하면 위 막대가 움직여야 정상 — 안 움직이면 마이크가 소리를 못 받는 상태예요 (윈도우 설정 → 시스템 → 소리 → 입력 확인)',
+  media:'🎚️ 미디어를 재생하면 위 막대가 움직여야 정상 — 안 움직이면 공유 창에서 오디오 공유를 체크하지 않은 상태예요',
+  both:'🎚️ 말하거나 미디어를 재생하면 위 막대가 움직여야 정상 — 스피커로 들으면 소리가 겹칠 수 있어 이어폰 사용을 권합니다'
+};
+/* kind: 'mic'(음성) · 'media'(미디어 소리만) · 'both'(음성+미디어) */
+async function startRec(kind){
   $('errBox').style.display='none';
   if(!dgKey){
     showErr('브라우저 녹음을 전사하려면 Deepgram API 키가 필요합니다.\n우상단 "초기화" 버튼을 눌러 Deepgram 키를 연결해 주세요.');
     return;
   }
-  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){
+  if(kind!=='media'&&!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){
     showErr('이 브라우저 환경에서는 마이크 기능을 쓸 수 없습니다.\n최신 크롬·엣지에서 열어 주세요.');
     return;
   }
-  try{
-    recStream=await navigator.mediaDevices.getUserMedia({audio:true});
-  }catch(e){
-    /* 로컬 파일(file://)로 열면 주소창에 자물쇠가 없으므로 해제 방법을 다르게 안내 */
-    const local=location.protocol==='file:';
-    if(e&&(e.name==='NotFoundError'||e.name==='DevicesNotFoundError')){
-      showErr('사용할 수 있는 마이크 장치를 찾지 못했습니다.\n윈도우 설정 → 시스템 → 소리 → "입력"에 마이크가 표시되는지 확인해 주세요. (외장 마이크라면 연결 상태 확인)');
-    }else if(local){
-      showErr('마이크 사용이 차단되어 있습니다.\n지금은 이 페이지를 내 컴퓨터의 파일로 직접 열었기 때문에(주소가 file://) 주소창에 자물쇠 아이콘이 없습니다. 대신 이렇게 해제하세요.\n\n① 녹음 버튼을 누른 직후 주소창 오른쪽 끝에 나타나는 마이크(차단) 아이콘을 클릭 → "허용" 선택\n② 위 아이콘이 안 보이면: 주소창에 edge://settings/content/microphone (크롬은 chrome://settings/content/microphone) 입력 → "차단" 목록에서 file:// 항목을 삭제한 뒤 이 페이지 새로고침\n③ 그래도 안 되면: 윈도우 설정 → 개인 정보 및 보안 → 마이크에서 브라우저 접근 허용 확인');
-    }else{
-      showErr('마이크 사용이 차단되어 있습니다.\n주소창 왼쪽 자물쇠(사이트 정보) 아이콘 → 마이크 → "허용"으로 바꾼 뒤 새로고침하세요.\n그래도 안 되면: 윈도우 설정 → 개인 정보 및 보안 → 마이크에서 브라우저 접근 허용을 확인해 주세요.');
+  if(kind!=='mic'&&!CAN_DISPLAY){
+    showErr('휴대폰·태블릿 브라우저는 미디어 소리 녹음을 지원하지 않습니다.\n기기의 화면 녹화 기능으로 녹화한 뒤, 그 영상 파일을 위에 올려주세요. (소리를 뽑아 전사합니다)');
+    return;
+  }
+  micStream=null;dispStream=null;mixCtx=null;
+  /* 화면 공유를 먼저 요청 — 마이크 권한창을 먼저 띄우면 사용자 제스처가 만료돼 공유 창이 안 뜰 수 있음 */
+  if(kind!=='mic'){
+    try{
+      /* 소리만 쓰지만 크롬은 video 트랙을 요구 — 프레임을 낮춰 CPU·배터리 소모를 줄임 */
+      dispStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:1},audio:true});
+    }catch(e){
+      dispStream=null;
+      if(!(e&&e.name==='NotAllowedError'))
+        showErr('화면·탭 소리 캡처를 시작하지 못했습니다.\n최신 크롬·엣지 브라우저에서 다시 시도해 주세요.');
+      return; /* 사용자가 취소한 경우는 조용히 종료 */
     }
+    if(!dispStream.getAudioTracks().length){
+      cleanupRec();
+      showErr('⚠️ 소리가 포함되지 않아 녹음을 시작하지 않았습니다.\n공유 창에서 오디오 옵션을 반드시 켜 주세요.\n\n· "전체 화면" 선택 → 왼쪽 아래 "시스템 오디오 공유" 체크\n· "크롬 탭" 선택 → "탭 오디오 공유" 체크\n· "창(window)" 선택은 소리를 캡처할 수 없습니다\n\n※ 맥에서는 시스템 오디오 캡처가 지원되지 않아 "탭" 공유만 소리가 담깁니다.');
+      return;
+    }
+  }
+  if(kind!=='media'){
+    try{
+      micStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    }catch(e){
+      cleanupRec();
+      showErr(micErrMsg(e));
+      return;
+    }
+  }
+  /* 녹음 대상 스트림 구성 — 'both'는 Web Audio로 두 소리를 한 트랙으로 합침 */
+  try{
+    if(kind==='mic')recStream=micStream;
+    else if(kind==='media')recStream=new MediaStream(dispStream.getAudioTracks());
+    else{
+      mixCtx=new (window.AudioContext||window.webkitAudioContext)();
+      if(mixCtx.state==='suspended')mixCtx.resume().catch(()=>{});
+      const dest=mixCtx.createMediaStreamDestination();
+      mixCtx.createMediaStreamSource(micStream).connect(dest);
+      mixCtx.createMediaStreamSource(new MediaStream(dispStream.getAudioTracks())).connect(dest);
+      recStream=dest.stream;
+    }
+  }catch(e){
+    cleanupRec();
+    showErr('마이크와 미디어 소리를 합치는 중 오류가 발생했습니다.\n최신 크롬·엣지에서 다시 시도해 주세요.');
     return;
   }
   const mime=(window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))?'audio/webm;codecs=opus'
@@ -882,27 +947,35 @@ $('recStart').addEventListener('click',async()=>{
   try{
     mediaRec=new MediaRecorder(recStream,mime?{mimeType:mime}:undefined);
   }catch(e){
-    recStream.getTracks().forEach(t=>t.stop());
+    cleanupRec();
     showErr('이 브라우저는 녹음을 지원하지 않습니다. 최신 크롬·엣지 브라우저에서 다시 시도해 주세요.');
     return;
   }
+  recKind=kind;
   recChunks=[];recSec=0;isRecording=true;
   recWallStart=Date.now();recPausedMs=0;pauseStart=0;recMutedMs=0;muteStart=0;
   /* 끊김 감지: 장치 분리·절전·다른 앱의 마이크 점유·모바일 백그라운드 회수 등 */
-  const aTrack=recStream.getAudioTracks()[0];
-  if(aTrack){
-    aTrack.onended=()=>{
+  const mTrack=micStream&&micStream.getAudioTracks()[0];
+  if(mTrack){
+    mTrack.onended=()=>{
       if(!isRecording)return;
       showErr('⚠️ 마이크 연결이 끊겨 녹음을 종료했습니다.\n(장치 분리·절전 모드·다른 앱의 마이크 사용 등이 원인일 수 있어요)\n지금까지 녹음된 부분은 파일로 준비했으니 🎧 미리 듣기로 확인해 주세요.');
       if(mediaRec&&mediaRec.state!=='inactive')mediaRec.stop();
     };
-    aTrack.onmute=()=>{if(isRecording&&!muteStart)muteStart=Date.now();};
-    aTrack.onunmute=()=>{if(muteStart){recMutedMs+=Date.now()-muteStart;muteStart=0;}};
+    mTrack.onmute=()=>{if(isRecording&&!muteStart)muteStart=Date.now();};
+    mTrack.onunmute=()=>{if(muteStart){recMutedMs+=Date.now()-muteStart;muteStart=0;}};
   }
+  /* 브라우저 하단 "공유 중지"를 누르면 영상 트랙이 끝남 → 녹음도 함께 종료 */
+  const dTrack=dispStream&&(dispStream.getVideoTracks()[0]||dispStream.getAudioTracks()[0]);
+  if(dTrack)dTrack.onended=()=>{
+    if(!isRecording)return;
+    showErr('⚠️ 화면 공유가 중지되어 녹음을 종료했습니다.\n지금까지 녹음된 부분은 파일로 준비했으니 🎧 미리 듣기로 확인해 주세요.');
+    if(mediaRec&&mediaRec.state!=='inactive')mediaRec.stop();
+  };
   mediaRec.ondataavailable=e=>{if(e.data&&e.data.size)recChunks.push(e.data);};
   mediaRec.onstop=()=>{
     if(muteStart){recMutedMs+=Date.now()-muteStart;muteStart=0;}
-    recStream.getTracks().forEach(t=>t.stop());
+    cleanupRec();
     isRecording=false;clearInterval(recTimer);
     stopMeter();
     try{if(wakeLock){wakeLock.release();wakeLock=null;}}catch(e){}
@@ -910,8 +983,9 @@ $('recStart').addEventListener('click',async()=>{
     const ext=type.indexOf('mp4')>-1?'m4a':'webm';
     const d=new Date(),z=n=>(n<10?'0':'')+n;
     const blob=new Blob(recChunks,{type});
+    const pre=recKind==='media'?'미디어녹음_':(recKind==='both'?'음성미디어녹음_':'녹음_');
     const f=new File([blob],
-      '녹음_'+d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'_'+z(d.getHours())+z(d.getMinutes())+'.'+ext,{type});
+      pre+d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'_'+z(d.getHours())+z(d.getMinutes())+'.'+ext,{type});
     recChunks=[];
     $('recIdle').style.display='';$('recLive').classList.remove('on');
     $('recPause').textContent='일시정지';$('recDot').style.animationPlayState='';
@@ -922,22 +996,33 @@ $('recStart').addEventListener('click',async()=>{
     $('recPreview').classList.add('on');
     toastMsg('녹음이 파일로 준비되었습니다 — 미리 듣기로 확인 후 정리 시작');
     /* 누락 감지: 녹음 중 마이크 입력이 끊겼던 시간이 있으면 알려서 미리 듣기 확인 유도 */
-    if(recMutedMs>2000)showErr('⚠️ 녹음 중 마이크 입력이 약 '+Math.round(recMutedMs/1000)+'초간 끊겼던 것으로 감지됐습니다.\n🎧 미리 듣기로 그 구간이 제대로 담겼는지 확인해 주세요.');
+    if(recKind!=='media'&&recMutedMs>2000)showErr('⚠️ 녹음 중 마이크 입력이 약 '+Math.round(recMutedMs/1000)+'초간 끊겼던 것으로 감지됐습니다.\n🎧 미리 듣기로 그 구간이 제대로 담겼는지 확인해 주세요.');
   };
   mediaRec.start(1000);
   startMeter(recStream);
   reqWake();
   $('recIdle').style.display='none';$('recLive').classList.add('on');
+  $('recWarnLevel').textContent=REC_WARN[kind];
   $('recMobileWarn').style.display=IS_MOBILE?'':'none';
   $('recTime').textContent='00:00';
   /* 백그라운드 탭에서 setInterval이 느려져도 표시가 어긋나지 않게 벽시계 기준으로 계산 */
   recTimer=setInterval(()=>{
+    /* 믹싱 컨텍스트가 중단되면 합쳐진 소리가 무음이 되므로 상시 복구 */
+    if(mixCtx&&mixCtx.state==='suspended')mixCtx.resume().catch(()=>{});
     if(mediaRec&&mediaRec.state==='recording'){
       recSec=Math.max(0,Math.floor((Date.now()-recWallStart-recPausedMs)/1000));
       $('recTime').textContent=fmtT(recSec);
     }
   },500);
-});
+}
+$('recMic').addEventListener('click',()=>startRec('mic'));
+$('recMedia').addEventListener('click',()=>startRec('media'));
+$('recBoth').addEventListener('click',()=>startRec('both'));
+/* 모바일은 화면 공유 API가 없어 미디어 녹음 버튼을 숨기고 대안을 안내 */
+if(!CAN_DISPLAY){
+  $('recMedia').style.display='none';$('recBoth').style.display='none';
+  $('recPerm').innerHTML='🎙️ 마이크 권한 요청에서 <b>허용</b>을 눌러주세요<br>미디어 소리 녹음은 <b>PC 크롬·엣지</b>에서만 됩니다 — 휴대폰·태블릿은 기기의 화면 녹화로 녹화한 뒤 그 영상 파일을 위에 올려주세요';
+}
 $('recPause').addEventListener('click',()=>{
   if(!mediaRec)return;
   if(mediaRec.state==='recording'){
@@ -1432,7 +1517,7 @@ $('resetBtn').addEventListener('click',()=>{
   $('progWrap').style.display='none';
   $('dropIcon').textContent='🎙️';
   $('dropTxt').textContent='녹음 파일이나 텍스트 파일을 끌어다 놓기 · 클릭해서 선택';
-  $('dropSub').innerHTML='🎙️ mp3 · m4a · wav · ogg — 화자 구분과 함께 통째로 전사<br>📄 txt · md — 스마트폰 "음성을 텍스트로 변환" 결과도 그대로 인식';
+  $('dropSub').innerHTML='🎙️ mp3 · m4a · wav · ogg · 영상(mp4 · mov) — 화자 구분과 함께 통째로 전사<br>📄 txt · md — 스마트폰 "음성을 텍스트로 변환" 결과도 그대로 인식';
   $('fileInput').value='';
   checkReady();
   window.scrollTo({top:0,behavior:'smooth'});
