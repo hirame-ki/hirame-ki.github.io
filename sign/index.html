@@ -680,6 +680,56 @@
   }
   .adm-input:focus { border-color: var(--brand); }
   .adm-input.error { border-color: #C0392B; }
+
+  /* 날짜 선택 달력 (서명 기록이 있는 날짜에 점 표시) */
+  .cal-trigger {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    text-align: left; cursor: pointer; font-weight: 600;
+  }
+  .cal-trigger.open { border-color: var(--brand); }
+  .cal-trigger svg { color: var(--ink3); flex-shrink: 0; }
+  .cal-pop {
+    margin-top: 8px; padding: 12px;
+    border: 1.5px solid var(--hair); border-radius: 14px; background: #fff;
+    box-shadow: 0 6px 20px rgba(0,0,0,.06);
+  }
+  .cal-pop[hidden] { display: none; }
+  .cal-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+  }
+  .cal-title { font-size: 13.5px; font-weight: 800; color: var(--ink); }
+  .cal-nav {
+    width: 30px; height: 30px; border: none; border-radius: 9px;
+    background: var(--brand-light); color: var(--brand);
+    font-family: var(--font); font-size: 16px; font-weight: 800; line-height: 1;
+  }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-dow {
+    text-align: center; padding: 4px 0;
+    font-size: 11px; font-weight: 700; color: var(--ink3);
+  }
+  .cal-day {
+    position: relative; height: 36px; border: none; background: none; border-radius: 9px;
+    font-family: var(--font); font-size: 13px; font-weight: 600; color: var(--ink);
+  }
+  .cal-day:hover { background: var(--brand-light); }
+  .cal-day.today { color: var(--brand); font-weight: 800; }
+  .cal-day.sel { background: var(--brand); color: #fff; }
+  .cal-day.has-rec::after {
+    content: ''; position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%);
+    width: 5px; height: 5px; border-radius: 50%; background: var(--brand);
+  }
+  .cal-day.sel.has-rec::after { background: #fff; }
+  .cal-sun { color: #C0392B; }
+  .cal-day.sel.cal-sun { color: #fff; }
+  .cal-hint {
+    display: flex; align-items: center; gap: 5px; margin-top: 8px;
+    font-size: 11px; font-weight: 600; color: var(--ink3);
+  }
+  .cal-hint i {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--brand);
+    display: inline-block; flex-shrink: 0;
+  }
   .adm-demo-note {
     font-size: 11.5px; font-weight: 600; color: var(--brand);
     background: var(--brand-light); border-radius: 10px;
@@ -1319,11 +1369,16 @@
     <div class="adm-tab-panel" id="admTab-records">
       <div class="adm-field">
         <label class="adm-label" for="recTrainingSel">연수</label>
-        <select class="adm-input" id="recTrainingSel"></select>
+        <select class="adm-input" id="recTrainingSel" onchange="onRecTrainingChange()"></select>
       </div>
       <div class="adm-field">
-        <label class="adm-label" for="recDate">날짜</label>
-        <input type="date" class="adm-input" id="recDate">
+        <label class="adm-label">날짜</label>
+        <input type="hidden" id="recDate">
+        <button type="button" class="adm-input cal-trigger" id="recDateBtn" onclick="toggleRecCal()">
+          <span id="recDateText">날짜를 선택해 주세요</span>
+          <svg width="15" height="15"><use href="#i-calendar"/></svg>
+        </button>
+        <div class="cal-pop" id="recCal" hidden></div>
       </div>
       <button class="adm-add-btn" onclick="fetchAdminRecords()" style="border-style:solid">
         <svg width="14" height="14"><use href="#i-print"/></svg> 조회
@@ -2690,11 +2745,121 @@ function populateRecTrainingOptions() {
     });
     if (titles.indexOf(prev) > -1) sel.value = prev;
   }
-  if (!document.getElementById('recDate').value) {
-    document.getElementById('recDate').value = todayStr();
-  }
+  if (!document.getElementById('recDate').value) setRecDate(todayStr());
   document.getElementById('admRecordsList').innerHTML = '';
   document.getElementById('recErr').classList.remove('show');
+}
+
+/* ── 날짜 선택 달력 (서명 기록이 있는 날짜에 점 표시) ── */
+var recCalYm      = null;    // 표시 중인 달 { y, m(0-11) }
+var recCalMarks   = {};      // 'YYYY-MM-DD' → 서명 인원수 (표시 중인 달)
+var recCalCache   = {};      // '연수명|YYYY-MM' → marks (같은 달 재조회 방지)
+var recCalLoading = false;
+
+function setRecDate(v) {
+  document.getElementById('recDate').value = v || '';
+  var t = document.getElementById('recDateText');
+  if (!v) { t.textContent = '날짜를 선택해 주세요'; t.style.color = 'var(--ink3)'; return; }
+  var p = v.split('-');
+  var wd = ['일','월','화','수','목','금','토'][new Date(+p[0], +p[1] - 1, +p[2]).getDay()];
+  t.textContent = +p[0] + '년 ' + (+p[1]) + '월 ' + (+p[2]) + '일 (' + wd + ')';
+  t.style.color = '';
+}
+
+function toggleRecCal() {
+  var pop = document.getElementById('recCal');
+  var btn = document.getElementById('recDateBtn');
+  if (!pop.hidden) { pop.hidden = true; btn.classList.remove('open'); return; }
+  var p = (document.getElementById('recDate').value || todayStr()).split('-');
+  recCalYm = { y: +p[0], m: +p[1] - 1 };
+  pop.hidden = false; btn.classList.add('open');
+  loadRecCalMarks();
+}
+
+function recCalMove(delta) {
+  var d = new Date(recCalYm.y, recCalYm.m + delta, 1);
+  recCalYm = { y: d.getFullYear(), m: d.getMonth() };
+  loadRecCalMarks();
+}
+
+function recCalPick(v) {
+  setRecDate(v);
+  document.getElementById('recCal').hidden = true;
+  document.getElementById('recDateBtn').classList.remove('open');
+}
+
+function onRecTrainingChange() {
+  document.getElementById('admRecordsList').innerHTML = '';
+  document.getElementById('recErr').classList.remove('show');
+  if (!document.getElementById('recCal').hidden) loadRecCalMarks();
+}
+
+function recCalMonthKey() {
+  return recCalYm.y + '-' + ('0' + (recCalYm.m + 1)).slice(-2);
+}
+
+// 표시 중인 달에 서명 기록이 있는 날짜를 가져온다 (연수별)
+function loadRecCalMarks() {
+  var title = document.getElementById('recTrainingSel').value;
+  var mk    = recCalMonthKey();
+  recCalMarks = {};
+  if (!API_URL || !title) { renderRecCal(); return; }
+
+  var ck = title + '|' + mk;
+  if (recCalCache[ck]) { recCalMarks = recCalCache[ck]; renderRecCal(); return; }
+
+  var last = new Date(recCalYm.y, recCalYm.m + 1, 0).getDate();
+  recCalLoading = true;
+  renderRecCal();
+
+  rpc('get_signature_dates', {
+    p_org_key: ORG_KEY, p_title: title,
+    p_from: mk + '-01', p_to: mk + '-' + last, p_pin: adminPin
+  })
+    .then(function(res) {
+      recCalLoading = false;
+      var marks = {};
+      ((res && res.dates) || []).forEach(function(x) { marks[x.date] = x.count; });
+      recCalCache[ck] = marks;
+      if (recCalMonthKey() === mk) recCalMarks = marks;
+      renderRecCal();
+    })
+    .catch(function() { recCalLoading = false; renderRecCal(); });
+}
+
+function renderRecCal() {
+  var pop   = document.getElementById('recCal');
+  if (pop.hidden) return;
+  var sel   = document.getElementById('recDate').value;
+  var pad   = new Date(recCalYm.y, recCalYm.m, 1).getDay();
+  var days  = new Date(recCalYm.y, recCalYm.m + 1, 0).getDate();
+  var today = todayStr();
+  var mk    = recCalMonthKey();
+
+  var h = '<div class="cal-head">' +
+      '<button type="button" class="cal-nav" onclick="recCalMove(-1)" aria-label="이전 달">&lsaquo;</button>' +
+      '<div class="cal-title">' + recCalYm.y + '년 ' + (recCalYm.m + 1) + '월</div>' +
+      '<button type="button" class="cal-nav" onclick="recCalMove(1)" aria-label="다음 달">&rsaquo;</button>' +
+    '</div><div class="cal-grid">';
+  ['일','월','화','수','목','금','토'].forEach(function(d, i) {
+    h += '<div class="cal-dow' + (i === 0 ? ' cal-sun' : '') + '">' + d + '</div>';
+  });
+  for (var i = 0; i < pad; i++) h += '<div></div>';
+  for (var d = 1; d <= days; d++) {
+    var ds  = mk + '-' + ('0' + d).slice(-2);
+    var cnt = recCalMarks[ds] || 0;
+    var cls = 'cal-day';
+    if ((pad + d - 1) % 7 === 0) cls += ' cal-sun';
+    if (ds === today) cls += ' today';
+    if (ds === sel)   cls += ' sel';
+    if (cnt)          cls += ' has-rec';
+    h += '<button type="button" class="' + cls + '" onclick="recCalPick(\'' + ds + '\')"' +
+         (cnt ? ' title="서명 ' + cnt + '명"' : '') + '>' + d + '</button>';
+  }
+  h += '</div><div class="cal-hint"><i></i>' +
+       (recCalLoading ? '서명 기록을 불러오는 중...' : '서명 기록이 있는 날짜예요') +
+       '</div>';
+  pop.innerHTML = h;
 }
 
 function showRecErr(msg) {
@@ -2764,6 +2929,7 @@ function deleteAdminRecord(i) {
     .then(function(res) {
       if (res.success) {
         admRecords.splice(i, 1);
+        recCalCache = {};   // 달력의 날짜 표시도 다시 계산되도록
         renderAdminRecords();
       } else if (res.needPin) {
         sessionStorage.removeItem(ADMIN_PIN_KEY);

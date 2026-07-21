@@ -266,6 +266,42 @@ begin
 end;
 $$;
 
+-- 관리자 패널 [서명 기록] 탭 달력용: 주어진 기간 중 서명 기록이 있는 날짜 + 인원수
+create or replace function get_signature_dates(
+  p_org_key text, p_title text, p_from date, p_to date, p_pin text default ''
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_admin_pin text;
+begin
+  select admin_pin into v_admin_pin from institutions where org_key = p_org_key;
+  if v_admin_pin is not null and v_admin_pin <> '' and coalesce(p_pin,'') <> v_admin_pin then
+    return jsonb_build_object('success', false, 'needPin', true, 'dates', '[]'::jsonb);
+  end if;
+
+  return jsonb_build_object(
+    'success', true,
+    'dates', (
+      select coalesce(jsonb_agg(jsonb_build_object(
+               'date', to_char(d.sign_date, 'YYYY-MM-DD'), 'count', d.cnt
+             ) order by d.sign_date), '[]'::jsonb)
+      from (
+        select sign_date, count(*) as cnt
+        from signatures
+        where org_key = p_org_key
+          and (coalesce(p_title, '') = '' or training_title = p_title)
+          and sign_date between p_from and p_to
+        group by sign_date
+      ) d
+    )
+  );
+end;
+$$;
+
 -- 서명 기록 삭제 (관리자 패널의 [서명 기록] 탭 전용, PIN 검증)
 -- ※ 드라이브에 저장된 이미지 파일 자체는 지우지 않고, Supabase의 기록(행)만 삭제한다.
 create or replace function delete_signature(p_org_key text, p_pin text, p_id bigint)
@@ -755,6 +791,7 @@ revoke execute on function
   get_page_data(text, text, text),
   submit_signature(text, date, time, text, text, text, text, text, text),
   get_signature_records(text, text, date, text),
+  get_signature_dates(text, text, date, date, text),
   set_admin_pin(text, text),
   change_admin_pin(text, text, text),
   _check_admin_pin(text, text),
@@ -780,6 +817,7 @@ grant execute on function
   get_page_data(text, text, text),
   submit_signature(text, date, time, text, text, text, text, text, text),
   get_signature_records(text, text, date, text),
+  get_signature_dates(text, text, date, date, text),
   set_admin_pin(text, text),
   change_admin_pin(text, text, text),
   get_share_token(text, text),
