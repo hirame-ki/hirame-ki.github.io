@@ -308,8 +308,9 @@
   .rec-tools{display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap}
   .btn.mini{padding:4px 11px;font-size:.77rem;border-radius:8px}
   .applied-chip{display:inline-flex;align-items:center;gap:5px;font-size:.76rem;font-weight:700;color:#2f6a4e;background:var(--ok-soft);border-radius:999px;padding:3px 10px}
-  .fitem.done .tag,.fitem.done .body{opacity:.5}
-  .fitem.done .body::before{content:"✓ 반영  ";color:var(--ok);font-weight:800;opacity:1}
+  .fitem.done .tag,.fitem.done .body{opacity:.55}
+  .fitem.done .body::before{content:"✓ ";color:var(--ok);font-weight:800;opacity:1}
+  .fitem .fst{color:var(--ok);font-weight:700;opacity:1}
   .legend .grad{height:9px;width:170px;border-radius:999px;border:1px solid var(--line)}
   /* 히트맵에서 "확인 필요" 칸에 두르는 것과 같은 테두리를 알약에도 둘러, 설명이 스스로를 보여 주게 한다 */
   .legend .pill{
@@ -439,6 +440,16 @@
   .rec .rtxt mark[data-c="sc"]{color:var(--brand-deep);border-color:rgba(47,125,118,.55);background:rgba(47,125,118,.10)}
   .rec .rtxt mark[data-c="st"]{color:#8a5a2b;border-color:rgba(154,91,24,.5);background:rgba(154,91,24,.10)}
   .rec .rtxt mark[data-c="bn"]{color:#6b4a86;border-color:rgba(107,74,134,.5);background:rgba(107,74,134,.10)}
+  /* 클릭으로 그 자리에서 고치는 하이라이트 */
+  .rec .rtxt mark.mk-fix,.rec .rtxt mark.mk-edit{cursor:pointer}
+  .rec .rtxt mark.mk-fix::after{content:"↵";font-size:.7em;opacity:.5;margin-left:2px;vertical-align:top}
+  .rec .rtxt mark.mk-edit::after{content:"✎";font-size:.72em;opacity:.55;margin-left:2px;vertical-align:top}
+  .rec .rtxt mark.mk-fix:hover,.rec .rtxt mark.mk-edit:hover{filter:brightness(.93);box-shadow:0 0 0 3px rgba(0,0,0,.05)}
+  .rec .rtxt mark.mk-applied{cursor:pointer;color:#2f6a4e;border-color:rgba(47,106,78,.6);background:var(--ok-soft);font-weight:700}
+  .rec .rtxt mark.mk-edited{cursor:pointer;color:#2f6a4e;border-color:rgba(47,106,78,.6);background:var(--ok-soft);border-bottom-style:dashed;font-weight:700}
+  .rec .rtxt mark.mk-applied:hover,.rec .rtxt mark.mk-edited:hover{text-decoration:line-through;text-decoration-color:rgba(47,106,78,.5)}
+  .rec .rtxt .mk-removed{cursor:pointer;color:var(--muted);text-decoration:line-through;font-size:.82em;padding:0 4px;border:1px dashed var(--line);border-radius:4px;margin:0 1px}
+  .rec .rtxt .mk-input{font:inherit;font-size:.86rem;font-weight:600;border:2px solid var(--brand);border-radius:5px;padding:0 5px;margin:0 1px;background:var(--bg);color:var(--ink);vertical-align:baseline;min-width:44px}
 
   .flist{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
   .fitem{display:flex;gap:10px;align-items:baseline;font-size:.83rem;padding:5px 0;border-bottom:1px solid var(--line-soft)}
@@ -2758,6 +2769,10 @@ const CAUTION = [
   [/[♦▶★☆●■◆▲◎♥♡✓✔※]/g, '특수기호는 사용하지 않습니다.'],
 ];
 CAUTION.forEach(([re, why]) => rule('bn', why, re, null));
+// 영어 알파벳 표현은 학교·연도별로 허용 범위가 달라, 한 글자라도 나오면 '기재 주의'로 표시한다.
+// (자동 교정하지 않고, 밑줄을 눌러 그 자리에서 직접 지우거나 우리말로 바꿀 수 있게 한다.)
+rule('bn', '영어 알파벳 표현입니다. 학교·연도별 기재 지침에 따라 허용 범위가 다르니 확인해 주세요 — 밑줄을 눌러 그 자리에서 고칠 수 있습니다.',
+     /[A-Za-z]+/g, null);
 
 /* ── 실행 ─────────────────────────────────────────────── */
 // 실제 학급 기록(26명)의 문장 길이는 중앙값 69자·95%가 136자였다.
@@ -2880,6 +2895,113 @@ function markUp(text, finds){
   return out + esc(text.slice(cur));
 }
 
+/* ── 그 자리에서 고치기 (한 지적씩 적용·수정) ─────────────────
+   원문 위치(s,e)는 그대로 두고, 각 지적에 붙은 상태(applied·edited·removed)만 바꾼다.
+   화면·복사·엑셀 본문은 늘 원문에서 그 상태를 반영해 새로 만들므로 위치가 어긋나지 않는다. */
+
+// 화면에 표시·적용할 위치 있는 지적을 겹치지 않게 고른다.
+// 짧은 지적(맞춤법·기재 주의)을 먼저 얹어, 문장 전체를 덮는 서술 지적이 그 안의 교정을 가리지 않게 한다.
+function resolvedFinds(x){
+  const all = displayFinds(x).filter(f => f.s >= 0);
+  all.sort((a, b) => ((a.e - a.s) - (b.e - b.s)) || (a.s - b.s));   // 짧은 것 우선
+  const placed = [];
+  for (const f of all){
+    if (placed.some(g => f.s < g.e && g.s < f.e)) continue;         // 이미 놓인 것과 겹치면 버림
+    placed.push(f);
+  }
+  return placed.sort((a, b) => a.s - b.s);                          // 렌더는 위치 순서로
+}
+
+// 한 지적이 최종적으로 내보낼 글자 (orig = 원문에서 그 자리 글자)
+function findOut(f, orig){
+  if (f.removed) return '';
+  if (f.edited != null) return f.edited;
+  if (f.applied && f.good) return f.good;
+  return orig;                                                      // 아직 손대지 않음 → 원문 그대로
+}
+
+// 현재까지 반영된 본문 (복사·엑셀·수정 여부 판단에 쓴다)
+function deriveText(x){
+  const text = x.r.text;
+  let out = '', cur = 0;
+  for (const f of resolvedFinds(x)){
+    out += text.slice(cur, f.s) + findOut(f, text.slice(f.s, f.e));
+    cur = f.e;
+  }
+  return out + text.slice(cur);
+}
+
+// 밑줄(하이라이트)이 클릭·수정 가능하도록 본문 HTML을 만든다.
+// 클릭 핸들러와 같은 원본 항목(state.lint[idx])에서 지적을 뽑아 data-mi 순서가 정확히 맞게 한다.
+function markUpEditable(x){
+  const o = state.lint[x.idx] || x;
+  const text = o.r.text;
+  let out = '', cur = 0;
+  resolvedFinds(o).forEach((f, mi) => {
+    out += esc(text.slice(cur, f.s));
+    const orig = text.slice(f.s, f.e);
+    const d = ` data-idx="${x.idx}" data-mi="${mi}"`;
+    if (f.removed){
+      out += `<span class="mk-removed"${d} title="지움 · 눌러 되살리기">${esc(orig)}</span>`;
+    } else if (f.edited != null){
+      out += `<mark class="mk-edited" data-c="${f.cat}"${d} title="직접 고침 · 눌러 다시 편집">${esc(f.edited)}</mark>`;
+    } else if (f.applied && f.good){
+      out += `<mark class="mk-applied" data-c="${f.cat}"${d} title="적용됨: ${esc(f.bad)} → ${esc(f.good)} · 눌러 되돌리기">${esc(f.good)}</mark>`;
+    } else if (f.good){
+      out += `<mark class="mk-fix" data-c="${f.cat}"${d} title="${esc(f.bad)} → ${esc(f.good)} · ${esc(f.why)} · 눌러서 적용">${esc(orig)}</mark>`;
+    } else {
+      out += `<mark class="mk-edit" data-c="${f.cat}"${d} title="${esc(f.why)} · 눌러서 직접 수정">${esc(orig)}</mark>`;
+    }
+    cur = f.e;
+  });
+  return out + esc(text.slice(cur));
+}
+
+// 하이라이트 클릭 처리 — 교정안은 적용/되돌리기, 서술·기재 주의는 그 자리 편집
+function onMarkClick(idx, mi, el){
+  const x = state.lint[idx];
+  const f = resolvedFinds(x)[mi];
+  if (!f) return;
+  if (f.removed){ f.removed = false; renderLint(); return; }          // 되살리기
+  if (f.edited != null){ startInlineEdit(el, x, f); return; }         // 다시 편집
+  if (f.applied && f.good){ f.applied = false; renderLint(); return; }// 적용 취소
+  if (f.good){ f.applied = true; renderLint(); return; }              // 교정안 적용
+  startInlineEdit(el, x, f);                                          // 서술·기재 주의: 직접 수정
+}
+
+// 하이라이트를 인라인 입력창으로 바꿔 그 자리에서 고치게 한다 (빈칸으로 두면 삭제)
+function startInlineEdit(markEl, x, f){
+  const origSpan = x.r.text.slice(f.s, f.e);
+  const cur = f.edited != null ? f.edited : origSpan;
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'mk-input'; inp.value = cur;
+  inp.style.width = Math.min(460, Math.max(44, cur.length * 15 + 20)) + 'px';
+  markEl.replaceWith(inp);
+  inp.focus(); inp.select();
+  let closed = false;
+  const commit = () => {
+    if (closed) return; closed = true;
+    const v = inp.value;
+    if (v === '')            { f.removed = true;  delete f.edited; }
+    else if (v === origSpan) { f.removed = false; delete f.edited; }  // 원래대로면 편집 해제
+    else                     { f.removed = false; f.edited = v; }
+    renderLint();
+  };
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter'){ e.preventDefault(); commit(); }
+    else if (e.key === 'Escape'){ closed = true; renderLint(); }
+  });
+  inp.addEventListener('blur', commit);
+}
+
+// 지적별 반영 상태 (아래 목록에 표시)
+function findState(f){
+  if (f.removed) return '삭제';
+  if (f.edited != null) return '수정';
+  if (f.applied && f.good) return '반영';
+  return '';
+}
+
 function renderLint(){
   const list = state.lint ?? computeLint();
   const limit = state.lintLimit;
@@ -2910,7 +3032,7 @@ function renderLint(){
   for (const k of Object.keys(CAT)) counts[k] = 0;
   items.forEach(x => x.finds.forEach(f => counts[f.cat]++));
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  const approvedCount = items.filter(x => x.approved).length;
+  const approvedCount = items.filter(x => deriveText(x) !== x.r.text).length;
   const aiErr = items.filter(x => x.aiError).length;
   const aiOk  = items.filter(x => x.aiChecked).length;
 
@@ -2978,13 +3100,11 @@ function renderLint(){
     </div>
 
     <div class="block">
-      <div class="head"><h2>확인할 기록 <span class="sub">지적이 많은 순 · 밑줄에 마우스를 올리면 이유가 보입니다</span></h2></div>
+      <div class="head"><h2>확인할 기록 <span class="sub">지적이 많은 순 · 밑줄을 누르면 그 자리에서 고칠 수 있습니다 (맞춤법·띄어쓰기는 눌러서 적용, 서술·기재 주의는 눌러서 직접 수정)</span></h2></div>
       ${flagged.length ? flagged.map(x => {
         const shown = x.finds.filter(vis);
-        const fixable = x.aiFixed != null                                  // 자동 적용 가능한 교정 수
-          ? x.finds.filter(f => f.good).length
-          : x.finds.filter(f => f.good && f.s >= 0).length;
-        const done = x.approved;
+        const pendingGood = shown.filter(f => f.s >= 0 && f.good && !f.applied && f.edited == null && !f.removed).length;
+        const edited = deriveText(x) !== x.r.text;                          // 하나라도 반영·수정됨
         return `
         <div class="rec${x.aiActive?' ai-active':''}" data-idx="${x.idx}">
           <div class="rhead">
@@ -2992,28 +3112,26 @@ function renderLint(){
             ${x.r.sub ? `<span class="nm" style="color:var(--muted);font-weight:500">${esc(x.r.sub)}</span>` : ''}
             ${x.aiActive ? `<span class="ai-spin">AI 검사 중…</span>` : (x.aiChecked ? `<span class="src-tag ai">🤖 AI 완료</span>` : '')}
             <span class="sp"></span>
+            ${edited ? `<span class="applied-chip">✓ 교정 반영됨</span>` : ''}
             <span class="len-chip ${x.over?'over':''}" title="공백 포함 ${x.r.text.length}자 · 공백 제외 ${x.r.text.replace(/\s/g,'').length}자 · ${x.bytes.toLocaleString()}바이트 (한도 ${limit.toLocaleString()})">${x.r.text.length}자 · ${x.bytes.toLocaleString()}B</span>
-            <span class="rec-tools no-print">${
-              done
-                ? `<span class="applied-chip">✓ 교정 반영됨</span>
-                   <button class="btn ghost mini" data-act="copy" data-idx="${x.idx}">복사</button>
-                   <button class="btn ghost mini" data-act="revert" data-idx="${x.idx}">되돌리기</button>`
-                : `${fixable ? `<button class="btn mini" data-act="apply" data-idx="${x.idx}">교정안 ${fixable}건 적용</button>` : ''}
-                   <button class="btn ghost mini" data-act="copy" data-idx="${x.idx}">복사</button>`
-            }</span>
+            <span class="rec-tools no-print">
+              ${pendingGood ? `<button class="btn mini" data-act="applyAll" data-idx="${x.idx}">교정안 전체 적용</button>` : ''}
+              ${edited ? `<button class="btn ghost mini" data-act="revert" data-idx="${x.idx}">되돌리기</button>` : ''}
+              <button class="btn ghost mini" data-act="copy" data-idx="${x.idx}">복사</button>
+            </span>
           </div>
-          <div class="rtxt">${done ? esc(x.fixedText) : markUp(x.r.text, shown)}</div>
+          <div class="rtxt">${markUpEditable(x)}</div>
           <div class="flist">
             ${shown.map(f => {
-              const applied = done && f.good;
+              const st = findState(f);
               return `
-              <div class="fitem${applied?' done':''}">
+              <div class="fitem${st?' done':''}">
                 <span class="src-dot ${f.src==='ai'?'ai':'rule'}" title="${f.src==='ai'?'AI 검사':'로컬 규칙 검사'}">${f.src==='ai'?'🤖':'📐'}</span>
                 <span class="tag" data-c="${f.cat}">${CAT[f.cat]}</span>
                 <span class="body">${
                   f.good ? `<span class="bad">${esc(f.bad)}</span><span class="arw">→</span><span class="good">${esc(f.good)}</span> ` :
                   f.bad  ? `<span class="bad">${esc(f.bad)}</span> ` : ''
-                }<span class="why">${esc(f.why)}</span></span>
+                }<span class="why">${esc(f.why)}</span>${st ? ` <span class="fst">(${st})</span>` : ''}</span>
               </div>`;
             }).join('')}
           </div>
@@ -3048,38 +3166,37 @@ function renderLint(){
   $('#lintXlsx')?.addEventListener('click', exportFixedXlsx);
   box.querySelectorAll('.rec-tools [data-act]').forEach(b => b.addEventListener('click', () => {
     const idx = +b.dataset.idx;
-    if (b.dataset.act === 'apply')  applyFix(idx);
+    if (b.dataset.act === 'applyAll')  applyAllFix(idx);
     else if (b.dataset.act === 'revert') revertFix(idx);
     else if (b.dataset.act === 'copy')   copyText(idx, b);
   }));
+  // 본문 하이라이트를 눌러 그 자리에서 적용·수정
+  box.querySelectorAll('.rtxt [data-mi]').forEach(el => el.addEventListener('click', () =>
+    onMarkClick(+el.dataset.idx, +el.dataset.mi, el)));
 
   // AI 정밀 검사 다시 실행 (연결·해제는 헤더 배지에서)
   $('#aiRun')?.addEventListener('click', () => { if (!state.aiBusy) runAiCheck(true); });
 }
 
-/* 한 학생의 교정안을 원문에 반영한다 — 위치가 있는 맞춤법·띄어쓰기 지적만.
-   오른쪽(뒤)부터 바꿔 앞쪽 위치가 밀리지 않게 한다. */
-function applyFix(idx){
+/* 한 학생의 교정안(맞춤법·띄어쓰기)을 한꺼번에 적용한다.
+   위치는 그대로 두고 각 지적의 applied 상태만 켜므로, 나중에 개별로 되돌리기도 가능하다. */
+function applyAllFix(idx){
   const x = state.lint[idx];
-  if (x.aiFixed != null){          // AI 교정은 모델이 준 전체 교정본을 그대로 쓴다
-    x.fixedText = x.aiFixed;
-  } else {                         // 규칙 교정은 위치가 있는 항목만 뒤에서부터 치환
-    const apps = x.finds.filter(f => f.good && f.s >= 0).sort((a, b) => b.s - a.s);
-    let t = x.r.text;
-    for (const f of apps) t = t.slice(0, f.s) + f.good + t.slice(f.e);
-    x.fixedText = t;
-  }
-  x.approved = true;
+  for (const f of displayFinds(x))
+    if (f.s >= 0 && f.good && f.edited == null && !f.removed) f.applied = true;
   renderLint();
 }
+// 이 학생의 모든 반영·수정·삭제를 원래대로 되돌린다
 function revertFix(idx){
   const x = state.lint[idx];
-  x.approved = false; delete x.fixedText;
+  for (const f of [...(x.finds || []), ...(x.aiFinds || [])]){
+    f.applied = false; delete f.edited; f.removed = false;
+  }
   renderLint();
 }
 function copyText(idx, btn){
   const x = state.lint[idx];
-  const t = x.fixedText ?? x.r.text;
+  const t = deriveText(x);
   const flash = () => { if (!btn) return; const o = btn.textContent; btn.textContent = '복사됨'; setTimeout(() => { btn.textContent = o; }, 1200); };
   if (navigator.clipboard && navigator.clipboard.writeText)
     navigator.clipboard.writeText(t).then(flash, () => fallbackCopy(t, flash));
@@ -3098,7 +3215,7 @@ function exportFixedXlsx(){
   const list = state.lint ?? computeLint();
   const data = [['학년','반','번호','이름','내용(교정 반영)']];
   for (const x of list)
-    data.push([x.r.grade || '', x.r.cls || '', x.r.no || '', x.r.name || '', x.fixedText ?? x.r.text]);
+    data.push([x.r.grade || '', x.r.cls || '', x.r.no || '', x.r.name || '', deriveText(x)]);
   download(buildXlsx('교정본', data, [7, 7, 7, 10, 110]),
     `생기부돋보기_수정본_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
