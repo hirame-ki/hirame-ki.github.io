@@ -1,6 +1,64 @@
 # 작업 진행 상황 (다음 세션 이어하기용)
 
-마지막 업데이트: 2026-07-13
+마지막 업데이트: 2026-07-22
+
+## 2026-07-22 세션 작업 내역 (연수 대상 = 전 구성원/부서 선택, 서명등록부 출력 필터링)
+
+- **배경**: 기존 "연수 대상" 필드(희망자/자율참여/필수참여/직접입력)는 화면에 보여주기만
+  하는 문구였고 실제 동작에는 영향이 없었음. 사용자가 "연수별로 대상자만 서명등록부(출력
+  용지)에 나오게 해달라"고 요청 — **전 구성원(기본) / 부서 선택** 두 가지로 단순화하고,
+  부서 선택 시 그 부서 소속 인원만 출력되고 나머지는 숨기도록 실제 필터로 만듦. 부서
+  선택 모달은 여러 부서를 체크박스로 고를 수 있고 전체선택/전체해제 버튼 제공.
+- **DB (`supabase-schema.sql`)**: `trainings`에 `target_type text default 'all'`,
+  `target_depts jsonb default '[]'` 컬럼 추가. `save_training()`에 `p_target_type`,
+  `p_target_depts` 파라미터 추가(시그니처 변경 → `drop function if exists` 먼저 실행).
+  `get_page_data`/`_trainings_json`에도 `targetType`/`targetDepts` 필드 노출.
+  grant/revoke 목록의 `save_training(...)` 시그니처도 갱신.
+- **프런트 (`index.html`)**: 연수 폼의 "연수 대상" 드롭다운을 전 구성원/부서 선택 셀렉트로
+  교체하고, 부서 선택 시 여는 새 모달(`modalTfDeptPicker`)에서 `deptOrder` 기준 체크박스
+  목록 + 전체선택/해제 버튼 제공. `buildPrintDoc()`에서 `training.targetType==='dept'`이면
+  `deptOrder`를 대상 부서로 필터링한 뒤 명단을 구성(서명 기록 매칭용 동명이인 판정은 전체
+  구성원 기준 유지, 대상 밖 부서 사람이 서명해도 출력에는 표시 안 함).
+  `toggleTraining()`이 `p_start_time`/`p_end_time`/`p_target_type`/`p_target_depts`를
+  누락한 채 `save_training`을 호출하던 기존 버그(활성/비활성 전환 시 시간·대상이 초기화될
+  수 있었음)도 같이 고쳐서 전체 필드를 항상 함께 전송하도록 함.
+- ⚠️ **사용자가 직접 해야 함**: Supabase SQL 편집기에서 `supabase-schema.sql` 전체 재실행
+  (전부 `create or replace` + `drop function if exists`라 재실행 안전). 재실행 전까지는
+  새 폼이 떠도 서버에서 대상 필드를 인식하지 못함.
+- ⚠️ 브라우저 실측 미확인(코드 상 구현만 완료) — 실제 화면에서 부서 선택 모달과 출력
+  용지 필터링 동작 확인 필요.
+
+## 2026-07-21 세션 작업 내역 (미서명 표기 제거 + 서명 기록 조회 달력)
+
+### 1) 서명등록부 출력: 미서명자 칸을 빈칸으로
+
+- `cellHtml()`(index.html)에서 서명 기록이 없는 사람의 서명란에 찍히던
+  `<span class="pd-unsigned">미서명</span>`을 **빈 문자열로 변경**. 손으로 채워 넣거나
+  그냥 비워 두는 실제 사용 방식에 맞춤.
+- 하단 요약표의 "미서명 N명" 집계 문구는 **그대로 유지**(사용자와 합의). `.pd-unsigned` CSS
+  규칙도 남겨 둠 — 되돌리려면 위 한 줄만 원복하면 됨.
+
+### 2) 관리자 → 서명 기록 탭: 기록이 있는 날짜를 달력에 표시
+
+- **배경**: 날짜를 하나씩 찍어서 조회해 봐야 그날 기록이 있는지 알 수 있어 불편했음.
+- 브라우저 기본 `<input type="date">`의 팝업 달력은 **날짜에 표시를 넣을 수 없어**(스타일링
+  불가) 자체 달력 UI로 교체함. 값은 기존과 동일하게 hidden `#recDate`에 `YYYY-MM-DD`로
+  들어가므로 `fetchAdminRecords()` / 출력 로직은 손대지 않음.
+- 새 RPC **`get_signature_dates(p_org_key, p_title, p_from, p_to, p_pin)`**
+  (`supabase-schema.sql`) — 기간 내 서명이 있는 날짜 + 인원수를 `{date, count}` 배열로 반환.
+  PIN 검증은 `get_signature_records`와 동일(`needPin`), revoke/grant 목록에도 등록함.
+- 달력 동작: **선택한 연수 기준**으로 기록이 있는 날짜에 브랜드 색 점 + `title="서명 N명"`,
+  오늘은 색 강조, 선택일은 채운 원, 일요일은 빨강. 월 이동(‹ ›) 시 그 달을 조회하고
+  `연수명|YYYY-MM` 키로 캐시(`recCalCache`)해 중복 호출 방지. 기록 삭제 성공 시 캐시 비움.
+  연수 셀렉트 변경 시(`onRecTrainingChange`) 달력이 열려 있으면 다시 조회.
+- 데모 모드(`API_URL` 없음)에서는 달력은 정상 동작하되 점 표시만 없음.
+- 관련 함수: `setRecDate` / `toggleRecCal` / `recCalMove` / `recCalPick` / `loadRecCalMarks` /
+  `renderRecCal`, CSS는 `.cal-trigger`·`.cal-pop`·`.cal-day` 계열.
+- ⚠️ **사용자가 직접 해야 함**: Supabase SQL 편집기에서 `supabase-schema.sql` 재실행
+  (전부 `create or replace`라 재실행 안전). 새 함수만 실행할 경우
+  `grant execute on function get_signature_dates(text, text, date, date, text) to anon, authenticated;`
+  도 같이 실행해야 함. 실행 전까지는 달력은 뜨지만 점 표시가 나오지 않음.
+- ⚠️ 브라우저 실측 미확인(코드 상 구현만 완료) — 실제 화면에서 달력 열림/점 표시 확인 필요.
 
 ## 2026-07-13 세션 작업 내역 (연수별 서명 가능 시간대 강제)
 
@@ -369,6 +427,8 @@ Supabase 연결·검증 완료 후 사용자 피드백을 받아 다음을 추�
 
 ## 다음 세션에서 사용자가 직접 해야 할 것
 
+0. (2026-07-21 추가) Supabase SQL 편집기에서 `supabase-schema.sql` **재실행** — 새 함수
+   `get_signature_dates` 반영용. 안 하면 서명 기록 탭 달력에 날짜 표시가 안 나옴.
 1. [script.google.com](https://script.google.com)에서 **새 프로젝트**(시트 아님) 생성 →
    `sign/code.gs` 붙여넣기 → 웹 앱으로 배포(액세스: 모든 사용자) → URL 복사
    (또는 `sign/README.md`의 "사본(시트)으로 배포하고 싶다면" 방식으로 사용설명서 시트 포함 배포)

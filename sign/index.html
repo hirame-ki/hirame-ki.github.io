@@ -741,6 +741,19 @@
   }
   .adm-err.show { display: block; }
 
+  .tf-dept-list {
+    max-height: 260px; overflow-y: auto; text-align: left;
+    border: 1.5px solid var(--hair); border-radius: 12px; padding: 4px 14px;
+    margin-bottom: 10px;
+  }
+  .tf-dept-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; font-size: 14px; font-weight: 600; color: var(--ink);
+    border-bottom: 1px solid var(--hair); cursor: pointer;
+  }
+  .tf-dept-row:last-child { border-bottom: none; }
+  .tf-dept-row input { width: 17px; height: 17px; flex-shrink: 0; accent-color: var(--brand); }
+
   /* ── 엑셀 일괄 등록 (구성원 관리) ─────────────────── */
   .xl-drop {
     margin-top: 4px; padding: 22px 14px; border-radius: 14px;
@@ -1457,10 +1470,14 @@
       <input type="text" class="adm-input" id="tfName" maxlength="60" placeholder="예: 학교폭력 예방 교원 연수" autocomplete="off">
     </div>
     <div class="adm-field">
-      <label class="adm-label" for="tfTargetSel">연수 대상 <span class="opt">(선택)</span></label>
-      <select class="adm-input" id="tfTargetSel" onchange="onTfTargetSelChange()"></select>
-      <input type="text" class="adm-input" id="tfTargetCustom" maxlength="40" placeholder="내용 직접 입력"
-             autocomplete="off" style="display:none;margin-top:8px">
+      <label class="adm-label" for="tfTargetType">연수 대상</label>
+      <select class="adm-input" id="tfTargetType" onchange="onTfTargetTypeChange()">
+        <option value="all">전 구성원</option>
+        <option value="dept">부서 선택</option>
+      </select>
+      <div id="tfTargetDeptWrap" style="display:none;margin-top:8px">
+        <button type="button" class="modal-btn ghost" id="tfTargetDeptBtn" style="margin:0" onclick="openTfDeptPicker()">부서 선택하기</button>
+      </div>
     </div>
     <div class="adm-field">
       <label class="adm-label" for="tfTimeStart">서명 가능 시간 <span class="opt">(선택 · 설정하면 이 시간에만 서명 가능)</span></label>
@@ -1479,6 +1496,22 @@
     <button class="modal-btn" id="tfSubmitBtn" onclick="submitTrainingForm()">저장하기</button>
     <button class="adm-del-btn" id="tfDeleteBtn" style="display:none" onclick="deleteTraining()">이 연수 삭제</button>
     <button class="modal-btn ghost" onclick="document.getElementById('modalTrainingForm').classList.remove('show')">닫기</button>
+  </div>
+</div>
+
+<!-- 관리자: 연수 대상 부서 선택 -->
+<div class="modal-overlay" id="modalTfDeptPicker">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-pen"/></svg></div>
+    <div class="modal-title">대상 부서 선택</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button type="button" class="modal-btn ghost" style="margin:0;flex:1" onclick="setAllTfDeptCheckboxes(true)">전체 선택</button>
+      <button type="button" class="modal-btn ghost" style="margin:0;flex:1" onclick="setAllTfDeptCheckboxes(false)">전체 해제</button>
+    </div>
+    <div id="tfDeptCheckList" class="tf-dept-list"></div>
+    <div class="adm-err" id="tfDeptErr"></div>
+    <button class="modal-btn" onclick="confirmTfDeptPicker()">확인</button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalTfDeptPicker').classList.remove('show')">취소</button>
   </div>
 </div>
 
@@ -1883,7 +1916,9 @@ function showAdminModal() {
     if (adminTrainings.length === 0) {
       adminTrainings = trainings.map(function(t, i) {
         return { id: i + 1, active: true, title: t.title, content: t.content || '', date: todayStr(),
-                 startTime: t.startTime || null, endTime: t.endTime || null };
+                 startTime: t.startTime || null, endTime: t.endTime || null,
+                 targetType: t.targetType === 'dept' ? 'dept' : 'all',
+                 targetDepts: Array.isArray(t.targetDepts) ? t.targetDepts : [] };
       });
     }
     if (adminStaff.length === 0) {
@@ -2065,58 +2100,76 @@ function renderAdminList() {
   box.innerHTML = html;
 }
 
-/* 연수 대상 드롭다운 + 시간 선택 → 저장 시 "대상 · HH:MM ~ HH:MM" 형태의
-   내용 문자열 하나로 합쳐지고, 수정 시 다시 분해해서 채워준다 */
-var TF_TARGET_PRESETS = ['전 구성원', '희망자', '자율 참여', '필수 참여'];
+/* 연수 대상: 전 구성원(기본) 또는 부서 선택. 선택한 부서 목록은
+   tfTargetType/tfTargetDepts에 담아뒀다가 저장 시 함께 전송하고,
+   연수 카드에는 부서명(전 구성원이면 빈 문자열) + 시간을 합쳐서 보여준다. */
+var tfTargetType     = 'all';   // 'all' | 'dept'
+var tfTargetDepts    = [];      // 부서 선택 시 대상 부서명 목록
+var tfDeptPickerTemp = [];      // 부서 선택 모달에서 확인 전까지의 임시 선택값
 
-function populateTfTargetOptions(selected) {
-  var sel  = document.getElementById('tfTargetSel');
-  var opts = TF_TARGET_PRESETS.slice();
-  if (selected && opts.indexOf(selected) === -1) opts.push(selected);
-
-  sel.innerHTML = '<option value="">— 선택 안 함 —</option>';
-  opts.forEach(function(t) {
-    var o = document.createElement('option');
-    o.value = t; o.textContent = t;
-    sel.appendChild(o);
-  });
-  var custom = document.createElement('option');
-  custom.value = '__custom__'; custom.textContent = '＋ 직접 입력';
-  sel.appendChild(custom);
-
-  sel.value = selected || '';
-  onTfTargetSelChange();
+function onTfTargetTypeChange() {
+  tfTargetType = document.getElementById('tfTargetType').value;
+  document.getElementById('tfTargetDeptWrap').style.display = tfTargetType === 'dept' ? 'block' : 'none';
+  renderTfTargetDeptBtn();
 }
 
-function onTfTargetSelChange() {
-  document.getElementById('tfTargetCustom').style.display =
-    document.getElementById('tfTargetSel').value === '__custom__' ? 'block' : 'none';
+function renderTfTargetDeptBtn() {
+  document.getElementById('tfTargetDeptBtn').textContent =
+    tfTargetDepts.length ? ('부서 선택 (' + tfTargetDepts.length + '개 선택됨)') : '부서 선택하기';
 }
 
-function getTfTarget() {
-  var v = document.getElementById('tfTargetSel').value;
-  return v === '__custom__' ? document.getElementById('tfTargetCustom').value.trim() : v;
-}
-
-function padTime(t) {
-  var p = String(t).split(':');
-  return ('0' + p[0]).slice(-2) + ':' + p[1];
-}
-
-/* 기존 내용 문자열을 대상/시작/종료로 분해 (형식이 다르면 전부 대상으로 취급) */
-function parseTrainingContent(c) {
-  c = String(c || '').trim();
-  var out = { target: '', start: '', end: '' };
-  if (!c) return out;
-  var m = c.match(/^(.*?)(\d{1,2}:\d{2})\s*(?:[~\-]\s*(\d{1,2}:\d{2}))?$/);
-  if (m) {
-    out.target = m[1].replace(/[·\s]+$/, '').trim();
-    out.start  = padTime(m[2]);
-    out.end    = m[3] ? padTime(m[3]) : '';
-  } else {
-    out.target = c;
+function renderTfDeptCheckList() {
+  var box = document.getElementById('tfDeptCheckList');
+  if (!deptOrder.length) {
+    box.innerHTML = '<div class="adm-empty">등록된 부서가 없어요.<br>먼저 구성원 관리에서 부서를 등록해 주세요.</div>';
+    return;
   }
-  return out;
+  var html = '';
+  deptOrder.forEach(function(d) {
+    var checked = tfDeptPickerTemp.indexOf(d) > -1 ? ' checked' : '';
+    html += '<label class="tf-dept-row">' +
+      '<input type="checkbox" value="' + esc(d) + '"' + checked + ' onchange="onTfDeptCheckChange(this)">' +
+      '<span>' + esc(d) + '</span>' +
+    '</label>';
+  });
+  box.innerHTML = html;
+}
+
+function onTfDeptCheckChange(el) {
+  var i = tfDeptPickerTemp.indexOf(el.value);
+  if (el.checked) { if (i === -1) tfDeptPickerTemp.push(el.value); }
+  else if (i > -1) { tfDeptPickerTemp.splice(i, 1); }
+}
+
+function setAllTfDeptCheckboxes(on) {
+  tfDeptPickerTemp = on ? deptOrder.slice() : [];
+  renderTfDeptCheckList();
+}
+
+function openTfDeptPicker() {
+  tfDeptPickerTemp = tfTargetDepts.slice();
+  renderTfDeptCheckList();
+  document.getElementById('tfDeptErr').classList.remove('show');
+  document.getElementById('modalTfDeptPicker').classList.add('show');
+}
+
+function confirmTfDeptPicker() {
+  if (!tfDeptPickerTemp.length) {
+    var err = document.getElementById('tfDeptErr');
+    err.textContent = '하나 이상의 부서를 선택해 주세요.';
+    err.classList.add('show');
+    return;
+  }
+  tfTargetDepts = tfDeptPickerTemp.slice();
+  renderTfTargetDeptBtn();
+  document.getElementById('modalTfDeptPicker').classList.remove('show');
+}
+
+/* 대상(전 구성원/부서 목록) + 시간 → 연수 카드에 보여줄 문구 하나로 합침 */
+function buildTrainingContent(targetType, targetDepts, ts, te) {
+  var content = (targetType === 'dept' && targetDepts.length) ? targetDepts.join(', ') : '';
+  if (ts) content += (content ? ' · ' : '') + ts + (te ? ' ~ ' + te : '');
+  return content;
 }
 
 /* 추가/수정 폼 */
@@ -2126,9 +2179,11 @@ function openTrainingForm(idx) {
   document.getElementById('tfTitle').textContent = isEdit ? '연수 수정' : '새 연수 추가';
   document.getElementById('tfName').value = isEdit ? adminTrainings[idx].title : '';
 
-  var parsed = parseTrainingContent(isEdit ? adminTrainings[idx].content : '');
-  populateTfTargetOptions(parsed.target);
-  document.getElementById('tfTargetCustom').value = '';
+  tfTargetType  = (isEdit && adminTrainings[idx].targetType === 'dept') ? 'dept' : 'all';
+  tfTargetDepts = (isEdit && Array.isArray(adminTrainings[idx].targetDepts)) ? adminTrainings[idx].targetDepts.slice() : [];
+  document.getElementById('tfTargetType').value = tfTargetType;
+  document.getElementById('tfTargetDeptWrap').style.display = tfTargetType === 'dept' ? 'block' : 'none';
+  renderTfTargetDeptBtn();
   document.getElementById('tfTimeStart').value = isEdit ? (adminTrainings[idx].startTime || '') : '';
   document.getElementById('tfTimeEnd').value   = isEdit ? (adminTrainings[idx].endTime || '') : '';
 
@@ -2171,14 +2226,12 @@ function submitTrainingForm() {
   if (!title) { showTfErr('연수명을 입력해 주세요.'); return; }
   if (!date)  { showTfErr('연수 날짜를 선택해 주세요.'); return; }
 
-  // 대상 + 시간 → 내용 문자열 조합
-  var target = getTfTarget();
   var ts = document.getElementById('tfTimeStart').value;
   var te = document.getElementById('tfTimeEnd').value;
   if (te && !ts)          { showTfErr('시작 시간을 선택해 주세요.'); return; }
   if (ts && te && te <= ts) { showTfErr('종료 시간이 시작 시간보다 빨라요.'); return; }
-  var content = target;
-  if (ts) content += (content ? ' · ' : '') + ts + (te ? ' ~ ' + te : '');
+  if (tfTargetType === 'dept' && !tfTargetDepts.length) { showTfErr('연수 대상 부서를 선택해 주세요.'); return; }
+  var content = buildTrainingContent(tfTargetType, tfTargetDepts, ts, te);
 
   var btn = document.getElementById('tfSubmitBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
@@ -2194,12 +2247,18 @@ function submitTrainingForm() {
           adminTrainings[i].date = date;
           adminTrainings[i].startTime = ts || null;
           adminTrainings[i].endTime = te || null;
+          adminTrainings[i].targetType = tfTargetType;
+          adminTrainings[i].targetDepts = tfTargetDepts.slice();
         }
         tfDone();
       } else {
         var maxId = 0;
         adminTrainings.forEach(function(t) { if (t.id > maxId) maxId = t.id; });
-        adminTrainings.push({ id: maxId + 1, active: true, title: title, content: content, date: date, startTime: ts || null, endTime: te || null });
+        adminTrainings.push({
+          id: maxId + 1, active: true, title: title, content: content, date: date,
+          startTime: ts || null, endTime: te || null,
+          targetType: tfTargetType, targetDepts: tfTargetDepts.slice()
+        });
         tfDone();
       }
     }, 350);
@@ -2216,7 +2275,9 @@ function submitTrainingForm() {
     p_date    : date,
     p_active  : idx > -1 ? adminTrainings[idx].active : true,
     p_start_time : ts || null,
-    p_end_time   : te || null
+    p_end_time   : te || null,
+    p_target_type  : tfTargetType,
+    p_target_depts : tfTargetType === 'dept' ? tfTargetDepts : []
   }).then(function(res) {
     if (res.success) { adminTrainings = res.trainings || adminTrainings; tfDone(); }
     else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showTfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
@@ -2238,7 +2299,11 @@ function toggleTraining(i) {
     p_title   : t.title,
     p_content : t.content,
     p_date    : t.date,
-    p_active  : next
+    p_active  : next,
+    p_start_time : t.startTime || null,
+    p_end_time   : t.endTime || null,
+    p_target_type  : t.targetType === 'dept' ? 'dept' : 'all',
+    p_target_depts : Array.isArray(t.targetDepts) ? t.targetDepts : []
   }).then(function(res) {
     if (res.success) { adminTrainings = res.trainings || adminTrainings; renderAdminList(); }
     else { t.active = !next; renderAdminList(); }
@@ -3070,7 +3135,10 @@ function refreshDemoFromAdmin() {
   var today = todayStr();
   trainings = adminTrainings
     .filter(function(t) { return t.active && (t.date === today || t.date === '매일'); })
-    .map(function(t) { return { title: t.title, content: t.content, startTime: t.startTime, endTime: t.endTime }; });
+    .map(function(t) {
+      return { title: t.title, content: t.content, startTime: t.startTime, endTime: t.endTime,
+               targetType: t.targetType, targetDepts: t.targetDepts };
+    });
   renderTrainings(trainings);
 }
 
@@ -3837,7 +3905,10 @@ function printAdminRecords() {
     return;
   }
 
-  pendingPrintTraining = { title: title };
+  var matched = adminTrainings.filter(function(t) { return t.title === title; })[0];
+  pendingPrintTraining = matched
+    ? { title: title, targetType: matched.targetType, targetDepts: matched.targetDepts }
+    : { title: title };
   pendingPrintDate = date;
   fetchRecordsAndBuild(pendingPrintTraining, adminPin, date);
 }
@@ -3978,10 +4049,17 @@ function buildPrintDoc(training, res, opts) {
   var records = res.records || [];
   var dateStr = res.date || todayStr();
 
+  // 연수 대상이 '부서 선택'이면 그 부서만 명단에 남기고 나머지는 숨긴다.
+  // ('전 구성원'이거나 대상 부서가 비어 있으면 전체 부서 그대로 사용)
+  var restrictDepts = (training.targetType === 'dept' && Array.isArray(training.targetDepts) && training.targetDepts.length)
+    ? training.targetDepts : null;
+  var printDeptOrder = restrictDepts ? deptOrder.filter(function(d) { return restrictDepts.indexOf(d) > -1; }) : deptOrder;
+
   // 서명 기록 매칭용 인덱스 (부서+이름 우선, 이름 단독은 보조 수단)
   // 이름 단독 매칭은 부서명이 나중에 변경돼도(rename_dept) 예전 기록을 찾아주기 위한
   // 구제책이지만, 동명이인이 있으면 다른 사람의 서명을 잘못 가져올 수 있으므로
-  // 명단 전체에서 그 이름이 유일할 때만 적용한다.
+  // 명단 전체에서 그 이름이 유일할 때만 적용한다. (전체 구성원 기준으로 계산해
+  // 부서 제한과 무관하게 동명이인 판정이 흔들리지 않게 한다)
   var nameCount = {};
   deptOrder.forEach(function(dept) {
     (staffByDept[dept] || []).forEach(function(name) {
@@ -3998,7 +4076,7 @@ function buildPrintDoc(training, res, opts) {
   var entries = [], total = 0, signed = 0;
 
   // 명단 순서대로 전원 표시 (서명자는 이미지, 미서명자는 표시)
-  deptOrder.forEach(function(dept) {
+  printDeptOrder.forEach(function(dept) {
     (staffByDept[dept] || []).forEach(function(name) {
       total++;
       var rec = byKey[dept + '_' + name] || byName[name] || null;
@@ -4007,9 +4085,10 @@ function buildPrintDoc(training, res, opts) {
     });
   });
 
-  // 명단에 없는 서명자도 누락 없이 추가
+  // 명단에 없는 서명자도 누락 없이 추가 (단, 부서 제한이 있으면 대상 부서 밖 서명자는 계속 숨김)
   records.forEach(function(r) {
     if (!r._used) {
+      if (restrictDepts && restrictDepts.indexOf(r.department) === -1) return;
       total++; signed++;
       entries.push({ dept: r.department, name: r.name, rec: r });
     }
