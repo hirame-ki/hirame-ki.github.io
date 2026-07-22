@@ -358,6 +358,21 @@
   .why.lex{background:#f4e8dd;color:#8a5a2b}
   .why.emb{background:var(--brand-soft);color:var(--brand-deep)}
   .why.both{background:var(--warn-soft);color:#8a4231}
+  /* 학생별로 묶은 확인 결과 표 */
+  .stu-table .stu-grp>td{background:var(--bg-sunken);border-top:2px solid var(--line);border-bottom:0}
+  .stu-table .stu-grp:first-child>td{border-top:0}
+  .stu-table .stu-grp .stu-name{font-weight:800;font-size:.9rem}
+  .stu-table .stu-grp .grp-meta{color:var(--muted);font-size:.8rem;font-weight:500;text-align:left}
+  .stu-table .stu-pair td{border-bottom:1px solid var(--line-soft)}
+  .stu-table .stu-pair .pair-cell{padding-left:26px;position:relative}
+  .stu-table .stu-pair .pair-cell::before{content:"└";position:absolute;left:9px;color:var(--muted);opacity:.7}
+  .clean-fold{margin-top:14px;border:1px solid var(--line);border-radius:10px;background:var(--bg-sunken);padding:2px 14px}
+  .clean-fold>summary{cursor:pointer;font-weight:700;font-size:.85rem;color:var(--ink-soft);padding:10px 2px;list-style:none}
+  .clean-fold>summary::-webkit-details-marker{display:none}
+  .clean-fold>summary::before{content:"▸  ";color:var(--muted)}
+  .clean-fold[open]>summary::before{content:"▾  "}
+  .clean-fold table{margin:2px 0 12px}
+  @media print{ .clean-fold[open]>summary::before{content:""} }
   .empty{color:var(--muted);font-size:.86rem;padding:22px 0;text-align:center}
 
   .compare{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -819,10 +834,10 @@
 
       <h4><span class="k">5</span>결과 살펴보기</h4>
       <ul>
-        <li><b>확인 필요 쌍</b> 표에서 겹치는 학생 조합을 높은 순으로 봅니다.</li>
-        <li>표의 줄이나 히트맵 칸을 <b>클릭</b>하면 두 기록이 나란히 열립니다.
+        <li><b>확인 결과</b> 표는 <b>학생별로 묶여</b> 있습니다. 각 학생 아래에 기준을 넘긴 상대와 걸린 쌍 수가 함께 나오고, 걸린 학생이 위험한 순으로 정렬됩니다.</li>
+        <li>학생 줄이나 상대 줄, 또는 히트맵 칸을 <b>클릭</b>하면 두 기록이 나란히 열립니다.
             그대로 겹치는 글자는 <b>붉게</b>, 내용이 닮은 문장은 <b>파랗게</b> 칠해집니다.</li>
-        <li><b>학생별 요약</b>에서 학생마다 가장 닮은 상대를 한눈에 볼 수 있습니다.</li>
+        <li>걸린 데 없는 학생은 <b>‘이상 없는 학생’</b>을 펼치면 각자 가장 닮은 상대까지 확인할 수 있습니다.</li>
         <li>겹침 매트릭스 위 <b>[관계망]</b> 탭을 누르면, 확인 필요한 학생끼리 선으로 이어진 <b>관계도</b>로 볼 수 있습니다.
             점을 잡아 끌면 연결된 학생이 따라오고, 인원이 많을수록 <b>서로 닮은 무리</b>를 한눈에 파악하기 좋습니다.</li>
         <li>시각화 오른쪽 <b>해석의 유의점</b>은 "닮음 = 문제"가 아님을 늘 상기시켜 줍니다.</li>
@@ -2148,12 +2163,15 @@ function renderResult(){
   const maxZ = Math.max(...pairs.map(p => p.z));
   const maxLex = Math.max(...pairs.map(p => p.lex));
 
-  // 학생별 요약: 각 학생이 가장 많이 겹치는 상대와 걸린 쌍 수
+  // 학생별로 묶기: 각 학생의 가장 닮은 상대 + 기준을 넘긴(확인 필요) 상대 목록
   const perStudent = rows.map((r, i) => {
     const mine = pairs.filter(p => p.i === i || p.j === i);
     const best = mine.reduce((m, p) => riskRatio(p) > riskRatio(m) ? p : m, mine[0]);
-    return { i, best, flagged: mine.filter(p => riskRatio(p) >= 1).length };
+    const flaggedPairs = mine.filter(p => riskRatio(p) >= 1).sort((a, b) => riskRatio(b) - riskRatio(a));
+    return { i, best, flaggedPairs, flagged: flaggedPairs.length };
   }).sort((a, b) => riskRatio(b.best) - riskRatio(a.best));
+  const flaggedStudents = perStudent.filter(s => s.flagged > 0);
+  const cleanStudents  = perStudent.filter(s => s.flagged === 0);
 
   const sugs = commonPhrases();
 
@@ -2228,60 +2246,71 @@ function renderResult(){
 
     <div class="block">
       <div class="head">
-        <h2>확인 필요 쌍 <span class="sub">표현 유사도 ${state.thrZ.toFixed(1)}z 이상 또는 글자 겹침 ${(state.thrLex*100).toFixed(0)}% 이상</span></h2>
+        <h2>확인 결과 <span class="sub action">학생별로 묶었습니다 · 기준(표현 ${state.thrZ.toFixed(1)}z 또는 글자 겹침 ${(state.thrLex*100).toFixed(0)}%)을 넘긴 상대를 아래에 나열 · 줄을 클릭하면 나란히 비교</span></h2>
         <span class="row no-print" style="gap:8px">
           <button class="btn ghost" id="printBtn">인쇄 / PDF</button>
           <button class="btn ghost" id="csvBtn" ${risky.length?'':'disabled'}>CSV 내보내기</button>
         </span>
       </div>
-      ${risky.length ? `
-      <table>
+      ${flaggedStudents.length ? `
+      <table class="stu-table">
         <thead><tr>
-          <th style="width:40px">#</th><th>학생 A</th><th>학생 B</th>
+          <th>학생 · 닮은 상대</th>
+          <th style="width:74px;text-align:right">걸린 쌍</th>
           <th style="width:74px">근거</th>
           <th style="width:96px;text-align:right">글자 겹침</th>
           <th style="width:96px;text-align:right">표현 유사도</th>
         </tr></thead>
-        <tbody id="riskBody">
-          ${risky.slice(0, 200).map((p, k) => {
-            const [cls, label] = reasonOf(p);
-            return `
-            <tr data-i="${p.i}" data-j="${p.j}">
-              <td class="num">${k + 1}</td>
-              <td>${esc(rows[p.i].label)}${rows[p.i].sub ? ` <span style="color:var(--muted)">${esc(rows[p.i].sub)}</span>` : ''}</td>
-              <td>${esc(rows[p.j].label)}${rows[p.j].sub ? ` <span style="color:var(--muted)">${esc(rows[p.j].sub)}</span>` : ''}</td>
-              <td><span class="why ${cls}">${label}</span></td>
-              <td class="num"><span class="score-chip ${p.lex>=state.thrLex?'hot':'cool'}">${(p.lex*100).toFixed(1)}%</span></td>
-              <td class="num"><span class="score-chip ${p.z>=state.thrZ?'hot':'cool'}">${p.z.toFixed(1)}z</span></td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-      ${risky.length > 200 ? `<p class="hint" style="margin-top:10px">상위 200쌍만 표시했습니다. 민감도를 높여 범위를 좁혀 보세요.</p>` : ''}
-      ` : `<div class="empty">지금 설정에서 걸리는 쌍이 없습니다. 왼쪽 민감도를 낮추면 더 넓게 살펴볼 수 있습니다.</div>`}
-    </div>
-
-    <div class="block">
-      <div class="head"><h2>학생별 요약 <span class="sub action">줄을 클릭하면 그 학생의 가장 닮은 쌍을 엽니다</span></h2></div>
-      <table>
-        <thead><tr>
-          <th>학생</th><th style="width:82px;text-align:right">걸린 쌍</th><th>가장 닮은 상대</th>
-          <th style="width:96px;text-align:right">글자 겹침</th><th style="width:96px;text-align:right">표현 유사도</th>
-        </tr></thead>
         <tbody id="stuBody">
-          ${perStudent.map(s => {
-            const other = s.best.i === s.i ? s.best.j : s.best.i;
-            return `
-            <tr data-i="${s.best.i}" data-j="${s.best.j}">
-              <td>${esc(rows[s.i].label)}${rows[s.i].sub ? ` <span style="color:var(--muted)">${esc(rows[s.i].sub)}</span>` : ''}</td>
-              <td class="num">${s.flagged ? `<span class="score-chip hot">${s.flagged}</span>` : '<span style="color:var(--muted)">0</span>'}</td>
-              <td>${esc(rows[other].label)}${rows[other].sub ? ` <span style="color:var(--muted)">${esc(rows[other].sub)}</span>` : ''}</td>
-              <td class="num"><span class="score-chip ${s.best.lex>=state.thrLex?'hot':'cool'}">${(s.best.lex*100).toFixed(1)}%</span></td>
-              <td class="num"><span class="score-chip ${s.best.z>=state.thrZ?'hot':'cool'}">${s.best.z.toFixed(1)}z</span></td>
+          ${flaggedStudents.map(s => {
+            const topOther = s.best.i === s.i ? s.best.j : s.best.i;
+            const header = `
+            <tr class="stu-grp" data-i="${s.best.i}" data-j="${s.best.j}">
+              <td><span class="stu-name">${esc(rows[s.i].label)}</span>${rows[s.i].sub ? ` <span style="color:var(--muted)">${esc(rows[s.i].sub)}</span>` : ''}</td>
+              <td class="num"><span class="score-chip hot">${s.flagged}</span></td>
+              <td colspan="3" class="grp-meta">가장 닮음 · ${esc(rows[topOther].label)}</td>
             </tr>`;
+            const partners = s.flaggedPairs.map(p => {
+              const other = p.i === s.i ? p.j : p.i;
+              const [cls, label] = reasonOf(p);
+              return `
+              <tr class="stu-pair" data-i="${p.i}" data-j="${p.j}">
+                <td class="pair-cell">${esc(rows[other].label)}${rows[other].sub ? ` <span style="color:var(--muted)">${esc(rows[other].sub)}</span>` : ''}</td>
+                <td></td>
+                <td><span class="why ${cls}">${label}</span></td>
+                <td class="num"><span class="score-chip ${p.lex>=state.thrLex?'hot':'cool'}">${(p.lex*100).toFixed(1)}%</span></td>
+                <td class="num"><span class="score-chip ${p.z>=state.thrZ?'hot':'cool'}">${p.z.toFixed(1)}z</span></td>
+              </tr>`;
+            }).join('');
+            return header + partners;
           }).join('')}
         </tbody>
       </table>
+      ` : `<div class="empty">지금 설정에서 걸리는 학생이 없습니다. 왼쪽 민감도를 낮추면 더 넓게 살펴볼 수 있습니다.</div>`}
+
+      ${cleanStudents.length ? `
+      <details class="clean-fold">
+        <summary>이상 없는 학생 ${cleanStudents.length}명 — 펼쳐서 각자 가장 닮은 상대 보기</summary>
+        <table class="clean-table">
+          <thead><tr>
+            <th>학생</th><th>가장 닮은 상대</th>
+            <th style="width:96px;text-align:right">글자 겹침</th>
+            <th style="width:96px;text-align:right">표현 유사도</th>
+          </tr></thead>
+          <tbody id="cleanBody">
+            ${cleanStudents.map(s => {
+              const other = s.best.i === s.i ? s.best.j : s.best.i;
+              return `
+              <tr data-i="${s.best.i}" data-j="${s.best.j}">
+                <td>${esc(rows[s.i].label)}${rows[s.i].sub ? ` <span style="color:var(--muted)">${esc(rows[s.i].sub)}</span>` : ''}</td>
+                <td>${esc(rows[other].label)}${rows[other].sub ? ` <span style="color:var(--muted)">${esc(rows[other].sub)}</span>` : ''}</td>
+                <td class="num"><span class="score-chip cool">${(s.best.lex*100).toFixed(1)}%</span></td>
+                <td class="num"><span class="score-chip cool">${s.best.z.toFixed(1)}z</span></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </details>` : ''}
     </div>
 
     <div class="block" id="detailBlock">
@@ -2290,8 +2319,11 @@ function renderResult(){
     </div>`;
 
   drawHeat();
-  box.querySelectorAll('#riskBody tr, #stuBody tr').forEach(tr =>
+  box.querySelectorAll('#stuBody tr[data-i], #cleanBody tr[data-i]').forEach(tr =>
     tr.addEventListener('click', () => select(+tr.dataset.i, +tr.dataset.j)));
+  // 인쇄 시 '이상 없는 학생' 접힘도 펼쳐서 함께 나오게 (렌더마다 덮어써 중복 등록 방지)
+  window.onbeforeprint = () =>
+    document.querySelectorAll('details.clean-fold').forEach(d => d.open = true);
   box.querySelectorAll('.sug').forEach(b => b.addEventListener('click', () => addIgnore(b.dataset.p)));
   $('#csvBtn')?.addEventListener('click', () => exportCsv(risky));
   $('#printBtn')?.addEventListener('click', () => window.print());
@@ -2612,7 +2644,7 @@ function select(i, j, scroll = true){
       ${matches.length > 5 ? `<div class="hint" style="margin-top:6px">상위 5건만 표시</div>` : ''}
     </div>` : ''}`;
 
-  document.querySelectorAll('#riskBody tr').forEach(tr =>
+  document.querySelectorAll('#stuBody tr[data-i], #cleanBody tr[data-i]').forEach(tr =>
     tr.classList.toggle('sel', +tr.dataset.i === i && +tr.dataset.j === j));
   drawHeat();
   // 분석 직후 자동 선택 때는 화면을 움직이지 않는다 (왼쪽 패널이 밀려 올라가는 것을 막기 위해)
