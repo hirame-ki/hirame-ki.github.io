@@ -2246,7 +2246,7 @@ function renderResult(){
 
     <div class="block">
       <div class="head">
-        <h2>확인 결과 <span class="sub action">학생별로 묶었습니다 · 기준(표현 ${state.thrZ.toFixed(1)}z 또는 글자 겹침 ${(state.thrLex*100).toFixed(0)}%)을 넘긴 상대를 아래에 나열 · 줄을 클릭하면 나란히 비교</span></h2>
+        <h2>확인 결과 <span class="sub action">기준(표현 유사도 ${state.thrZ.toFixed(1)}z 또는 글자 겹침 ${(state.thrLex*100).toFixed(0)}%)을 넘긴 상대 · 클릭하면 비교</span></h2>
         <span class="row no-print" style="gap:8px">
           <button class="btn ghost" id="printBtn">인쇄 / PDF</button>
           <button class="btn ghost" id="csvBtn" ${risky.length?'':'disabled'}>CSV 내보내기</button>
