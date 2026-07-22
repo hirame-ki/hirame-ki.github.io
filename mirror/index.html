@@ -465,6 +465,8 @@
   .rec .rtxt mark.mk-applied:hover,.rec .rtxt mark.mk-edited:hover{text-decoration:line-through;text-decoration-color:rgba(47,106,78,.5)}
   .rec .rtxt .mk-removed{cursor:pointer;color:var(--muted);text-decoration:line-through;font-size:.82em;padding:0 4px;border:1px dashed var(--line);border-radius:4px;margin:0 1px}
   .rec .rtxt .mk-input{font:inherit;font-size:.86rem;font-weight:600;border:2px solid var(--brand);border-radius:5px;padding:0 5px;margin:0 1px;background:var(--bg);color:var(--ink);vertical-align:baseline;min-width:44px}
+  /* 문장급 편집: 폭 넓게 · 줄바꿈되어 전체가 보이는 여러 줄 편집창 */
+  .rec .rtxt textarea.mk-area{display:block;width:100%;box-sizing:border-box;margin:5px 0;padding:6px 9px;line-height:1.75;font-weight:500;resize:vertical;overflow:hidden;word-break:break-all;box-shadow:0 2px 10px rgba(0,0,0,.08)}
 
   .flist{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
   .fitem{display:flex;gap:10px;align-items:baseline;font-size:.83rem;padding:5px 0;border-bottom:1px solid var(--line-soft)}
@@ -3001,29 +3003,43 @@ function onMarkClick(idx, mi, el){
   startInlineEdit(el, x, f);                                          // 서술·기재 주의: 직접 수정
 }
 
-// 하이라이트를 인라인 입력창으로 바꿔 그 자리에서 고치게 한다 (빈칸으로 두면 삭제)
+// 하이라이트를 그 자리 편집창으로 바꾼다 (빈칸으로 두면 삭제).
+// 짧은 지적은 한 줄 입력창, 문장급(서술 방식 등)은 폭 넓게 줄바꿈되는 여러 줄 편집창으로 열어
+// 긴 문장이 가로로 잘리지 않고 전체가 보이게 한다.
 function startInlineEdit(markEl, x, f){
   const origSpan = x.r.text.slice(f.s, f.e);
   const cur = f.edited != null ? f.edited : origSpan;
-  const inp = document.createElement('input');
-  inp.type = 'text'; inp.className = 'mk-input'; inp.value = cur;
-  inp.style.width = Math.min(460, Math.max(44, cur.length * 15 + 20)) + 'px';
-  markEl.replaceWith(inp);
-  inp.focus(); inp.select();
+  const long = cur.length > 30;                     // 문장급이면 넓은 편집창
+  const el = document.createElement(long ? 'textarea' : 'input');
+  el.className = 'mk-input' + (long ? ' mk-area' : '');
+  el.value = cur;
+  if (long){
+    el.rows = 1;
+    markEl.replaceWith(el);
+    const grow = () => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; };
+    grow();
+    el.addEventListener('input', grow);             // 내용 길이에 맞춰 높이 자동 조절
+  } else {
+    el.type = 'text';
+    el.style.width = Math.min(460, Math.max(44, cur.length * 15 + 20)) + 'px';
+    markEl.replaceWith(el);
+  }
+  el.focus(); el.select();
   let closed = false;
   const commit = () => {
     if (closed) return; closed = true;
-    const v = inp.value;
+    const v = el.value;
     if (v === '')            { f.removed = true;  delete f.edited; }
     else if (v === origSpan) { f.removed = false; delete f.edited; }  // 원래대로면 편집 해제
     else                     { f.removed = false; f.edited = v; }
     renderLint();
   };
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'Enter'){ e.preventDefault(); commit(); }
+  // Enter = 적용 / Shift+Enter = 줄바꿈(여러 줄 편집창) / Esc = 취소
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); commit(); }
     else if (e.key === 'Escape'){ closed = true; renderLint(); }
   });
-  inp.addEventListener('blur', commit);
+  el.addEventListener('blur', commit);
 }
 
 // 지적별 반영 상태 (아래 목록에 표시)
