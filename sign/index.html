@@ -753,6 +753,11 @@
   }
   .tf-dept-row:last-child { border-bottom: none; }
   .tf-dept-row input { width: 17px; height: 17px; flex-shrink: 0; accent-color: var(--brand); }
+  .tf-person-dept-head {
+    font-size: 12px; font-weight: 800; color: var(--brand);
+    margin: 12px 2px 2px; letter-spacing: -0.01em;
+  }
+  .tf-person-dept-head:first-child { margin-top: 4px; }
 
   /* ── 엑셀 일괄 등록 (구성원 관리) ─────────────────── */
   .xl-drop {
@@ -1474,9 +1479,13 @@
       <select class="adm-input" id="tfTargetType" onchange="onTfTargetTypeChange()">
         <option value="all">전 구성원</option>
         <option value="dept">부서 선택</option>
+        <option value="person">개별 선택</option>
       </select>
       <div id="tfTargetDeptWrap" style="display:none;margin-top:8px">
         <button type="button" class="modal-btn ghost" id="tfTargetDeptBtn" style="margin:0" onclick="openTfDeptPicker()">부서 선택하기</button>
+      </div>
+      <div id="tfTargetPersonWrap" style="display:none;margin-top:8px">
+        <button type="button" class="modal-btn ghost" id="tfTargetPersonBtn" style="margin:0" onclick="openTfPersonPicker()">개인 선택하기</button>
       </div>
     </div>
     <div class="adm-field">
@@ -1512,6 +1521,22 @@
     <div class="adm-err" id="tfDeptErr"></div>
     <button class="modal-btn" onclick="confirmTfDeptPicker()">확인</button>
     <button class="modal-btn ghost" onclick="document.getElementById('modalTfDeptPicker').classList.remove('show')">취소</button>
+  </div>
+</div>
+
+<!-- 관리자: 연수 대상 개인 선택 -->
+<div class="modal-overlay" id="modalTfPersonPicker">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-pen"/></svg></div>
+    <div class="modal-title">대상 인원 선택</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button type="button" class="modal-btn ghost" style="margin:0;flex:1" onclick="setAllTfPersonCheckboxes(true)">전체 선택</button>
+      <button type="button" class="modal-btn ghost" style="margin:0;flex:1" onclick="setAllTfPersonCheckboxes(false)">전체 해제</button>
+    </div>
+    <div id="tfPersonCheckList" class="tf-dept-list"></div>
+    <div class="adm-err" id="tfPersonErr"></div>
+    <button class="modal-btn" onclick="confirmTfPersonPicker()">확인</button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalTfPersonPicker').classList.remove('show')">취소</button>
   </div>
 </div>
 
@@ -1917,8 +1942,9 @@ function showAdminModal() {
       adminTrainings = trainings.map(function(t, i) {
         return { id: i + 1, active: true, title: t.title, content: t.content || '', date: todayStr(),
                  startTime: t.startTime || null, endTime: t.endTime || null,
-                 targetType: t.targetType === 'dept' ? 'dept' : 'all',
-                 targetDepts: Array.isArray(t.targetDepts) ? t.targetDepts : [] };
+                 targetType: (t.targetType === 'dept' || t.targetType === 'person') ? t.targetType : 'all',
+                 targetDepts: Array.isArray(t.targetDepts) ? t.targetDepts : [],
+                 targetPersons: Array.isArray(t.targetPersons) ? t.targetPersons : [] };
       });
     }
     if (adminStaff.length === 0) {
@@ -2100,22 +2126,38 @@ function renderAdminList() {
   box.innerHTML = html;
 }
 
-/* 연수 대상: 전 구성원(기본) 또는 부서 선택. 선택한 부서 목록은
-   tfTargetType/tfTargetDepts에 담아뒀다가 저장 시 함께 전송하고,
-   연수 카드에는 부서명(전 구성원이면 빈 문자열) + 시간을 합쳐서 보여준다. */
-var tfTargetType     = 'all';   // 'all' | 'dept'
-var tfTargetDepts    = [];      // 부서 선택 시 대상 부서명 목록
-var tfDeptPickerTemp = [];      // 부서 선택 모달에서 확인 전까지의 임시 선택값
+/* 연수 대상: 전 구성원(기본) / 부서 선택 / 개별 선택. 선택 값은
+   tfTargetType + tfTargetDepts(부서 선택 시) 또는 tfTargetPersons(개별 선택 시)에
+   담아뒀다가 저장 시 함께 전송하고, 연수 카드에는 요약 문구 + 시간을 합쳐서 보여준다. */
+var tfTargetType       = 'all';   // 'all' | 'dept' | 'person'
+var tfTargetDepts      = [];      // 부서 선택 시 대상 부서명 목록
+var tfTargetPersons    = [];      // 개별 선택 시 대상 인원 목록 [{dept, name}]
+var tfDeptPickerTemp   = [];      // 부서 선택 모달에서 확인 전까지의 임시 선택값
+var tfPersonPickerTemp = [];      // 개별 선택 모달에서 확인 전까지의 임시 선택값
+
+function personListIndex(list, dept, name) {
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].dept === dept && list[i].name === name) return i;
+  }
+  return -1;
+}
 
 function onTfTargetTypeChange() {
   tfTargetType = document.getElementById('tfTargetType').value;
   document.getElementById('tfTargetDeptWrap').style.display = tfTargetType === 'dept' ? 'block' : 'none';
+  document.getElementById('tfTargetPersonWrap').style.display = tfTargetType === 'person' ? 'block' : 'none';
   renderTfTargetDeptBtn();
+  renderTfTargetPersonBtn();
 }
 
 function renderTfTargetDeptBtn() {
   document.getElementById('tfTargetDeptBtn').textContent =
     tfTargetDepts.length ? ('부서 선택 (' + tfTargetDepts.length + '개 선택됨)') : '부서 선택하기';
+}
+
+function renderTfTargetPersonBtn() {
+  document.getElementById('tfTargetPersonBtn').textContent =
+    tfTargetPersons.length ? ('개인 선택 (' + tfTargetPersons.length + '명 선택됨)') : '개인 선택하기';
 }
 
 function renderTfDeptCheckList() {
@@ -2165,9 +2207,72 @@ function confirmTfDeptPicker() {
   document.getElementById('modalTfDeptPicker').classList.remove('show');
 }
 
-/* 대상(전 구성원/부서 목록) + 시간 → 연수 카드에 보여줄 문구 하나로 합침 */
-function buildTrainingContent(targetType, targetDepts, ts, te) {
-  var content = (targetType === 'dept' && targetDepts.length) ? targetDepts.join(', ') : '';
+function renderTfPersonCheckList() {
+  var box = document.getElementById('tfPersonCheckList');
+  if (!deptOrder.length) {
+    box.innerHTML = '<div class="adm-empty">등록된 구성원이 없어요.<br>먼저 구성원 관리에서 인원을 등록해 주세요.</div>';
+    return;
+  }
+  var html = '';
+  deptOrder.forEach(function(dept) {
+    var names = staffByDept[dept] || [];
+    if (!names.length) return;
+    html += '<div class="tf-person-dept-head">' + esc(dept) + '</div>';
+    names.forEach(function(name) {
+      var checked = personListIndex(tfPersonPickerTemp, dept, name) > -1 ? ' checked' : '';
+      html += '<label class="tf-dept-row">' +
+        '<input type="checkbox" data-dept="' + esc(dept) + '" data-name="' + esc(name) + '"' + checked +
+          ' onchange="onTfPersonCheckChange(this)">' +
+        '<span>' + esc(name) + '</span>' +
+      '</label>';
+    });
+  });
+  box.innerHTML = html;
+}
+
+function onTfPersonCheckChange(el) {
+  var dept = el.dataset.dept, name = el.dataset.name;
+  var i = personListIndex(tfPersonPickerTemp, dept, name);
+  if (el.checked) { if (i === -1) tfPersonPickerTemp.push({ dept: dept, name: name }); }
+  else if (i > -1) { tfPersonPickerTemp.splice(i, 1); }
+}
+
+function setAllTfPersonCheckboxes(on) {
+  tfPersonPickerTemp = [];
+  if (on) {
+    deptOrder.forEach(function(dept) {
+      (staffByDept[dept] || []).forEach(function(name) {
+        tfPersonPickerTemp.push({ dept: dept, name: name });
+      });
+    });
+  }
+  renderTfPersonCheckList();
+}
+
+function openTfPersonPicker() {
+  tfPersonPickerTemp = tfTargetPersons.slice();
+  renderTfPersonCheckList();
+  document.getElementById('tfPersonErr').classList.remove('show');
+  document.getElementById('modalTfPersonPicker').classList.add('show');
+}
+
+function confirmTfPersonPicker() {
+  if (!tfPersonPickerTemp.length) {
+    var err = document.getElementById('tfPersonErr');
+    err.textContent = '한 명 이상 선택해 주세요.';
+    err.classList.add('show');
+    return;
+  }
+  tfTargetPersons = tfPersonPickerTemp.slice();
+  renderTfTargetPersonBtn();
+  document.getElementById('modalTfPersonPicker').classList.remove('show');
+}
+
+/* 대상(전 구성원/부서 목록/개별 인원) + 시간 → 연수 카드에 보여줄 문구 하나로 합침 */
+function buildTrainingContent(targetType, targetDepts, targetPersons, ts, te) {
+  var content = '';
+  if (targetType === 'dept' && targetDepts.length) content = targetDepts.join(', ');
+  else if (targetType === 'person' && targetPersons.length) content = targetPersons.length + '명 선택';
   if (ts) content += (content ? ' · ' : '') + ts + (te ? ' ~ ' + te : '');
   return content;
 }
@@ -2179,11 +2284,15 @@ function openTrainingForm(idx) {
   document.getElementById('tfTitle').textContent = isEdit ? '연수 수정' : '새 연수 추가';
   document.getElementById('tfName').value = isEdit ? adminTrainings[idx].title : '';
 
-  tfTargetType  = (isEdit && adminTrainings[idx].targetType === 'dept') ? 'dept' : 'all';
-  tfTargetDepts = (isEdit && Array.isArray(adminTrainings[idx].targetDepts)) ? adminTrainings[idx].targetDepts.slice() : [];
+  tfTargetType    = (isEdit && (adminTrainings[idx].targetType === 'dept' || adminTrainings[idx].targetType === 'person'))
+    ? adminTrainings[idx].targetType : 'all';
+  tfTargetDepts   = (isEdit && Array.isArray(adminTrainings[idx].targetDepts)) ? adminTrainings[idx].targetDepts.slice() : [];
+  tfTargetPersons = (isEdit && Array.isArray(adminTrainings[idx].targetPersons)) ? adminTrainings[idx].targetPersons.slice() : [];
   document.getElementById('tfTargetType').value = tfTargetType;
   document.getElementById('tfTargetDeptWrap').style.display = tfTargetType === 'dept' ? 'block' : 'none';
+  document.getElementById('tfTargetPersonWrap').style.display = tfTargetType === 'person' ? 'block' : 'none';
   renderTfTargetDeptBtn();
+  renderTfTargetPersonBtn();
   document.getElementById('tfTimeStart').value = isEdit ? (adminTrainings[idx].startTime || '') : '';
   document.getElementById('tfTimeEnd').value   = isEdit ? (adminTrainings[idx].endTime || '') : '';
 
@@ -2231,7 +2340,8 @@ function submitTrainingForm() {
   if (te && !ts)          { showTfErr('시작 시간을 선택해 주세요.'); return; }
   if (ts && te && te <= ts) { showTfErr('종료 시간이 시작 시간보다 빨라요.'); return; }
   if (tfTargetType === 'dept' && !tfTargetDepts.length) { showTfErr('연수 대상 부서를 선택해 주세요.'); return; }
-  var content = buildTrainingContent(tfTargetType, tfTargetDepts, ts, te);
+  if (tfTargetType === 'person' && !tfTargetPersons.length) { showTfErr('연수 대상 인원을 선택해 주세요.'); return; }
+  var content = buildTrainingContent(tfTargetType, tfTargetDepts, tfTargetPersons, ts, te);
 
   var btn = document.getElementById('tfSubmitBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
@@ -2249,6 +2359,7 @@ function submitTrainingForm() {
           adminTrainings[i].endTime = te || null;
           adminTrainings[i].targetType = tfTargetType;
           adminTrainings[i].targetDepts = tfTargetDepts.slice();
+          adminTrainings[i].targetPersons = tfTargetPersons.slice();
         }
         tfDone();
       } else {
@@ -2257,7 +2368,7 @@ function submitTrainingForm() {
         adminTrainings.push({
           id: maxId + 1, active: true, title: title, content: content, date: date,
           startTime: ts || null, endTime: te || null,
-          targetType: tfTargetType, targetDepts: tfTargetDepts.slice()
+          targetType: tfTargetType, targetDepts: tfTargetDepts.slice(), targetPersons: tfTargetPersons.slice()
         });
         tfDone();
       }
@@ -2276,8 +2387,9 @@ function submitTrainingForm() {
     p_active  : idx > -1 ? adminTrainings[idx].active : true,
     p_start_time : ts || null,
     p_end_time   : te || null,
-    p_target_type  : tfTargetType,
-    p_target_depts : tfTargetType === 'dept' ? tfTargetDepts : []
+    p_target_type    : tfTargetType,
+    p_target_depts   : tfTargetType === 'dept' ? tfTargetDepts : [],
+    p_target_persons : tfTargetType === 'person' ? tfTargetPersons : []
   }).then(function(res) {
     if (res.success) { adminTrainings = res.trainings || adminTrainings; tfDone(); }
     else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showTfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
@@ -2302,8 +2414,9 @@ function toggleTraining(i) {
     p_active  : next,
     p_start_time : t.startTime || null,
     p_end_time   : t.endTime || null,
-    p_target_type  : t.targetType === 'dept' ? 'dept' : 'all',
-    p_target_depts : Array.isArray(t.targetDepts) ? t.targetDepts : []
+    p_target_type    : (t.targetType === 'dept' || t.targetType === 'person') ? t.targetType : 'all',
+    p_target_depts   : Array.isArray(t.targetDepts) ? t.targetDepts : [],
+    p_target_persons : Array.isArray(t.targetPersons) ? t.targetPersons : []
   }).then(function(res) {
     if (res.success) { adminTrainings = res.trainings || adminTrainings; renderAdminList(); }
     else { t.active = !next; renderAdminList(); }
@@ -3137,7 +3250,7 @@ function refreshDemoFromAdmin() {
     .filter(function(t) { return t.active && (t.date === today || t.date === '매일'); })
     .map(function(t) {
       return { title: t.title, content: t.content, startTime: t.startTime, endTime: t.endTime,
-               targetType: t.targetType, targetDepts: t.targetDepts };
+               targetType: t.targetType, targetDepts: t.targetDepts, targetPersons: t.targetPersons };
     });
   renderTrainings(trainings);
 }
@@ -3907,7 +4020,7 @@ function printAdminRecords() {
 
   var matched = adminTrainings.filter(function(t) { return t.title === title; })[0];
   pendingPrintTraining = matched
-    ? { title: title, targetType: matched.targetType, targetDepts: matched.targetDepts }
+    ? { title: title, targetType: matched.targetType, targetDepts: matched.targetDepts, targetPersons: matched.targetPersons }
     : { title: title };
   pendingPrintDate = date;
   fetchRecordsAndBuild(pendingPrintTraining, adminPin, date);
@@ -4049,17 +4162,23 @@ function buildPrintDoc(training, res, opts) {
   var records = res.records || [];
   var dateStr = res.date || todayStr();
 
-  // 연수 대상이 '부서 선택'이면 그 부서만 명단에 남기고 나머지는 숨긴다.
-  // ('전 구성원'이거나 대상 부서가 비어 있으면 전체 부서 그대로 사용)
-  var restrictDepts = (training.targetType === 'dept' && Array.isArray(training.targetDepts) && training.targetDepts.length)
+  // 연수 대상이 '부서 선택'/'개별 선택'이면 그 부서·인원만 명단에 남기고 나머지는 숨긴다.
+  // ('전 구성원'이거나 대상 목록이 비어 있으면 전체 구성원 그대로 사용)
+  var targetPersons = (training.targetType === 'person' && Array.isArray(training.targetPersons) && training.targetPersons.length)
+    ? training.targetPersons : null;
+  var restrictDepts = (!targetPersons && training.targetType === 'dept' && Array.isArray(training.targetDepts) && training.targetDepts.length)
     ? training.targetDepts : null;
-  var printDeptOrder = restrictDepts ? deptOrder.filter(function(d) { return restrictDepts.indexOf(d) > -1; }) : deptOrder;
+  function inPrintTarget(dept, name) {
+    if (targetPersons) return personListIndex(targetPersons, dept, name) > -1;
+    if (restrictDepts) return restrictDepts.indexOf(dept) > -1;
+    return true;
+  }
 
   // 서명 기록 매칭용 인덱스 (부서+이름 우선, 이름 단독은 보조 수단)
   // 이름 단독 매칭은 부서명이 나중에 변경돼도(rename_dept) 예전 기록을 찾아주기 위한
   // 구제책이지만, 동명이인이 있으면 다른 사람의 서명을 잘못 가져올 수 있으므로
   // 명단 전체에서 그 이름이 유일할 때만 적용한다. (전체 구성원 기준으로 계산해
-  // 부서 제한과 무관하게 동명이인 판정이 흔들리지 않게 한다)
+  // 대상 제한과 무관하게 동명이인 판정이 흔들리지 않게 한다)
   var nameCount = {};
   deptOrder.forEach(function(dept) {
     (staffByDept[dept] || []).forEach(function(name) {
@@ -4075,9 +4194,10 @@ function buildPrintDoc(training, res, opts) {
 
   var entries = [], total = 0, signed = 0;
 
-  // 명단 순서대로 전원 표시 (서명자는 이미지, 미서명자는 표시)
-  printDeptOrder.forEach(function(dept) {
+  // 명단 순서대로 대상자만 표시 (서명자는 이미지, 미서명자는 표시)
+  deptOrder.forEach(function(dept) {
     (staffByDept[dept] || []).forEach(function(name) {
+      if (!inPrintTarget(dept, name)) return;
       total++;
       var rec = byKey[dept + '_' + name] || byName[name] || null;
       if (rec) { rec._used = true; signed++; }
@@ -4085,10 +4205,10 @@ function buildPrintDoc(training, res, opts) {
     });
   });
 
-  // 명단에 없는 서명자도 누락 없이 추가 (단, 부서 제한이 있으면 대상 부서 밖 서명자는 계속 숨김)
+  // 명단에 없는 서명자도 누락 없이 추가 (단, 대상 제한이 있으면 대상 밖 서명자는 계속 숨김)
   records.forEach(function(r) {
     if (!r._used) {
-      if (restrictDepts && restrictDepts.indexOf(r.department) === -1) return;
+      if (!inPrintTarget(r.department, r.name)) return;
       total++; signed++;
       entries.push({ dept: r.department, name: r.name, rec: r });
     }

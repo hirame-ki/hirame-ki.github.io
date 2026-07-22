@@ -63,11 +63,13 @@ update trainings set sort_order = id where sort_order is null;
 alter table trainings add column if not exists start_time time;
 alter table trainings add column if not exists end_time   time;
 
--- 연수 대상: 'all'(전 구성원, 기본값) 또는 'dept'(부서 선택).
--- target_depts는 target_type='dept'일 때만 의미가 있으며, 출력 용지(서명등록부)에
--- 표시할 부서명 목록이다. 'all'이거나 목록이 비어있으면 전 구성원을 출력한다.
+-- 연수 대상: 'all'(전 구성원, 기본값) / 'dept'(부서 선택) / 'person'(개별 선택).
+-- target_depts는 target_type='dept'일 때, target_persons([{dept,name}, ...])는
+-- target_type='person'일 때만 의미가 있으며, 출력 용지(서명등록부)에 표시할 대상을
+-- 정한다. 'all'이거나 해당 목록이 비어있으면 전 구성원을 출력한다.
 alter table trainings add column if not exists target_type text not null default 'all';
 alter table trainings add column if not exists target_depts jsonb not null default '[]'::jsonb;
+alter table trainings add column if not exists target_persons jsonb not null default '[]'::jsonb;
 
 create table if not exists signatures (
   id             bigserial primary key,
@@ -175,7 +177,7 @@ begin
       select coalesce(jsonb_agg(jsonb_build_object(
         'title', title, 'content', content,
         'startTime', to_char(start_time, 'HH24:MI'), 'endTime', to_char(end_time, 'HH24:MI'),
-        'targetType', target_type, 'targetDepts', target_depts
+        'targetType', target_type, 'targetDepts', target_depts, 'targetPersons', target_persons
       ) order by sort_order, id), '[]'::jsonb)
       from trainings
       where org_key = p_org_key and active
@@ -440,7 +442,7 @@ as $$
   select coalesce(jsonb_agg(jsonb_build_object(
     'id', id, 'active', active, 'title', title, 'content', content, 'date', training_date,
     'startTime', to_char(start_time, 'HH24:MI'), 'endTime', to_char(end_time, 'HH24:MI'),
-    'targetType', target_type, 'targetDepts', target_depts
+    'targetType', target_type, 'targetDepts', target_depts, 'targetPersons', target_persons
   ) order by sort_order, id), '[]'::jsonb)
   from trainings where org_key = p_org_key;
 $$;
@@ -486,16 +488,20 @@ $$;
 -- 재배포 시 시그니처 충돌(오버로드 모호성) 방지: 구버전 함수 명시적 제거
 drop function if exists save_training(text, text, bigint, text, text, text, boolean);
 drop function if exists save_training(text, text, bigint, text, text, text, boolean, text, text);
+drop function if exists save_training(text, text, bigint, text, text, text, boolean, text, text, text, jsonb);
 
 -- 연수 추가/수정 (id가 NULL이면 추가, 있으면 수정)
 -- p_start_time/p_end_time: 'HH:MM' 형식, 둘 다 비우면 하루 종일 서명 가능
--- p_target_type: 'all'(전 구성원, 기본값) 또는 'dept'(부서 선택)
--- p_target_depts: p_target_type='dept'일 때 대상 부서명 배열(jsonb), 그 외에는 무시하고 빈 배열로 저장
+-- p_target_type: 'all'(전 구성원, 기본값) / 'dept'(부서 선택) / 'person'(개별 선택)
+-- p_target_depts: p_target_type='dept'일 때 대상 부서명 배열(jsonb)
+-- p_target_persons: p_target_type='person'일 때 대상 인원 배열(jsonb, [{"dept":..,"name":..}, ...])
+-- 그 외 타입일 때는 두 배열 다 무시하고 빈 배열로 저장
 create or replace function save_training(
   p_org_key text, p_pin text, p_id bigint,
   p_title text, p_content text, p_date text, p_active boolean,
   p_start_time text default null, p_end_time text default null,
-  p_target_type text default 'all', p_target_depts jsonb default '[]'::jsonb
+  p_target_type text default 'all', p_target_depts jsonb default '[]'::jsonb,
+  p_target_persons jsonb default '[]'::jsonb
 )
 returns jsonb
 language plpgsql
@@ -505,8 +511,9 @@ as $$
 declare
   v_start time;
   v_end   time;
-  v_target_type text;
-  v_target_depts jsonb;
+  v_target_type    text;
+  v_target_depts   jsonb;
+  v_target_persons jsonb;
 begin
   begin
     perform _check_admin_pin(p_org_key, p_pin);
@@ -534,18 +541,23 @@ begin
     return jsonb_build_object('success', false, 'message', '종료 시간이 시작 시간보다 빨라요.');
   end if;
 
-  v_target_type := case when p_target_type = 'dept' then 'dept' else 'all' end;
+  v_target_type := case when p_target_type in ('dept', 'person') then p_target_type else 'all' end;
   v_target_depts := case when v_target_type = 'dept' and jsonb_typeof(p_target_depts) = 'array'
                           then p_target_depts else '[]'::jsonb end;
+  v_target_persons := case when v_target_type = 'person' and jsonb_typeof(p_target_persons) = 'array'
+                            then p_target_persons else '[]'::jsonb end;
   if v_target_type = 'dept' and jsonb_array_length(v_target_depts) = 0 then
     return jsonb_build_object('success', false, 'message', '연수 대상 부서를 선택해 주세요.');
   end if;
+  if v_target_type = 'person' and jsonb_array_length(v_target_persons) = 0 then
+    return jsonb_build_object('success', false, 'message', '연수 대상 인원을 선택해 주세요.');
+  end if;
 
   if p_id is null then
-    insert into trainings (org_key, active, title, content, training_date, start_time, end_time, target_type, target_depts, sort_order)
+    insert into trainings (org_key, active, title, content, training_date, start_time, end_time, target_type, target_depts, target_persons, sort_order)
     values (
       p_org_key, coalesce(p_active, true), p_title, coalesce(p_content,''), p_date, v_start, v_end,
-      v_target_type, v_target_depts,
+      v_target_type, v_target_depts, v_target_persons,
       coalesce((select max(sort_order) from trainings where org_key = p_org_key), 0) + 1
     );
   else
@@ -556,6 +568,7 @@ begin
       training_date = p_date,
       target_type = v_target_type,
       target_depts = v_target_depts,
+      target_persons = v_target_persons,
       start_time = v_start,
       end_time = v_end
     where id = p_id and org_key = p_org_key;
@@ -824,7 +837,7 @@ revoke execute on function
   _qr_token_for(text, text),
   get_share_token(text, text),
   get_admin_data(text, text),
-  save_training(text, text, bigint, text, text, text, boolean, text, text, text, jsonb),
+  save_training(text, text, bigint, text, text, text, boolean, text, text, text, jsonb, jsonb),
   delete_training(text, text, bigint),
   move_training(text, text, bigint, text),
   save_staff(text, text, bigint, text, text),
@@ -846,7 +859,7 @@ grant execute on function
   change_admin_pin(text, text, text),
   get_share_token(text, text),
   get_admin_data(text, text),
-  save_training(text, text, bigint, text, text, text, boolean, text, text, text, jsonb),
+  save_training(text, text, bigint, text, text, text, boolean, text, text, text, jsonb, jsonb),
   delete_training(text, text, bigint),
   move_training(text, text, bigint, text),
   save_staff(text, text, bigint, text, text),

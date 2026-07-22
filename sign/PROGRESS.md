@@ -2,31 +2,35 @@
 
 마지막 업데이트: 2026-07-22
 
-## 2026-07-22 세션 작업 내역 (연수 대상 = 전 구성원/부서 선택, 서명등록부 출력 필터링)
+## 2026-07-22 세션 작업 내역 (연수 대상 = 전 구성원/부서 선택/개별 선택, 서명등록부 출력 필터링)
 
 - **배경**: 기존 "연수 대상" 필드(희망자/자율참여/필수참여/직접입력)는 화면에 보여주기만
   하는 문구였고 실제 동작에는 영향이 없었음. 사용자가 "연수별로 대상자만 서명등록부(출력
-  용지)에 나오게 해달라"고 요청 — **전 구성원(기본) / 부서 선택** 두 가지로 단순화하고,
-  부서 선택 시 그 부서 소속 인원만 출력되고 나머지는 숨기도록 실제 필터로 만듦. 부서
-  선택 모달은 여러 부서를 체크박스로 고를 수 있고 전체선택/전체해제 버튼 제공.
+  용지)에 나오게 해달라"고 요청 — **전 구성원(기본) / 부서 선택 / 개별 선택** 세 가지로
+  정리하고, 부서·개별 선택 시 그 대상만 출력되고 나머지는 숨기도록 실제 필터로 만듦.
+  부서 선택 모달은 부서 체크박스, 개별 선택 모달은 부서별로 묶은 전체 구성원 명단에서
+  사람 단위 체크박스로 고를 수 있고, 둘 다 전체선택/전체해제 버튼 제공.
 - **DB (`supabase-schema.sql`)**: `trainings`에 `target_type text default 'all'`,
-  `target_depts jsonb default '[]'` 컬럼 추가. `save_training()`에 `p_target_type`,
-  `p_target_depts` 파라미터 추가(시그니처 변경 → `drop function if exists` 먼저 실행).
-  `get_page_data`/`_trainings_json`에도 `targetType`/`targetDepts` 필드 노출.
-  grant/revoke 목록의 `save_training(...)` 시그니처도 갱신.
-- **프런트 (`index.html`)**: 연수 폼의 "연수 대상" 드롭다운을 전 구성원/부서 선택 셀렉트로
-  교체하고, 부서 선택 시 여는 새 모달(`modalTfDeptPicker`)에서 `deptOrder` 기준 체크박스
-  목록 + 전체선택/해제 버튼 제공. `buildPrintDoc()`에서 `training.targetType==='dept'`이면
-  `deptOrder`를 대상 부서로 필터링한 뒤 명단을 구성(서명 기록 매칭용 동명이인 판정은 전체
-  구성원 기준 유지, 대상 밖 부서 사람이 서명해도 출력에는 표시 안 함).
-  `toggleTraining()`이 `p_start_time`/`p_end_time`/`p_target_type`/`p_target_depts`를
-  누락한 채 `save_training`을 호출하던 기존 버그(활성/비활성 전환 시 시간·대상이 초기화될
-  수 있었음)도 같이 고쳐서 전체 필드를 항상 함께 전송하도록 함.
+  `target_depts jsonb default '[]'`, `target_persons jsonb default '[]'`(`[{dept,name}]`)
+  컬럼 추가. `save_training()`에 `p_target_type`/`p_target_depts`/`p_target_persons`
+  파라미터 추가(시그니처 변경 → `drop function if exists` 먼저 실행, 대상 타입에 따라
+  값 검증). `get_page_data`/`_trainings_json`에도 세 필드 노출. grant/revoke 목록의
+  `save_training(...)` 시그니처도 갱신.
+- **프런트 (`index.html`)**: 연수 폼의 "연수 대상" 드롭다운에 세 번째 옵션 추가, 개별
+  선택 시 여는 새 모달(`modalTfPersonPicker`)에서 `deptOrder`/`staffByDept` 기준 부서별
+  그룹 체크박스 목록 + 전체선택/해제 버튼 제공(부서 선택 모달 `modalTfDeptPicker`와 같은
+  패턴). `buildPrintDoc()`의 대상 판정을 `inPrintTarget(dept,name)` 헬퍼로 통합해
+  person/dept/all 세 가지를 한 곳에서 처리(서명 기록 매칭용 동명이인 판정은 전체 구성원
+  기준 유지, 대상 밖 사람이 서명해도 출력에는 표시 안 함). 사람 식별은 부서+이름 조합
+  (`personListIndex`)으로 하므로 동명이인이 다른 부서에 있어도 안전.
+  `toggleTraining()`이 `p_start_time`/`p_end_time`/`p_target_*`를 누락한 채
+  `save_training`을 호출하던 기존 버그(활성/비활성 전환 시 시간·대상이 초기화될 수
+  있었음)도 같이 고쳐서 전체 필드를 항상 함께 전송하도록 함.
 - ⚠️ **사용자가 직접 해야 함**: Supabase SQL 편집기에서 `supabase-schema.sql` 전체 재실행
   (전부 `create or replace` + `drop function if exists`라 재실행 안전). 재실행 전까지는
   새 폼이 떠도 서버에서 대상 필드를 인식하지 못함.
-- ⚠️ 브라우저 실측 미확인(코드 상 구현만 완료) — 실제 화면에서 부서 선택 모달과 출력
-  용지 필터링 동작 확인 필요.
+- ⚠️ 브라우저 실측 미확인(코드 상 구현만 완료) — 실제 화면에서 부서/개별 선택 모달과
+  출력 용지 필터링 동작 확인 필요.
 
 ## 2026-07-21 세션 작업 내역 (미서명 표기 제거 + 서명 기록 조회 달력)
 
