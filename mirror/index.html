@@ -1736,11 +1736,16 @@ async function aiCorrectOne(text, name){
    동시에 돌려도 품질은 그대로이고 속도만 빨라진다(전체를 한 요청에 몰아넣지 않음).
    한 명 끝날 때마다 지적 수·목록·진행도를 실시간으로 갱신한다. 실패하면 한 번 더 시도. */
 const AI_CONCURRENCY = 4;
-async function runAiCheck(){
+async function runAiCheck(force = false){
   if (!state.aiKey || state.aiBusy) return;
   const list = state.lint ?? computeLint();
+  // 아직 검사하지 않은(또는 실패한) 학생만 큐에 담는다.
+  // 업로드·분석 시작에서 중복으로 불려도 이미 끝난 학생을 다시 검사(=중복 과금)하지 않는다.
+  // '다시 실행' 버튼만 force=true로 전체를 재검사한다.
+  const queue = list.map((_, i) => i).filter(i => force || !(list[i].aiChecked && !list[i].aiError));
+  if (!queue.length) return;
   state.aiBusy = true;
-  const total = list.length; let done = 0;
+  const total = list.length; let done = total - queue.length;
   const badge = $('#aiBadgeTxt');
   const refresh = () => {
     state.aiProgress = `${done} / ${total}`;
@@ -1751,7 +1756,6 @@ async function runAiCheck(){
   };
   refresh();
 
-  const queue = list.map((_, i) => i);
   const worker = async () => {
     let i;
     while ((i = queue.shift()) !== undefined){
@@ -1771,7 +1775,7 @@ async function runAiCheck(){
       x.aiActive = false; done++; refresh();
     }
   };
-  try { await Promise.all(Array.from({ length: Math.min(AI_CONCURRENCY, total) }, worker)); }
+  try { await Promise.all(Array.from({ length: Math.min(AI_CONCURRENCY, queue.length) }, worker)); }
   finally { state.aiBusy = false; updateAiBadge(); renderLint(); }
 }
 
@@ -1830,6 +1834,9 @@ async function loadFile(file){
     const rows = refreshParse();
     dropState('loaded', `${file.name} · ${rows.length}명 인식`, '다른 파일을 놓으면 교체됩니다');
     document.querySelector('details.fold').open = false;
+    // 파일을 올리는 즉시 AI 정밀 검사를 백그라운드로 시작한다(키가 연결돼 있을 때).
+    // 표현 점검(맞춤법·띄어쓰기)은 임베딩이 필요 없어 분석 시작을 누르기 전에도 돌릴 수 있다.
+    if (rows.length && state.aiKey && !state.aiBusy) runAiCheck();
   } catch (e){
     console.error(e);
     dropState('bad', '파일을 읽지 못했습니다', e.message);
@@ -3047,7 +3054,7 @@ function renderLint(){
   }));
 
   // AI 정밀 검사 다시 실행 (연결·해제는 헤더 배지에서)
-  $('#aiRun')?.addEventListener('click', () => { if (!state.aiBusy) runAiCheck(); });
+  $('#aiRun')?.addEventListener('click', () => { if (!state.aiBusy) runAiCheck(true); });
 }
 
 /* 한 학생의 교정안을 원문에 반영한다 — 위치가 있는 맞춤법·띄어쓰기 지적만.
