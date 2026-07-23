@@ -94,6 +94,25 @@
     margin-top: 6px; letter-spacing: -0.01em;
     opacity: 0; animation: fadeUp .65s cubic-bezier(.22,.61,.36,1) .26s both;
   }
+  .header-sub a.sub-mail {
+    color: #fff; text-decoration: underline;
+    text-decoration-color: rgba(255,255,255,.5);
+    text-underline-offset: 2px; font-weight: 600;
+  }
+  .header-sub a.sub-mail:hover { text-decoration-color: #fff; }
+  .sub-mail-copy {
+    -webkit-appearance: none; appearance: none; cursor: pointer;
+    margin-left: 5px; padding: 1px 7px; line-height: 1.5;
+    font-family: var(--font); font-size: 10.5px; font-weight: 600;
+    color: rgba(255,255,255,.9); background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.28); border-radius: 999px;
+    vertical-align: middle; position: relative;
+  }
+  .sub-mail-copy:hover { background: rgba(255,255,255,.26); color: #fff; }
+  .sub-mail-copy.copied {
+    background: rgba(255,255,255,.95); color: var(--brand, #333);
+    border-color: transparent;
+  }
 
   /* ── Progress ─────────────────────────────────────── */
   .progress {
@@ -414,12 +433,14 @@
   /* ── 좌측 상단 고정 칩 (제작자 문의, 항상 노출) ─────── */
   .site-credit-chip {
     position: fixed; left: 14px; top: 14px; z-index: 1700;
+    display: inline-flex; align-items: center; gap: 5px;
     padding: 9px 15px; border-radius: 999px;
     background: var(--card); border: 1px solid var(--hair);
     color: var(--ink2); text-decoration: none;
     font-family: var(--font); font-size: 11.5px; font-weight: 700;
     letter-spacing: -0.01em; box-shadow: var(--shadow-md);
   }
+  .site-credit-chip svg { flex: none; }
   .site-credit-chip:hover { background: var(--brand-light); color: var(--brand); border-color: var(--brand-soft); }
   body.print-mode .site-credit-chip { display: none !important; }
 
@@ -1073,6 +1094,11 @@
     <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
     </symbol>
+    <symbol id="i-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -1289,7 +1315,8 @@
 
 <!-- 좌측 상단 고정 칩 (항상 노출, 인쇄 시에는 자동 숨김) -->
 <a class="site-credit-chip" href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener">
-  문의 @hirame.ki
+  <svg width="13" height="13" aria-hidden="true"><use href="#i-instagram"/></svg>
+  <span>제작@hirame.ki</span>
 </a>
 
 <!-- ── Modals ── -->
@@ -3142,7 +3169,7 @@ function submitOrgSettings() {
     setTimeout(function() {
       orgName = name;
       document.getElementById('headerOrg').textContent = orgName || '연수 전자서명';
-      document.getElementById('headerSub').textContent = subTitle || DEFAULT_SUB_TITLE;
+      renderHeaderSub(subTitle || DEFAULT_SUB_TITLE);
       applyBrandColor(color);
       btn.disabled = false; btn.textContent = '✓ 저장되었습니다';
       setTimeout(function() { btn.textContent = '저장하기'; }, 1200);
@@ -3461,6 +3488,56 @@ function fallbackCopy(text, done) {
   document.body.removeChild(ta);
 }
 
+// 부제목에 포함된 이메일 주소를 자동 인식 → mailto 링크 + 복사 버튼으로 렌더링
+function renderHeaderSub(text) {
+  var el = document.getElementById('headerSub');
+  if (!el) return;
+  el.textContent = '';
+  var str = String(text == null ? '' : text);
+  var re = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  var last = 0, m;
+  while ((m = re.exec(str)) !== null) {
+    if (m.index > last) el.appendChild(document.createTextNode(str.slice(last, m.index)));
+    var email = m[0];
+
+    var a = document.createElement('a');
+    a.className = 'sub-mail';
+    a.href = 'mailto:' + email;
+    a.textContent = email;
+    a.title = '클릭하면 메일 보내기';
+    el.appendChild(a);
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'sub-mail-copy';
+    btn.title = '이메일 주소 복사';
+    btn.setAttribute('aria-label', email + ' 복사');
+    btn.textContent = '복사';
+    (function(addr, button) {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        function done() {
+          button.classList.add('copied');
+          button.textContent = '복사됨';
+          setTimeout(function() {
+            button.classList.remove('copied');
+            button.textContent = '복사';
+          }, 1400);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(addr).then(done).catch(function() { fallbackCopy(addr, done); });
+        } else {
+          fallbackCopy(addr, done);
+        }
+      });
+    })(email, btn);
+    el.appendChild(btn);
+
+    last = m.index + email.length;
+  }
+  if (last < str.length) el.appendChild(document.createTextNode(str.slice(last)));
+}
+
 /* ═══════════════════════════════════════════
    데이터 로드
 ═══════════════════════════════════════════ */
@@ -3520,7 +3597,7 @@ function onPageDataLoaded(data) {
     document.getElementById('headerOrg').textContent = orgName;
     document.title = orgName + ' · 연수 전자서명';
   }
-  document.getElementById('headerSub').textContent = String(data.subTitle || '').trim() || DEFAULT_SUB_TITLE;
+  renderHeaderSub(String(data.subTitle || '').trim() || DEFAULT_SUB_TITLE);
 
   // Supabase는 구성원을 평평한 목록으로 반환 → 부서별로 그룹핑 (등록 순서 유지)
   staffByDept = {}; deptOrder = [];
