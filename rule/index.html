@@ -499,7 +499,8 @@
     <div class="guide">
       <ol>
         <li><a href="https://build.nvidia.com" target="_blank" rel="noopener">build.nvidia.com</a> 접속 후 무료 가입 (신용카드 불필요)</li>
-        <li>아무 모델이나 열고 우측 <b>Get API Key</b> 클릭</li>
+        <li><a href="https://build.nvidia.com/models" target="_blank" rel="noopener">build.nvidia.com/models</a> 에서 아무 모델이나 클릭해 열기</li>
+        <li>모델 상세 페이지 우측의 <b>Get API Key</b> 클릭</li>
         <li><b>nvapi-</b> 로 시작하는 키 복사 (한 번만 표시되니 꼭 저장)</li>
         <li>위 칸에 붙여넣고 <b>연결</b></li>
       </ol>
@@ -644,13 +645,14 @@ async function embed(texts, input_type){
 function stripThink(t){ return t.replace(/<think>[\s\S]*?<\/think>/g,"").replace(/^[\s\S]*?<\/think>/,"").trim(); }
 // 스트리밍: 토큰을 받는 즉시 흘려보내 연결을 유지(Cloudflare 524 방지) + 답변을 실시간 표시.
 // onDelta(partial)가 있으면 누적 텍스트를 계속 전달한다.
-async function chat(messages, onDelta){
+async function chat(messages, onDelta, signal){
   const MAX_RETRY=3;
   for(let attempt=0;;attempt++){
     const res = await fetch(BASE+"/chat/completions",{
       method:"POST",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+state.apiKey},
-      body:JSON.stringify({ model:CHAT_MODEL, messages, temperature:0.1, top_p:0.8, max_tokens:2048, stream:true })
+      body:JSON.stringify({ model:CHAT_MODEL, messages, temperature:0.1, top_p:0.8, max_tokens:2048, stream:true }),
+      signal
     });
     if(res.status===429 && attempt<MAX_RETRY){ await sleep(4000*(attempt+1)); continue; }
     if(!res.ok){ throw new Error("chat "+res.status+": "+(await res.text()).slice(0,160)); }
@@ -1023,15 +1025,52 @@ async function ask(){
     btn.innerHTML='<span class="spinner"></span> 근거 정리 중';
     const context=top.map((x,i)=>`[근거 ${i+1}] (${x.c.file} ${x.c.loc})\n${x.c.text}`).join("\n\n");
     ansBody.innerHTML=
-      '<p style="color:var(--gold-soft)"><span class="spinner"></span> 관련 조항을 찾았습니다. 답변을 작성하고 있어요…</p>'
+      '<p style="color:var(--gold-soft)"><span class="spinner"></span> 관련 조항을 찾았습니다. 답변을 작성하고 있어요… <span id="waitElapsed" style="color:var(--muted);font-variant-numeric:tabular-nums">0초</span></p>'
       +'<div style="color:var(--muted);font-size:.82rem;line-height:1.65;margin-top:10px;border:1px dashed var(--line);border-radius:8px;padding:12px 14px">'
       +'💡 <b>왜 조금 기다리게 되나요?</b><br>'
       +'이 서비스는 <b>엔비디아(NVIDIA)의 무료 AI 서버</b>로 답변을 만듭니다. 무료로 개방된 서버라, 전 세계 이용자가 몰리는 시간대에는 내 요청이 <b>대기열에서 순서를 기다리게</b> 돼요. 그래서 첫 문장이 나타나기까지 보통 몇 초, 혼잡할 땐 <b>30초~1분 이상</b> 걸리기도 합니다.<br>'
       +'화면이 멈춘 것이 아니며, 순서가 오면 아래에 답변이 <b>한 글자씩 실시간</b>으로 나타납니다. 잠시만 기다려 주세요.'
       +'</div>';
-    const raw=await chat(buildAskMessages(context, q), (partial)=>{
-      if(partial) ansBody.innerHTML=renderMd(partial);
-    });
+
+    // 첫 토큰까지의 경과 시간 표시 + 90초 대기 상한.
+    // 첫 글자가 오면 카운터·타임아웃을 모두 해제한다(생성 속도는 빠르므로 첫 토큰만 감시).
+    const startTs=Date.now(), TIMEOUT_MS=90000;
+    let firstToken=false;
+    const ctrl=new AbortController();
+    const elapsedTimer=setInterval(()=>{
+      if(firstToken) return;
+      const el=document.getElementById("waitElapsed");
+      if(el) el.textContent=Math.floor((Date.now()-startTs)/1000)+"초";
+    },1000);
+    const timeoutId=setTimeout(()=>{ if(!firstToken) ctrl.abort(); }, TIMEOUT_MS);
+
+    let raw;
+    try{
+      raw=await chat(buildAskMessages(context, q), (partial)=>{
+        if(partial){
+          if(!firstToken){ firstToken=true; clearInterval(elapsedTimer); clearTimeout(timeoutId); }
+          ansBody.innerHTML=renderMd(partial);
+        }
+      }, ctrl.signal);
+    }catch(e){
+      clearInterval(elapsedTimer); clearTimeout(timeoutId);
+      if(ctrl.signal.aborted){
+        // 90초 안에 첫 토큰이 오지 않음 — 오류가 아니라 무료 서버 혼잡. 재시도 유도.
+        ansBody.innerHTML=
+          '<p style="color:var(--gold-soft);border:1px dashed var(--line);border-radius:8px;padding:12px 14px;line-height:1.7">'
+          +'⏱ <b>90초 동안 응답이 시작되지 않았습니다.</b><br>'
+          +'지금 <b>NVIDIA 무료 AI 서버가 혼잡한 것으로 보입니다.</b> 서비스나 질문의 문제가 아니며, 잠시 후 다시 시도하면 대개 정상적으로 답변이 나옵니다.'
+          +'</p>'
+          +'<div style="margin-top:12px;display:flex;justify-content:flex-end">'
+          +'<button class="btn" id="retryAskBtn" style="padding:8px 18px;font-size:.88rem">다시 시도</button></div>';
+        const rb=document.getElementById("retryAskBtn");
+        if(rb) rb.onclick=ask;
+        btn.disabled=false; btn.textContent="질의";
+        return;
+      }
+      throw e; // 그 밖의 오류는 바깥 catch에서 처리
+    }
+    clearInterval(elapsedTimer); clearTimeout(timeoutId);
 
     let lowRelNote="";
     if(top[0].s<0.35){
