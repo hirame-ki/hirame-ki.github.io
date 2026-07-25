@@ -48,6 +48,7 @@
     --shadow:0 1px 2px rgba(31,42,55,.05), 0 8px 24px -14px rgba(31,42,55,.22);
     --radius:14px;
     --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,monospace;
+    --rec-scale:1;   /* 생기부 내용(나란히 보기·표현 점검 본문) 글자 크기 배율 — 우측 상단 슬라이더로 조절 */
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
@@ -154,14 +155,15 @@
   /* ─── 드롭존 ─── */
   .drop{
     border:1.5px dashed var(--line);border-radius:12px;background:var(--bg);
-    padding:22px 16px;text-align:center;cursor:pointer;
+    padding:13px 16px;text-align:center;cursor:pointer;
     transition:border-color .15s,background .15s;
   }
   .drop:hover{border-color:var(--brand);background:var(--brand-soft)}
   .drop.over{border-color:var(--brand);background:var(--brand-soft);border-style:solid}
-  .drop .ico{font-size:26px;opacity:.6}
-  .drop .t{font-weight:700;font-size:.88rem;margin-top:8px}
-  .drop .s{color:var(--muted);font-size:.78rem;margin-top:4px}
+  .drop .ico{font-size:22px;opacity:.6}
+  .drop .ico svg{width:22px;height:22px}
+  .drop .t{font-weight:700;font-size:.88rem;margin-top:5px}
+  .drop .s{color:var(--muted);font-size:.78rem;margin-top:3px}
   .drop.loaded{border-style:solid;border-color:rgba(74,143,109,.4);background:var(--ok-soft)}
   .drop.loaded .t{color:#2f6a4e}
   .drop.bad{border-color:var(--warn);background:var(--warn-soft)}
@@ -326,13 +328,14 @@
     padding:8px 15px 8px 12px;font-size:.8rem;font-weight:700;
     color:var(--ink-soft);text-decoration:none;
     box-shadow:0 2px 6px rgba(31,42,55,.06), 0 10px 26px -14px rgba(31,42,55,.3);
+    transform-origin:right bottom;transform:scale(.7);   /* 우측 하단 모서리 기준 축소 */
     transition:transform .15s,box-shadow .15s,color .15s;
   }
   .credit:hover{
-    transform:translateY(-1px);color:var(--brand-deep);
+    transform:scale(.7) translateY(-1.4px);color:var(--brand-deep);
     box-shadow:0 3px 10px rgba(31,42,55,.09), 0 14px 30px -14px rgba(31,42,55,.36);
   }
-  .credit:active{transform:translateY(0)}
+  .credit:active{transform:scale(.7)}
   .credit svg{width:17px;height:17px;flex:0 0 17px}
   .credit .at{font-family:var(--mono);letter-spacing:-.01em}
   @media (max-width:980px){ .credit{right:12px;bottom:12px;padding:7px 13px 7px 10px;font-size:.75rem} }
@@ -379,7 +382,7 @@
   .side{border:1px solid var(--line);border-radius:11px;padding:15px;background:var(--bg)}
   .side .who{font-weight:700;font-size:.88rem;margin-bottom:9px;display:flex;gap:8px;align-items:center}
   .side .who .no{background:var(--brand-soft);color:var(--brand);border-radius:6px;padding:1px 8px;font-size:.76rem;font-family:var(--mono);font-weight:700}
-  .side .txt{font-size:.87rem;line-height:1.9;color:var(--ink-soft);white-space:pre-wrap;word-break:break-all}
+  .side .txt{font-size:calc(.87rem * var(--rec-scale));line-height:1.9;color:var(--ink-soft);white-space:pre-wrap;word-break:break-all}
   .side mark{background:rgba(176,90,68,.18);color:#8a4231;border-radius:3px;padding:1px 2px;font-weight:600}
   /* 무시하기로 등록한 문구 — 겹침 계산에서 뺐다는 것을 눈에 보이게 흐리고 줄을 긋는다 */
   .side mark.ign{background:var(--bg-sunken);color:var(--muted);font-weight:400;text-decoration:line-through;text-decoration-color:rgba(123,133,149,.55)}
@@ -414,7 +417,14 @@
   .ml-pair .ml-b{color:var(--muted);border-top:1px dotted var(--line);margin-top:3px;padding-top:3px}
 
   /* ─── 상단 탭 ─── */
-  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+  /* 결과 상단 탭 줄(유사도/표현 점검·글자 크기 슬라이더)을 스크롤해도 늘 보이게 고정 */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;
+        position:sticky;top:0;z-index:15;background:var(--bg)}
+  /* 데스크톱은 #main(스크롤 영역)의 위쪽 여백(padding) 만큼 바 위에 틈이 생겨 본문이 비쳐 보인다.
+     그 틈을 바 배경색으로 덮어 준다. #main overflow가 위로 넘치는 부분을 잘라 헤더는 가리지 않는다. */
+  @media (min-width:981px){
+    .tabs::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:40px;background:var(--bg)}
+  }
   .tab{
     background:none;border:0;border-bottom:2px solid transparent;
     padding:9px 15px 10px;font-size:.9rem;font-weight:700;color:var(--muted);
@@ -429,6 +439,15 @@
   }
   .tab.on .cnt{background:var(--brand-soft);color:var(--brand-deep)}
   .tab .cnt.hot{background:var(--warn-soft);color:#8a4231}
+  /* 생기부 내용 글자 크기 슬라이더 (탭 줄 오른쪽 끝) */
+  .fontctl{margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:0 4px 6px;color:var(--muted)}
+  .fontctl .lbl{font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap}
+  .fontctl .a{font-size:.72rem;font-weight:800}
+  .fontctl .b{font-size:1rem;font-weight:800}
+  .fontctl input[type=range]{width:104px;height:4px;-webkit-appearance:none;appearance:none;background:var(--line);border-radius:999px;cursor:pointer}
+  .fontctl input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:var(--brand);border:2px solid var(--card);box-shadow:0 1px 3px rgba(31,42,55,.25);cursor:pointer}
+  .fontctl input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--brand);border:2px solid var(--card);box-shadow:0 1px 3px rgba(31,42,55,.25);cursor:pointer;border:none}
+  @media (max-width:640px){ .fontctl .lbl{display:none} }
 
   /* ─── 표현 점검 ─── */
   .lint-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -449,22 +468,26 @@
   .rec .rhead .no{background:var(--brand-soft);color:var(--brand);border-radius:6px;padding:1px 8px;font-size:.76rem;font-family:var(--mono);font-weight:700}
   .rec .rhead .nm{font-weight:700;font-size:.88rem}
   .rec .rhead .sp{flex:1}
-  .rec .rtxt{font-size:.87rem;line-height:2;color:var(--ink-soft);word-break:break-all}
+  .rec .rtxt{font-size:calc(.87rem * var(--rec-scale));line-height:2;color:var(--ink-soft);word-break:break-all}
   .rec .rtxt mark{border-radius:3px;padding:1px 2px;font-weight:600;background:none;cursor:help;border-bottom:2px solid}
   .rec .rtxt mark[data-c="sp"]{color:#8a4231;border-color:rgba(176,90,68,.55);background:rgba(176,90,68,.10)}
   .rec .rtxt mark[data-c="sc"]{color:var(--brand-deep);border-color:rgba(47,125,118,.55);background:rgba(47,125,118,.10)}
   .rec .rtxt mark[data-c="st"]{color:#8a5a2b;border-color:rgba(154,91,24,.5);background:rgba(154,91,24,.10)}
   .rec .rtxt mark[data-c="bn"]{color:#6b4a86;border-color:rgba(107,74,134,.5);background:rgba(107,74,134,.10)}
+  .rec .rtxt mark[data-c="us"]{color:#2f6a4e;border-color:rgba(47,106,78,.5)}
+  .rec .rtxt .mk-plain{cursor:text}   /* 지적 없는 부분도 드래그해 고칠 수 있음을 알린다 */
   /* 클릭으로 그 자리에서 고치는 하이라이트 */
   .rec .rtxt mark.mk-fix,.rec .rtxt mark.mk-edit{cursor:pointer}
   .rec .rtxt mark.mk-fix::after{content:"↵";font-size:.7em;opacity:.5;margin-left:2px;vertical-align:top}
   .rec .rtxt mark.mk-edit::after{content:"✎";font-size:.72em;opacity:.55;margin-left:2px;vertical-align:top}
   .rec .rtxt mark.mk-fix:hover,.rec .rtxt mark.mk-edit:hover{filter:brightness(.93);box-shadow:0 0 0 3px rgba(0,0,0,.05)}
-  .rec .rtxt mark.mk-applied{cursor:pointer;color:#2f6a4e;border-color:rgba(47,106,78,.6);background:var(--ok-soft);font-weight:700}
-  .rec .rtxt mark.mk-edited{cursor:pointer;color:#2f6a4e;border-color:rgba(47,106,78,.6);background:var(--ok-soft);border-bottom-style:dashed;font-weight:700}
-  .rec .rtxt mark.mk-applied:hover,.rec .rtxt mark.mk-edited:hover{text-decoration:line-through;text-decoration-color:rgba(47,106,78,.5)}
+  /* 교정 적용·직접 고침 = '완료' 상태. 지적(옅은 밑줄)과 확실히 구분되도록 옅은 파란색으로 채우고 ✓를 붙인다 */
+  .rec .rtxt mark.mk-applied,.rec .rtxt mark.mk-edited{cursor:pointer;color:#1c4f86;border-color:#4a86d6;background:#d3e6fb;font-weight:700}
+  .rec .rtxt mark.mk-edited{border-bottom-style:dashed}
+  .rec .rtxt mark.mk-applied::after,.rec .rtxt mark.mk-edited::after{content:"✓";font-size:.72em;margin-left:3px;vertical-align:top;color:#1c4f86}
+  .rec .rtxt mark.mk-applied:hover,.rec .rtxt mark.mk-edited:hover{text-decoration:line-through;text-decoration-color:rgba(28,79,134,.5)}
   .rec .rtxt .mk-removed{cursor:pointer;color:var(--muted);text-decoration:line-through;font-size:.82em;padding:0 4px;border:1px dashed var(--line);border-radius:4px;margin:0 1px}
-  .rec .rtxt .mk-input{font:inherit;font-size:.86rem;font-weight:600;border:2px solid var(--brand);border-radius:5px;padding:0 5px;margin:0 1px;background:var(--bg);color:var(--ink);vertical-align:baseline;min-width:44px}
+  .rec .rtxt .mk-input{font:inherit;font-size:calc(.86rem * var(--rec-scale));font-weight:600;border:2px solid var(--brand);border-radius:5px;padding:0 5px;margin:0 1px;background:var(--bg);color:var(--ink);vertical-align:baseline;min-width:44px}
   /* 문장급 편집: 폭 넓게 · 줄바꿈되어 전체가 보이는 여러 줄 편집창 */
   .rec .rtxt textarea.mk-area{display:block;width:100%;box-sizing:border-box;margin:5px 0;padding:6px 9px;line-height:1.75;font-weight:500;resize:vertical;overflow:hidden;word-break:break-all;box-shadow:0 2px 10px rgba(0,0,0,.08)}
 
@@ -590,6 +613,8 @@
     main{overflow:visible}
     .compare{grid-template-columns:1fr}
     .badge span.long{display:none}
+    /* 모바일은 문서 전체가 스크롤되고 헤더가 위에 붙어 있으므로, 탭 줄은 헤더 높이만큼 내려 붙인다 */
+    .tabs{top:var(--head-h,56px)}
   }
 
   /* ─── 모바일 ─── */
@@ -650,7 +675,6 @@
    <div class="panel-scroll">
     <div>
       <div class="field-label"><i class="n">1</i>양식 받아 채우기</div>
-      <p class="hint">양식을 내려받아 학생 기록을 채운 뒤, 그 파일을 아래 상자에 끌어다 놓으세요.</p>
       <button class="btn ghost" id="tplBtn" style="width:100%;margin-bottom:10px">엑셀 양식 다운로드 (.xlsx · 한셀 호환)</button>
       <div class="drop" id="drop">
         <div class="ico"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></div>
@@ -675,44 +699,25 @@
 
     <div>
       <div class="field-label"><i class="n">2</i>민감도</div>
-      <p class="hint">두 기준 중 하나라도 넘으면 “확인 필요”로 표시합니다. 뜻이 헷갈리면 상단 <b>결과 해석</b> 칩을 눌러 보세요.</p>
 
       <div class="thr-view"><span>표현 유사도</span><b id="zVal">2.5</b></div>
       <input type="range" id="thrZ" min="1.0" max="4.0" step="0.1" value="2.5">
-      <div class="thr-cap">반의 평범한 수준보다 <b id="zCap">2.5</b>걸음 이상 튀게 닮은 쌍. 낮출수록 많이 걸립니다.</div>
 
-      <div class="thr-view"><span>글자 겹침</span><b id="lexVal">8%</b></div>
+      <div class="thr-view" style="margin-top:12px"><span>글자 겹침</span><b id="lexVal">8%</b></div>
       <input type="range" id="thrLex" min="2" max="40" step="1" value="8">
-      <div class="thr-cap">같은 문구가 이 비율 이상 그대로 겹치는 쌍.</div>
-      <p class="hint" style="margin:10px 0 0">
-        분석을 마친 뒤에는 슬라이더를 움직이는 즉시 <b>결과가 실시간으로 바뀝니다.</b>
-        다시 계산하지 않으니 부담 없이 조절해 보세요.
-      </p>
     </div>
 
     <div class="divider"></div>
 
     <div>
       <div class="field-label"><i class="n">3</i>무시할 문구 <span class="lbl-opt">선택</span></div>
-      <p class="hint">
-        모두가 똑같이 쓸 수밖에 없는 문구(수행평가 이름, 단원명, 공통 활동명)를 <b>한 줄에 하나씩</b> 적으면
-        <b>글자 겹침 계산에서 뺍니다.</b> 이것도 즉시 반영됩니다.
-      </p>
-      <textarea id="ignore" spellcheck="false" style="min-height:74px"
-                placeholder="산과 염기의 중화반응 실험&#10;2학기 프로젝트 수행평가"></textarea>
+      <textarea id="ignore" spellcheck="false" style="min-height:168px"
+                placeholder="모두가 똑같이 쓰는 문구(활동명, 프로젝트명 등)를 한 줄에 하나씩 적으면 글자 겹침 계산에서 제외됩니다.&#10;&#10;예) 산과 염기의 중화반응 실험&#10;예) 2학기 프로젝트 수행평가"></textarea>
       <div class="parse-stat" id="ignoreStat">등록한 문구가 없습니다.</div>
-      <p class="hint" style="margin-top:8px">
-        표현 유사도(z)에는 적용하지 않습니다. 그쪽은 이미 반 전체의 공통 성분을 걷어내고 비교하며,
-        문구를 지우면 문장이 부서져 오히려 판단이 흐려집니다.
-      </p>
     </div>
 
     <div class="note">
-      <b>처음 한 번만</b> 분석 모델(약 120MB)을 내려받습니다. 양식을 받거나 파일을 올리는 순간
-      백그라운드로 시작하므로, 기록을 정리하는 동안 준비가 끝납니다.
-      <br><br>
-      <b>기록 내용은 어디에도 전송되지 않습니다.</b> 올리신 파일도, 붙여넣은 글도
-      이 브라우저를 벗어나지 않으며 저장되지도 않습니다.
+      <b>기록은 이 브라우저를 벗어나지 않습니다.</b> 분석 모델(약 120MB)은 처음 한 번만 자동으로 준비됩니다.
     </div>
    </div><!-- /.panel-scroll -->
 
@@ -729,7 +734,13 @@
   <main id="main">
     <div class="tabs no-print" role="tablist">
       <button class="tab on" id="tabSim" role="tab" aria-selected="true">유사도 점검</button>
-      <button class="tab" id="tabLint" role="tab" aria-selected="false">표현 점검<span class="cnt" id="lintCnt">–</span></button>
+      <button class="tab" id="tabLint" role="tab" aria-selected="false">표현 점검 및 수정<span class="cnt" id="lintCnt">–</span></button>
+      <label class="fontctl" title="생기부 내용 글자 크기 (나란히 보기·표현 점검 본문에만 적용)">
+        <span class="lbl">내용 글자 크기</span>
+        <span class="a" aria-hidden="true">가</span>
+        <input type="range" id="recFont" min="80" max="160" step="5" value="100" aria-label="생기부 내용 글자 크기">
+        <span class="b" aria-hidden="true">가</span>
+      </label>
     </div>
 
    <div id="paneSim">
@@ -757,9 +768,8 @@
       </div>
       <div class="ph-title">아직 분석한 기록이 없습니다</div>
       <div class="ph-sub">
-        왼쪽에서 양식을 받아 채운 뒤 파일을 끌어다 놓고 <b>분석 시작</b>을 누르면,
-        학생 간 겹치는 구간을 표와 히트맵으로 보여 드립니다.
-        모든 계산은 이 브라우저 안에서 이루어집니다.
+        왼쪽에서 파일을 올리고 <b>분석 시작</b>을 누르면 결과가 여기에 표시됩니다.
+        <br>처음이라면 상단 <b>사용법</b>을 참고하세요.
       </div>
     </div>
     <div id="result" style="display:none"></div>
@@ -843,9 +853,11 @@
         <li>겹침 매트릭스 위 <b>[관계망]</b> 탭을 누르면, 확인 필요한 학생끼리 선으로 이어진 <b>관계도</b>로 볼 수 있습니다.
             점을 잡아 끌면 연결된 학생이 따라오고, 인원이 많을수록 <b>서로 닮은 무리</b>를 한눈에 파악하기 좋습니다.</li>
         <li>시각화 오른쪽 <b>해석의 유의점</b>은 "닮음 = 문제"가 아님을 늘 상기시켜 줍니다.</li>
-        <li><b>인쇄 / PDF</b> 버튼으로 결과 전체를 종이나 PDF로 남길 수 있습니다.</li>
+        <li><b>인쇄 / PDF</b> 버튼으로 결과 전체를 종이나 PDF로 남길 수 있습니다. (<b>나란히 보기</b>는 인쇄에서 빠집니다.)</li>
         <li>왼쪽 <b>민감도</b> 슬라이더를 움직이면 <b>결과가 실시간으로 바뀝니다.</b>
             분석을 다시 하지 않으므로 기다릴 필요 없이 이리저리 맞춰 보셔도 됩니다.</li>
+        <li>결과 <b>오른쪽 위 ‘내용 글자 크기’ 슬라이더</b>로 <b>생기부 내용</b>(나란히 보기·표현 점검 본문)의 글자 크기만
+            키우거나 줄일 수 있습니다. 많은 기록을 오래 볼 때 눈이 덜 피로합니다. (제목·표·안내문 크기는 그대로입니다.)</li>
         <li><b>CSV 내보내기</b>로 확인 필요 목록을 파일로 저장할 수 있습니다.</li>
       </ul>
 
@@ -869,8 +881,8 @@
       </div>
       <p>각 수치가 무슨 뜻인지는 상단 <b>결과 해석</b> 칩에서 자세히 설명합니다.</p>
 
-      <h4><span class="k">7</span>표현 점검 — 맞춤법 · 띄어쓰기 · 서술 · 기재 · 분량</h4>
-      <p>결과 화면 위쪽 <b>표현 점검</b> 탭은 유사도와 별개로 도는 기능입니다.
+      <h4><span class="k">7</span>표현 점검 및 수정 — 맞춤법 · 띄어쓰기 · 서술 · 기재 · 분량</h4>
+      <p>결과 화면 위쪽 <b>표현 점검 및 수정</b> 탭은 유사도와 별개로 도는 기능입니다.
          <b>분석 시작을 누르지 않아도, 모델을 내려받지 않아도</b> 기록을 붙여넣는 즉시 결과가 나옵니다.</p>
       <p>검사는 <b>두 갈래</b>로 나뉘고, 각 지적 앞의 <b>📐(로컬) / 🤖(AI)</b> 표시로 출처를 구분합니다.</p>
       <ul>
@@ -894,8 +906,11 @@
         <b>[복사]</b>로 개별 텍스트를 가져가거나 <b>[수정본 엑셀(.xlsx·한셀 호환)]</b>로 전체를 한 번에 내려받을 수 있습니다.
         <b>수정본을 그대로 쓰지 말고</b> 반드시 확인 후 반영해 주세요 — 최종 판단과 책임은 교사에게 있습니다.
       </div>
-      <p>본문의 밑줄에 마우스를 올리면 이유가 뜹니다. 위쪽 알약을 눌러 유형별로 켜고 끌 수 있고,
-         <b>지적 목록 CSV</b>로 지적 내역을 파일로 남길 수 있습니다.</p>
+      <p><b>그 자리에서 바로 고칠 수 있습니다.</b> 본문의 밑줄을 누르면 — 맞춤법·띄어쓰기는 교정안이 <b>바로 적용</b>되고,
+         서술·기재 주의는 <b>편집창</b>이 열립니다. 지적에 안 걸린 곳이라도, 심지어 <b>밑줄을 포함해 드래그</b>하면
+         그 범위를 통째로 골라 고쳐 쓸 수 있습니다. 분량이 넘친 기록은 <b>[본문 전체 고쳐 쓰기]</b>로 통째로 다시 써 줄일 수 있고,
+         고친 뒤 남은 지적은 이어서 고칠 수 있습니다. 각 밑줄에 마우스를 올리면 이유가 뜨고,
+         위쪽 알약으로 유형별로 켜고 끌 수 있으며, <b>지적 목록 CSV</b>로 내역을 남길 수 있습니다.</p>
       <div class="box warn">
         <b>AI 정밀 검사는 본문만 전송합니다.</b> 학년·반·번호는 전송되지 않고, 본문 속 학교명·학생 이름은 자동으로 가려집니다.
         NVIDIA는 표준 API 내용을 세션 종료 후 저장·학습에 쓰지 않는다고 명시합니다(보안 로그 제외).
@@ -1165,7 +1180,8 @@ function parseInput(raw){
     else if (nums.length === 1) [no] = nums;
     name = words[0] ?? '';
 
-    rows.push({ grade, cls, no: no || String(rows.length + 1), name, text });
+    // hasNum: 실제 번호(학번)가 입력에 있었는지. no는 없을 때 순번으로 채우므로 이 플래그로 구분한다.
+    rows.push({ grade, cls, no: no || String(rows.length + 1), name, text, hasNum: nums.length > 0 });
   });
   return rows.map(r => ({ ...r, ...labelOf(r) }));
 }
@@ -1700,11 +1716,14 @@ function maskForSend(text, name){
 }
 
 // 워커(→NVIDIA) 채팅 호출. 스트리밍 SSE를 모아 전체 응답 문자열을 돌려준다.
-async function aiChat(messages, { temperature = 0.2, max_tokens = 2048 } = {}){
+// 같은 기록은 되도록 같은 결과가 나오도록 무작위성을 없앤다: temperature 0(탐욕적 디코딩) · top_p 1 · seed 고정.
+// 다만 호스팅된 대형 MoE 모델(qwen3-next)은 서버 배치 구성에 따른 부동소수점 차이로
+// temperature 0에서도 실행마다 완전히 같은 답을 보장하진 못한다(호스팅 LLM의 알려진 한계).
+async function aiChat(messages, { temperature = 0, top_p = 1, seed = 12345, max_tokens = 2048 } = {}){
   const res = await fetch(AI_BASE + '/chat/completions', {
     method:'POST',
     headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + state.aiKey },
-    body: JSON.stringify({ model: AI_MODEL, messages, temperature, top_p:0.8, max_tokens, stream:true }),
+    body: JSON.stringify({ model: AI_MODEL, messages, temperature, top_p, seed, max_tokens, stream:true }),
   });
   if (!res.ok || !res.body) throw new Error('연결 실패 (' + res.status + ')');
   const reader = res.body.getReader(), dec = new TextDecoder();
@@ -1745,15 +1764,17 @@ async function aiCorrectOne(text, name){
     '5. 반드시 아래 JSON만 출력한다(그 외 어떤 말도 하지 마라): ' +
     '{"corrected":"교정된 전체 본문","changes":[{"cat":"맞춤법","bad":"고치기 전","good":"고친 후","why":"짧은 이유"}]}\n' +
     '6. 고칠 맞춤법·띄어쓰기가 없으면 corrected는 원문을 글자 그대로 두고 changes는 빈 배열로 둔다.';
-  const raw = await aiChat([{ role:'system', content: sys }, { role:'user', content: sent }], { temperature: 0.1 });
+  const raw = await aiChat([{ role:'system', content: sys }, { role:'user', content: sent }], { temperature: 0 });
   const m = raw.match(/\{[\s\S]*\}/);
   if (!m) return { corrected: text, changes: [] };
   let obj; try { obj = JSON.parse(m[0]); } catch(_){ return { corrected: text, changes: [] }; }
+  const seen = {};                          // 같은 표현이 여러 번 지적되면 순서대로 다음 자리를 찾는다
   const changes = Array.isArray(obj.changes) ? obj.changes
     .filter(c => c && c.good && c.bad && c.bad !== c.good)
     .map(c => {
       const bad = String(c.bad), good = String(c.good);
-      const s = text.indexOf(bad);          // 원문에서 위치를 찾아 로컬처럼 색 하이라이트가 되게 한다
+      const s = text.indexOf(bad, seen[bad] ?? 0);   // 원문에서 위치를 찾아 로컬처럼 색 하이라이트가 되게 한다
+      if (s >= 0) seen[bad] = s + bad.length;
       return { cat: /띄어/.test(c.cat || '') ? 'sc' : 'sp', src:'ai',
                s, e: s >= 0 ? s + bad.length : -1, bad, good, why: String(c.why || '다듬음') };
     }) : [];
@@ -1807,13 +1828,18 @@ async function runAiCheck(force = false){
   finally { state.aiBusy = false; updateAiBadge(); renderLint(); }
 }
 
-/* 화면에 보여줄 지적 목록 — 로컬 검사와 AI 검사를 확실히 구분해 합친다.
-   AI 검사를 마친 기록: 맞춤법·띄어쓰기는 AI 결과, 서술 방식·기재 주의는 로컬 규칙.
-   AI 검사 전/실패: 로컬 규칙이 전부(맞춤법·띄어쓰기·서술·기재) 담당. */
+/* 화면에 보여줄 지적 목록 — 로컬 검사와 AI 검사를 합친다.
+   서술 방식·기재 주의·분량은 항상 로컬 규칙 담당.
+   맞춤법·띄어쓰기는 AI 결과를 우선하되, AI 지적과 자리가 겹치지 않는 로컬 지적은 그대로 남긴다 —
+   AI가 놓친 오류를 로컬 규칙이 잡았을 때 그것까지 버리면(예전 방식) 검사 후 지적이 사라진다.
+   AI 검사 전/실패: 로컬 규칙이 전부 담당. */
 function displayFinds(x){
   const rule = x.finds || [];
-  if (x.aiChecked) return [...rule.filter(f => f.cat === 'st' || f.cat === 'bn'), ...(x.aiFinds || [])];
-  return rule;
+  if (!x.aiChecked) return rule;
+  const ai = x.aiFinds || [];
+  const missed = rule.filter(f => (f.cat === 'sp' || f.cat === 'sc')
+    && !ai.some(a => a.s >= 0 && f.s < a.e && a.s < f.e));   // 같은 자리는 AI(문맥 판단)가 맡는다
+  return [...rule.filter(f => f.cat === 'st' || f.cat === 'bn'), ...missed, ...ai];
 }
 
 /* ═══ 8. 입력 패널 ═══════════════════════════════════════ */
@@ -1904,7 +1930,6 @@ $('#model').addEventListener('change', () => {
 $('#thrZ').addEventListener('input', e => {
   state.thrZ = +e.target.value;
   $('#zVal').textContent = state.thrZ.toFixed(1);
-  $('#zCap').textContent = state.thrZ.toFixed(1);
   if (state.pairs.length) renderResult();
 });
 $('#thrLex').addEventListener('input', e => {
@@ -2260,8 +2285,8 @@ function renderResult(){
           <th>학생 · 닮은 상대</th>
           <th style="width:74px;text-align:right">걸린 쌍</th>
           <th style="width:74px">근거</th>
-          <th style="width:96px;text-align:right">글자 겹침</th>
           <th style="width:96px;text-align:right">표현 유사도</th>
+          <th style="width:96px;text-align:right">글자 겹침</th>
         </tr></thead>
         <tbody id="stuBody">
           ${flaggedStudents.map(s => {
@@ -2280,8 +2305,8 @@ function renderResult(){
                 <td class="pair-cell">${esc(rows[other].label)}${rows[other].sub ? ` <span style="color:var(--muted)">${esc(rows[other].sub)}</span>` : ''}</td>
                 <td></td>
                 <td><span class="why ${cls}">${label}</span></td>
-                <td class="num"><span class="score-chip ${p.lex>=state.thrLex?'hot':'cool'}">${(p.lex*100).toFixed(1)}%</span></td>
                 <td class="num"><span class="score-chip ${p.z>=state.thrZ?'hot':'cool'}">${p.z.toFixed(1)}z</span></td>
+                <td class="num"><span class="score-chip ${p.lex>=state.thrLex?'hot':'cool'}">${(p.lex*100).toFixed(1)}%</span></td>
               </tr>`;
             }).join('');
             return header + partners;
@@ -2296,8 +2321,8 @@ function renderResult(){
         <table class="clean-table">
           <thead><tr>
             <th>학생</th><th>가장 닮은 상대</th>
-            <th style="width:96px;text-align:right">글자 겹침</th>
             <th style="width:96px;text-align:right">표현 유사도</th>
+            <th style="width:96px;text-align:right">글자 겹침</th>
           </tr></thead>
           <tbody id="cleanBody">
             ${cleanStudents.map(s => {
@@ -2306,8 +2331,8 @@ function renderResult(){
               <tr data-i="${s.best.i}" data-j="${s.best.j}">
                 <td>${esc(rows[s.i].label)}${rows[s.i].sub ? ` <span style="color:var(--muted)">${esc(rows[s.i].sub)}</span>` : ''}</td>
                 <td>${esc(rows[other].label)}${rows[other].sub ? ` <span style="color:var(--muted)">${esc(rows[other].sub)}</span>` : ''}</td>
-                <td class="num"><span class="score-chip cool">${(s.best.lex*100).toFixed(1)}%</span></td>
                 <td class="num"><span class="score-chip cool">${s.best.z.toFixed(1)}z</span></td>
+                <td class="num"><span class="score-chip cool">${(s.best.lex*100).toFixed(1)}%</span></td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -2315,7 +2340,7 @@ function renderResult(){
       </details>` : ''}
     </div>
 
-    <div class="block" id="detailBlock">
+    <div class="block no-print" id="detailBlock">
       <div class="head"><h2>나란히 보기 <span class="sub">그대로 겹치는 표현에 색을 칠해 보여 줍니다</span></h2></div>
       <div id="detail"><div class="empty">위 표의 줄이나 히트맵 칸을 선택하세요.</div></div>
     </div>`;
@@ -2559,7 +2584,7 @@ function drawHeat(){
     tip.style.left = Math.min(e.clientX + 14, innerWidth - 310) + 'px';
     tip.style.top = (e.clientY + 16) + 'px';
     tip.innerHTML = `${esc(state.rows[h.i].full)} ↔ ${esc(state.rows[h.j].full)}<br>
-      글자 겹침 <b>${(state.lexMtx[h.i][h.j]*100).toFixed(1)}%</b> · 표현 유사도 <b>${state.zMtx[h.i][h.j].toFixed(1)}z</b>`;
+      표현 유사도 <b>${state.zMtx[h.i][h.j].toFixed(1)}z</b> · 글자 겹침 <b>${(state.lexMtx[h.i][h.j]*100).toFixed(1)}%</b>`;
   };
   cv.onmouseleave = () => { $('#tip').style.display = 'none'; };
   cv.onclick = e => { const h = hit(e); if (h && h.i !== h.j) select(h.i, h.j); };
@@ -2611,8 +2636,8 @@ function select(i, j, scroll = true){
 
   $('#detail').innerHTML = `
     <div class="row" style="margin-bottom:14px;gap:9px">
-      <span class="score-chip ${p.lex>=state.thrLex?'hot':'cool'}" style="font-size:.9rem;padding:4px 13px">글자 겹침 ${(p.lex*100).toFixed(1)}%</span>
       <span class="score-chip ${p.z>=state.thrZ?'hot':'cool'}" style="font-size:.9rem;padding:4px 13px">표현 유사도 ${p.z.toFixed(1)}z</span>
+      <span class="score-chip ${p.lex>=state.thrLex?'hot':'cool'}" style="font-size:.9rem;padding:4px 13px">글자 겹침 ${(p.lex*100).toFixed(1)}%</span>
       ${cls ? `<span class="why ${cls}">${label} 기준 초과</span>` : '<span class="hint" style="margin:0">두 기준 모두 아래입니다.</span>'}
     </div>
     <div class="compare">
@@ -2656,12 +2681,12 @@ function select(i, j, scroll = true){
 /* ═══ 13. CSV 내보내기 (파일은 이 컴퓨터에만 저장됩니다) ══ */
 function exportCsv(risky){
   const q = v => `"${String(v).replace(/"/g, '""')}"`;
-  const head = ['학년A','반A','번호A','이름A','학년B','반B','번호B','이름B','근거','글자겹침(%)','표현유사도(z)','가장 닮은 문장A','가장 닮은 문장B','기록A','기록B'];
+  const head = ['학년A','반A','번호A','이름A','학년B','반B','번호B','이름B','근거','표현유사도(z)','글자겹침(%)','가장 닮은 문장A','가장 닮은 문장B','기록A','기록B'];
   const lines = [head.map(q).join(',')];
   for (const p of risky){
     const a = state.rows[p.i], b = state.rows[p.j];
     lines.push([a.grade, a.cls, a.no, a.name, b.grade, b.cls, b.no, b.name, reasonOf(p)[1],
-      (p.lex*100).toFixed(1), p.z.toFixed(2),
+      p.z.toFixed(2), (p.lex*100).toFixed(1),
       state.sents[p.i][p.bi].s, state.sents[p.j][p.bj].s, a.text, b.text].map(q).join(','));
   }
   download(new Blob(['﻿' + lines.join('\r\n')], { type:'text/csv;charset=utf-8' }),
@@ -2849,13 +2874,15 @@ function lintText(text){
       finds.push({ cat:'st', why:`한 문장이 ${sn.s.length}자입니다. 나눠 쓰면 읽기 쉽습니다.`,
                    s:sn.start, e:Math.min(sn.end, text.length), bad:sn.s.slice(0, 24) + '…', good:'' });
 
-  // 겹치는 지적은 하나만 남긴다 (앞선 것 우선, 긴 것 우선)
+  // 겹치는 지적은 '같은 종류끼리만' 하나로 줄인다 (앞선 것·긴 것 우선).
+  // 종류가 다르면(예: 한 자리에 서술 방식 + 띄어쓰기가 겹칠 때) 둘 다 남겨 목록에 함께 보이게 한다.
+  // 본문 밑줄은 markUp·resolvedFinds가 각자 겹침을 다시 걸러 내므로 깨지지 않는다.
   finds.sort((a, b) => a.s - b.s || (b.e - b.s) - (a.e - a.s));
   const kept = [];
-  let last = -1;
+  const lastByCat = {};
   for (const f of finds){
-    if (f.s < last) continue;
-    kept.push(f); last = f.e;
+    if (f.s < (lastByCat[f.cat] ?? -1)) continue;   // 같은 종류가 이미 이 자리를 덮고 있으면 건너뜀
+    kept.push(f); lastByCat[f.cat] = f.e;
   }
 
   // 기록 전체를 봐야 하는 점검 (표시할 위치가 없어 s = -1)
@@ -2904,7 +2931,9 @@ function computeLint(){
 
 function lintCount(){
   const list = state.lint ?? computeLint();
-  return list.reduce((s, x) => s + displayFinds(x).length, 0);   // 로컬 + AI 지적 합산
+  const limit = state.lintLimit;
+  // 로컬 + AI 지적 + 분량 초과(1건) — 아래 통계 카드의 '지적' 합계와 같은 기준으로 센다
+  return list.reduce((s, x) => s + displayFinds(x).length + (x.bytes > limit ? 1 : 0), 0);
 }
 
 function updateLintBadge(){
@@ -2933,16 +2962,29 @@ function markUp(text, finds){
    원문 위치(s,e)는 그대로 두고, 각 지적에 붙은 상태(applied·edited·removed)만 바꾼다.
    화면·복사·엑셀 본문은 늘 원문에서 그 상태를 반영해 새로 만들므로 위치가 어긋나지 않는다. */
 
-// 화면에 표시·적용할 위치 있는 지적을 겹치지 않게 고른다.
-// 짧은 지적(맞춤법·기재 주의)을 먼저 얹어, 문장 전체를 덮는 서술 지적이 그 안의 교정을 가리지 않게 한다.
+// 사용자가 만든 구간 하나를 목록에서 뺀다 (원래대로 되돌릴 때)
+function removeUserEdit(x, f){
+  const a = x.userEdits; if (!a) return;
+  const i = a.indexOf(f); if (i >= 0) a.splice(i, 1);
+}
+// 어떤 지적이 사용자가 통째로 고른 구간 안에 들어가면 — 본문에서는 그 구간 밑에 가려지고,
+// 목록에는 '(수정)'으로 표시한다. 목록에서 아예 빼면 지적 수가 바뀌어 정렬이 튀고,
+// 지적이 전부 덮인 학생은 '이상 없는 기록'으로 넘어가 화면에서 사라지는 문제가 있었다.
+function coveredByUser(x, f){
+  return f.s >= 0 && (x.userEdits || []).some(u => u.s < f.e && f.s < u.e);
+}
+
+// 화면에 얹을 구간 = 규칙·AI 지적 + 사용자가 드래그로 직접 고른 구간(userEdits).
+// 드래그로 통째로 고른 구간을 먼저 얹어, 그 안에 든 지적은 그 밑에 가려지게 한다(밑줄을 포함해 통째로 수정).
+// 남은 지적은 짧은 것부터 얹어, 문장 전체를 덮는 서술 지적이 그 안의 교정을 가리지 않게 한다.
 function resolvedFinds(x){
-  const all = displayFinds(x).filter(f => f.s >= 0);
-  all.sort((a, b) => ((a.e - a.s) - (b.e - b.s)) || (a.s - b.s));   // 짧은 것 우선
+  const users = (x.userEdits || []).filter(f => f.s >= 0);
+  const finds = displayFinds(x).filter(f => f.s >= 0)
+                  .sort((a, b) => ((a.e - a.s) - (b.e - b.s)) || (a.s - b.s));   // 짧은 것 우선
   const placed = [];
-  for (const f of all){
-    if (placed.some(g => f.s < g.e && g.s < f.e)) continue;         // 이미 놓인 것과 겹치면 버림
-    placed.push(f);
-  }
+  const put = f => { if (!placed.some(g => f.s < g.e && g.s < f.e)) placed.push(f); };
+  users.forEach(put);
+  finds.forEach(put);
   return placed.sort((a, b) => a.s - b.s);                          // 렌더는 위치 순서로
 }
 
@@ -2965,14 +3007,48 @@ function deriveText(x){
   return out + text.slice(cur);
 }
 
+// 이 기록이 원문에서 바뀌었는지 — 교정 반영·직접 수정에 더해, 본문 전체 고쳐 쓰기(r.orig 보관)도 포함한다
+function recEdited(x){ return x.r.orig != null || deriveText(x) !== x.r.text; }
+
+/* 개별 교정(밑줄 클릭 적용·드래그·인라인 수정)을 '본문'으로 확정한다.
+   지금까지의 반영본(deriveText)을 x.r.text로 굳히고 다시 점검한다 — 그래야 AI 재검사가
+   원문이 아니라 '내가 고친 본문'을 읽는다. 원문은 r.orig에 남겨 [되돌리기]가 되게 한다.
+   AI 결과는 위치가 어긋나므로 비운다(호출부에서 곧바로 재검사해 다시 채운다). 바뀐 게 없으면 false. */
+function commitEdits(x){
+  const t = deriveText(x);
+  if (t === x.r.text) return false;               // 확정할 새 변경 없음
+  if (x.r.orig == null) x.r.orig = x.r.text;      // 최초 원문 보관(되돌리기용)
+  x.r.text = t;
+  x.finds = lintText(t);
+  x.bytes = neisBytes(t);
+  x.userEdits = [];
+  x.aiFinds = null; x.aiChecked = false; x.aiError = null; x.aiFixed = null;
+  return true;
+}
+
+/* 확인할 기록·이상 없는 기록의 나열 순서 — 항상 학번(학년→반→번호) 오름차순.
+   학번이 입력되지 않은 기록은 이름 ㄱ,ㄴ,ㄷ 순(한글 정렬). 학번이 있는 기록을 이름만 있는 기록보다 앞에 둔다. */
+function recOrder(a, b){
+  const p = a.r, q = b.r;
+  const n = v => { const k = parseInt(v, 10); return Number.isNaN(k) ? 0 : k; };
+  if (p.hasNum && q.hasNum)
+    return (n(p.grade) - n(q.grade)) || (n(p.cls) - n(q.cls)) || (n(p.no) - n(q.no))
+        || (p.name || '').localeCompare(q.name || '', 'ko');
+  if (p.hasNum !== q.hasNum) return p.hasNum ? -1 : 1;
+  return (p.name || '').localeCompare(q.name || '', 'ko')
+      || (p.text || '').localeCompare(q.text || '', 'ko');
+}
+
 // 밑줄(하이라이트)이 클릭·수정 가능하도록 본문 HTML을 만든다.
 // 클릭 핸들러와 같은 원본 항목(state.lint[idx])에서 지적을 뽑아 data-mi 순서가 정확히 맞게 한다.
 function markUpEditable(x){
   const o = state.lint[x.idx] || x;
   const text = o.r.text;
+  // 밑줄 사이의 '지적 없는' 구간마다 원문 시작 위치를 심어, 드래그 선택을 원문 위치로 되돌릴 수 있게 한다
+  const plain = (str, off) => str ? `<span class="mk-plain" data-idx="${x.idx}" data-o="${off}">${esc(str)}</span>` : '';
   let out = '', cur = 0;
   resolvedFinds(o).forEach((f, mi) => {
-    out += esc(text.slice(cur, f.s));
+    out += plain(text.slice(cur, f.s), cur);
     const orig = text.slice(f.s, f.e);
     const d = ` data-idx="${x.idx}" data-mi="${mi}"`;
     if (f.removed){
@@ -2988,7 +3064,7 @@ function markUpEditable(x){
     }
     cur = f.e;
   });
-  return out + esc(text.slice(cur));
+  return out + plain(text.slice(cur), cur);
 }
 
 // 하이라이트 클릭 처리 — 교정안은 적용/되돌리기, 서술·기재 주의는 그 자리 편집
@@ -2996,11 +3072,75 @@ function onMarkClick(idx, mi, el){
   const x = state.lint[idx];
   const f = resolvedFinds(x)[mi];
   if (!f) return;
-  if (f.removed){ f.removed = false; renderLint(); return; }          // 되살리기
+  if (f.removed){                                                    // 되살리기
+    if (f.user) removeUserEdit(x, f); else f.removed = false;         // 사용자 구간이면 아예 원래대로
+    renderLint(); return;
+  }
   if (f.edited != null){ startInlineEdit(el, x, f); return; }         // 다시 편집
   if (f.applied && f.good){ f.applied = false; renderLint(); return; }// 적용 취소
   if (f.good){ f.applied = true; renderLint(); return; }              // 교정안 적용
   startInlineEdit(el, x, f);                                          // 서술·기재 주의: 직접 수정
+}
+
+/* 드래그로 고른 부분을 그 자리 편집으로 — 점검에 안 걸린 곳도 직접 고칠 수 있다.
+   선택이 '지적 없는 한 구간(mk-plain)' 안에 온전히 들어와 있을 때만 받는다(밑줄을 가로지르면 무시).
+   받은 선택은 사용자 편집 구간(userEdits)으로 만들어 기존 '직접 수정' 밑줄과 똑같이 다룬다. */
+function plainSpanOf(node){
+  const el = node && (node.nodeType === 3 ? node.parentElement : node);
+  return el && el.classList && el.classList.contains('mk-plain') ? el : null;
+}
+// 선택 끝점이 텍스트 노드면 그 안 글자 위치, 구간 요소 자체면 자식 순서 → 글자 위치로 바꾼다
+function plainCharOffset(span, node, off){
+  if (node !== span) return off;                                     // 텍스트 노드 안 오프셋
+  let n = 0;
+  for (let i = 0; i < off && i < span.childNodes.length; i++) n += span.childNodes[i].textContent.length;
+  return n;
+}
+// 선택 끝점 하나를 { 기록번호, 원문 글자 위치 }로 바꾼다.
+// 지적 없는 구간(mk-plain)은 정확한 위치, 밑줄(mark)은 통째로 포함되도록 시작쪽은 앞끝(f.s)·끝쪽은 뒤끝(f.e)으로 스냅한다.
+function selectionPoint(node, off, isEnd){
+  const plain = plainSpanOf(node);
+  if (plain) return { idx:+plain.dataset.idx, pos:+plain.dataset.o + plainCharOffset(plain, node, off) };
+  const el = node && (node.nodeType === 3 ? node.parentElement : node);
+  const marked = el && el.closest && el.closest('.rtxt [data-mi]');
+  if (marked){
+    const f = resolvedFinds(state.lint[+marked.dataset.idx])[+marked.dataset.mi];
+    if (f) return { idx:+marked.dataset.idx, pos: isEnd ? f.e : f.s };
+  }
+  return null;
+}
+function onSelectEdit(){
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || !sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  // 한 밑줄 안에서만 이루어진 선택은 무시 — 밑줄 클릭(적용/편집)과 겹쳐 이중 동작하기 때문
+  const mkOf = n => { const el = n && (n.nodeType === 3 ? n.parentElement : n); return el && el.closest ? el.closest('.rtxt [data-mi]') : null; };
+  const m1 = mkOf(range.startContainer);
+  if (m1 && m1 === mkOf(range.endContainer)) return;
+  const p1 = selectionPoint(range.startContainer, range.startOffset, false);
+  const p2 = selectionPoint(range.endContainer, range.endOffset, true);
+  if (!p1 || !p2 || p1.idx !== p2.idx) return;                       // 같은 기록 안, 본문 위에서 끝난 선택만 받는다
+  const s = Math.min(p1.pos, p2.pos), e = Math.max(p1.pos, p2.pos);
+  if (e <= s) return;
+  sel.removeAllRanges();
+  startSelectionEdit(p1.idx, s, e);
+}
+function startSelectionEdit(idx, s, e){
+  const x = state.lint[idx];
+  const orig = x.r.text.slice(s, e);
+  x.userEdits = (x.userEdits || []).filter(u => !(s < u.e && u.s < e)); // 겹치는 기존 사용자 구간은 새 선택으로 대체
+  x.userEdits.push({
+    user: true, fresh: true, src: 'user', cat: 'us', s, e,
+    bad: orig.slice(0, 24) + (orig.length > 24 ? '…' : ''), good: '',
+    why: '직접 고른 부분입니다.', edited: orig,     // 일단 원문 그대로 얹고 곧바로 편집창을 연다
+  });
+  renderLint();
+  const placed = resolvedFinds(x);
+  const mi = placed.findIndex(g => g.user && g.fresh);
+  const f = mi >= 0 ? placed[mi] : x.userEdits.find(g => g.fresh);
+  const el = mi >= 0 && document.querySelector(`.rec[data-idx="${idx}"] .rtxt [data-mi="${mi}"]`);
+  if (el) startInlineEdit(el, x, f);
+  else { removeUserEdit(x, f); renderLint(); }                        // 못 열면 흔적 없이 화면까지 원상 복구
 }
 
 // 하이라이트를 그 자리 편집창으로 바꾼다 (빈칸으로 두면 삭제).
@@ -3029,6 +3169,9 @@ function startInlineEdit(markEl, x, f){
   const commit = () => {
     if (closed) return; closed = true;
     const v = el.value;
+    delete f.fresh;
+    // 사용자가 드래그로 만든 구간은 '지적'이 아니므로, 원래대로 되돌리면 아예 목록에서 뺀다
+    if (f.user && v === origSpan){ removeUserEdit(x, f); renderLint(); return; }
     if (v === '')            { f.removed = true;  delete f.edited; }
     else if (v === origSpan) { f.removed = false; delete f.edited; }  // 원래대로면 편집 해제
     else                     { f.removed = false; f.edited = v; }
@@ -3037,6 +3180,48 @@ function startInlineEdit(markEl, x, f){
   // Enter = 적용 / Shift+Enter = 줄바꿈(여러 줄 편집창) / Esc = 취소
   el.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); commit(); }
+    else if (e.key === 'Escape'){
+      closed = true;
+      if (f.user && f.fresh) removeUserEdit(x, f);                    // 새로 고른 구간을 그냥 취소하면 흔적 없이 사라진다
+      renderLint();
+    }
+  });
+  el.addEventListener('blur', commit);
+}
+
+/* 본문 전체 고쳐 쓰기 — 분량이 넘칠 때(또는 이미 고쳐 쓴 기록)를 통째로 다시 쓴다.
+   각 지적은 원문 위치에 매인 오프셋 방식이라 길이를 크게 줄이면 위치가 어긋난다.
+   그래서 통째로 고쳐 쓸 때는 새 본문을 기준으로 삼고, 규칙 점검을 다시 돌려
+   남은 맞춤법·띄어쓰기·서술 지적을 그 자리에서 이어서 고칠 수 있게 한다.
+   원문은 r.orig에 보관해 [되돌리기]로 되살린다. AI 결과는 위치가 바뀌므로 비운다. */
+function startRecordRewrite(idx){
+  const box = document.querySelector(`.rec[data-idx="${idx}"] .rtxt`);
+  if (!box) return;
+  const x = state.lint[idx];
+  const el = document.createElement('textarea');
+  el.className = 'mk-input mk-area';
+  el.value = deriveText(x);                     // 이미 적용한 교정이 반영된 본문에서 이어 쓴다
+  box.innerHTML = '';
+  box.appendChild(el);
+  const grow = () => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; };
+  grow(); el.focus();
+  el.addEventListener('input', grow);
+  let closed = false;
+  const commit = () => {
+    if (closed) return; closed = true;
+    const v = el.value;
+    const orig = x.r.orig != null ? x.r.orig : x.r.text;
+    if (v === orig){ delete x.r.orig; x.r.text = orig; }   // 원래대로면 고쳐 쓰기 해제
+    else { if (x.r.orig == null) x.r.orig = x.r.text; x.r.text = v; }
+    x.finds = lintText(x.r.text);
+    x.bytes = neisBytes(x.r.text);
+    x.userEdits = [];                             // 통째로 다시 썼으므로 드래그 편집 구간은 위치가 어긋나 비운다
+    x.aiFinds = null; x.aiChecked = false; x.aiError = null; x.aiFixed = null; x.aiActive = false;
+    renderLint();
+  };
+  // Ctrl/⌘+Enter = 저장 (여러 줄이라 Enter는 줄바꿈) · Esc = 취소
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); commit(); }
     else if (e.key === 'Escape'){ closed = true; renderLint(); }
   });
   el.addEventListener('blur', commit);
@@ -3080,13 +3265,12 @@ function renderLint(){
   for (const k of Object.keys(CAT)) counts[k] = 0;
   items.forEach(x => x.finds.forEach(f => counts[f.cat]++));
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  const approvedCount = items.filter(x => deriveText(x) !== x.r.text).length;
+  const approvedCount = items.filter(recEdited).length;
   const aiErr = items.filter(x => x.aiError).length;
   const aiOk  = items.filter(x => x.aiChecked).length;
 
-  const flagged = items.filter(x => x.finds.some(vis))
-                       .sort((a, b) => b.finds.filter(vis).length - a.finds.filter(vis).length);
-  const clean = items.filter(x => !x.finds.some(vis));
+  const flagged = items.filter(x => x.finds.some(vis)).sort(recOrder);
+  const clean = items.filter(x => !x.finds.some(vis)).sort(recOrder);
 
   box.innerHTML = `
     <div class="print-head">생기부돋보기 표현 점검 · ${new Date().toLocaleDateString('ko-KR')} ·
@@ -3119,8 +3303,8 @@ function renderLint(){
             <option value="900"  ${limit===900 ?'selected':''}>개인별 세특(행특) — 900바이트</option>
           </select>
           ${state.aiKey
-            ? `<button class="btn" id="aiRun" ${state.aiBusy?'disabled':''}>${
-                state.aiBusy ? `AI 검사 중… <span id="aiProg">${state.aiProgress}</span>` : 'AI 정밀 검사 다시 실행'}</button>`
+            ? `<button class="btn" id="aiRun" ${state.aiBusy?'disabled':''} title="지금까지 그 자리에서 고친 교정을 본문으로 저장한 뒤, 그 저장된 본문으로 AI 정밀 검사를 다시 실행합니다.">${
+                state.aiBusy ? `AI 검사 중… <span id="aiProg">${state.aiProgress}</span>` : '교정 내용 저장 후 AI 정밀 검사 재실행'}</button>`
             : ''}
           <button class="btn ghost" id="lintPrint">인쇄 / PDF</button>
           <button class="btn ghost" id="lintCsv" ${total?'':'disabled'}>지적 목록 CSV</button>
@@ -3138,21 +3322,21 @@ function renderLint(){
         <b>AI 정밀 검사</b>는 각 기록의 <b>본문만</b> NVIDIA AI로 보냅니다 — <b>학년·반·번호는 전송되지 않고</b>, 본문 속 <b>학교명·학생 이름은 자동 마스킹</b>되어 학생을 특정할 개인정보는 제외됩니다.
         NVIDIA는 표준 API 내용을 <b>세션 종료 후 저장·학습에 사용하지 않는다</b>고 명시합니다(보안 로그 제외).
         <b>교정본은 그대로 쓰지 말고 한 명씩 검토·승인해 주세요.</b>
+        AI 검사는 같은 기록이라도 <b>실행할 때마다 결과가 조금 다를 수 있습니다</b>(모델 특성상 완전히 같게는 고정되지 않습니다). 최종 판단은 선생님이 해 주세요.
       </p>
       ${aiErr ? `<p class="hint no-print" style="margin:6px 0 0;color:var(--warn)">⚠ AI 검사 ${aiErr}건 실패 — API 키가 올바른지, 네트워크가 연결됐는지 확인 후 다시 실행해 주세요.</p>` : ''}
       ${aiOk && !aiErr ? `<p class="hint no-print" style="margin:6px 0 0;color:#2f6a4e">✓ AI 정밀 검사 완료 — ${aiOk}건. 아래에서 학생별로 검토·승인하세요.</p>` : ''}
       <p class="hint no-print" style="margin:6px 0 0">
         바이트는 <b>나이스(NEIS) 글자수 계산기</b>와 같은 방식으로 셉니다 — 한글 3, 영문·숫자·공백·문장부호 1, 줄바꿈 2바이트.
-        2026학년도부터 <b>진로활동 2,100→1,500</b>, <b>개인별 세특(행특) 1,500→900</b>바이트로 바뀌었습니다.
       </p>
     </div>
 
     <div class="block">
-      <div class="head"><h2>확인할 기록 <span class="sub">지적이 많은 순 · 밑줄을 누르면 그 자리에서 고칠 수 있습니다 (맞춤법·띄어쓰기는 눌러서 적용, 서술·기재 주의는 눌러서 직접 수정)</span></h2></div>
+      <div class="head"><h2>확인할 기록 <span class="sub">지적이 많은 순 · 밑줄을 누르면 그 자리에서 고칠 수 있습니다 (맞춤법·띄어쓰기는 눌러서 적용, 서술·기재 주의는 눌러서 직접 수정) · <b>밑줄 부분을 포함해 드래그하면</b> 그 범위를 통째로 고칠 수 있고, 분량이 넘치면 <b>[본문 전체 고쳐 쓰기]</b>로 통째로 다시 쓸 수 있습니다</span></h2></div>
       ${flagged.length ? flagged.map(x => {
         const shown = x.finds.filter(vis);
-        const pendingGood = shown.filter(f => f.s >= 0 && f.good && !f.applied && f.edited == null && !f.removed).length;
-        const edited = deriveText(x) !== x.r.text;                          // 하나라도 반영·수정됨
+        const pendingGood = shown.filter(f => f.s >= 0 && f.good && !f.applied && f.edited == null && !f.removed && !coveredByUser(x, f)).length;
+        const edited = recEdited(x);                                        // 하나라도 반영·수정됨(본문 전체 고쳐 쓰기 포함)
         return `
         <div class="rec${x.aiActive?' ai-active':''}" data-idx="${x.idx}">
           <div class="rhead">
@@ -3164,6 +3348,7 @@ function renderLint(){
             <span class="len-chip ${x.over?'over':''}" title="공백 포함 ${x.r.text.length}자 · 공백 제외 ${x.r.text.replace(/\s/g,'').length}자 · ${x.bytes.toLocaleString()}바이트 (한도 ${limit.toLocaleString()})">${x.r.text.length}자 · ${x.bytes.toLocaleString()}B</span>
             <span class="rec-tools no-print">
               ${pendingGood ? `<button class="btn mini" data-act="applyAll" data-idx="${x.idx}">교정안 전체 적용</button>` : ''}
+              ${x.over || x.r.orig != null ? `<button class="btn ghost mini" data-act="rewrite" data-idx="${x.idx}" title="본문 전체를 통째로 다시 써서 분량을 줄입니다. 고쳐 쓴 뒤 남은 지적은 이어서 고칠 수 있습니다.">본문 전체 고쳐 쓰기</button>` : ''}
               ${edited ? `<button class="btn ghost mini" data-act="revert" data-idx="${x.idx}">되돌리기</button>` : ''}
               <button class="btn ghost mini" data-act="copy" data-idx="${x.idx}">복사</button>
             </span>
@@ -3171,7 +3356,7 @@ function renderLint(){
           <div class="rtxt">${markUpEditable(x)}</div>
           <div class="flist">
             ${shown.map(f => {
-              const st = findState(f);
+              const st = coveredByUser(x, f) ? '수정' : findState(f);   // 드래그로 통째로 고친 구간에 덮인 지적
               return `
               <div class="fitem${st?' done':''}">
                 <span class="src-dot ${f.src==='ai'?'ai':'rule'}" title="${f.src==='ai'?'AI 검사':'로컬 규칙 검사'}">${f.src==='ai'?'🤖':'📐'}</span>
@@ -3215,15 +3400,25 @@ function renderLint(){
   box.querySelectorAll('.rec-tools [data-act]').forEach(b => b.addEventListener('click', () => {
     const idx = +b.dataset.idx;
     if (b.dataset.act === 'applyAll')  applyAllFix(idx);
+    else if (b.dataset.act === 'rewrite') startRecordRewrite(idx);
     else if (b.dataset.act === 'revert') revertFix(idx);
     else if (b.dataset.act === 'copy')   copyText(idx, b);
   }));
   // 본문 하이라이트를 눌러 그 자리에서 적용·수정
   box.querySelectorAll('.rtxt [data-mi]').forEach(el => el.addEventListener('click', () =>
     onMarkClick(+el.dataset.idx, +el.dataset.mi, el)));
+  // 밑줄을 포함해 드래그하면 그 범위를 통째로 고칠 수 있게
+  box.querySelectorAll('.rtxt').forEach(rt => rt.addEventListener('mouseup', onSelectEdit));
 
-  // AI 정밀 검사 다시 실행 (연결·해제는 헤더 배지에서)
-  $('#aiRun')?.addEventListener('click', () => { if (!state.aiBusy) runAiCheck(true); });
+  // 교정 내용을 본문으로 저장(확정)한 뒤 그 본문으로 AI 정밀 검사 재실행 (연결·해제는 헤더 배지에서)
+  $('#aiRun')?.addEventListener('click', () => {
+    if (state.aiBusy) return;
+    const list = state.lint ?? computeLint();
+    let n = 0;
+    for (const x of list) if (commitEdits(x)) n++;   // 개별 교정을 본문으로 확정
+    if (n) renderLint();                             // 저장 결과를 먼저 화면에 반영
+    runAiCheck(true);                                // 저장된 본문으로 전체 재검사
+  });
 }
 
 /* 한 학생의 교정안(맞춤법·띄어쓰기)을 한꺼번에 적용한다.
@@ -3231,12 +3426,19 @@ function renderLint(){
 function applyAllFix(idx){
   const x = state.lint[idx];
   for (const f of displayFinds(x))
-    if (f.s >= 0 && f.good && f.edited == null && !f.removed) f.applied = true;
+    if (f.s >= 0 && f.good && f.edited == null && !f.removed && !coveredByUser(x, f)) f.applied = true;
   renderLint();
 }
-// 이 학생의 모든 반영·수정·삭제를 원래대로 되돌린다
+// 이 학생의 모든 반영·수정·삭제를 원래대로 되돌린다 (본문 전체 고쳐 쓰기도 함께 되살린다)
 function revertFix(idx){
   const x = state.lint[idx];
+  if (x.r.orig != null){                          // 통째로 고쳐 쓴 기록이면 원문으로 되돌리고 다시 점검
+    x.r.text = x.r.orig; delete x.r.orig;
+    x.finds = lintText(x.r.text);
+    x.bytes = neisBytes(x.r.text);
+    x.aiFinds = null; x.aiChecked = false; x.aiError = null; x.aiFixed = null;
+  }
+  x.userEdits = [];                               // 드래그로 직접 고친 구간도 모두 원래대로
   for (const f of [...(x.finds || []), ...(x.aiFinds || [])]){
     f.applied = false; delete f.edited; f.removed = false;
   }
@@ -3296,6 +3498,32 @@ function showTab(name){
 }
 $('#tabSim').addEventListener('click', () => showTab('sim'));
 $('#tabLint').addEventListener('click', () => showTab('lint'));
+
+/* 생기부 내용 글자 크기 슬라이더 — 나란히 보기·표현 점검 본문에만 적용(--rec-scale).
+   나머지 글자(제목·표·안내문)는 그대로 둔다. 설정은 이 브라우저에만 저장한다. */
+const REC_FONT_STORE = 'sgm-rec-font';
+const recFontEl = $('#recFont');
+function applyRecFont(pct){
+  const p = Math.min(160, Math.max(80, +pct || 100));
+  document.documentElement.style.setProperty('--rec-scale', (p / 100).toFixed(3));
+  if (recFontEl) recFontEl.value = p;
+}
+applyRecFont((() => { try { return localStorage.getItem(REC_FONT_STORE); } catch(_){ return null; } })() || 100);
+recFontEl?.addEventListener('input', e => {
+  applyRecFont(e.target.value);
+  try { localStorage.setItem(REC_FONT_STORE, e.target.value); } catch(_){}
+});
+
+/* 모바일(문서 전체 스크롤)에서 고정된 탭 줄이 sticky 헤더와 겹치지 않도록,
+   헤더 실제 높이를 --head-h로 계속 맞춰 준다. 데스크톱은 헤더가 스크롤 영역 밖이라 이 값이 쓰이지 않는다. */
+(function syncHeadH(){
+  const head = document.querySelector('header');
+  if (!head) return;
+  const set = () => document.documentElement.style.setProperty('--head-h', head.offsetHeight + 'px');
+  set();
+  if (window.ResizeObserver) new ResizeObserver(set).observe(head);
+  else window.addEventListener('resize', set);
+})();
 
 // 입력이 바뀌면 점검 결과는 버리고, 뱃지 숫자만 가볍게 다시 센다
 let lintTimer = 0;
