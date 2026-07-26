@@ -516,6 +516,7 @@
   .ai-sugg .opt .n{flex:0 0 auto;font-size:.74rem;font-weight:700;color:var(--brand-deep)}
   .ai-sugg .opt .t{min-width:0;word-break:break-all}
   .ai-sugg .opt .meta{display:block;margin-top:2px;font-size:.74rem;font-weight:400;color:var(--muted)}
+  .ai-sugg .opt .meta b{font-weight:700;color:var(--brand-deep)}   /* 조금 짧게 / 비슷한 분량 / 더 길게 */
   .ai-sugg .warn{margin-top:6px;font-size:.75rem;color:var(--muted)}
 
   .flist{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-direction:column;gap:2px}
@@ -940,6 +941,9 @@
         <b>문구가 잘 떠오르지 않을 때 — [🤖 AI 추천].</b> 마음에 걸리는 부분을 드래그하면 편집창과 함께
         <b>[🤖 AI 추천]</b> 버튼이 뜹니다. 누르면 <b>본문 전체를 맥락으로 읽고</b> 그 부분만 다시 쓴
         <b>후보 3개</b>를 보여 줍니다. 앞뒤 문장과 이어지도록, 명사형 종결(~함/~임)을 지킨 채로요.
+        후보는 <b>분량</b>과 <b>관점</b>을 함께 갈라 놓았습니다 — 드래그한 글자 수를 기준으로
+        <b>① 조금 짧게(관찰된 행동 중심) · ② 비슷한 분량(표현만 다듬기) · ③ 더 길게(역량·태도까지 풀어 쓰기)</b>.
+        바이트가 모자랄 때는 ③을, 넘칠 때는 ①을 고르시면 됩니다.
         후보를 누르면 <b>편집창에 채워지기만</b> 하고, 확정은 지금처럼 Enter입니다. 각 후보 옆에 분량 증감(바이트)도 함께 나옵니다.
         <br><br>
         <b>다만 AI는 본문에 없는 활동을 지어낼 수 있습니다.</b> 지어내지 말라고 지시해 두었지만 완전하지 않습니다.
@@ -1865,6 +1869,10 @@ function maskSplit(text, s, e, name){
 
 /* 드래그로 고른 구간을 AI에게 다시 써 달라고 한다 — 본문 전체를 문맥으로 함께 보내되
    고쳐 쓰는 것은 고른 구간뿐이다. 자동 적용은 하지 않고 후보 3개를 돌려줄 뿐이다.
+   후보 3개는 '분량'과 '관점'을 함께 가른다 — 고른 글자 수보다 조금 짧게(관찰된 행동 중심) /
+   비슷하게(표현만 다듬기) / 더 길게(역량·태도 중심). 분량을 앞세운 것은 바이트가 넘치거나
+   모자랄 때 바로 골라 쓸 수 있게 하려는 것이고, 길게 쓰는 후보에도 없는 사실은 못 넣게 막아 둔다.
+   화면에 붙는 관점 이름(attachAiSuggest의 kinds)은 이 순서를 그대로 따르므로 함께 고쳐야 한다.
    맞춤법 검사(aiCorrectOne)와 달리 여러 갈래의 답이 나와야 하므로 temperature를 올리고,
    seed를 매번 바꿔 [다시 추천]이 같은 답을 되풀이하지 않게 한다.
    → [{ text, note }] */
@@ -1880,14 +1888,22 @@ async function aiRewriteSpan(text, s, e, name, signal){
     '"앞"·"고칠부분"·"뒤" 어디에도 없는 정보를 새로 넣으면 안 된다. 있는 사실을 다르게 표현할 뿐이다. ' +
     '구체적으로 쓰려고 없는 내용을 채우지 말고, 확신이 없으면 표현만 바꿔라.\n' +
     '4. "앞"이나 "뒤"에 이미 나온 내용을 되풀이하지 마라.\n' +
-    '5. 길이는 "고칠부분"과 비슷하거나 짧게 한다.\n' +
-    '5-1. 문장부호를 원문과 똑같이 맞춘다. "고칠부분"이 마침표로 끝나면 후보도 반드시 마침표로 끝내고, ' +
+    '5. 문장부호를 원문과 똑같이 맞춘다. "고칠부분"이 마침표로 끝나면 후보도 반드시 마침표로 끝내고, ' +
     '마침표 없이 끝나면(문장 중간 조각이면) 후보에도 마침표를 붙이지 마라.\n' +
-    '6. 서로 방향이 다른 후보 3개를 낸다(예: 관찰된 행동 중심 / 역량·태도 중심 / 간결하게 줄인 것). ' +
-    'note에는 무엇을 바꿨는지 15자 안쪽으로 적는다.\n' +
+    '6. 후보 3개는 [분량]과 [관점]을 함께 달리해서 낸다. 분량 기준은 "고칠부분글자수"(공백 포함 글자 수)이고, ' +
+    '반드시 이 순서대로 1·2·3번을 낸다. 셋은 서로 뚜렷이 달라야 한다.\n' +
+    '   후보1 — 약간 짧게(글자수의 약 80~90%) + [관찰된 행동 중심]: ' +
+    '학생이 실제로 한 일과 장면만 남기고 수식·평가어를 덜어 간결하게 줄인다.\n' +
+    '   후보2 — 비슷한 분량(약 95~105%) + [표현 다듬기]: ' +
+    '초점은 원문과 같게 두고 어휘와 문장 구조만 자연스럽게 바꾼다.\n' +
+    '   후보3 — 길게(약 115~135%) + [역량·태도 중심]: ' +
+    '같은 행동에서 드러난 역량·태도·성장을 덧붙여 풀어 쓴다. ' +
+    '단, 늘리려고 없는 사실을 지어내면 안 된다(3번 규칙이 분량보다 우선한다). ' +
+    '새 활동·수치를 넣지 말고, 이미 "앞"·"고칠부분"·"뒤"에 있는 행동에서 읽어낼 수 있는 것만 서술하라.\n' +
+    'note에는 원문에서 무엇을 바꿨는지 15자 안쪽으로 적는다(관점 이름 자체는 화면에 따로 나오므로 되풀이하지 마라).\n' +
     '7. 반드시 아래 JSON만 출력한다(그 외 어떤 말도 하지 마라): ' +
     '{"options":[{"text":"후보 문장","note":"짧은 설명"}]}';
-  const user = JSON.stringify({ 앞: before, 고칠부분: target, 뒤: after }, null, 0);
+  const user = JSON.stringify({ 앞: before, 고칠부분: target, 고칠부분글자수: target.length, 뒤: after }, null, 0);
   const raw = await aiChat([{ role:'system', content: sys }, { role:'user', content: user }],
                            { temperature: 0.7, top_p: 0.9, seed: Math.floor(Math.random() * 1e6),
                              max_tokens: 900, signal });
@@ -1901,7 +1917,9 @@ async function aiRewriteSpan(text, s, e, name, signal){
     .filter(o => o && typeof o.text === 'string' && o.text.trim())
     .map(o => ({ text: matchTailPunct(o.text, orig), note: String(o.note || '').trim() }))
     .filter(o => o.text && !seen.has(o.text) && seen.add(o.text))
-    .slice(0, 3);
+    .slice(0, 3)
+    // 짧게 → 비슷하게 → 길게 순으로 세운다. AI가 순서를 뒤섞어 보내도 화면에서는 항상 같은 차례로 보이게.
+    .sort((a, b) => a.text.length - b.text.length);
   if (!opts.length) throw new Error('추천안을 만들지 못했습니다');
   return opts;
 }
@@ -3371,7 +3389,7 @@ function attachAiSuggest(input, x, f, onFill){
   const btn = document.createElement('button');
   btn.type = 'button'; btn.className = 'ask';
   btn.textContent = '🤖 AI 추천';
-  btn.title = '고른 부분을 본문 전체 맥락에 맞춰 다시 쓴 후보를 3개 받습니다. 고르면 편집창에 채워지고, 확정은 Enter입니다.';
+  btn.title = '고른 부분을 본문 전체 맥락에 맞춰 다시 쓴 후보를 3개 받습니다 — 조금 짧게(행동 중심) · 비슷한 분량(표현 다듬기) · 더 길게(역량·태도 중심). 고르면 편집창에 채워지고, 확정은 Enter입니다.';
   row.appendChild(btn);
   const stat = document.createElement('span');
   row.appendChild(stat);
@@ -3398,12 +3416,15 @@ function attachAiSuggest(input, x, f, onFill){
 
   const show = list => {
     opts.innerHTML = '';
+    // 후보는 짧게 → 비슷하게 → 길게 순으로 온다. 세 개가 다 왔을 때만 분량·관점 이름을 붙인다.
+    const kinds = list.length === 3
+      ? ['조금 짧게 · 행동 중심', '비슷한 분량 · 표현 다듬기', '더 길게 · 역량·태도 중심'] : [];
     list.forEach((o, i) => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'opt'; b.dataset.on = '0';
       const d = neisBytes(o.text) - origBytes;
       b.innerHTML = `<span class="n">${i + 1}</span><span class="t">${esc(o.text)}`
-        + `<span class="meta">${o.note ? esc(o.note) + ' · ' : ''}`
+        + `<span class="meta">${kinds[i] ? '<b>' + kinds[i] + '</b> · ' : ''}${o.note ? esc(o.note) + ' · ' : ''}`
         + `${d === 0 ? '분량 같음' : (d > 0 ? '+' : '') + d + '바이트'}</span></span>`;
       b.addEventListener('click', () => fill(o.text, b));
       opts.appendChild(b);
