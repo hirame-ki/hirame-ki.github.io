@@ -1395,62 +1395,121 @@ function rowsToTsv(rows){
   return out.join('\n');
 }
 
-/* 입력 양식 .xlsx 생성 */
+/* 입력 양식 .xlsx 생성 — 결과 파일과 같은 서식 체계를 쓰되(buildXlsx),
+   양식이라 테두리·줄무늬는 빼고((plain)) (예시) 줄만 흐리게 둔다.
+   내용 열에 열 기본 서식이 걸려 있어, 아래로 새로 붙여 넣는 줄에도 자동 줄바꿈이 그대로 먹는다. */
 function buildTemplate(){
-  const enc = new TextEncoder(), B = s => enc.encode(s);
-  const x = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const data = [
     ['학년','반','번호','내용'],
     ['1','3','1','(예시) 이 줄은 지우고 쓰셔도 되고, 그냥 두셔도 분석에서 자동으로 빠집니다.'],
     ['1','3','2','(예시) 한 줄에 학생 한 명씩, 기록 전문을 이 칸에 붙여넣으세요.'],
   ];
-  const rows = data.map((r, ri) =>
-    `<row r="${ri+1}">` + r.map((v, ci) =>
-      `<c r="${String.fromCharCode(65+ci)}${ri+1}" t="inlineStr"><is><t xml:space="preserve">${x(v)}</t></is></c>`
-    ).join('') + '</row>').join('');
-
-  const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-<cols><col min="1" max="1" width="7" customWidth="1"/><col min="2" max="2" width="7" customWidth="1"/><col min="3" max="3" width="7" customWidth="1"/><col min="4" max="4" width="110" customWidth="1"/></cols>
-<sheetData>${rows}</sheetData></worksheet>`;
-
-  return makeZip([
-    { name:'[Content_Types].xml', data:B(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-<Default Extension="xml" ContentType="application/xml"/>
-<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
-<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
-</Types>`) },
-    { name:'_rels/.rels', data:B(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
-</Relationships>`) },
-    { name:'xl/workbook.xml', data:B(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-<sheets><sheet name="생기부" sheetId="1" r:id="rId1"/></sheets></workbook>`) },
-    { name:'xl/_rels/workbook.xml.rels', data:B(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
-</Relationships>`) },
-    { name:'xl/worksheets/sheet1.xml', data:B(sheet) },
-  ]);
+  return buildXlsx('생기부', data, [7, 7, 7, { w:96, wrap:true }],
+                   { plain:true, hintFrom:1, filter:false });
 }
 
-/* 범용 .xlsx 생성 — 2차원 배열(첫 줄 머리글)과 열 너비를 받아 한 시트로 묶는다.
-   buildTemplate 과 같은 방식(외부 라이브러리 없이 ZIP+XML 직접 작성). */
-function buildXlsx(sheetName, data, widths){
+/* 내려받는 .xlsx 의 서식(styles.xml) — 머리글 띠 · 한 줄 걸러 옅은 배경 · 표 테두리 · 자동 줄바꿈.
+   한셀에서도 그대로 열리도록 테마 색(theme)을 참조하지 않고 색값을 직접 적는다.
+   요소 순서(fonts→fills→borders→cellStyleXfs→cellXfs→cellStyles)는 규격이 정한 것이라
+   바꾸면 파일이 열리지 않는다. fills 0·1번(none·gray125)도 규격이 요구하는 자리라 지우면 안 된다.
+   cellXfs 안에서의 자리번호가 곧 셀의 s 속성 값이다 — 아래 STY 표와 짝이므로 함께 고칠 것.
+   결과 파일과 입력 양식은 요구가 달라 서식을 나눠 뒀다. p(plain)는 입력 양식용으로 테두리·줄무늬가 없다 —
+   양식의 빈 열에는 이 서식을 열 기본값으로 걸어 두는데(<col style>), 테두리가 들어 있으면
+   시트 끝까지 격자가 그려져 버린다. h(hint)는 양식의 (예시) 줄을 흐리게 보이는 용도다. */
+const STY = { head:1, mid:2, wrap:3, midZ:4, wrapZ:5, pMid:6, pWrap:7, hMid:8, hWrap:9 };   // Z = 줄무늬(짝수 줄)
+const XLSX_STYLES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="3">
+<font><sz val="10"/><color rgb="FF1F2A37"/><name val="맑은 고딕"/><family val="2"/></font>
+<font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="맑은 고딕"/><family val="2"/></font>
+<font><sz val="10"/><color rgb="FF8A94A3"/><name val="맑은 고딕"/><family val="2"/></font>
+</fonts>
+<fills count="4">
+<fill><patternFill patternType="none"/></fill>
+<fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF2F7D76"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFF3F8F7"/><bgColor indexed="64"/></patternFill></fill>
+</fills>
+<borders count="2">
+<border><left/><right/><top/><bottom/><diagonal/></border>
+<border><left style="thin"><color rgb="FFD6DEE5"/></left><right style="thin"><color rgb="FFD6DEE5"/></right><top style="thin"><color rgb="FFD6DEE5"/></top><bottom style="thin"><color rgb="FFD6DEE5"/></bottom><diagonal/></border>
+</borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="10">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>
+<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="left" vertical="top" wrapText="1"/></xf>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+
+/* 범용 .xlsx 생성 — 2차원 배열(첫 줄 머리글)과 열 설정을 받아 한 시트로 묶는다.
+   외부 라이브러리 없이 ZIP+XML을 직접 쓴다. 결과 파일도 입력 양식도 이 함수 하나로 만든다.
+   cols 는 숫자(너비)이거나 { w, wrap } — wrap 인 열은 줄바꿈되고 그 줄 수에 맞춰 행 높이를 잡는다.
+   opts.plain    — 테두리·줄무늬 없이. 열 기본 서식을 걸어 **나중에 채워 넣는 행도** 줄바꿈되게 한다(입력 양식)
+   opts.hintFrom — 이 줄부터는 흐린 글씨((예시) 줄)
+   opts.filter   — 머리글에 필터 단추 (기본 켬) */
+function buildXlsx(sheetName, data, cols, opts){
+  const o = opts || {};
   const enc = new TextEncoder(), B = s => enc.encode(s);
   const x = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const colRef = i => { let s = ''; i++; while (i){ s = String.fromCharCode(65 + (i-1) % 26) + s; i = Math.floor((i-1) / 26); } return s; };
-  const rows = data.map((r, ri) =>
-    `<row r="${ri+1}">` + r.map((v, ci) =>
-      `<c r="${colRef(ci)}${ri+1}" t="inlineStr"><is><t xml:space="preserve">${x(v)}</t></is></c>`
-    ).join('') + '</row>').join('');
-  const cols = (widths || []).map((w, i) => `<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('');
+  const spec = (cols || []).map(c => (typeof c === 'number' ? { w:c } : (c || {})));
+  const at = i => spec[i] || {};
+
+  /* 줄바꿈된 글이 몇 줄을 차지하는지 어림한다.
+     엑셀 열 너비의 단위는 '0' 한 글자 폭이라 한글은 두 칸을 먹는다.
+     너비에서 4를 빼고 5%를 얹어 넉넉하게 잡는다 — 낱말 단위로 줄이 바뀌면서
+     줄 끝이 남기 때문에, 모자라게 잡으면 글자가 잘려 보인다. */
+  const visLen = s => { let n = 0; for (const ch of String(s)) n += ch.charCodeAt(0) < 0x1100 ? 1 : 2; return n; };
+  const lineCount = (s, w) => {
+    const per = Math.max(4, (w || 10) - 4);
+    return String(s).split('\n').reduce((n, seg) => n + Math.max(1, Math.ceil(visLen(seg) * 1.05 / per)), 0);
+  };
+
+  // 몸통 셀의 서식 고르기 — 입력 양식(plain)은 테두리·줄무늬 없이, (예시) 줄은 흐리게.
+  const bodyStyle = (ri, wrap) => {
+    if (o.hintFrom != null && ri >= o.hintFrom) return wrap ? STY.hWrap : STY.hMid;
+    if (o.plain) return wrap ? STY.pWrap : STY.pMid;
+    return ri % 2 === 0 ? (wrap ? STY.wrapZ : STY.midZ) : (wrap ? STY.wrap : STY.mid);
+  };
+
+  const rows = data.map((r, ri) => {
+    const head = ri === 0;
+    let lines = 1;
+    const cells = r.map((v, ci) => {
+      const c = at(ci);
+      if (!head && c.wrap) lines = Math.max(lines, lineCount(v, c.w));
+      const s = head ? STY.head : bodyStyle(ri, !!c.wrap);
+      return `<c r="${colRef(ci)}${ri+1}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${x(v)}</t></is></c>`;
+    }).join('');
+    // customHeight 는 붙이지 않는다 — 우리 어림값을 쓰되, 엑셀·한셀이 다시 맞출 여지를 남긴다.
+    const ht = head ? 26 : Math.min(409, Math.round((lines * 14 + 7) * 10) / 10);
+    return `<row r="${ri+1}" ht="${ht}">${cells}</row>`;
+  }).join('');
+
+  /* 입력 양식에서는 열 자체에 서식을 건다 — 선생님이 아래로 붙여 넣는 행에도 줄바꿈이 먹어야 하기 때문.
+     이때 테두리가 든 서식을 쓰면 시트 끝까지 격자가 그려지므로 p(plain) 서식만 쓴다. */
+  const colXml = spec.map((c, i) => {
+    if (!c.w) return '';
+    const st = o.plain ? ` style="${c.wrap ? STY.pWrap : STY.pMid}"` : '';
+    return `<col min="${i+1}" max="${i+1}" width="${c.w}"${st} customWidth="1"/>`;
+  }).join('');
+  const last = colRef(Math.max(0, (data[0] || []).length - 1));
+  const filter = o.filter === false ? '' : `<autoFilter ref="A1:${last}${data.length}"/>`;
   const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-${cols ? `<cols>${cols}</cols>` : ''}<sheetData>${rows}</sheetData></worksheet>`;
+<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A2" sqref="A2"/></sheetView></sheetViews>
+<sheetFormatPr defaultRowHeight="16"/>
+${colXml ? `<cols>${colXml}</cols>` : ''}<sheetData>${rows}</sheetData>
+${filter}</worksheet>`;
 
   return makeZip([
     { name:'[Content_Types].xml', data:B(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -1459,6 +1518,7 @@ ${cols ? `<cols>${cols}</cols>` : ''}<sheetData>${rows}</sheetData></worksheet>`
 <Default Extension="xml" ContentType="application/xml"/>
 <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
 <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
 </Types>`) },
     { name:'_rels/.rels', data:B(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
@@ -1470,7 +1530,9 @@ ${cols ? `<cols>${cols}</cols>` : ''}<sheetData>${rows}</sheetData></worksheet>`
     { name:'xl/_rels/workbook.xml.rels', data:B(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
 </Relationships>`) },
+    { name:'xl/styles.xml', data:B(XLSX_STYLES) },
     { name:'xl/worksheets/sheet1.xml', data:B(sheet) },
   ]);
 }
@@ -3807,7 +3869,8 @@ function exportFixedXlsx(){
   const data = [['학년','반','번호','이름','내용(교정 반영)']];
   for (const x of list)
     data.push([x.r.grade || '', x.r.cls || '', x.r.no || '', x.r.name || '', deriveText(x)]);
-  download(buildXlsx('교정본', data, [7, 7, 7, 10, 110]),
+  // 내용 열만 줄바꿈 — 너비 96이면 한글 46자쯤에서 줄이 바뀌고, 행 높이가 그 줄 수에 맞춰 잡힌다.
+  download(buildXlsx('교정본', data, [7, 7, 7, 12, { w:96, wrap:true }]),
     `생기부돋보기_수정본_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
