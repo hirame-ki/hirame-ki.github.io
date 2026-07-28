@@ -1791,7 +1791,20 @@ const state = {
    보내는 것은 본문 텍스트뿐. 이름·학교·학번은 전송에서 빠지고, 돌아온 교정본은
    로컬에서 행 순서로 각 학생에 다시 붙는다. */
 const AI_BASE  = 'https://hirameki.esquire0.workers.dev/v1';
-const AI_MODEL = 'qwen/qwen3-next-80b-a3b-instruct';
+/* 쓸 모델을 차례로 적어 둔다. 앞의 것이 없어지면(404·410) 자동으로 다음 것으로 넘어간다.
+   2026-07-27에 `qwen/qwen3-next-80b-a3b-instruct`가 예고된 수명을 다해 내려가면서
+   AI 검사가 통째로 죽고, 화면에는 "API 키를 확인하라"는 엉뚱한 안내만 떴던 일이 있다.
+   NVIDIA는 모델을 종료일과 함께 내리므로, 한 줄에 매어 두면 같은 일이 되풀이된다.
+   담을 모델을 고르는 기준: ① 한국어 품질 ② **비추론(non-reasoning)** — 이 도구는 응답이
+   JSON만이기를 기대하므로(aiCorrectOne·aiRewriteSpan) 생각 과정을 함께 뱉는 모델은 파싱이 깨진다. */
+const AI_CHAIN = [
+  'moonshotai/kimi-k2.6',
+  'z-ai/glm-5.2',
+  'deepseek-ai/deepseek-v4-flash',
+  'openai/gpt-oss-120b',
+];
+let aiChainAt = 0;                 // 살아 있는 모델을 한 번 찾으면 그 뒤로는 그것부터 쓴다
+const aiModel = () => AI_CHAIN[Math.min(aiChainAt, AI_CHAIN.length - 1)];
 const AI_KEY_STORE = 'mirror_nvapi_v1';
 const saveAiKey = k => { try { localStorage.setItem(AI_KEY_STORE, k); } catch(_){} };
 const loadAiKey = () => { try { return localStorage.getItem(AI_KEY_STORE) || ''; } catch(_){ return ''; } };
@@ -1855,16 +1868,46 @@ function maskForSend(text, name){
 
 // 워커(→NVIDIA) 채팅 호출. 스트리밍 SSE를 모아 전체 응답 문자열을 돌려준다.
 // 같은 기록은 되도록 같은 결과가 나오도록 무작위성을 없앤다: temperature 0(탐욕적 디코딩) · top_p 1 · seed 고정.
-// 다만 호스팅된 대형 MoE 모델(qwen3-next)은 서버 배치 구성에 따른 부동소수점 차이로
+// 다만 호스팅된 대형 MoE 모델(AI_CHAIN에 담은 것들이 그렇다)은 서버 배치 구성에 따른 부동소수점 차이로
 // temperature 0에서도 실행마다 완전히 같은 답을 보장하진 못한다(호스팅 LLM의 알려진 한계).
-async function aiChat(messages, { temperature = 0, top_p = 1, seed = 12345, max_tokens = 2048, signal } = {}){
+/* API 오류를 Error로 세운다.
+   NVIDIA는 오류 본문을 JSON 문자열로 통째로 넘겨주므로("{\"title\":\"Gone\",\"detail\":\"The model ...\"}")
+   사람이 읽을 detail·title만 뽑아 메시지로 삼는다 — 이 메시지가 화면에 그대로 보인다.
+   404·410은 '모델이 없어졌다'는 뜻이라 다음 모델로 넘어갈 표시를 함께 세운다. */
+function aiErr(status, raw){
+  let msg = String(raw || '');
+  try { const o = JSON.parse(msg); msg = o.detail || o.title || o.message || msg; } catch(_){}
+  const e = new Error(msg.trim() + (status ? ` (${status})` : ''));
+  e.status = status;
+  e.modelGone = status === 404 || status === 410 || /no longer available|end of life|model.*not found/i.test(msg);
+  return e;
+}
+
+async function aiChat(messages, opts = {}){
+  let last;
+  // 살아 있는 모델을 만날 때까지 차례로 내려간다. 모델이 없어진 것(404·410)만 건너뛰고,
+  // 키·한도·네트워크 문제는 다음 모델에서도 똑같이 날 것이므로 그 자리에서 멈춘다.
+  for (let i = aiChainAt; i < AI_CHAIN.length; i++){
+    try { return await aiChatOnce(AI_CHAIN[i], messages, opts); }
+    catch (e){
+      if (!e || !e.modelGone) throw e;
+      last = e;
+      aiChainAt = Math.max(aiChainAt, i + 1);   // 동시에 여러 건이 돌아도 되돌아가지 않게
+      console.warn('[AI] 모델을 쓸 수 없어 다음으로 넘어갑니다:', AI_CHAIN[i], '→', AI_CHAIN[i + 1] || '(없음)', e.message);
+    }
+  }
+  throw new Error('쓸 수 있는 AI 모델이 없습니다 — ' + ((last && last.message) || '모델 목록을 확인해 주세요') );
+}
+
+// 모델 하나로 실제 호출. 모델이 없어진 경우에는 err.modelGone을 세워 위에서 건너뛰게 한다.
+async function aiChatOnce(model, messages, { temperature = 0, top_p = 1, seed = 12345, max_tokens = 2048, signal } = {}){
   const res = await fetch(AI_BASE + '/chat/completions', {
     method:'POST',
     headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + state.aiKey },
-    body: JSON.stringify({ model: AI_MODEL, messages, temperature, top_p, seed, max_tokens, stream:true }),
+    body: JSON.stringify({ model, messages, temperature, top_p, seed, max_tokens, stream:true }),
     signal,                                                  // 편집창을 닫으면 진행 중인 추천 요청을 끊는다
   });
-  if (!res.ok || !res.body) throw new Error('연결 실패 (' + res.status + ')');
+  if (!res.ok || !res.body) throw aiErr(res.status, '연결 실패 (' + res.status + ')');
   const reader = res.body.getReader(), dec = new TextDecoder();
   let buf = '', out = '';
   for (;;){
@@ -1876,17 +1919,26 @@ async function aiChat(messages, { temperature = 0, top_p = 1, seed = 12345, max_
       const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1);
       if (!line.startsWith('data:')) {
         if (line.startsWith(':')) continue;                  // keep-alive 주석
-        try { const e = JSON.parse(line); if (e.error) throw new Error(e.error.message || 'API 오류'); } catch(_){}
+        let e = null; try { e = JSON.parse(line); } catch(_){}   // 파싱 실패만 삼키고 오류는 올려보낸다
+        if (e && e.error) throw aiErr(e.error.status, e.error.message || 'API 오류');
         continue;
       }
       const data = line.slice(5).trim();
       if (data === '[DONE]') { buf = ''; break; }
       let ev; try { ev = JSON.parse(data); } catch(_){ continue; }
-      if (ev.error) throw new Error(ev.error.message || 'API 오류 (' + (ev.error.status || '') + ')');
+      if (ev.error) throw aiErr(ev.error.status, ev.error.message || 'API 오류 (' + (ev.error.status || '') + ')');
       out += ev.choices?.[0]?.delta?.content || '';
     }
   }
-  return out;
+  return stripThink(out);
+}
+
+/* 추론형 모델의 생각 블록을 걷어 낸다. 이 도구는 응답이 JSON뿐이라고 보고
+   맨 처음 { 부터 훑으므로(aiCorrectOne·aiRewriteSpan), 생각 블록 안에 중괄호가 섞이면
+   엉뚱한 조각을 JSON으로 읽는다. AI_CHAIN 앞자리는 비추론 모델이지만,
+   뒤로 밀려 내려갔을 때를 대비해 막아 둔다. 닫는 태그가 빠진 경우도 함께 처리. */
+function stripThink(t){
+  return String(t).replace(/<think>[\s\S]*?<\/think>/g, '').replace(/^[\s\S]*?<\/think>/, '').trim();
 }
 
 /* AI가 맡는 것은 맞춤법·띄어쓰기뿐이다(문맥을 봐야 하는 영역 — AI가 규칙보다 잘한다).
@@ -3658,6 +3710,9 @@ function renderLint(){
   const approvedCount = items.filter(recEdited).length;
   const aiErr = items.filter(x => x.aiError).length;
   const aiOk  = items.filter(x => x.aiChecked).length;
+  // 실패 사유는 거의 언제나 모든 건이 같다(키·모델·한도). 개수만 세고 사유를 감추면
+  // "모델이 종료됨"이 "키를 확인하세요"로 둔갑해 엉뚱한 곳을 고치게 된다 → 첫 사유를 그대로 보여 준다.
+  const aiErrMsg = (items.find(x => x.aiError) || {}).aiError || '';
 
   /* '확인할 기록' 카드로 그릴 것 —
      ① 지적이 있는 기록
@@ -3721,7 +3776,8 @@ function renderLint(){
         <b>교정본은 그대로 쓰지 말고 한 명씩 검토·승인해 주세요.</b>
         AI 검사는 같은 기록이라도 <b>실행할 때마다 결과가 조금 다를 수 있습니다</b>(모델 특성상 완전히 같게는 고정되지 않습니다). 최종 판단은 선생님이 해 주세요.
       </p>
-      ${aiErr ? `<p class="hint no-print" style="margin:6px 0 0;color:var(--warn)">⚠ AI 검사 ${aiErr}건 실패 — API 키가 올바른지, 네트워크가 연결됐는지 확인 후 다시 실행해 주세요.</p>` : ''}
+      ${aiErr ? `<p class="hint no-print" style="margin:6px 0 0;color:var(--warn)">⚠ AI 검사 ${aiErr}건 실패 — <b>${esc(aiErrMsg)}</b><br>
+        키·네트워크 문제가 아니라 위 메시지가 모델·한도를 가리킨다면, 키를 다시 발급받아도 해결되지 않습니다.</p>` : ''}
       ${aiOk && !aiErr ? `<p class="hint no-print" style="margin:6px 0 0;color:#2f6a4e">✓ AI 정밀 검사 완료 — ${aiOk}건. 아래에서 학생별로 검토·승인하세요.</p>` : ''}
       <p class="hint no-print" style="margin:6px 0 0">
         바이트는 <b>나이스(NEIS) 글자수 계산기</b>와 같은 방식으로 셉니다 — 한글 3, 영문·숫자·공백·문장부호 1, 줄바꿈 2바이트.

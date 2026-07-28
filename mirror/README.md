@@ -81,7 +81,10 @@ AI가 쓴 문장은 더 그렇습니다. **AI 추천은 초안을 대신 써 주
 - 임베딩: `Xenova/multilingual-e5-small` 고정 (transformers.js로 브라우저에서 실행).
   다른 모델과의 비교는 `test/benchmark.html`에서 합니다
 - 엑셀 읽기·쓰기: 브라우저 기본 기능만으로 직접 구현 (기록이 서드파티 스크립트를 거치지 않도록)
-- AI 정밀 검사·AI 추천: `qwen/qwen3-next-80b-a3b-instruct` (NVIDIA API · 키를 연결했을 때만 · 본문만 전송)
+- AI 정밀 검사·AI 추천: `AI_CHAIN`의 모델을 차례로 시도 (NVIDIA API · 키를 연결했을 때만 · 본문만 전송)
+  `moonshotai/kimi-k2.6` → `z-ai/glm-5.2` → `deepseek-ai/deepseek-v4-flash` → `openai/gpt-oss-120b`.
+  앞의 모델이 종료되면(404·410) 자동으로 다음 것으로 넘어간다 —
+  2026-07-27 `qwen/qwen3-next-80b-a3b-instruct` 종료로 AI 검사가 통째로 멈춘 일이 있어 체인으로 바꿨다.
 
 ### 이 도구가 쓰는 AI 모델은 둘입니다
 
