@@ -566,8 +566,35 @@
 // NVIDIA는 브라우저 직접 호출(CORS)을 막으므로 worker.js 프록시(Cloudflare Worker)를 거친다.
 const BASE = "https://hirameki.esquire0.workers.dev/v1";
 const EMBED_MODEL = "nvidia/llama-nemotron-embed-1b-v2";
-const CHAT_MODEL  = "qwen/qwen3-next-80b-a3b-instruct";
-const CHAT_LABEL  = "Qwen3-Next 80B";
+/* 쓸 모델을 차례로 적어 둔다. 앞의 것이 없어지면(404·410) 자동으로 다음 것으로 넘어간다.
+   2026-07-27에 `qwen/qwen3-next-80b-a3b-instruct`가 예고된 수명을 다해 내려가면서 답변 생성이
+   통째로 멈춘 일이 있다. NVIDIA는 모델을 종료일과 함께 내리므로 한 줄에 매어 두면 되풀이된다.
+   추론 블록을 뱉는 모델이 섞여도 stripThink()가 걸러 준다.
+   차례는 **첫 토큰이 빨리 나오는 순서**로 세운다 — 스트리밍으로 답을 흘리는 화면이라
+   TTFT가 곧 체감 속도이고, 느리면 Cloudflare 524까지 걸린다. 활성 파라미터가 작은
+   MoE(gpt-oss·a3b)를 앞에 둔다. 앞서 쓰던 qwen3-next-80b-a3b도 같은 이유로 고른 것이었다. */
+const CHAT_CHAIN = [
+  { id:"openai/gpt-oss-120b",            label:"GPT-OSS 120B", extra:{ reasoning_effort:"low" } },
+  { id:"nvidia/nemotron-3-nano-30b-a3b", label:"Nemotron 3 Nano", extra:{} },
+  { id:"moonshotai/kimi-k2.6",           label:"Kimi K2.6",    extra:{} },
+  { id:"z-ai/glm-5.2",                   label:"GLM-5.2",      extra:{} },
+];
+/* 첫 글자가 나오기까지 기다리는 한도. 없으면 화면이 "생각 중…"에서 영영 멎는다 —
+   중계 워커는 업스트림을 기다리며 5초마다 keep-alive를 흘리므로 바이트는 계속 오는데
+   내용은 없는 상태가 무한히 이어질 수 있다. 넘기면 그 모델을 건너뛴다. */
+const FIRST_TOKEN_MS = 45000;
+let chatChainAt = 0;                       // 살아 있는 모델을 찾으면 그 뒤로는 그것부터 쓴다
+const chatModel = () => CHAT_CHAIN[Math.min(chatChainAt, CHAT_CHAIN.length-1)];
+// 모델이 없어졌을 때만 다음으로 넘긴다. 더 넘길 곳이 없으면 false.
+function nextChatModel(){
+  if(chatChainAt >= CHAT_CHAIN.length-1) return false;
+  chatChainAt++;
+  console.warn("[규정나침반] 모델을 쓸 수 없어 다음으로 넘어갑니다 →", chatModel().id);
+  const el=document.getElementById("modelLabel"); if(el) el.textContent=chatModel().label;
+  return true;
+}
+const isModelGone = (status,msg) =>
+  status===404 || status===410 || /no longer available|end of life/i.test(String(msg||""));
 const DB_KEY  = "regchart_chunks_v1";
 const KEY_KEY = "regchart_apikey_v1";
 
@@ -647,38 +674,70 @@ function stripThink(t){ return t.replace(/<think>[\s\S]*?<\/think>/g,"").replace
 // onDelta(partial)가 있으면 누적 텍스트를 계속 전달한다.
 async function chat(messages, onDelta, signal){
   const MAX_RETRY=3;
-  for(let attempt=0;;attempt++){
-    const res = await fetch(BASE+"/chat/completions",{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+state.apiKey},
-      body:JSON.stringify({ model:CHAT_MODEL, messages, temperature:0.1, top_p:0.8, max_tokens:2048, stream:true }),
-      signal
-    });
-    if(res.status===429 && attempt<MAX_RETRY){ await sleep(4000*(attempt+1)); continue; }
-    if(!res.ok){ throw new Error("chat "+res.status+": "+(await res.text()).slice(0,160)); }
-
-    const reader=res.body.getReader(), dec=new TextDecoder();
-    let buf="", full="";
-    while(true){
-      const {value,done}=await reader.read();
-      if(done) break;
-      buf+=dec.decode(value,{stream:true});
-      let nl;
-      while((nl=buf.indexOf("\n"))>=0){
-        const line=buf.slice(0,nl).trim(); buf=buf.slice(nl+1);
-        if(!line.startsWith("data:")) continue;
-        const data=line.slice(5).trim();
-        if(data==="[DONE]") continue;
-        let obj;
-        try{ obj=JSON.parse(data); }catch(_){ continue; }
-        if(obj.error){ throw new Error("chat "+(obj.error.status||"")+": "+String(obj.error.message||"오류").slice(0,160)); }
-        const delta=obj.choices?.[0]?.delta?.content||"";
-        if(delta){ full+=delta; if(onDelta) onDelta(stripThink(full)); }
+  // 모델을 바꿔 다시 도는 것은 재시도 횟수로 세지 않는다(429 재시도 여유를 그대로 남겨 둔다).
+  retry: for(let attempt=0;;){
+    /* 바깥 signal(사용자 중단)과 첫-토큰 시계를 한 컨트롤러로 묶는다.
+       무엇이 끊었는지 구분해야 — 사용자가 끊은 것은 그대로 올리고,
+       시계가 끊은 것은 '이 모델은 못 쓴다'는 뜻이라 다음 모델로 넘긴다. */
+    const ctl=new AbortController();
+    const relay=()=>ctl.abort();
+    if(signal){ if(signal.aborted) ctl.abort(); else signal.addEventListener("abort",relay); }
+    let timedOut=false, timer=setTimeout(()=>{ timedOut=true; ctl.abort(); },FIRST_TOKEN_MS);
+    const stopClock=()=>{ if(timer){ clearTimeout(timer); timer=null; } };
+    try{
+      const res = await fetch(BASE+"/chat/completions",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":"Bearer "+state.apiKey},
+        body:JSON.stringify({ model:chatModel().id, messages, temperature:0.1, top_p:0.8,
+                              max_tokens:2048, ...(chatModel().extra||{}), stream:true }),
+        signal:ctl.signal
+      });
+      if(res.status===429 && attempt<MAX_RETRY){ attempt++; await sleep(4000*attempt); continue retry; }
+      if(!res.ok){
+        const t=(await res.text()).slice(0,160);
+        if(isModelGone(res.status,t) && nextChatModel()) continue retry;
+        throw new Error("chat "+res.status+": "+t);
       }
+
+      const reader=res.body.getReader(), dec=new TextDecoder();
+      let buf="", full="";
+      while(true){
+        const {value,done}=await reader.read();
+        if(done) break;
+        buf+=dec.decode(value,{stream:true});
+        let nl;
+        while((nl=buf.indexOf("\n"))>=0){
+          const line=buf.slice(0,nl).trim(); buf=buf.slice(nl+1);
+          if(!line.startsWith("data:")) continue;
+          const data=line.slice(5).trim();
+          if(data==="[DONE]") continue;
+          let obj;
+          try{ obj=JSON.parse(data); }catch(_){ continue; }
+          if(obj.error){
+            // 워커가 업스트림 오류를 200 + SSE로 실어 보내므로, 모델 종료도 여기서 잡힌다.
+            const st=obj.error.status||0, msg=String(obj.error.message||"오류");
+            if(isModelGone(st,msg) && nextChatModel()){ reader.cancel().catch(()=>{}); continue retry; }
+            throw new Error("chat "+(st||"")+": "+msg.slice(0,160));
+          }
+          const delta=obj.choices?.[0]?.delta?.content||"";
+          if(delta){ if(!full) stopClock(); full+=delta; if(onDelta) onDelta(stripThink(full)); }
+        }
+      }
+      const content=stripThink(full);
+      if(!content) throw new Error("빈 응답이 반환되었습니다. 잠시 후 다시 시도해 주세요.");
+      return content;
+    }catch(e){
+      if(timedOut){
+        // 살아는 있지만 첫 글자조차 못 내놓는 모델 → 다음 모델로. 더 없으면 사유를 그대로 알린다.
+        const why=chatModel().label+" 모델이 "+(FIRST_TOKEN_MS/1000)+"초 안에 응답을 시작하지 못했습니다";
+        if(nextChatModel()) continue retry;
+        throw new Error(why);
+      }
+      throw e;
+    }finally{
+      stopClock();
+      if(signal) signal.removeEventListener("abort",relay);
     }
-    const content=stripThink(full);
-    if(!content) throw new Error("빈 응답이 반환되었습니다. 잠시 후 다시 시도해 주세요.");
-    return content;
   }
 }
 function cosine(a,b){ let d=0,na=0,nb=0; for(let i=0;i<a.length;i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];} return d/(Math.sqrt(na)*Math.sqrt(nb)+1e-9); }
@@ -821,7 +880,7 @@ async function tryConnect(key, silent){
     saveKey(key); // 다음 방문 시 자동 연결
     closeModal();
     connPill.classList.add("show");
-    modelLabel.textContent = CHAT_LABEL;
+    modelLabel.textContent = chatModel().label;
     st.textContent="";
     $("#uploadCard").classList.remove("locked");
     if(state.chunks.length) unlockAsk();
