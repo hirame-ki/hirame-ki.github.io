@@ -1802,19 +1802,24 @@ const AI_BASE  = 'https://hirameki.esquire0.workers.dev/v1';
    ② 한국어 품질
    ③ 생각 과정을 본문에 섞지 않을 것 — 이 도구는 응답이 JSON만이기를 기대하므로
       (aiCorrectOne·aiRewriteSpan) 추론 블록이 본문에 섞이면 파싱이 깨진다. stripThink()로 한 번 더 막는다. */
+/* 차례는 실측으로 정했다. 덩치 큰 모델(kimi-k2.6·deepseek-v4-flash)을 앞에 뒀을 때
+   둘 다 첫 글자를 제때 못 내놓아 화면이 멎었다. 활성 파라미터가 작은 것부터 세운다. */
 const AI_CHAIN = [
-  { id:'openai/gpt-oss-120b',            extra:{ reasoning_effort:'low' } },  // MoE 활성 5B — meeting 프로젝트에서 쓰던 것
-  { id:'nvidia/nemotron-3-nano-30b-a3b', extra:{} },                          // MoE 활성 3B — 가장 가볍다
-  { id:'moonshotai/kimi-k2.6',           extra:{} },                          // 품질 예비
-  { id:'z-ai/glm-5.2',                   extra:{} },
+  // MoE 활성 5B. meeting 프로젝트에서도 쓰고 있고, 실사용에서 정상 응답이 확인된 모델
+  { id:'openai/gpt-oss-120b',            extra:{ reasoning_effort:'low' } },
+  { id:'nvidia/nemotron-3-nano-30b-a3b', extra:{} },   // 활성 3B — 가장 가볍다
+  { id:'openai/gpt-oss-20b',             extra:{ reasoning_effort:'low' } },  // 같은 계열 소형
+  { id:'z-ai/glm-5.2',                   extra:{} },   // 품질 예비. 무거우므로 맨 뒤
 ];
 let aiChainAt = 0;                 // 살아 있는 모델을 한 번 찾으면 그 뒤로는 그것부터 쓴다
 /* 첫 글자가 나오기까지 기다리는 한도. 이 한도가 없으면 화면이 "0/N"에서 영원히 멎는다 —
    중계 워커는 업스트림을 기다리는 동안 5초마다 keep-alive 주석을 흘리므로, 바이트는 계속
    오는데 내용은 없는 상태가 무한히 이어질 수 있다(워커에 상한이 없다). 한도를 넘기면
    그 모델을 '못 쓰는 것'으로 보고 체인의 다음 모델로 넘어간다. 첫 글자가 나온 뒤에는
-   생성이 진행 중이라는 뜻이므로 시계를 끈다. */
-const AI_FIRST_TOKEN_MS = 45000;
+   생성이 진행 중이라는 뜻이므로 시계를 끈다.
+   30초로 잡은 것은 실사용 관찰에 따른 것이다 — 45초로 뒀더니 느린 모델에 걸렸을 때
+   "멈춘 것 같다"는 체감이 너무 길었다. 정상 모델은 몇 초 안에 첫 글자를 낸다. */
+const AI_FIRST_TOKEN_MS = 30000;
 const AI_KEY_STORE = 'mirror_nvapi_v1';
 const saveAiKey = k => { try { localStorage.setItem(AI_KEY_STORE, k); } catch(_){} };
 const loadAiKey = () => { try { return localStorage.getItem(AI_KEY_STORE) || ''; } catch(_){ return ''; } };
@@ -2105,20 +2110,39 @@ async function runAiCheck(force = false){
   state.aiBusy = true;
   const total = list.length; let done = total - queue.length;
   const badge = $('#aiBadgeTxt');
-  const refresh = () => {
-    state.aiProgress = `${done} / ${total}`;
+
+  /* 흐른 시간을 초로 함께 보여 준다.
+     한 건에 수십 초가 걸릴 수 있는데 숫자가 멈춰 있으면 "멎은 것 아닌가" 하게 된다.
+     실제로 모델이 느렸을 때 0/N에서 멈춘 것처럼 보인 적이 있어, 살아 있다는 표시를 남긴다.
+     화면을 통째로 다시 그리면(renderLint) 편집 중인 입력창이 날아가므로,
+     1초 단위 갱신은 글자만 바꿔 넣는다. */
+  const started = Date.now();
+  const secs = t => Math.round((Date.now() - t) / 1000);
+  const paintLabels = () => {
+    const s = secs(started);
+    state.aiProgress = `${done} / ${total} · ${s}초`;
     const el = $('#aiProg'); if (el) el.textContent = state.aiProgress;
-    if (badge) badge.textContent = `AI 검사 중… ${done}/${total}`;
+    if (badge) badge.textContent = `AI 검사 중… ${done}/${total} · ${s}초`;
+    // 학생 카드마다 그 학생이 검사에 들어간 뒤 흐른 시간을 따로 보여 준다
+    document.querySelectorAll('.rec .ai-spin[data-idx]').forEach(sp => {
+      const x = list[+sp.dataset.idx];
+      sp.textContent = `AI 검사 중… ${x && x.aiStart ? secs(x.aiStart) : 0}초`;
+    });
+  };
+  const refresh = () => {
+    paintLabels();
     updateLintBadge();                       // 상단 탭의 지적 수 실시간 반영
     if (state.tab === 'lint') renderLint();   // 지적 목록·통계 카드 실시간 반영
+    paintLabels();                            // 다시 그린 뒤의 카드에도 초를 얹는다
   };
   refresh();
+  const ticker = setInterval(paintLabels, 1000);
 
   const worker = async () => {
     let i;
     while ((i = queue.shift()) !== undefined){
       const x = list[i];
-      x.aiActive = true; refresh();
+      x.aiActive = true; x.aiStart = Date.now(); refresh();
       let ok = false;
       for (let attempt = 0; attempt < 2 && !ok; attempt++){
         try {
@@ -2130,11 +2154,11 @@ async function runAiCheck(force = false){
           if (attempt === 0) await new Promise(r => setTimeout(r, 800));   // 잠시 쉬고 한 번 더
         }
       }
-      x.aiActive = false; done++; refresh();
+      x.aiActive = false; x.aiStart = null; done++; refresh();
     }
   };
   try { await Promise.all(Array.from({ length: Math.min(AI_CONCURRENCY, queue.length) }, worker)); }
-  finally { state.aiBusy = false; updateAiBadge(); renderLint(); }
+  finally { clearInterval(ticker); state.aiBusy = false; updateAiBadge(); renderLint(); }
 }
 
 /* 화면에 보여줄 지적 목록 — 로컬 검사와 AI 검사를 합친다.
@@ -2145,10 +2169,16 @@ async function runAiCheck(force = false){
 function displayFinds(x){
   const rule = x.finds || [];
   if (!x.aiChecked) return rule;
-  const ai = x.aiFinds || [];
-  const missed = rule.filter(f => (f.cat === 'sp' || f.cat === 'sc')
-    && !ai.some(a => a.s >= 0 && f.s < a.e && a.s < f.e));   // 같은 자리는 AI(문맥 판단)가 맡는다
-  return [...rule.filter(f => f.cat === 'st' || f.cat === 'bn'), ...missed, ...ai];
+  const hits = (a, b) => a.s >= 0 && b.s >= 0 && a.s < b.e && b.s < a.e;   // 자리가 겹치는가
+  /* 사전에 답이 정해진 지적(firm)은 같은 자리에서 AI보다 우선한다.
+     AI가 ‘구지’를 ‘구체’로 고치는 것을 실제로 확인했다 — 사전에 있는 낱말까지
+     모델 판단에 맡기면 틀린 교정이 화면에 오르고, 실행할 때마다 답도 달라진다. */
+  const firm = rule.filter(f => f.firm && f.s >= 0);
+  const ai = (x.aiFinds || []).filter(a => !firm.some(f => hits(f, a)));
+  // 문맥을 봐야 하는 나머지 맞춤법·띄어쓰기는 지금처럼 AI(문맥 판단)에 자리를 내준다
+  const missed = rule.filter(f => (f.cat === 'sp' || f.cat === 'sc') && !f.firm
+    && !ai.some(a => hits(f, a)));
+  return [...rule.filter(f => f.cat === 'st' || f.cat === 'bn'), ...firm, ...missed, ...ai];
 }
 
 /* ═══ 8. 입력 패널 ═══════════════════════════════════════ */
@@ -3032,10 +3062,14 @@ const jong = ch => { const c = ch.codePointAt(0) - 0xAC00; return (c < 0 || c >=
 const isAdn = ch => jong(ch) === 8 || jong(ch) === 4 || ch === '는';
 
 const RULES = [];
-const rule = (cat, why, re, fix, guard) => RULES.push({ cat, why, re, fix, guard });
-// 사전형 규칙: 틀린 표기 → 바른 표기
+const rule = (cat, why, re, fix, guard, firm) => RULES.push({ cat, why, re, fix, guard, firm });
+/* 사전형 규칙: 틀린 표기 → 바른 표기.
+   사전에 올린 것은 문맥을 볼 필요 없이 **틀린 표기가 확정된 낱말**이므로 firm으로 표시한다.
+   firm 지적은 같은 자리에서 AI 교정보다 우선한다(displayFinds) — AI가 '구지'를 '구체'로
+   잘못 안내하는 일이 실제로 있었고, 사전에 답이 있는 낱말까지 모델의 그날 컨디션에 맡길 이유가 없다.
+   덤으로 결과가 실행마다 흔들리지 않는다(규칙은 언제나 같은 답을 낸다). */
 const dict = (cat, why, map, guard) =>
-  rule(cat, why, new RegExp(Object.keys(map).join('|'), 'g'), m => map[m[0]], guard);
+  rule(cat, why, new RegExp(Object.keys(map).join('|'), 'g'), m => map[m[0]], guard, true);
 
 /* ── 맞춤법 ───────────────────────────────────────────── */
 rule('sp', '‘되어’로 풀어서 말이 되면 ‘돼’, 아니면 ‘되’입니다.',
@@ -3046,8 +3080,16 @@ rule('sp', '‘되었-’의 준말은 ‘됐-’입니다.', /됬|됫/g, () => 
 rule('sp', '‘하였-’의 준말은 ‘했-’입니다.', /햇(다|음|고|으며)/g, m => '했' + m[1]);
 rule('sp', '‘왠’은 ‘왠지’에만 쓰고, 나머지는 모두 ‘웬’입니다.', /왠(?!지)/g, () => '웬');
 rule('sp', '‘왜인지’의 준말이므로 ‘왠지’입니다.', /웬지/g, () => '왠지');
+// ‘줌·옴·감’까지 넣은 것은 ‘보여줌으로서’처럼 명사형 종결이 다양하기 때문(실제 기록에서 나왔다)
 rule('sp', '수단·방법을 나타낼 때는 ‘-(으)로써’입니다.',
-     /(함|됨|임|짐|봄)으로서/g, m => m[1] + '으로써');
+     /(함|됨|임|짐|봄|줌|옴|감|섬|남)으로서/g, m => m[1] + '으로써', null, true);
+/* ‘드러냄’(밖으로 나타냄)과 ‘들어냄’(들어서 밖으로 옮김)은 둘 다 있는 말이라 통째로 못 바꾼다.
+   생기부에서 걸리는 것은 앞에 추상적인 자질이 오는 경우뿐이므로, 그때만 잡는다.
+   (‘책상을 들어냄’ 같은 문장은 건드리지 않는다.) */
+const SHOW_N = '리더십|배려심|적극성|성실성|책임감|역량|의지|능력|태도|모습|관심|열정|재능|자질|면모|저력|가능성|잠재력|끈기|열의|소질';
+rule('sp', '속성을 밖으로 나타낼 때는 ‘드러냄’입니다(‘들어냄’은 물건을 들어서 옮기는 것).',
+     new RegExp(`(${SHOW_N})(을|를)(\\s*)들어(냄|내|낸|냈)`, 'g'),
+     m => m[1] + m[2] + m[3] + '드러' + m[4], null, true);   // 원문의 띄어쓰기를 그대로 살린다
 rule('sp', '자격·신분을 나타낼 때는 ‘-(으)로서’입니다.',
      /(학생|리더|반장|부반장|모둠장|조장|부장|일원|구성원|친구|선배|후배|주체)(으로써|로써)/g,
      m => m[1] + (m[2] === '으로써' ? '으로서' : '로서'));
@@ -3064,7 +3106,14 @@ dict('sp', '자주 틀리는 표기입니다.', {
   '넉두리':'넋두리', '어의없':'어이없', '되물림':'대물림', '알맞는':'알맞은',
   '걸맞는':'걸맞은', '있슴':'있음', '없슴':'없음', '했슴':'했음', '뵈요':'봬요',
   '단언컨데':'단언컨대', '할런지':'할는지',
+  // 실제 학급 기록에서 AI가 놓치거나 틀리게 안내한 낱말들 — 사전에 답이 있으므로 규칙이 맡는다
+  '격는':'겪는', '격었':'겪었', '띄어남':'뛰어남', '띄어난':'뛰어난',
 });
+/* ‘구지’는 ‘굳이’의 흔한 오기지만, 고전 시가 <구지가>와 지명(구지면·구지읍)이 있어
+   통째로 바꾸면 안 된다. 뒤에 오는 글자로 가려낸다.
+   (AI가 이 낱말을 ‘구체’로 잘못 고치는 것을 실제로 확인해 규칙으로 못 박았다.) */
+rule('sp', '‘굳이’의 잘못된 표기입니다.', /구지/g, () => '굳이',
+     (m, text) => !/^[가면읍역동리]/.test(text.slice(m.index + 2)), true);
 // 앞 음절 받침이 없거나 ㄴ이면 ‘율’, 그 밖에는 ‘률’
 dict('sp', '앞말 받침에 따라 ‘율/률’이 갈립니다.', {
   '확율':'확률', '비률':'비율', '출석율':'출석률', '참여률':'참여율', '성공율':'성공률',
@@ -3186,6 +3235,7 @@ function lintText(text){
       finds.push({
         cat: r.cat, why: r.why, s: m.index, e: m.index + m[0].length,
         bad: m[0], good: r.fix ? r.fix(m) : '',
+        firm: !!r.firm,          // 사전에 답이 정해진 지적 — 같은 자리에서 AI보다 우선한다
       });
     }
   }
@@ -3602,7 +3652,13 @@ function attachAiSuggest(input, x, f, onFill){
     if (ctrl) ctrl.abort();
     ctrl = new AbortController();
     btn.disabled = true;
-    stat.innerHTML = '<span class="wait">문맥을 읽는 중…</span>';
+    // 흐른 시간을 초로 함께 보인다 — 멈춘 것이 아니라 기다리는 중임을 알 수 있게
+    const t0 = Date.now();
+    stat.innerHTML = '<span class="wait">문맥을 읽는 중… 0초</span>';
+    const tick = setInterval(() => {
+      const w = stat.querySelector('.wait');
+      if (w) w.textContent = `문맥을 읽는 중… ${Math.round((Date.now() - t0) / 1000)}초`;
+    }, 1000);
     if (!asked){ asked = true; }
     try {
       const list = await aiRewriteSpan(x.r.text, f.s, f.e, x.r.name, ctrl.signal);
@@ -3612,7 +3668,7 @@ function attachAiSuggest(input, x, f, onFill){
       if (!panel.isConnected || (e && e.name === 'AbortError')) return;
       btn.disabled = false;
       stat.innerHTML = `<span class="err">추천 실패 — ${esc((e && e.message) || '오류')}</span>`;
-    } finally { ctrl = null; }
+    } finally { clearInterval(tick); ctrl = null; }
   };
   btn.addEventListener('click', ask);
 
@@ -3841,7 +3897,7 @@ function renderLint(){
             ${x.r.sub ? `<span class="nm" style="color:var(--muted);font-weight:500">${esc(x.r.sub)}</span>` : ''}
             ${fromSim ? `<span class="from-sim">${edited ? '유사도에서 넘어와 고침'
               : '유사도에서 넘어옴' + (shown.length ? '' : ' · 표현 지적은 없습니다')}</span>` : ''}
-            ${x.aiActive ? `<span class="ai-spin">AI 검사 중…</span>` : (x.aiChecked ? `<span class="src-tag ai">🤖 AI 완료</span>` : '')}
+            ${x.aiActive ? `<span class="ai-spin" data-idx="${x.idx}">AI 검사 중… 0초</span>` : (x.aiChecked ? `<span class="src-tag ai">🤖 AI 완료</span>` : '')}
             <span class="sp"></span>
             ${edited && !fromSim ? `<span class="applied-chip">✓ 교정 반영됨</span>` : ''}
             <span class="len-chip ${x.over?'over':''}" title="공백 포함 ${x.r.text.length}자 · 공백 제외 ${x.r.text.replace(/\s/g,'').length}자 · ${x.bytes.toLocaleString()}바이트 (한도 ${limit.toLocaleString()})">${x.r.text.length}자 · ${x.bytes.toLocaleString()}B</span>
