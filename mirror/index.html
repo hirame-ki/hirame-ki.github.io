@@ -1795,16 +1795,26 @@ const AI_BASE  = 'https://hirameki.esquire0.workers.dev/v1';
    2026-07-27에 `qwen/qwen3-next-80b-a3b-instruct`가 예고된 수명을 다해 내려가면서
    AI 검사가 통째로 죽고, 화면에는 "API 키를 확인하라"는 엉뚱한 안내만 떴던 일이 있다.
    NVIDIA는 모델을 종료일과 함께 내리므로, 한 줄에 매어 두면 같은 일이 되풀이된다.
-   담을 모델을 고르는 기준: ① 한국어 품질 ② **비추론(non-reasoning)** — 이 도구는 응답이
-   JSON만이기를 기대하므로(aiCorrectOne·aiRewriteSpan) 생각 과정을 함께 뱉는 모델은 파싱이 깨진다. */
+   담을 모델을 고르는 기준:
+   ① **첫 토큰이 빨리 나올 것** — 학생 수만큼(보통 20~30건) 호출하므로 TTFT가 곧 전체 대기 시간이다.
+      활성 파라미터가 작은 MoE(a3b·a12b, gpt-oss)를 앞에 세운다. 앞서 쓰던 qwen3-next-80b-a3b도
+      같은 이유로 고른 것이었다(활성 3B). **덩치 큰 밀집 모델을 앞에 두면 0/N에서 멎은 것처럼 보인다.**
+   ② 한국어 품질
+   ③ 생각 과정을 본문에 섞지 않을 것 — 이 도구는 응답이 JSON만이기를 기대하므로
+      (aiCorrectOne·aiRewriteSpan) 추론 블록이 본문에 섞이면 파싱이 깨진다. stripThink()로 한 번 더 막는다. */
 const AI_CHAIN = [
-  'moonshotai/kimi-k2.6',
-  'z-ai/glm-5.2',
-  'deepseek-ai/deepseek-v4-flash',
-  'openai/gpt-oss-120b',
+  { id:'openai/gpt-oss-120b',            extra:{ reasoning_effort:'low' } },  // MoE 활성 5B — meeting 프로젝트에서 쓰던 것
+  { id:'nvidia/nemotron-3-nano-30b-a3b', extra:{} },                          // MoE 활성 3B — 가장 가볍다
+  { id:'moonshotai/kimi-k2.6',           extra:{} },                          // 품질 예비
+  { id:'z-ai/glm-5.2',                   extra:{} },
 ];
 let aiChainAt = 0;                 // 살아 있는 모델을 한 번 찾으면 그 뒤로는 그것부터 쓴다
-const aiModel = () => AI_CHAIN[Math.min(aiChainAt, AI_CHAIN.length - 1)];
+/* 첫 글자가 나오기까지 기다리는 한도. 이 한도가 없으면 화면이 "0/N"에서 영원히 멎는다 —
+   중계 워커는 업스트림을 기다리는 동안 5초마다 keep-alive 주석을 흘리므로, 바이트는 계속
+   오는데 내용은 없는 상태가 무한히 이어질 수 있다(워커에 상한이 없다). 한도를 넘기면
+   그 모델을 '못 쓰는 것'으로 보고 체인의 다음 모델로 넘어간다. 첫 글자가 나온 뒤에는
+   생성이 진행 중이라는 뜻이므로 시계를 끈다. */
+const AI_FIRST_TOKEN_MS = 45000;
 const AI_KEY_STORE = 'mirror_nvapi_v1';
 const saveAiKey = k => { try { localStorage.setItem(AI_KEY_STORE, k); } catch(_){} };
 const loadAiKey = () => { try { return localStorage.getItem(AI_KEY_STORE) || ''; } catch(_){ return ''; } };
@@ -1893,19 +1903,50 @@ async function aiChat(messages, opts = {}){
       if (!e || !e.modelGone) throw e;
       last = e;
       aiChainAt = Math.max(aiChainAt, i + 1);   // 동시에 여러 건이 돌아도 되돌아가지 않게
-      console.warn('[AI] 모델을 쓸 수 없어 다음으로 넘어갑니다:', AI_CHAIN[i], '→', AI_CHAIN[i + 1] || '(없음)', e.message);
+      console.warn('[AI] 모델을 쓸 수 없어 다음으로 넘어갑니다:', AI_CHAIN[i].id,
+                   '→', (AI_CHAIN[i + 1] || {}).id || '(없음)', e.message);
     }
   }
   throw new Error('쓸 수 있는 AI 모델이 없습니다 — ' + ((last && last.message) || '모델 목록을 확인해 주세요') );
 }
 
-// 모델 하나로 실제 호출. 모델이 없어진 경우에는 err.modelGone을 세워 위에서 건너뛰게 한다.
-async function aiChatOnce(model, messages, { temperature = 0, top_p = 1, seed = 12345, max_tokens = 2048, signal } = {}){
+// 모델 하나로 실제 호출. 모델이 없어졌거나 너무 느리면 err.modelGone을 세워 위에서 건너뛰게 한다.
+async function aiChatOnce(m, messages, { temperature = 0, top_p = 1, seed = 12345, max_tokens = 2048, signal } = {}){
+  /* 바깥 signal(편집창 닫기)과 첫-토큰 시계를 한 컨트롤러로 묶는다.
+     둘 중 무엇이 끊었는지 구분해야 — 사용자가 닫은 것은 오류가 아니고,
+     시계가 끊은 것은 '이 모델은 못 쓴다'는 뜻이라 다음 모델로 넘겨야 한다. */
+  const ctl = new AbortController();
+  const relay = () => ctl.abort();
+  if (signal){
+    if (signal.aborted) ctl.abort();
+    else signal.addEventListener('abort', relay);
+  }
+  let timedOut = false;
+  let timer = setTimeout(() => { timedOut = true; ctl.abort(); }, AI_FIRST_TOKEN_MS);
+  const stopClock = () => { if (timer){ clearTimeout(timer); timer = null; } };
+
+  try {
+    return await aiStream(m, messages, { temperature, top_p, seed, max_tokens }, ctl.signal, stopClock);
+  } catch (e){
+    if (timedOut){
+      const t = aiErr(0, `${m.id} 모델이 ${AI_FIRST_TOKEN_MS / 1000}초 안에 응답을 시작하지 못했습니다`);
+      t.modelGone = true;                       // 살아는 있지만 쓸 수 없으니 다음 모델로
+      throw t;
+    }
+    throw e;                                    // 사용자가 닫은 것(AbortError)도 그대로 올려보낸다
+  } finally {
+    stopClock();
+    if (signal) signal.removeEventListener('abort', relay);
+  }
+}
+
+// 실제 스트리밍 수신. 첫 글자를 받으면 onFirstToken()으로 첫-토큰 시계를 끈다.
+async function aiStream(m, messages, params, signal, onFirstToken){
   const res = await fetch(AI_BASE + '/chat/completions', {
     method:'POST',
     headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + state.aiKey },
-    body: JSON.stringify({ model, messages, temperature, top_p, seed, max_tokens, stream:true }),
-    signal,                                                  // 편집창을 닫으면 진행 중인 추천 요청을 끊는다
+    body: JSON.stringify({ model: m.id, messages, ...params, ...(m.extra || {}), stream:true }),
+    signal,
   });
   if (!res.ok || !res.body) throw aiErr(res.status, '연결 실패 (' + res.status + ')');
   const reader = res.body.getReader(), dec = new TextDecoder();
@@ -1927,7 +1968,9 @@ async function aiChatOnce(model, messages, { temperature = 0, top_p = 1, seed = 
       if (data === '[DONE]') { buf = ''; break; }
       let ev; try { ev = JSON.parse(data); } catch(_){ continue; }
       if (ev.error) throw aiErr(ev.error.status, ev.error.message || 'API 오류 (' + (ev.error.status || '') + ')');
-      out += ev.choices?.[0]?.delta?.content || '';
+      const piece = ev.choices?.[0]?.delta?.content || '';
+      if (piece && !out) onFirstToken();      // 생성이 시작됐다 — 첫-토큰 시계를 끈다
+      out += piece;
     }
   }
   return stripThink(out);
