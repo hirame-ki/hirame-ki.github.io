@@ -42,17 +42,32 @@ const REPEAT = +(process.env.BENCH_REPEAT || 3);
    그 자리는 아직 재 보지 않은 후보로 채운다(활성 파라미터가 크지 않은 것들). */
 const CANDIDATES = [
   { id:'openai/gpt-oss-120b',               extra:{ reasoning_effort:'low' } },
-  { id:'nvidia/nemotron-3-nano-30b-a3b',    extra:{} },
-  { id:'openai/gpt-oss-20b',                extra:{ reasoning_effort:'low' } },
-  { id:'z-ai/glm-5.2',                      extra:{} },
   { id:'google/gemma-4-31b-it',             extra:{} },
-  { id:'mistralai/mistral-medium-3.5-128b', extra:{} },
-  { id:'nvidia/nemotron-3-super-120b-a12b', extra:{} },
 ];
+/* 뺀 모델과 이유 (다시 넣기 전에 반드시 읽을 것 — 같은 검토를 세 번 되풀이했다)
 
-/* 첫 글자까지 기다리는 한도. 앱(AI_FIRST_TOKEN_MS)과 같은 30초를 쓴다 —
-   앱에서 못 쓸 만큼 느린 모델은 벤치에서도 탈락시켜야 순위가 현실과 맞는다. */
-const FIRST_TOKEN_MS = 30000;
+   ① 첫 글자가 안 나옴 — 이 계정에서 **한 건씩 순차로 불러도** 90초를 넘긴다.
+      동시 호출 탓이 아님을 따로 확인했다(gpt-oss-120b는 4개 동시에도 TTFT 2초대).
+        · z-ai/glm-5.2                      (한때 31~48초에 되기도 해 편차가 극심)
+        · deepseek-ai/deepseek-v4-flash
+        · mistralai/mistral-medium-3.5-128b
+   ② 계정에서 쓸 수 없음
+        · moonshotai/kimi-k2.6  → 404 "Not found for account"
+   ③ 교정본을 못 내놓음 — 답을 delta.content가 아니라 reasoning으로만 흘리고
+      finish=length로 끝없이 생각만 하다 끝난다. **워커를 거치지 않고 직접 불러도 같다.**
+        · nvidia/nemotron-3-nano-30b-a3b · openai/gpt-oss-20b · nvidia/nemotron-3-super-120b-a12b
+   ④ 사라짐
+        · qwen/*  NVIDIA 카탈로그에서 삭제(2026-07-27 수명 종료). 되돌릴 방법 없음.
+
+   Groq에는 qwen3.6-27b가 남아 있지만 무료 토큰 한도가 빠듯해 학급 단위 사용에 부적합하다는
+   판단으로 NVIDIA를 계속 쓰기로 했다(2026-07-28). */
+
+/* 첫 글자까지 기다리는 한도. 앱은 30초지만 **여기서는 60초로 넉넉히 잡는다.**
+   NVIDIA 무료 티어는 대기가 길어, 30초로 재면 품질이 좋은 모델이 '느리다'는 이유로
+   측정도 되기 전에 떨어져 나간다(실제로 glm-5.2가 그렇게 탈락했다).
+   속도는 탈락 조건이 아니라 **순위 요소(TTFT)**로만 쓰고, 품질을 먼저 가린다.
+   앱의 30초는 그대로 둔다 — 선생님이 화면 앞에서 무한정 기다릴 수는 없기 때문이다. */
+const FIRST_TOKEN_MS = 60000;
 
 /* 시험 문항. must = 교정본에 반드시 있어야 할 것, forbid = 남아 있으면 안 되는 원래 오류.
    clean = 오류가 없는 기록(손대면 과교정). 본문은 엑셀에서 읽어 오므로 여기엔 채점표만 둔다. */
@@ -269,6 +284,54 @@ function judge(c, raw){
   return r;
 }
 
+/* 모델 하나를 전 문항에 걸쳐 재고 점수를 매긴다. 여러 모델이 동시에 이 함수를 돈다. */
+async function runModel(m, sys, cases){
+  const r = { model:m.id, ttft:[], json:0, style:0, cjk:0, hit:0, want:0, left:0, over:0,
+              same:0, cases:0, spacingOk:false, gujiOk:false, err:null, detail:{} };
+  const t0 = Date.now();
+  try {
+    for (const c of cases){
+      const runs = [];
+      for (let k = 0; k < REPEAT; k++){
+        const { ttft, raw, empty } = await callModel(m, sys, c.text);
+        r.ttft.push(ttft);
+        runs.push(judge(c, raw));
+        if (empty){ r.empty = (r.empty || 0) + 1; r.emptyWhy = empty; }
+      }
+      // 점수는 반복의 평균으로 — 한 번 잘 맞힌 것과 늘 잘 맞히는 것을 구분한다
+      const avg = f => runs.reduce((s, x) => s + f(x), 0) / runs.length;
+      r.json  += avg(x => x.json ? 1 : 0);
+      r.style += avg(x => x.style ? 1 : 0);
+      r.cjk   += avg(x => x.cjk ? 1 : 0);
+      r.hit   += avg(x => x.hit);
+      r.want  += runs[0].want;
+      r.left  += avg(x => x.left);
+      r.over  += avg(x => x.over);
+      r.cases++;
+      // 일관성: 반복 실행에서 교정본이 글자 하나까지 같았는가
+      const identical = runs.every(x => x.fixed === runs[0].fixed);
+      if (identical) r.same++;
+      r.detail[c.no] = { hit:avg(x=>x.hit), want:runs[0].want, left:avg(x=>x.left),
+                         over:avg(x=>x.over), identical, fixed:runs[0].fixed };
+      // 선생님이 지정한 두 관문 — 반복 중 '항상' 통과해야 인정한다(운으로 한 번 맞힌 것 배제)
+      if (c.key === '띄어쓰기')
+        r.spacingOk = runs.every(x => x.want && x.hit / x.want >= 0.7);
+      if (c.key === '구지')
+        r.gujiOk = runs.every(x => x.fixed.includes('굳이') && !x.fixed.includes('구지'));
+    }
+    r.ttftMed = r.ttft.slice().sort((a,b)=>a-b)[Math.floor(r.ttft.length/2)];
+    console.log(m.id.padEnd(34) + `TTFT ${r.ttftMed}ms · 검출 ${r.hit.toFixed(1)}/${r.want}` +
+                ` · 일관 ${r.same}/${r.cases} · 과교정 ${r.over.toFixed(1)}` +
+                (r.empty ? ` · 빈응답 ${r.empty}회` : '') +
+                `  [띄어쓰기 ${r.spacingOk?'✓':'✗'} · 구지 ${r.gujiOk?'✓':'✗'}]` +
+                `  (${Math.round((Date.now()-t0)/1000)}초)`);
+  } catch (e){
+    r.err = e.message;
+    console.log(m.id.padEnd(34) + '✗ ' + e.message);
+  }
+  return r;
+}
+
 async function main(){
   if (!KEY.startsWith('nvapi-')){
     console.error('NVIDIA 키가 필요합니다.\n  NVAPI_KEY=nvapi-xxxx node mirror/test/model-bench.js');
@@ -280,52 +343,12 @@ async function main(){
   cases.forEach(c => console.log(`  ${c.no}번 ${c.name} — ${c.label}`));
   console.log(`\n후보 모델 ${CANDIDATES.length}개\n`);
 
-  const rows = [];
-  for (const m of CANDIDATES){
-    const r = { model:m.id, ttft:[], json:0, style:0, cjk:0, hit:0, want:0, left:0, over:0,
-                same:0, cases:0, spacingOk:false, gujiOk:false, err:null, detail:{} };
-    process.stdout.write(m.id.padEnd(34));
-    try {
-      for (const c of cases){
-        const runs = [];
-        for (let k = 0; k < REPEAT; k++){
-          const { ttft, raw, empty } = await callModel(m, sys, c.text);
-          r.ttft.push(ttft);
-          runs.push(judge(c, raw));
-          if (empty){ r.empty = (r.empty || 0) + 1; r.emptyWhy = empty; }
-          process.stdout.write(empty ? '·' : '.');      // 빈 응답은 가운뎃점으로 구분해 눈에 띄게
-        }
-        // 점수는 반복의 평균으로 — 한 번 잘 맞힌 것과 늘 잘 맞히는 것을 구분한다
-        const avg = f => runs.reduce((s, x) => s + f(x), 0) / runs.length;
-        r.json  += avg(x => x.json ? 1 : 0);
-        r.style += avg(x => x.style ? 1 : 0);
-        r.cjk   += avg(x => x.cjk ? 1 : 0);
-        r.hit   += avg(x => x.hit);
-        r.want  += runs[0].want;
-        r.left  += avg(x => x.left);
-        r.over  += avg(x => x.over);
-        r.cases++;
-        // 일관성: 반복 실행에서 교정본이 글자 하나까지 같았는가
-        const identical = runs.every(x => x.fixed === runs[0].fixed);
-        if (identical) r.same++;
-        r.detail[c.no] = { hit:avg(x=>x.hit), want:runs[0].want, left:avg(x=>x.left),
-                           over:avg(x=>x.over), identical, fixed:runs[0].fixed };
-        // 선생님이 지정한 두 관문 — 반복 중 '항상' 통과해야 인정한다(운으로 한 번 맞힌 것 배제)
-        if (c.key === '띄어쓰기')
-          r.spacingOk = runs.every(x => x.want && x.hit / x.want >= 0.7);
-        if (c.key === '구지')
-          r.gujiOk = runs.every(x => x.fixed.includes('굳이') && !x.fixed.includes('구지'));
-      }
-      r.ttftMed = r.ttft.slice().sort((a,b)=>a-b)[Math.floor(r.ttft.length/2)];
-      console.log(`  TTFT ${r.ttftMed}ms · 검출 ${r.hit.toFixed(1)}/${r.want}` +
-                  ` · 일관 ${r.same}/${r.cases} · 과교정 ${r.over.toFixed(1)}` +
-                  `  [띄어쓰기 ${r.spacingOk?'✓':'✗'} · 구지 ${r.gujiOk?'✓':'✗'}]`);
-    } catch (e){
-      r.err = e.message;
-      console.log('  ✗ ' + e.message);
-    }
-    rows.push(r);
-  }
+  /* 모델끼리는 동시에 돌린다 — 한 모델이 느려도 다른 모델을 기다리게 하지 않는다.
+     한 모델 안에서는 순차로 부른다(동시에 부르면 서로 대기열에 끼어 TTFT가 왜곡된다).
+     NVIDIA 무료 한도는 분당 40회쯤인데 이 방식은 분당 10회를 넘지 않아 여유가 있다.
+     출력이 뒤섞이지 않도록 진행 표시는 각 모델이 끝났을 때 한 줄로 낸다. */
+  console.log('모델별로 동시에 진행합니다. 끝나는 대로 한 줄씩 나옵니다.\n');
+  const rows = await Promise.all(CANDIDATES.map(m => runModel(m, sys, cases)));
 
   const ok = rows.filter(x => !x.err);
   const N = cases.length;
@@ -335,7 +358,9 @@ async function main(){
   for (const x of ok)
     console.log(x.model.padEnd(34) +
       String(x.ttftMed + 'ms').padEnd(8) +
-      `${x.json.toFixed(0)}/${N}`.padEnd(5) + `${x.style.toFixed(0)}/${N}`.padEnd(5) +
+      /* 소수 첫째 자리까지 보인다. 예전에는 반올림해서 5.67을 '6/6'으로 찍어 놓고
+         아래 '제외' 줄에는 'JSON 형식 미준수'라고 적어, 표와 결론이 모순돼 보였다. */
+      `${x.json.toFixed(1)}/${N}`.padEnd(7) + `${x.style.toFixed(1)}/${N}`.padEnd(7) +
       (x.cjk ? x.cjk.toFixed(1) + '건' : '없음').padEnd(6) +
       (Math.round(pct(x) * 100) + '%').padEnd(7) + `${x.same}/${x.cases}`.padEnd(7) +
       x.over.toFixed(1).padEnd(7) +
