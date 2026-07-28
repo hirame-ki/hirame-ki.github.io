@@ -46,12 +46,16 @@ const CANDIDATES = [
 ];
 /* 뺀 모델과 이유 (다시 넣기 전에 반드시 읽을 것 — 같은 검토를 세 번 되풀이했다)
 
-   ① 첫 글자가 안 나옴 — 이 계정에서 **한 건씩 순차로 불러도** 90초를 넘긴다.
-      동시 호출 탓이 아님을 따로 확인했다(gpt-oss-120b는 4개 동시에도 TTFT 2초대).
-        · z-ai/glm-5.2                      (한때 31~48초에 되기도 해 편차가 극심)
+   ① NVIDIA 쪽 대기열 포화 — 모델이 느린 게 아니라 **줄이 밀려 있다.**
+      `ResourceExhausted: Worker local total request limit reached (1088/48)`
+      처리 슬롯 48개에 대기 1088건이라는 뜻이다. 우리 워커·우리 코드와 무관하다.
+      한 건씩 순차로 불러도 90~120초를 넘긴다(동시 호출 탓이 아님을 따로 확인 —
+      gpt-oss-120b는 4개 동시에도 TTFT 2초대). 한가한 시간대엔 될 수도 있으나,
+      한 반 26명을 돌려야 하는 도구의 선두에 둘 수는 없다.
         · deepseek-ai/deepseek-v4-flash
+        · z-ai/glm-5.2                      (한때 31~48초에 되기도 해 편차가 극심)
         · mistralai/mistral-medium-3.5-128b
-   ② 계정에서 쓸 수 없음
+   ② 계정에서 접근 불가 — 대기열 문제가 아니라 권한 문제라 시간이 지나도 그대로일 가능성이 크다.
         · moonshotai/kimi-k2.6  → 404 "Not found for account"
    ③ 교정본을 못 내놓음 — 답을 delta.content가 아니라 reasoning으로만 흘리고
       finish=length로 끝없이 생각만 하다 끝난다. **워커를 거치지 않고 직접 불러도 같다.**
