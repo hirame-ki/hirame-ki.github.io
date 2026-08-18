@@ -347,13 +347,14 @@ section.block { margin-bottom: 34px; }
     <p>기존에 쓰시던 스프레드시트와 학생 코드는 그대로 유지됩니다. 아래 버튼으로 코드를 복사해서 Apps Script에 붙여넣기만 하면 됩니다.</p>
     <div class="meta-row">
       <span class="meta-chip">Done? Done! v3.0</span>
-      <span class="meta-chip">배포일 2026-08-15</span>
+      <span class="meta-chip">배포일 2026-08-18</span>
     </div>
   </header>
 
   <section class="fixlist">
     <h2>이번에 새로 생긴 것 (v3.0)</h2>
     <ul class="newlist">
+      <li><strong>학생 자동 로그인</strong> — 학생이 로그인 화면에서 <strong>[이 기기에서 자동 로그인]</strong>을 체크해 두면, 다음부터는 앱을 열자마자 6자리 코드 없이 바로 자기 화면으로 들어갑니다. 코드는 그 기기에만 저장되고 서버에는 아무것도 남지 않습니다. <strong>로그아웃을 누르면 저장이 지워지고</strong>, 선생님이 학생을 지우거나 코드가 바뀌면 저장된 코드도 자동으로 정리됩니다. 공용 기기에서는 체크하지 않도록 안내해 주세요. (워드클라우드 QR로 들어온 경우에는 자동 로그인이 동작하지 않아 QR 참여가 그대로 유지됩니다.)</li>
       <li><strong>참 잘했어요 도장</strong> — 피드백을 쓸 때 도장을 1~3개까지 함께 찍어줄 수 있습니다. 학생 화면 맨 위에 지금까지 모은 도장이 바로 보입니다.</li>
       <li><strong>학급공약</strong> — "도장 100개 모으면 영화 보기"처럼 반 전체 목표를 걸어두고, 모이면 <strong>[공약 실시]</strong>를 눌러 도장을 차감합니다.</li>
       <li>학생 화면에 <strong>우리 반이 함께 모은 도장</strong>과 목표까지 남은 개수가 표시됩니다.</li>
@@ -3623,6 +3624,11 @@ body {
 .login-box input:focus { border-color: var(--accent); }
 .login-divider { display: flex; align-items: center; gap: 10px; margin: 18px 0; color: var(--text3); font-size: 12px; font-weight: 700; }
 .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+/* ★ 자동 로그인 체크박스.
+   .login-box input 규칙이 width:100%를 씌우기 때문에 여기서 되돌려준다. */
+.login-remember { display: flex; align-items: center; gap: 8px; margin: -2px 0 14px; cursor: pointer; user-select: none; }
+.login-remember input[type="checkbox"] { width: 18px; height: 18px; flex: none; padding: 0; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.login-remember span { font-size: 12.5px; font-weight: 700; color: var(--text2); line-height: 1.4; }
 .btn-grad { width: 100%; padding: 13px; background: linear-gradient(135deg, #4a90d9, #357abd); color: #fff; border: none; border-radius: var(--r-sm); font-family: 'Nanum Gothic', sans-serif; font-size: 15px; font-weight: 800; cursor: pointer; transition: all 0.15s; box-shadow: 0 3px 12px rgba(74,144,217,0.4); }
 .btn-grad:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(74,144,217,0.5); }
 .btn-teacher { width: 100%; padding: 12px; background: var(--surface); color: var(--text2); border: 1.5px solid var(--border); border-radius: var(--r-sm); font-family: 'Nanum Gothic', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
@@ -4354,6 +4360,10 @@ tr:hover td { background: var(--bg); }
           oninput="this.value=this.value.toUpperCase()"
           onkeydown="if(event.key==='Enter')loginStudent()"&gt;
       &lt;/div&gt;
+      &lt;label class="login-remember"&gt;
+        &lt;input type="checkbox" id="remember-code"&gt;
+        &lt;span&gt;이 기기에서 자동 로그인 (내 태블릿·내 컴퓨터에서만 체크)&lt;/span&gt;
+      &lt;/label&gt;
       &lt;button class="btn-grad" onclick="loginStudent()"&gt;학생으로 접속&lt;/button&gt;
       &lt;div class="login-divider"&gt;교사 전용&lt;/div&gt;
       &lt;div class="form-group"&gt;
@@ -4973,11 +4983,37 @@ let studentDetailExportData = null;     // 학생별 보기 상세에서 뽑은 
 let assignmentDetailExportData = null;  // 과제별 보기 상세에서 뽑은 엑셀용 데이터 캐시
 let matrixData = { students:[], assignments:[], submissions:[] };
 let teacherName = '';
+// ★ 자동 로그인용 localStorage 키. 아래 initApp()이 바로 실행되면서 이 값을 읽으므로
+//   반드시 initApp() 호출보다 위에 선언해 둬야 한다.
+//   (아래쪽에 두면 const가 아직 초기화 전이라 ReferenceError가 나고,
+//    getRememberedCode의 try/catch가 그걸 삼켜서 "자동 로그인이 조용히 안 되는" 버그가 된다.)
+const REMEMBER_KEY = 'dd_student_code';
 
 async function initApp() {
   try {
-    const res = await api({ action:'getSettings' });
-    if (res.success) {
+    // ★ 워드클라우드 QR(?wc=)로 들어온 경우에는 자동 로그인을 하지 않는다.
+    //   저 아래 wc 감지 코드가 페이지를 워드클라우드 화면으로 바꾸는데,
+    //   자동 로그인이 뒤늦게 응답을 받고 학생 화면으로 덮어버리면 QR 참여가 깨진다.
+    const isWcEntry = !!(document.querySelector('meta[name="wc-session-id"]')
+      || new URLSearchParams(window.location.search).get('wc'));
+
+    const savedCode = isWcEntry ? '' : getRememberedCode();
+    if (savedCode) {
+      document.getElementById('remember-code').checked = true;
+      document.getElementById('student-code').value = savedCode;
+      showLoading("자동 접속 중...");
+    }
+
+    // ★ 설정 조회와 자동 로그인을 한꺼번에 던진다.
+    //   순서대로 await 하면 학생이 앱 열 때마다 시트 왕복이 두 번 겹쳐서 느려진다.
+    const wrap = p =&gt; p.then(res =&gt; ({ ok:true, res }), err =&gt; ({ ok:false, err }));
+    const [setOut, loginOut] = await Promise.all([
+      wrap(api({ action:'getSettings' })),
+      savedCode ? wrap(api({ action:'login', code:savedCode })) : null
+    ]);
+
+    if (setOut.ok &amp;&amp; setOut.res &amp;&amp; setOut.res.success) {
+      const res = setOut.res;
       if (res.theme &amp;&amp; res.theme !== '기본') applyTheme(res.theme);
       if (res.teacherName) {
         teacherName = res.teacherName;
@@ -4986,7 +5022,24 @@ async function initApp() {
         el.classList.remove('hidden');
       }
     }
-  } catch(e) {}
+
+    if (!loginOut) return;
+    hideLoading();
+    if (loginOut.ok &amp;&amp; loginOut.res &amp;&amp; loginOut.res.success) {
+      enterStudentApp(loginOut.res.student);
+    } else if (loginOut.ok) {
+      // 서버가 "그런 코드 없다"고 답한 경우 — 선생님이 학생을 지웠거나 코드가 바뀐 것이니 저장을 버린다.
+      forgetRememberedCode();
+      document.getElementById('student-code').value = '';
+      toast("저장된 코드로 접속할 수 없어요. 코드를 다시 입력해주세요.");
+    } else {
+      // 통신 실패는 코드 잘못이 아니다. 저장은 그대로 두고 직접 로그인만 기다린다.
+      toast("자동 접속에 실패했어요. '학생으로 접속'을 눌러주세요.");
+    }
+  } catch(e) {
+    // ★ 무슨 일이 있어도 로딩 화면에 갇히면 안 된다.
+    hideLoading();
+  }
 }
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
@@ -5386,6 +5439,32 @@ function buildEmbedUrlFromInfo(fileUrl, mimeType) {
   return fileUrl;
 }
 
+// ── 자동 로그인: 이 기기에 학생 코드 기억하기 ──
+// ★ localStorage는 Apps Script가 화면을 띄우는 googleusercontent 서브도메인에 묶여 있다.
+//   구글이 그 서브도메인을 바꾸면 저장한 코드가 통째로 안 보일 수 있으므로,
+//   "있으면 편하고, 없으면 평소 로그인 화면"이 되도록만 만들고 절대 여기에 기대지 않는다.
+function getRememberedCode() {
+  try { return String(localStorage.getItem(REMEMBER_KEY) || '').trim().toUpperCase(); } catch(e) { return ''; }
+}
+function setRememberedCode(code) {
+  try { localStorage.setItem(REMEMBER_KEY, code); } catch(e) {}
+}
+function forgetRememberedCode() {
+  try { localStorage.removeItem(REMEMBER_KEY); } catch(e) {}
+  const box = document.getElementById("remember-code");
+  if (box) box.checked = false;
+}
+
+// 로그인 성공 뒤 학생 화면으로 들어가는 공통 처리 (직접 로그인·자동 로그인이 함께 쓴다)
+function enterStudentApp(student) {
+  currentStudent = student;
+  document.getElementById("s-name").textContent = student.name;
+  document.getElementById("s-class").textContent = student.class + (student.number ? " · " + student.number : "");
+  document.getElementById("s-avatar").textContent = student.name[0];
+  showPage("page-student");
+  loadStudentAssignments();
+}
+
 // 로그인
 async function loginStudent() {
   const code = document.getElementById("student-code").value.trim();
@@ -5395,12 +5474,10 @@ async function loginStudent() {
     const res = await api({ action:"login", code });
     hideLoading();
     if (res.success) {
-      currentStudent = res.student;
-      document.getElementById("s-name").textContent = res.student.name;
-      document.getElementById("s-class").textContent = res.student.class + (res.student.number ? " · " + res.student.number : "");
-      document.getElementById("s-avatar").textContent = res.student.name[0];
-      showPage("page-student");
-      loadStudentAssignments();
+      // ★ 체크했으면 이 기기에 코드를 남기고, 체크를 풀었으면 전에 남은 것까지 지운다.
+      if (document.getElementById("remember-code").checked) setRememberedCode(code.toUpperCase());
+      else forgetRememberedCode();
+      enterStudentApp(res.student);
     } else toast("❌ " + res.message);
   } catch(e) { hideLoading(); toast("❌ 연결 오류: " + (e.message||"")); }
 }
@@ -5436,6 +5513,9 @@ function logout() {
   else wcStopPolling();
   document.getElementById("student-code").value = "";
   document.getElementById("teacher-pw").value = "";
+  // ★ 학생이 직접 로그아웃했다면 "이 기기에서 나가겠다"는 뜻이므로 저장된 코드도 지운다.
+  //   (안 지우면 로그아웃하자마자 다시 자동 로그인돼서 빠져나올 방법이 없다.)
+  forgetRememberedCode();
   showPage("page-login");
 }
 
@@ -7317,6 +7397,7 @@ window.addEventListener('resize', () =&gt; {
       <li><span class="check-mark">✓</span>선생님 화면 사이드바에 🏅 도장 · 학급공약 메뉴가 보이는가</li>
       <li><span class="check-mark">✓</span>피드백을 쓸 때 도장 버튼(1~3개)이 뜨고, 학생 화면 맨 위에 도장 개수가 보이는가</li>
       <li><span class="check-mark">✓</span>선생님 화면 사이드바에 ☁️ 워드클라우드 메뉴가 보이는가</li>
+      <li><span class="check-mark">✓</span>학생 로그인 화면에 <strong>[이 기기에서 자동 로그인]</strong> 체크박스가 보이는가 — 체크하고 접속한 뒤 창을 닫았다 다시 열면 코드 없이 들어가지는가</li>
     </ul>
   </section>
 
@@ -7341,6 +7422,14 @@ window.addEventListener('resize', () =&gt; {
     <div class="faq-item">
       <p class="faq-q">학생이 워드클라우드 QR을 찍었는데 로그인 화면이 떠요</p>
       <p class="faq-a">아직 <strong>4단계(새 버전으로 배포)</strong>가 안 끝난 상태입니다. 주소는 예전과 같지만 예전 버전에는 워드클라우드 참여 화면이 없어서 평소의 로그인 화면이 나옵니다. 배포를 마치신 뒤 <strong>세션을 다시 시작해 새 QR을 띄워</strong> 주세요. 참여에는 6자리 코드가 필요 없습니다.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">자동 로그인을 켰는데 다음에 열면 코드를 또 물어봐요</p>
+      <p class="faq-a">학생이 <strong>로그아웃</strong>을 눌렀거나, 브라우저에서 <strong>시크릿(비공개) 창</strong>을 쓰거나 인터넷 사용기록·쿠키를 지운 경우입니다. 학생 코드는 그 기기의 브라우저에만 저장되기 때문에, 기록을 지우면 함께 사라집니다. 다시 코드를 입력하고 체크박스를 켜 주시면 됩니다. (다른 기기나 다른 브라우저에는 저장이 따라가지 않습니다)</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">공용 태블릿에서 자동 로그인을 켰는데 어떻게 끄나요?</p>
+      <p class="faq-a">그 기기에서 학생 화면의 <strong>로그아웃</strong>을 한 번 누르면 저장된 코드가 지워집니다. 또는 로그인 화면에서 <strong>체크를 푼 채로</strong> 코드를 입력해 접속하셔도 이전에 저장된 코드까지 함께 지워집니다. 학교 공용 기기에서는 체크하지 않도록 미리 안내해 주세요.</p>
     </div>
     <div class="faq-item">
       <p class="faq-q">공약 실시 버튼이 회색으로 눌리지 않아요</p>
