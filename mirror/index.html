@@ -100,8 +100,8 @@
   .ai-badge[data-st="off"] .dot{background:var(--muted)}
   .ai-badge[data-st="on"]{background:var(--ok-soft);color:#2f6a4e;border-color:rgba(74,143,109,.22)}
   .ai-badge[data-st="on"] .dot{background:var(--ok)}
-  .ai-badge-btn{border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:.73rem;font-weight:700;border-radius:999px;padding:2px 10px;cursor:pointer;opacity:.85;transition:opacity .15s,background .15s}
-  .ai-badge-btn:hover{opacity:1;background:rgba(0,0,0,.05)}
+  .ai-badge-btn,.model-badge-btn{border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:.73rem;font-weight:700;border-radius:999px;padding:2px 10px;cursor:pointer;opacity:.85;transition:opacity .15s,background .15s}
+  .ai-badge-btn:hover,.model-badge-btn:hover{opacity:1;background:rgba(0,0,0,.05)}
   .model-badge[data-st="idle"]{background:var(--bg-sunken);color:var(--muted);border-color:var(--line)}
   .model-badge[data-st="idle"] .dot{background:var(--muted)}
   .model-badge[data-st="loading"]{background:var(--brand-soft);color:var(--brand-deep);border-color:rgba(63,107,140,.25)}
@@ -211,6 +211,28 @@
   .divider{height:1px;background:var(--line-soft)}
   .note{background:var(--bg-sunken);border-radius:11px;padding:13px 14px;font-size:.79rem;color:var(--ink-soft);line-height:1.7}
   .note b{color:var(--ink)}
+
+  /* 모델 파일을 못 받았을 때만 뜨는 안내.
+     실패 사유를 화면에 적어 두지 않으면 선생님 쪽에서 학교 망 차단인지 회선 문제인지
+     구분할 방법이 없다(콘솔을 열어 보시라고 할 수는 없다). */
+  .net-warn{
+    background:var(--warn-soft);border:1px solid rgba(176,90,68,.28);border-radius:11px;
+    padding:12px 13px;margin-bottom:12px;font-size:.78rem;color:#8a4231;line-height:1.65;
+    /* 고정 영역(run-dock)에 있으므로 화면이 낮으면 입력란을 다 덮어 버린다.
+       높이를 묶되, 접히는 것은 설명글뿐이고 [다시 시도]는 늘 바닥에 남게 한다. */
+    display:flex;flex-direction:column;max-height:46vh;
+  }
+  .net-warn .wtext{overflow-y:auto;min-height:0}
+  .net-warn b{color:#7a3728}
+  .net-warn ol{margin:7px 0 0;padding-left:17px}
+  .net-warn li{margin-bottom:3px}
+  .net-warn .errwhy{
+    display:block;margin-top:9px;font-family:var(--mono);font-size:.71rem;
+    opacity:.8;white-space:normal;word-break:break-all;
+  }
+  .net-warn .retry{flex:0 0 auto;align-self:flex-start;margin-top:10px}
+  /* 숨김은 hidden 속성으로만 다룬다 — 나중에 display를 주더라도 새지 않게 못을 박아 둔다 */
+  .net-warn[hidden],.model-badge-btn[hidden]{display:none}
 
   #progress{display:none}
   #progress.on{display:block}
@@ -707,7 +729,10 @@
     <i class="dot"></i><span id="aiBadgeTxt">AI 미연결</span>
     <button class="ai-badge-btn" id="aiBadgeBtn">연결</button>
   </div>
-  <div class="badge model-badge" id="modelBadge" data-st="idle"><i class="dot"></i><span id="modelBadgeTxt">모델 대기 중</span></div>
+  <div class="badge model-badge" id="modelBadge" data-st="idle">
+    <i class="dot"></i><span id="modelBadgeTxt">모델 대기 중</span>
+    <button class="model-badge-btn" id="modelRetryBtn" hidden>다시 시도</button>
+  </div>
 </header>
 
 <div class="shell">
@@ -763,6 +788,20 @@
    </div><!-- /.panel-scroll -->
 
    <div class="run-dock">
+     <div class="net-warn" id="modelErr" hidden>
+       <div class="wtext">
+       <b>분석 모델을 내려받지 못했습니다.</b> 유사도 점검은 이 모델 파일(약 120MB)을 받아야 시작됩니다.
+       <b>학교·교육청 망이 모델 서버(huggingface.co)를 막아 둔 경우</b>가 가장 흔합니다.
+       <ol>
+         <li>휴대폰 핫스팟이나 댁 인터넷으로 바꿔 <b>새로고침</b> — 한 번만 받아 두면 그 뒤로는 학교에서도 그대로 돌아갑니다.</li>
+         <li>광고 차단·보안 확장 프로그램을 끄고 다시 시도해 보세요.</li>
+         <li>시크릿 창은 받아 둔 파일을 매번 버립니다. 일반 창에서 열어 주세요.</li>
+       </ol>
+       <b>표현 점검 및 수정 탭은 이 문제와 상관없이 그대로 쓰실 수 있습니다.</b>
+       <span class="errwhy" id="modelErrWhy"></span>
+       </div>
+       <button class="btn ghost retry" id="modelRetryBtn2">다시 시도</button>
+     </div>
      <button class="btn wide" id="runBtn" disabled>분석 시작</button>
      <div id="progress" style="margin-top:12px">
        <div class="prog-txt"><span id="progLabel">준비 중…</span><span id="progPct">0%</span></div>
@@ -1584,11 +1623,19 @@ const CDNS = [
   'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2',
 ];
 let libPromise = null;
+let libTry = 0;
 function loadLib(){
-  if (!libPromise) libPromise = (async () => {
-    for (const url of CDNS){ try { return await import(url); } catch {} }
-    throw new Error('분석 엔진을 불러오지 못했습니다. 네트워크를 확인해 주세요.');
-  })();
+  if (!libPromise){
+    libPromise = (async () => {
+      /* 한 번 실패한 주소는 브라우저 모듈 맵에 '실패'로 박혀, 그대로 다시 import해도
+         네트워크를 아예 타지 않는다. 재시도 때는 쿼리를 붙여 다른 주소로 만들어야
+         진짜로 다시 받아온다(jsDelivr는 모르는 쿼리를 무시하고 같은 파일을 준다). */
+      const bust = libTry++ ? '?retry=' + libTry : '';
+      for (const url of CDNS){ try { return await import(url + bust); } catch {} }
+      throw new Error('분석 엔진을 불러오지 못했습니다. 네트워크를 확인해 주세요.');
+    })();
+    libPromise.catch(() => { libPromise = null; });   // 실패는 캐시하지 않는다 — 안 그러면 재시도가 즉시 같은 오류로 끝난다
+  }
   return libPromise;
 }
 
@@ -1620,6 +1667,7 @@ function getExtractor(modelId){
   };
   const p = (async () => {
     setBadge('loading', '모델 준비 중…');
+    hideModelError();
     const { pipeline } = await loadLib();
     return pipeline('feature-extraction', modelId, { progress_callback: report });
   })();
@@ -1628,12 +1676,40 @@ function getExtractor(modelId){
     setBadge('ready', '모델 준비 완료');
     try { localStorage.setItem('sgm-warmed-' + modelId, '1'); } catch {}
   }).catch(err => {
-    pipes.delete(modelId);
-    setBadge('error', '모델 준비 실패 · 다시 시도');
+    pipes.delete(modelId);                       // 지워야 다음 호출이 새로 받는다
+    setBadge('error', '모델 준비 실패');
+    showModelError(err);
     console.error(err);
   });
   return p;
 }
+
+/* 모델 준비 실패는 사실상 전부 네트워크 문제다(학교 망의 huggingface.co 차단이 압도적).
+   배지에 '다시 시도'라고만 적어 두었더니 눌러도 아무 일이 없어 더 당황하시게 만들었고,
+   실패 사유는 콘솔에만 남아 문의를 받아도 방화벽인지 회선인지 알 수 없었다.
+   그래서 ① 진짜 눌리는 재시도 버튼과 ② 화면에 보이는 사유·해결 순서를 함께 둔다. */
+function showModelError(err){
+  const why = err && err.message ? err.message : String(err);
+  const box = $('#modelErr');
+  if (box){
+    $('#modelErrWhy').textContent = '자세한 오류: ' + why;
+    box.hidden = false;
+  }
+  const btn = $('#modelRetryBtn');
+  if (btn) btn.hidden = false;
+}
+function hideModelError(){
+  const box = $('#modelErr');
+  if (box) box.hidden = true;
+  const btn = $('#modelRetryBtn');
+  if (btn) btn.hidden = true;
+}
+function retryModel(){
+  hideModelError();
+  getExtractor(EMBED_MODEL).catch(() => {});     // 실패는 위 catch가 다시 화면에 띄운다
+}
+$('#modelRetryBtn')?.addEventListener('click', retryModel);
+$('#modelRetryBtn2')?.addEventListener('click', retryModel);
 
 /* 예열: 양식 다운로드·파일 등록·입력 시작 중 가장 먼저 일어난 시점부터 */
 let prewarmed = false;
