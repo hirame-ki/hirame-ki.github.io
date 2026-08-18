@@ -346,13 +346,21 @@ section.block { margin-bottom: 34px; }
     <h1>코드 두 개만 바꾸면 5분 안에 끝나요</h1>
     <p>기존에 쓰시던 스프레드시트와 학생 코드는 그대로 유지됩니다. 아래 버튼으로 코드를 복사해서 Apps Script에 붙여넣기만 하면 됩니다.</p>
     <div class="meta-row">
-      <span class="meta-chip">Done? Done! v3.0</span>
+      <span class="meta-chip">Done? Done! v3.0.1</span>
       <span class="meta-chip">배포일 2026-08-18</span>
     </div>
   </header>
 
   <section class="fixlist">
-    <h2>이번에 새로 생긴 것 (v3.0)</h2>
+    <h2>이번에 고쳐진 것 (v3.0.1)</h2>
+    <ul>
+      <li class="priority"><strong>선생님이 등록한 과제가 학생 화면에 하나도 안 뜨던 문제</strong> — 반 이름이 <strong>"3-1"처럼 숫자와 붙임표로 되어 있으면</strong> 구글 시트가 이 값을 <strong>날짜(2026-03-01)로 바꿔서</strong> 저장해 버렸습니다. 그러면 과제의 '대상수업'과 학생의 '수업장소'가 서로 다른 값이 되어, 선생님 화면에는 과제가 멀쩡히 보이는데 학생 화면만 <strong>"등록된 과제가 없습니다"</strong>로 비어 있었습니다. 이제 대상수업을 <strong>글자 그대로</strong> 저장하고, <strong>이미 날짜로 바뀌어 저장된 기존 과제도 업데이트 직후 자동으로 되돌립니다.</strong> (선생님이 따로 하실 일은 없습니다)</li>
+      <li>반 이름을 <strong>"3 - 1", "3/1"처럼 조금 다르게 적어 두어도</strong> 같은 반으로 알아봅니다 — 학생 명단과 과제의 반 표기가 어긋나 과제·제출 현황이 비어 보이던 문제도 함께 해결됩니다.</li>
+      <li>학생이 앱을 켜 둔 채로 있어도 <strong>[과제 제출] 탭을 다시 누르면 과제 목록을 새로 받아옵니다</strong> — 수업 중에 과제를 올려도 학생이 새로고침할 필요가 없습니다.</li>
+      <li>학생 화면에 과제가 없을 때 <strong>지금 접속한 반 이름을 함께 표시</strong>합니다 — 반이 잘못 지정된 경우를 바로 알아볼 수 있습니다.</li>
+      <li>과제를 <strong>수정할 때도</strong> 대상수업·마감일이 날짜로 바뀌지 않도록 막았습니다.</li>
+    </ul>
+    <h2 style="margin:22px 0 14px">v3.0에서 새로 생긴 것</h2>
     <ul class="newlist">
       <li><strong>학생 자동 로그인</strong> — 학생이 로그인 화면에서 <strong>[이 기기에서 자동 로그인]</strong>을 체크해 두면, 다음부터는 앱을 열자마자 6자리 코드 없이 바로 자기 화면으로 들어갑니다. 코드는 그 기기에만 저장되고 서버에는 아무것도 남지 않습니다. <strong>로그아웃을 누르면 저장이 지워지고</strong>, 선생님이 학생을 지우거나 코드가 바뀌면 저장된 코드도 자동으로 정리됩니다. 공용 기기에서는 체크하지 않도록 안내해 주세요. (워드클라우드 QR로 들어온 경우에는 자동 로그인이 동작하지 않아 QR 참여가 그대로 유지됩니다.)</li>
       <li><strong>참 잘했어요 도장</strong> — 피드백을 쓸 때 도장을 1~3개까지 함께 찍어줄 수 있습니다. 학생 화면 맨 위에 지금까지 모은 도장이 바로 보입니다.</li>
@@ -1093,6 +1101,62 @@ function asTimeText(v) {
   return String(v == null ? "" : v);
 }
 
+// ── 클래스명(수업장소 · 대상수업) 표기 정리 ─────────
+// "3-1" 같은 클래스명을 그냥 appendRow 하면 구글 시트가 날짜(2026-03-01)로
+// 자동 변환한다. 학생목록·클래스목록·학급공약은 텍스트 서식을 지정해 막아 뒀지만
+// 과제목록 F열(대상수업)만 빠져 있었다. 그래서 "3-1"반 대상으로 등록한 과제의
+// 대상수업이 Date로 저장됐고, 학생의 수업장소("3-1")와 영원히 다른 값이 되어
+// 교사는 등록했는데 학생 화면에는 과제가 하나도 안 보였다.
+// 읽을 때는 항상 이 함수를 거쳐 사람이 입력한 표기로 되돌린다.
+function classText(v) {
+  if (v == null) return "";
+  if (v instanceof Date) {
+    // 날짜로 바뀐 값 → 원래 표기("3-1")로 복원
+    return (v.getMonth() + 1) + "-" + v.getDate();
+  }
+  return String(v).trim();
+}
+
+// 비교 전용 키 — 공백을 없애고 구분자(. / _ – —)를 '-'로 통일한 뒤 대문자로 맞춘다.
+// 교사가 학생과 과제에 같은 반을 다르게 적어 넣어도(예: "3 - 1", "3/1") 이어지게 한다.
+function classKey(v) {
+  return classText(v)
+    .replace(/\s+/g, "")
+    .replace(/[.\/_–—－]/g, "-")
+    .toUpperCase();
+}
+
+function sameClass(a, b) {
+  return classKey(a) === classKey(b);
+}
+
+// ── 클래스명이 날짜로 바뀌어 저장된 셀 복구 ─────────
+// 이미 어긋난 채로 저장된 기존 데이터를 한 번 훑어 원래 표기로 되돌리고,
+// 앞으로 다시 변환되지 않도록 해당 열을 텍스트 서식으로 고정한다.
+function repairClassColumns() {
+  const jobs = [
+    [SHEET.학생목록, 1],   // 수업장소
+    [SHEET.과제목록, 6],   // 대상수업
+    [SHEET.클래스목록, 2], // 클래스명
+    [SHEET.학급공약, 2]    // 클래스
+  ];
+  jobs.forEach(function (j) {
+    try {
+      const sh = getSheet(j[0]);
+      if (!sh) return;
+      forceTextColumn(sh, j[1]);          // 앞으로 들어올 값까지 텍스트로 고정
+      if (sh.getLastRow() &lt; 2) return;
+      const range = sh.getRange(2, j[1], sh.getLastRow() - 1, 1);
+      const vals  = range.getValues();
+      let changed = 0;
+      for (let i = 0; i &lt; vals.length; i++) {
+        if (vals[i][0] instanceof Date) { vals[i][0] = classText(vals[i][0]); changed++; }
+      }
+      if (changed) range.setValues(vals);
+    } catch (e) {}
+  });
+}
+
 // ── 학생 식별 공통 처리 ───────────────────────────
 // 제출물·피드백 시트의 '학번' 열에는 학번이 있으면 학번이, 없으면 6자리 코드가 들어간다.
 // 그래서 학번을 나중에 채워 넣거나 비워둔 반이 있으면 두 시트가 서로 다른 값을 갖게 되어
@@ -1109,7 +1173,7 @@ function buildStudentIndex() {
     const code = String(data[i][3] == null ? "" : data[i][3]).trim();
     if (!num &amp;&amp; !code) continue;
     const stu = {
-      class:  String(data[i][0] || ""),
+      class:  classText(data[i][0]),
       number: num,
       name:   String(data[i][2] || ""),
       code:   code,
@@ -1206,9 +1270,9 @@ function isRowOf(idx, me, keys, rawNum, rawName) {
 // ── 시트 초기화를 한 번만 수행 ─────────────────────
 // 스크립트 속성에 완료 표시를 남겨, 매 요청마다 시트를 훑지 않게 한다.
 // 시트를 새로 만들거나 구조를 바꿨다면 setupSpreadsheet()를 실행하면 다시 검사한다.
-// ★ V3 — 피드백 시트에 '도장' 열, '학급공약' 시트가 추가됐다.
+// ★ V4 — 클래스명이 날짜로 바뀌어 저장된 셀(과제목록 '대상수업' 등)을 복구한다.
 //   번호를 올려 두면 기존 사용자도 다음 요청 때 딱 한 번 구조 점검이 돌아간다.
-const SETUP_FLAG = "DD_SHEETS_READY_V3";
+const SETUP_FLAG = "DD_SHEETS_READY_V4";
 
 function ensureSheetsOnce() {
   try {
@@ -1286,6 +1350,10 @@ function initSheets() {
     const n = sh.getName();
     if (n === SHEET.피드백 || n.endsWith(" 피드백")) ensureStampColumn(sh);
   });
+
+  // ★ 기존 사용자용 — 날짜로 바뀌어 저장된 클래스명("3-1" → 2026-03-01)을 되돌린다.
+  //   이 값이 어긋나 있으면 교사가 등록한 과제가 학생 화면에 뜨지 않는다.
+  repairClassColumns();
 }
 
 // ── 피드백 시트에 '도장' 열 보장 ───────────────────
@@ -1723,7 +1791,9 @@ function loginStudent(code) {
         student: {
           code:   data[i][3],
           name:   data[i][2],
-          class:  data[i][0],
+          // ★ 날짜로 바뀌어 저장된 수업장소도 원래 표기로 되돌려 보낸다.
+          //   (이 값이 그대로 과제 목록 조회의 대상수업 필터로 쓰인다)
+          class:  classText(data[i][0]),
           number: data[i][1]
         }
       };
@@ -1739,10 +1809,14 @@ function getAssignments(class_target) {
   if (!sheet) return { success: true, assignments: [] };
   const data = sheet.getDataRange().getValues();
   const assignments = [];
+  // ★ 반 비교는 표기 차이(공백·구분자·날짜 변환)를 흡수한 뒤에 한다.
+  //   예전에는 문자열을 그대로 비교해서, 시트가 "3-1"을 날짜로 바꿔 저장하거나
+  //   교사가 "3 - 1"처럼 띄어 적으면 그 반 학생에게 과제가 하나도 안 보였다.
+  const wanted = classKey(class_target);
   for (let i = 1; i &lt; data.length; i++) {
     if (!data[i][0]) continue;
-    const target = String(data[i][5] || "");
-    if (class_target &amp;&amp; target &amp;&amp; target !== class_target) continue;
+    const target = classText(data[i][5]);
+    if (wanted &amp;&amp; target &amp;&amp; classKey(target) !== wanted) continue;
     assignments.push({
       // ★ 과제ID는 항상 문자열로 돌려준다.
       //   제출물·피드백 쪽은 문자열로 비교하는데 여기만 시트 원본(숫자일 수 있음)이라
@@ -2210,7 +2284,14 @@ function addAssignment(password, title, description, due_date, class_target, fil
   //   이미 존재하는 ID가 다시 발급되어 제출물·피드백이 엉뚱한 과제에 붙었다.
   //   (기존 A001 형식 데이터와 섞여도 문자열 비교라 문제없다)
   const id = makeAssignmentId(sheet);
-  sheet.appendRow([id, title, description||"", due_date||"", now(), class_target||"", fUrl, fName, fMime]);
+  // ★ appendRow로 그냥 쓰면 대상수업("3-1")·마감일이 날짜로 자동 변환된다.
+  //   그러면 학생의 수업장소와 값이 달라져 학생 화면에 과제가 뜨지 않았다.
+  //   행 전체를 텍스트 서식으로 고정한 뒤 값을 넣는다.
+  const newRow = sheet.getLastRow() + 1;
+  const range  = sheet.getRange(newRow, 1, 1, 9);
+  range.setNumberFormat("@");
+  range.setValues([[id, title, description||"", due_date||"", now(),
+                    classText(class_target), fUrl, fName, fMime]]);
   try { sheet.autoResizeColumns(1, sheet.getLastColumn()); } catch(e) {}
   return { success: true, message: "과제가 등록되었습니다.", id };
 }
@@ -2236,8 +2317,11 @@ function updateAssignment(password, assignment_id, title, description, due_date,
 
     sheet.getRange(i+1, 2).setValue(title);
     sheet.getRange(i+1, 3).setValue(description || "");
-    sheet.getRange(i+1, 4).setValue(due_date || "");
-    sheet.getRange(i+1, 6).setValue(class_target || "");
+    // ★ 마감일·대상수업은 텍스트 서식을 먼저 지정한다.
+    //   안 그러면 "3-1" 같은 반 이름이 날짜로 바뀌어 저장돼,
+    //   수정한 순간부터 그 반 학생에게 과제가 사라진다.
+    sheet.getRange(i+1, 4).setNumberFormat("@").setValue(due_date || "");
+    sheet.getRange(i+1, 6).setNumberFormat("@").setValue(classText(class_target));
 
     // ★ 첨부 처리
     //   keep_file="1" → 기존 첨부 유지 (새 파일을 올리지 않은 경우)
@@ -2338,7 +2422,7 @@ function addStudent(password, name, class_name, number) {
   const newRow = sheet.getLastRow() + 1;
   const range = sheet.getRange(newRow, 1, 1, 5);
   range.setNumberFormat("@");
-  range.setValues([[class_name, number||"", name, code, now()]]);
+  range.setValues([[classText(class_name), number||"", name, code, now()]]);
   try { sheet.setColumnWidth(1,160); sheet.setColumnWidth(2,120); sheet.setColumnWidth(3,140); sheet.setColumnWidth(4,120); sheet.setColumnWidth(5,180); } catch(e) {}
 
   // 학생 드라이브 폴더 미리 생성
@@ -2373,7 +2457,7 @@ function bulkAddStudents(password, students_json, class_name) {
     const newRow = sheet.getLastRow() + 1;
     const range = sheet.getRange(newRow, 1, 1, 5);
     range.setNumberFormat("@");
-    range.setValues([[class_name, number, name, code, now()]]);
+    range.setValues([[classText(class_name), number, name, code, now()]]);
     try { getStudentFolder(name); } catch(e) {}
     results.push({ name, code, number });
   }
@@ -2394,7 +2478,7 @@ function getStudents(password) {
   for (let i = 1; i &lt; data.length; i++) {
     if (!data[i][3]) continue;  // 코드(4열)가 없으면 skip
     students.push({
-      class:      String(data[i][0]),
+      class:      classText(data[i][0]),
       number:     String(data[i][1] || ""),
       name:       String(data[i][2]),
       code:       String(data[i][3]),
@@ -2535,7 +2619,7 @@ function searchSubmissions(password, class_name, student_name, assignment_id) {
     const stu  = studentOfRow(idx, num, subData[i][1]) ||
                  { name: String(subData[i][1] || ""), class: "", number: num, code: "", canon: num };
 
-    if (class_name   &amp;&amp; stu.class !== class_name) continue;
+    if (class_name   &amp;&amp; !sameClass(stu.class, class_name)) continue;
     if (student_name &amp;&amp; String(stu.name).indexOf(student_name) &lt; 0) continue;
     if (assignment_id &amp;&amp; String(subData[i][2]) !== String(assignment_id)) continue;
 
@@ -2904,7 +2988,7 @@ function getClasses(password) {
   const classes = [];
   for (let i = 1; i &lt; data.length; i++) {
     if (!data[i][0]) continue;
-    classes.push({ id: String(data[i][0]), name: String(data[i][1]), created_at: String(data[i][2]) });
+    classes.push({ id: String(data[i][0]), name: classText(data[i][1]), created_at: String(data[i][2]) });
   }
   return { success: true, classes };
 }
@@ -2917,7 +3001,7 @@ function addClassRoom(password, className) {
   if (!sheet) return { success: false, message: "시트 초기화 오류." };
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i &lt; data.length; i++) {
-    if (String(data[i][1]).trim() === className.trim())
+    if (sameClass(data[i][1], className))
       return { success: false, message: "이미 등록된 클래스명입니다." };
   }
   const id = "CLS_" + new Date().getTime();
@@ -2962,13 +3046,13 @@ function renameClassRoom(password, classId, newName) {
 
   let rowIdx = -1, oldName = "";
   for (let i = 1; i &lt; data.length; i++) {
-    if (String(data[i][0]) === String(classId)) { rowIdx = i + 1; oldName = String(data[i][1]); }
-    else if (String(data[i][1]).trim() === trimmed) {
+    if (String(data[i][0]) === String(classId)) { rowIdx = i + 1; oldName = classText(data[i][1]); }
+    else if (sameClass(data[i][1], trimmed)) {
       return { success: false, message: "이미 등록된 클래스명입니다." };
     }
   }
   if (rowIdx &lt; 0) return { success: false, message: "클래스를 찾을 수 없습니다." };
-  if (oldName.trim() === trimmed) return { success: true, message: "변경할 내용이 없습니다.", name: trimmed };
+  if (oldName === trimmed) return { success: true, message: "변경할 내용이 없습니다.", name: trimmed };
 
   // 1) 클래스목록 자체
   const nameCell = sheet.getRange(rowIdx, 2);
@@ -2982,7 +3066,7 @@ function renameClassRoom(password, classId, newName) {
     const range = stuSheet.getRange(2, 1, stuSheet.getLastRow() - 1, 1);
     const vals = range.getValues();
     for (let i = 0; i &lt; vals.length; i++) {
-      if (String(vals[i][0]) === oldName) { vals[i][0] = trimmed; movedStudents++; }
+      if (sameClass(vals[i][0], oldName)) { vals[i][0] = trimmed; movedStudents++; }
     }
     if (movedStudents) { range.setNumberFormat("@"); range.setValues(vals); }
   }
@@ -2994,7 +3078,7 @@ function renameClassRoom(password, classId, newName) {
     const range = asgSheet.getRange(2, 6, asgSheet.getLastRow() - 1, 1);
     const vals = range.getValues();
     for (let i = 0; i &lt; vals.length; i++) {
-      if (String(vals[i][0]) === oldName) { vals[i][0] = trimmed; movedAssigns++; }
+      if (sameClass(vals[i][0], oldName)) { vals[i][0] = trimmed; movedAssigns++; }
     }
     if (movedAssigns) { range.setNumberFormat("@"); range.setValues(vals); }
   }
@@ -3007,7 +3091,7 @@ function renameClassRoom(password, classId, newName) {
     const range = pldSheet.getRange(2, 2, pldSheet.getLastRow() - 1, 1);
     const vals = range.getValues();
     for (let i = 0; i &lt; vals.length; i++) {
-      if (String(vals[i][0]) === oldName) { vals[i][0] = trimmed; movedPledges++; }
+      if (sameClass(vals[i][0], oldName)) { vals[i][0] = trimmed; movedPledges++; }
     }
     if (movedPledges) { range.setNumberFormat("@"); range.setValues(vals); }
   }
@@ -3043,7 +3127,7 @@ function deleteClassRoom(password, classId) {
 
   let rowIdx = -1, name = "";
   for (let i = 1; i &lt; data.length; i++) {
-    if (String(data[i][0]) === String(classId)) { rowIdx = i + 1; name = String(data[i][1]); break; }
+    if (String(data[i][0]) === String(classId)) { rowIdx = i + 1; name = classText(data[i][1]); break; }
   }
   if (rowIdx &lt; 0) return { success: false, message: "클래스를 찾을 수 없습니다." };
 
@@ -3052,13 +3136,13 @@ function deleteClassRoom(password, classId) {
   const stuSheet = getSheet(SHEET.학생목록);
   if (stuSheet) {
     const d = stuSheet.getDataRange().getValues();
-    for (let i = 1; i &lt; d.length; i++) if (String(d[i][0]) === name &amp;&amp; d[i][3]) stuCount++;
+    for (let i = 1; i &lt; d.length; i++) if (sameClass(d[i][0], name) &amp;&amp; d[i][3]) stuCount++;
   }
   let asgCount = 0;
   const asgSheet = getSheet(SHEET.과제목록);
   if (asgSheet) {
     const d = asgSheet.getDataRange().getValues();
-    for (let i = 1; i &lt; d.length; i++) if (d[i][0] &amp;&amp; String(d[i][5]) === name) asgCount++;
+    for (let i = 1; i &lt; d.length; i++) if (d[i][0] &amp;&amp; sameClass(d[i][5], name)) asgCount++;
   }
   const ss = getSS();
   const subSh = ss.getSheetByName(name + " 제출물");
@@ -3121,7 +3205,7 @@ function readPledges(className) {
   const out = [];
   for (let i = 1; i &lt; data.length; i++) {
     if (!data[i][0]) continue;
-    if (String(data[i][1]).trim() !== cls) continue;
+    if (!sameClass(data[i][1], cls)) continue;
     out.push({
       id:          String(data[i][0]),
       class_name:  String(data[i][1]),
@@ -3156,7 +3240,7 @@ function summarizeStamps(idx, fbData, className, who, withStudents) {
     if (!cls) continue;
     // 학생목록에 없는 행은 어느 반인지 알 수 없으므로 반 집계에서 뺀다
     const stu = studentOfRow(idx, fbData[i][1], fbData[i][2]);
-    if (!stu || String(stu.class) !== cls) continue;
+    if (!stu || !sameClass(stu.class, cls)) continue;
     earned += n;
     perStudent[stu.canon] = (perStudent[stu.canon] || 0) + n;
   }
@@ -3175,7 +3259,7 @@ function summarizeStamps(idx, fbData, className, who, withStudents) {
 
   if (withStudents) {
     result.students = idx.list
-      .filter(function(s) { return String(s.class) === cls; })
+      .filter(function(s) { return sameClass(s.class, cls); })
       .map(function(s) {
         return {
           code:   s.code,
@@ -5100,6 +5184,17 @@ function fmtDate(str) {
   if (!str) return '';
   return String(str).replace('T',' ').slice(0,16);
 }
+// ★ 반 이름 비교 전용 — 공백과 구분자(. / _ – —) 표기 차이를 흡수한다.
+//   서버(Code.gs의 classKey)와 같은 규칙이라, 시트에 "3 - 1"처럼 적혀 있어도
+//   "3-1" 반 과제로 이어진다. 예전에는 === 로만 비교해서 표기가 조금만 달라도
+//   교사가 등록한 과제가 학생·현황판에서 통째로 빠졌다.
+function classKey(v) {
+  return String(v == null ? '' : v).trim()
+    .replace(/\s+/g, '')
+    .replace(/[.\/_–—－]/g, '-')
+    .toUpperCase();
+}
+function sameClassName(a, b) { return classKey(a) === classKey(b); }
 
 // ══════════════════════════════════════════════════════
 // 생기부 자료용 엑셀(.xlsx) 다운로드
@@ -5524,6 +5619,10 @@ function switchSTab(tab, e) {
   if (e &amp;&amp; e.currentTarget) e.currentTarget.classList.add("active");
   document.getElementById("s-tab-submit").classList.toggle("hidden", tab !== 'submit');
   document.getElementById("s-tab-my").classList.toggle("hidden", tab !== 'my');
+  // ★ 과제 탭으로 돌아올 때마다 목록을 새로 받아온다.
+  //   이전에는 접속 직후 딱 한 번만 불러와서, 학생이 화면을 켜 둔 사이에
+  //   선생님이 새 과제를 올리면 새로고침 전까지 보이지 않았다.
+  if (tab === 'submit') loadStudentAssignments();
   if (tab === 'my') loadMySubmissions();
 }
 
@@ -5543,7 +5642,13 @@ async function loadStudentAssignments() {
     if (!subMap[s.assignment_id] || s.submitted_at &gt; subMap[s.assignment_id].submitted_at) subMap[s.assignment_id] = s;
   });
   const el = document.getElementById("assignment-list");
-  if (!allAssignments.length) { el.innerHTML = `&lt;div class="empty-state" style="grid-column:1/-1"&gt;&lt;div class="icon"&gt;📋&lt;/div&gt;&lt;p&gt;등록된 과제가 없습니다.&lt;/p&gt;&lt;/div&gt;`; return; }
+  if (!allAssignments.length) {
+    // ★ 어느 반으로 접속했는지 함께 보여준다.
+    //   과제가 안 보일 때 "반이 잘못 잡혔구나"를 바로 알 수 있어야 한다.
+    const cls = currentStudent &amp;&amp; currentStudent.class ? escHtml(currentStudent.class) + ' · ' : '';
+    el.innerHTML = `&lt;div class="empty-state" style="grid-column:1/-1"&gt;&lt;div class="icon"&gt;📋&lt;/div&gt;&lt;p&gt;${cls}등록된 과제가 없습니다.&lt;/p&gt;&lt;/div&gt;`;
+    return;
+  }
   el.innerHTML = allAssignments.map((a,i) =&gt; {
     const sub = subMap[a.id];
     const isRejected = sub &amp;&amp; sub.feedback &amp;&amp; sub.feedback.is_rejected;
@@ -5794,7 +5899,7 @@ function showTeacherPanel(name) {
 async function loadStudentCardsForClass(className) {
   showLoading();
   try {
-    const classStudents = allStudents.filter(s =&gt; s.class === className);
+    const classStudents = allStudents.filter(s =&gt; sameClassName(s.class, className));
     const res = await api({ action:"getAllSubmissions", password:teacherPw, assignment_id:"", student_code:"" });
     allSubmissions = res.submissions || [];
     hideLoading();
@@ -5840,7 +5945,7 @@ async function openStudentDetail(studentCode) {
     const grid = document.getElementById("student-assignment-grid");
     // ★ 입장한 클래스 대상 과제만 보여준다 (전체 공개 과제 포함).
     //   이전에는 필터 없이 전체를 보여줘서 현황판과 과제 개수가 서로 달랐다.
-    const viewAssignments = allAssignments.filter(a =&gt; !enteredClass || !a.class_target || a.class_target === enteredClass);
+    const viewAssignments = allAssignments.filter(a =&gt; !enteredClass || !a.class_target || sameClassName(a.class_target, enteredClass));
     studentDetailExportData = { student, submitted: [] };
     if (!viewAssignments.length) { grid.innerHTML = `&lt;div class="empty-state" style="grid-column:1/-1"&gt;&lt;div class="icon"&gt;📋&lt;/div&gt;&lt;p&gt;등록된 과제가 없습니다.&lt;/p&gt;&lt;/div&gt;`; return; }
     grid.innerHTML = viewAssignments.map((a,i) =&gt; {
@@ -5915,7 +6020,7 @@ async function openAssignmentDetail(assignmentId) {
     document.getElementById("assignment-detail-view").classList.remove("hidden");
     document.getElementById("assignment-detail-title").textContent = assignment.title;
     const classFilter = enteredClass || assignment.class_target || null;
-    const targetStudents = classFilter ? allStudents.filter(s =&gt; s.class === classFilter) : allStudents;
+    const targetStudents = classFilter ? allStudents.filter(s =&gt; sameClassName(s.class, classFilter)) : allStudents;
     // 이 과제는 학생당 제출물이 하나라서 제출·반려·미제출이 서로 겹치지 않는다.
     // (아래 카드 상태와 숫자가 정확히 맞아떨어지도록 반려는 제출에서 빼고 따로 센다)
     const targetCodes = new Set(targetStudents.map(t =&gt; t.code));
@@ -6073,7 +6178,7 @@ function filterStudentsByClass(cls, btn) {
   currentClassFilter = cls;
   document.querySelectorAll("#student-class-filter .chip").forEach(b =&gt; { b.classList.remove("chip-blue"); b.classList.add("chip-gray"); });
   if (btn) { btn.classList.remove("chip-gray"); btn.classList.add("chip-blue"); }
-  renderStudentTable(cls === 'all' ? allStudents : allStudents.filter(s =&gt; s.class === cls));
+  renderStudentTable(cls === 'all' ? allStudents : allStudents.filter(s =&gt; sameClassName(s.class, cls)));
 }
 // 학생 목록 한 줄. 목록 그리기와 정렬 두 곳에서 같은 모양을 써야 해서 함수로 뺐다.
 function studentRowHtml(s) {
@@ -6089,7 +6194,7 @@ function sortStudentTable(col) {
   const asc = _tableSortDir[col];
   const keys = ['code','name','class','number'];
   const key = keys[col];
-  const base = currentClassFilter === 'all' ? allStudents : allStudents.filter(s =&gt; s.class === currentClassFilter);
+  const base = currentClassFilter === 'all' ? allStudents : allStudents.filter(s =&gt; sameClassName(s.class, currentClassFilter));
   document.getElementById("student-tbody").innerHTML = [...base].sort((a,b) =&gt; { const va = String(a[key]||''), vb = String(b[key]||''); return asc ? va.localeCompare(vb,'ko') : vb.localeCompare(va,'ko'); }).map(studentRowHtml).join('');
 }
 
@@ -6292,7 +6397,7 @@ async function loadTeacherAssignmentList() {
   showLoading();
   const res = await api({ action:'getAssignments' });
   hideLoading();
-  const list = (res.assignments || []).filter(a =&gt; { if (!enteredClass) return true; return !a.class_target || a.class_target === enteredClass; });
+  const list = (res.assignments || []).filter(a =&gt; { if (!enteredClass) return true; return !a.class_target || sameClassName(a.class_target, enteredClass); });
   const el = document.getElementById('t-assignment-list');
   if (!list.length) { el.innerHTML = `&lt;div class="empty-state"&gt;&lt;div class="icon"&gt;📋&lt;/div&gt;&lt;p&gt;등록된 과제가 없습니다.&lt;/p&gt;&lt;/div&gt;`; return; }
   // ★ 등록 순서 번호(#N)를 정렬하기 전에 먼저 매겨둔다.
@@ -6367,7 +6472,7 @@ function openEditAssignModal(idx) {
   (allClasses || []).forEach(c =&gt; {
     const opt = document.createElement('option');
     opt.value = c.name; opt.textContent = c.name;
-    if (c.name === a.class_target) opt.selected = true;
+    if (sameClassName(c.name, a.class_target)) opt.selected = true;
     sel.appendChild(opt);
   });
 
@@ -6459,8 +6564,8 @@ async function loadMatrixView() {
   } catch(e) { hideLoading(); toast('❌ 오류: ' + e.message); }
 }
 function renderMatrix() {
-  const classStudents = allStudents.filter(s =&gt; s.class === enteredClass);
-  const classAssignments = allAssignments.filter(a =&gt; !a.class_target || a.class_target === enteredClass);
+  const classStudents = allStudents.filter(s =&gt; sameClassName(s.class, enteredClass));
+  const classAssignments = allAssignments.filter(a =&gt; !a.class_target || sameClassName(a.class_target, enteredClass));
   if (!classStudents.length || !classAssignments.length) { document.getElementById('matrix-container').innerHTML = `&lt;div class="empty-state"&gt;&lt;div class="icon"&gt;📊&lt;/div&gt;&lt;p&gt;학생 또는 과제가 없습니다.&lt;/p&gt;&lt;/div&gt;`; return; }
   const subMap = {};
   allSubmissions.forEach(s =&gt; { const key = s.student_code + '||' + s.assignment_id; if (!subMap[key] || s.submitted_at &gt; subMap[key].submitted_at) subMap[key] = s; });
@@ -7389,7 +7494,7 @@ window.addEventListener('resize', () =&gt; {
     <h2 class="section-title">업데이트 후 확인해 보세요</h2>
     <ul class="checklist">
       <li class="priority"><span class="check-mark">✓</span>기존 학생 명단과 과제가 그대로 남아 있는가 ← 가장 먼저 확인</li>
-      <li><span class="check-mark">✓</span>학생 코드로 접속했을 때 과제 목록이 뜨는가</li>
+      <li class="priority"><span class="check-mark">✓</span>학생 코드로 접속했을 때 <strong>그 반 과제가 빠짐없이 뜨는가</strong> — 특히 "3-1"처럼 붙임표가 들어간 반 이름을 쓰시는 경우 꼭 확인해 주세요</li>
       <li><span class="check-mark">✓</span>과제를 누르면 선생님이 쓴 설명이 파란 박스로 보이는가</li>
       <li><span class="check-mark">✓</span>제출 시각이 실제 시각과 같은가</li>
       <li><span class="check-mark">✓</span>선생님 화면 사이드바에 📊 현황판 메뉴가 보이는가</li>
@@ -7410,6 +7515,10 @@ window.addEventListener('resize', () =&gt; {
     <div class="faq-item">
       <p class="faq-q">예전에 써 둔 피드백이 학생에게 안 보여요</p>
       <p class="faq-a">v2.2 이전에 저장된 피드백 중 일부는 엉뚱한 학생 앞으로 기록돼 아무에게도 보이지 않을 수 있습니다. 스프레드시트에서 <code>[✏️ Done? Done!] → [🩺 피드백 연결 점검]</code>을 실행하면 그런 기록을 행 번호까지 찾아줍니다. 시트를 건드리지 않고 알려주기만 하니 안심하고 눌러보셔도 됩니다. 목록에 뜬 피드백은 웹앱에서 해당 학생을 찾아 <strong>다시 저장</strong>하시면 정상적으로 보입니다. (새 코드로 바꾼 뒤부터 쓰는 피드백은 이런 일이 생기지 않습니다)</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">과제를 등록했는데 학생 화면에는 안 보여요</p>
+      <p class="faq-a">v3.0.1에서 고쳐진 문제입니다. <strong>"3-1"처럼 숫자와 붙임표로 된 반 이름</strong>이 구글 시트에서 날짜로 바뀌어 저장되는 바람에, 과제의 <strong>대상수업</strong>과 학생의 <strong>수업장소</strong>가 서로 다른 값이 되어 생겼습니다. 새 코드로 업데이트하시면 <strong>이미 잘못 저장된 과제까지 자동으로 되돌아가</strong> 학생 화면에 바로 나타납니다. 업데이트 후에도 안 보인다면 스프레드시트의 <strong>과제목록</strong> 시트 <strong>F열(대상수업)</strong>과 <strong>학생목록</strong> 시트 <strong>A열(수업장소)</strong>에 적힌 반 이름이 같은지 확인해 주세요. (모든 반에 보여주고 싶은 과제는 대상수업을 <strong>비워 두시면</strong> 됩니다)</p>
     </div>
     <div class="faq-item">
       <p class="faq-q">"연결된 스프레드시트가 없습니다" 오류가 떠요</p>
