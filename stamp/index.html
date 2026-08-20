@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<!--
+  Based on dojang-maker — https://github.com/ngryun/dojang-maker
+  Copyright (c) 2026 남궁연 (Namgung Yeon)
+  Licensed under the MIT License. See ./LICENSE for the full text.
+
+  This file has been modified from the original.
+  Modifications copyright (c) 2026 @hirame.ki (Instagram).
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f1e7">
+<meta name="description" content="학교에 찾아오던 도장 아저씨를 대신하는 전자도장. 이름을 넣으면 배경이 투명한 도장 PNG를 만들어 줍니다. 글씨체·모양·색과 잉크 번짐까지 조절할 수 있습니다.">
+  <!-- 탭 아이콘 — 헤더의 도장 아저씨를 얼굴만 16×16 으로 다시 그린 것.
+       외부 파일 없이 data URI 로 박아 index.html 하나로 열리는 성질을 지킨다.
+       PNG 를 먼저 두고 SVG 를 뒤에 둔다: SVG 를 아는 브라우저는 뒤엣것을 골라
+       또렷하게 그리고, 모르는 브라우저는 앞의 PNG 로 물러선다. -->
+  <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAmklEQVR42mNgQAPyvlb/kfHXj88owujmMRACA+YAallIrIMGjwPoZTFOhwxeB5ycT108dBxAbYtxOGTwO8BaXwMvRjeYaPVDzgEqMuJg/OLjBzAmZBFMHUzf0HfAyE0Do+UAITzH2wYFjzwHDOM0MGJbRPRulA5eB9DKIbjsGXgH4OqSUeogQuYR7BPS3QHEOoRSTHLvmNYOAACPrD3mVpFNSwAAAABJRU5ErkJggg==">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cg fill='%231F4D3A'%3E%3Crect x='2' y='0' width='2' height='1'/%3E%3Crect x='12' y='0' width='2' height='1'/%3E%3Crect x='1' y='1' width='1' height='1'/%3E%3Crect x='14' y='1' width='1' height='1'/%3E%3Crect x='0' y='2' width='1' height='1'/%3E%3Crect x='15' y='2' width='1' height='1'/%3E%3Crect x='0' y='3' width='1' height='1'/%3E%3Crect x='15' y='3' width='1' height='1'/%3E%3Crect x='0' y='4' width='1' height='1'/%3E%3Crect x='15' y='4' width='1' height='1'/%3E%3Crect x='0' y='5' width='1' height='1'/%3E%3Crect x='15' y='5' width='1' height='1'/%3E%3Crect x='0' y='6' width='1' height='1'/%3E%3Crect x='15' y='6' width='1' height='1'/%3E%3Crect x='0' y='7' width='1' height='1'/%3E%3Crect x='15' y='7' width='1' height='1'/%3E%3Crect x='0' y='8' width='1' height='1'/%3E%3Crect x='15' y='8' width='1' height='1'/%3E%3Crect x='0' y='9' width='1' height='1'/%3E%3Crect x='15' y='9' width='1' height='1'/%3E%3Crect x='0' y='10' width='1' height='1'/%3E%3Crect x='15' y='10' width='1' height='1'/%3E%3Crect x='0' y='11' width='1' height='1'/%3E%3Crect x='15' y='11' width='1' height='1'/%3E%3Crect x='0' y='12' width='2' height='1'/%3E%3Crect x='14' y='12' width='2' height='1'/%3E%3Crect x='0' y='13' width='3' height='1'/%3E%3Crect x='13' y='13' width='3' height='1'/%3E%3Crect x='1' y='14' width='4' height='1'/%3E%3Crect x='11' y='14' width='4' height='1'/%3E%3Crect x='2' y='15' width='12' height='1'/%3E%3C/g%3E%3Cg fill='%23F5F1E6'%3E%3Crect x='4' y='0' width='8' height='1'/%3E%3Crect x='2' y='1' width='12' height='1'/%3E%3Crect x='1' y='2' width='14' height='1'/%3E%3Crect x='1' y='3' width='2' height='1'/%3E%3Crect x='13' y='3' width='2' height='1'/%3E%3Crect x='1' y='4' width='1' height='1'/%3E%3Crect x='14' y='4' width='1' height='1'/%3E%3Crect x='1' y='5' width='1' height='1'/%3E%3Crect x='14' y='5' width='1' height='1'/%3E%3Crect x='1' y='6' width='1' height='1'/%3E%3Crect x='14' y='6' width='1' height='1'/%3E%3Crect x='1' y='7' width='1' height='1'/%3E%3Crect x='14' y='7' width='1' height='1'/%3E%3Crect x='1' y='8' width='1' height='1'/%3E%3Crect x='14' y='8' width='1' height='1'/%3E%3Crect x='1' y='9' width='1' height='1'/%3E%3Crect x='14' y='9' width='1' height='1'/%3E%3Crect x='1' y='10' width='1' height='1'/%3E%3Crect x='14' y='10' width='1' height='1'/%3E%3Crect x='1' y='11' width='14' height='1'/%3E%3Crect x='2' y='12' width='12' height='1'/%3E%3Crect x='3' y='13' width='10' height='1'/%3E%3Crect x='5' y='14' width='6' height='1'/%3E%3C/g%3E%3Cg fill='%23F5C99F'%3E%3Crect x='3' y='3' width='10' height='1'/%3E%3Crect x='2' y='4' width='12' height='1'/%3E%3Crect x='2' y='5' width='1' height='1'/%3E%3Crect x='7' y='5' width='2' height='1'/%3E%3Crect x='13' y='5' width='1' height='1'/%3E%3Crect x='2' y='6' width='1' height='1'/%3E%3Crect x='13' y='6' width='1' height='1'/%3E%3Crect x='2' y='7' width='1' height='1'/%3E%3Crect x='7' y='7' width='2' height='1'/%3E%3Crect x='13' y='7' width='1' height='1'/%3E%3Crect x='2' y='8' width='12' height='1'/%3E%3Crect x='2' y='9' width='5' height='1'/%3E%3Crect x='9' y='9' width='5' height='1'/%3E%3Crect x='2' y='10' width='12' height='1'/%3E%3C/g%3E%3Cg fill='%233B2F28'%3E%3Crect x='3' y='5' width='4' height='1'/%3E%3Crect x='9' y='5' width='4' height='1'/%3E%3Crect x='3' y='6' width='1' height='1'/%3E%3Crect x='6' y='6' width='4' height='1'/%3E%3Crect x='12' y='6' width='1' height='1'/%3E%3Crect x='3' y='7' width='4' height='1'/%3E%3Crect x='9' y='7' width='4' height='1'/%3E%3C/g%3E%3Cg fill='%23241C17'%3E%3Crect x='4' y='6' width='1' height='1'/%3E%3Crect x='11' y='6' width='1' height='1'/%3E%3C/g%3E%3Cg fill='%23E8F1F0'%3E%3Crect x='5' y='6' width='1' height='1'/%3E%3Crect x='10' y='6' width='1' height='1'/%3E%3C/g%3E%3Cg fill='%239C4B3C'%3E%3Crect x='7' y='9' width='2' height='1'/%3E%3C/g%3E%3C/svg%3E">
+<title>도장 아저씨 — 투명배경 도장 이미지 만들기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Song+Myung&family=Gowun+Batang:wght@400;700&family=Hahmlet:wght@400;700;900&family=Noto+Serif+KR:wght@400;700;900&family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=Nanum+Brush+Script&family=Gaegu:wght@400;700&family=Nanum+Gothic:wght@400;700;800&family=Gugi&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!--
+  글씨체를 직접 추가하고 싶을 때: 폰트 파일을 이 폴더에 넣고 아래 주석을 풀어 쓰세요.
+  전서체(篆書體) 같은 도장 전용 글씨체는 구글 폰트에 없으므로 이 방법으로 넣습니다.
+  @font-face { font-family:'내폰트'; src:url('./myfont.ttf') format('truetype'); }
+  그리고 아래 JS의 FONTS 배열에 { fam:'내폰트', w:400, label:'내 글씨체', group:'직접 추가' } 를 추가.
+-->
+<style>
+  /* ============================================================
+     디자인 토큰 — hirameki/sign 과 동일한 아이덴티티
+     ============================================================ */
+  :root{
+    --bg:#F4F6F3; --card:#FFFFFF;
+    --ink:#0E1A14; --ink2:#465045; --ink3:#8A958C;
+    --hair:#E8ECE7;
+    --brand:#1F4D3A; --brand-soft:#E4ECE6; --brand-light:#EFF4F0;
+    --seal:#b3272d;                 /* 인주색 — 도장 결과물에만 쓴다 */
+    --shadow-sm:0 2px 8px rgba(14,26,20,.05);
+    --shadow-md:0 8px 24px rgba(31,77,58,.11);
+    --shadow-lg:0 14px 32px rgba(31,77,58,.22);
+    --radius-sm:12px; --radius:16px; --radius-lg:20px;
+    --font:'Pretendard Variable','Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    --font-serif:'Noto Serif KR',var(--font);
+  }
+  *,*::before,*::after{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:var(--font); font-size:14px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+    display:flex; flex-direction:column;
+    overflow:hidden;                /* 데스크톱에서는 페이지가 통째로 스크롤되지 않는다 */
+  }
+  button{font-family:inherit; cursor:pointer}
+  button:disabled{cursor:not-allowed}
+
+  @keyframes fadeUp{
+    from{opacity:0; transform:translateY(8px)}
+    to  {opacity:1; transform:translateY(0)}
+  }
+  @keyframes sweepMove{
+    0%  {transform:translateX(-120%) skewX(-14deg); opacity:0}
+    12% {opacity:.9}
+    55% {opacity:.45}
+    100%{transform:translateX(220%) skewX(-14deg); opacity:0}
+  }
+
+  /* ---------- 헤더 ---------- */
+  header{
+    position:relative; overflow:hidden; flex:none; z-index:5;
+    padding:22px 26px 24px;
+    background:linear-gradient(155deg,
+      color-mix(in srgb, var(--brand) 74%, #08150f) 0%,
+      var(--brand) 55%,
+      color-mix(in srgb, var(--brand) 68%, #08150f) 100%);
+    box-shadow:0 14px 30px -10px rgba(14,26,20,.38);
+  }
+  header .sweep{
+    position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.38) 50%,transparent 60%);
+    animation:sweepMove 1.35s cubic-bezier(.3,.6,.4,1) .1s both;
+  }
+  /* 글 왼쪽, 아저씨 오른쪽. 좁아지면 아저씨가 먼저 자리를 내준다. */
+  header .head-row{
+    position:relative; display:flex; align-items:center; gap:20px;
+  }
+  header .head-text{min-width:0; flex:1}
+  header .mascot{
+    flex:none; width:auto; height:84px;
+    image-rendering:pixelated;                 /* 확대해도 픽셀이 뭉개지지 않게 */
+    filter:drop-shadow(0 3px 6px rgba(8,21,15,.45));
+    opacity:0; animation:fadeUp .65s cubic-bezier(.22,.61,.36,1) .34s both, bob 3.6s ease-in-out 1s infinite;
+  }
+  /* 아주 작게만 흔들린다. 헤더에서 계속 움직이는 것이라 크면 거슬린다. */
+  @keyframes bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+  @media (prefers-reduced-motion:reduce){
+    header .mascot{animation:none; opacity:1}
+    header .sweep{animation:none; opacity:0}
+    header h1, header p{animation:none; opacity:1}
+  }
+
+  header h1{
+    position:relative; font-family:var(--font-serif);
+    font-size:26px; font-weight:700; color:#fff;
+    letter-spacing:-.015em; line-height:1.2;
+    display:flex; align-items:center; gap:9px;
+    opacity:0; animation:fadeUp .65s cubic-bezier(.22,.61,.36,1) .18s both;
+  }
+  header h1 .seal{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:30px; height:30px; border-radius:9px;
+    background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.26);
+    font-size:15px; font-weight:700;
+  }
+  header p{
+    position:relative; margin-top:6px;
+    font-size:13.5px; font-weight:500; color:rgba(255,255,255,.76);
+    letter-spacing:-.01em; max-width:640px;
+    opacity:0; animation:fadeUp .65s cubic-bezier(.22,.61,.36,1) .26s both;
+  }
+
+  /* ============================================================
+     본문 — 왼쪽 조작부 / 오른쪽 결과물, 정확히 절반씩.
+     오른쪽은 스크롤되지 않는다. 옵션을 아무리 내려도 도장은 그 자리에.
+     ============================================================ */
+  .wrap{
+    flex:1; min-height:0;
+    display:grid; grid-template-columns:1fr 1fr;
+  }
+
+  /* ---------- 왼쪽: 조작부 (이쪽만 스크롤) ---------- */
+  .panel{
+    height:100%; overflow-y:auto; overscroll-behavior:contain;
+    padding:20px 22px 40px;
+    border-right:1px solid var(--hair);
+  }
+  .panel::-webkit-scrollbar{width:10px}
+  .panel::-webkit-scrollbar-thumb{
+    background:var(--hair); border-radius:99px;
+    border:3px solid var(--bg); background-clip:padding-box;
+  }
+  .panel::-webkit-scrollbar-thumb:hover{background:#d3dad2; background-clip:padding-box}
+
+  /* ---------- 접이식 카드 ----------
+     한 번 맞추면 잘 안 건드리는 항목은 접어두어 스크롤을 줄인다.
+     <details> 를 쓰면 키보드·스크린리더 대응이 공짜로 따라온다. */
+  .card{
+    border:1px solid var(--hair); border-radius:var(--radius);
+    background:var(--card); box-shadow:var(--shadow-sm);
+    margin-bottom:10px; overflow:hidden;
+    animation:fadeUp .3s ease;
+  }
+  .card > summary{
+    list-style:none; cursor:pointer; user-select:none;
+    padding:13px 15px;
+    display:flex; align-items:center; gap:8px;
+    font-size:13px; font-weight:700; color:var(--ink);
+    letter-spacing:-.01em;
+    transition:background .15s;
+  }
+  .card > summary::-webkit-details-marker{display:none}
+  .card > summary:hover{background:var(--brand-light)}
+  .card > summary::after{
+    content:''; margin-left:auto; flex:none;
+    width:7px; height:7px; border-right:2px solid var(--ink3); border-bottom:2px solid var(--ink3);
+    transform:rotate(45deg) translate(-2px,-2px); transition:transform .2s;
+  }
+  .card[open] > summary::after{transform:rotate(225deg) translate(-2px,-2px)}
+  .card[open] > summary{border-bottom:1px solid var(--hair)}
+  .card-body{padding:15px}
+
+  .row{margin-bottom:13px}
+  .row:last-child{margin-bottom:0}
+  label.lb{
+    display:block; font-size:11.5px; font-weight:700;
+    margin-bottom:6px; color:var(--ink2); letter-spacing:-.01em;
+  }
+  .hint{font-size:11px; color:var(--ink3); font-weight:500}
+
+  input[type=text], select{
+    width:100%; padding:11px 12px;
+    border:1px solid var(--hair); border-radius:var(--radius-sm);
+    background:var(--card); color:var(--ink);
+    font-family:inherit; font-size:14px; font-weight:600;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input[type=text]:focus, select:focus{
+    outline:none; border-color:var(--brand);
+    box-shadow:0 0 0 3px var(--brand-soft);
+  }
+
+  /* 세그먼트 컨트롤 */
+  .seg{
+    display:flex; gap:4px; padding:4px;
+    background:var(--brand-light); border-radius:var(--radius-sm);
+  }
+  .seg button{
+    flex:1; padding:9px 4px; border:0; background:transparent;
+    border-radius:9px; font-size:12px; font-weight:600; color:var(--ink2);
+    letter-spacing:-.01em; transition:background .15s, color .15s;
+  }
+  .seg button[aria-pressed=true]{
+    background:var(--card); color:var(--brand);
+    font-weight:700; box-shadow:var(--shadow-sm);
+  }
+
+  .sl{display:flex; align-items:center; gap:10px}
+  .sl input[type=range]{flex:1; accent-color:var(--brand); min-width:0}
+  .sl output{
+    width:48px; text-align:right; font-variant-numeric:tabular-nums;
+    font-size:11.5px; font-weight:600; color:var(--ink3);
+  }
+
+  .chk{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--ink2); cursor:pointer}
+  .chk input{accent-color:var(--brand); width:16px; height:16px}
+
+  /* 인주 색 — 스와치마다 이름을 붙인다. 마우스를 올려야 보이는 title 만으로는 모른다 */
+  .colors{display:flex; gap:12px; align-items:flex-start}
+  .colors input[type=color]{
+    width:42px; height:44px; padding:0; border:1px solid var(--hair);
+    border-radius:9px; background:none; cursor:pointer; flex:none;
+  }
+  .swatches{display:flex; gap:9px; flex-wrap:wrap}
+  .sw{display:flex; flex-direction:column; align-items:center; gap:4px; width:44px}
+  .sw em{font-style:normal; font-size:9.5px; font-weight:600; color:var(--ink3); text-align:center; line-height:1.2}
+  .swatch{
+    width:26px; height:26px; border-radius:50%;
+    border:1px solid rgba(14,26,20,.12); cursor:pointer; padding:0;
+    transition:transform .12s, box-shadow .15s;
+  }
+  .swatch:hover{transform:scale(1.12); box-shadow:var(--shadow-sm)}
+
+  button.btn{
+    width:100%; padding:13px; border:1px solid var(--hair);
+    border-radius:var(--radius); background:var(--card);
+    font-size:14px; font-weight:700; color:var(--ink);
+    letter-spacing:-.01em;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    transition:transform .12s, background .15s, box-shadow .15s;
+  }
+  button.btn:hover{background:var(--brand-light)}
+  button.btn:active:not(:disabled){transform:scale(.98)}
+  button.btn.primary{
+    background:var(--brand); border-color:var(--brand); color:#fff;
+    box-shadow:var(--shadow-lg);
+  }
+  button.btn.primary:hover{background:color-mix(in srgb, var(--brand) 88%, #000)}
+  button.btn:disabled{background:var(--hair); color:var(--ink3); box-shadow:none}
+
+  .presets{display:flex; flex-wrap:wrap; gap:7px}
+  .presets button{
+    padding:8px 13px; border:1px solid var(--hair); border-radius:999px;
+    background:var(--card); font-size:12px; font-weight:600; color:var(--ink2);
+    letter-spacing:-.01em; transition:background .15s, color .15s, border-color .15s;
+  }
+  .presets button:hover{background:var(--brand-light); color:var(--brand); border-color:var(--brand-soft)}
+
+  /* 내 도장 — 직인·소인을 오가며 쓰는 사람이 매번 슬라이더를 다시 맞추지 않게 */
+  .slots-row{margin-top:13px; padding-top:12px; border-top:1px solid var(--hair)}
+  .slots{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:9px}
+  .slots:empty{display:none}
+  .slot{
+    display:inline-flex; align-items:center;
+    border:1px solid var(--brand-soft); border-radius:999px;
+    background:var(--brand-light); overflow:hidden;
+  }
+  .slot button{
+    border:0; background:transparent; font-family:inherit;
+    font-size:11.5px; font-weight:700; color:var(--brand); letter-spacing:-.01em;
+  }
+  .slot .slot-load{padding:6px 4px 6px 12px; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .slot .slot-del{padding:6px 10px 6px 5px; color:var(--ink3); font-size:13px; line-height:1}
+  .slot .slot-del:hover{color:var(--seal)}
+  .slots-empty{font-size:11px; color:var(--ink3); font-weight:500; margin-bottom:9px}
+  button.btn.slot-add{padding:9px; font-size:12.5px; font-weight:600; color:var(--ink2)}
+
+  .saveline{
+    display:flex; align-items:center; justify-content:space-between; gap:9px;
+    margin-top:12px; padding-top:11px; border-top:1px solid var(--hair);
+  }
+  .saveline > span:first-child{font-size:11px; color:var(--ink3); font-weight:500; line-height:1.35}
+  .saveline-btns{display:flex; gap:6px; flex:none}
+  .saveline button{
+    flex:none; padding:7px 11px; border:1px solid var(--hair); border-radius:9px;
+    background:var(--card); font-size:11.5px; font-weight:600; color:var(--ink2);
+    white-space:nowrap; transition:background .15s, color .15s, border-color .15s;
+  }
+  .saveline button:hover:not(:disabled){background:var(--brand-light); color:var(--brand); border-color:var(--brand-soft)}
+  .saveline button:disabled{opacity:.42}
+
+  /* ---------- 오른쪽: 결과물 (항상 고정, 스크롤 없음) ---------- */
+  .stage{
+    height:100%; overflow:hidden;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:13px;
+    padding:24px 26px;
+    background:radial-gradient(circle at 50% 34%, #fff 0%, var(--bg) 68%);
+  }
+  .stage-tag{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:5px 12px; border-radius:999px;
+    background:var(--brand-soft); color:var(--brand);
+    font-size:11px; font-weight:700; letter-spacing:-.01em;
+  }
+  .canvas-box{
+    position:relative; aspect-ratio:1;
+    width:min(100%, 400px, calc(100vh - 470px));
+    min-width:180px;
+    border-radius:var(--radius-lg); border:1px solid var(--hair);
+    box-shadow:var(--shadow-md); overflow:hidden;
+    animation:fadeUp .35s ease;
+  }
+  .canvas-box.checker{
+    background-color:#fff;
+    background-image:
+      linear-gradient(45deg,#EDF1EC 25%,transparent 25%,transparent 75%,#EDF1EC 75%),
+      linear-gradient(45deg,#EDF1EC 25%,transparent 25%,transparent 75%,#EDF1EC 75%);
+    background-size:18px 18px; background-position:0 0,9px 9px;
+  }
+  .canvas-box.paper{
+    background:#FBF9F3;
+    box-shadow:var(--shadow-md), inset 0 0 40px rgba(120,100,60,.10);
+  }
+  #view{width:100%; height:100%; display:block}
+  .stage-info{display:flex; flex-direction:column; align-items:center; gap:5px}
+  .stage .meta{font-size:12px; font-weight:500; color:var(--ink3); text-align:center}
+  .toggle-view{
+    display:flex; gap:8px; align-items:center;
+    font-size:12px; font-weight:600; color:var(--ink2); cursor:pointer;
+  }
+  .toggle-view input{accent-color:var(--brand); width:16px; height:16px}
+
+  /* 내보내기 — 조작부를 끝까지 스크롤하지 않아도 늘 손에 닿는 자리 */
+  .export{
+    width:min(100%, 400px);
+    background:var(--card); border:1px solid var(--hair);
+    border-radius:var(--radius); box-shadow:var(--shadow-sm);
+    padding:13px 14px 12px;
+  }
+  .export-row{display:flex; align-items:center; gap:10px; margin-bottom:9px}
+  .export-row .lb{margin:0; flex:none; white-space:nowrap}
+  /* px 만 보여주면 종이에서 얼마나 큰지 알 수 없다. 환산값을 붙여 둔다. */
+  .export-note{
+    margin:-3px 0 9px; font-size:11px; font-weight:500;
+    color:var(--ink3); line-height:1.45;
+  }
+  .export .btns{display:flex; gap:8px}
+  .export .btns .primary{flex:1}
+  .export .btns #copy{flex:none; width:78px}
+  /* 한글에 넣는 법 — 평소에는 접어 두어 카드를 단순하게 유지한다.
+     필요한 사람만 펴 보면 되는 내용이라 기본 화면에 늘어놓지 않는다. */
+  .howto{margin-top:10px; padding-top:9px; border-top:1px solid var(--hair)}
+  .howto > summary{
+    list-style:none; cursor:pointer; user-select:none;
+    display:flex; align-items:center; gap:6px;
+    font-size:11.5px; font-weight:700; color:var(--ink2);
+  }
+  .howto > summary::-webkit-details-marker{display:none}
+  .howto > summary::before{
+    content:''; flex:none; width:5px; height:5px;
+    border-right:1.5px solid var(--ink3); border-bottom:1.5px solid var(--ink3);
+    transform:rotate(-45deg); transition:transform .2s;
+  }
+  .howto[open] > summary::before{transform:rotate(45deg)}
+  .howto > summary:hover{color:var(--brand)}
+  .howto ol{margin:9px 0 0; padding-left:18px}
+  .howto li{
+    font-size:11.5px; color:var(--ink2); font-weight:500;
+    line-height:1.55; margin-bottom:3px; text-align:left;
+  }
+  .howto li b{color:var(--ink); font-weight:700}
+  .howto p{
+    margin:9px 0 0; font-size:11px; color:var(--ink3);
+    font-weight:500; line-height:1.5; text-align:left;
+  }
+  .status{
+    font-size:11.5px; font-weight:600; color:var(--brand);
+    min-height:15px; margin-top:6px; text-align:center;
+  }
+
+  /* ---------- 제작자 칩 (우측 하단 고정) ---------- */
+  .credit-chip{
+    position:fixed; right:16px; bottom:16px; z-index:1700;
+    display:inline-flex; align-items:center; gap:6px;
+    padding:9px 14px; border-radius:999px;
+    background:var(--card); border:1px solid var(--hair);
+    color:var(--ink2); text-decoration:none;
+    font-size:11.5px; font-weight:700; letter-spacing:-.01em;
+    box-shadow:var(--shadow-md);
+    transition:background .15s, color .15s, border-color .15s;
+  }
+  .credit-chip svg{flex:none}
+  .credit-chip:hover{background:var(--brand-light); color:var(--brand); border-color:var(--brand-soft)}
+
+  /* ============================================================
+     모바일 (세로 좁은 화면)
+     - 결과물은 위에 고정, 저장 버튼은 아래에 고정, 옵션만 그 사이를 스크롤.
+     - 손가락으로 누를 것들은 최소 44px 가까이 키운다.
+     - 입력칸 글씨는 16px 이상이어야 iOS 사파리가 화면을 확대하지 않는다.
+     ============================================================ */
+  @media (max-width:900px){
+    html,body{height:auto}
+    body{overflow:visible; display:block}
+
+    header{padding:18px 18px 20px}
+    header h1{font-size:21px}
+    header h1 .seal{width:26px; height:26px; font-size:13px}
+    header p{font-size:12.5px; margin-top:5px}
+    header .head-row{gap:14px}
+    header .mascot{height:62px}
+
+    .wrap{display:flex; flex-direction:column; align-items:stretch}
+
+    .stage{
+      order:-1;                              /* 결과물을 조작부 위로 */
+      position:sticky; top:0; z-index:20;
+      height:auto; background:var(--bg);
+      border-bottom:1px solid var(--hair);
+      box-shadow:0 6px 14px -10px rgba(14,26,20,.4);
+      padding:12px 14px 10px; gap:8px;
+    }
+    .stage-tag{display:none}
+    .canvas-box{width:min(52vw, 230px); min-width:0}
+    .stage .meta{font-size:11px}
+    .toggle-view{font-size:11.5px}
+
+    /* 내보내기는 화면 아래에 붙여 언제든 저장할 수 있게 한다 */
+    .export{
+      position:fixed; left:0; right:0; bottom:0; z-index:1600;
+      width:auto; border-radius:0;
+      border:0; border-top:1px solid var(--hair);
+      box-shadow:0 -6px 18px -10px rgba(14,26,20,.4);
+      padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    }
+    .export-row{margin-bottom:8px}
+    .export .btns #copy{width:92px}
+    .status{margin-top:6px; min-height:0}
+
+    .panel{
+      height:auto; overflow:visible; border-right:0;
+      padding:16px 14px 40px;
+      padding-bottom:calc(180px + env(safe-area-inset-bottom));  /* 하단 고정 바에 가리지 않게 */
+      width:100%; max-width:620px; margin:0 auto;
+    }
+    .card-body{padding:14px 13px}
+
+    /* 좁은 화면에서는 칩을 아이콘만 남긴다 — 하단 고정 바와 겹치지 않게 띄운다 */
+    .credit-chip{
+      right:12px; bottom:calc(148px + env(safe-area-inset-bottom));
+      padding:11px; gap:0;
+    }
+    .credit-chip span{display:none}
+
+    /* 손가락 크기에 맞춘 조작 요소 — 누르는 것은 36px 이상으로 */
+    input[type=text], select{font-size:16px; padding:13px 12px}
+    input[type=range]{height:38px}
+    .sl{gap:12px}
+    .sl output{font-size:12px; width:50px}
+    .seg button{padding:13px 4px; font-size:12px}
+    .presets button{padding:11px 15px; font-size:12.5px}
+    button.btn{padding:15px; font-size:14.5px}
+    .card > summary{padding:15px}
+    .chk{padding:7px 0}
+    .chk input{width:22px; height:22px}
+    .colors{gap:12px}
+    .colors input[type=color]{width:50px; height:52px}
+    .sw{width:52px}
+    .swatch{width:34px; height:34px}
+    .saveline button{padding:10px 13px; font-size:12px}
+    .toggle-view{padding:6px 0}
+    .toggle-view input{width:22px; height:22px}
+  }
+
+  /* 세로가 짧은 화면 — 고정된 결과물이 화면을 다 먹지 않게 줄인다 */
+  @media (max-width:900px) and (max-height:680px){
+    .canvas-box{width:min(42vw, 170px)}
+    .stage{padding:9px 14px 7px}
+  }
+
+  /* 가로로 눕힌 휴대폰 */
+  @media (max-width:900px) and (max-height:480px){
+    .canvas-box{width:min(26vw, 130px)}
+    .stage .meta{display:none}
+  }
+
+  /* 아주 좁은 화면 (iPhone SE 등) */
+  @media (max-width:360px){
+    .panel{padding:14px 11px 36px; padding-bottom:calc(180px + env(safe-area-inset-bottom))}
+    .seg button{padding:13px 2px; font-size:11.5px}
+    .presets button{padding:10px 12px; font-size:12px}
+  }
+
+  /* 손가락 입력 기기: 마우스 호버 효과를 끄고 탭 반응을 즉시 */
+  @media (hover:none){
+    button,.chk,label{touch-action:manipulation}
+    button.btn:hover{background:var(--card)}
+    .card > summary:hover{background:transparent}
+    .presets button:hover{background:var(--card); border-color:var(--hair); color:var(--ink2)}
+    .presets button:active{background:var(--brand-light); color:var(--brand)}
+    .swatch:hover{transform:none; box-shadow:none}
+    .credit-chip:hover{background:var(--card); color:var(--ink2); border-color:var(--hair)}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="sweep"></div>
+  <div class="head-row">
+    <div class="head-text">
+      <h1>도장 아저씨 <span class="seal">印</span></h1>
+      <p>매년 학교에 찾아오시던 그 도장 아저씨, 그립습니다! 이제 전자도장으로 찾아갑니다~</p>
+    </div>
+    <!-- 도장 아저씨 — 16×16 픽셀 맵을 그대로 옮긴 인라인 SVG. 외부 파일이 없다. -->
+    <svg class="mascot" viewBox="0 0 16 18" width="16" height="18" shape-rendering="crispEdges" aria-hidden="true">
+        <g fill="#F5F1E6"><rect x="5" y="1" width="6" height="1"/><rect x="3" y="2" width="10" height="1"/><rect x="2" y="3" width="12" height="1"/><rect x="2" y="4" width="1" height="1"/><rect x="13" y="4" width="1" height="1"/><rect x="2" y="5" width="1" height="1"/><rect x="13" y="5" width="1" height="1"/><rect x="2" y="6" width="1" height="1"/><rect x="13" y="6" width="1" height="1"/><rect x="2" y="7" width="1" height="1"/><rect x="13" y="7" width="1" height="1"/><rect x="2" y="8" width="1" height="1"/><rect x="13" y="8" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="13" y="9" width="1" height="1"/><rect x="2" y="10" width="1" height="1"/><rect x="13" y="10" width="1" height="1"/><rect x="2" y="11" width="12" height="1"/><rect x="3" y="12" width="10" height="1"/><rect x="5" y="13" width="6" height="1"/><rect x="6" y="16" width="4" height="1"/><rect x="6" y="17" width="4" height="1"/></g>
+        <g fill="#F5C99F"><rect x="3" y="4" width="10" height="1"/><rect x="3" y="5" width="10" height="1"/><rect x="7" y="6" width="2" height="1"/><rect x="7" y="8" width="2" height="1"/><rect x="3" y="9" width="10" height="1"/><rect x="3" y="10" width="4" height="1"/><rect x="9" y="10" width="4" height="1"/><rect x="6" y="14" width="4" height="1"/></g>
+        <g fill="#3B2F28"><rect x="3" y="6" width="4" height="1"/><rect x="9" y="6" width="4" height="1"/><rect x="3" y="7" width="1" height="1"/><rect x="6" y="7" width="4" height="1"/><rect x="12" y="7" width="1" height="1"/><rect x="3" y="8" width="4" height="1"/><rect x="9" y="8" width="4" height="1"/></g>
+        <g fill="#241C17"><rect x="4" y="7" width="1" height="1"/><rect x="11" y="7" width="1" height="1"/></g>
+        <g fill="#E8F1F0"><rect x="5" y="7" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/></g>
+        <g fill="#9C4B3C"><rect x="7" y="10" width="2" height="1"/></g>
+        <g fill="#C43A33"><rect x="2" y="15" width="12" height="1"/><rect x="1" y="16" width="5" height="1"/><rect x="10" y="16" width="5" height="1"/><rect x="1" y="17" width="5" height="1"/><rect x="10" y="17" width="5" height="1"/></g>
+      </svg>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- ================= 조작부 ================= -->
+  <div class="panel">
+
+    <details class="card" open>
+      <summary>빠른 설정</summary>
+      <div class="card-body">
+        <div class="presets" id="presets">
+          <button data-preset="personal">개인 인감</button>
+          <button data-preset="gigwan">기관장 직인</button>
+          <button data-preset="sagak">사각 직인</button>
+          <button data-preset="soin">결재용 소인</button>
+          <button data-preset="worn">낡은 느낌</button>
+        </div>
+
+        <div class="slots-row">
+          <label class="lb">내 도장 <span class="hint">지금 설정을 이름표로 저장해 둡니다</span></label>
+          <div class="slots" id="slots"></div>
+          <button type="button" class="btn slot-add" id="slotAdd">현재 설정 저장</button>
+        </div>
+
+        <div class="saveline">
+          <span id="saveNote">설정은 이 브라우저에 자동으로 저장됩니다.</span>
+          <span class="saveline-btns">
+            <button type="button" id="undo" disabled>되돌리기</button>
+            <button type="button" id="reset">처음 설정으로</button>
+          </span>
+        </div>
+      </div>
+    </details>
+
+    <details class="card" open>
+      <summary>글자</summary>
+      <div class="card-body">
+        <div class="row">
+          <label class="lb" for="text"><span id="textLb">도장에 넣을 글자</span></label>
+          <input type="text" id="text" value="홍길동" maxlength="14" autocomplete="off" placeholder="예: 홍길동 / ○○고등학교장">
+        </div>
+        <!-- 가운데 글자 — 원주 배치에서만 쓴다. 다른 배치에서는 놓을 자리가 없다. -->
+        <div class="row" id="midRow" hidden>
+          <label class="lb" for="mid">가운데 글자 <span class="hint">테두리 안쪽에 들어갑니다</span></label>
+          <input type="text" id="mid" value="" maxlength="8" autocomplete="off" placeholder="예: 교장 / 대표이사">
+        </div>
+        <div class="row">
+          <label class="lb" for="suffix"><span id="suffixLb">이름 뒤에 붙일 글자</span> <span class="hint">직인은 보통 「인」을 붙입니다</span></label>
+          <select id="suffix">
+            <option value="">없음</option>
+            <option value="인" selected>인 붙이기</option>
+            <option value="印">印 붙이기</option>
+            <option value="之印">之印 붙이기</option>
+          </select>
+        </div>
+        <div class="row">
+          <label class="lb" for="font">글씨체</label>
+          <select id="font"></select>
+        </div>
+        <div class="row">
+          <label class="lb">배치 <span class="hint">글자를 어떻게 늘어놓을지</span></label>
+          <div class="seg" id="layout" role="group">
+            <button data-v="auto" aria-pressed="true">자동</button>
+            <button data-v="vertical" aria-pressed="false">세로</button>
+            <button data-v="horizontal" aria-pressed="false">가로</button>
+            <button data-v="grid" aria-pressed="false">격자</button>
+            <button data-v="ring" aria-pressed="false">원주</button>
+          </div>
+          <p class="hint" id="ringHint" hidden>위 글자가 테두리를 돌고, 가운데 글자와 접미사가 안쪽에 들어갑니다.</p>
+        </div>
+        <!-- 글자띠 두께 — 바깥 원과 안쪽 원 사이. 원주 배치에서만 뜻이 있다. -->
+        <div class="row" id="ringRow" hidden>
+          <label class="lb" for="ring">테두리 글자띠 <span class="hint">바깥 원과 안쪽 원 사이 폭</span></label>
+          <div class="sl"><input type="range" id="ring" min="20" max="55" value="34"><output id="o-ring"></output></div>
+        </div>
+        <div class="row">
+          <label class="chk"><input type="checkbox" id="trad" checked> 전통 순서 <span class="hint">(오른쪽 줄부터 · 원주는 왼쪽으로 돎)</span></label>
+        </div>
+        <div class="row">
+          <label class="chk"><input type="checkbox" id="stretch" checked> 글자를 칸에 꽉 채우기 <span class="hint">(도장 느낌)</span></label>
+        </div>
+        <div class="row">
+          <label class="lb" for="glyphFill">글자 크기 <span class="hint">칸을 채우는 비율</span></label>
+          <div class="sl"><input type="range" id="glyphFill" min="50" max="115" value="96"><output id="o-glyphFill"></output></div>
+        </div>
+        <div class="row">
+          <label class="lb" for="spacing">글자 간격 <span class="hint">글자 수가 많을 때 띄웁니다</span></label>
+          <div class="sl"><input type="range" id="spacing" min="0" max="35" value="0"><output id="o-spacing"></output></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary>모양과 색</summary>
+      <div class="card-body">
+        <div class="row">
+          <label class="lb">테두리 모양</label>
+          <div class="seg" id="shape" role="group">
+            <button data-v="circle" aria-pressed="true">원형</button>
+            <button data-v="ellipse" aria-pressed="false">타원</button>
+            <button data-v="rounded" aria-pressed="false">둥근사각</button>
+            <button data-v="square" aria-pressed="false">사각</button>
+          </div>
+        </div>
+        <div class="row">
+          <label class="lb">새김 방식</label>
+          <div class="seg" id="style" role="group">
+            <button data-v="yang" aria-pressed="true">양각 (글자가 붉게)</button>
+            <button data-v="eum" aria-pressed="false">음각 (바탕이 붉게)</button>
+          </div>
+        </div>
+        <div class="row">
+          <label class="lb" for="color">인주 색</label>
+          <div class="colors">
+            <input type="color" id="color" value="#b3272d" aria-label="인주 색 직접 고르기">
+            <div class="swatches">
+              <span class="sw"><button class="swatch" style="background:#b3272d" data-color="#b3272d"></button><em>전통 인주</em></span>
+              <span class="sw"><button class="swatch" style="background:#d0353a" data-color="#d0353a"></button><em>밝은 홍색</em></span>
+              <span class="sw"><button class="swatch" style="background:#8f1d22" data-color="#8f1d22"></button><em>짙은 주홍</em></span>
+              <span class="sw"><button class="swatch" style="background:#1f3a93" data-color="#1f3a93"></button><em>청인</em></span>
+              <span class="sw"><button class="swatch" style="background:#2e2a24" data-color="#2e2a24"></button><em>먹색</em></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <label class="lb" for="border">테두리 두께</label>
+          <div class="sl"><input type="range" id="border" min="0" max="140" value="52"><output id="o-border"></output></div>
+        </div>
+        <div class="row">
+          <label class="chk"><input type="checkbox" id="dbl"> 이중 테두리 (쌍선) <span class="hint" id="dblHint">관인에 흔한 두 겹 테두리</span></label>
+        </div>
+        <div class="row">
+          <label class="lb" for="pad">안쪽 여백</label>
+          <div class="sl"><input type="range" id="pad" min="0" max="200" value="60"><output id="o-pad"></output></div>
+        </div>
+        <div class="row">
+          <label class="lb" for="rot">기울기</label>
+          <div class="sl"><input type="range" id="rot" min="-15" max="15" value="0" step="0.5"><output id="o-rot"></output></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary>질감</summary>
+      <div class="card-body">
+        <div class="row">
+          <label class="lb" for="ink">인주 번짐 <span class="hint">오른쪽으로 갈수록 획이 끊깁니다</span></label>
+          <div class="sl"><input type="range" id="ink" min="0" max="100" value="18"><output id="o-ink"></output></div>
+        </div>
+        <div class="row">
+          <label class="lb" for="grain">번짐 입자 <span class="hint">왼쪽=굵은 얼룩, 오른쪽=고운 알갱이</span></label>
+          <div class="sl"><input type="range" id="grain" min="0" max="100" value="45"><output id="o-grain"></output></div>
+        </div>
+        <div class="row">
+          <label class="lb" for="rough">테두리 거칠기</label>
+          <div class="sl"><input type="range" id="rough" min="0" max="100" value="15"><output id="o-rough"></output></div>
+        </div>
+        <button class="btn" id="reseed">무늬 다시 뽑기</button>
+      </div>
+    </details>
+
+  </div>
+
+  <!-- ================= 결과물 (항상 고정) ================= -->
+  <div class="stage">
+    <span class="stage-tag">미리보기</span>
+    <div class="canvas-box checker" id="cbox">
+      <canvas id="view" width="700" height="700"></canvas>
+    </div>
+    <div class="stage-info">
+      <label class="toggle-view"><input type="checkbox" id="paper"> 종이 위에 놓고 보기</label>
+      <div class="meta" id="meta"></div>
+    </div>
+
+    <!-- 내보내기 — 조작부를 스크롤하지 않고도 늘 손에 닿는 자리 -->
+    <div class="export">
+      <div class="export-row">
+        <label class="lb" for="size">도장 크기</label>
+        <select id="size">
+          <option value="12">12mm · 막도장 (4푼)</option>
+          <option value="15" selected>15mm · 개인 도장 (5푼)</option>
+          <option value="18">18mm · 개인·법인 겸용 (6푼)</option>
+          <option value="21">21mm · 사용인감 (7푼)</option>
+          <option value="24">24mm · 직인 (8푼)</option>
+          <option value="30">30mm · 큰 직인 (10푼)</option>
+        </select>
+      </div>
+      <div class="export-note" id="sizeNote"></div>
+      <div class="btns">
+        <button class="btn primary" id="save">PNG 저장</button>
+        <button class="btn" id="copy">복사</button>
+      </div>
+      <details class="howto">
+        <summary>한글에 넣는 법</summary>
+        <ol>
+          <li><b>PNG 저장</b>으로 파일을 받습니다.</li>
+          <li>한글에서 <b>입력 → 그림</b>으로 그 파일을 넣습니다.</li>
+          <li>넣은 도장 그림에서 <b>마우스 우클릭 → 개체 속성</b>을 엽니다.</li>
+          <li><b>글자처럼 취급</b> 체크를 <b>해제</b>합니다. 이걸 풀어야 다음 항목을 고를 수 있습니다.</li>
+          <li><b>본문과의 배치</b>를 <b>글 앞으로</b>로 바꾸면 이름 위에 겹칩니다.</li>
+        </ol>
+        <p>크기가 고른 값과 다르게 들어왔다면 같은 창의 <b>크기</b>에서 mm로 직접 지정하세요.</p>
+        <p>복사는 한쇼·구글 문서에서만 배경이 투명하게 들어갑니다. 한글·한워드·카톡은 검게 나오니 위 방법을 쓰세요.</p>
+      </details>
+      <div class="status" id="status"></div>
+    </div>
+  </div>
+</div>
+
+<a class="credit-chip" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener" aria-label="제작자 인스타그램 @hirame.ki">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+  </svg>
+  <span>제작 @hirame.ki</span>
+</a>
+<script>
+"use strict";
+
+/* ============================================================
+   글씨체 목록
+   ============================================================ */
+const FONTS = [
+  { fam:'Nanum Myeongjo',  w:800, label:'나눔명조 굵게',   group:'도장 느낌' },
+  { fam:'Song Myung',      w:400, label:'송명',            group:'도장 느낌' },
+  { fam:'Hahmlet',         w:900, label:'함렛 아주굵게',   group:'도장 느낌' },
+  { fam:'Noto Serif KR',   w:900, label:'노토 세리프 블랙',group:'도장 느낌' },
+  { fam:'Gowun Batang',    w:700, label:'고운바탕 굵게',   group:'도장 느낌' },
+  { fam:'Nanum Myeongjo',  w:400, label:'나눔명조 보통',   group:'단정한' },
+  { fam:'Gowun Batang',    w:400, label:'고운바탕 보통',   group:'단정한' },
+  { fam:'Nanum Gothic',    w:800, label:'나눔고딕 굵게',   group:'단정한' },
+  { fam:'Black Han Sans',  w:400, label:'검은고딕',        group:'두꺼운' },
+  { fam:'Do Hyeon',        w:400, label:'도현',            group:'두꺼운' },
+  { fam:'Jua',             w:400, label:'주아',            group:'두꺼운' },
+  { fam:'Nanum Brush Script', w:400, label:'나눔붓글씨',   group:'손글씨' },
+  { fam:'Gaegu',           w:700, label:'개구 굵게',       group:'손글씨' },
+  /* 새 글씨체는 반드시 맨 뒤에 붙인다. fontIdx 가 이 배열의 번호 그대로 저장되므로
+     중간에 끼우면 이미 저장된 설정이 다른 글씨체를 가리키게 된다.
+     목록에서의 자리는 group 이 정하므로 뒤에 붙여도 '도장 느낌' 칸에 들어간다. */
+  { fam:'Gugi',            w:400, label:'구기 (각진)',     group:'도장 느낌' },
+];
+
+/* ============================================================
+   상태
+   ============================================================ */
+const S = {
+  text:'홍길동', mid:'', suffix:'인',
+  fontIdx:0,
+  shape:'circle', style:'yang', layout:'auto',
+  trad:true, stretch:true, glyphFill:96, spacing:0, ring:34,
+  color:'#b3272d',
+  border:52, pad:60, rot:0, dbl:false,
+  ink:18, grain:45, rough:15,
+  seed:(Math.random()*2147483647)|0,   // 첫 방문마다 다른 무늬로 시작한다
+};
+
+/* ============================================================
+   난수 · 노이즈
+   ============================================================ */
+function mulberry32(a){
+  return function(){
+    a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function smoothstep(a,b,x){
+  if(b<=a) return x<a?0:1;
+  let t=(x-a)/(b-a);
+  t = t<0?0:t>1?1:t;
+  return t*t*(3-2*t);
+}
+/* 격자 난수 + 부드러운 보간으로 만든 프랙탈 노이즈 (fBm) */
+function makeNoise(seed){
+  const P=256, MASK=255;
+  const rnd=mulberry32(seed|0);
+  const g=new Float32Array(P*P);
+  for(let i=0;i<g.length;i++) g[i]=rnd();
+  function v(ix,iy){ return g[((iy&MASK)<<8) + (ix&MASK)]; }
+  function n2(x,y){
+    const x0=Math.floor(x), y0=Math.floor(y);
+    const tx=x-x0, ty=y-y0;
+    const fx=tx*tx*(3-2*tx), fy=ty*ty*(3-2*ty);
+    const a=v(x0,y0), b=v(x0+1,y0), c=v(x0,y0+1), d=v(x0+1,y0+1);
+    return (a+(b-a)*fx) + ((c+(d-c)*fx) - (a+(b-a)*fx))*fy;
+  }
+  return function fbm(x,y){
+    let amp=0.5, f=1, sum=0, norm=0;
+    for(let o=0;o<4;o++){ sum+=amp*n2(x*f,y*f); norm+=amp; amp*=0.5; f*=2.13; }
+    return sum/norm;
+  };
+}
+/* 큰 이미지에서 픽셀마다 fBm을 부르면 느리므로, 절반 해상도 필드를 만들어 두고 보간해 쓴다 */
+function buildField(size, seed, freq){
+  const q=2;
+  const W=Math.ceil(size/q)+2;
+  const f=new Float32Array(W*W);
+  const fbm=makeNoise(seed);
+  for(let y=0;y<W;y++){
+    for(let x=0;x<W;x++) f[y*W+x]=fbm(x*q*freq, y*q*freq);
+  }
+  return {f,W,q};
+}
+function sampleField(F,x,y){
+  const fx=x/F.q, fy=y/F.q;
+  const x0=fx|0, y0=fy|0;
+  const tx=fx-x0, ty=fy-y0;
+  const i=y0*F.W+x0;
+  const a=F.f[i], b=F.f[i+1], c=F.f[i+F.W], d=F.f[i+F.W+1];
+  const top=a+(b-a)*tx, bot=c+(d-c)*tx;
+  return top+(bot-top)*ty;
+}
+
+/* ============================================================
+   도형
+   ============================================================ */
+/* 초타원 지수: 원=2, 둥근사각=4.2, 사각=12 */
+function shapeExp(shape){
+  return shape==='square' ? 12 : shape==='rounded' ? 4.2 : 2;
+}
+function shapeRadii(shape, R){
+  return shape==='ellipse' ? {rx:R, ry:R*0.74} : {rx:R, ry:R};
+}
+/* 각도 a 에서의 초타원 반지름. 큰 지수에서도 값이 넘치지 않도록 최댓값으로 정규화해 계산한다. */
+function outlineR(a, rx, ry, n){
+  const u=Math.abs(Math.cos(a))/rx, v=Math.abs(Math.sin(a))/ry;
+  const m=Math.max(u,v);
+  if(m<=0) return rx;
+  const s=Math.pow(Math.pow(u/m,n)+Math.pow(v/m,n), 1/n);
+  return 1/(m*s);
+}
+/* 테두리를 미세하게 떨리게 만든 폴리곤 경로. scale<1 이면 안쪽 윤곽. */
+function outlinePath(ctx, rx, ry, n, rough, fbm, phase, ampBase){
+  const N = 1080;
+  ctx.beginPath();
+  for(let i=0;i<=N;i++){
+    const a = i/N*Math.PI*2;
+    const ca=Math.cos(a), sa=Math.sin(a);
+    let r = outlineR(a, rx, ry, n);
+    if(rough>0){
+      // 저주파(전체가 살짝 찌그러짐) + 고주파(손으로 새긴 미세한 떨림)
+      const lo = fbm(ca*1.7+phase, sa*1.7+phase) - 0.5;
+      const hi = fbm(ca*8.5+phase*2.3, sa*8.5+phase*2.3) - 0.5;
+      r += (lo*1.0 + hi*0.5) * rough * ampBase;
+    }
+    const x=ca*r, y=sa*r;
+    if(i) ctx.lineTo(x,y); else ctx.moveTo(x,y);
+  }
+  ctx.closePath();
+}
+
+/* ============================================================
+   글자 배치
+   ============================================================ */
+function layoutCells(n, mode){
+  let cols;
+  if(mode==='horizontal') cols=n;
+  else if(mode==='vertical') cols=1;
+  else if(mode==='grid') cols=Math.ceil(Math.sqrt(n));
+  else { // auto
+    if(n<=3) cols=1;
+    else if(n<=6) cols=2;
+    else if(n<=9) cols=3;
+    else cols=Math.ceil(Math.sqrt(n));
+  }
+  cols=Math.max(1, Math.min(cols, n));
+  const base=Math.floor(n/cols), extra=n%cols;
+  const counts=[];
+  for(let c=0;c<cols;c++) counts.push(base+(c<extra?1:0));
+  return {cols, counts};
+}
+/* ---- 원주 배치 ----
+   테두리는 정원이 아니다. 타원이나 둥근사각에서 각도를 균등 분할하면
+   곡률이 큰 옆구리에서 글자가 뭉친다. 그래서 곡선을 잘게 쪼개 누적 길이표를
+   만들어 두고, 호 길이를 기준으로 자리를 잡는다. */
+function arcTable(rx, ry, nExp, N=1440){
+  const cum=new Float64Array(N+1);
+  let px=0, py=0;
+  for(let i=0;i<=N;i++){
+    const a=i/N*Math.PI*2;
+    const r=outlineR(a, rx, ry, nExp);
+    const x=Math.cos(a)*r, y=Math.sin(a)*r;
+    if(i) cum[i]=cum[i-1]+Math.hypot(x-px, y-py);
+    px=x; py=y;
+  }
+  return {cum, N, total:cum[N]};
+}
+/* 각도 → 그 각도까지의 누적 길이. 표의 각도 간격이 일정하므로 바로 찾아 쓴다. */
+function lengthAt(tbl, a){
+  const t=((a % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+  const x=t/(Math.PI*2)*tbl.N, i=Math.floor(x), f=x-i;
+  const j=Math.min(i+1, tbl.N);
+  return tbl.cum[i] + (tbl.cum[j]-tbl.cum[i])*f;
+}
+/* 누적 길이 → 각도. 길이표를 이분 탐색해 되찾는다. */
+function angleAt(tbl, s){
+  const L=tbl.total;
+  const t=((s % L) + L) % L;
+  let lo=0, hi=tbl.N;
+  while(lo < hi-1){
+    const mid=(lo+hi)>>1;
+    if(tbl.cum[mid] <= t) lo=mid; else hi=mid;
+  }
+  const seg=tbl.cum[hi]-tbl.cum[lo];
+  const f= seg>0 ? (t-tbl.cum[lo])/seg : 0;
+  return (lo+f)/tbl.N*Math.PI*2;
+}
+/* 테두리를 도는 칸 목록. 격자와 달리 칸마다 회전각(rot)을 함께 낸다. */
+function buildRingCells(n, rx, ry, nExp, band, trad, spacing){
+  // 글자 중심이 지나갈 곡선은 바깥 윤곽에서 띠 두께의 절반만큼 안쪽이다
+  const cx0=rx-band/2, cy0=ry-band/2;
+  const tbl=arcTable(cx0, cy0, nExp);
+  const step=tbl.total/n;
+  const gap=(spacing||0)/100;
+  // 첫 글자를 위쪽 한가운데에 둔다. 캔버스에서 위쪽은 -90°.
+  const start=lengthAt(tbl, -Math.PI/2);
+  // 전통 순서는 오른쪽부터 읽으므로 위에서 왼쪽으로 돈다 (각도가 줄어드는 방향)
+  const dir=trad ? -1 : 1;
+  const cells=[];
+  for(let i=0;i<n;i++){
+    const a=angleAt(tbl, start + dir*i*step);
+    const r=outlineR(a, cx0, cy0, nExp);
+    cells.push({
+      cx: Math.cos(a)*r,
+      cy: Math.sin(a)*r,
+      // 칸 너비를 호 길이 그대로 두면 글자가 띠보다 훨씬 넓은 칸을 받아
+      // 옆으로 늘어난다. 띠 두께로 한 번 눌러 정사각형에 가깝게 만든다.
+      // 글자가 많아 호 길이가 띠보다 좁아지면 그때는 호 길이가 이긴다.
+      // 이때 기준은 띠의 안쪽 가장자리다. 곡선 위에서는 바깥이 벌어지는 만큼
+      // 안쪽이 좁아져, 호 길이를 그대로 쓰면 글자의 안쪽 모서리끼리 부딪힌다.
+      w: Math.min(step*(n>1 ? 1-gap : 1)*(r-band/2)/r, band),
+      h: band*(1-gap*0.5),
+      // 글자의 위쪽이 바깥을 향하도록 세운다
+      rot: a + Math.PI/2,
+    });
+  }
+  return cells;
+}
+
+/* 가로:세로 비율이 A 인 직사각형을 초타원 안에 최대로 넣었을 때의 세로 반크기 */
+function inscribedHalfHeight(A, rx, ry, n){
+  const u=A/rx, v=1/ry;
+  const m=Math.max(u,v);
+  const s=Math.pow(Math.pow(u/m,n)+Math.pow(v/m,n), 1/n);
+  return 1/(m*s);
+}
+/* 글자를 채울 순서대로 칸(중심좌표+크기) 목록을 만든다 */
+function buildCells(grid, trad, boxW, boxH, spacing){
+  const {cols, counts}=grid;
+  const cw=boxW/cols;
+  // 칸 높이는 가장 긴 열을 기준으로 통일하고, 짧은 열은 위아래 가운데로 모은다.
+  // (열마다 높이를 다르게 하면 글자 크기가 들쭉날쭉해진다)
+  const ch=boxH/Math.max(...counts);
+  // 칸의 중심은 그대로 두고 글자가 놓일 자리만 줄여 글자 사이를 띄운다.
+  // 칸이 하나뿐인 방향은 띄울 상대가 없으므로 건드리지 않는다 — 그래야
+  // 한 글자짜리 도장이 간격 슬라이더 때문에 작아지지 않는다.
+  const gap=(spacing||0)/100;
+  const cells=[];
+  for(let c=0;c<cols;c++){
+    const colPos = trad ? (cols-1-c) : c;
+    const cx = -boxW/2 + cw*(colPos+0.5);
+    const rows=counts[c];
+    const colH=ch*rows;
+    const w = cw * (cols>1 ? 1-gap : 1);
+    const h = ch * (rows>1 ? 1-gap : 1);
+    for(let r=0;r<rows;r++){
+      cells.push({ cx, cy:-colH/2 + ch*(r+0.5), w, h });
+    }
+  }
+  return cells;
+}
+
+/* ============================================================
+   전체 렌더
+   ============================================================ */
+const REF = 220; // 글자 측정용 기준 폰트 크기
+
+function fontSpec(f, px){ return `${f.w} ${px}px "${f.fam}", serif`; }
+
+async function ensureFont(f, sample){
+  try{
+    await document.fonts.load(fontSpec(f, 100), sample || '가');
+    await document.fonts.load(fontSpec(f, REF), sample || '가');
+  }catch(e){ /* CDN 차단 등 — 대체 글씨체로 그린다 */ }
+}
+
+/* 글자 하나의 잉크 범위(획이 실제로 차지하는 사각형)와 그 중심 어긋남 */
+function inkBox(ctx, ch){
+  const m=ctx.measureText(ch);
+  return {
+    w: Math.max(1, (m.actualBoundingBoxRight||0)+(m.actualBoundingBoxLeft||0) || m.width),
+    h: Math.max(1, (m.actualBoundingBoxAscent||REF*0.72)+(m.actualBoundingBoxDescent||0)),
+    x: ((m.actualBoundingBoxRight||0)-(m.actualBoundingBoxLeft||0))/2,
+    y: ((m.actualBoundingBoxAscent||REF*0.72)-(m.actualBoundingBoxDescent||0))/2,
+  };
+}
+/* 한글·한자·전각 부호 — 글자마다 잉크가 정사각형에 고르게 차는 무리 */
+const FULLWIDTH = /[ᄀ-ᇿ⺀-〿㄰-㆏㐀-䶿一-鿿ꥠ-꥿가-힣豈-﫿！-｠]/;
+
+/* 칸 목록에 글자를 하나씩 앉힌다. 칸을 어떻게 만들었는지는 따지지 않으므로
+   격자 배치와 원주 배치가 이 코드를 함께 쓴다.
+   호출하는 쪽에서 글씨체·색·합성 모드를 미리 걸어 둔다. */
+function drawGlyphs(ctx, chars, cells, st){
+  const fill = st.glyphFill/100;
+  /* 기준 글자. 영문·부호를 이 글자가 받았을 배율로 키운다. */
+  const ref = inkBox(ctx, '가');
+
+  for(let i=0;i<chars.length && i<cells.length;i++){
+    const ch=chars[i], cell=cells[i];
+    const g=inkBox(ctx, ch);
+    let sx, sy, oy;
+
+    if(FULLWIDTH.test(ch)){
+      // 한글·한자는 잉크를 칸에 꽉 채운다. 서로 크기가 고르므로 이래야 도장답다.
+      sx=(cell.w*fill)/g.w; sy=(cell.h*fill)/g.h;
+      if(!st.stretch){
+        const s=Math.min(sx,sy); sx=s; sy=s;
+      }else{
+        // 칸을 채우되 장평이 과하게 일그러지지 않도록 가로:세로 비율을 제한한다
+        const AR=1.35;
+        if(sx > sy*AR) sx = sy*AR;
+        if(sy > sx*AR) sy = sx*AR;
+      }
+      oy = g.y;                        // 제 잉크를 칸 한가운데에 맞춘다
+    }else{
+      /* 영문·숫자·부호는 글자마다 잉크 범위가 딴판이다. 마침표는 잉크가 거의
+         없어서, 칸에 맞춰 키우면 커다란 점이 되어 버린다. 그래서 제 잉크가 아니라
+         기준 글자가 받았을 배율을 그대로 쓴다 — 저희끼리 본래 비율을 지킨다.
+         세로 위치도 기준 글자의 밑선에 맞춰야 'a' 와 'h' 의 밑이 어긋나지 않는다. */
+      sx = sy = Math.min((cell.w*fill)/ref.w, (cell.h*fill)/ref.h);
+      oy = ref.y;
+    }
+
+    ctx.save();
+    ctx.translate(cell.cx, cell.cy);
+    if(cell.rot) ctx.rotate(cell.rot);   // 원주 배치에서만 걸린다
+    ctx.scale(sx, sy);
+    ctx.fillText(ch, -g.x, oy);
+    ctx.restore();
+  }
+}
+
+function render(ctx, size, st){
+  const f = FONTS[st.fontIdx] || FONTS[0];
+  const chars = [...st.text.trim()].filter(c=>c!==' ');
+  const midChars = [...(st.mid||'').trim()].filter(c=>c!==' ');
+  const all = chars.concat([...st.suffix]);
+  // 가운데 글자는 원주 배치에서만 자리가 있다. 다른 배치에서는 세지 않는다.
+  const n = all.length + (st.layout==='ring' ? midChars.length : 0);
+
+  ctx.clearRect(0,0,size,size);
+  ctx.save();
+  ctx.translate(size/2, size/2);
+  ctx.rotate(st.rot*Math.PI/180);
+
+  const margin = size*0.045;
+  const R = size/2 - margin;
+  const {rx, ry} = shapeRadii(st.shape, R);
+  const nExp = shapeExp(st.shape);
+  const rough = st.rough/100;
+  const fbm = makeNoise(st.seed ^ 0x9e37);
+  const roughAmp = R*0.09;
+
+  const bw = R * (st.border/1000);          // 테두리 두께 (0 ~ 0.14R)
+  const padIn = R * (st.pad/1000);          // 안쪽 여백
+
+  // 이중 테두리 — 굵은 바깥선 안쪽에 가는 선을 한 줄 더 두른다.
+  const dblW = Math.max(1, bw*0.40);              // 안쪽 선 두께
+  const dblGap = Math.max(R*0.010, bw*0.55);      // 두 선 사이 간격
+  // 안쪽 선이 실제로 그려지는 경우에만 글자 자리를 양보한다.
+  // (테두리 두께가 0이면 선을 안 그리므로 글자를 줄일 이유가 없다)
+  /* 원주 배치에서는 켜지 않는다. 거기서는 띠 안쪽의 원이 이미 두 번째 선이라,
+     쌍선까지 그리면 바깥 두 줄 + 안쪽 한 줄로 선이 셋이 된다. */
+  const dblOn = st.dbl && st.layout!=='ring' && (st.style==='eum' ? bw > R*0.012 : bw > 0.5);
+  const dblTotal = dblOn ? (st.style==='eum' ? bw*1.5 : dblGap + dblW) : 0;
+
+  /* ---- 테두리 / 바탕 ---- */
+  ctx.fillStyle = st.color;
+  ctx.strokeStyle = st.color;
+  ctx.lineJoin='round';
+
+  if(st.style==='eum'){
+    // 음각: 도형을 붉게 채우고, 글자는 나중에 파낸다
+    outlinePath(ctx, rx, ry, nExp, rough, fbm, 3.1, roughAmp);
+    ctx.fill();
+    if(bw > R*0.012){
+      // 바탕 안쪽에 테두리 선을 파내 전통 관인 느낌을 준다
+      const inset = bw*1.9;
+      ctx.save();
+      ctx.globalCompositeOperation='destination-out';
+      ctx.lineWidth = bw*0.55;
+      outlinePath(ctx, rx-inset, ry-inset, nExp, rough, fbm, 3.1, roughAmp*0.8);
+      ctx.stroke();
+      if(dblOn){
+        const inset2 = inset + bw*1.15;
+        ctx.lineWidth = bw*0.34;
+        outlinePath(ctx, rx-inset2, ry-inset2, nExp, rough, fbm, 4.7, roughAmp*0.7);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }else if(bw > 0.5){
+    // 양각: 테두리 선만 그린다
+    ctx.lineWidth = bw;
+    outlinePath(ctx, rx-bw/2, ry-bw/2, nExp, rough, fbm, 3.1, roughAmp);
+    ctx.stroke();
+    if(dblOn){
+      // 안쪽 가는 선. 위상(4.7)을 달리 줘서 두 선의 울퉁불퉁함이 겹쳐 보이지 않게 한다
+      ctx.lineWidth = dblW;
+      outlinePath(ctx, rx-bw-dblGap-dblW/2, ry-bw-dblGap-dblW/2, nExp, rough, fbm, 4.7, roughAmp*0.7);
+      ctx.stroke();
+    }
+  }
+
+  /* ---- 안쪽 여유 반지름 ---- */
+  let riX = rx - bw - padIn;
+  let riY = ry - bw - padIn;
+  if(st.style==='eum'){ riX -= bw*1.4; riY -= bw*1.4; }
+  riX -= dblTotal; riY -= dblTotal;          // 안쪽 선이 글자를 침범하지 않게
+
+  /* ---- 원주 배치의 안쪽 원 ----
+     띠와 가운데를 가르는 가는 선. 관인은 이 선이 있어야 두 덩어리가 각자의
+     자리를 가진 것처럼 보인다. 없으면 글자가 그냥 흩어져 보인다. */
+  const hasMid = midChars.length + st.suffix.length > 0;
+  // 띠가 두꺼울수록 안쪽 원이 작아지고 테두리 글자가 커진다 — 두 원의 간격이다
+  const ringBand = Math.min(riX, riY) * ((st.ring ?? 34)/100);
+  /* 띠 글자는 riX 에서 riX-ringBand 까지를 꽉 채운다. 선을 그 경계에 그으면
+     선이 글자를 관통하므로, 한 뼘 더 안쪽으로 물린다. */
+  const ringInset = ringBand * 1.16;
+  const ringGap   = ringBand * 0.18;               // 선과 가운데 글자 사이 숨통
+  // 가를 것이 없는데 선을 그으면 빈 원만 남는다.
+  if(st.layout==='ring' && hasMid && riX>4 && riY>4){
+    ctx.save();
+    if(st.style==='eum') ctx.globalCompositeOperation='destination-out';
+    ctx.strokeStyle = st.color;
+    ctx.lineWidth = Math.max(1, bw*0.36);
+    // 위상(6.2)을 바깥 테두리와 다르게 줘서 두 선의 떨림이 겹쳐 보이지 않게 한다
+    outlinePath(ctx, riX-ringInset, riY-ringInset, nExp, rough, fbm, 6.2, roughAmp*0.55);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---- 글자 ---- */
+  if(n>0 && riX>4 && riY>4){
+    ctx.save();
+    if(st.style==='eum') ctx.globalCompositeOperation='destination-out';
+    ctx.fillStyle = st.color;
+    ctx.font = fontSpec(f, REF);
+    ctx.textAlign='center';
+    ctx.textBaseline='alphabetic';
+
+    if(st.layout==='ring'){
+      /* 원주 배치 — 테두리 글자가 바깥을 돌고, 가운데 글자와 접미사가
+         안쪽 원 안에 들어간다. 관인에서 가장 흔한 모양이다. */
+      const ring = chars;
+      const mid  = midChars.concat([...st.suffix]);
+      if(ring.length){
+        drawGlyphs(ctx, ring,
+          buildRingCells(ring.length, riX, riY, nExp, ringBand, st.trad, st.spacing), st);
+      }
+      if(mid.length){
+        // 가운데는 안쪽 원 안의 자리. 격자 배치 코드를 그대로 쓴다.
+        const inX = riX - ringInset - ringGap, inY = riY - ringInset - ringGap;
+        if(inX > 4 && inY > 4){
+          const grid = layoutCells(mid.length, 'auto');
+          const A = grid.cols/Math.max(...grid.counts);
+          const boxH = 2*inscribedHalfHeight(A, inX, inY, nExp);
+          drawGlyphs(ctx, mid, buildCells(grid, st.trad, boxH*A, boxH, st.spacing), st);
+        }
+      }
+    }else{
+      // 칸이 정사각형에 가까워지도록 글자판 비율을 정하고, 그 비율로 초타원에 내접시킨다
+      const grid = layoutCells(n, st.layout);
+      const rowsMax = Math.max(...grid.counts);
+      const A = grid.cols/rowsMax;
+      const boost = 1.0;              // 글자판은 내접 사각형까지. 여유는 '글자 크기' 슬라이더로 준다.
+      const halfH = inscribedHalfHeight(A, riX, riY, nExp);
+      const boxH = 2*halfH*boost;
+      drawGlyphs(ctx, all, buildCells(grid, st.trad, boxH*A, boxH, st.spacing), st);
+    }
+    ctx.restore();
+  }
+
+  ctx.restore();
+
+  /* ---- 잉크 번짐·끊김 ---- */
+  if(st.ink>0) applyInk(ctx, size, st);
+}
+
+/* 잉크가 고르게 묻지 않은 느낌: 획 경계부터 벗겨지고, 넓은 면은 얼룩진다 */
+function applyInk(ctx, size, st){
+  const img = ctx.getImageData(0,0,size,size);
+  const d = img.data;
+  const N = size*size;
+
+  const A = new Float32Array(N);
+  let any=false;
+  for(let i=0;i<N;i++){ const a=d[i*4+3]/255; A[i]=a; if(a>0) any=true; }
+  if(!any) return;
+
+  const amt = (st.ink/100)*0.78;                        // 끊김 강도
+  const gr  = st.grain/100;
+  // 얼룩 크기는 1024px 기준으로 정하고, 해상도가 달라도 같은 모습이 되도록 반비례로 맞춘다
+  const freqBreak = (0.005 + gr*0.032) * (1024/size);
+  const freqSoft  = freqBreak*0.32;
+  const Fb = buildField(size, st.seed*7919+13, freqBreak);
+  const Fs = buildField(size, st.seed*104729+7, freqSoft);
+
+  const step = Math.max(2, Math.round(size*0.006));     // 경계 판정 간격 (도장 크기에 비례)
+  const soft = 0.11;
+
+  for(let y=0;y<size;y++){
+    const row=y*size;
+    for(let x=0;x<size;x++){
+      const i=row+x;
+      const a0=A[i];
+      if(a0<=0) continue;
+
+      // 주변 알파 평균 → 1에 가까우면 획 내부, 작으면 경계
+      const xm=x>step?x-step:0, xp=x+step<size?x+step:size-1;
+      const ym=y>step?y-step:0, yp=y+step<size?y+step:size-1;
+      const cov=(A[row+xm]+A[row+xp]+A[ym*size+x]+A[yp*size+x])*0.25;
+      const edge=1-Math.min(1,cov);
+
+      const nb=sampleField(Fb,x,y);
+      const ns=sampleField(Fs,x,y);
+
+      // 경계일수록 문턱이 높아져 먼저 벗겨진다
+      const th = amt*(0.5 + 1.05*edge);
+      const keep = smoothstep(th-soft, th+soft, nb);
+
+      // 남은 부분도 농담 차이가 생긴다. fBm 은 값이 중앙에 몰리므로 폭을 넓혀 대비를 살린다.
+      const nsw = smoothstep(0.32, 0.68, ns);
+      const dens = 1 - (st.ink/100)*0.45*(1-nsw);
+
+      const a = a0*keep*dens;
+      d[i*4+3] = a<=0 ? 0 : a>=1 ? 255 : (a*255)|0;
+    }
+  }
+  ctx.putImageData(img,0,0);
+}
+
+/* ============================================================
+   UI 연결
+   ============================================================ */
+const view = document.getElementById('view');
+const vctx = view.getContext('2d', {willReadFrequently:true});
+const statusEl = document.getElementById('status');
+const metaEl = document.getElementById('meta');
+
+const $ = id => document.getElementById(id);
+
+/* 글씨체 select 채우기 */
+(function fillFonts(){
+  const sel=$('font');
+  const groups=[...new Set(FONTS.map(f=>f.group))];
+  groups.forEach(g=>{
+    const og=document.createElement('optgroup');
+    og.label=g;
+    FONTS.forEach((f,i)=>{
+      if(f.group!==g) return;
+      const o=document.createElement('option');
+      o.value=i; o.textContent=f.label;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+  sel.value='0';
+})();
+
+/* 슬라이더 표시값 */
+const SL_FMT = {
+  glyphFill:v=>v+'%', spacing:v=>v+'%', ring:v=>v+'%',
+  border:v=>(v/10).toFixed(1)+'%', pad:v=>(v/10).toFixed(1)+'%',
+  rot:v=>(+v).toFixed(1)+'°', ink:v=>v+'%', grain:v=>v+'%', rough:v=>v+'%',
+};
+function syncOutputs(){
+  Object.keys(SL_FMT).forEach(k=>{
+    const el=$(k), out=$('o-'+k);
+    if(el&&out) out.textContent=SL_FMT[k](el.value);
+  });
+}
+
+/* 세그먼트 버튼 */
+function wireSeg(id, key){
+  const box=$(id);
+  box.addEventListener('click', e=>{
+    const b=e.target.closest('button');
+    if(!b) return;
+    [...box.querySelectorAll('button')].forEach(x=>x.setAttribute('aria-pressed', String(x===b)));
+    S[key]=b.dataset.v;
+    syncLayoutHint();
+    commitHistory();     // 버튼은 change 이벤트가 없으므로 직접 기록한다
+    schedule();
+  });
+}
+function setSeg(id, key, val){
+  S[key]=val;
+  [...$(id).querySelectorAll('button')].forEach(x=>x.setAttribute('aria-pressed', String(x.dataset.v===val)));
+}
+wireSeg('layout','layout');
+wireSeg('shape','shape');
+wireSeg('style','style');
+
+/* 입력 → 상태 */
+const TEXT_KEYS=[['text','text'],['mid','mid'],['suffix','suffix']];
+TEXT_KEYS.forEach(([id,key])=>{
+  $(id).addEventListener('input', e=>{ S[key]=e.target.value; schedule(); });
+});
+const NUM_KEYS=['glyphFill','spacing','ring','border','pad','rot','ink','grain','rough'];
+NUM_KEYS.forEach(id=>{
+  $(id).addEventListener('input', e=>{ S[id]=+e.target.value; syncOutputs(); schedule(); });
+});
+const CHK_KEYS=['trad','stretch','dbl'];
+CHK_KEYS.forEach(id=>{
+  $(id).addEventListener('change', e=>{ S[id]=e.target.checked; schedule(); });
+});
+$('font').addEventListener('change', async e=>{
+  S.fontIdx=+e.target.value;
+  await ensureFont(FONTS[S.fontIdx], S.text+S.mid+S.suffix+'가印');
+  schedule();
+});
+$('color').addEventListener('input', e=>{ S.color=e.target.value; schedule(); });
+document.querySelectorAll('.swatch').forEach(b=>{
+  b.addEventListener('click', ()=>{ S.color=b.dataset.color; $('color').value=S.color; commitHistory(); schedule(); });
+});
+$('reseed').addEventListener('click', ()=>{
+  S.seed=(Math.random()*2147483647)|0;
+  commitHistory();
+  schedule();
+});
+$('paper').addEventListener('change', e=>{
+  setPaper(e.target.checked);
+  saveState();
+});
+$('reset').addEventListener('click', async ()=>{
+  Object.assign(S, JSON.parse(JSON.stringify(DEFAULTS)));
+  S.seed=(Math.random()*2147483647)|0;
+  try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+  setPaper(false);
+  commitHistory();
+  pushStateToUI();
+  await ensureFont(FONTS[S.fontIdx], S.text+S.mid+S.suffix+'가印');
+  schedule();
+});
+
+/* ============================================================
+   되돌리기
+   슬라이더를 드래그하는 동안 input 이벤트가 수십 번 뜨므로 그때마다
+   기록하면 한 번 되돌리기가 1px 짜리가 된다. 조작이 끝나는 시점
+   (change / 버튼 클릭)에만 한 칸씩 쌓는다.
+   ============================================================ */
+const HISTORY_MAX = 30;
+const undoStack = [];
+let lastCommitted = snapshot();
+
+function snapshot(){ return JSON.parse(JSON.stringify(S)); }
+function updateUndo(){ $('undo').disabled = undoStack.length === 0; }
+function commitHistory(){
+  const cur = snapshot();
+  if(JSON.stringify(cur) === JSON.stringify(lastCommitted)) return;   // 실제로 바뀐 게 없으면 쌓지 않는다
+  undoStack.push(lastCommitted);
+  if(undoStack.length > HISTORY_MAX) undoStack.shift();
+  lastCommitted = cur;
+  updateUndo();
+}
+document.querySelector('.panel').addEventListener('change', commitHistory);
+
+$('undo').addEventListener('click', async ()=>{
+  const prev = undoStack.pop();
+  if(!prev) return;
+  Object.assign(S, prev);
+  lastCommitted = snapshot();
+  updateUndo();
+  pushStateToUI();
+  await ensureFont(FONTS[S.fontIdx], S.text+S.mid+S.suffix+'가印');
+  schedule();
+});
+
+/* ============================================================
+   내 도장 — 직인·소인처럼 번갈아 쓰는 설정을 이름표로 저장해 둔다.
+   자동 저장(STORE_KEY)은 마지막 상태 하나뿐이라 오갈 수가 없다.
+   ============================================================ */
+const SLOT_KEY='dojang-maker/slots/v1';
+const SLOT_MAX=8;
+
+function loadSlots(){
+  if(!CAN_STORE) return [];
+  try{
+    const raw=localStorage.getItem(SLOT_KEY);
+    const a=raw?JSON.parse(raw):[];
+    if(!Array.isArray(a)) return [];
+    return a.filter(x=>x && typeof x==='object' && typeof x.name==='string' && x.s && typeof x.s==='object')
+            .slice(0, SLOT_MAX);
+  }catch(e){ return []; }
+}
+function persistSlots(a){
+  if(!CAN_STORE) return;
+  try{ localStorage.setItem(SLOT_KEY, JSON.stringify(a)); }catch(e){ /* 용량 초과 */ }
+}
+function renderSlots(){
+  const box=$('slots'), list=loadSlots(), add=$('slotAdd');
+  box.textContent='';
+  list.forEach((slot,i)=>{
+    const wrap=document.createElement('span');
+    wrap.className='slot';
+    const load=document.createElement('button');
+    load.type='button'; load.className='slot-load'; load.dataset.i=i;
+    load.textContent=slot.name; load.title=slot.name+' 불러오기';
+    const del=document.createElement('button');
+    del.type='button'; del.className='slot-del'; del.dataset.i=i;
+    del.textContent='×'; del.title=slot.name+' 삭제';
+    del.setAttribute('aria-label', slot.name+' 삭제');
+    wrap.append(load, del);
+    box.appendChild(wrap);
+  });
+  add.disabled = !CAN_STORE || list.length>=SLOT_MAX;
+  add.textContent = list.length>=SLOT_MAX ? `저장 칸이 찼습니다 (${SLOT_MAX}개)` : '현재 설정 저장';
+}
+
+$('slotAdd').addEventListener('click', ()=>{
+  const list=loadSlots();
+  if(list.length>=SLOT_MAX) return;
+  const name=((S.text.trim()+S.suffix) || '도장').slice(0,10);
+  list.push({ name, s:snapshot() });
+  persistSlots(list);
+  renderSlots();
+  statusEl.textContent=`'${name}' 설정을 저장했습니다.`;
+});
+
+$('slots').addEventListener('click', async e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const i=+b.dataset.i, list=loadSlots();
+  if(!list[i]) return;
+  if(b.classList.contains('slot-del')){
+    list.splice(i,1); persistSlots(list); renderSlots(); return;
+  }
+  Object.assign(S, list[i].s);
+  commitHistory();
+  pushStateToUI();
+  await ensureFont(FONTS[S.fontIdx], S.text+S.mid+S.suffix+'가印');
+  schedule();
+});
+
+/* 프리셋
+   생김새만 바꾼다. 입력한 이름(text)은 건드리지 않는다 —
+   프리셋을 눌러 볼 때마다 이름을 다시 치게 만들면 안 되므로 여기에 text 를 넣지 않는다. */
+const PRESETS = {
+  /* 개인 인감 — 이름 도장. 가장 무난한 원형 양각 */
+  personal:{ suffix:'인', shape:'circle', style:'yang', layout:'auto',
+             fontIdx:0, border:52, pad:60, glyphFill:96, spacing:0,
+             ink:20, grain:45, rough:16, rot:0, dbl:false, stretch:true, trad:true },
+  /* 기관장 직인 — 굵은 테두리에 번짐을 최대한 죽여 공문서에 바로 쓸 수 있게.
+     관인에서 가장 흔한 모양이 원주 배치라 이 프리셋만 그렇게 둔다.
+     이중 테두리는 끈다 — 원주에서는 안쪽 원이 이미 두 번째 선이라,
+     같이 켜면 바깥 두 줄 + 안쪽 한 줄로 선이 셋이 된다. */
+  gigwan:{ suffix:'인', shape:'circle', style:'yang', layout:'ring',
+             fontIdx:3, border:72, pad:52, glyphFill:94, spacing:6, ring:34,
+             ink:10, grain:50, rough:8, rot:0, dbl:false, stretch:true, trad:true },
+  /* 사각 직인 — 음각 격자 배치 */
+  sagak:{ suffix:'印', shape:'rounded', style:'eum', layout:'grid',
+             fontIdx:2, border:40, pad:58, glyphFill:97, spacing:4,
+             ink:18, grain:38, rough:18, rot:0, dbl:false, stretch:true, trad:true },
+  /* 결재용 소인 — 작게 찍히므로 획을 단순하게, 여백을 넉넉히 */
+  soin:{ suffix:'', shape:'circle', style:'yang', layout:'auto',
+             fontIdx:7, border:44, pad:70, glyphFill:90, spacing:0,
+             ink:14, grain:50, rough:10, rot:0, dbl:false, stretch:false, trad:true },
+  /* 낡은 느낌 — 질감만 건드리는 부분 프리셋 */
+  worn:{ ink:62, grain:34, rough:58 },
+};
+$('presets').addEventListener('click', async e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const p=PRESETS[b.dataset.preset]; if(!p) return;
+  Object.assign(S, p);
+  S.seed=(Math.random()*2147483647)|0;
+  pushStateToUI();
+  await ensureFont(FONTS[S.fontIdx], S.text+S.mid+S.suffix+'가印');
+  schedule();
+});
+
+function pushStateToUI(){
+  $('text').value=S.text;
+  $('mid').value=S.mid;
+  $('suffix').value=S.suffix;
+  $('font').value=String(S.fontIdx);
+  $('color').value=S.color;
+  NUM_KEYS.forEach(id=>{ $(id).value=S[id]; });
+  CHK_KEYS.forEach(id=>{ $(id).checked=!!S[id]; });
+  setSeg('layout','layout',S.layout);
+  setSeg('shape','shape',S.shape);
+  setSeg('style','style',S.style);
+  syncOutputs();
+  syncLayoutHint();
+}
+/* 원주 배치는 글자를 테두리와 가운데 두 자리에 나눠 놓는다. 다른 배치에는
+   가운데라는 자리가 없으므로, 그 입력창과 설명은 원주일 때만 내보인다.
+   입력창 이름도 같이 바꾼다 — 같은 칸이 배치에 따라 다른 자리를 뜻하기 때문이다. */
+function syncLayoutHint(){
+  const ring = S.layout==='ring';
+  $('ringHint').hidden = !ring;
+  $('midRow').hidden   = !ring;
+  $('ringRow').hidden  = !ring;
+  $('textLb').textContent   = ring ? '테두리 글자' : '도장에 넣을 글자';
+  $('suffixLb').textContent = ring ? '가운데 뒤에 붙일 글자' : '이름 뒤에 붙일 글자';
+  /* 원주는 안쪽 원이 이미 두 번째 선이라 쌍선을 그리지 않는다.
+     체크는 그대로 두되 잠가서, 켜져 있는데 안 그려지는 것처럼 보이지 않게 한다.
+     (설정에 이미 켜진 채로 저장돼 있을 수 있다) */
+  $('dbl').disabled = ring;
+  $('dbl').closest('.chk').style.opacity = ring ? .45 : '';
+  $('dblHint').textContent  = ring ? '원주에서는 안쪽 원이 그 역할을 합니다'
+                                   : '관인에 흔한 두 겹 테두리';
+}
+
+/* ============================================================
+   브라우저에 설정 저장 (localStorage)
+   ============================================================ */
+const STORE_KEY='dojang-maker/settings/v1';
+const DEFAULTS=JSON.parse(JSON.stringify(S));   // 되돌리기용 원본. S 가 바뀌기 전에 떠 둔다.
+
+// github.io 는 한 계정의 모든 프로젝트가 같은 origin 을 쓴다.
+// 다른 프로젝트와 섞이지 않도록 키에 이름을 붙인다.
+const CAN_STORE=(function(){
+  try{
+    const k=STORE_KEY+'/__test';
+    localStorage.setItem(k,'1'); localStorage.removeItem(k); return true;
+  }catch(e){ return false; }   // 시크릿 모드·저장 차단 등
+})();
+
+let saveTimer=0;
+function saveState(){
+  if(!CAN_STORE) return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{
+      localStorage.setItem(STORE_KEY, JSON.stringify(Object.assign({}, S, {paper:$('paper').checked})));
+    }catch(e){ /* 용량 초과 등 — 저장 못 해도 그리기에는 지장 없다 */ }
+  }, 350);
+}
+
+/* 저장된 값은 예전 버전일 수도, 손으로 고쳐졌을 수도 있다.
+   기본값과 자료형이 같고 허용 범위 안에 드는 것만 받아들인다. */
+function loadState(){
+  if(!CAN_STORE) return null;
+  let saved;
+  try{
+    const raw=localStorage.getItem(STORE_KEY);
+    if(!raw) return null;
+    saved=JSON.parse(raw);
+  }catch(e){ return null; }
+  if(!saved || typeof saved!=='object') return null;
+
+  const segVals=id=>[...$(id).querySelectorAll('button')].map(b=>b.dataset.v);
+  const ENUM={shape:segVals('shape'), style:segVals('style'), layout:segVals('layout')};
+  const SUFFIXES=[...$('suffix').options].map(o=>o.value);
+
+  Object.keys(DEFAULTS).forEach(k=>{
+    const v=saved[k], d=DEFAULTS[k];
+    if(v===undefined || typeof v!==typeof d) return;
+
+    if(typeof d==='boolean'){ S[k]=v; return; }
+
+    if(typeof d==='number'){
+      if(!isFinite(v)) return;
+      const el=$(k);
+      if(el && el.type==='range') S[k]=Math.min(+el.max, Math.max(+el.min, v));
+      else if(k==='fontIdx')      S[k]=Math.min(FONTS.length-1, Math.max(0, Math.round(v)));
+      else                        S[k]=v|0;
+      return;
+    }
+
+    // 문자열
+    if(k==='text' || k==='mid') S[k]=v.slice(0, +$(k).maxLength || 14);
+    else if(k==='suffix'){ if(SUFFIXES.includes(v)) S.suffix=v; }
+    else if(k==='color') { if(/^#[0-9a-fA-F]{6}$/.test(v)) S.color=v; }
+    else if(ENUM[k])     { if(ENUM[k].includes(v)) S[k]=v; }
+  });
+  return saved;
+}
+
+function setPaper(on){
+  $('paper').checked=on;
+  $('cbox').classList.toggle('paper', on);
+  $('cbox').classList.toggle('checker', !on);
+}
+
+/* ---- 미리보기 (프레임마다 한 번만) ---- */
+let pending=false;
+function schedule(){
+  if(pending) return;
+  pending=true;
+  requestAnimationFrame(()=>{
+    pending=false;
+    try{
+      render(vctx, view.width, S);
+      const n=[...S.text.trim()].filter(c=>c!==' ').length+[...S.suffix].length;
+      metaEl.textContent = `글자 ${n}자 · ${FONTS[S.fontIdx].label} · ${S.style==='yang'?'양각':'음각'} · 미리보기 ${view.width}px`;
+    }catch(err){
+      statusEl.textContent='그리기 오류: '+err.message;
+      console.error(err);
+    }
+    saveState();
+  });
+}
+
+/* ---- 저장 ---- */
+function sanitize(s){
+  return (s||'도장').trim().replace(/[\\/:*?"<>|\s]+/g,'_').slice(0,30) || '도장';
+}
+/* 캔버스는 아무것도 안 그린 자리가 '검정 + 알파 0' 이다. 눈에는 안 보이지만,
+   붙여넣기 과정에서 알파 채널이 버려지면 그 검정이 그대로 드러나 배경이
+   새까맣게 나온다. 한글·워드가 대표적이다.
+   보이는 그림은 건드리지 않고, 완전히 투명한 곳의 RGB 만 흰색으로 갈아둔다.
+   제대로 된 뷰어에서는 아무 차이가 없고, 알파를 버리는 앱에서만 흰 배경이 된다. */
+function matteWhite(ctx, size){
+  const img=ctx.getImageData(0,0,size,size), d=img.data;
+  for(let i=0;i<d.length;i+=4){
+    if(d[i+3]===0){ d[i]=255; d[i+1]=255; d[i+2]=255; }
+  }
+  ctx.putImageData(img,0,0);
+}
+
+/* 크기는 mm 로 고르게 하고, 픽셀 수는 여기서 정한다.
+   실제 도장은 12~30mm 로 작아서, 600dpi 로는 가장 작은 12mm 가 283px 밖에 안 된다.
+   1200dpi 로 잡으면 12mm 도 567px, 가장 큰 30mm 라야 1417px 이라
+   작은 도장도 또렷하면서 파일이 무거워지지 않는다. */
+const MM_PER_INCH = 25.4;
+const EXPORT_DPI  = 1200;
+const exportMm = ()=> +$('size').value;
+const exportPx = ()=> Math.round(exportMm() / MM_PER_INCH * EXPORT_DPI);
+
+function updateSizeNote(){
+  $('sizeNote').textContent = `한글·워드에 넣으면 ${exportMm()}mm 크기로 들어옵니다.`;
+}
+$('size').addEventListener('change', updateSizeNote);
+
+/* ---- PNG 에 실제 크기 심기 ----
+   캔버스 `toBlob` 은 PNG 에 해상도 정보(pHYs 청크)를 넣지 않는다. 그래서 파일만
+   봐서는 종이에서 몇 mm 인지 알 수 없고, 문서에 넣으면 앱이 제 나름의 기준으로
+   크기를 정해 사람이 매번 다시 줄여야 했다.
+   저장하기 직전에 pHYs 를 직접 써 넣어 "이 그림은 몇 mm 짜리"임을 알린다. */
+const CRC_TABLE = (()=>{
+  const t = new Uint32Array(256);
+  for(let n=0;n<256;n++){
+    let c=n;
+    for(let k=0;k<8;k++) c = (c&1) ? (0xEDB88320 ^ (c>>>1)) : (c>>>1);
+    t[n] = c>>>0;
+  }
+  return t;
+})();
+function crc32(bytes){
+  let c = 0xFFFFFFFF;
+  for(let i=0;i<bytes.length;i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c>>>8);
+  return (c ^ 0xFFFFFFFF)>>>0;
+}
+/* pHYs 는 길이(4) + 타입(4) + 데이터(9) + CRC(4) = 21바이트다.
+   데이터는 가로·세로 각각 '1미터당 픽셀 수' 4바이트씩, 마지막 1바이트가 단위(1=미터). */
+function physChunk(ppm){
+  const c  = new Uint8Array(21);
+  const dv = new DataView(c.buffer);
+  dv.setUint32(0, 9);
+  c.set([0x70,0x48,0x59,0x73], 4);              // 'pHYs'
+  dv.setUint32(8,  ppm);
+  dv.setUint32(12, ppm);
+  c[16] = 1;
+  dv.setUint32(17, crc32(c.subarray(4,17)));    // CRC 는 타입부터 데이터 끝까지
+  return c;
+}
+async function withPhysicalSize(blob, px, mm){
+  const src = new Uint8Array(await blob.arrayBuffer());
+  /* 예상과 다른 파일이면 손대지 않는다. 크기 정보가 빠질 뿐 그림은 멀쩡하다. */
+  const isPng  = src[0]===0x89 && src[1]===0x50 && src[2]===0x4E && src[3]===0x47;
+  const isIhdr = src[12]===0x49 && src[13]===0x48 && src[14]===0x44 && src[15]===0x52;
+  if(!isPng || !isIhdr) return blob;
+
+  const dv = new DataView(src.buffer, src.byteOffset, src.byteLength);
+  const at = 8 + 8 + dv.getUint32(8) + 4;       // 서명과 IHDR 를 통째로 건너뛴다
+  const chunk = physChunk(Math.round(px / (mm/1000)));
+  const out = new Uint8Array(src.length + chunk.length);
+  out.set(src.subarray(0, at), 0);
+  out.set(chunk, at);
+  out.set(src.subarray(at), at + chunk.length);
+  return new Blob([out], {type:'image/png'});
+}
+
+async function renderToBlob(){
+  const mm=exportMm(), size=exportPx();
+  const c=document.createElement('canvas');
+  c.width=c.height=size;
+  const ctx=c.getContext('2d',{willReadFrequently:true});
+  await ensureFont(FONTS[S.fontIdx], S.text+S.mid+S.suffix+'가印');
+  render(ctx, size, S);
+  matteWhite(ctx, size);
+  const blob=await new Promise(res=>c.toBlob(res,'image/png'));
+  return await withPhysicalSize(blob, size, mm);
+}
+async function withBusy(msg, fn){
+  const btns=[$('save'),$('copy')];
+  btns.forEach(b=>b.disabled=true);
+  statusEl.textContent=msg;
+  await new Promise(r=>setTimeout(r,16));
+  try{ await fn(); }
+  catch(err){ statusEl.textContent='오류: '+err.message; console.error(err); }
+  finally{ btns.forEach(b=>b.disabled=false); }
+}
+$('save').addEventListener('click', ()=>withBusy('만들고 있습니다…', async()=>{
+  const blob=await renderToBlob();
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`도장_${sanitize(S.text+S.mid+S.suffix)}_${exportMm()}mm.png`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  statusEl.textContent=`저장했습니다 · ${exportMm()}mm · 배경 투명`;
+}));
+$('copy').addEventListener('click', ()=>withBusy('복사할 이미지를 만들고 있습니다…', async()=>{
+  const blob=await renderToBlob();
+  if(!navigator.clipboard || !window.ClipboardItem){
+    statusEl.textContent='이 브라우저는 이미지 복사를 지원하지 않습니다. PNG 저장을 이용하세요.';
+    return;
+  }
+  await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+  statusEl.textContent='클립보드에 복사했습니다. 문서에 붙여넣기 하세요.';
+}));
+
+/* ---- 시작 ---- */
+(async function init(){
+  const restored = loadState();                // 지난번에 쓰던 설정 복원
+  if(!CAN_STORE) $('saveNote').textContent='이 브라우저에서는 설정 저장을 쓸 수 없습니다.';
+  lastCommitted = snapshot();                  // 복원된 상태를 되돌리기 기준점으로 삼는다
+  updateUndo();
+  updateSizeNote();
+  renderSlots();
+  pushStateToUI();
+  setPaper(!!(restored && restored.paper));
+  schedule();                                  // 폰트 로딩 전에도 일단 보여준다
+  // 브라우저가 새로고침 때 입력값을 되살려 놓는 경우가 있어, 로드 후 한 번 더 맞춘다
+  window.addEventListener('load', ()=>{ pushStateToUI(); schedule(); });
+  try{ await document.fonts.ready; }catch(e){}
+  await ensureFont(FONTS[S.fontIdx], S.text+S.mid+S.suffix+'가印');
+  schedule();                                  // 웹폰트가 적용된 모습으로 다시 그린다
+})();
+</script>
+</body>
+</html>
