@@ -335,6 +335,14 @@
     h1{font-size:1.6rem}
     .card{padding:20px}
   }
+  /* 연결이 끊겼을 때 항상 보이는 복구 버튼 (모달이 안 뜨는 상황에서도 손이 닿게) */
+  .reconnect-bar{position:fixed;top:0;left:0;right:0;z-index:2500;display:none;
+    align-items:center;justify-content:center;gap:12px;
+    background:var(--warn-bg);border-bottom:1px solid var(--warn-bd);color:var(--warn);
+    padding:9px 16px;font-size:.85rem;font-weight:600}
+  .reconnect-bar.show{display:flex}
+  .reconnect-bar button{background:var(--accent);color:var(--accent-ink);border:none;border-radius:8px;
+    padding:6px 16px;font-size:.83rem;font-weight:700;cursor:pointer;font-family:inherit}
 </style>
 </head>
 <body>
@@ -479,6 +487,12 @@
   <button class="unlink" id="unlinkBtn">초기화</button>
 </div>
 
+<!-- 연결 끊김 안내 바 (항상 최상단 고정) -->
+<div class="reconnect-bar" id="reconnectBar">
+  <span>AI 서버에 연결되어 있지 않습니다.</span>
+  <button id="reconnectBtn">연결하기</button>
+</div>
+
 <!-- API 연결 모달 -->
 <div class="modal-overlay hidden" id="apiModal">
   <div class="modal">
@@ -565,7 +579,32 @@
 <script>
 // NVIDIA는 브라우저 직접 호출(CORS)을 막으므로 worker.js 프록시(Cloudflare Worker)를 거친다.
 const BASE = "https://hirameki.esquire0.workers.dev/v1";
-const EMBED_MODEL = "nvidia/llama-nemotron-embed-1b-v2";
+/* 임베딩 모델도 종료일과 함께 내려간다 — 2026-08-25에 `nvidia/llama-nemotron-embed-1b-v2`가
+   수명을 다해(410 Gone) 문서 등록·질의가 통째로 멈췄다. 챗 모델과 같이 차례를 둔다.
+   주의: 임베딩 모델이 바뀌면 벡터 공간이 달라져 **기존 벡터와 섞어 쓸 수 없다.**
+   그래서 어떤 모델로 만든 벡터인지 함께 저장해 두고, 달라지면 저장된 원문으로 다시 임베딩한다. */
+/* 차례는 **무료 키로 확실히 쓸 수 있는 것부터** 세운다. 최신 모델일수록 무료 등급에서
+   막혀(403) 있을 수 있는데, 그러면 첫 줄에서 걸려 도구 전체가 멈춘다.
+   llama-3.2-nv-embedqa-1b-v1은 오래 쓰인 검색용(RAG) 임베딩 모델이라 앞에 둔다. */
+const EMBED_CHAIN = [
+  /* 실제 키로 전부 재 본 결과(2026-08-27) 이 계정에서 도는 임베딩 모델은 이것 하나뿐이었다.
+     내려간 llama-nemotron-embed-1b-v2의 형제(VL) 판으로, 차원(2048)도 같아 그대로 이어진다. */
+  { id:"nvidia/llama-nemotron-embed-vl-1b-v2", label:"Llama-Nemotron Embed VL 1B" },
+  /* 아래는 예비. 같은 시점 측정에서 nemotron-3-embed-1b는 90초가 넘도록 응답이 없었고
+     나머지는 404(계정에 없음)였다. 계정·시기에 따라 달라질 수 있어 남겨 둔다. */
+  { id:"nvidia/llama-3.2-nv-embedqa-1b-v1",    label:"Llama-3.2 EmbedQA 1B" },
+  { id:"nvidia/nv-embedqa-mistral-7b-v2",      label:"EmbedQA Mistral 7B" },
+  { id:"nvidia/nemotron-3-embed-1b",           label:"Nemotron-3 Embed 1B" },
+];
+let embedChainAt = 0;
+const embedModel = () => EMBED_CHAIN[Math.min(embedChainAt, EMBED_CHAIN.length-1)];
+function nextEmbedModel(){
+  if(embedChainAt >= EMBED_CHAIN.length-1) return false;
+  embedChainAt++;
+  console.warn("[규정나침반] 임베딩 모델을 쓸 수 없어 다음으로 넘어갑니다 →", embedModel().id);
+  return true;
+}
+
 /* 쓸 모델을 차례로 적어 둔다. 앞의 것이 없어지면(404·410) 자동으로 다음 것으로 넘어간다.
    2026-07-27에 `qwen/qwen3-next-80b-a3b-instruct`가 예고된 수명을 다해 내려가면서 답변 생성이
    통째로 멈춘 일이 있다. NVIDIA는 모델을 종료일과 함께 내리므로 한 줄에 매어 두면 되풀이된다.
@@ -573,16 +612,20 @@ const EMBED_MODEL = "nvidia/llama-nemotron-embed-1b-v2";
    차례는 **첫 토큰이 빨리 나오는 순서**로 세운다 — 스트리밍으로 답을 흘리는 화면이라
    TTFT가 곧 체감 속도이고, 느리면 Cloudflare 524까지 걸린다. 활성 파라미터가 작은
    MoE(gpt-oss·a3b)를 앞에 둔다. 앞서 쓰던 qwen3-next-80b-a3b도 같은 이유로 고른 것이었다. */
+/* 차례는 실측으로 정했다. 덩치 큰 모델(kimi-k2.6·deepseek-v4-flash)을 앞에 뒀을 때
+   둘 다 첫 글자를 제때 못 내놓아 화면이 멎었다. 활성 파라미터가 작은 것부터 세운다. */
 const CHAT_CHAIN = [
-  { id:"openai/gpt-oss-120b",            label:"GPT-OSS 120B", extra:{ reasoning_effort:"low" } },
-  { id:"nvidia/nemotron-3-nano-30b-a3b", label:"Nemotron 3 Nano", extra:{} },
-  { id:"moonshotai/kimi-k2.6",           label:"Kimi K2.6",    extra:{} },
-  { id:"z-ai/glm-5.2",                   label:"GLM-5.2",      extra:{} },
+  /* 실측(2026-08-27, 같은 키): gpt-oss-120b 0.3초 / gemma-4-31b-it 25~29초.
+     스트리밍 화면이라 첫 응답이 빠른 쪽이 앞이다. */
+  { id:"openai/gpt-oss-120b",   label:"GPT-OSS 120B", extra:{ reasoning_effort:"low" } },
+  { id:"openai/gpt-oss-20b",    label:"GPT-OSS 20B",  extra:{ reasoning_effort:"low" } },
+  { id:"google/gemma-4-31b-it", label:"Gemma 4 31B",  extra:{} },
 ];
 /* 첫 글자가 나오기까지 기다리는 한도. 없으면 화면이 "생각 중…"에서 영영 멎는다 —
    중계 워커는 업스트림을 기다리며 5초마다 keep-alive를 흘리므로 바이트는 계속 오는데
-   내용은 없는 상태가 무한히 이어질 수 있다. 넘기면 그 모델을 건너뛴다. */
-const FIRST_TOKEN_MS = 45000;
+   내용은 없는 상태가 무한히 이어질 수 있다. 넘기면 그 모델을 건너뛴다.
+   30초로 잡은 것은 실사용 관찰에 따른 것이다 — 정상 모델은 몇 초 안에 첫 글자를 낸다. */
+const FIRST_TOKEN_MS = 30000;
 let chatChainAt = 0;                       // 살아 있는 모델을 찾으면 그 뒤로는 그것부터 쓴다
 const chatModel = () => CHAT_CHAIN[Math.min(chatChainAt, CHAT_CHAIN.length-1)];
 // 모델이 없어졌을 때만 다음으로 넘긴다. 더 넘길 곳이 없으면 false.
@@ -603,7 +646,7 @@ let state = { apiKey:"", chunks:[], topK:3, deselected:new Set() }; // chunks: {
 /* ---------- storage ----------
    임베딩 벡터가 커서 localStorage(약 5MB) 한도를 넘기므로 IndexedDB에 저장한다.
    IndexedDB는 용량이 훨씬 커서 여러 규정 문서를 넣어도 새로고침 후 유지된다. */
-const IDB_NAME="regchart", IDB_STORE="kv", CHUNK_KEY="chunks_v1";
+const IDB_NAME="regchart", IDB_STORE="kv", CHUNK_KEY="chunks_v1", EMBMODEL_KEY="embed_model_v1";
 function idbOpen(){
   return new Promise((res,rej)=>{
     const r=indexedDB.open(IDB_NAME,1);
@@ -627,7 +670,7 @@ function idbGet(key){
   }));
 }
 async function saveDB(){
-  try{ await idbSet(CHUNK_KEY, state.chunks); }
+  try{ await idbSet(CHUNK_KEY, state.chunks); await idbSet(EMBMODEL_KEY, embedModel().id); }
   catch(e){
     const us=$("#uploadStatus");
     if(us){ us.style.color="var(--warn)"; us.textContent="⚠ 저장에 실패했습니다. 이 문서는 이번 방문에서만 사용되며, 재방문 시 다시 등록해야 합니다. ("+(e&&e.message||e)+")"; }
@@ -644,29 +687,94 @@ async function loadDB(){
     if(Array.isArray(d)) state.chunks=d;
   }catch(e){}
 }
+/* 임베딩 모델이 바뀌면 예전 벡터는 좌표계가 달라 그대로 쓰면 엉뚱한 조항을 찾는다.
+   청크에 원문(text)을 갖고 있으므로 파일을 다시 올릴 필요 없이 다시 임베딩하면 된다. */
+async function reindexIfModelChanged(){
+  if(!state.chunks.length) return;
+  let saved=null;
+  try{ saved=await idbGet(EMBMODEL_KEY); }catch(_){}
+  /* 지난번에 쓰던 모델이 차례 안에 있으면 거기서부터 이어 간다.
+     그러지 않으면 새로고침할 때마다 1번 모델로 되돌아가, 무료 등급에서 막힌(403)
+     모델을 매번 다시 두드리고 멀쩡한 벡터를 통째로 다시 만들게 된다. */
+  const at = EMBED_CHAIN.findIndex(m=>m.id===saved);
+  if(at>=0) embedChainAt = at;
+  if(saved===embedModel().id) return;          // 그대로면 할 일 없음
+  const us=$("#uploadStatus"), prog=$("#progress"), bar=$("#bar");
+  const B=32;
+  try{
+    if(prog) prog.classList.add("show");
+    for(let i=0;i<state.chunks.length;i+=B){
+      const part=state.chunks.slice(i,i+B);
+      const vecs=await embed(part.map(c=>c.text),"passage");
+      part.forEach((c,k)=>c.vec=vecs[k]);
+      const pct=Math.round(Math.min(i+B,state.chunks.length)/state.chunks.length*100);
+      if(bar) bar.style.width=pct+"%";
+      if(us){ us.style.color="var(--muted)"; us.textContent="임베딩 모델이 바뀌어 등록된 문서를 다시 분석하는 중… "+pct+"%"; }
+    }
+    await saveDB();
+    if(us){ us.style.color="var(--ok)"; us.textContent="✓ 등록된 문서를 새 임베딩 모델로 다시 분석했습니다."; }
+  }catch(e){
+    if(us){ us.style.color="var(--warn)"; us.textContent="⚠ 다시 분석하지 못했습니다. 문서를 다시 등록해 주세요. ("+(e&&e.message||e)+")"; }
+  }finally{
+    if(prog) prog.classList.remove("show");
+    if(bar) bar.style.width="0%";
+  }
+}
 function saveKey(k){ try{ localStorage.setItem(KEY_KEY,k); }catch(e){} }
 function loadKey(){ try{ return localStorage.getItem(KEY_KEY)||""; }catch(e){ return ""; } }
 function clearKey(){ try{ localStorage.removeItem(KEY_KEY); }catch(e){} }
 
 /* ---------- API calls (429 자동 재시도 공통 처리) ---------- */
+/* 응답이 아예 오지 않는 모델이 있다(2026-08-27 nemotron-3-embed-1b는 90초가 넘도록 무응답).
+   상한이 없으면 "관련 규정을 찾고 있습니다…"에서 화면이 영영 멈추고 콘솔에도 아무것도 안 남는다.
+   시간이 넘으면 그 모델을 못 쓰는 것으로 보고 다음 차례로 넘어간다. */
+const API_TIMEOUT_MS = 40000;
 async function apiFetch(path, body, tag){
   const MAX_RETRY=3;
   for(let attempt=0;;attempt++){
-    const res = await fetch(BASE+path,{
-      method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+state.apiKey},
-      body:JSON.stringify(body)
-    });
+    const ac=new AbortController();
+    const to=setTimeout(()=>ac.abort(), API_TIMEOUT_MS);
+    let res;
+    try{
+      res = await fetch(BASE+path,{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":"Bearer "+state.apiKey},
+        body:JSON.stringify(body),
+        signal:ac.signal
+      });
+    }catch(err){
+      clearTimeout(to);
+      const e=new Error(tag+" 응답 없음: 모델이 응답하지 않습니다("+(API_TIMEOUT_MS/1000)+"초 초과)");
+      e.timedOut=true; throw e;
+    }
+    clearTimeout(to);
     if(res.status===429 && attempt<MAX_RETRY){ await sleep(4000*(attempt+1)); continue; }
-    if(!res.ok){ throw new Error(tag+" "+res.status+": "+(await res.text()).slice(0,160)); }
+    if(!res.ok){
+      const e=new Error(tag+" "+res.status+": "+(await res.text()).slice(0,160)); e.status=res.status; throw e;
+    }
     return res.json();
   }
 }
 async function embed(texts, input_type){
-  const j = await apiFetch("/embeddings",
-    { model:EMBED_MODEL, input:texts, input_type, encoding_format:"float", truncate:"END" }, "embed");
-  // 순서 보장: index 기준 정렬 후 반환
-  return j.data.slice().sort((a,b)=>a.index-b.index).map(d=>d.embedding);
+  for(;;){
+    const m = embedModel();
+    try{
+      /* input_type·truncate는 NeMo Retriever 계열 전용 파라미터라 모델마다 받지 않을 수 있다.
+         거부당하면(400·422) 그 모델에 한해 빼고 한 번 더 시도한다. */
+      const body = { model:m.id, input:texts, encoding_format:"float" };
+      if(!m.noInputType){ body.input_type = input_type; body.truncate = "END"; }
+      const j = await apiFetch("/embeddings", body, "embed");
+      // 순서 보장: index 기준 정렬 후 반환
+      return j.data.slice().sort((a,b)=>a.index-b.index).map(d=>d.embedding);
+    }catch(e){
+      if((isModelGone(e.status, e.message) || e.timedOut) && nextEmbedModel()) continue;
+      if((e.status===400 || e.status===422) && !m.noInputType){ m.noInputType = true; continue; }
+      /* 403은 "키가 이 모델을 못 쓴다"는 뜻일 수도 있다(무료 등급 제한).
+         키 자체가 나쁘면 어차피 모든 모델이 403이므로, 일단 다음 차례를 시도해 본다. */
+      if(e.status===403 && nextEmbedModel()) continue;
+      throw e;
+    }
+  }
 }
 // thinking 지원 모델의 추론 블록 제거 (닫힘 태그 누락 시에도 대응)
 function stripThink(t){ return t.replace(/<think>[\s\S]*?<\/think>/g,"").replace(/^[\s\S]*?<\/think>/,"").trim(); }
@@ -688,8 +796,10 @@ async function chat(messages, onDelta, signal){
       const res = await fetch(BASE+"/chat/completions",{
         method:"POST",
         headers:{"Content-Type":"application/json","Authorization":"Bearer "+state.apiKey},
+        // seed를 고정한다 — 같은 질문에 같은 답이 나오도록. 생기부돋보기 쪽은 원래 넣어 두었는데
+        // 여기만 빠져 있어, 같은 규정을 물어도 답이 조금씩 달라졌다.
         body:JSON.stringify({ model:chatModel().id, messages, temperature:0.1, top_p:0.8,
-                              max_tokens:2048, ...(chatModel().extra||{}), stream:true }),
+                              seed:12345, max_tokens:2048, ...(chatModel().extra||{}), stream:true }),
         signal:ctl.signal
       });
       if(res.status===429 && attempt<MAX_RETRY){ attempt++; await sleep(4000*attempt); continue retry; }
@@ -740,6 +850,24 @@ async function chat(messages, onDelta, signal){
     }
   }
 }
+/* 로딩 문구에 흐른 초를 붙인다 — 첫 글자까지 수십 초가 걸릴 수 있어,
+   숫자가 올라가지 않으면 "멎었나" 싶어진다(실제로 모델이 느렸을 때 그렇게 보였다).
+   돌려주는 함수를 부르면 카운터가 멎는다. 답이 흘러들어오기 시작하면 반드시 멈춰야
+   1초마다 덮어쓰기가 스트리밍된 본문을 지우지 않는다. */
+function tickElapsed(host, label, color){
+  const t0=Date.now();
+  let on=true;
+  const paint=()=>{
+    if(!on) return;
+    host.innerHTML='<p style="color:'+(color||'var(--gold-soft)')+'"><span class="spinner"></span> '
+      +label+' <span style="color:var(--muted);font-variant-numeric:tabular-nums">'
+      +Math.floor((Date.now()-t0)/1000)+'초</span></p>';
+  };
+  paint();
+  const id=setInterval(paint,1000);
+  return ()=>{ on=false; clearInterval(id); };
+}
+
 function cosine(a,b){ let d=0,na=0,nb=0; for(let i=0;i<a.length;i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i];} return d/(Math.sqrt(na)*Math.sqrt(nb)+1e-9); }
 // 키워드 일치 점수(0~1): 질문의 단어("제15조", 고유명사 등)가 조각에 그대로 들어 있으면 가산.
 // 의미검색(임베딩)이 정확한 조항 번호·명칭을 놓치는 약점을 보완한다.
@@ -866,6 +994,15 @@ const connPill=$("#connPill"), modelLabel=$("#modelLabel"), apiModal=$("#apiModa
 /* ---------- connect (모달) ---------- */
 function openModal(){ apiModal.classList.remove("hidden"); setTimeout(()=>$("#apiKey").focus(),50); }
 function closeModal(){ apiModal.classList.add("hidden"); }
+/* 연결 상태에 따라 상단 복구 바를 켜고 끈다 */
+function setConnectedUI(on){
+  const bar=document.getElementById("reconnectBar");
+  if(bar) bar.classList.toggle("show", !on);
+}
+(function(){
+  const b=document.getElementById("reconnectBtn");
+  if(b) b.onclick=()=>openModal();
+})();
 
 async function tryConnect(key, silent){
   const st=$("#apiStatus");
@@ -882,14 +1019,17 @@ async function tryConnect(key, silent){
     connPill.classList.add("show");
     modelLabel.textContent = chatModel().label;
     st.textContent="";
+    setConnectedUI(true);
     $("#uploadCard").classList.remove("locked");
     if(state.chunks.length) unlockAsk();
     renderFiles();
+    reindexIfModelChanged();   // 모델이 바뀌었으면 백그라운드로 다시 임베딩
     return true;
   }catch(e){
     state.apiKey="";
+    setConnectedUI(false);
     if(!silent){ st.style.color="var(--warn)"; st.textContent="연결 실패: 키를 다시 확인해 주세요. ("+e.message+")"; }
-    else { st.style.color="var(--warn)"; st.textContent="저장된 키로 자동 연결에 실패했습니다. 키를 다시 입력해 주세요."; }
+    else { st.style.color="var(--warn)"; st.textContent="저장된 키로 자동 연결에 실패했습니다. ("+(e&&e.message||e)+")"; }
     return false;
   }
 }
@@ -1068,6 +1208,13 @@ async function ask(){
   $("#resultPlaceholder").style.display="none";
   resetChat(); // 새 질의가 시작되면 이전 답변 기준의 채팅은 초기화
   ansWrap.classList.add("show");
+  /* 연결이 끊긴 채로 질의하면 빈 키로 호출돼 화면이 멈춘 것처럼 보인다 — 먼저 막는다 */
+  if(!state.apiKey){
+    ansBody.innerHTML='<p style="color:var(--warn)">AI 서버에 연결되어 있지 않습니다. 아래 <b>연결</b> 창에서 NVIDIA API 키를 확인해 주세요.</p>';
+    btn.disabled=false; btn.textContent="질의";
+    openModal();
+    return;
+  }
   ansBody.innerHTML='<p style="color:var(--muted)"><span class="spinner"></span> 관련 규정을 찾고 있습니다…</p>';
   srcBox.innerHTML="";
   ansWrap.scrollIntoView({behavior:"smooth",block:"start"});
@@ -1264,19 +1411,20 @@ async function regenerate(rec){
   }
   if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 작성 중'; }
   resetChat(); // 답변이 바뀌므로 기존 답변 기준의 채팅 문맥은 무효
-  ansBody.innerHTML='<p style="color:var(--gold-soft)"><span class="spinner"></span> 같은 근거로 답변을 다시 작성하고 있어요…</p>';
+  const stopTick=tickElapsed(ansBody, '같은 근거로 답변을 다시 작성하고 있어요…');
   try{
     const raw=await chat(buildAskMessages(rec.context, rec.q), (partial)=>{
-      if(partial) ansBody.innerHTML=renderMd(partial);
+      if(partial){ stopTick(); ansBody.innerHTML=renderMd(partial); }
     });
     rec.answer=raw;
     rec.chat=[]; // 이전 답변 기준의 추가 채팅은 비운다
     saveHistory();
     renderResult(rec);
   }catch(e){
+    stopTick();   // 멈추지 않으면 1초마다 로딩 문구가 오류 메시지를 덮어쓴다
     ansBody.innerHTML=`<p style="color:var(--warn)">다시 생성 중 오류가 발생했습니다: ${escapeHtml(e.message)}</p>`
       +'<p style="color:var(--muted);font-size:.85rem">왼쪽 질의 기록에서 이 질문을 클릭하면 기존 답변을 다시 볼 수 있습니다.</p>';
-  }
+  }finally{ stopTick(); }
 }
 
 /* ---------- 추가 질문 채팅 ----------
@@ -1335,11 +1483,12 @@ async function sendChat(){
   input.value="";
   addMsg("user", escapeHtml(msg));
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
-  const aiEl=addMsg("ai",'<p style="color:var(--muted)"><span class="spinner"></span> 답변 작성 중…</p>');
+  const aiEl=addMsg("ai",'');
+  const stopTick=tickElapsed(aiEl, '답변 작성 중…', 'var(--muted)');
   try{
     const messages=[{role:"system",content:chatSys()}, ...chatHistory, {role:"user",content:msg}];
     const raw=await chat(messages,(partial)=>{
-      if(partial){ aiEl.innerHTML=renderMd(partial); chatLog.scrollTop=chatLog.scrollHeight; }
+      if(partial){ stopTick(); aiEl.innerHTML=renderMd(partial); chatLog.scrollTop=chatLog.scrollHeight; }
     });
     aiEl.innerHTML=renderMd(raw);
     chatHistory.push({role:"user",content:msg},{role:"assistant",content:raw});
@@ -1349,8 +1498,9 @@ async function sendChat(){
     const rec=histRecs.find(r=>r.id===currentRecId);
     if(rec){ (rec.chat=rec.chat||[]).push({q:msg, a:raw}); saveHistory(); }
   }catch(e){
+    stopTick();   // 멈추지 않으면 로딩 문구가 오류 메시지를 1초마다 덮어쓴다
     aiEl.innerHTML=`<p style="color:var(--warn)">오류가 발생했습니다: ${escapeHtml(e.message)}<br>잠시 후 다시 시도해 주세요.</p>`;
-  }
+  }finally{ stopTick(); }
   chatLog.scrollTop=chatLog.scrollHeight;
   btn.disabled=false; btn.textContent="보내기";
   input.focus();
@@ -1384,15 +1534,23 @@ $("#helpClose").onclick=()=>helpModal.classList.add("hidden");
 helpModal.addEventListener("click",e=>{ if(e.target===helpModal) helpModal.classList.add("hidden"); }); // 바깥 클릭으로 닫기
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") helpModal.classList.add("hidden"); });
 
-/* ---------- init ---------- */
-loadDB().then(()=>{
-  if(state.chunks.length){ renderFiles(); unlockAsk(); }
-});
-loadHistory().then(renderHistory);
-(function(){
+/* ---------- init ----------
+   순서가 중요하다. 예전에는 loadDB()와 tryConnect()가 나란히 돌았는데,
+   tryConnect는 통신을 기다리기 전에 state.apiKey부터 채워 놓는다. 그 사이에
+   loadDB()가 끝나면 unlockAsk()가 "키가 있다"고 보고 질의 카드를 열어 버린다.
+   그러다 연결이 실패해 키가 지워지면 **질의 카드는 열려 있는데 문서 등록은 잠긴**
+   이상한 상태가 되고, 그대로 질의하면 빈 키로 호출돼 멈춘 것처럼 보인다.
+   문서를 먼저 다 읽어 들인 뒤 연결하면 두 문제가 함께 사라진다. */
+(async function(){
+  await loadDB();
+  if(state.chunks.length) renderFiles();
+  loadHistory().then(renderHistory);
   const saved=loadKey();
-  if(saved){ $("#apiKey").value=saved; tryConnect(saved, true).then(ok=>{ if(!ok) openModal(); }); }
-  else openModal();
+  if(saved){
+    $("#apiKey").value=saved;
+    const ok=await tryConnect(saved, true);
+    if(!ok) openModal();
+  } else openModal();
 })();
 </script>
 </body>
