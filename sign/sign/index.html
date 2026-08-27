@@ -1,0 +1,4510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>연수 전자서명</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✍️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+  :root {
+    --bg:          #F4F6F3;
+    --card:        #FFFFFF;
+    --ink:         #0E1A14;
+    --ink2:        #465045;
+    --ink3:        #8A958C;
+    --hair:        #E8ECE7;
+    --brand:       #1F4D3A;
+    --brand-soft:  #E4ECE6;
+    --brand-light: #EFF4F0;
+    --shadow-sm:   0 2px 8px rgba(14,26,20,.05);
+    --shadow-md:   0 8px 24px rgba(31,77,58,.11);
+    --shadow-lg:   0 14px 32px rgba(31,77,58,.22);
+    --shadow-xl:   0 18px 40px rgba(31,77,58,.30);
+    --radius-sm:   12px;
+    --radius:      16px;
+    --radius-lg:   20px;
+    --font:        'Pretendard Variable','Pretendard','Noto Sans KR',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    --font-serif:  'Noto Serif KR', var(--font);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100%;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+
+  #app {
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ──────────────────────────────────────── */
+  .header {
+    position: relative; overflow: hidden;
+    padding: 30px 20px 32px;
+    background: linear-gradient(155deg,
+      color-mix(in srgb, var(--brand) 74%, #08150f) 0%,
+      var(--brand) 55%,
+      color-mix(in srgb, var(--brand) 68%, #08150f) 100%);
+    box-shadow: 0 14px 30px -10px rgba(14,26,20,.38);
+  }
+  .header-sweep {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(100deg, transparent 40%, rgba(255,255,255,.38) 50%, transparent 60%);
+    animation: sweepMove 1.35s cubic-bezier(.3,.6,.4,1) .1s both;
+  }
+  @keyframes sweepMove {
+    0%   { transform: translateX(-120%) skewX(-14deg); opacity: 0; }
+    12%  { opacity: .9; }
+    55%  { opacity: .45; }
+    100% { transform: translateX(220%) skewX(-14deg); opacity: 0; }
+  }
+  .header-meta {
+    position: relative;
+    display: flex; justify-content: flex-end; align-items: center;
+    margin-bottom: 20px; min-height: 18px;
+  }
+  .date-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; color: rgba(255,255,255,.72); font-weight: 500;
+  }
+  .org-name {
+    position: relative;
+    font-family: var(--font-serif);
+    font-size: 29px; font-weight: 700; color: #fff;
+    letter-spacing: -0.015em; line-height: 1.2;
+    opacity: 0; animation: fadeUp .65s cubic-bezier(.22,.61,.36,1) .18s both;
+  }
+  .header-sub {
+    position: relative;
+    font-size: 13.5px; font-weight: 500; color: rgba(255,255,255,.76);
+    margin-top: 6px; letter-spacing: -0.01em;
+    opacity: 0; animation: fadeUp .65s cubic-bezier(.22,.61,.36,1) .26s both;
+  }
+  .header-sub a.sub-mail {
+    color: #fff; text-decoration: underline;
+    text-decoration-color: rgba(255,255,255,.5);
+    text-underline-offset: 2px; font-weight: 600;
+  }
+  .header-sub a.sub-mail:hover { text-decoration-color: #fff; }
+  .sub-mail-copy {
+    -webkit-appearance: none; appearance: none; cursor: pointer;
+    margin-left: 5px; padding: 1px 7px; line-height: 1.5;
+    font-family: var(--font); font-size: 10.5px; font-weight: 600;
+    color: rgba(255,255,255,.9); background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.28); border-radius: 999px;
+    vertical-align: middle; position: relative;
+  }
+  .sub-mail-copy:hover { background: rgba(255,255,255,.26); color: #fff; }
+  .sub-mail-copy.copied {
+    background: rgba(255,255,255,.95); color: var(--brand, #333);
+    border-color: transparent;
+  }
+
+  /* ── Progress ─────────────────────────────────────── */
+  .progress {
+    padding: 14px 20px 12px;
+    opacity: 0; animation: fadeUp .55s cubic-bezier(.22,.61,.36,1) .1s both;
+  }
+  .progress-track { display: flex; gap: 6px; }
+  .progress-bar {
+    flex: 1; height: 3px; border-radius: 999px;
+    background: var(--hair); transition: background .3s;
+  }
+  .progress-bar.active, .progress-bar.done { background: var(--brand); }
+  .progress-label {
+    margin-top: 8px; font-size: 11px;
+    color: var(--ink3); font-weight: 500;
+  }
+
+  /* ── Page title ───────────────────────────────────── */
+  .page-title {
+    padding: 4px 20px 14px;
+    font-family: var(--font-serif);
+    font-size: 22px; font-weight: 600; color: var(--ink);
+    letter-spacing: -0.01em; line-height: 1.32;
+    opacity: 0; animation: fadeUp .6s cubic-bezier(.22,.61,.36,1) .34s both;
+  }
+  .page-sub {
+    padding: 0 20px 12px;
+    font-size: 13px; color: var(--ink2); font-weight: 500;
+    margin-top: -8px;
+    opacity: 0; animation: fadeUp .6s cubic-bezier(.22,.61,.36,1) .34s both;
+  }
+
+  /* ── Content ──────────────────────────────────────── */
+  .content { flex: 1; padding: 0 20px 8px; }
+
+  /* ── Training items ───────────────────────────────── */
+  .training-list {
+    display: flex; flex-direction: column; gap: 10px;
+    opacity: 0; animation: fadeUp .55s cubic-bezier(.22,.61,.36,1) .42s both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .training-item {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 17px 17px 17px 19px;
+    display: flex; align-items: center; gap: 13px;
+    border: 1px solid var(--hair);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s, transform .12s;
+    -webkit-user-select: none; user-select: none;
+  }
+  .training-item:active { transform: scale(0.985); }
+  .training-item.selected {
+    border: 2px solid var(--brand);
+    box-shadow: var(--shadow-md);
+    padding: 15px 15px 15px 17px;
+  }
+  .training-item.signed-done {
+    background: var(--brand-light);
+    opacity: .9; cursor: default;
+  }
+  .training-icon {
+    width: 38px; height: 38px; border-radius: 12px;
+    background: var(--brand-light); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .training-item.selected .training-icon,
+  .training-item.signed-done .training-icon {
+    background: var(--brand); color: #fff;
+  }
+  .training-body { flex: 1; min-width: 0; }
+  .training-name {
+    font-size: 14px; font-weight: 700; color: var(--ink);
+    letter-spacing: -0.01em; line-height: 1.4;
+    margin-bottom: 2px;
+    overflow: hidden; text-overflow: ellipsis;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .training-meta {
+    font-size: 11px; color: var(--ink3); font-weight: 500;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .training-item.signed-done .training-meta { color: var(--brand); font-weight: 600; }
+  .training-item.time-blocked { opacity: .55; cursor: default; }
+  .training-item.time-blocked .training-meta { color: var(--ink3); font-weight: 600; }
+  .training-chev { color: var(--ink3); flex-shrink: 0; }
+  .training-item.selected .training-chev { color: var(--brand); }
+
+  /* ── Empty state ──────────────────────────────────── */
+  .empty-state {
+    text-align: center; padding: 40px 16px 20px;
+    background: var(--card); border-radius: var(--radius-lg);
+    border: 1px solid var(--hair);
+  }
+  .empty-state .ico { color: var(--ink3); margin-bottom: 12px; display: inline-block; }
+  .empty-state p { font-size: 13px; line-height: 1.7; color: var(--ink2); }
+  .empty-hint {
+    margin-top: 14px; background: var(--brand-light);
+    border-radius: 12px; padding: 12px 14px;
+    font-size: 11px; color: var(--ink2); line-height: 1.8; text-align: left;
+  }
+  .empty-hint b { color: var(--brand); font-weight: 700; }
+
+  /* ── Loading ─────────────────────────────────────── */
+  .loading { text-align: center; padding: 60px 0; color: var(--ink3); }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 2.5px solid var(--hair); border-top-color: var(--brand);
+    border-radius: 50%; animation: spin .8s linear infinite;
+    margin: 0 auto 14px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p { font-size: 12px; color: var(--ink3); font-weight: 500; }
+
+  /* ── Info cards (step 2) ──────────────────────────── */
+  .info-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px 16px; border: 1px solid var(--hair);
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 10px;
+    animation: fadeUp .3s ease;
+  }
+  .info-card.preview {
+    background: var(--card);
+    border: 1px solid var(--hair);
+  }
+  .info-card-icon {
+    width: 32px; height: 32px; border-radius: 10px;
+    background: var(--brand-light); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .info-card.active .info-card-icon {
+    background: var(--brand); color: #fff;
+  }
+  .info-card.active { border: 1.5px solid var(--brand); }
+  .info-card-body { flex: 1; min-width: 0; position: relative; }
+  .info-card-label {
+    font-size: 10px; color: var(--ink3); font-weight: 600;
+    letter-spacing: .04em; margin-bottom: 1px;
+  }
+  .info-card-value {
+    font-size: 15px; font-weight: 700; color: var(--ink);
+    letter-spacing: -0.01em;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .info-card-value.placeholder { color: var(--ink3); font-weight: 500; }
+  .info-card.preview .info-card-value { font-size: 13px; }
+  .info-card .chev { color: var(--ink3); flex-shrink: 0; }
+  .info-card.active .chev { color: var(--brand); }
+  .info-card.disabled { opacity: .55; }
+  .info-card.disabled .info-card-icon {
+    background: var(--hair); color: var(--ink3);
+  }
+
+  /* Native select overlay */
+  .native-select {
+    position: absolute; inset: -14px -16px;
+    opacity: 0; cursor: pointer;
+    font-size: 16px; /* avoid iOS zoom */
+    font-family: var(--font);
+  }
+  .native-select:disabled { cursor: not-allowed; }
+
+  /* ── Sign step ────────────────────────────────────── */
+  .sign-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px; background: var(--brand-soft); color: var(--brand);
+    border-radius: 999px; font-size: 11px; font-weight: 700;
+    margin-bottom: 10px; letter-spacing: -0.01em;
+  }
+  .canvas-card {
+    background: var(--card); border-radius: var(--radius-lg);
+    border: 1px solid var(--hair); box-shadow: 0 4px 16px rgba(14,26,20,.04);
+    overflow: hidden;
+    animation: fadeUp .3s ease;
+  }
+  .canvas-head {
+    padding: 11px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--hair);
+  }
+  .canvas-head-meta {
+    font-size: 11px; color: var(--ink3); font-weight: 600;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    max-width: 70%;
+  }
+  .clear-btn {
+    padding: 5px 11px; background: var(--brand-light); color: var(--brand);
+    border: none; border-radius: 999px; font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+  .clear-btn:hover { background: var(--brand-soft); }
+  .canvas-wrap {
+    position: relative; background: #FCFDFC;
+    touch-action: none;
+  }
+  canvas { display: block; width: 100%; cursor: crosshair; }
+  .canvas-hint {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px;
+    pointer-events: none; transition: opacity .25s;
+  }
+  .canvas-hint .pen-ico { color: var(--ink3); opacity: .5; }
+  .canvas-hint p {
+    font-size: 12px; color: var(--ink3);
+    letter-spacing: -0.005em; font-weight: 500;
+  }
+  .canvas-baseline {
+    position: absolute; left: 24px; right: 24px; bottom: 38px;
+    border-top: 1px dashed var(--hair);
+    pointer-events: none;
+  }
+  .canvas-foot {
+    position: absolute; left: 0; right: 0; bottom: 14px;
+    text-align: center; font-size: 10px; color: var(--ink3);
+    letter-spacing: .2em; font-weight: 600; pointer-events: none;
+  }
+
+  /* ── Success ──────────────────────────────────────── */
+  .success-wrap {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 16px 20px 0;
+    animation: fadeUp .35s ease;
+  }
+  .success-circle-wrap {
+    position: relative; margin-bottom: 22px;
+  }
+  .success-circle-bg {
+    position: absolute; inset: 0;
+    width: 96px; height: 96px; border-radius: 50%;
+    background: var(--brand-soft);
+    transform: scale(1.25); opacity: .5;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1.25); opacity: .5; }
+    50%      { transform: scale(1.5);  opacity: .25; }
+  }
+  .success-circle {
+    width: 96px; height: 96px; border-radius: 50%;
+    background: var(--brand); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; box-shadow: var(--shadow-xl);
+    animation: popIn .5s cubic-bezier(.17,.67,.35,1.3) both;
+  }
+  @keyframes popIn {
+    from { transform: scale(.5); opacity: 0; }
+    to   { transform: scale(1);  opacity: 1; }
+  }
+  .success-title {
+    font-size: 26px; font-weight: 800; color: var(--ink);
+    letter-spacing: -0.035em; margin-bottom: 8px;
+  }
+  .success-sub {
+    font-size: 14px; color: var(--ink2);
+    text-align: center; line-height: 1.6; font-weight: 500;
+  }
+  .success-info {
+    margin-top: 26px; width: 100%; background: var(--card);
+    border-radius: 18px; padding: 14px 18px;
+    border: 1px solid var(--hair);
+  }
+  .si-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--hair);
+    gap: 14px;
+  }
+  .si-row:last-child { border-bottom: none; }
+  .si-label {
+    font-size: 12px; color: var(--ink3); font-weight: 600; flex-shrink: 0;
+  }
+  .si-value {
+    font-size: 13px; color: var(--ink); font-weight: 700;
+    letter-spacing: -0.01em; text-align: right;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* ── Footer / Buttons ─────────────────────────────── */
+  .footer-actions {
+    padding: 14px 20px 24px;
+    display: flex; gap: 10px;
+  }
+  .btn {
+    padding: 16px; border: none; border-radius: 16px;
+    font-family: var(--font);
+    font-size: 15px; font-weight: 700;
+    letter-spacing: -0.01em;
+    transition: transform .12s, opacity .15s, box-shadow .15s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:active:not(:disabled) { transform: scale(0.98); }
+  .btn-primary {
+    flex: 1; background: var(--brand); color: #fff;
+    box-shadow: var(--shadow-lg);
+  }
+  .btn-primary:disabled {
+    background: var(--hair); color: var(--ink3);
+    box-shadow: none;
+  }
+  .btn-back {
+    width: 54px; padding: 15px; background: var(--card);
+    color: var(--ink2); border: 1px solid var(--hair);
+  }
+  .btn-outline {
+    flex: 1; background: var(--card); color: var(--ink);
+    border: 1px solid var(--hair);
+  }
+
+  /* ── 좌측 상단 고정 칩 (제작자 문의, 항상 노출) ─────── */
+  .site-credit-chip {
+    position: fixed; left: 14px; top: 14px; z-index: 1700;
+    display: inline-flex; align-items: center;
+    padding: 9px; border-radius: 999px;
+    background: var(--card); border: 1px solid var(--hair);
+    color: var(--ink2); text-decoration: none;
+    font-family: var(--font); font-size: 11.5px; font-weight: 700;
+    letter-spacing: -0.01em; box-shadow: var(--shadow-md);
+    transition: padding 1.25s ease, background .9s ease, color .9s ease, border-color .9s ease;
+  }
+  .site-credit-chip svg { flex: none; width: 15px; height: 15px; }
+  /* 기본은 로고만, hover/focus 시 제작자명 펼침 */
+  .site-credit-chip .credit-name {
+    display: inline-block; max-width: 0; opacity: 0;
+    overflow: hidden; white-space: nowrap;
+    transition: max-width 1.4s ease, opacity 1s ease, margin-left 1.4s ease;
+    margin-left: 0;
+  }
+  .site-credit-chip:hover, .site-credit-chip:focus-visible {
+    padding: 9px 14px 9px 11px;
+    background: var(--brand-light); color: var(--brand); border-color: var(--brand-soft);
+  }
+  .site-credit-chip:hover .credit-name,
+  .site-credit-chip:focus-visible .credit-name {
+    max-width: 160px; opacity: 1; margin-left: 6px;
+  }
+  /* 터치 기기(hover 불가)에서는 항상 로고만 표시 */
+  @media (hover: none) {
+    .site-credit-chip:hover { padding: 9px; }
+    .site-credit-chip:hover .credit-name { max-width: 0; opacity: 0; margin-left: 0; }
+  }
+  body.print-mode .site-credit-chip { display: none !important; }
+
+  /* ── Modal ────────────────────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(14,26,20,.45); z-index: 1500;   /* 관리자 패널(1200) 위에 떠야 함 */
+    align-items: center; justify-content: center; padding: 24px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-card {
+    background: var(--card); border-radius: 22px;
+    padding: 28px 24px 22px; width: 100%; max-width: 320px;
+    text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    animation: popIn .25s cubic-bezier(.17,.67,.35,1.3) both;
+  }
+  .modal-icon-wrap {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--brand-light); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+  }
+  .modal-icon-wrap.warn { background: #FDECEA; color: #C0392B; }
+  .modal-title {
+    font-size: 17px; font-weight: 800; color: var(--ink);
+    margin-bottom: 8px; letter-spacing: -0.02em;
+  }
+  .modal-msg {
+    font-size: 13px; color: var(--ink2); line-height: 1.7;
+    margin-bottom: 18px; white-space: pre-line;
+  }
+  .modal-msg b { color: var(--ink); font-weight: 700; }
+  .modal-btn {
+    display: block; width: 100%; padding: 13px;
+    background: var(--brand); color: #fff; border: none;
+    border-radius: 12px; font-family: var(--font);
+    font-size: 14px; font-weight: 700;
+  }
+  .modal-btn.ghost {
+    background: var(--card); color: var(--ink2);
+    border: 1px solid var(--hair); margin-top: 8px;
+  }
+
+  /* ── Setup gate (시스템 연결) ─────────────────────── */
+  .gate {
+    display: none; flex: 1; flex-direction: column;
+    padding: 8px 20px 24px;
+    animation: fadeUp .3s ease;
+  }
+  body.gate-active .progress,
+  body.gate-active .step { display: none !important; }
+  body.gate-active .gate { display: flex; }
+  .gate-card {
+    background: var(--card); border: 1px solid var(--hair);
+    border-radius: var(--radius-lg); padding: 32px 22px 26px;
+    box-shadow: var(--shadow-md); text-align: center;
+  }
+  .gate-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--brand-light); color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+  }
+  .gate-title {
+    font-size: 20px; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--ink); margin-bottom: 8px;
+  }
+  .gate-desc {
+    font-size: 13px; color: var(--ink2); line-height: 1.7;
+    font-weight: 500; margin-bottom: 22px;
+  }
+  .gate-desc b { color: var(--brand); font-weight: 700; }
+  .gate-input {
+    width: 100%; padding: 14px 16px;
+    border: 1.5px solid var(--hair); border-radius: 14px;
+    font-family: var(--font); font-size: 13px; color: var(--ink);
+    background: #FCFDFC; outline: none;
+    transition: border-color .15s;
+  }
+  .gate-input::placeholder { color: var(--ink3); }
+  .gate-input:focus { border-color: var(--brand); }
+  .gate-input.error { border-color: #C0392B; }
+  .gate-err {
+    display: none; margin-top: 10px; text-align: left;
+    font-size: 12px; color: #C0392B; font-weight: 600; line-height: 1.6;
+    background: #FDECEA; padding: 10px 12px; border-radius: 10px;
+  }
+  .gate-err.show { display: block; }
+  .gate-btn {
+    margin-top: 14px; width: 100%; padding: 15px;
+    background: var(--brand); color: #fff; border: none;
+    border-radius: 14px; font-family: var(--font);
+    font-size: 15px; font-weight: 700;
+    box-shadow: var(--shadow-lg);
+  }
+  .gate-btn:disabled { background: var(--hair); color: var(--ink3); box-shadow: none; }
+  .gate-note {
+    margin-top: 16px; font-size: 11px; color: var(--ink3);
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    font-weight: 500;
+  }
+
+  /* ── 서명결과 출력 버튼 ───────────────────────────── */
+  .print-link-btn {
+    margin: 14px 0 0; display: flex; align-items: center; justify-content: center;
+    gap: 6px; width: 100%; padding: 13px;
+    background: var(--card); border: 1px solid var(--hair); border-radius: 14px;
+    color: var(--ink2); font-size: 13px; font-weight: 600;
+    transition: background .15s, color .15s;
+  }
+  .print-link-btn:hover { background: var(--brand-light); color: var(--brand); }
+
+  /* ── 연수 선택 목록 (출력용) ──────────────────────── */
+  .picker-list {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 16px; max-height: 40vh; overflow-y: auto;
+  }
+  .picker-item {
+    text-align: left; padding: 13px 14px;
+    border: 1px solid var(--hair); background: #FCFDFC;
+    border-radius: 12px; font-size: 13px; font-weight: 700;
+    color: var(--ink); font-family: var(--font);
+    display: flex; align-items: center; gap: 9px;
+    transition: border-color .15s, background .15s;
+  }
+  .picker-item:hover { border-color: var(--brand); background: var(--brand-light); }
+  .picker-item .pi-ico { color: var(--brand); flex-shrink: 0; display: flex; }
+
+  /* ── 공유 링크 박스 ───────────────────────────────── */
+  .share-box {
+    background: #FCFDFC; border: 1px dashed #C9D2C9; border-radius: 12px;
+    padding: 11px 12px; font-size: 11px; color: var(--ink2);
+    word-break: break-all; text-align: left; margin-bottom: 12px;
+    max-height: 88px; overflow: auto; font-weight: 500; line-height: 1.6;
+  }
+  .share-qr-wrap { text-align: center; margin-bottom: 12px; }
+  .share-qr {
+    width: 150px; height: 150px; border-radius: 12px;
+    border: 1px solid var(--hair); background: #fff; padding: 8px;
+  }
+  .share-qr-hint {
+    margin-top: 6px; font-size: 10.5px; color: var(--ink3); font-weight: 500;
+  }
+  .share-qr-actions {
+    display: flex; gap: 8px; justify-content: center; margin-top: 10px;
+  }
+  .share-qr-btn {
+    padding: 7px 12px; border-radius: 999px;
+    border: 1px solid var(--hair); background: var(--card); color: var(--ink2);
+    font-family: var(--font); font-size: 11.5px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .share-qr-btn:hover { background: var(--brand-light); color: var(--brand); border-color: var(--brand-soft); }
+  .share-qr { cursor: zoom-in; }
+
+  /* ── QR 확대보기 (전체화면) ── */
+  .qr-zoom-overlay {
+    display: none; position: fixed; inset: 0; z-index: 1600;
+    background: rgba(6,12,9,.92);
+    align-items: center; justify-content: center; padding: 40px 20px;
+    animation: fadeUp .2s ease;
+  }
+  .qr-zoom-overlay.show { display: flex; }
+  .qr-zoom-img {
+    max-width: min(88vw, 480px); max-height: 70vh;
+    width: 100%; background: #fff; border-radius: 16px; padding: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    cursor: default;
+  }
+  .qr-zoom-close {
+    position: absolute; top: 20px; right: 20px;
+    width: 40px; height: 40px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,.12); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .qr-zoom-close:hover { background: rgba(255,255,255,.22); }
+  .qr-zoom-dl {
+    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+    padding: 11px 20px; border-radius: 999px; border: none;
+    background: #fff; color: var(--ink); font-family: var(--font);
+    font-size: 13px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 7px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.3);
+  }
+  .share-short-status {
+    min-height: 15px; margin: -6px 0 10px;
+    font-size: 11px; color: var(--brand); font-weight: 600;
+  }
+
+  /* ── 안내문 배너 ─────────────────────────────────── */
+  .notice-bar {
+    display: none; margin: 0 20px 10px;
+    background: var(--brand-light); border: 1px solid var(--brand-soft);
+    border-radius: 14px; padding: 12px 14px;
+    font-size: 12.5px; color: var(--ink2); font-weight: 500; line-height: 1.65;
+    align-items: flex-start; gap: 9px;
+    animation: fadeUp .3s ease;
+  }
+  .notice-bar.show { display: flex; }
+  .notice-bar .nb-ico { color: var(--brand); flex-shrink: 0; margin-top: 1px; display: flex; }
+  body.gate-active .notice-bar { display: none !important; }
+
+  /* ── 공유 미니 버튼 (관리자용) ────────────────────── */
+  .share-mini {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.1); color: rgba(255,255,255,.85);
+    display: none; align-items: center; justify-content: center;
+    margin-left: 8px; padding: 0;
+  }
+  .share-mini.show { display: inline-flex; }
+  .share-mini:hover { color: #fff; border-color: rgba(255,255,255,.55); background: rgba(255,255,255,.2); }
+
+  /* ── 출력 비밀번호 입력 ──────────────────────────── */
+  .pin-input {
+    width: 100%; padding: 13px 16px; margin-bottom: 4px;
+    border: 1.5px solid var(--hair); border-radius: 12px;
+    font-family: var(--font); font-size: 18px; font-weight: 700;
+    letter-spacing: .25em; text-align: center;
+    color: var(--ink); background: #FCFDFC; outline: none;
+  }
+  .pin-input:focus { border-color: var(--brand); }
+
+  /* ── 인쇄 형식 선택 ──────────────────────────────── */
+  .pf-field { text-align: left; margin-bottom: 14px; }
+  .pf-label {
+    display: block; font-size: 12px; font-weight: 700;
+    color: var(--ink2); margin-bottom: 6px; letter-spacing: -0.01em;
+  }
+  .pf-select {
+    width: 100%; padding: 12px 34px 12px 14px;
+    border: 1.5px solid var(--hair); border-radius: 12px;
+    font-family: var(--font); font-size: 14px; font-weight: 600;
+    color: var(--ink); background: #FCFDFC; outline: none;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7' fill='none'%3E%3Cpath d='M1 1L5.5 5.5L10 1' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+    transition: border-color .15s;
+  }
+  .pf-select:focus { border-color: var(--brand); }
+  .pf-hint {
+    text-align: left; font-size: 11px; color: var(--ink3);
+    font-weight: 500; line-height: 1.6; margin: -2px 0 14px;
+  }
+
+  /* ── 관리자 UI (연수 관리) ─────────────────────── */
+  .adm-field { text-align: left; margin-bottom: 12px; }
+  .adm-label {
+    display: block; font-size: 12px; font-weight: 700;
+    color: var(--ink2); margin-bottom: 6px; letter-spacing: -0.01em;
+  }
+  .adm-label .opt { font-weight: 500; color: var(--ink3); }
+  .adm-input {
+    width: 100%; padding: 13px 14px;
+    border: 1.5px solid var(--hair); border-radius: 12px;
+    font-family: var(--font); font-size: 14px; color: var(--ink);
+    background: #FCFDFC; outline: none; transition: border-color .15s;
+  }
+  .adm-input:focus { border-color: var(--brand); }
+  .adm-input.error { border-color: #C0392B; }
+
+  /* 날짜 선택 달력 (서명 기록이 있는 날짜에 점 표시) */
+  .cal-trigger {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    text-align: left; cursor: pointer; font-weight: 600;
+  }
+  .cal-trigger.open { border-color: var(--brand); }
+  .cal-trigger svg { color: var(--ink3); flex-shrink: 0; }
+  .cal-pop {
+    margin-top: 8px; padding: 12px;
+    border: 1.5px solid var(--hair); border-radius: 14px; background: #fff;
+    box-shadow: 0 6px 20px rgba(0,0,0,.06);
+  }
+  .cal-pop[hidden] { display: none; }
+  .cal-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+  }
+  .cal-title { font-size: 13.5px; font-weight: 800; color: var(--ink); }
+  .cal-nav {
+    width: 30px; height: 30px; border: none; border-radius: 9px;
+    background: var(--brand-light); color: var(--brand);
+    font-family: var(--font); font-size: 16px; font-weight: 800; line-height: 1;
+  }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-dow {
+    text-align: center; padding: 4px 0;
+    font-size: 11px; font-weight: 700; color: var(--ink3);
+  }
+  .cal-day {
+    position: relative; height: 36px; border: none; background: none; border-radius: 9px;
+    font-family: var(--font); font-size: 13px; font-weight: 600; color: var(--ink);
+  }
+  .cal-day:hover { background: var(--brand-light); }
+  .cal-day.today { color: var(--brand); font-weight: 800; }
+  .cal-day.sel { background: var(--brand); color: #fff; }
+  .cal-day.has-rec::after {
+    content: ''; position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%);
+    width: 5px; height: 5px; border-radius: 50%; background: var(--brand);
+  }
+  .cal-day.sel.has-rec::after { background: #fff; }
+  .cal-sun { color: #C0392B; }
+  .cal-day.sel.cal-sun { color: #fff; }
+  .cal-hint {
+    display: flex; align-items: center; gap: 5px; margin-top: 8px;
+    font-size: 11px; font-weight: 600; color: var(--ink3);
+  }
+  .cal-hint i {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--brand);
+    display: inline-block; flex-shrink: 0;
+  }
+  .adm-demo-note {
+    font-size: 11.5px; font-weight: 600; color: var(--brand);
+    background: var(--brand-light); border-radius: 10px;
+    padding: 9px 12px; margin-bottom: 12px; line-height: 1.55;
+  }
+  .adm-err {
+    display: none; font-size: 12px; font-weight: 600; color: #C0392B;
+    margin: 2px 0 8px; text-align: left;
+  }
+  .adm-err.show { display: block; }
+
+  .tf-dept-list {
+    max-height: 260px; overflow-y: auto; text-align: left;
+    border: 1.5px solid var(--hair); border-radius: 12px; padding: 4px 14px;
+    margin-bottom: 10px;
+  }
+  .tf-dept-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; font-size: 14px; font-weight: 600; color: var(--ink);
+    border-bottom: 1px solid var(--hair); cursor: pointer;
+  }
+  .tf-dept-row:last-child { border-bottom: none; }
+  .tf-dept-row input { width: 17px; height: 17px; flex-shrink: 0; accent-color: var(--brand); }
+  .tf-person-dept-head {
+    font-size: 12px; font-weight: 800; color: var(--brand);
+    margin: 12px 2px 2px; letter-spacing: -0.01em;
+  }
+  .tf-person-dept-head:first-child { margin-top: 4px; }
+
+  /* ── 엑셀 일괄 등록 (구성원 관리) ─────────────────── */
+  .xl-drop {
+    margin-top: 4px; padding: 22px 14px; border-radius: 14px;
+    border: 1.5px dashed var(--hair); background: #FCFDFC;
+    text-align: center; cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .xl-drop svg { color: var(--ink3); }
+  .xl-drop p { font-size: 12.5px; color: var(--ink2); font-weight: 600; margin-top: 8px; line-height: 1.5; }
+  .xl-drop-hint { font-size: 11px !important; color: var(--ink3) !important; font-weight: 500 !important; margin-top: 4px !important; }
+  .xl-drop.drag { border-color: var(--brand); background: var(--brand-light); }
+  .xl-result-ok {
+    margin-top: 12px; padding: 10px 12px; border-radius: 10px;
+    background: var(--brand-light); color: var(--brand);
+    font-size: 12.5px; font-weight: 700; text-align: left; line-height: 1.5;
+  }
+  .adm-panel-body { max-width: 560px; margin: 0 auto; padding: 18px 18px 40px; }
+  .adm-add-btn {
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: 1.5px dashed var(--brand-soft); background: var(--brand-light);
+    color: var(--brand); font-family: var(--font); font-size: 13.5px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    margin-bottom: 14px;
+  }
+  .adm-list { display: flex; flex-direction: column; gap: 10px; }
+  .adm-item {
+    background: var(--card); border: 1px solid var(--hair);
+    border-radius: 14px; padding: 14px 14px 12px;
+    display: flex; gap: 12px; align-items: flex-start; text-align: left;
+  }
+  .adm-item.off { opacity: .55; }
+  .adm-item-main { flex: 1; min-width: 0; }
+  .adm-item-title {
+    font-size: 14px; font-weight: 800; color: var(--ink);
+    letter-spacing: -0.02em; margin-bottom: 3px; word-break: keep-all;
+  }
+  .adm-item-meta { font-size: 12px; color: var(--ink2); font-weight: 500; line-height: 1.5; }
+  .adm-item-date {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11.5px; font-weight: 700; color: var(--brand);
+    background: var(--brand-light); border-radius: 8px;
+    padding: 3px 8px; margin-top: 7px;
+  }
+  .adm-item-move { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+  .adm-move-btn {
+    width: 26px; height: 22px; border-radius: 7px; padding: 0;
+    border: 1px solid var(--hair); background: var(--card); color: var(--ink2);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .adm-move-btn svg { transform: rotate(180deg); }
+  .adm-move-btn.down svg { transform: none; }
+  .adm-move-btn:disabled { opacity: .3; }
+  .adm-move-btn:active:not(:disabled) { background: var(--brand-light); border-color: var(--brand-soft); color: var(--brand); }
+  .adm-item-side { display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }
+  .adm-edit-btn {
+    padding: 7px 13px; border-radius: 9px;
+    border: 1px solid var(--hair); background: var(--card); color: var(--ink2);
+    font-family: var(--font); font-size: 12px; font-weight: 700;
+  }
+  .adm-toggle {
+    position: relative; width: 40px; height: 23px; border-radius: 20px;
+    border: none; background: #D5DAD6; transition: background .15s; padding: 0;
+  }
+  .adm-toggle::after {
+    content: ''; position: absolute; top: 2.5px; left: 3px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    transition: transform .15s;
+  }
+  .adm-toggle.on { background: var(--brand); }
+  .adm-toggle.on::after { transform: translateX(16px); }
+  .adm-empty {
+    text-align: center; padding: 40px 0; color: var(--ink3);
+    font-size: 13px; font-weight: 600;
+  }
+  .adm-del-btn {
+    background: none; border: none; color: #C0392B;
+    font-family: var(--font); font-size: 12.5px; font-weight: 700;
+    margin-top: 10px; padding: 6px;
+  }
+  .adm-dept-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin: 14px 2px 2px; padding-bottom: 4px;
+    font-size: 13px; font-weight: 800; color: var(--brand);
+    letter-spacing: -0.01em;
+  }
+  .adm-dept-head:first-child { margin-top: 0; }
+  .adm-dept-head small { font-size: 11px; font-weight: 600; color: var(--ink3); }
+  .adm-tabs {
+    display: flex; gap: 6px; margin-bottom: 16px;
+    background: var(--brand-light); border-radius: 12px; padding: 4px;
+  }
+  .adm-tab {
+    flex: 1; padding: 9px 6px; border: none; border-radius: 9px;
+    background: transparent; color: var(--ink2);
+    font-family: var(--font); font-size: 12.5px; font-weight: 700;
+  }
+  .adm-tab.active { background: var(--card); color: var(--brand); box-shadow: var(--shadow-sm); }
+  .adm-tab-panel { display: none; }
+  .adm-tab-panel.active { display: block; }
+
+
+  /* ── 서명등록부 (인쇄) ────────────────────────────── */
+  .print-overlay {
+    display: none; position: fixed; inset: 0;
+    background: #EDEFEC; z-index: 1200; overflow: auto;
+  }
+  .print-overlay.show { display: block; }
+  .print-toolbar {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--card); border-bottom: 1px solid var(--hair);
+    padding: 12px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .pt-title {
+    font-size: 14px; font-weight: 800; color: var(--ink);
+    letter-spacing: -0.02em;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .pt-title svg { color: var(--brand); }
+  .pt-actions { display: flex; gap: 8px; }
+  .pt-btn {
+    padding: 9px 16px; border-radius: 10px;
+    font-size: 13px; font-weight: 700; font-family: var(--font);
+    border: 1px solid var(--hair); background: var(--card); color: var(--ink2);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pt-btn.solid { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .print-doc {
+    max-width: 760px; min-height: 1075px;   /* 760px 폭 기준 A4(210×297mm) 비율 */
+    margin: 20px auto 48px;
+    background: #fff; padding: 44px 40px;
+    box-shadow: 0 4px 24px rgba(14,26,20,.08);
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .pd-org {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12px; font-weight: 700; color: #555;
+    letter-spacing: .04em;
+    border-bottom: 2px solid #2C3E50; padding-bottom: 9px;
+  }
+  .pd-title {
+    text-align: center; font-size: 24px; font-weight: 800; color: #111;
+    letter-spacing: .01em; margin: 24px 0 6px; line-height: 1.35;
+    word-break: keep-all;
+  }
+  .pd-meta {
+    text-align: center; font-size: 12px; color: #555;
+    margin-bottom: 22px; font-weight: 500;
+  }
+  /* 페이지 단위 컨테이너: 각 표가 인쇄 시 한 페이지를 이룸 */
+  .pd-page { break-after: page; page-break-after: always; }
+  .pd-page.last { break-after: auto; page-break-after: auto; }
+  .pd-page + .pd-page { margin-top: 22px; }
+  .print-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .print-table th {
+    background: #F1F3F0; border: 1px solid #9AA39A;
+    padding: 7px 4px; font-size: 11.5px; font-weight: 700; color: #222;
+  }
+  .print-table th.pd-div, .print-table td.pd-div {
+    border-left: 2px solid #6B756B;
+  }
+  .print-table td {
+    border: 1px solid #B9C0B9; padding: 2px 4px;
+    font-size: 11.5px; color: #222; text-align: center;
+    vertical-align: middle; height: 15mm;
+    word-break: keep-all; overflow-wrap: break-word;
+  }
+  .print-table td.pd-name { font-weight: 700; }
+  .print-table td.pd-sig { padding: 1mm; }
+  .print-table td img {
+    width: 100%; height: 13mm; object-fit: contain;
+    display: block; margin: 0 auto;
+  }
+  .print-table tr { break-inside: avoid; page-break-inside: avoid; }
+  .pd-unsigned { color: #C0392B; font-size: 11px; font-weight: 700; }
+  .pd-signed-alt { color: #1F4D3A; font-size: 11px; font-weight: 700; }
+  .pd-summary {
+    margin-top: 22px; border: 1.5px solid #2C3E50; border-radius: 8px;
+    padding: 15px 18px 16px;
+  }
+  .pd-sum-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12.5px; color: #222; font-weight: 600; gap: 12px;
+  }
+  .pd-sum-row b { font-weight: 800; }
+  .pd-pct { font-size: 20px; font-weight: 800; color: #1F4D3A; white-space: nowrap; }
+  .pd-bar {
+    margin-top: 11px; height: 8px; background: #E8ECE7;
+    border-radius: 99px; overflow: hidden;
+  }
+  .pd-bar i {
+    display: block; height: 100%; background: #1F4D3A; border-radius: 99px;
+  }
+  .pd-foot {
+    margin-top: 24px; text-align: center;
+    font-size: 10.5px; color: #888; font-weight: 500; line-height: 1.7;
+  }
+  .pd-loading { padding: 90px 0; text-align: center; color: var(--ink3); }
+
+  @page { size: A4; margin: 13mm; }
+  @media print {
+    body.print-mode { background: #fff; }
+    body.print-mode #app,
+    body.print-mode .modal-overlay { display: none !important; }
+    /* 관리자 패널(adminOverlay)도 .print-overlay 라서, 인쇄 시 뒤에 남아있으면
+       서명등록부 위에 관리자 UI·조회 표가 함께 찍힘 → 인쇄 대상(printOverlay)만 남기고 숨김 */
+    body.print-mode #adminOverlay { display: none !important; }
+    body.print-mode .print-overlay {
+      position: static; background: #fff; overflow: visible;
+    }
+    body.print-mode .print-toolbar { display: none !important; }
+    body.print-mode .print-doc {
+      max-width: none; min-height: 0; margin: 0; padding: 0; box-shadow: none;
+    }
+  }
+
+  /* steps wrapper transitions */
+  .step { display: none; }
+  .step.active { display: flex; flex-direction: column; flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- ── Inline icon defs ──────────────────────────────── -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+    </symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12l5 5L20 7"/>
+    </symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 6l6 6-6 6"/>
+    </symbol>
+    <symbol id="i-chev-l" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 6l-6 6 6 6"/>
+    </symbol>
+    <symbol id="i-chev-d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 9l6 6 6-6"/>
+    </symbol>
+    <symbol id="i-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+      <rect x="8" y="2" width="8" height="4" rx="1"/>
+    </symbol>
+    <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="1"/>
+      <path d="M9 9h1M9 13h1M9 17h1M14 9h1M14 13h1M14 17h1"/>
+    </symbol>
+    <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 20h9"/>
+      <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 4v6h6M23 20v-6h-6"/>
+      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+    </symbol>
+    <symbol id="i-inbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+      <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+    </symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </symbol>
+    <symbol id="i-print" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 9V2h12v7"/>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+      <rect x="6" y="14" width="12" height="8"/>
+    </symbol>
+    <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+    </symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </symbol>
+    <symbol id="i-zoom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </symbol>
+    <symbol id="i-instagram" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="app">
+
+  <!-- ── Header ── -->
+  <header class="header">
+    <div class="header-sweep"></div>
+    <div class="header-meta">
+      <span class="date-pill" id="datePill">
+        <svg width="11" height="11"><use href="#i-calendar"/></svg>
+        <span id="headerDate">—</span>
+      </span>
+      <button class="share-mini" id="adminMini" onclick="showAdminModal()" aria-label="연수 관리 (관리자)" title="연수 관리 (관리자)">
+        <svg width="12" height="12"><use href="#i-gear"/></svg>
+      </button>
+      <button class="share-mini" id="shareMini" onclick="showShareModal()" aria-label="공유 링크·QR 보기" title="공유 링크·QR 보기">
+        <svg width="12" height="12"><use href="#i-link"/></svg>
+      </button>
+    </div>
+    <h1 class="org-name" id="headerOrg">연수 전자서명</h1>
+    <div class="header-sub" id="headerSub">연수 참여 전자서명</div>
+  </header>
+
+  <!-- ── 안내문 배너 (관리자 패널 > 기관 설정에서 입력 시 표시) ── -->
+  <div class="notice-bar" id="noticeBar">
+    <span class="nb-ico"><svg width="14" height="14"><use href="#i-bell"/></svg></span>
+    <span id="noticeText"></span>
+  </div>
+
+  <!-- ── 시스템 연결 (최초 1회) ── -->
+  <div class="gate" id="gate">
+    <div class="gate-card">
+      <div id="gateNormal">
+        <div class="gate-icon"><svg width="30" height="30"><use href="#i-shield"/></svg></div>
+        <div class="gate-title">시스템 연결이 필요해요</div>
+        <div class="gate-desc">
+          관리자에게 받은 <b>접속 링크</b>로 접속하시거나,<br>
+          아래에 <b>웹앱 배포 URL</b>을 입력해 주세요.
+        </div>
+        <input type="url" class="gate-input" id="gateInput"
+               placeholder="https://script.google.com/macros/s/…/exec"
+               autocomplete="off" spellcheck="false">
+        <div class="gate-err" id="gateErr"></div>
+        <button class="gate-btn" id="gateBtn" onclick="connectApi()">연결하기</button>
+        <div class="gate-note">
+          <svg width="11" height="11"><use href="#i-lock"/></svg>
+          입력한 주소는 이 기기에만 저장됩니다
+        </div>
+        <button class="modal-btn ghost" style="margin-top:14px" onclick="startDemo()">
+          배포 URL 없이 데모 체험하기
+        </button>
+      </div>
+      <div id="gateExpired" style="display:none">
+        <div class="gate-icon"><svg width="30" height="30"><use href="#i-lock"/></svg></div>
+        <div class="gate-title">이 QR/링크는 만료됐어요</div>
+        <div class="gate-desc">
+          <b id="gateExpiredOrg">이 기관</b>은 미참석자의 원격 서명을 막기 위해<br>
+          공유 QR/링크가 <b>매일 자동으로 갱신</b>되도록 설정되어 있어요.<br><br>
+          오늘 새로 공유된 QR/링크로 다시 접속해 주세요.
+        </div>
+        <button class="modal-btn ghost" style="margin-top:14px" onclick="retryGateWithPin()">
+          관리자이신가요? PIN으로 접속하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Progress ── -->
+  <div class="progress">
+    <div class="progress-track">
+      <div class="progress-bar active" id="bar1"></div>
+      <div class="progress-bar" id="bar2"></div>
+      <div class="progress-bar" id="bar3"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">1 of 3 단계</div>
+  </div>
+
+  <!-- ── STEP 1: 연수 선택 ── -->
+  <div id="step1" class="step active">
+    <div class="page-title">어떤 연수를<br>서명하시겠어요?</div>
+    <div class="content">
+      <div id="trainingContainer">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>연수 목록을 불러오는 중...</p>
+        </div>
+      </div>
+      <button class="print-link-btn" onclick="openPrintPicker()">
+        <svg width="14" height="14"><use href="#i-print"/></svg> 서명결과 출력
+      </button>
+    </div>
+    <div class="footer-actions">
+      <button class="btn btn-primary" id="btn1" onclick="goToStep2()" disabled>
+        다음 단계로
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: 정보 입력 ── -->
+  <div id="step2" class="step">
+    <div class="page-title">본인 정보를<br>선택해 주세요</div>
+    <div class="content">
+
+      <div class="info-card preview">
+        <div class="info-card-icon"><svg width="15" height="15"><use href="#i-clipboard"/></svg></div>
+        <div class="info-card-body">
+          <div class="info-card-label">선택한 연수</div>
+          <div class="info-card-value" id="previewTitle">—</div>
+        </div>
+      </div>
+
+      <div class="info-card" id="deptCard">
+        <div class="info-card-icon"><svg width="15" height="15"><use href="#i-building"/></svg></div>
+        <div class="info-card-body">
+          <div class="info-card-label">부서</div>
+          <div class="info-card-value placeholder" id="deptValue">부서를 선택해 주세요</div>
+          <select id="dept" class="native-select" onchange="onDeptChange()">
+            <option value="">— 부서를 선택해 주세요 —</option>
+          </select>
+        </div>
+        <span class="chev"><svg width="16" height="16"><use href="#i-chev-d"/></svg></span>
+      </div>
+
+      <div class="info-card disabled" id="nameCard">
+        <div class="info-card-icon"><svg width="15" height="15"><use href="#i-user"/></svg></div>
+        <div class="info-card-body">
+          <div class="info-card-label">성명</div>
+          <div class="info-card-value placeholder" id="nameValue">부서를 먼저 선택해 주세요</div>
+          <select id="uname" class="native-select" onchange="onNameChange()" disabled>
+            <option value="">— 부서를 먼저 선택해 주세요 —</option>
+          </select>
+        </div>
+        <span class="chev"><svg width="16" height="16"><use href="#i-chev-d"/></svg></span>
+      </div>
+
+    </div>
+    <div class="footer-actions">
+      <button class="btn btn-back" onclick="goToStep1()" aria-label="이전">
+        <svg width="18" height="18"><use href="#i-chev-l"/></svg>
+      </button>
+      <button class="btn btn-primary" id="btn2" onclick="goToStep3()" disabled>
+        서명하러 가기
+        <svg width="15" height="15"><use href="#i-pen"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: 서명 ── -->
+  <div id="step3" class="step">
+    <div style="padding: 4px 20px 4px;">
+      <div class="sign-tag">
+        <svg width="11" height="11"><use href="#i-pen"/></svg> 마지막 단계
+      </div>
+      <div style="font-size:24px;font-weight:800;color:var(--ink);letter-spacing:-0.035em;line-height:1.2;">
+        서명을 남겨주세요
+      </div>
+      <div style="font-size:13px;color:var(--ink2);margin-top:6px;font-weight:500;">
+        손가락이나 펜으로 자유롭게
+      </div>
+    </div>
+    <div class="content" style="padding-top: 14px;">
+      <div class="canvas-card">
+        <div class="canvas-head">
+          <div class="canvas-head-meta" id="signMeta">—</div>
+          <button class="clear-btn" onclick="clearCanvas()">
+            <svg width="11" height="11"><use href="#i-refresh"/></svg> 다시
+          </button>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="sigCanvas" height="240"></canvas>
+          <div class="canvas-baseline"></div>
+          <div class="canvas-hint" id="canvasHint">
+            <span class="pen-ico"><svg width="28" height="28"><use href="#i-pen"/></svg></span>
+            <p>여기에 서명해 주세요</p>
+          </div>
+          <div class="canvas-foot">SIGNATURE</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-actions">
+      <button class="btn btn-back" onclick="goToStep2FromStep3()" aria-label="이전">
+        <svg width="18" height="18"><use href="#i-chev-l"/></svg>
+      </button>
+      <button class="btn btn-primary" id="btn3" onclick="doSubmit()" disabled>
+        서명 제출하기
+      </button>
+    </div>
+  </div>
+
+  <!-- ── STEP 4: 완료 ── -->
+  <div id="step4" class="step">
+    <div class="success-wrap">
+      <div class="success-circle-wrap">
+        <div class="success-circle-bg"></div>
+        <div class="success-circle">
+          <svg width="44" height="44"><use href="#i-check"/></svg>
+        </div>
+      </div>
+      <div class="success-title">서명 완료!</div>
+      <div class="success-sub">
+        연수 참여 기록이 정상적으로<br>접수되었어요.
+      </div>
+      <div class="success-info" id="successInfo"></div>
+    </div>
+    <div class="footer-actions">
+      <button class="btn btn-primary" onclick="resetAll()">
+        다른 연수 서명하기
+      </button>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- 좌측 상단 고정 칩 (항상 노출, 인쇄 시에는 자동 숨김) -->
+<a class="site-credit-chip" href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener" aria-label="제작 @hirame.ki 인스타그램" title="제작@hirame.ki">
+  <svg width="15" height="15" aria-hidden="true"><use href="#i-instagram"/></svg>
+  <span class="credit-name">제작@hirame.ki</span>
+</a>
+
+<!-- ── Modals ── -->
+<div class="modal-overlay" id="modalAlreadySigned" onclick="this.classList.remove('show')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="26" height="26"><use href="#i-check"/></svg></div>
+    <div class="modal-title">이미 서명을 완료하셨어요</div>
+    <div class="modal-msg">이 기기에서 이미<br><b id="modalSignedTitle">—</b><br>서명을 완료하셨습니다.<br><br>다른 연수는 선택해서 서명하실 수 있어요.</div>
+    <button class="modal-btn" onclick="document.getElementById('modalAlreadySigned').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalDuplicate" onclick="this.classList.remove('show')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap warn"><svg width="26" height="26"><use href="#i-lock"/></svg></div>
+    <div class="modal-title">중복 서명이 차단되었어요</div>
+    <div class="modal-msg" id="modalDuplicateMsg">—</div>
+    <button class="modal-btn" onclick="document.getElementById('modalDuplicate').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalTimeBlocked" onclick="this.classList.remove('show')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap warn"><svg width="26" height="26"><use href="#i-lock"/></svg></div>
+    <div class="modal-title">지금은 서명할 수 없어요</div>
+    <div class="modal-msg" id="modalTimeBlockedMsg">—</div>
+    <button class="modal-btn" onclick="document.getElementById('modalTimeBlocked').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalError" onclick="this.classList.remove('show')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap warn"><svg width="26" height="26"><use href="#i-warn"/></svg></div>
+    <div class="modal-title">잠시 후 다시 시도해 주세요</div>
+    <div class="modal-msg" id="modalErrorMsg">—</div>
+    <button class="modal-btn" onclick="document.getElementById('modalError').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<!-- 연결 완료 + 공유 링크 -->
+<!-- 관리자: 비밀번호 로그인 / 최초 생성 -->
+<div class="modal-overlay" id="modalAdminPin">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-lock"/></svg></div>
+    <div class="modal-title" id="apTitle">관리자 확인</div>
+    <div class="modal-msg" id="apMsg">관리자 비밀번호를 입력해 주세요.</div>
+    <input type="password" class="pin-input" id="apPin" autocomplete="off" inputmode="text">
+    <input type="password" class="pin-input" id="apPin2" autocomplete="off" inputmode="text"
+           placeholder="비밀번호 확인" style="display:none">
+    <div class="adm-err" id="apErr" style="text-align:center"></div>
+    <button class="modal-btn" id="apBtn" onclick="submitAdminPin()" style="margin-top:6px">확인</button>
+    <button class="modal-btn ghost" onclick="pendingPinPurpose='admin';document.getElementById('modalAdminPin').classList.remove('show')">취소</button>
+  </div>
+</div>
+
+<!-- 관리자 패널 (연수 / 구성원 / 기관 설정) -->
+<div class="print-overlay" id="adminOverlay">
+  <div class="print-toolbar">
+    <div class="pt-title">
+      <svg width="16" height="16"><use href="#i-gear"/></svg>
+      관리자
+    </div>
+    <div class="pt-actions">
+      <button class="pt-btn" onclick="closeAdminPanel()">닫기</button>
+    </div>
+  </div>
+  <div class="adm-panel-body">
+    <div class="adm-demo-note" id="admPanelDemoNote" style="display:none">
+      미리보기 모드예요. 변경 내용은 이 화면에만 적용되고, 실제로는 저장되지 않습니다.
+    </div>
+    <div class="adm-tabs">
+      <button class="adm-tab active" id="admTabBtn-trainings" onclick="switchAdminTab('trainings')">연수 관리</button>
+      <button class="adm-tab" id="admTabBtn-staff" onclick="switchAdminTab('staff')">구성원 관리</button>
+      <button class="adm-tab" id="admTabBtn-records" onclick="switchAdminTab('records')">서명 기록</button>
+      <button class="adm-tab" id="admTabBtn-settings" onclick="switchAdminTab('settings')">기관 설정</button>
+    </div>
+
+    <div class="adm-tab-panel active" id="admTab-trainings">
+      <button class="adm-add-btn" onclick="openTrainingForm(null)">
+        <svg width="14" height="14"><use href="#i-plus"/></svg> 새 연수 추가
+      </button>
+      <div class="adm-list" id="admList"></div>
+    </div>
+
+    <div class="adm-tab-panel" id="admTab-staff">
+      <button class="adm-add-btn" onclick="openStaffForm(null)">
+        <svg width="14" height="14"><use href="#i-plus"/></svg> 구성원 추가
+      </button>
+      <button class="adm-add-btn" onclick="openStaffExcelModal()" style="margin-top:8px">
+        <svg width="14" height="14"><use href="#i-download"/></svg> 엑셀로 일괄 등록
+      </button>
+      <div class="adm-list" id="admStaffList"></div>
+    </div>
+
+    <div class="adm-tab-panel" id="admTab-records">
+      <div class="adm-field">
+        <label class="adm-label" for="recTrainingSel">연수</label>
+        <select class="adm-input" id="recTrainingSel" onchange="onRecTrainingChange()"></select>
+      </div>
+      <div class="adm-field">
+        <label class="adm-label">날짜</label>
+        <input type="hidden" id="recDate">
+        <button type="button" class="adm-input cal-trigger" id="recDateBtn" onclick="toggleRecCal()">
+          <span id="recDateText">날짜를 선택해 주세요</span>
+          <svg width="15" height="15"><use href="#i-calendar"/></svg>
+        </button>
+        <div class="cal-pop" id="recCal" hidden></div>
+      </div>
+      <button class="adm-add-btn" onclick="fetchAdminRecords()" style="border-style:solid">
+        <svg width="14" height="14"><use href="#i-print"/></svg> 조회
+      </button>
+      <button class="adm-add-btn" onclick="printAdminRecords()" style="margin-top:8px">
+        <svg width="14" height="14"><use href="#i-clipboard"/></svg> 서명등록부 출력
+      </button>
+      <div class="adm-err" id="recErr"></div>
+      <div class="adm-list" id="admRecordsList"></div>
+    </div>
+
+    <div class="adm-tab-panel" id="admTab-settings">
+      <div class="adm-field">
+        <label class="adm-label" for="admOrgName">기관명</label>
+        <input type="text" class="adm-input" id="admOrgName" maxlength="40" placeholder="예: ○○고등학교" autocomplete="off">
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="admSubTitle">부제목 <span class="opt">(선택 · 기관명 아래 작은 문구, 비우면 "연수 참여 전자서명")</span></label>
+        <input type="text" class="adm-input" id="admSubTitle" maxlength="40" placeholder="연수 참여 전자서명" autocomplete="off">
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="admNotice">안내문 <span class="opt">(선택 · 서명 화면 상단에 배너로 표시)</span></label>
+        <input type="text" class="adm-input" id="admNotice" maxlength="120" placeholder="예: 서명 후 설문에도 참여해 주세요" autocomplete="off">
+      </div>
+      <div class="adm-field">
+        <label class="adm-label" for="admBrandColor">대표 색상</label>
+        <input type="color" class="adm-input" id="admBrandColor" style="height:46px;padding:4px;">
+      </div>
+
+      <div class="adm-field">
+        <label class="adm-label">공유 QR 방식</label>
+        <div class="pf-hint" style="margin:-2px 0 10px;">
+          연수에 참석하지 않은 사람이 다른 사람에게 전달받은 QR로 원격 서명하는 것을 막기 위한 설정이에요.
+          "매일 자동 갱신"을 선택하면 공유 QR/링크가 매일 새로 바뀌어, 예전에 카톡 등으로 전달된 QR은
+          다음 날부터 사용할 수 없게 돼요. (그만큼 관리자가 매일 새 QR을 다시 공유해야 해요)
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;">
+          <input type="radio" name="admQrMode" value="fixed" style="margin-top:3px" checked>
+          <span>항상 고정된 공유 QR<span class="opt" style="display:block;font-weight:500;margin-top:2px;">한 번 공유하면 계속 그대로 사용 (기존 방식)</span></span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;">
+          <input type="radio" name="admQrMode" value="rotate" style="margin-top:3px">
+          <span>매일 자동 갱신되는 공유 QR<span class="opt" style="display:block;font-weight:500;margin-top:2px;">매일 새 QR로 바뀌어, 어제 이전의 QR로는 접속할 수 없어요</span></span>
+        </label>
+      </div>
+
+      <div class="adm-err" id="admSettingsErr"></div>
+      <button class="modal-btn" id="admSettingsBtn" onclick="submitOrgSettings()">저장하기</button>
+
+      <div style="border-top:1px solid var(--hair);margin:22px 0 16px;"></div>
+
+      <div class="adm-label" style="margin-bottom:10px;">관리자 비밀번호 변경</div>
+      <div class="adm-field">
+        <input type="password" class="adm-input" id="admCurPin" placeholder="현재 비밀번호" autocomplete="off">
+      </div>
+      <div class="adm-field">
+        <input type="password" class="adm-input" id="admNewPin" placeholder="새 비밀번호 (4자 이상)" autocomplete="off">
+      </div>
+      <div class="adm-field">
+        <input type="password" class="adm-input" id="admNewPin2" placeholder="새 비밀번호 확인" autocomplete="off">
+      </div>
+      <div class="adm-err" id="admPinErr"></div>
+      <button class="modal-btn ghost" id="admPinChangeBtn" onclick="submitChangeAdminPin()">비밀번호 변경</button>
+    </div>
+  </div>
+</div>
+
+<!-- 관리자: 연수 추가/수정 폼 -->
+<div class="modal-overlay" id="modalTrainingForm">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-pen"/></svg></div>
+    <div class="modal-title" id="tfTitle">새 연수 추가</div>
+
+    <div class="adm-field">
+      <label class="adm-label" for="tfName">연수명</label>
+      <input type="text" class="adm-input" id="tfName" maxlength="60" placeholder="예: 학교폭력 예방 교원 연수" autocomplete="off">
+    </div>
+    <div class="adm-field">
+      <label class="adm-label" for="tfTargetType">연수 대상</label>
+      <select class="adm-input" id="tfTargetType" onchange="onTfTargetTypeChange()">
+        <option value="all">전 구성원</option>
+        <option value="dept">부서 선택</option>
+        <option value="person">개별 선택</option>
+      </select>
+      <div id="tfTargetDeptWrap" style="display:none;margin-top:8px">
+        <button type="button" class="modal-btn ghost" id="tfTargetDeptBtn" style="margin:0" onclick="openTfDeptPicker()">부서 선택하기</button>
+      </div>
+      <div id="tfTargetPersonWrap" style="display:none;margin-top:8px">
+        <button type="button" class="modal-btn ghost" id="tfTargetPersonBtn" style="margin:0" onclick="openTfPersonPicker()">개인 선택하기</button>
+      </div>
+    </div>
+    <div class="adm-field">
+      <label class="adm-label" for="tfTimeStart">서명 가능 시간 <span class="opt">(선택 · 설정하면 이 시간에만 서명 가능)</span></label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="time" class="adm-input" id="tfTimeStart" style="flex:1;min-width:0">
+        <span style="color:var(--ink3);font-weight:700;flex-shrink:0">~</span>
+        <input type="time" class="adm-input" id="tfTimeEnd" style="flex:1;min-width:0">
+      </div>
+    </div>
+    <div class="adm-field">
+      <label class="adm-label" for="tfDate">연수 날짜</label>
+      <input type="date" class="adm-input" id="tfDate">
+    </div>
+
+    <div class="adm-err" id="tfErr"></div>
+    <button class="modal-btn" id="tfSubmitBtn" onclick="submitTrainingForm()">저장하기</button>
+    <button class="adm-del-btn" id="tfDeleteBtn" style="display:none" onclick="deleteTraining()">이 연수 삭제</button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalTrainingForm').classList.remove('show')">닫기</button>
+  </div>
+</div>
+
+<!-- 관리자: 연수 대상 부서 선택 -->
+<div class="modal-overlay" id="modalTfDeptPicker">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-pen"/></svg></div>
+    <div class="modal-title">대상 부서 선택</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button type="button" class="modal-btn ghost" style="margin:0;flex:1" onclick="setAllTfDeptCheckboxes(true)">전체 선택</button>
+      <button type="button" class="modal-btn ghost" style="margin:0;flex:1" onclick="setAllTfDeptCheckboxes(false)">전체 해제</button>
+    </div>
+    <div id="tfDeptCheckList" class="tf-dept-list"></div>
+    <div class="adm-err" id="tfDeptErr"></div>
+    <button class="modal-btn" onclick="confirmTfDeptPicker()">확인</button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalTfDeptPicker').classList.remove('show')">취소</button>
+  </div>
+</div>
+
+<!-- 관리자: 연수 대상 개인 선택 -->
+<div class="modal-overlay" id="modalTfPersonPicker">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-pen"/></svg></div>
+    <div class="modal-title">대상 인원 선택</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button type="button" class="modal-btn ghost" style="margin:0;flex:1" onclick="setAllTfPersonCheckboxes(true)">전체 선택</button>
+      <button type="button" class="modal-btn ghost" style="margin:0;flex:1" onclick="setAllTfPersonCheckboxes(false)">전체 해제</button>
+    </div>
+    <div id="tfPersonCheckList" class="tf-dept-list"></div>
+    <div class="adm-err" id="tfPersonErr"></div>
+    <button class="modal-btn" onclick="confirmTfPersonPicker()">확인</button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalTfPersonPicker').classList.remove('show')">취소</button>
+  </div>
+</div>
+
+<!-- 관리자: 구성원 추가/수정 폼 -->
+<div class="modal-overlay" id="modalStaffForm">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-user"/></svg></div>
+    <div class="modal-title" id="sfTitle">구성원 추가</div>
+
+    <div class="adm-field">
+      <label class="adm-label" for="sfDeptSel">부서</label>
+      <select class="adm-input" id="sfDeptSel" onchange="onSfDeptSelChange()"></select>
+      <input type="text" class="adm-input" id="sfDept" maxlength="30" placeholder="새 부서명 입력"
+             autocomplete="off" style="display:none;margin-top:8px">
+    </div>
+    <div class="adm-field" id="sfNameField">
+      <label class="adm-label" for="sfName">성명</label>
+      <input type="text" class="adm-input" id="sfName" maxlength="20" placeholder="예: 홍길동" autocomplete="off">
+    </div>
+    <div class="adm-field" id="sfNamesField">
+      <label class="adm-label" for="sfNames">성명 <span class="opt">(여러 명 한 번에: 줄바꿈·쉼표로 구분)</span></label>
+      <textarea class="adm-input" id="sfNames" rows="6" style="resize:vertical"
+                placeholder="홍길동&#10;김철수&#10;이영희&#10;&#10;※ 엑셀의 이름 열을 복사해&#10;   그대로 붙여넣어도 됩니다"></textarea>
+    </div>
+
+    <div class="adm-err" id="sfErr"></div>
+    <button class="modal-btn" id="sfSubmitBtn" onclick="submitStaffForm()">저장하기</button>
+    <button class="adm-del-btn" id="sfDeleteBtn" style="display:none" onclick="deleteStaffMember()">이 구성원 삭제</button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalStaffForm').classList.remove('show')">닫기</button>
+  </div>
+</div>
+
+<!-- 관리자: 구성원 엑셀 일괄 등록 -->
+<div class="modal-overlay" id="modalStaffExcel">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-download"/></svg></div>
+    <div class="modal-title">엑셀로 일괄 등록</div>
+    <div class="modal-msg">부서·이름을 적은 엑셀 파일을 올리면 한 번에 등록돼요.</div>
+
+    <button class="modal-btn ghost" onclick="downloadStaffExcelTemplate()">
+      <svg width="14" height="14"><use href="#i-download"/></svg> 엑셀 양식 다운로드
+    </button>
+
+    <div class="xl-drop" id="xlDrop" onclick="document.getElementById('xlFileInput').click()">
+      <svg width="26" height="26"><use href="#i-inbox"/></svg>
+      <p>여기로 파일을 끌어다 놓거나<br>탭해서 선택하세요</p>
+      <p class="xl-drop-hint">엑셀(.xlsx/.xls) · 한셀(엑셀 형식으로 저장 후 업로드) · CSV 지원</p>
+    </div>
+    <input type="file" id="xlFileInput" accept=".xlsx,.xls,.csv" style="display:none">
+
+    <div id="xlResult"></div>
+    <div class="adm-err" id="xlErr"></div>
+    <button class="modal-btn" id="xlSubmitBtn" onclick="submitStaffExcel()" style="margin-top:10px" disabled>일괄 등록하기</button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalStaffExcel').classList.remove('show')">닫기</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalShare">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="26" height="26"><use href="#i-link"/></svg></div>
+    <div class="modal-title">공유 링크</div>
+    <div class="modal-msg">아래 <b>공유 링크 또는 QR</b>을 구성원에게 안내하시면<br>별도 설정 없이 바로 서명할 수 있어요.</div>
+    <div class="share-qr-wrap">
+      <img class="share-qr" id="shareQr" alt="공유 링크 QR 코드" onclick="openQrZoom()">
+      <div class="share-qr-actions">
+        <button class="share-qr-btn" onclick="openQrZoom()">
+          <svg width="12" height="12"><use href="#i-zoom"/></svg> 확대보기
+        </button>
+        <button class="share-qr-btn" onclick="downloadQrImage()">
+          <svg width="12" height="12"><use href="#i-download"/></svg> 이미지 저장
+        </button>
+      </div>
+      <div class="share-qr-hint">QR 이미지를 길게 누르면 저장할 수도 있어요</div>
+    </div>
+    <div class="share-box" id="shareLinkBox">—</div>
+    <div class="share-short-status" id="shareShortStatus"></div>
+    <div class="pf-hint" id="shareRotateNote" style="display:none;margin:2px 0 12px;">
+      ⏰ 매일 자정에 자동으로 갱신되는 QR이에요 — 미참석자의 원격 서명을 막기 위해서예요.
+      매일 아침 이 화면을 다시 열어 새 QR로 공유해 주세요 (어제 QR은 오늘부터 안 돼요).
+    </div>
+    <button class="modal-btn" id="copyShareBtn" onclick="copyShareLink()">
+      링크 복사하기
+    </button>
+    <button class="modal-btn ghost" onclick="confirmResetConnection()">다른 배포 URL로 연결 변경</button>
+    <button class="modal-btn ghost" onclick="document.getElementById('modalShare').classList.remove('show')">닫기</button>
+  </div>
+</div>
+
+<!-- QR 확대보기 (전체화면) -->
+<div class="qr-zoom-overlay" id="qrZoomOverlay" onclick="closeQrZoom()">
+  <button class="qr-zoom-close" onclick="closeQrZoom()" aria-label="닫기">
+    <svg width="18" height="18"><use href="#i-x"/></svg>
+  </button>
+  <img class="qr-zoom-img" id="qrZoomImg" alt="QR 코드 확대보기" onclick="event.stopPropagation()">
+  <button class="qr-zoom-dl" onclick="event.stopPropagation(); downloadQrImage()">
+    <svg width="13" height="13"><use href="#i-download"/></svg> 이미지 저장
+  </button>
+</div>
+
+<!-- 출력 비밀번호 입력 -->
+<div class="modal-overlay" id="modalPin">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-lock"/></svg></div>
+    <div class="modal-title">출력 비밀번호</div>
+    <div class="modal-msg">관리자가 설정한 <b>출력 비밀번호</b>를<br>입력해 주세요.</div>
+    <input type="password" class="pin-input" id="pinInput" autocomplete="off" inputmode="text">
+    <div class="gate-err" id="pinErr" style="margin-bottom:8px"></div>
+    <button class="modal-btn" onclick="submitPin()" style="margin-top:6px">확인</button>
+    <button class="modal-btn ghost" onclick="closePinModal()">취소</button>
+  </div>
+</div>
+
+<!-- 출력할 연수 선택 -->
+<div class="modal-overlay" id="modalPicker" onclick="this.classList.remove('show')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-print"/></svg></div>
+    <div class="modal-title">서명등록부 출력</div>
+    <div class="modal-msg">출력할 연수를 선택해 주세요.</div>
+    <div class="picker-list" id="pickerList"></div>
+    <button class="modal-btn ghost" style="margin-top:0" onclick="document.getElementById('modalPicker').classList.remove('show')">취소</button>
+  </div>
+</div>
+
+<!-- 인쇄 형식 선택 -->
+<div class="modal-overlay" id="modalPrintFormat">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-icon-wrap"><svg width="24" height="24"><use href="#i-print"/></svg></div>
+    <div class="modal-title">인쇄 형식 선택</div>
+    <div class="modal-msg">서명등록부를 어떤 형식으로 출력할지 선택해 주세요.</div>
+    <div class="pf-field">
+      <label class="pf-label">표 열 수</label>
+      <select class="pf-select" id="pfCols">
+        <option value="1">1열</option>
+        <option value="2" selected>2열 (기본)</option>
+        <option value="3">3열</option>
+      </select>
+    </div>
+    <div class="pf-field">
+      <label class="pf-label">정렬 방식</label>
+      <select class="pf-select" id="pfGroup">
+        <option value="dept" selected>부서별로 모아서 (기본)</option>
+        <option value="name">이름 가나다순</option>
+      </select>
+    </div>
+    <div class="pf-field">
+      <label class="pf-label">서명률 표시</label>
+      <select class="pf-select" id="pfRate">
+        <option value="yes" selected>포함 (기본)</option>
+        <option value="no">미포함</option>
+      </select>
+    </div>
+    <div class="pf-hint">
+      모바일에서는 미리보기 화면이 화면 폭에 맞게 좁게 표시될 수 있어요.
+      실제 인쇄·PDF 저장 결과물은 PC와 동일한 A4 규격으로 나오니 걱정하지 않으셔도 됩니다.
+    </div>
+    <button class="modal-btn" onclick="submitPrintFormat()" style="margin-top:6px">출력 미리보기</button>
+    <button class="modal-btn ghost" onclick="cancelPrintFormat()">취소</button>
+  </div>
+</div>
+
+<!-- ── 서명등록부 미리보기 / 인쇄 ── -->
+<div class="print-overlay" id="printOverlay">
+  <div class="print-toolbar">
+    <div class="pt-title">
+      <svg width="16" height="16"><use href="#i-print"/></svg>
+      서명등록부 미리보기
+    </div>
+    <div class="pt-actions">
+      <button class="pt-btn" onclick="backToPrintFormat()">닫기</button>
+      <button class="pt-btn solid" onclick="window.print()">
+        <svg width="13" height="13"><use href="#i-print"/></svg> 인쇄하기
+      </button>
+    </div>
+  </div>
+  <div class="print-doc" id="printDoc"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════
+   Supabase 연결 (기관명·구성원·연수·서명기록 텍스트 데이터 전용)
+   ※ 서명 "이미지" 자체는 기관별 Apps Script(API_URL, 아래)가 각자의
+     구글 드라이브에 저장한다 — 여기 Supabase에는 이미지 URL(포인터)만
+     저장된다. URL/키는 공개되어도 무방 (anon key + 테이블 직접 접근
+     차단 + RPC 함수 내부 PIN 검증 조합으로 보호, supabase-schema.sql 참고)
+═══════════════════════════════════════════ */
+var SUPABASE_URL      = 'https://kelvxbvvxpcnlholvmfr.supabase.co';
+var SUPABASE_ANON_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtlbHZ4YnZ2eHBjbmxob2x2bWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTIxOTQsImV4cCI6MjA5Njk4ODE5NH0.5Y9VScOYiXuBNLkhCevRaBUFdBWnx6SyhHFVS8LMBKo';
+
+// CDN 로드 실패(오프라인 데모 등) 시에도 스크립트 전체가 죽지 않도록 가드
+var sb = (typeof supabase !== 'undefined')
+  ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+function rpc(fn, params) {
+  if (!sb) return Promise.reject(new Error('Supabase 클라이언트를 불러오지 못했습니다.'));
+  return sb.rpc(fn, params).then(function(res) {
+    if (res.error) throw res.error;
+    return res.data;
+  });
+}
+
+/* ═══════════════════════════════════════════
+   상태
+═══════════════════════════════════════════ */
+var API_URL          = '';   // 기관 Apps Script 배포 URL — 서명 이미지 업로드 전용
+var API_STORAGE_KEY  = 'esign_api_url';
+var PIN_SESSION_KEY  = 'esign_print_pin';
+var ORG_KEY          = '';   // API_URL 배포 ID = Supabase 기관 식별자(org_key)
+var QR_TOKEN         = '';   // '?d=' 파라미터로 받은 오늘자 매일갱신 QR 토큰(해당 기관이 그 모드일 때만 사용)
+var orgName          = '';
+var DEFAULT_SUB_TITLE = '연수 참여 전자서명';
+var trainings        = [];
+var selectedTraining = null;
+var selectedIndex    = -1;
+var isDrawing        = false;
+var hasSignature     = false;
+var canvas, ctx;
+var staffByDept      = {};
+var deptOrder        = [];
+var printPinSet      = false;   // 관리자 비밀번호(=출력 비밀번호)가 설정되어 있는지
+var pendingPrintTraining = null;
+var pendingPrintRes = null;
+var pendingPrintDate = null;   // 인쇄 대상 날짜 (관리자 '서명 기록' 탭에서 과거 날짜 출력 시 사용, 기본은 오늘)
+var PRINT_FORMAT_KEY = 'esign_print_format';
+var BRAND_INK        = '#1F4D3A';  // 서명 잉크 색 (대표 색상 적용 시 어둡게 보정)
+
+/* ═══════════════════════════════════════════
+   초기화
+═══════════════════════════════════════════ */
+window.addEventListener('load', function() {
+  var now = new Date();
+  document.getElementById('headerDate').textContent =
+    (now.getMonth() + 1) + '월 ' + now.getDate() + '일 (' +
+    ['일','월','화','수','목','금','토'][now.getDay()] + ')';
+
+  initCanvas();
+
+  var params   = new URLSearchParams(location.search);
+  var sParam   = params.get('s');    // 압축형 접속 링크: 배포 ID만 전달
+  var apiParam = params.get('api');  // 전체 URL형 (구버전 링크 호환)
+  var dParam   = params.get('d');    // 매일갱신 QR 모드일 때만 쓰이는 오늘자 토큰 (일부러 저장소에 남기지 않음)
+  QR_TOKEN = dParam || '';
+
+  if (sParam && /^[\w-]+$/.test(sParam)) {
+    localStorage.setItem(API_STORAGE_KEY,
+      'https://script.google.com/macros/s/' + sParam + '/exec');
+  } else if (apiParam && isValidApiUrl(apiParam)) {
+    localStorage.setItem(API_STORAGE_KEY, apiParam);
+  }
+  API_URL = localStorage.getItem(API_STORAGE_KEY) || '';
+  ORG_KEY = extractOrgKey(API_URL);
+
+  // 데모 미리보기: ?demo=1 또는 파일로 직접 열었을 때
+  if (params.get('demo') === '1' ||
+      (location.protocol === 'file:' && !API_URL)) {
+    API_URL = ''; ORG_KEY = '';
+    loadDemoData();
+    return;
+  }
+
+  if (!API_URL) {
+    document.body.classList.add('gate-active');
+    return;
+  }
+  loadPageData();
+});
+
+function isValidApiUrl(url) {
+  return /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(String(url).trim());
+}
+
+function extractOrgKey(url) {
+  var m = String(url || '').match(/\/macros\/s\/([\w-]+)\/exec/);
+  return m ? m[1] : '';
+}
+
+/* ═══════════════════════════════════════════
+   API 연결 (최초 1회)
+   ① 기관 Apps Script(이미지 업로드 전용)가 살아있는지 확인
+   ② Supabase에 기관을 등록(없으면 생성, 있으면 URL만 갱신)
+   ③ 공개 페이지 데이터를 불러와 렌더링
+═══════════════════════════════════════════ */
+function connectApi() {
+  var input = document.getElementById('gateInput');
+  var err   = document.getElementById('gateErr');
+  var btn   = document.getElementById('gateBtn');
+  var url   = input.value.trim();
+
+  err.classList.remove('show');
+  input.classList.remove('error');
+
+  if (!isValidApiUrl(url)) {
+    err.textContent = '주소 형식이 올바르지 않아요. 배포 URL은 https://script.google.com/macros/s/…/exec 형태입니다.';
+    err.classList.add('show');
+    input.classList.add('error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '연결 확인 중...';
+
+  var orgKey = extractOrgKey(url);
+
+  fetch(url + '?action=ping')
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(data) {
+      if (!data || !data.ok) throw new Error('invalid response');
+      return rpc('register_institution', { p_org_key: orgKey, p_apps_script_url: url });
+    })
+    .then(function() {
+      API_URL = url; ORG_KEY = orgKey;
+      localStorage.setItem(API_STORAGE_KEY, url);
+      document.body.classList.remove('gate-active');
+      return rpc('get_page_data', { p_org_key: ORG_KEY, p_token: QR_TOKEN, p_pin: adminPin || '' });
+    })
+    .then(function(data) {
+      onPageDataLoaded(data);
+      if (!data.qrExpired) showShareModal();
+    })
+    .catch(function() {
+      document.body.classList.add('gate-active');   // 중간 단계 실패 시 게이트 화면 복귀
+      btn.disabled = false;
+      btn.textContent = '연결하기';
+      err.textContent = '연결에 실패했어요.\n① 배포 URL이 정확한지\n② 배포 시 액세스 권한이 "모든 사용자"인지 확인해 주세요.';
+      err.classList.add('show');
+      input.classList.add('error');
+    });
+}
+
+document.getElementById('gateInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') connectApi();
+});
+
+function resetConnection() {
+  localStorage.removeItem(API_STORAGE_KEY);
+  // 이전 연결에 묶인 부가 정보도 함께 정리
+  localStorage.removeItem('esign_short_url');
+  localStorage.removeItem('esign_short_url_for');
+  sessionStorage.removeItem(PIN_SESSION_KEY);
+  sessionStorage.removeItem(ADMIN_PIN_KEY);   // 다른 기관으로 재연결 시 이전 PIN이 전송되지 않도록
+  location.href = location.pathname;
+}
+
+function askResetConfirm() {
+  var ok = window.confirm(
+    '현재 연결을 해제하고 배포 URL 입력 화면으로 돌아갈까요?\n\n' +
+    '(기존 배포 URL을 다시 입력하면 언제든 재연결할 수 있습니다)'
+  );
+  if (ok) resetConnection();
+}
+
+function confirmResetConnection() {
+  // 데모 모드이거나 아직 관리자 비밀번호를 만들기 전(printPinSet=false)이면
+  // PIN 검증 자체가 불가능하므로 기존처럼 확인창만 거친다.
+  if (!API_URL || !printPinSet) { askResetConfirm(); return; }
+
+  var pin = window.prompt('연결을 변경하려면 관리자 비밀번호를 입력해 주세요.');
+  if (pin === null) return;   // 취소
+
+  rpc('get_admin_data', { p_org_key: ORG_KEY, p_pin: pin })
+    .then(function(res) {
+      if (!res.success) { alert('비밀번호가 일치하지 않아요.'); return; }
+      askResetConfirm();
+    })
+    .catch(function() { alert('서버에 연결할 수 없어요.'); });
+}
+
+/* ══════════════════════════════════════════════
+   관리자: 연수 · 구성원 · 기관 설정 관리
+   전부 Supabase RPC 호출 (supabase-schema.sql 참고).
+   PIN이 필요한 동작은 각 RPC 함수 내부에서 검증하며, 클라이언트에는
+   저장된 PIN 값 자체가 절대 노출되지 않는다 (needPin 불리언만 응답).
+══════════════════════════════════════════════ */
+var ADMIN_PIN_KEY     = 'esign_admin_pin';
+var adminPin          = '';
+var adminTrainings    = [];   // [{id, active, title, content, date}]
+var adminStaff        = [];   // [{id, dept, name}]
+var editingTrainingId = null; // null = 추가 모드
+var editingStaffId    = null;
+var apCreateMode      = false;
+
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-' +
+    ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
+    ('0' + d.getDate()).slice(-2);
+}
+function nowTimeStr() {
+  var d = new Date();
+  return ('0' + d.getHours()).slice(-2) + ':' +
+    ('0' + d.getMinutes()).slice(-2) + ':' +
+    ('0' + d.getSeconds()).slice(-2);
+}
+
+/* 진입: ⚙️ 버튼 */
+function showAdminModal() {
+  pendingPinPurpose = 'admin';
+  // 데모 모드: 비밀번호 없이 패널 진입 (화면 목록으로 시뮬레이션)
+  if (!API_URL) {
+    if (adminTrainings.length === 0) {
+      adminTrainings = trainings.map(function(t, i) {
+        return { id: i + 1, active: true, title: t.title, content: t.content || '', date: todayStr(),
+                 startTime: t.startTime || null, endTime: t.endTime || null,
+                 targetType: (t.targetType === 'dept' || t.targetType === 'person') ? t.targetType : 'all',
+                 targetDepts: Array.isArray(t.targetDepts) ? t.targetDepts : [],
+                 targetPersons: Array.isArray(t.targetPersons) ? t.targetPersons : [] };
+      });
+    }
+    if (adminStaff.length === 0) {
+      var sid = 1;
+      deptOrder.forEach(function(dept) {
+        (staffByDept[dept] || []).forEach(function(name) {
+          adminStaff.push({ id: sid++, dept: dept, name: name });
+        });
+      });
+    }
+    document.getElementById('admOrgName').value    = orgName;
+    document.getElementById('admSubTitle').value   = document.getElementById('headerSub').textContent || '';
+    document.getElementById('admNotice').value     = document.getElementById('noticeText').textContent || '';
+    document.getElementById('admBrandColor').value = '#1f4d3a';
+    setAdmQrModeUi(false);
+    document.getElementById('admCurPin').value  = '';
+    document.getElementById('admNewPin').value  = '';
+    document.getElementById('admNewPin2').value = '';
+    document.getElementById('admPanelDemoNote').style.display = 'block';
+    switchAdminTab('trainings');
+    openAdminPanel();
+    return;
+  }
+
+  document.getElementById('admPanelDemoNote').style.display = 'none';
+  var cached = sessionStorage.getItem(ADMIN_PIN_KEY);
+  if (cached) { adminPin = cached; fetchAdminData(); return; }
+
+  // PIN이 없으면 최초 생성, 있으면 로그인
+  showAdminPinModal(!printPinSet);
+}
+
+function switchAdminTab(tab) {
+  ['trainings', 'staff', 'records', 'settings'].forEach(function(t) {
+    document.getElementById('admTab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('admTabBtn-' + t).classList.toggle('active', t === tab);
+  });
+  if (tab === 'records') populateRecTrainingOptions();
+}
+
+function showAdminPinModal(createMode, wasWrong) {
+  apCreateMode = createMode;
+  document.getElementById('apTitle').textContent = createMode ? '관리자 비밀번호 만들기' : '관리자 확인';
+  document.getElementById('apMsg').innerHTML = createMode
+    ? '처음 오셨네요! 연수 관리에 사용할<br><b>관리자 비밀번호</b>를 만들어 주세요.<br>(서명결과 출력 비밀번호로도 사용됩니다)'
+    : '관리자 비밀번호를 입력해 주세요.';
+  document.getElementById('apPin2').style.display = createMode ? 'block' : 'none';
+  document.getElementById('apPin').value = '';
+  document.getElementById('apPin2').value = '';
+  var err = document.getElementById('apErr');
+  if (wasWrong) { err.textContent = '비밀번호가 일치하지 않아요. 다시 입력해 주세요.'; err.classList.add('show'); }
+  else err.classList.remove('show');
+  var btn = document.getElementById('apBtn');
+  btn.disabled = false; btn.textContent = createMode ? '만들기' : '확인';
+  document.getElementById('modalAdminPin').classList.add('show');
+  setTimeout(function() { document.getElementById('apPin').focus(); }, 100);
+}
+
+function showApErr(msg) {
+  var err = document.getElementById('apErr');
+  err.textContent = msg; err.classList.add('show');
+  var btn = document.getElementById('apBtn');
+  btn.disabled = false; btn.textContent = apCreateMode ? '만들기' : '확인';
+}
+
+function submitAdminPin() {
+  var pin = document.getElementById('apPin').value.trim();
+  if (!pin) { showApErr('비밀번호를 입력해 주세요.'); return; }
+  var btn = document.getElementById('apBtn');
+  btn.disabled = true; btn.textContent = '확인 중...';
+
+  if (apCreateMode) {
+    var pin2 = document.getElementById('apPin2').value.trim();
+    if (pin.length < 4) { showApErr('4자 이상으로 만들어 주세요.'); return; }
+    if (pin !== pin2)   { showApErr('두 입력이 서로 달라요. 다시 확인해 주세요.'); return; }
+    rpc('set_admin_pin', { p_org_key: ORG_KEY, p_pin: pin }).then(function(res) {
+      if (res.success) {
+        adminPin = pin;
+        sessionStorage.setItem(ADMIN_PIN_KEY, pin);
+        printPinSet = true;
+        fetchAdminData();
+      } else showApErr(res.message || '비밀번호를 만들지 못했어요. 다시 시도해 주세요.');
+    }).catch(function() { showApErr('서버에 연결할 수 없어요.'); });
+    return;
+  }
+
+  adminPin = pin;
+  if (pendingPinPurpose === 'share') {
+    pendingPinPurpose = 'admin';
+    sessionStorage.setItem(ADMIN_PIN_KEY, pin);
+    document.getElementById('modalAdminPin').classList.remove('show');
+    showShareModal();   // 캐시된 adminPin으로 다시 시도 → 이번엔 오늘자 토큰을 받아옴
+    return;
+  }
+  if (pendingPinPurpose === 'reconnect') {
+    pendingPinPurpose = 'admin';
+    sessionStorage.setItem(ADMIN_PIN_KEY, pin);
+    document.getElementById('modalAdminPin').classList.remove('show');
+    document.body.classList.remove('gate-active');
+    loadPageData();   // 이번엔 p_pin으로 오늘자 토큰 검사를 건너뜀
+    return;
+  }
+  fetchAdminData();
+}
+
+function fetchAdminData() {
+  rpc('get_admin_data', { p_org_key: ORG_KEY, p_pin: adminPin })
+    .then(function(res) {
+      if (res.needPin) {
+        sessionStorage.removeItem(ADMIN_PIN_KEY);
+        showAdminPinModal(false, true);
+        return;
+      }
+      if (!res.success) throw new Error(res.message || 'error');
+      sessionStorage.setItem(ADMIN_PIN_KEY, adminPin);
+      adminTrainings = res.trainings || [];
+      adminStaff     = res.staff || [];
+      document.getElementById('admOrgName').value    = res.orgName || '';
+      document.getElementById('admSubTitle').value   = res.subTitle || '';
+      document.getElementById('admNotice').value     = res.notice || '';
+      document.getElementById('admBrandColor').value = /^#[0-9a-fA-F]{6}$/.test(res.brandColor) ? res.brandColor : '#1f4d3a';
+      setAdmQrModeUi(!!res.qrRotateDaily);
+      document.getElementById('admCurPin').value  = '';
+      document.getElementById('admNewPin').value  = '';
+      document.getElementById('admNewPin2').value = '';
+      document.getElementById('modalAdminPin').classList.remove('show');
+      switchAdminTab('trainings');
+      openAdminPanel();
+    })
+    .catch(function() {
+      if (document.getElementById('modalAdminPin').classList.contains('show')) {
+        showApErr('목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.');
+      }
+    });
+}
+
+/* 패널 */
+function openAdminPanel() {
+  renderAdminList();
+  renderAdminStaff();
+  document.getElementById('adminOverlay').classList.add('show');
+}
+
+function closeAdminPanel() {
+  document.getElementById('adminOverlay').classList.remove('show');
+  if (API_URL) loadPageData();       // 변경 사항 서명 화면에 반영
+  else refreshDemoFromAdmin();
+}
+
+function renderAdminList() {
+  var box = document.getElementById('admList');
+  if (!adminTrainings.length) {
+    box.innerHTML = '<div class="adm-empty">등록된 연수가 없어요.<br>위 버튼으로 첫 연수를 추가해 보세요.</div>';
+    return;
+  }
+  var html = '';
+  adminTrainings.forEach(function(t, i) {
+    html +=
+      '<div class="adm-item' + (t.active ? '' : ' off') + '">' +
+        '<div class="adm-item-move">' +
+          '<button class="adm-move-btn" onclick="moveTraining(' + i + ',\'up\')"' +
+            (i === 0 ? ' disabled' : '') + ' aria-label="위로 이동">' +
+            '<svg width="12" height="12"><use href="#i-chev-d"/></svg></button>' +
+          '<button class="adm-move-btn down" onclick="moveTraining(' + i + ',\'down\')"' +
+            (i === adminTrainings.length - 1 ? ' disabled' : '') + ' aria-label="아래로 이동">' +
+            '<svg width="12" height="12"><use href="#i-chev-d"/></svg></button>' +
+        '</div>' +
+        '<div class="adm-item-main">' +
+          '<div class="adm-item-title">' + esc(t.title) + '</div>' +
+          (t.content ? '<div class="adm-item-meta">' + esc(t.content) + '</div>' : '') +
+          '<span class="adm-item-date"><svg width="10" height="10"><use href="#i-calendar"/></svg>' + esc(t.date || '') + '</span>' +
+        '</div>' +
+        '<div class="adm-item-side">' +
+          '<button class="adm-toggle' + (t.active ? ' on' : '') + '" onclick="toggleTraining(' + i + ')" aria-label="활성/비활성 전환"></button>' +
+          '<button class="adm-edit-btn" onclick="openTrainingForm(' + i + ')">수정</button>' +
+        '</div>' +
+      '</div>';
+  });
+  box.innerHTML = html;
+}
+
+/* 연수 대상: 전 구성원(기본) / 부서 선택 / 개별 선택. 선택 값은
+   tfTargetType + tfTargetDepts(부서 선택 시) 또는 tfTargetPersons(개별 선택 시)에
+   담아뒀다가 저장 시 함께 전송하고, 연수 카드에는 요약 문구 + 시간을 합쳐서 보여준다. */
+var tfTargetType       = 'all';   // 'all' | 'dept' | 'person'
+var tfTargetDepts      = [];      // 부서 선택 시 대상 부서명 목록
+var tfTargetPersons    = [];      // 개별 선택 시 대상 인원 목록 [{dept, name}]
+var tfDeptPickerTemp   = [];      // 부서 선택 모달에서 확인 전까지의 임시 선택값
+var tfPersonPickerTemp = [];      // 개별 선택 모달에서 확인 전까지의 임시 선택값
+
+function personListIndex(list, dept, name) {
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].dept === dept && list[i].name === name) return i;
+  }
+  return -1;
+}
+
+function onTfTargetTypeChange() {
+  tfTargetType = document.getElementById('tfTargetType').value;
+  document.getElementById('tfTargetDeptWrap').style.display = tfTargetType === 'dept' ? 'block' : 'none';
+  document.getElementById('tfTargetPersonWrap').style.display = tfTargetType === 'person' ? 'block' : 'none';
+  renderTfTargetDeptBtn();
+  renderTfTargetPersonBtn();
+}
+
+function renderTfTargetDeptBtn() {
+  document.getElementById('tfTargetDeptBtn').textContent =
+    tfTargetDepts.length ? ('부서 선택 (' + tfTargetDepts.length + '개 선택됨)') : '부서 선택하기';
+}
+
+function renderTfTargetPersonBtn() {
+  document.getElementById('tfTargetPersonBtn').textContent =
+    tfTargetPersons.length ? ('개인 선택 (' + tfTargetPersons.length + '명 선택됨)') : '개인 선택하기';
+}
+
+function renderTfDeptCheckList() {
+  var box = document.getElementById('tfDeptCheckList');
+  if (!deptOrder.length) {
+    box.innerHTML = '<div class="adm-empty">등록된 부서가 없어요.<br>먼저 구성원 관리에서 부서를 등록해 주세요.</div>';
+    return;
+  }
+  var html = '';
+  deptOrder.forEach(function(d) {
+    var checked = tfDeptPickerTemp.indexOf(d) > -1 ? ' checked' : '';
+    html += '<label class="tf-dept-row">' +
+      '<input type="checkbox" value="' + esc(d) + '"' + checked + ' onchange="onTfDeptCheckChange(this)">' +
+      '<span>' + esc(d) + '</span>' +
+    '</label>';
+  });
+  box.innerHTML = html;
+}
+
+function onTfDeptCheckChange(el) {
+  var i = tfDeptPickerTemp.indexOf(el.value);
+  if (el.checked) { if (i === -1) tfDeptPickerTemp.push(el.value); }
+  else if (i > -1) { tfDeptPickerTemp.splice(i, 1); }
+}
+
+function setAllTfDeptCheckboxes(on) {
+  tfDeptPickerTemp = on ? deptOrder.slice() : [];
+  renderTfDeptCheckList();
+}
+
+function openTfDeptPicker() {
+  tfDeptPickerTemp = tfTargetDepts.slice();
+  renderTfDeptCheckList();
+  document.getElementById('tfDeptErr').classList.remove('show');
+  document.getElementById('modalTfDeptPicker').classList.add('show');
+}
+
+function confirmTfDeptPicker() {
+  if (!tfDeptPickerTemp.length) {
+    var err = document.getElementById('tfDeptErr');
+    err.textContent = '하나 이상의 부서를 선택해 주세요.';
+    err.classList.add('show');
+    return;
+  }
+  tfTargetDepts = tfDeptPickerTemp.slice();
+  renderTfTargetDeptBtn();
+  document.getElementById('modalTfDeptPicker').classList.remove('show');
+}
+
+function renderTfPersonCheckList() {
+  var box = document.getElementById('tfPersonCheckList');
+  if (!deptOrder.length) {
+    box.innerHTML = '<div class="adm-empty">등록된 구성원이 없어요.<br>먼저 구성원 관리에서 인원을 등록해 주세요.</div>';
+    return;
+  }
+  var html = '';
+  deptOrder.forEach(function(dept) {
+    var names = staffByDept[dept] || [];
+    if (!names.length) return;
+    html += '<div class="tf-person-dept-head">' + esc(dept) + '</div>';
+    names.forEach(function(name) {
+      var checked = personListIndex(tfPersonPickerTemp, dept, name) > -1 ? ' checked' : '';
+      html += '<label class="tf-dept-row">' +
+        '<input type="checkbox" data-dept="' + esc(dept) + '" data-name="' + esc(name) + '"' + checked +
+          ' onchange="onTfPersonCheckChange(this)">' +
+        '<span>' + esc(name) + '</span>' +
+      '</label>';
+    });
+  });
+  box.innerHTML = html;
+}
+
+function onTfPersonCheckChange(el) {
+  var dept = el.dataset.dept, name = el.dataset.name;
+  var i = personListIndex(tfPersonPickerTemp, dept, name);
+  if (el.checked) { if (i === -1) tfPersonPickerTemp.push({ dept: dept, name: name }); }
+  else if (i > -1) { tfPersonPickerTemp.splice(i, 1); }
+}
+
+function setAllTfPersonCheckboxes(on) {
+  tfPersonPickerTemp = [];
+  if (on) {
+    deptOrder.forEach(function(dept) {
+      (staffByDept[dept] || []).forEach(function(name) {
+        tfPersonPickerTemp.push({ dept: dept, name: name });
+      });
+    });
+  }
+  renderTfPersonCheckList();
+}
+
+function openTfPersonPicker() {
+  tfPersonPickerTemp = tfTargetPersons.slice();
+  renderTfPersonCheckList();
+  document.getElementById('tfPersonErr').classList.remove('show');
+  document.getElementById('modalTfPersonPicker').classList.add('show');
+}
+
+function confirmTfPersonPicker() {
+  if (!tfPersonPickerTemp.length) {
+    var err = document.getElementById('tfPersonErr');
+    err.textContent = '한 명 이상 선택해 주세요.';
+    err.classList.add('show');
+    return;
+  }
+  tfTargetPersons = tfPersonPickerTemp.slice();
+  renderTfTargetPersonBtn();
+  document.getElementById('modalTfPersonPicker').classList.remove('show');
+}
+
+/* 대상(전 구성원/부서 목록/개별 인원) + 시간 → 연수 카드에 보여줄 문구 하나로 합침 */
+function buildTrainingContent(targetType, targetDepts, targetPersons, ts, te) {
+  var content = '';
+  if (targetType === 'dept' && targetDepts.length) content = targetDepts.join(', ');
+  else if (targetType === 'person' && targetPersons.length) content = targetPersons.length + '명 선택';
+  if (ts) content += (content ? ' · ' : '') + ts + (te ? ' ~ ' + te : '');
+  return content;
+}
+
+/* 추가/수정 폼 */
+function openTrainingForm(idx) {
+  var isEdit = idx !== null;
+  editingTrainingId = isEdit ? adminTrainings[idx].id : null;
+  document.getElementById('tfTitle').textContent = isEdit ? '연수 수정' : '새 연수 추가';
+  document.getElementById('tfName').value = isEdit ? adminTrainings[idx].title : '';
+
+  tfTargetType    = (isEdit && (adminTrainings[idx].targetType === 'dept' || adminTrainings[idx].targetType === 'person'))
+    ? adminTrainings[idx].targetType : 'all';
+  tfTargetDepts   = (isEdit && Array.isArray(adminTrainings[idx].targetDepts)) ? adminTrainings[idx].targetDepts.slice() : [];
+  tfTargetPersons = (isEdit && Array.isArray(adminTrainings[idx].targetPersons)) ? adminTrainings[idx].targetPersons.slice() : [];
+  document.getElementById('tfTargetType').value = tfTargetType;
+  document.getElementById('tfTargetDeptWrap').style.display = tfTargetType === 'dept' ? 'block' : 'none';
+  document.getElementById('tfTargetPersonWrap').style.display = tfTargetType === 'person' ? 'block' : 'none';
+  renderTfTargetDeptBtn();
+  renderTfTargetPersonBtn();
+  document.getElementById('tfTimeStart').value = isEdit ? (adminTrainings[idx].startTime || '') : '';
+  document.getElementById('tfTimeEnd').value   = isEdit ? (adminTrainings[idx].endTime || '') : '';
+
+  var dv = isEdit ? String(adminTrainings[idx].date || '') : todayStr();
+  document.getElementById('tfDate').value = /^\d{4}-\d{2}-\d{2}$/.test(dv) ? dv : todayStr();
+  document.getElementById('tfDeleteBtn').style.display = isEdit ? 'inline-block' : 'none';
+  document.getElementById('tfErr').classList.remove('show');
+  var btn = document.getElementById('tfSubmitBtn');
+  btn.disabled = false; btn.textContent = '저장하기';
+  document.getElementById('modalTrainingForm').classList.add('show');
+  if (!isEdit) setTimeout(function() { document.getElementById('tfName').focus(); }, 100);
+}
+
+function showTfErr(msg) {
+  var err = document.getElementById('tfErr');
+  err.textContent = msg; err.classList.add('show');
+  var btn = document.getElementById('tfSubmitBtn');
+  btn.disabled = false; btn.textContent = '저장하기';
+}
+
+function tfDone() {
+  var btn = document.getElementById('tfSubmitBtn');
+  btn.textContent = '✓ 저장되었습니다';
+  setTimeout(function() {
+    document.getElementById('modalTrainingForm').classList.remove('show');
+    renderAdminList();
+  }, 800);
+}
+
+function findAdminIdx(id) {
+  for (var i = 0; i < adminTrainings.length; i++)
+    if (adminTrainings[i].id === id) return i;
+  return -1;
+}
+
+function submitTrainingForm() {
+  var title = document.getElementById('tfName').value.trim();
+  var date  = document.getElementById('tfDate').value;
+  document.getElementById('tfErr').classList.remove('show');
+  if (!title) { showTfErr('연수명을 입력해 주세요.'); return; }
+  if (!date)  { showTfErr('연수 날짜를 선택해 주세요.'); return; }
+
+  var ts = document.getElementById('tfTimeStart').value;
+  var te = document.getElementById('tfTimeEnd').value;
+  if (te && !ts)          { showTfErr('시작 시간을 선택해 주세요.'); return; }
+  if (ts && te && te <= ts) { showTfErr('종료 시간이 시작 시간보다 빨라요.'); return; }
+  if (tfTargetType === 'dept' && !tfTargetDepts.length) { showTfErr('연수 대상 부서를 선택해 주세요.'); return; }
+  if (tfTargetType === 'person' && !tfTargetPersons.length) { showTfErr('연수 대상 인원을 선택해 주세요.'); return; }
+  var content = buildTrainingContent(tfTargetType, tfTargetDepts, tfTargetPersons, ts, te);
+
+  var btn = document.getElementById('tfSubmitBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  // 데모: 로컬 목록만 갱신
+  if (!API_URL) {
+    setTimeout(function() {
+      if (editingTrainingId !== null) {
+        var i = findAdminIdx(editingTrainingId);
+        if (i > -1) {
+          adminTrainings[i].title = title;
+          adminTrainings[i].content = content;
+          adminTrainings[i].date = date;
+          adminTrainings[i].startTime = ts || null;
+          adminTrainings[i].endTime = te || null;
+          adminTrainings[i].targetType = tfTargetType;
+          adminTrainings[i].targetDepts = tfTargetDepts.slice();
+          adminTrainings[i].targetPersons = tfTargetPersons.slice();
+        }
+        tfDone();
+      } else {
+        var maxId = 0;
+        adminTrainings.forEach(function(t) { if (t.id > maxId) maxId = t.id; });
+        adminTrainings.push({
+          id: maxId + 1, active: true, title: title, content: content, date: date,
+          startTime: ts || null, endTime: te || null,
+          targetType: tfTargetType, targetDepts: tfTargetDepts.slice(), targetPersons: tfTargetPersons.slice()
+        });
+        tfDone();
+      }
+    }, 350);
+    return;
+  }
+
+  var idx = editingTrainingId !== null ? findAdminIdx(editingTrainingId) : -1;
+  rpc('save_training', {
+    p_org_key : ORG_KEY,
+    p_pin     : adminPin,
+    p_id      : editingTrainingId,
+    p_title   : title,
+    p_content : content,
+    p_date    : date,
+    p_active  : idx > -1 ? adminTrainings[idx].active : true,
+    p_start_time : ts || null,
+    p_end_time   : te || null,
+    p_target_type    : tfTargetType,
+    p_target_depts   : tfTargetType === 'dept' ? tfTargetDepts : [],
+    p_target_persons : tfTargetType === 'person' ? tfTargetPersons : []
+  }).then(function(res) {
+    if (res.success) { adminTrainings = res.trainings || adminTrainings; tfDone(); }
+    else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showTfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
+    else showTfErr(res.message || '저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
+  }).catch(function() { showTfErr('서버에 연결할 수 없어요. 네트워크 상태를 확인해 주세요.'); });
+}
+
+function toggleTraining(i) {
+  var t = adminTrainings[i];
+  var next = !t.active;
+
+  t.active = next; renderAdminList();   // 낙관적 반영
+  if (!API_URL) return;
+
+  rpc('save_training', {
+    p_org_key : ORG_KEY,
+    p_pin     : adminPin,
+    p_id      : t.id,
+    p_title   : t.title,
+    p_content : t.content,
+    p_date    : t.date,
+    p_active  : next,
+    p_start_time : t.startTime || null,
+    p_end_time   : t.endTime || null,
+    p_target_type    : (t.targetType === 'dept' || t.targetType === 'person') ? t.targetType : 'all',
+    p_target_depts   : Array.isArray(t.targetDepts) ? t.targetDepts : [],
+    p_target_persons : Array.isArray(t.targetPersons) ? t.targetPersons : []
+  }).then(function(res) {
+    if (res.success) { adminTrainings = res.trainings || adminTrainings; renderAdminList(); }
+    else { t.active = !next; renderAdminList(); }
+  }).catch(function() { t.active = !next; renderAdminList(); });
+}
+
+function moveTraining(i, dir) {
+  var j = dir === 'up' ? i - 1 : i + 1;
+  if (j < 0 || j >= adminTrainings.length) return;
+
+  var id = adminTrainings[i].id;
+  var tmp = adminTrainings[i];
+  adminTrainings[i] = adminTrainings[j];
+  adminTrainings[j] = tmp;
+  renderAdminList();   // 낙관적 반영
+  if (!API_URL) return;
+
+  rpc('move_training', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: id, p_direction: dir })
+    .then(function(res) {
+      if (res.success) { adminTrainings = res.trainings || adminTrainings; renderAdminList(); }
+      else { swapBack(); renderAdminList(); }
+    })
+    .catch(function() { swapBack(); renderAdminList(); });
+
+  function swapBack() {
+    var t = adminTrainings[i]; adminTrainings[i] = adminTrainings[j]; adminTrainings[j] = t;
+  }
+}
+
+function deleteTraining() {
+  if (editingTrainingId === null) return;
+  if (!confirm('이 연수를 삭제할까요?\n서명 기록은 삭제되지 않고 [서명결과 출력]에서 계속 조회할 수 있어요.')) return;
+
+  var btn = document.getElementById('tfSubmitBtn');
+  btn.disabled = true;
+
+  if (!API_URL) {
+    var i = findAdminIdx(editingTrainingId);
+    if (i > -1) adminTrainings.splice(i, 1);
+    document.getElementById('modalTrainingForm').classList.remove('show');
+    renderAdminList();
+    return;
+  }
+
+  rpc('delete_training', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: editingTrainingId })
+    .then(function(res) {
+      if (res.success) {
+        adminTrainings = res.trainings || [];
+        document.getElementById('modalTrainingForm').classList.remove('show');
+        renderAdminList();
+      } else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showTfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
+      else showTfErr(res.message || '삭제하지 못했어요.');
+    }).catch(function() { showTfErr('서버에 연결할 수 없어요.'); });
+}
+
+/* ── 구성원 관리 (부서별 그룹 나열 — 먼저 등록한 부서가 위) ── */
+var admDeptGroups = [];   // 부서명 수정 버튼 → 인덱스로 원래 부서명 참조
+
+function renderAdminStaff() {
+  var box = document.getElementById('admStaffList');
+  if (!adminStaff.length) {
+    box.innerHTML = '<div class="adm-empty">등록된 구성원이 없어요.<br>위 버튼으로 첫 구성원을 추가해 보세요.</div>';
+    return;
+  }
+
+  // 부서별 그룹핑 — adminStaff는 등록순(id순)이므로 먼저 등록된 부서가 위로
+  var groups = {};
+  admDeptGroups = [];
+  adminStaff.forEach(function(s, i) {
+    var d = String(s.dept || '').trim();
+    if (!(d in groups)) { groups[d] = []; admDeptGroups.push(d); }
+    groups[d].push(i);
+  });
+
+  var html = '';
+  admDeptGroups.forEach(function(d, gi) {
+    html +=
+      '<div class="adm-dept-head">' +
+        '<span>' + (d ? esc(d) : '(부서 미지정)') +
+          '<small> ' + groups[d].length + '명</small></span>' +
+        '<button class="adm-edit-btn" onclick="renameDept(' + gi + ')">부서명 수정</button>' +
+      '</div>';
+    groups[d].forEach(function(i) {
+      html +=
+        '<div class="adm-item">' +
+          '<div class="adm-item-main">' +
+            '<div class="adm-item-title">' + esc(adminStaff[i].name) + '</div>' +
+          '</div>' +
+          '<div class="adm-item-side">' +
+            '<button class="adm-edit-btn" onclick="openStaffForm(' + i + ')">수정</button>' +
+          '</div>' +
+        '</div>';
+    });
+  });
+  box.innerHTML = html;
+}
+
+/* 부서명 일괄 변경 (해당 부서 구성원 전원의 부서를 한 번에 변경) */
+function renameDept(gi) {
+  var oldDept = admDeptGroups[gi];
+  var label   = oldDept || '(부서 미지정)';
+  var newDept = window.prompt('[' + label + '] 부서의 새 이름을 입력해 주세요.', oldDept);
+  if (newDept === null) return;
+  newDept = newDept.trim();
+  if (!newDept || newDept === oldDept) return;
+
+  if (!API_URL) {
+    adminStaff.forEach(function(s) {
+      if (String(s.dept || '').trim() === oldDept) s.dept = newDept;
+    });
+    renderAdminStaff();
+    return;
+  }
+
+  rpc('rename_dept', { p_org_key: ORG_KEY, p_pin: adminPin, p_old_dept: oldDept, p_new_dept: newDept })
+    .then(function(res) {
+      if (res.success) { adminStaff = res.staff || adminStaff; renderAdminStaff(); }
+      else if (res.needPin) {
+        sessionStorage.removeItem(ADMIN_PIN_KEY);
+        alert('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.');
+      } else {
+        alert(res.message || '부서명을 변경하지 못했어요.');
+      }
+    }).catch(function() { alert('서버에 연결할 수 없어요.'); });
+}
+
+/* 부서 드롭다운: 기존 구성원들의 부서에서 구성 (등록 순서 유지) */
+function populateSfDeptOptions(selected) {
+  var sel = document.getElementById('sfDeptSel');
+  var depts = [];
+  adminStaff.forEach(function(s) {
+    var d = String(s.dept || '').trim();
+    if (d && depts.indexOf(d) === -1) depts.push(d);
+  });
+  if (selected && depts.indexOf(selected) === -1) depts.push(selected);
+
+  sel.innerHTML = '';
+  depts.forEach(function(d) {
+    var o = document.createElement('option');
+    o.value = d; o.textContent = d;
+    sel.appendChild(o);
+  });
+  var custom = document.createElement('option');
+  custom.value = '__custom__'; custom.textContent = '＋ 새 부서 직접 입력';
+  sel.appendChild(custom);
+
+  if (selected && depts.indexOf(selected) > -1) sel.value = selected;
+  else if (depts.length) sel.value = depts[0];
+  else sel.value = '__custom__';
+  onSfDeptSelChange();
+}
+
+function onSfDeptSelChange() {
+  var isCustom = document.getElementById('sfDeptSel').value === '__custom__';
+  document.getElementById('sfDept').style.display = isCustom ? 'block' : 'none';
+}
+
+function getSfDept() {
+  var v = document.getElementById('sfDeptSel').value;
+  return v === '__custom__' ? document.getElementById('sfDept').value.trim() : v;
+}
+
+function openStaffForm(idx) {
+  var isEdit = idx !== null;
+  editingStaffId = isEdit ? adminStaff[idx].id : null;
+  document.getElementById('sfTitle').textContent = isEdit ? '구성원 수정' : '구성원 추가';
+  populateSfDeptOptions(isEdit ? String(adminStaff[idx].dept || '').trim() : null);
+  document.getElementById('sfDept').value  = '';
+  document.getElementById('sfName').value  = isEdit ? adminStaff[idx].name : '';
+  document.getElementById('sfNames').value = '';
+  // 수정 모드: 한 명 입력칸 / 추가 모드: 여러 명 일괄 입력칸
+  document.getElementById('sfNameField').style.display  = isEdit ? 'block' : 'none';
+  document.getElementById('sfNamesField').style.display = isEdit ? 'none' : 'block';
+  document.getElementById('sfDeleteBtn').style.display = isEdit ? 'inline-block' : 'none';
+  document.getElementById('sfErr').classList.remove('show');
+  var btn = document.getElementById('sfSubmitBtn');
+  btn.disabled = false; btn.textContent = '저장하기';
+  document.getElementById('modalStaffForm').classList.add('show');
+  if (!isEdit) setTimeout(function() { document.getElementById('sfNames').focus(); }, 100);
+}
+
+function showSfErr(msg) {
+  var err = document.getElementById('sfErr');
+  err.textContent = msg; err.classList.add('show');
+  var btn = document.getElementById('sfSubmitBtn');
+  btn.disabled = false; btn.textContent = '저장하기';
+}
+
+function findStaffIdx(id) {
+  for (var i = 0; i < adminStaff.length; i++)
+    if (adminStaff[i].id === id) return i;
+  return -1;
+}
+
+// 같은 부서에 같은 이름이 이미 등록돼 있는지 (동명이인 저장 차단용, excludeId는 수정 중인 본인 제외)
+function deptNameExists(dept, name, excludeId) {
+  return adminStaff.some(function(s) {
+    return s.dept === dept && s.name === name && s.id !== excludeId;
+  });
+}
+
+function sfDone() {
+  var btn = document.getElementById('sfSubmitBtn');
+  btn.textContent = '✓ 저장되었습니다';
+  setTimeout(function() {
+    document.getElementById('modalStaffForm').classList.remove('show');
+    renderAdminStaff();
+  }, 800);
+}
+
+function submitStaffForm() {
+  var dept = getSfDept();
+  document.getElementById('sfErr').classList.remove('show');
+  var btn = document.getElementById('sfSubmitBtn');
+
+  // ── 수정 모드: 한 명 ──
+  if (editingStaffId !== null) {
+    var name = document.getElementById('sfName').value.trim();
+    if (!name) { showSfErr('성명을 입력해 주세요.'); return; }
+    if (deptNameExists(dept, name, editingStaffId)) {
+      showSfErr('이미 ' + dept + '에 \'' + name + '\'이(가) 있어요. 구분을 위해 이름 뒤에 A/B 등을 붙여 다시 입력해 주세요. 예: ' + name + 'A, ' + name + 'B');
+      return;
+    }
+    btn.disabled = true; btn.textContent = '저장 중...';
+
+    if (!API_URL) {
+      setTimeout(function() {
+        var i = findStaffIdx(editingStaffId);
+        if (i > -1) { adminStaff[i].dept = dept; adminStaff[i].name = name; }
+        sfDone();
+      }, 350);
+      return;
+    }
+
+    rpc('save_staff', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: editingStaffId, p_dept: dept, p_name: name })
+      .then(function(res) {
+        if (res.success) { adminStaff = res.staff || adminStaff; sfDone(); }
+        else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showSfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
+        else showSfErr(res.message || '저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
+      }).catch(function() { showSfErr('서버에 연결할 수 없어요. 네트워크 상태를 확인해 주세요.'); });
+    return;
+  }
+
+  // ── 추가 모드: 여러 명 일괄 등록 (줄바꿈·쉼표 구분, 엑셀 열 복붙 지원) ──
+  var names = document.getElementById('sfNames').value
+    .split(/[\n,]/)
+    .map(function(s) { return s.trim(); })
+    .filter(Boolean);
+  if (!names.length) { showSfErr('성명을 한 명 이상 입력해 주세요.'); return; }
+
+  // 붙여넣은 목록 안에서 이름이 겹치거나, 같은 부서에 이미 등록된 이름과 겹치면
+  // 동명이인일 수 있으므로 저장을 막고 구분용 알파벳을 붙이도록 안내한다.
+  var seenNames = {};
+  for (var ni = 0; ni < names.length; ni++) {
+    var nm = names[ni];
+    if (seenNames[nm] || deptNameExists(dept, nm, null)) {
+      showSfErr('이미 ' + dept + '에 \'' + nm + '\'이(가) 있어요. 구분을 위해 이름 뒤에 A/B 등을 붙여 다시 입력해 주세요. 예: ' + nm + 'A, ' + nm + 'B');
+      return;
+    }
+    seenNames[nm] = true;
+  }
+
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  if (!API_URL) {
+    setTimeout(function() {
+      var maxId = 0;
+      adminStaff.forEach(function(s) { if (s.id > maxId) maxId = s.id; });
+      names.forEach(function(n) { adminStaff.push({ id: ++maxId, dept: dept, name: n }); });
+      sfDone();
+    }, 350);
+    return;
+  }
+
+  rpc('bulk_add_staff', { p_org_key: ORG_KEY, p_pin: adminPin, p_dept: dept, p_names: names })
+    .then(function(res) {
+      if (res.success) { adminStaff = res.staff || adminStaff; sfDone(); }
+      else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showSfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
+      else showSfErr(res.message || '저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
+    }).catch(function() { showSfErr('서버에 연결할 수 없어요. 네트워크 상태를 확인해 주세요.'); });
+}
+
+function deleteStaffMember() {
+  if (editingStaffId === null) return;
+  if (!confirm('이 구성원을 삭제할까요?\n이미 등록된 서명 기록은 그대로 남아요.')) return;
+
+  var btn = document.getElementById('sfSubmitBtn');
+  btn.disabled = true;
+
+  if (!API_URL) {
+    var i = findStaffIdx(editingStaffId);
+    if (i > -1) adminStaff.splice(i, 1);
+    document.getElementById('modalStaffForm').classList.remove('show');
+    renderAdminStaff();
+    return;
+  }
+
+  rpc('delete_staff', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: editingStaffId })
+    .then(function(res) {
+      if (res.success) {
+        adminStaff = res.staff || [];
+        document.getElementById('modalStaffForm').classList.remove('show');
+        renderAdminStaff();
+      } else if (res.needPin) { sessionStorage.removeItem(ADMIN_PIN_KEY); showSfErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.'); }
+      else showSfErr(res.message || '삭제하지 못했어요.');
+    }).catch(function() { showSfErr('서버에 연결할 수 없어요.'); });
+}
+
+/* ── 구성원 엑셀 일괄 등록 (부서/이름 두 열짜리 파일을 올리면 한 번에 등록) ──
+   엑셀(.xlsx/.xls)뿐 아니라 한컴오피스 한셀에서 "다른 이름으로 저장 → Excel
+   통합 문서(.xlsx)"로 저장한 파일도 동일한 형식이라 그대로 인식된다.
+   자체 .cell 포맷은 파싱 라이브러리가 없어 지원하지 않는다. */
+var xlParsedRows = null;   // 검증까지 통과한 [{dept, name}]
+
+function openStaffExcelModal() {
+  xlParsedRows = null;
+  document.getElementById('xlFileInput').value = '';
+  document.getElementById('xlResult').innerHTML = '';
+  document.getElementById('xlErr').classList.remove('show');
+  var btn = document.getElementById('xlSubmitBtn');
+  btn.disabled = true; btn.textContent = '일괄 등록하기';
+  document.getElementById('modalStaffExcel').classList.add('show');
+}
+
+function downloadStaffExcelTemplate() {
+  if (typeof XLSX === 'undefined') { showXlErr('엑셀 기능을 불러오지 못했어요. 네트워크 상태를 확인해 주세요.'); return; }
+  var rows = [
+    ['부서', '이름'],
+    ['기획부', '홍길동'],
+    ['기획부', '김철수'],
+    ['운영부', '이영희']
+  ];
+  var ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 16 }, { wch: 16 }];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '구성원명단');
+  XLSX.writeFile(wb, '구성원_등록_양식.xlsx');
+}
+
+function showXlErr(msg) {
+  var err = document.getElementById('xlErr');
+  err.textContent = msg; err.classList.add('show');
+}
+
+function handleStaffExcelFile(file) {
+  document.getElementById('xlErr').classList.remove('show');
+  document.getElementById('xlResult').innerHTML = '';
+  document.getElementById('xlSubmitBtn').disabled = true;
+  xlParsedRows = null;
+
+  if (typeof XLSX === 'undefined') { showXlErr('엑셀 기능을 불러오지 못했어요. 네트워크 상태를 확인해 주세요.'); return; }
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      var sheet = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      parseStaffExcelRows(rows);
+    } catch (err) {
+      showXlErr('파일을 읽지 못했어요. 엑셀(.xlsx) 형식으로 저장했는지 확인해 주세요.');
+    }
+  };
+  reader.onerror = function() { showXlErr('파일을 읽지 못했어요.'); };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseStaffExcelRows(rows) {
+  if (!rows.length) { showXlErr('엑셀에 데이터가 없어요. 양식을 다운로드해서 사용해 주세요.'); return; }
+
+  // 헤더가 정확히 "부서"/"이름"이 아니어도 흔한 표현은 인식
+  var deptKeys = ['부서', '부서명', 'dept', 'department'];
+  var nameKeys = ['이름', '성명', 'name'];
+  var headers  = Object.keys(rows[0]);
+  var deptKey  = headers.find(function(k) { return deptKeys.indexOf(String(k).trim()) > -1; });
+  var nameKey  = headers.find(function(k) { return nameKeys.indexOf(String(k).trim()) > -1; });
+
+  if (!nameKey) {
+    showXlErr('"이름"(또는 "성명") 열을 찾을 수 없어요. 양식을 다운로드해서 사용해 주세요.');
+    return;
+  }
+
+  var entries = [];
+  rows.forEach(function(r) {
+    var dept = deptKey ? String(r[deptKey] || '').trim() : '';
+    var name = String(r[nameKey] || '').trim();
+    if (name) entries.push({ dept: dept, name: name });
+  });
+  if (!entries.length) { showXlErr('등록할 이름이 없어요.'); return; }
+
+  // 동명이인(같은 부서+같은 이름) 검증 — 파일 내부 중복 + 기존 등록자와의 중복 모두 차단
+  var seen = {};
+  for (var i = 0; i < entries.length; i++) {
+    var key = entries[i].dept + '_' + entries[i].name;
+    if (seen[key] || deptNameExists(entries[i].dept, entries[i].name, null)) {
+      showXlErr('"' + (entries[i].dept || '(부서 없음)') + '"에 \'' + entries[i].name +
+        '\'이(가) 이미 있거나 파일 안에서 중복돼요. 구분을 위해 이름 뒤에 A/B 등을 붙여 수정한 뒤 다시 올려주세요.');
+      return;
+    }
+    seen[key] = true;
+  }
+
+  xlParsedRows = entries;
+  var deptCount = {};
+  entries.forEach(function(e) { deptCount[e.dept || '(부서 없음)'] = true; });
+  document.getElementById('xlResult').innerHTML =
+    '<div class="xl-result-ok">✓ ' + entries.length + '명 인식됐어요 (부서 ' +
+    Object.keys(deptCount).length + '개). 아래 버튼으로 등록해 주세요.</div>';
+  document.getElementById('xlSubmitBtn').disabled = false;
+}
+
+function xlDone() {
+  var btn = document.getElementById('xlSubmitBtn');
+  btn.textContent = '✓ 등록되었습니다';
+  setTimeout(function() {
+    document.getElementById('modalStaffExcel').classList.remove('show');
+    renderAdminStaff();
+  }, 800);
+}
+
+function submitStaffExcel() {
+  if (!xlParsedRows || !xlParsedRows.length) return;
+  var btn = document.getElementById('xlSubmitBtn');
+  btn.disabled = true; btn.textContent = '등록 중...';
+
+  // bulk_add_staff는 부서 1개 + 이름 배열만 받으므로, 파일 안의 여러 부서를 묶어서 순차 등록
+  var groups = {}, order = [];
+  xlParsedRows.forEach(function(e) {
+    if (!groups[e.dept]) { groups[e.dept] = []; order.push(e.dept); }
+    groups[e.dept].push(e.name);
+  });
+
+  if (!API_URL) {
+    setTimeout(function() {
+      var maxId = 0;
+      adminStaff.forEach(function(s) { if (s.id > maxId) maxId = s.id; });
+      xlParsedRows.forEach(function(e) { adminStaff.push({ id: ++maxId, dept: e.dept, name: e.name }); });
+      xlDone();
+    }, 400);
+    return;
+  }
+
+  var failed = [];
+  var chain = Promise.resolve();
+  order.forEach(function(dept) {
+    chain = chain.then(function() {
+      return rpc('bulk_add_staff', { p_org_key: ORG_KEY, p_pin: adminPin, p_dept: dept, p_names: groups[dept] })
+        .then(function(res) {
+          if (res.success) { adminStaff = res.staff || adminStaff; }
+          else failed.push((dept || '(부서 없음)') + ': ' + (res.message || '실패'));
+        })
+        .catch(function() { failed.push((dept || '(부서 없음)') + ': 서버 연결 실패'); });
+    });
+  });
+
+  chain.then(function() {
+    if (failed.length) {
+      btn.disabled = false; btn.textContent = '일괄 등록하기';
+      showXlErr('일부 부서 등록에 실패했어요 — ' + failed.join(', '));
+      renderAdminStaff();
+    } else {
+      xlDone();
+    }
+  });
+}
+
+document.getElementById('xlFileInput').addEventListener('change', function(e) {
+  if (e.target.files && e.target.files[0]) handleStaffExcelFile(e.target.files[0]);
+});
+
+(function() {
+  var dropEl = document.getElementById('xlDrop');
+  ['dragover', 'dragenter'].forEach(function(ev) {
+    dropEl.addEventListener(ev, function(e) { e.preventDefault(); dropEl.classList.add('drag'); });
+  });
+  ['dragleave', 'drop'].forEach(function(ev) {
+    dropEl.addEventListener(ev, function(e) { e.preventDefault(); dropEl.classList.remove('drag'); });
+  });
+  dropEl.addEventListener('drop', function(e) {
+    e.preventDefault();
+    var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleStaffExcelFile(f);
+  });
+})();
+
+/* ── 서명 기록 관리 (연수+날짜로 조회 → 개별 삭제) ── */
+var admRecords = [];   // 마지막으로 조회한 목록 (id 포함)
+
+function populateRecTrainingOptions() {
+  var sel = document.getElementById('recTrainingSel');
+  var titles = [];
+  adminTrainings.forEach(function(t) {
+    if (titles.indexOf(t.title) === -1) titles.push(t.title);
+  });
+  var prev = sel.value;
+  sel.innerHTML = '';
+  if (!titles.length) {
+    sel.innerHTML = '<option value="">등록된 연수가 없어요</option>';
+  } else {
+    titles.forEach(function(t) {
+      var o = document.createElement('option');
+      o.value = t; o.textContent = t;
+      sel.appendChild(o);
+    });
+    if (titles.indexOf(prev) > -1) sel.value = prev;
+  }
+  if (!document.getElementById('recDate').value) setRecDate(todayStr());
+  document.getElementById('admRecordsList').innerHTML = '';
+  document.getElementById('recErr').classList.remove('show');
+}
+
+/* ── 날짜 선택 달력 (서명 기록이 있는 날짜에 점 표시) ── */
+var recCalYm      = null;    // 표시 중인 달 { y, m(0-11) }
+var recCalMarks   = {};      // 'YYYY-MM-DD' → 서명 인원수 (표시 중인 달)
+var recCalCache   = {};      // '연수명|YYYY-MM' → marks (같은 달 재조회 방지)
+var recCalLoading = false;
+
+function setRecDate(v) {
+  document.getElementById('recDate').value = v || '';
+  var t = document.getElementById('recDateText');
+  if (!v) { t.textContent = '날짜를 선택해 주세요'; t.style.color = 'var(--ink3)'; return; }
+  var p = v.split('-');
+  var wd = ['일','월','화','수','목','금','토'][new Date(+p[0], +p[1] - 1, +p[2]).getDay()];
+  t.textContent = +p[0] + '년 ' + (+p[1]) + '월 ' + (+p[2]) + '일 (' + wd + ')';
+  t.style.color = '';
+}
+
+function toggleRecCal() {
+  var pop = document.getElementById('recCal');
+  var btn = document.getElementById('recDateBtn');
+  if (!pop.hidden) { pop.hidden = true; btn.classList.remove('open'); return; }
+  var p = (document.getElementById('recDate').value || todayStr()).split('-');
+  recCalYm = { y: +p[0], m: +p[1] - 1 };
+  pop.hidden = false; btn.classList.add('open');
+  loadRecCalMarks();
+}
+
+function recCalMove(delta) {
+  var d = new Date(recCalYm.y, recCalYm.m + delta, 1);
+  recCalYm = { y: d.getFullYear(), m: d.getMonth() };
+  loadRecCalMarks();
+}
+
+function recCalPick(v) {
+  setRecDate(v);
+  document.getElementById('recCal').hidden = true;
+  document.getElementById('recDateBtn').classList.remove('open');
+}
+
+function onRecTrainingChange() {
+  document.getElementById('admRecordsList').innerHTML = '';
+  document.getElementById('recErr').classList.remove('show');
+  if (!document.getElementById('recCal').hidden) loadRecCalMarks();
+}
+
+function recCalMonthKey() {
+  return recCalYm.y + '-' + ('0' + (recCalYm.m + 1)).slice(-2);
+}
+
+// 표시 중인 달에 서명 기록이 있는 날짜를 가져온다 (연수별)
+function loadRecCalMarks() {
+  var title = document.getElementById('recTrainingSel').value;
+  var mk    = recCalMonthKey();
+  recCalMarks = {};
+  if (!API_URL || !title) { renderRecCal(); return; }
+
+  var ck = title + '|' + mk;
+  if (recCalCache[ck]) { recCalMarks = recCalCache[ck]; renderRecCal(); return; }
+
+  var last = new Date(recCalYm.y, recCalYm.m + 1, 0).getDate();
+  recCalLoading = true;
+  renderRecCal();
+
+  rpc('get_signature_dates', {
+    p_org_key: ORG_KEY, p_title: title,
+    p_from: mk + '-01', p_to: mk + '-' + last, p_pin: adminPin
+  })
+    .then(function(res) {
+      recCalLoading = false;
+      var marks = {};
+      ((res && res.dates) || []).forEach(function(x) { marks[x.date] = x.count; });
+      recCalCache[ck] = marks;
+      if (recCalMonthKey() === mk) recCalMarks = marks;
+      renderRecCal();
+    })
+    .catch(function() { recCalLoading = false; renderRecCal(); });
+}
+
+function renderRecCal() {
+  var pop   = document.getElementById('recCal');
+  if (pop.hidden) return;
+  var sel   = document.getElementById('recDate').value;
+  var pad   = new Date(recCalYm.y, recCalYm.m, 1).getDay();
+  var days  = new Date(recCalYm.y, recCalYm.m + 1, 0).getDate();
+  var today = todayStr();
+  var mk    = recCalMonthKey();
+
+  var h = '<div class="cal-head">' +
+      '<button type="button" class="cal-nav" onclick="recCalMove(-1)" aria-label="이전 달">&lsaquo;</button>' +
+      '<div class="cal-title">' + recCalYm.y + '년 ' + (recCalYm.m + 1) + '월</div>' +
+      '<button type="button" class="cal-nav" onclick="recCalMove(1)" aria-label="다음 달">&rsaquo;</button>' +
+    '</div><div class="cal-grid">';
+  ['일','월','화','수','목','금','토'].forEach(function(d, i) {
+    h += '<div class="cal-dow' + (i === 0 ? ' cal-sun' : '') + '">' + d + '</div>';
+  });
+  for (var i = 0; i < pad; i++) h += '<div></div>';
+  for (var d = 1; d <= days; d++) {
+    var ds  = mk + '-' + ('0' + d).slice(-2);
+    var cnt = recCalMarks[ds] || 0;
+    var cls = 'cal-day';
+    if ((pad + d - 1) % 7 === 0) cls += ' cal-sun';
+    if (ds === today) cls += ' today';
+    if (ds === sel)   cls += ' sel';
+    if (cnt)          cls += ' has-rec';
+    h += '<button type="button" class="' + cls + '" onclick="recCalPick(\'' + ds + '\')"' +
+         (cnt ? ' title="서명 ' + cnt + '명"' : '') + '>' + d + '</button>';
+  }
+  h += '</div><div class="cal-hint"><i></i>' +
+       (recCalLoading ? '서명 기록을 불러오는 중...' : '서명 기록이 있는 날짜예요') +
+       '</div>';
+  pop.innerHTML = h;
+}
+
+function showRecErr(msg) {
+  var err = document.getElementById('recErr');
+  err.textContent = msg; err.classList.add('show');
+}
+
+function fetchAdminRecords() {
+  var title = document.getElementById('recTrainingSel').value;
+  var date  = document.getElementById('recDate').value;
+  document.getElementById('recErr').classList.remove('show');
+  if (!title) { showRecErr('연수를 선택해 주세요.'); return; }
+  if (!date)  { showRecErr('날짜를 선택해 주세요.'); return; }
+
+  if (!API_URL) {
+    showRecErr('데모 모드에서는 서명 기록 조회를 지원하지 않아요.');
+    return;
+  }
+
+  document.getElementById('admRecordsList').innerHTML = '<div class="adm-empty">불러오는 중...</div>';
+
+  rpc('get_signature_records', { p_org_key: ORG_KEY, p_title: title, p_date: date, p_pin: adminPin })
+    .then(function(res) {
+      if (res.needPin) {
+        sessionStorage.removeItem(ADMIN_PIN_KEY);
+        document.getElementById('admRecordsList').innerHTML = '';
+        showRecErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.');
+        return;
+      }
+      admRecords = res.records || [];
+      renderAdminRecords();
+    })
+    .catch(function() {
+      document.getElementById('admRecordsList').innerHTML = '';
+      showRecErr('서버에 연결할 수 없어요.');
+    });
+}
+
+function renderAdminRecords() {
+  var box = document.getElementById('admRecordsList');
+  if (!admRecords.length) {
+    box.innerHTML = '<div class="adm-empty">해당 날짜에 서명 기록이 없어요.</div>';
+    return;
+  }
+  var html = '';
+  admRecords.forEach(function(r, i) {
+    html +=
+      '<div class="adm-item">' +
+        '<div class="adm-item-main">' +
+          '<div class="adm-item-title">' + esc(r.name) + '</div>' +
+          '<div class="adm-item-meta">' + esc(r.department || '') + ' · ' + esc(r.time || '') + '</div>' +
+        '</div>' +
+        '<div class="adm-item-side">' +
+          '<button class="adm-del-btn" style="margin-top:0" onclick="deleteAdminRecord(' + i + ')">삭제</button>' +
+        '</div>' +
+      '</div>';
+  });
+  box.innerHTML = html;
+}
+
+function deleteAdminRecord(i) {
+  var rec = admRecords[i];
+  if (!rec) return;
+  if (!confirm('[' + rec.name + ']님의 서명 기록을 삭제할까요?\n삭제하면 되돌릴 수 없습니다.\n(드라이브에 저장된 서명 이미지 파일은 그대로 남아요)')) return;
+
+  rpc('delete_signature', { p_org_key: ORG_KEY, p_pin: adminPin, p_id: rec.id })
+    .then(function(res) {
+      if (res.success) {
+        admRecords.splice(i, 1);
+        recCalCache = {};   // 달력의 날짜 표시도 다시 계산되도록
+        renderAdminRecords();
+      } else if (res.needPin) {
+        sessionStorage.removeItem(ADMIN_PIN_KEY);
+        showRecErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.');
+      } else {
+        showRecErr(res.message || '삭제하지 못했어요.');
+      }
+    })
+    .catch(function() { showRecErr('서버에 연결할 수 없어요.'); });
+}
+
+/* ── 기관 설정 (기관명/부서목록/안내문/대표색상/공유 QR 방식) ── */
+function setAdmQrModeUi(rotateDaily) {
+  var sel = rotateDaily ? 'rotate' : 'fixed';
+  document.querySelectorAll('input[name="admQrMode"]').forEach(function(el) {
+    el.checked = (el.value === sel);
+  });
+}
+
+function submitOrgSettings() {
+  var name     = document.getElementById('admOrgName').value.trim();
+  var subTitle = document.getElementById('admSubTitle').value.trim();
+  var notice   = document.getElementById('admNotice').value.trim();
+  var color    = document.getElementById('admBrandColor').value;
+  var qrRotateDaily = document.querySelector('input[name="admQrMode"]:checked').value === 'rotate';
+  document.getElementById('admSettingsErr').classList.remove('show');
+
+  var btn = document.getElementById('admSettingsBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  if (!API_URL) {
+    setTimeout(function() {
+      orgName = name;
+      document.getElementById('headerOrg').textContent = orgName || '연수 전자서명';
+      renderHeaderSub(subTitle || DEFAULT_SUB_TITLE);
+      applyBrandColor(color);
+      btn.disabled = false; btn.textContent = '✓ 저장되었습니다';
+      setTimeout(function() { btn.textContent = '저장하기'; }, 1200);
+    }, 350);
+    return;
+  }
+
+  rpc('update_org_settings', {
+    p_org_key: ORG_KEY, p_pin: adminPin,
+    p_org_name: name, p_dept_list: null, p_notice: notice, p_brand_color: color,
+    p_sub_title: subTitle, p_qr_rotate_daily: qrRotateDaily
+  }).then(function(res) {
+    if (res.success) {
+      btn.textContent = '✓ 저장되었습니다';
+      setTimeout(function() { btn.disabled = false; btn.textContent = '저장하기'; }, 1200);
+    } else if (res.needPin) {
+      sessionStorage.removeItem(ADMIN_PIN_KEY);
+      showAdmSettingsErr('관리자 인증이 만료됐어요. 패널을 닫고 다시 열어 주세요.');
+    } else {
+      showAdmSettingsErr(res.message || '저장하지 못했어요.');
+    }
+  }).catch(function() { showAdmSettingsErr('서버에 연결할 수 없어요.'); });
+}
+
+function showAdmSettingsErr(msg) {
+  var err = document.getElementById('admSettingsErr');
+  err.textContent = msg; err.classList.add('show');
+  var btn = document.getElementById('admSettingsBtn');
+  btn.disabled = false; btn.textContent = '저장하기';
+}
+
+/* ── 관리자 비밀번호 변경 ── */
+function showAdmPinErr(msg) {
+  var err = document.getElementById('admPinErr');
+  err.textContent = msg; err.classList.add('show');
+  var btn = document.getElementById('admPinChangeBtn');
+  btn.disabled = false; btn.textContent = '비밀번호 변경';
+}
+
+function submitChangeAdminPin() {
+  var curPin  = document.getElementById('admCurPin').value.trim();
+  var newPin  = document.getElementById('admNewPin').value.trim();
+  var newPin2 = document.getElementById('admNewPin2').value.trim();
+  document.getElementById('admPinErr').classList.remove('show');
+
+  if (!curPin)              { showAdmPinErr('현재 비밀번호를 입력해 주세요.'); return; }
+  if (newPin.length < 4)    { showAdmPinErr('새 비밀번호는 4자 이상이어야 해요.'); return; }
+  if (newPin !== newPin2)   { showAdmPinErr('새 비밀번호 확인이 서로 달라요.'); return; }
+
+  var btn = document.getElementById('admPinChangeBtn');
+  btn.disabled = true; btn.textContent = '변경 중...';
+
+  function clearFields() {
+    document.getElementById('admCurPin').value  = '';
+    document.getElementById('admNewPin').value  = '';
+    document.getElementById('admNewPin2').value = '';
+  }
+
+  if (!API_URL) {
+    setTimeout(function() {
+      clearFields();
+      btn.textContent = '✓ 변경되었습니다 (데모)';
+      setTimeout(function() { btn.disabled = false; btn.textContent = '비밀번호 변경'; }, 1200);
+    }, 350);
+    return;
+  }
+
+  rpc('change_admin_pin', { p_org_key: ORG_KEY, p_pin: curPin, p_new_pin: newPin })
+    .then(function(res) {
+      if (res.success) {
+        adminPin = newPin;
+        sessionStorage.setItem(ADMIN_PIN_KEY, newPin);
+        clearFields();
+        btn.textContent = '✓ 변경되었습니다';
+        setTimeout(function() { btn.disabled = false; btn.textContent = '비밀번호 변경'; }, 1200);
+      } else if (res.needPin) {
+        showAdmPinErr('현재 비밀번호가 일치하지 않아요.');
+      } else {
+        showAdmPinErr(res.message || '변경하지 못했어요.');
+      }
+    })
+    .catch(function() { showAdmPinErr('서버에 연결할 수 없어요.'); });
+}
+
+/* 데모: 관리 결과를 서명 화면 목록에 반영 */
+function refreshDemoFromAdmin() {
+  if (adminStaff.length) {
+    staffByDept = {}; deptOrder = [];
+    adminStaff.forEach(function(s) {
+      var d = s.dept || '(부서 미지정)';
+      if (!staffByDept[d]) { staffByDept[d] = []; deptOrder.push(d); }
+      staffByDept[d].push(s.name);
+    });
+    var deptSel = document.getElementById('dept');
+    deptSel.innerHTML = '<option value="">— 부서를 선택해 주세요 —</option>';
+    deptOrder.forEach(function(d) {
+      var opt = document.createElement('option');
+      opt.value = d; opt.textContent = d;
+      deptSel.appendChild(opt);
+    });
+  }
+  if (!adminTrainings.length) return;
+  var today = todayStr();
+  trainings = adminTrainings
+    .filter(function(t) { return t.active && (t.date === today || t.date === '매일'); })
+    .map(function(t) {
+      return { title: t.title, content: t.content, startTime: t.startTime, endTime: t.endTime,
+               targetType: t.targetType, targetDepts: t.targetDepts, targetPersons: t.targetPersons };
+    });
+  renderTrainings(trainings);
+}
+
+
+/* ── 공유 링크 ── */
+var currentShareLink = '';
+
+function buildShareLink(token) {
+  // 배포 URL 전체 대신 배포 ID만 담아 링크를 절반 이하로 압축 (QR 단순화)
+  var m = String(API_URL).match(/\/macros\/s\/([\w-]+)\/exec/);
+  var base = m ? (location.origin + location.pathname + '?s=' + m[1])
+                : (location.origin + location.pathname + '?api=' + encodeURIComponent(API_URL));
+  return token ? (base + '&d=' + encodeURIComponent(token)) : base;
+}
+
+function setShareUi(link) {
+  currentShareLink = link;
+  document.getElementById('shareLinkBox').textContent = link;
+  document.getElementById('shareQr').src =
+    'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data=' + encodeURIComponent(link);
+}
+
+/* 공유 모달을 열 때, 그 기관이 '매일 자동갱신' 모드면 PIN 인증 후 오늘자 토큰을 받아와야 함
+   (토큰 계산에 쓰이는 qr_secret은 서버 밖으로 절대 나가지 않으므로, 공유 링크를 만들려면
+   반드시 서버에 물어봐야 한다 — 그리고 그 요청 자체를 PIN으로 보호해 QR 유출 창구를 최소화함) */
+var pendingPinPurpose = 'admin';   // 'admin' | 'share' — PIN 모달 확인 성공 후 이어갈 동작
+
+function showShareModal() {
+  if (!API_URL) {   // 데모 모드: 서버가 없으므로 고정 링크만 보여줌
+    openShareModalWithToken(null);
+    return;
+  }
+  rpc('get_share_token', { p_org_key: ORG_KEY, p_pin: adminPin || '' })
+    .then(function(res) {
+      if (res.needPin) {
+        var wasWrong = !!adminPin;   // 이미 한 번 시도했던 PIN인데도 실패했다면 "틀림" 안내
+        pendingPinPurpose = 'share';
+        showAdminPinModal(false, wasWrong);
+        return;
+      }
+      openShareModalWithToken(res.rotateDaily ? res.token : null);
+    })
+    .catch(function() { openShareModalWithToken(null); });
+}
+
+function openShareModalWithToken(token) {
+  var link = buildShareLink(token);
+  setShareUi(link);
+  document.getElementById('shareRotateNote').style.display = token ? 'block' : 'none';
+  document.getElementById('modalShare').classList.add('show');
+
+  // 단축 URL 생성 시도 → 성공하면 짧은 주소로 링크·QR 교체 (QR이 훨씬 단순해짐)
+  var status = document.getElementById('shareShortStatus');
+  status.textContent = '더 짧은 주소를 만드는 중...';
+  makeShortUrl(link, function(shortUrl) {
+    if (shortUrl) {
+      setShareUi(shortUrl);
+      status.textContent = '✓ 단축 주소 생성 완료 — QR도 단축 주소로 만들어졌어요';
+    } else {
+      status.textContent = '';
+    }
+  });
+}
+
+/**
+ * 무료 단축 서비스로 짧은 주소 생성
+ * da.gd → clck.ru 순서로 시도, 모두 실패하면 null → 압축 링크(?s=...) 사용
+ * (두 서비스 모두 CORS를 지원해 브라우저에서 직접 호출 가능)
+ */
+function makeShortUrl(longUrl, cb) {
+  // 같은 링크로 이미 만든 단축 주소가 있으면 재사용
+  var cached    = localStorage.getItem('esign_short_url');
+  var cachedFor = localStorage.getItem('esign_short_url_for');
+  if (cached && cachedFor === longUrl) { cb(cached); return; }
+
+  var services = [
+    'https://da.gd/shorten?url=',
+    'https://clck.ru/--?url='
+  ];
+
+  function tryService(idx) {
+    if (idx >= services.length) { cb(null); return; }
+
+    var timedOut = false;
+    var timer = setTimeout(function() {
+      timedOut = true;
+      tryService(idx + 1);
+    }, 6000);
+
+    fetch(services[idx] + encodeURIComponent(longUrl))
+      .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+      .then(function(text) {
+        if (timedOut) return;
+        clearTimeout(timer);
+        var url = String(text).trim();
+        // 응답이 "https://xx.xx/xxxxx" 형태의 짧은 주소인지 확인
+        if (/^https:\/\/\S{8,40}$/.test(url)) {
+          localStorage.setItem('esign_short_url', url);
+          localStorage.setItem('esign_short_url_for', longUrl);
+          cb(url);
+        } else {
+          tryService(idx + 1);
+        }
+      })
+      .catch(function() {
+        if (timedOut) return;
+        clearTimeout(timer);
+        tryService(idx + 1);
+      });
+  }
+
+  tryService(0);
+}
+
+/* ── 기관 대표 색상 적용 (관리자 패널 > 기관 설정, #RRGGBB) ── */
+function applyBrandColor(hex) {
+  hex = String(hex || '').trim();
+  if (!/^#?[0-9a-fA-F]{6}$/.test(hex)) return;
+  if (hex.charAt(0) !== '#') hex = '#' + hex;
+
+  var r = parseInt(hex.substr(1, 2), 16),
+      g = parseInt(hex.substr(3, 2), 16),
+      b = parseInt(hex.substr(5, 2), 16);
+
+  // p만큼 흰색과 혼합 (파스텔 톤 파생)
+  function tint(p) {
+    return 'rgb(' +
+      Math.round(r + (255 - r) * p) + ',' +
+      Math.round(g + (255 - g) * p) + ',' +
+      Math.round(b + (255 - b) * p) + ')';
+  }
+  // p만큼 검정과 혼합 (서명 잉크가 항상 진하도록 보정)
+  function shade(p) {
+    return 'rgb(' +
+      Math.round(r * (1 - p)) + ',' +
+      Math.round(g * (1 - p)) + ',' +
+      Math.round(b * (1 - p)) + ')';
+  }
+
+  var rs = document.documentElement.style;
+  rs.setProperty('--brand',       hex);
+  rs.setProperty('--brand-soft',  tint(0.87));
+  rs.setProperty('--brand-light', tint(0.93));
+  rs.setProperty('--shadow-md', '0 8px 24px rgba('  + r + ',' + g + ',' + b + ',.11)');
+  rs.setProperty('--shadow-lg', '0 14px 32px rgba(' + r + ',' + g + ',' + b + ',.22)');
+  rs.setProperty('--shadow-xl', '0 18px 40px rgba(' + r + ',' + g + ',' + b + ',.30)');
+
+  BRAND_INK = shade(0.35);
+  if (ctx) ctx.strokeStyle = BRAND_INK;
+}
+
+/* ── QR 확대보기 / 다운로드 ── */
+function openQrZoom() {
+  var src = document.getElementById('shareQr').src;
+  if (!src) return;
+  document.getElementById('qrZoomImg').src = src;
+  document.getElementById('qrZoomOverlay').classList.add('show');
+}
+
+function closeQrZoom() {
+  document.getElementById('qrZoomOverlay').classList.remove('show');
+}
+
+function downloadQrImage() {
+  var src = document.getElementById('shareQr').src;
+  if (!src) return;
+  var fileName = (orgName ? orgName.replace(/[\\/:*?"<>|]/g, '') : '연수전자서명') + '_QR.png';
+
+  fetch(src)
+    .then(function(r) { if (!r.ok) throw new Error('fetch failed'); return r.blob(); })
+    .then(function(blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+    })
+    .catch(function() {
+      // CORS 등으로 직접 다운로드가 막히면 새 탭에서 열어 수동 저장(길게 눌러 저장)을 유도
+      window.open(src, '_blank');
+    });
+}
+
+function copyShareLink() {
+  var link = currentShareLink || buildShareLink();
+  var btn  = document.getElementById('copyShareBtn');
+  function done() {
+    btn.textContent = '복사되었어요!';
+    setTimeout(function() { btn.textContent = '링크 복사하기'; }, 1800);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(link).then(done).catch(function() { fallbackCopy(link, done); });
+  } else {
+    fallbackCopy(link, done);
+  }
+}
+
+function fallbackCopy(text, done) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) {}
+  document.body.removeChild(ta);
+}
+
+// 부제목에 포함된 이메일 주소를 자동 인식 → mailto 링크 + 복사 버튼으로 렌더링
+function renderHeaderSub(text) {
+  var el = document.getElementById('headerSub');
+  if (!el) return;
+  el.textContent = '';
+  var str = String(text == null ? '' : text);
+  var re = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+  var last = 0, m;
+  while ((m = re.exec(str)) !== null) {
+    if (m.index > last) el.appendChild(document.createTextNode(str.slice(last, m.index)));
+    var email = m[0];
+
+    var a = document.createElement('a');
+    a.className = 'sub-mail';
+    a.href = 'mailto:' + email;
+    a.textContent = email;
+    a.title = '클릭하면 메일 보내기';
+    el.appendChild(a);
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'sub-mail-copy';
+    btn.title = '이메일 주소 복사';
+    btn.setAttribute('aria-label', email + ' 복사');
+    btn.textContent = '복사';
+    (function(addr, button) {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        function done() {
+          button.classList.add('copied');
+          button.textContent = '복사됨';
+          setTimeout(function() {
+            button.classList.remove('copied');
+            button.textContent = '복사';
+          }, 1400);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(addr).then(done).catch(function() { fallbackCopy(addr, done); });
+        } else {
+          fallbackCopy(addr, done);
+        }
+      });
+    })(email, btn);
+    el.appendChild(btn);
+
+    last = m.index + email.length;
+  }
+  if (last < str.length) el.appendChild(document.createTextNode(str.slice(last)));
+}
+
+/* ═══════════════════════════════════════════
+   데이터 로드
+═══════════════════════════════════════════ */
+function loadPageData() {
+  rpc('get_page_data', { p_org_key: ORG_KEY, p_token: QR_TOKEN, p_pin: adminPin || '' })
+    .then(function(data) { onPageDataLoaded(data); })
+    .catch(function() { renderEmpty(true); });
+}
+
+/* 매일갱신 QR 모드에서 오늘자 토큰이 없거나 만료된 경우 — 전체 화면 차단 */
+function showQrExpired(org) {
+  document.getElementById('gateNormal').style.display  = 'none';
+  document.getElementById('gateExpired').style.display = 'block';
+  document.getElementById('gateExpiredOrg').textContent = org || '이 기관';
+  document.body.classList.add('gate-active');
+}
+
+/* 만료 화면에서 관리자가 PIN으로 재접속(주로 배포 URL을 재입력한 직후, 오늘자 QR 토큰이 없는 경우) */
+function retryGateWithPin() {
+  pendingPinPurpose = 'reconnect';
+  showAdminPinModal(false);
+}
+
+/* 게이트 화면에서 데모 시작 (배포 URL 불필요) */
+function startDemo() {
+  API_URL = ''; ORG_KEY = '';
+  document.body.classList.remove('gate-active');
+  loadDemoData();
+}
+
+function loadDemoData() {
+  setTimeout(function() {
+    onPageDataLoaded({
+      orgName: '○○기관 (미리보기)',
+      subTitle: '',
+      notice: '오늘 연수 종료 후 만족도 설문에도 참여해 주세요. (데모 안내문 — 관리자 패널 > 기관 설정에서 입력)',
+      trainings: [
+        { title: '학교폭력 예방교육', content: '전 구성원 · 09:00 ~ 09:40', startTime: '09:00', endTime: '09:40' },
+        { title: 'AI 활용 수업 설계 워크숍', content: '자율 참여' },
+        { title: '심폐소생술(CPR) 응급처치 교육', content: '보건 담당 주관' }
+      ],
+      staff: [
+        { dept: '기획부', name: '황성재' }, { dept: '기획부', name: '김지영' }, { dept: '기획부', name: '이민호' },
+        { dept: '운영부', name: '박서연' }, { dept: '운영부', name: '정현우' },
+        { dept: '교육부', name: '최유진' }, { dept: '교육부', name: '한도윤' }, { dept: '교육부', name: '오세빈' },
+        { dept: '행정실', name: '윤지호' }, { dept: '행정실', name: '강미래' }
+      ]
+    });
+  }, 400);
+}
+
+function onPageDataLoaded(data) {
+  if (data.qrExpired) { showQrExpired(data.orgName); return; }
+
+  orgName = String(data.orgName || '').trim();
+  if (orgName) {
+    document.getElementById('headerOrg').textContent = orgName;
+    document.title = orgName + ' · 연수 전자서명';
+  }
+  renderHeaderSub(String(data.subTitle || '').trim() || DEFAULT_SUB_TITLE);
+
+  // Supabase는 구성원을 평평한 목록으로 반환 → 부서별로 그룹핑 (등록 순서 유지)
+  staffByDept = {}; deptOrder = [];
+  (data.staff || []).forEach(function(s) {
+    var d = String(s.dept || '').trim();
+    var n = String(s.name || '').trim();
+    if (!n) return;
+    if (!staffByDept[d]) { staffByDept[d] = []; deptOrder.push(d); }
+    staffByDept[d].push(n);
+  });
+  // 구성원이 아직 하나도 없으면 부서 목록만이라도 폴백으로 표시
+  if (deptOrder.length === 0 && data.deptList) {
+    String(data.deptList).split(',').map(function(d) { return d.trim(); }).filter(Boolean).forEach(function(d) {
+      staffByDept[d] = []; deptOrder.push(d);
+    });
+  }
+  printPinSet = !!data.printPinSet;
+
+  // 안내문 (관리자 패널 > 기관 설정에서 입력)
+  var notice = String(data.notice || '').trim();
+  if (notice) {
+    document.getElementById('noticeText').textContent = notice;
+    document.getElementById('noticeBar').classList.add('show');
+  }
+
+  // 대표 색상 (관리자 패널 > 기관 설정에서 선택)
+  applyBrandColor(data.brandColor);
+
+  // 연결된 상태면 헤더에 공유 버튼 표시 (관리자용)
+  if (API_URL) document.getElementById('shareMini').classList.add('show');
+  document.getElementById('adminMini').classList.add('show');   // 연수 관리 버튼: 항상 표시
+
+  var deptSel = document.getElementById('dept');
+  deptSel.innerHTML = '<option value="">— 부서를 선택해 주세요 —</option>';
+  deptOrder.forEach(function(d) {
+    var opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    deptSel.appendChild(opt);
+  });
+
+  trainings = data.trainings || [];
+  renderTrainings(trainings);
+}
+
+/* ═══════════════════════════════════════════
+   연수 목록
+═══════════════════════════════════════════ */
+function renderEmpty(isError) {
+  var container = document.getElementById('trainingContainer');
+  if (isError) {
+    container.innerHTML =
+      '<div class="empty-state">' +
+        '<span class="ico"><svg width="32" height="32"><use href="#i-warn"/></svg></span>' +
+        '<p>데이터를 불러오지 못했습니다.<br>잠시 후 다시 시도해 주세요.</p>' +
+        '<div class="empty-hint">' +
+          '<b>계속 실패한다면</b><br>' +
+          '① 관리자에게 시스템 상태 확인 요청<br>' +
+          '② 아래 버튼으로 연결을 다시 설정' +
+        '</div>' +
+        '<button class="print-link-btn" onclick="resetConnection()">연결 다시 설정</button>' +
+      '</div>';
+  } else {
+    container.innerHTML =
+      '<div class="empty-state">' +
+        '<span class="ico"><svg width="34" height="34"><use href="#i-inbox"/></svg></span>' +
+        '<p>오늘 등록된 연수가 없습니다.</p>' +
+        '<div class="empty-hint">' +
+          '<b>관리자 확인 사항</b><br>' +
+          '헤더의 ⚙️ <b>관리자</b> 버튼 → 연수 관리에서<br>' +
+          '오늘 날짜(또는 매일)로 활성화된 연수를 등록해 주세요.' +
+        '</div>' +
+      '</div>';
+  }
+}
+
+// 'HH:MM' 문자열 비교로 서명 가능 시간대를 벗어났는지 확인 (없으면 하루 종일 허용)
+// 최종 방어선은 서버(submit_signature)의 now() 검사 — 기기 시각은 UX 안내용일 뿐
+function trainingTimeGateMsg(t) {
+  var now = nowTimeStr().slice(0, 5);
+  if (t.startTime && now < t.startTime) return '서명 가능 시간이 아니에요 (' + t.startTime + '부터)';
+  if (t.endTime && now > t.endTime) return '서명 가능 시간이 종료됐어요 (' + t.endTime + '까지)';
+  return '';
+}
+
+function renderTrainings(list) {
+  var container = document.getElementById('trainingContainer');
+  if (!list || list.length === 0) { renderEmpty(false); return; }
+
+  var html = '<div class="training-list">';
+  list.forEach(function(t, i) {
+    var blockedMsg = trainingTimeGateMsg(t);
+    html += '<div class="training-item' + (blockedMsg ? ' time-blocked' : '') + '" id="ti' + i + '" onclick="selectTraining(' + i + ')">' +
+      '<div class="training-icon"><svg width="18" height="18"><use href="#i-book"/></svg></div>' +
+      '<div class="training-body">' +
+        '<div class="training-name">' + esc(t.title) + '</div>' +
+        '<div class="training-meta">' + esc(blockedMsg || t.content || '연수 참여 서명') + '</div>' +
+      '</div>' +
+      '<span class="training-chev"><svg width="16" height="16"><use href="#i-chev-r"/></svg></span>' +
+    '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+  updateTrainingListUI();
+}
+
+function selectTraining(idx) {
+  var training = trainings[idx];
+  if (localStorage.getItem('signed_' + training.title)) {
+    document.getElementById('modalSignedTitle').textContent = training.title;
+    document.getElementById('modalAlreadySigned').classList.add('show');
+    return;
+  }
+  var blockedMsg = trainingTimeGateMsg(training);
+  if (blockedMsg) {
+    document.getElementById('modalTimeBlockedMsg').textContent = blockedMsg;
+    document.getElementById('modalTimeBlocked').classList.add('show');
+    return;
+  }
+  document.querySelectorAll('.training-item').forEach(function(el) {
+    el.classList.remove('selected');
+    var icon = el.querySelector('.training-icon svg use');
+    if (icon && !el.classList.contains('signed-done')) icon.setAttribute('href', '#i-book');
+  });
+  var el = document.getElementById('ti' + idx);
+  if (el) {
+    el.classList.add('selected');
+    var iconUse = el.querySelector('.training-icon svg use');
+    if (iconUse) iconUse.setAttribute('href', '#i-check');
+  }
+  selectedTraining = training;
+  selectedIndex = idx;
+  document.getElementById('btn1').disabled = false;
+}
+
+function updateTrainingListUI() {
+  trainings.forEach(function(t, i) {
+    var el = document.getElementById('ti' + i);
+    if (!el) return;
+    if (localStorage.getItem('signed_' + t.title)) {
+      el.classList.add('signed-done');
+      el.classList.remove('selected');
+      var iconUse = el.querySelector('.training-icon svg use');
+      if (iconUse) iconUse.setAttribute('href', '#i-check');
+      var meta = el.querySelector('.training-meta');
+      if (meta) meta.textContent = '서명 완료';
+      var chev = el.querySelector('.training-chev');
+      if (chev) chev.style.display = 'none';
+      el.onclick = function() {
+        document.getElementById('modalSignedTitle').textContent = t.title;
+        document.getElementById('modalAlreadySigned').classList.add('show');
+      };
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════
+   스텝 이동
+═══════════════════════════════════════════ */
+function showStep(n) {
+  for (var i = 1; i <= 4; i++) {
+    document.getElementById('step' + i).classList.toggle('active', i === n);
+  }
+  setBars(n);
+  window.scrollTo({ top: 0, behavior: 'auto' });
+}
+
+function setBars(n) {
+  var label = document.getElementById('progressLabel');
+  if (n >= 4) {
+    document.getElementById('bar1').classList.add('done');
+    document.getElementById('bar2').classList.add('done');
+    document.getElementById('bar3').classList.add('done');
+    label.textContent = '완료';
+    return;
+  }
+  for (var i = 1; i <= 3; i++) {
+    var b = document.getElementById('bar' + i);
+    b.classList.remove('active', 'done');
+    if (i < n) b.classList.add('done');
+    else if (i === n) b.classList.add('active');
+  }
+  label.textContent = n + ' of 3 단계';
+}
+
+function goToStep1() {
+  showStep(1);
+}
+
+function goToStep2() {
+  if (!selectedTraining) return;
+  document.getElementById('previewTitle').textContent = selectedTraining.title;
+  showStep(2);
+}
+
+function goToStep2FromStep3() {
+  showStep(2);
+}
+
+function goToStep3() {
+  document.getElementById('signMeta').textContent =
+    document.getElementById('dept').value + ' · ' + document.getElementById('uname').value;
+  showStep(3);
+  setTimeout(resizeCanvas, 80);
+}
+
+/* ── 부서/이름 ───────────────────────────────────── */
+function onDeptChange() {
+  var dept = document.getElementById('dept').value;
+  var nameSel = document.getElementById('uname');
+  var deptCard = document.getElementById('deptCard');
+  var nameCard = document.getElementById('nameCard');
+  var deptValue = document.getElementById('deptValue');
+  var nameValue = document.getElementById('nameValue');
+
+  if (dept) {
+    deptValue.textContent = dept;
+    deptValue.classList.remove('placeholder');
+    deptCard.classList.add('active');
+  } else {
+    deptValue.textContent = '부서를 선택해 주세요';
+    deptValue.classList.add('placeholder');
+    deptCard.classList.remove('active');
+  }
+
+  nameSel.innerHTML = '<option value="">— 성명을 선택해 주세요 —</option>';
+  if (dept && staffByDept[dept]) {
+    staffByDept[dept].forEach(function(n) {
+      var opt = document.createElement('option');
+      opt.value = n; opt.textContent = n;
+      nameSel.appendChild(opt);
+    });
+    nameSel.disabled = false;
+    nameCard.classList.remove('disabled');
+    nameValue.textContent = '성명을 선택해 주세요';
+    nameValue.classList.add('placeholder');
+    nameCard.classList.remove('active');
+  } else {
+    nameSel.innerHTML = '<option value="">— 부서를 먼저 선택해 주세요 —</option>';
+    nameSel.disabled = true;
+    nameCard.classList.add('disabled');
+    nameCard.classList.remove('active');
+    nameValue.textContent = '부서를 먼저 선택해 주세요';
+    nameValue.classList.add('placeholder');
+  }
+  validateStep2();
+}
+
+function onNameChange() {
+  var name = document.getElementById('uname').value;
+  var nameCard = document.getElementById('nameCard');
+  var nameValue = document.getElementById('nameValue');
+  if (name) {
+    nameValue.textContent = name;
+    nameValue.classList.remove('placeholder');
+    nameCard.classList.add('active');
+  } else {
+    nameValue.textContent = '성명을 선택해 주세요';
+    nameValue.classList.add('placeholder');
+    nameCard.classList.remove('active');
+  }
+  validateStep2();
+}
+
+function validateStep2() {
+  var dept = document.getElementById('dept').value;
+  var name = document.getElementById('uname').value;
+  document.getElementById('btn2').disabled = !(dept && name);
+}
+
+/* ═══════════════════════════════════════════
+   캔버스 서명
+═══════════════════════════════════════════ */
+function initCanvas() {
+  canvas = document.getElementById('sigCanvas');
+  ctx    = canvas.getContext('2d');
+  canvas.addEventListener('mousedown',  startDraw);
+  canvas.addEventListener('mousemove',  draw);
+  canvas.addEventListener('mouseup',    endDraw);
+  canvas.addEventListener('mouseleave', endDraw);
+  canvas.addEventListener('touchstart', function(e) { e.preventDefault(); startDraw(e.touches[0]); }, { passive:false });
+  canvas.addEventListener('touchmove',  function(e) { e.preventDefault(); draw(e.touches[0]); },      { passive:false });
+  canvas.addEventListener('touchend',   endDraw);
+}
+
+function resizeCanvas() {
+  var dpr = window.devicePixelRatio || 1;
+  var w   = canvas.offsetWidth;
+  if (!w) return;
+  canvas.width  = w * dpr;
+  canvas.height = 240 * dpr;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(dpr, dpr);
+  ctx.strokeStyle = BRAND_INK;
+  ctx.lineWidth   = 2.6;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+}
+
+function getPos(e) {
+  var rect   = canvas.getBoundingClientRect();
+  var dpr    = window.devicePixelRatio || 1;
+  var scaleX = (canvas.width  / dpr) / rect.width;
+  var scaleY = (canvas.height / dpr) / rect.height;
+  return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+}
+
+function startDraw(e) {
+  isDrawing = true;
+  var p = getPos(e);
+  ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  document.getElementById('canvasHint').style.opacity = '0';
+}
+function draw(e) {
+  if (!isDrawing) return;
+  var p = getPos(e);
+  ctx.lineTo(p.x, p.y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  hasSignature = true;
+  document.getElementById('btn3').disabled = false;
+}
+function endDraw() { isDrawing = false; }
+function clearCanvas() {
+  var dpr = window.devicePixelRatio || 1;
+  ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+  hasSignature = false;
+  document.getElementById('btn3').disabled = true;
+  document.getElementById('canvasHint').style.opacity = '1';
+}
+
+/* ═══════════════════════════════════════════
+   제출
+═══════════════════════════════════════════ */
+function doSubmit() {
+  if (!hasSignature) return;
+  var btn = document.getElementById('btn3');
+  btn.disabled = true; btn.textContent = '제출 중...';
+
+  var dateStr = todayStr();
+  var timeStr = nowTimeStr();
+  var payload = {
+    trainingTitle : selectedTraining.title,
+    department    : document.getElementById('dept').value,
+    name          : document.getElementById('uname').value.trim(),
+    signatureData : canvas.toDataURL('image/png'),
+  };
+
+  // 데모 모드
+  if (!API_URL) {
+    setTimeout(function() { showSuccess(payload); }, 500);
+    return;
+  }
+
+  function fail(msg) {
+    document.getElementById('modalErrorMsg').textContent = msg;
+    document.getElementById('modalError').classList.add('show');
+    btn.disabled = false; btn.textContent = '서명 제출하기';
+  }
+
+  // ① 기관 Apps Script에 이미지만 업로드(자기 드라이브에 저장) → fileId/imageUrl 수신
+  //   ※ Content-Type 헤더를 지정하지 않아야(text/plain 전송) CORS preflight 없이 처리됩니다.
+  // ② Supabase에 텍스트 기록 + 이미지 URL 저장 (UNIQUE 제약이 최종 중복 방어선)
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({
+      trainingTitle: payload.trainingTitle,
+      department: payload.department,
+      name: payload.name,
+      dateStr: dateStr,
+      signatureData: payload.signatureData
+    })
+  })
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(imgRes) {
+      if (!imgRes.success) { fail(imgRes.message || '이미지 저장에 실패했습니다.'); throw new Error('__handled__'); }
+      return rpc('submit_signature', {
+        p_org_key        : ORG_KEY,
+        p_sign_date      : dateStr,
+        p_sign_time      : timeStr,
+        p_training_title : payload.trainingTitle,
+        p_department     : payload.department,
+        p_name           : payload.name,
+        p_image_file_id  : imgRes.fileId,
+        p_image_url      : imgRes.imageUrl,
+        p_token          : QR_TOKEN
+      });
+    })
+    .then(function(res) {
+      if (res.success) {
+        showSuccess(payload);
+      } else if (res.duplicate) {
+        document.getElementById('modalDuplicateMsg').textContent = res.message || '이미 서명이 등록되어 있습니다.';
+        document.getElementById('modalDuplicate').classList.add('show');
+        btn.disabled = false; btn.textContent = '서명 제출하기';
+      } else {
+        fail(res.message || '알 수 없는 오류');
+      }
+    })
+    .catch(function(err) {
+      if (err && err.message === '__handled__') return;
+      fail('서버에 연결할 수 없습니다.\n네트워크 상태를 확인한 뒤 다시 시도해 주세요.');
+    });
+}
+
+function showSuccess(p) {
+  localStorage.setItem('signed_' + p.trainingTitle, '1');
+  updateTrainingListUI();
+  var btn3 = document.getElementById('btn3');
+  btn3.textContent = '서명 제출하기';
+  showStep(4);
+  var now = new Date();
+  var time = ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+  document.getElementById('successInfo').innerHTML =
+    '<div class="si-row"><span class="si-label">연수</span><span class="si-value">' + esc(p.trainingTitle) + '</span></div>' +
+    '<div class="si-row"><span class="si-label">부서</span><span class="si-value">' + esc(p.department) + '</span></div>' +
+    '<div class="si-row"><span class="si-label">성명</span><span class="si-value">' + esc(p.name) + '</span></div>' +
+    '<div class="si-row"><span class="si-label">시각</span><span class="si-value">' + time + '</span></div>';
+}
+
+function resetAll() {
+  selectedTraining = null; selectedIndex = -1; hasSignature = false;
+
+  document.getElementById('dept').value = '';
+  onDeptChange();
+
+  document.querySelectorAll('.training-item').forEach(function(el) {
+    if (el.classList.contains('signed-done')) return;
+    el.classList.remove('selected');
+    var iconUse = el.querySelector('.training-icon svg use');
+    if (iconUse) iconUse.setAttribute('href', '#i-book');
+  });
+  document.getElementById('btn1').disabled = true;
+  clearCanvas();
+  showStep(1);
+  updateTrainingListUI();
+}
+
+/* ═══════════════════════════════════════════
+   서명등록부 출력
+═══════════════════════════════════════════ */
+function openPrintPicker() {
+  if (!trainings || trainings.length === 0) {
+    document.getElementById('modalErrorMsg').textContent = '오늘 등록된 연수가 없어 출력할 수 없습니다.';
+    document.getElementById('modalError').classList.add('show');
+    return;
+  }
+  var list = document.getElementById('pickerList');
+  list.innerHTML = '';
+  trainings.forEach(function(t, i) {
+    var btn = document.createElement('button');
+    btn.className = 'picker-item';
+    btn.innerHTML =
+      '<span class="pi-ico"><svg width="15" height="15"><use href="#i-clipboard"/></svg></span>' +
+      '<span>' + esc(t.title) + '</span>';
+    btn.onclick = function() {
+      document.getElementById('modalPicker').classList.remove('show');
+      openPrintView(t);
+    };
+    list.appendChild(btn);
+  });
+  document.getElementById('modalPicker').classList.add('show');
+}
+
+function openPrintView(training) {
+  pendingPrintTraining = training;
+  pendingPrintDate = todayStr();
+
+  // 데모 모드: 기록 없이 명단만 출력
+  if (!API_URL) {
+    showPrintLoading();
+    pendingPrintRes = { records: [], date: pendingPrintDate };
+    showPrintFormatModal();
+    return;
+  }
+
+  // 출력 비밀번호가 설정된 기관: 세션에 저장된 값이 없으면 먼저 입력받기
+  var pin = sessionStorage.getItem(PIN_SESSION_KEY) || '';
+  if (printPinSet && !pin) {
+    showPinModal(false);
+    return;
+  }
+  fetchRecordsAndBuild(training, pin, pendingPrintDate);
+}
+
+/* 관리자 패널 [서명 기록] 탭 전용: 선택한 연수·날짜(오늘이 아니어도 됨)로 바로 출력.
+   관리자 패널은 이미 관리자 비밀번호로 인증된 상태이므로 별도 출력 비밀번호 입력 없이 진행한다. */
+function printAdminRecords() {
+  var title = document.getElementById('recTrainingSel').value;
+  var date  = document.getElementById('recDate').value;
+  document.getElementById('recErr').classList.remove('show');
+  if (!title) { showRecErr('연수를 선택해 주세요.'); return; }
+  if (!date)  { showRecErr('날짜를 선택해 주세요.'); return; }
+
+  if (!API_URL) {
+    showRecErr('데모 모드에서는 서명등록부 출력을 지원하지 않아요.');
+    return;
+  }
+
+  var matched = adminTrainings.filter(function(t) { return t.title === title; })[0];
+  pendingPrintTraining = matched
+    ? { title: title, targetType: matched.targetType, targetDepts: matched.targetDepts, targetPersons: matched.targetPersons }
+    : { title: title };
+  pendingPrintDate = date;
+  fetchRecordsAndBuild(pendingPrintTraining, adminPin, date);
+}
+
+function showPrintLoading() {
+  document.getElementById('printDoc').innerHTML =
+    '<div class="pd-loading">' +
+      '<div class="spinner"></div>' +
+      '<p style="font-size:12px;font-weight:500;">서명 기록을 불러오는 중...</p>' +
+    '</div>';
+  document.getElementById('printOverlay').classList.add('show');
+  document.body.classList.add('print-mode');
+}
+
+function fetchRecordsAndBuild(training, pin, dateStr) {
+  dateStr = dateStr || todayStr();
+  showPrintLoading();
+
+  rpc('get_signature_records', {
+    p_org_key: ORG_KEY, p_title: training.title, p_date: dateStr, p_pin: pin || ''
+  })
+    .then(function(res) {
+      if (res && res.needPin) {
+        // 비밀번호 미입력 또는 불일치
+        sessionStorage.removeItem(PIN_SESSION_KEY);
+        closePrintView();
+        showPinModal(!!pin);   // 값을 보냈는데 거부됐으면 "불일치" 안내
+        return;
+      }
+      if (!res || res.success === false) throw new Error((res && res.message) || 'error');
+      pendingPrintRes = res;
+      showPrintFormatModal();
+    })
+    .catch(function() {
+      document.getElementById('printDoc').innerHTML =
+        '<div class="pd-loading">' +
+          '<p style="font-size:13px;font-weight:600;color:#C0392B;">서명 기록을 불러오지 못했습니다.<br>잠시 후 다시 시도해 주세요.</p>' +
+        '</div>';
+    });
+}
+
+/* ── 출력 비밀번호 모달 ── */
+function showPinModal(wasWrong) {
+  var err = document.getElementById('pinErr');
+  var input = document.getElementById('pinInput');
+  input.value = '';
+  if (wasWrong) {
+    err.textContent = '비밀번호가 일치하지 않아요. 다시 입력해 주세요.';
+    err.classList.add('show');
+  } else {
+    err.classList.remove('show');
+  }
+  document.getElementById('modalPin').classList.add('show');
+  setTimeout(function() { input.focus(); }, 100);
+}
+
+function closePinModal() {
+  document.getElementById('modalPin').classList.remove('show');
+  pendingPrintTraining = null;
+}
+
+function submitPin() {
+  var pin = document.getElementById('pinInput').value.trim();
+  if (!pin) {
+    var err = document.getElementById('pinErr');
+    err.textContent = '비밀번호를 입력해 주세요.';
+    err.classList.add('show');
+    return;
+  }
+  sessionStorage.setItem(PIN_SESSION_KEY, pin);
+  document.getElementById('modalPin').classList.remove('show');
+  if (pendingPrintTraining) fetchRecordsAndBuild(pendingPrintTraining, pin, pendingPrintDate);
+}
+
+document.getElementById('pinInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') submitPin();
+});
+
+/* ── 인쇄 형식 선택 모달 ── */
+function getSavedPrintFormat() {
+  try {
+    var saved = JSON.parse(localStorage.getItem(PRINT_FORMAT_KEY) || 'null');
+    if (saved && saved.cols && saved.group && saved.rate) return saved;
+  } catch (e) {}
+  return { cols: '2', group: 'dept', rate: 'yes' };
+}
+
+function showPrintFormatModal() {
+  var f = getSavedPrintFormat();
+  document.getElementById('pfCols').value = f.cols;
+  document.getElementById('pfGroup').value = f.group;
+  document.getElementById('pfRate').value = f.rate;
+  document.getElementById('modalPrintFormat').classList.add('show');
+}
+
+function cancelPrintFormat() {
+  document.getElementById('modalPrintFormat').classList.remove('show');
+  pendingPrintRes = null;
+  closePrintView();
+}
+
+// 미리보기 화면의 "닫기": 메인 화면으로 나가지 않고 인쇄 형식 선택으로 되돌아감
+function backToPrintFormat() {
+  if (pendingPrintTraining && pendingPrintRes) {
+    showPrintFormatModal();
+  } else {
+    closePrintView();
+  }
+}
+
+function submitPrintFormat() {
+  var opts = {
+    cols: parseInt(document.getElementById('pfCols').value, 10) || 2,
+    group: document.getElementById('pfGroup').value === 'name' ? 'name' : 'dept',
+    showRate: document.getElementById('pfRate').value !== 'no'
+  };
+  try {
+    localStorage.setItem(PRINT_FORMAT_KEY, JSON.stringify({
+      cols: String(opts.cols), group: opts.group, rate: opts.showRate ? 'yes' : 'no'
+    }));
+  } catch (e) {}
+  document.getElementById('modalPrintFormat').classList.remove('show');
+  if (pendingPrintTraining && pendingPrintRes) {
+    buildPrintDoc(pendingPrintTraining, pendingPrintRes, opts);
+  }
+}
+
+function closePrintView() {
+  document.getElementById('printOverlay').classList.remove('show');
+  document.body.classList.remove('print-mode');
+}
+
+function buildPrintDoc(training, res, opts) {
+  opts = opts || { cols: 2, group: 'dept', showRate: true };
+  var cols = (opts.cols === 1 || opts.cols === 3) ? opts.cols : 2;
+  var groupByDept = opts.group !== 'name';
+  var showRate = opts.showRate !== false;
+  var records = res.records || [];
+  var dateStr = res.date || todayStr();
+
+  // 연수 대상이 '부서 선택'/'개별 선택'이면 그 부서·인원만 명단에 남기고 나머지는 숨긴다.
+  // ('전 구성원'이거나 대상 목록이 비어 있으면 전체 구성원 그대로 사용)
+  var targetPersons = (training.targetType === 'person' && Array.isArray(training.targetPersons) && training.targetPersons.length)
+    ? training.targetPersons : null;
+  var restrictDepts = (!targetPersons && training.targetType === 'dept' && Array.isArray(training.targetDepts) && training.targetDepts.length)
+    ? training.targetDepts : null;
+  function inPrintTarget(dept, name) {
+    if (targetPersons) return personListIndex(targetPersons, dept, name) > -1;
+    if (restrictDepts) return restrictDepts.indexOf(dept) > -1;
+    return true;
+  }
+
+  // 서명 기록 매칭용 인덱스 (부서+이름 우선, 이름 단독은 보조 수단)
+  // 이름 단독 매칭은 부서명이 나중에 변경돼도(rename_dept) 예전 기록을 찾아주기 위한
+  // 구제책이지만, 동명이인이 있으면 다른 사람의 서명을 잘못 가져올 수 있으므로
+  // 명단 전체에서 그 이름이 유일할 때만 적용한다. (전체 구성원 기준으로 계산해
+  // 대상 제한과 무관하게 동명이인 판정이 흔들리지 않게 한다)
+  var nameCount = {};
+  deptOrder.forEach(function(dept) {
+    (staffByDept[dept] || []).forEach(function(name) {
+      nameCount[name] = (nameCount[name] || 0) + 1;
+    });
+  });
+
+  var byKey = {}, byName = {};
+  records.forEach(function(r) {
+    byKey[r.department + '_' + r.name] = r;
+    if (!byName[r.name] && nameCount[r.name] === 1) byName[r.name] = r;
+  });
+
+  var entries = [], total = 0, signed = 0;
+
+  // 명단 순서대로 대상자만 표시 (서명자는 이미지, 미서명자는 표시)
+  deptOrder.forEach(function(dept) {
+    (staffByDept[dept] || []).forEach(function(name) {
+      if (!inPrintTarget(dept, name)) return;
+      total++;
+      var rec = byKey[dept + '_' + name] || byName[name] || null;
+      if (rec) { rec._used = true; signed++; }
+      entries.push({ dept: dept, name: name, rec: rec });
+    });
+  });
+
+  // 명단에 없는 서명자도 누락 없이 추가 (단, 대상 제한이 있으면 대상 밖 서명자는 계속 숨김)
+  records.forEach(function(r) {
+    if (!r._used) {
+      if (!inPrintTarget(r.department, r.name)) return;
+      total++; signed++;
+      entries.push({ dept: r.department, name: r.name, rec: r });
+    }
+  });
+
+  // 정렬 방식이 '이름 가나다순'이면 부서 그룹을 풀고 이름 기준으로 재정렬
+  if (!groupByDept) {
+    entries.sort(function(a, b) { return a.name.localeCompare(b.name, 'ko'); });
+  }
+
+  var pct = total > 0 ? Math.round(signed / total * 100) : 0;
+
+  // ── N열 1행 · 페이지 세로 순번 배치 (열 수는 opts.cols) ──
+  // 각 페이지: 첫 블록부터 순서대로 위→아래 채우고, 다음 블록으로 이어짐
+  // 여백 없이 매 페이지를 최대한 채우는 "전체" 행 수와, 서명률 표를 붙일
+  // 마지막 페이지에서만 쓰는 "여백 확보용" 행 수를 구분해서 사용한다.
+  var ROWS_FIRST_FULL    = 15;  // 첫 페이지(제목 영역 포함), 요약 없이 꽉 채울 때
+  var ROWS_NEXT_FULL     = 18;  // 이후 페이지, 요약 없이 꽉 채울 때
+  var ROWS_FIRST_SUMMARY = 12;  // 첫 페이지이면서 마지막 페이지라 요약이 붙을 때
+  var ROWS_NEXT_SUMMARY  = 15;  // 이후 페이지이면서 마지막 페이지라 요약이 붙을 때
+
+  // 같은 부서가 연속될 때 부서 셀을 세로 병합(rowspan)하기 위한 스팬 계산
+  // 반환값: 그룹 시작 행 → 병합할 행 수(양수), 병합에 흡수된 행 → -1, 빈 행 → 0
+  // 부서별 정렬이 아닐 때는 병합하지 않음(우연히 이웃한 동일 부서까지 묶이는 것을 방지)
+  function computeDeptSpans(list) {
+    var spans = new Array(list.length).fill(0);
+    if (!groupByDept) {
+      for (var n = 0; n < list.length; n++) spans[n] = list[n] ? 1 : 0;
+      return spans;
+    }
+    var i = 0;
+    while (i < list.length) {
+      if (!list[i]) { i++; continue; }
+      var j = i + 1;
+      while (j < list.length && list[j] && list[j].dept === list[i].dept) j++;
+      spans[i] = j - i;
+      for (var k = i + 1; k < j; k++) spans[k] = -1;
+      i = j;
+    }
+    return spans;
+  }
+
+  function cellHtml(entry, globalNo, isRightBlock, deptSpan) {
+    var div = isRightBlock ? ' class="pd-div"' : '';
+    if (!entry) {
+      return '<td' + div + '></td><td></td><td></td><td class="pd-sig"></td>';
+    }
+    var sigCell;
+    if (entry.rec && entry.rec.fileId) {
+      sigCell = '<img src="https://drive.google.com/thumbnail?id=' + esc(entry.rec.fileId) + '&amp;sz=w300"' +
+        ' referrerpolicy="no-referrer" alt="서명"' +
+        ' onerror="this.outerHTML=\'<span class=&quot;pd-signed-alt&quot;>서명 완료</span>\'">';
+    } else if (entry.rec) {
+      sigCell = '<span class="pd-signed-alt">서명 완료</span>';
+    } else {
+      sigCell = '';
+    }
+    var deptCell = '';
+    if (deptSpan !== -1) {
+      var rs = deptSpan > 1 ? ' rowspan="' + deptSpan + '"' : '';
+      deptCell = '<td' + rs + '>' + esc(entry.dept) + '</td>';
+    }
+    return '<td' + div + '>' + globalNo + '</td>' +
+      deptCell +
+      '<td class="pd-name">' + esc(entry.name) + '</td>' +
+      '<td class="pd-sig">' + sigCell + '</td>';
+  }
+
+  // 열별 컬럼 비율(번호:부서:성명:서명 = 6:13:9:22, 합계 50)을 열 수에 맞게 재분배
+  var BLOCK_RATIO = [6, 13, 9, 22];
+  var BLOCK_RATIO_SUM = 50;
+  var blockWidthPct = 100 / cols;
+  var colsHtml = '', theadCells = '';
+  for (var b = 0; b < cols; b++) {
+    BLOCK_RATIO.forEach(function(r) {
+      colsHtml += '<col style="width:' + (r / BLOCK_RATIO_SUM * blockWidthPct).toFixed(2) + '%">';
+    });
+    var divCls = b > 0 ? ' class="pd-div"' : '';
+    theadCells += '<th' + divCls + '>번호</th><th>부서</th><th>성명</th><th>서명</th>';
+  }
+  var theadHtml =
+    '<colgroup>' + colsHtml + '</colgroup>' +
+    '<thead><tr>' + theadCells + '</tr></thead>';
+
+  // list와 시작 오프셋(startAt)을 받아 capFirst/capNext 행 수 기준으로
+  // 페이지들을 나눈다. 각 페이지 객체는 실제 렌더에 쓸 html과, 그 페이지가
+  // 사용한 행 수(rowsOnPage) · 소비한 인원 수(consumed)를 담는다.
+  function paginateEntries(list, startAt, capFirst, capNext) {
+    var pages = [];
+    var base = 0, pageIdx = 0;
+    while (base < list.length || pageIdx === 0) {
+      var R = pageIdx === 0 ? capFirst : capNext;
+      var counts = [], consumed = 0;
+      for (var b = 0; b < cols; b++) {
+        var c = Math.max(0, Math.min(R, list.length - base - consumed));
+        counts.push(c);
+        consumed += c;
+      }
+      var rowsOnPage = Math.max(counts[0], 1);
+      var blockBase = [], acc = 0;
+      for (var b = 0; b < cols; b++) { blockBase.push(acc); acc += counts[b]; }
+      var blockLists = [];
+      for (var b = 0; b < cols; b++) {
+        var bl = [];
+        for (var i = 0; i < rowsOnPage; i++) {
+          bl.push(i < counts[b] ? list[base + blockBase[b] + i] : null);
+        }
+        blockLists.push(bl);
+      }
+      var blockSpans = blockLists.map(computeDeptSpans);
+      var trs = '';
+      for (var i = 0; i < rowsOnPage; i++) {
+        var rowHtml = '';
+        for (var b = 0; b < cols; b++) {
+          rowHtml += cellHtml(blockLists[b][i], startAt + base + blockBase[b] + i + 1, b > 0, blockSpans[b][i]);
+        }
+        trs += '<tr>' + rowHtml + '</tr>';
+      }
+      pages.push({
+        html: '<table class="print-table">' + theadHtml + '<tbody>' + trs + '</tbody></table>',
+        rowsOnPage: rowsOnPage, consumed: consumed
+      });
+      base += consumed;
+      pageIdx++;
+      if (consumed === 0) break;
+    }
+    return pages;
+  }
+
+  // 1차: 요약 없이 페이지마다 최대한 채워서 배치
+  var fullPages = paginateEntries(entries, 0, ROWS_FIRST_FULL, ROWS_NEXT_FULL);
+  var finalPages = fullPages;
+
+  if (showRate && fullPages.length) {
+    var lastFull = fullPages[fullPages.length - 1];
+    var lastCap = fullPages.length === 1 ? ROWS_FIRST_SUMMARY : ROWS_NEXT_SUMMARY;
+    if (lastFull.rowsOnPage > lastCap) {
+      // 마지막 페이지가 이미 꽉 차 있어 요약이 들어갈 여백이 없음 →
+      // 그 페이지분만 여백 확보용 행 수로 다시 나눠 필요하면 페이지를 추가
+      var consumedBeforeLast = fullPages.slice(0, -1).reduce(function(s, p) { return s + p.consumed; }, 0);
+      var tailEntries = entries.slice(consumedBeforeLast);
+      var tailCapFirst = fullPages.length === 1 ? ROWS_FIRST_SUMMARY : ROWS_NEXT_SUMMARY;
+      var tailPages = paginateEntries(tailEntries, consumedBeforeLast, tailCapFirst, ROWS_NEXT_SUMMARY);
+      finalPages = fullPages.slice(0, -1).concat(tailPages);
+    }
+  }
+
+  var pagesHtml = finalPages.map(function(p) {
+    return '<div class="pd-page">' + p.html + '</div>';
+  }).join('');
+
+  var now = new Date();
+  var printedAt = now.getFullYear() + '-' +
+    ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
+    ('0' + now.getDate()).slice(-2) + ' ' +
+    ('0' + now.getHours()).slice(-2) + ':' +
+    ('0' + now.getMinutes()).slice(-2);
+
+  var summaryHtml = !showRate ? '' :
+    '<div class="pd-summary">' +
+      '<div class="pd-sum-row">' +
+        '<span>대상 <b>' + total + '명</b> · 서명 <b>' + signed + '명</b> · 미서명 <b>' + (total - signed) + '명</b></span>' +
+        '<span class="pd-pct">서명률 ' + pct + '%</span>' +
+      '</div>' +
+      '<div class="pd-bar"><i style="width:' + pct + '%"></i></div>' +
+    '</div>';
+
+  document.getElementById('printDoc').innerHTML =
+    '<div class="pd-org">' +
+      '<span>' + esc(orgName || '연수 전자서명 시스템') + '</span>' +
+      '<span>연수일: ' + esc(dateStr) + '</span>' +
+    '</div>' +
+    '<h1 class="pd-title">' + esc(training.title) + ' 서명등록부</h1>' +
+    '<div class="pd-meta">' + esc(orgName ? orgName + ' · ' : '') + '전자서명 기록 자동 집계</div>' +
+    pagesHtml +
+    summaryHtml +
+    '<div class="pd-foot">' +
+      '본 서명등록부는 연수 전자서명 시스템에서 자동 생성된 문서입니다.<br>' +
+      '출력일시: ' + printedAt +
+    '</div>';
+
+  // 마지막 페이지는 강제 페이지 넘김 해제 (요약이 같은 페이지에 붙도록)
+  var pages = document.querySelectorAll('#printDoc .pd-page');
+  if (pages.length) pages[pages.length - 1].classList.add('last');
+}
+
+function todayStr() {
+  var n = new Date();
+  return n.getFullYear() + '-' +
+    ('0' + (n.getMonth() + 1)).slice(-2) + '-' +
+    ('0' + n.getDate()).slice(-2);
+}
+
+/* ── 유틸 ── */
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
