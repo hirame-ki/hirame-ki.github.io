@@ -433,15 +433,35 @@
   /* ── 좌측 상단 고정 칩 (제작자 문의, 항상 노출) ─────── */
   .site-credit-chip {
     position: fixed; left: 14px; top: 14px; z-index: 1700;
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 9px 15px; border-radius: 999px;
+    display: inline-flex; align-items: center;
+    padding: 9px; border-radius: 999px;
     background: var(--card); border: 1px solid var(--hair);
     color: var(--ink2); text-decoration: none;
     font-family: var(--font); font-size: 11.5px; font-weight: 700;
     letter-spacing: -0.01em; box-shadow: var(--shadow-md);
+    transition: padding 1.25s ease, background .9s ease, color .9s ease, border-color .9s ease;
   }
-  .site-credit-chip svg { flex: none; }
-  .site-credit-chip:hover { background: var(--brand-light); color: var(--brand); border-color: var(--brand-soft); }
+  .site-credit-chip svg { flex: none; width: 15px; height: 15px; }
+  /* 기본은 로고만, hover/focus 시 제작자명 펼침 */
+  .site-credit-chip .credit-name {
+    display: inline-block; max-width: 0; opacity: 0;
+    overflow: hidden; white-space: nowrap;
+    transition: max-width 1.4s ease, opacity 1s ease, margin-left 1.4s ease;
+    margin-left: 0;
+  }
+  .site-credit-chip:hover, .site-credit-chip:focus-visible {
+    padding: 9px 14px 9px 11px;
+    background: var(--brand-light); color: var(--brand); border-color: var(--brand-soft);
+  }
+  .site-credit-chip:hover .credit-name,
+  .site-credit-chip:focus-visible .credit-name {
+    max-width: 160px; opacity: 1; margin-left: 6px;
+  }
+  /* 터치 기기(hover 불가)에서는 항상 로고만 표시 */
+  @media (hover: none) {
+    .site-credit-chip:hover { padding: 9px; }
+    .site-credit-chip:hover .credit-name { max-width: 0; opacity: 0; margin-left: 0; }
+  }
   body.print-mode .site-credit-chip { display: none !important; }
 
   /* ── Modal ────────────────────────────────────────── */
@@ -1314,9 +1334,9 @@
 </div><!-- /app -->
 
 <!-- 좌측 상단 고정 칩 (항상 노출, 인쇄 시에는 자동 숨김) -->
-<a class="site-credit-chip" href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener">
-  <svg width="13" height="13" aria-hidden="true"><use href="#i-instagram"/></svg>
-  <span>제작@hirame.ki</span>
+<a class="site-credit-chip" href="https://www.instagram.com/hirame.ki" target="_blank" rel="noopener" aria-label="제작 @hirame.ki 인스타그램" title="제작@hirame.ki">
+  <svg width="15" height="15" aria-hidden="true"><use href="#i-instagram"/></svg>
+  <span class="credit-name">제작@hirame.ki</span>
 </a>
 
 <!-- ── Modals ── -->
