@@ -346,13 +346,21 @@ section.block { margin-bottom: 34px; }
     <h1>코드 두 개만 바꾸면 5분 안에 끝나요</h1>
     <p>기존에 쓰시던 스프레드시트와 학생 코드는 그대로 유지됩니다. 아래 버튼으로 코드를 복사해서 Apps Script에 붙여넣기만 하면 됩니다.</p>
     <div class="meta-row">
-      <span class="meta-chip">Done? Done! v3.0.1</span>
-      <span class="meta-chip">배포일 2026-08-18</span>
+      <span class="meta-chip">Done? Done! v3.1.0</span>
+      <span class="meta-chip">배포일 2026-09-04</span>
     </div>
   </header>
 
   <section class="fixlist">
-    <h2>이번에 고쳐진 것 (v3.0.1)</h2>
+    <h2>이번 업데이트 (v3.1.0) — 파일 여러 개 첨부</h2>
+    <ul class="newlist">
+      <li><strong>학생 제출·과제 등록 모두 파일을 여러 개 붙일 수 있습니다</strong> — 한 번에 여러 개를 고르거나 끌어다 놓으면 됩니다.</li>
+      <li>올린 파일은 <strong>목록에서 하나씩 지우거나 더 추가</strong>할 수 있습니다. 과제를 수정할 때도 기존 첨부는 그대로 두고 파일만 더할 수 있습니다.</li>
+      <li>첨부는 이미지·PDF 모두 <strong>차례로 미리보기</strong>됩니다. <strong>스프레드시트는 손대지 않아도 되고</strong>, 지금까지 올린 첨부도 그대로 보입니다.</li>
+    </ul>
+    <details class="preview" style="margin-top:16px">
+      <summary>지난 버전에서 바뀐 것 모두 보기 (v3.0.1 · v3.0 · v2.2 · v2.1)</summary>
+    <h2 style="margin:16px 0 14px">v3.0.1에서 고쳐진 것</h2>
     <ul>
       <li class="priority"><strong>선생님이 등록한 과제가 학생 화면에 하나도 안 뜨던 문제</strong> — 반 이름이 <strong>"3-1"처럼 숫자와 붙임표로 되어 있으면</strong> 구글 시트가 이 값을 <strong>날짜(2026-03-01)로 바꿔서</strong> 저장해 버렸습니다. 그러면 과제의 '대상수업'과 학생의 '수업장소'가 서로 다른 값이 되어, 선생님 화면에는 과제가 멀쩡히 보이는데 학생 화면만 <strong>"등록된 과제가 없습니다"</strong>로 비어 있었습니다. 이제 대상수업을 <strong>글자 그대로</strong> 저장하고, <strong>이미 날짜로 바뀌어 저장된 기존 과제도 업데이트 직후 자동으로 되돌립니다.</strong> (선생님이 따로 하실 일은 없습니다)</li>
       <li>반 이름을 <strong>"3 - 1", "3/1"처럼 조금 다르게 적어 두어도</strong> 같은 반으로 알아봅니다 — 학생 명단과 과제의 반 표기가 어긋나 과제·제출 현황이 비어 보이던 문제도 함께 해결됩니다.</li>
@@ -394,6 +402,7 @@ section.block { margin-bottom: 34px; }
       <li>학생에게 다른 반 과제까지 보이던 문제</li>
       <li>접근할 수 없던 <strong>현황판</strong> 메뉴 복구, 과제 첨부파일 제거 기능 추가</li>
     </ul>
+    </details>
   </section>
 
   <section class="block">
@@ -1904,6 +1913,23 @@ function getMySubmissions(student_code) {
 
 // ── 과제 제출 ────────────────────────────────────
 // 제출물 시트 열: A=학번, B=이름, C=과제ID, D=내용, E=파일URL, F=제출일시, G=파일명, H=파일형식
+// ★ 첨부 파일 문자열 분해 (복수 첨부 지원)
+//   전달 형식: "URL|||파일명|||형식###URL|||파일명|||형식..."
+//   저장 형식: URL열/파일명열/형식열에 각각 '###'로 이어 붙인다.
+//   파일이 하나면 결과가 예전과 똑같아서 기존 데이터와 호환된다.
+function splitFileParam(file_url) {
+  const urls = [], names = [], mimes = [];
+  String(file_url || "").split("###").forEach(function(chunk) {
+    if (!chunk) return;
+    const parts = chunk.split("|||");
+    if (!parts[0]) return;
+    urls.push(parts[0]);
+    names.push(parts[1] || "");
+    mimes.push(parts[2] || "");
+  });
+  return { urls: urls.join("###"), names: names.join("###"), mimes: mimes.join("###") };
+}
+
 function submitAssignment(student_code, assignment_id, content, file_url, student_name) {
   // content 또는 file_url 중 하나는 반드시 있어야 제출 가능
   const hasContent  = content &amp;&amp; String(content).trim() !== "";
@@ -1947,10 +1973,10 @@ function submitAssignment(student_code, assignment_id, content, file_url, studen
     }
   }
 
-  const parts = (file_url || "").split("|||");
-  const fUrl  = parts[0] || "";
-  const fName = parts[1] || "";
-  const fMime = parts[2] || "";
+  const packed = splitFileParam(file_url);
+  const fUrl  = packed.urls;
+  const fName = packed.names;
+  const fMime = packed.mimes;
 
   const timestamp = now();
 
@@ -2274,10 +2300,10 @@ function addAssignment(password, title, description, due_date, class_target, fil
   const sheet = getSheet(SHEET.과제목록);
   if (!sheet) return { success: false, message: "시트 초기화 오류입니다." };
 
-  const parts = (file_url || "").split("|||");
-  const fUrl  = parts[0] || "";
-  const fName = parts[1] || "";
-  const fMime = parts[2] || "";
+  const packed = splitFileParam(file_url);
+  const fUrl  = packed.urls;
+  const fName = packed.names;
+  const fMime = packed.mimes;
 
   // ★ 과제ID는 시간 기반으로 만든다.
   //   이전에는 getLastRow() 기반이라, 과제를 지운 뒤 새로 추가하면
@@ -2310,10 +2336,10 @@ function updateAssignment(password, assignment_id, title, description, due_date,
   for (let i = 1; i &lt; data.length; i++) {
     if (String(data[i][0]) !== String(assignment_id)) continue;
 
-    const parts = (file_url || "").split("|||");
-    const fUrl  = parts[0] || "";
-    const fName = parts[1] || "";
-    const fMime = parts[2] || "";
+    const packed = splitFileParam(file_url);
+    const fUrl  = packed.urls;
+    const fName = packed.names;
+    const fMime = packed.mimes;
 
     sheet.getRange(i+1, 2).setValue(title);
     sheet.getRange(i+1, 3).setValue(description || "");
@@ -4516,16 +4542,16 @@ tr:hover td { background: var(--bg); }
         &lt;textarea id="sub-content" placeholder="이번 수업에서 한 활동, 느낀 점, 배운 점 등을 자유롭게 적어주세요."&gt;&lt;/textarea&gt;
       &lt;/div&gt;
       &lt;div class="form-group"&gt;
-        &lt;label&gt;파일 첨부 (선택) — 이미지 또는 PDF&lt;/label&gt;
+        &lt;label&gt;파일 첨부 (선택) — 이미지 또는 PDF · 여러 개 첨부 가능&lt;/label&gt;
         &lt;div class="file-drop-zone" id="s-drop-zone"
           ondragover="handleDragOver(event,'s-drop-zone')"
           ondragleave="handleDragLeave('s-drop-zone')"
           ondrop="handleDrop(event,'s-file-input','s-file-preview','student')"&gt;
-          &lt;input type="file" id="s-file-input" accept="image/*,.pdf"
+          &lt;input type="file" id="s-file-input" accept="image/*,.pdf" multiple
             onchange="handleFileSelect(this,'s-file-preview','student')"&gt;
           &lt;div class="file-drop-icon"&gt;📎&lt;/div&gt;
-          &lt;div class="file-drop-text"&gt;파일을 드래그하거나 클릭하여 선택&lt;/div&gt;
-          &lt;div class="file-drop-hint"&gt;이미지(JPG, PNG 등) · PDF · 최대 50MB&lt;/div&gt;
+          &lt;div class="file-drop-text"&gt;파일을 드래그하거나 클릭하여 선택 (여러 개 가능)&lt;/div&gt;
+          &lt;div class="file-drop-hint"&gt;이미지(JPG, PNG 등) · PDF · 파일당 최대 50MB&lt;/div&gt;
         &lt;/div&gt;
         &lt;div id="s-upload-progress" class="upload-progress hidden"&gt;
           &lt;div class="mini-spinner"&gt;&lt;/div&gt;&lt;span&gt;Drive에 업로드 중...&lt;/span&gt;
@@ -4704,11 +4730,11 @@ tr:hover td { background: var(--bg); }
             ondragover="handleDragOver(event,'t-drop-zone')"
             ondragleave="handleDragLeave('t-drop-zone')"
             ondrop="handleDrop(event,'t-file-input','t-file-preview','teacher')"&gt;
-            &lt;input type="file" id="t-file-input" accept="image/*,.pdf"
+            &lt;input type="file" id="t-file-input" accept="image/*,.pdf" multiple
               onchange="handleFileSelect(this,'t-file-preview','teacher')"&gt;
             &lt;div class="file-drop-icon"&gt;📎&lt;/div&gt;
-            &lt;div class="file-drop-text"&gt;파일을 드래그하거나 클릭하여 선택&lt;/div&gt;
-            &lt;div class="file-drop-hint"&gt;이미지(JPG, PNG 등) · PDF · 최대 50MB&lt;/div&gt;
+            &lt;div class="file-drop-text"&gt;파일을 드래그하거나 클릭하여 선택 (여러 개 가능)&lt;/div&gt;
+            &lt;div class="file-drop-hint"&gt;이미지(JPG, PNG 등) · PDF · 파일당 최대 50MB&lt;/div&gt;
           &lt;/div&gt;
           &lt;div id="t-upload-progress" class="upload-progress hidden"&gt;&lt;div class="mini-spinner"&gt;&lt;/div&gt;&lt;span&gt;Drive에 업로드 중...&lt;/span&gt;&lt;/div&gt;
           &lt;div id="t-file-preview"&gt;&lt;/div&gt;
@@ -5049,9 +5075,9 @@ let mySubmissions = [];
 let selectedAssignmentId = null;
 let currentClassFilter = 'all';
 let _tableSortDir = {};
-let teacherUploadedFile = null;
-let studentUploadedFile = null;
-let editAssignUploadedFile = null;
+let teacherUploadedFiles = [];
+let studentUploadedFiles = [];
+let editAssignUploadedFiles = [];
 let selectedClass = null;
 let selectedStudentCode = null;
 let allSubmissions = [];
@@ -5444,12 +5470,25 @@ function handleDrop(e, inputId, previewId, role) {
   const zoneId = previewId === 'edit-file-preview' ? 'edit-drop-zone'
                : role === 'teacher' ? 't-drop-zone' : 's-drop-zone';
   document.getElementById(zoneId).classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file) processFile(file, previewId, role);
+  processFiles(Array.from(e.dataTransfer.files || []), previewId, role);
 }
 function handleFileSelect(input, previewId, role) {
-  const file = input.files[0];
-  if (file) processFile(file, previewId, role);
+  processFiles(Array.from(input.files || []), previewId, role);
+  input.value = '';   // 같은 파일을 다시 골라도 change가 발생하도록 초기화
+}
+// ★ 여러 파일을 순서대로 업로드한다.
+async function processFiles(files, previewId, role) {
+  for (const f of files) await processFile(f, previewId, role);
+}
+// previewId로 해당 첨부 목록 배열을 돌려준다.
+function getUploadList(previewId, role) {
+  if (previewId === 'edit-file-preview') return editAssignUploadedFiles;
+  return role === 'teacher' ? teacherUploadedFiles : studentUploadedFiles;
+}
+function setUploadList(previewId, role, arr) {
+  if (previewId === 'edit-file-preview') editAssignUploadedFiles = arr;
+  else if (role === 'teacher') teacherUploadedFiles = arr;
+  else studentUploadedFiles = arr;
 }
 async function processFile(file, previewId, role) {
   const MAX = 50*1024*1024;
@@ -5460,9 +5499,6 @@ async function processFile(file, previewId, role) {
   const isEditModal = previewId === 'edit-file-preview';
   const progressId = isEditModal ? 'edit-upload-progress' : (role === 'teacher' ? 't-upload-progress' : 's-upload-progress');
   document.getElementById(progressId).classList.remove('hidden');
-  document.getElementById(previewId).innerHTML = '';
-  if (isEditModal) editAssignUploadedFile = null;
-  else if (role === 'teacher') teacherUploadedFile = null; else studentUploadedFile = null;
   try {
     const base64 = await fileToBase64(file);
     const studentName = (currentStudent &amp;&amp; currentStudent.name) ? currentStudent.name : "";
@@ -5472,10 +5508,11 @@ async function processFile(file, previewId, role) {
     const res = await api({ action:'uploadFile', fileName:file.name, mimeType:file.type, fileData:base64, role:role, student_name:studentName });
     document.getElementById(progressId).classList.add('hidden');
     if (!res.success) { toast("❌ 업로드 실패: " + res.message); return; }
-    if (isEditModal) { editAssignUploadedFile = res; window._editKeepFile = false; renderEditFileCurrent(); }
-    else if (role === 'teacher') teacherUploadedFile = res; else studentUploadedFile = res;
-    renderFilePreview(previewId, res);
-    toast("✅ 파일이 업로드되었습니다.");
+    // ★ 기존 첨부를 지우지 않고 목록에 덧붙인다 (복수 첨부)
+    getUploadList(previewId, role).push({ viewUrl: res.viewUrl, fileName: res.fileName, mimeType: res.mimeType, embedUrl: res.embedUrl || '' });
+    if (isEditModal) renderEditFileCurrent();
+    renderFilePreview(previewId, role);
+    toast("✅ " + file.name + " 업로드 완료");
   } catch(err) {
     document.getElementById(progressId).classList.add('hidden');
     toast("❌ 업로드 오류: " + err.message);
@@ -5489,25 +5526,55 @@ function fileToBase64(file) {
     r.readAsDataURL(file);
   });
 }
-function renderFilePreview(containerId, fileInfo) {
+// ★ 첨부한 파일을 모두 목록으로 그린다. (하나씩 삭제 가능)
+function renderFilePreview(containerId, role) {
   const el = document.getElementById(containerId);
-  if (!fileInfo || !fileInfo.viewUrl) { el.innerHTML = ''; return; }
-  let previewHtml = '';
-  if (fileInfo.embedUrl) {
-    if (fileInfo.mimeType &amp;&amp; fileInfo.mimeType.startsWith('image/')) previewHtml = `&lt;img src="${escHtml(fileInfo.embedUrl)}" alt="미리보기" onerror="this.style.display='none'"&gt;`;
-    else if (fileInfo.mimeType === 'application/pdf') previewHtml = `&lt;iframe src="${escHtml(fileInfo.embedUrl)}" allowfullscreen&gt;&lt;/iframe&gt;`;
-  }
-  const roleKey = containerId.startsWith('t-') ? 'teacher' : 'student';
-  el.innerHTML = `&lt;div class="file-preview-wrap"&gt;${previewHtml}&lt;div class="file-info-bar"&gt;&lt;span class="file-name"&gt;📎 ${escHtml(fileInfo.fileName)}&lt;/span&gt;&lt;a href="${escHtml(fileInfo.viewUrl)}" target="_blank" style="color:var(--accent);font-size:12px;text-decoration:none;flex-shrink:0"&gt;새창에서 보기&lt;/a&gt;&lt;button class="btn-remove-file" onclick="removeFile('${roleKey}','${containerId}')"&gt;삭제&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`;
+  if (!el) return;
+  const roleKey = role || (containerId.startsWith('s-') ? 'student' : 'teacher');
+  const list = getUploadList(containerId, roleKey);
+  if (!list.length) { el.innerHTML = ''; return; }
+  el.innerHTML = list.map(function(f, i) {
+    const embed = f.embedUrl || buildEmbedUrlFromInfo(f.viewUrl, f.mimeType);
+    let previewHtml = '';
+    if (f.mimeType &amp;&amp; f.mimeType.startsWith('image/')) previewHtml = `&lt;img src="${escHtml(embed)}" alt="미리보기" onerror="this.style.display='none'"&gt;`;
+    else if (f.mimeType === 'application/pdf') previewHtml = `&lt;iframe src="${escHtml(embed)}" allowfullscreen&gt;&lt;/iframe&gt;`;
+    return `&lt;div class="file-preview-wrap"&gt;${previewHtml}&lt;div class="file-info-bar"&gt;&lt;span class="file-name"&gt;📎 ${escHtml(f.fileName)}&lt;/span&gt;&lt;a href="${escHtml(f.viewUrl)}" target="_blank" style="color:var(--accent);font-size:12px;text-decoration:none;flex-shrink:0"&gt;새창에서 보기&lt;/a&gt;&lt;button class="btn-remove-file" onclick="removeFile('${roleKey}','${containerId}',${i})"&gt;삭제&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;`;
+  }).join('');
 }
-function removeFile(role, previewId) {
-  if (previewId === 'edit-file-preview') { editAssignUploadedFile = null; document.getElementById('edit-file-input').value = ''; }
-  else if (role === 'teacher') { teacherUploadedFile = null; document.getElementById('t-file-input').value = ''; }
-  else { studentUploadedFile = null; document.getElementById('s-file-input').value = ''; }
-  document.getElementById(previewId).innerHTML = '';
+function removeFile(role, previewId, index) {
+  const list = getUploadList(previewId, role);
+  if (typeof index === 'number') list.splice(index, 1);
+  else setUploadList(previewId, role, []);
+  const inputId = previewId === 'edit-file-preview' ? 'edit-file-input' : (role === 'teacher' ? 't-file-input' : 's-file-input');
+  const inp = document.getElementById(inputId); if (inp) inp.value = '';
+  renderFilePreview(previewId, role);
+  if (previewId === 'edit-file-preview') renderEditFileCurrent();
+}
+// ★ 첨부 여러 개를 한 문자열로 묶는다. 파일 안은 '|||', 파일 사이는 '###'.
+//   (파일이 하나뿐이면 기존 형식과 같아서 예전 데이터와 호환된다)
+function packFiles(list) {
+  return (list || []).map(function(f) { return [f.viewUrl, f.fileName, f.mimeType].join('|||'); }).join('###');
+}
+// 시트에 저장된 '###' 묶음 문자열을 파일 배열로 되돌린다.
+function unpackFiles(fileUrl, fileName, mimeType) {
+  const urls  = String(fileUrl  || '').split('###');
+  const names = String(fileName || '').split('###');
+  const mimes = String(mimeType || '').split('###');
+  const out = [];
+  for (let i = 0; i &lt; urls.length; i++) {
+    if (!urls[i]) continue;
+    out.push({ viewUrl: urls[i], fileName: names[i] || '첨부 파일', mimeType: mimes[i] || '' });
+  }
+  return out;
 }
 function buildFileAttachHtml(fileUrl, fileName, mimeType, embedUrl) {
   if (!fileUrl) return '';
+  // ★ 첨부가 여러 개('###'로 묶임)면 하나씩 나눠 그린다.
+  if (String(fileUrl).indexOf('###') !== -1) {
+    return unpackFiles(fileUrl, fileName, mimeType).map(function(f) {
+      return buildFileAttachHtml(f.viewUrl, f.fileName, f.mimeType, buildEmbedUrlFromInfo(f.viewUrl, f.mimeType));
+    }).join('');
+  }
   const previewSrc = embedUrl || fileUrl;
   let previewHtml = '';
   if (mimeType &amp;&amp; mimeType.startsWith('image/')) previewHtml = `&lt;img src="${escHtml(previewSrc)}" alt="첨부 이미지" onerror="this.style.display='none'"&gt;`;
@@ -5600,7 +5667,7 @@ function logout() {
   const wasTeacher = !!teacherPw;   // 아래에서 teacherPw를 비우기 전에 기억해 둔다
   currentStudent = null; teacherPw = null;
   mySubmissions = []; allSubmissions = [];
-  teacherUploadedFile = null; studentUploadedFile = null;
+  teacherUploadedFiles = []; studentUploadedFiles = [];
   selectedClass = null; selectedStudentCode = null;
   // ★ 교사가 워드클라우드를 켜둔 상태에서만 종료한다.
   //   이전에는 학생이 로그아웃해도 '세션 종료' 토스트가 떴다.
@@ -5705,7 +5772,7 @@ function selectAssignment(id) {
   if (infoHtml) { fileViewEl.innerHTML = infoHtml; fileViewEl.classList.remove("hidden"); }
   else { fileViewEl.innerHTML = ''; fileViewEl.classList.add("hidden"); }
 
-  studentUploadedFile = null;
+  studentUploadedFiles = [];
   document.getElementById("s-file-preview").innerHTML = '';
   const inp = document.getElementById("s-file-input");
   if (inp) inp.value = '';
@@ -5745,7 +5812,7 @@ function closeAssignmentView() {
   document.getElementById("assignment-view").classList.add("hidden");
 }
 function cancelSubmit() {
-  selectedAssignmentId = null; studentUploadedFile = null;
+  selectedAssignmentId = null; studentUploadedFiles = [];
   document.getElementById("submit-form").classList.add("hidden");
   document.getElementById("s-file-preview").innerHTML = '';
 }
@@ -5757,7 +5824,7 @@ async function submitAssignment() {
   if (latest &amp;&amp; !isRejected) { toast("이미 제출한 과제입니다."); return; }
   const content = document.getElementById("sub-content").value.trim();
   let fileParam = "";
-  if (studentUploadedFile) fileParam = [studentUploadedFile.viewUrl, studentUploadedFile.fileName, studentUploadedFile.mimeType].join("|||");
+  fileParam = packFiles(studentUploadedFiles);
   // 텍스트 내용 또는 파일 첨부 중 하나는 반드시 있어야 제출 가능
   if (!content &amp;&amp; !fileParam) { toast("내용을 입력하거나 파일을 첨부해주세요."); return; }
   if (!confirm('제출 후에는 수정이 불가합니다. 제출하시겠습니까?')) return;
@@ -6435,14 +6502,14 @@ async function addAssignment() {
   const classTgt = document.getElementById('new-a-class').value;
   if (!title) { toast('과제명을 입력해주세요.'); return; }
   let fileParam = '';
-  if (teacherUploadedFile) fileParam = [teacherUploadedFile.viewUrl, teacherUploadedFile.fileName, teacherUploadedFile.mimeType].join('|||');
+  fileParam = packFiles(teacherUploadedFiles);
   showLoading('등록 중...');
   const res = await api({ action:'addAssignment', password:teacherPw, title, description:desc, due_date:due, class_target:classTgt, file_url:fileParam });
   hideLoading();
   if (res.success) {
     toast('✅ 과제가 등록되었습니다.');
     document.getElementById('new-a-title').value = ''; document.getElementById('new-a-desc').value = ''; document.getElementById('new-a-due').value = ''; document.getElementById('new-a-class').value = '';
-    teacherUploadedFile = null; document.getElementById('t-file-preview').innerHTML = '';
+    teacherUploadedFiles = []; document.getElementById('t-file-preview').innerHTML = '';
     const inp = document.getElementById('t-file-input'); if (inp) inp.value = '';
     allAssignments = (await api({ action:'getAssignments' })).assignments || [];
     loadTeacherAssignmentList();
@@ -6457,13 +6524,12 @@ function openEditAssignModal(idx) {
   document.getElementById('edit-a-title').value  = a.title;
   document.getElementById('edit-a-desc').value   = a.description || '';
   document.getElementById('edit-a-due').value    = a.due_date || '';
-  document.getElementById('edit-file-preview').innerHTML = '';
-  editAssignUploadedFile = null;
   const inp = document.getElementById('edit-file-input'); if (inp) inp.value = '';
 
-  // 기존 파일 표시
+  // ★ 기존 첨부를 목록으로 불러둔다. 여기서 하나씩 지우거나 더 추가할 수 있다.
   window._editOriginalAssign = a;
-  window._editKeepFile = true;      // 기본은 기존 첨부 유지
+  editAssignUploadedFiles = unpackFiles(a.file_url, a.file_name, a.mime_type);
+  renderFilePreview('edit-file-preview', 'teacher');
   renderEditFileCurrent();
 
   // 수업장소 셀렉트 채우기
@@ -6482,28 +6548,29 @@ function openEditAssignModal(idx) {
 // ★ 첨부 상태 표시 + '첨부 제거' 버튼
 //   이전 버전에는 첨부만 떼어낼 방법이 아예 없었다.
 function renderEditFileCurrent() {
-  const a = window._editOriginalAssign || {};
   const curEl = document.getElementById('edit-a-file-current');
-  if (window._editKeepFile &amp;&amp; a.file_name) {
-    curEl.innerHTML = `현재 파일: &lt;a href="${escHtml(a.file_url)}" target="_blank" style="color:var(--accent)"&gt;${escHtml(a.file_name)}&lt;/a&gt;
-      &lt;button class="btn-outline btn-sm" style="margin-left:6px" onclick="removeEditAssignFile()"&gt;첨부 제거&lt;/button&gt;
-      &lt;div style="color:var(--text3);font-size:11px;margin-top:4px"&gt;새 파일을 올리면 교체됩니다.&lt;/div&gt;`;
-  } else if (!window._editKeepFile &amp;&amp; !editAssignUploadedFile) {
+  if (!curEl) return;
+  const n = editAssignUploadedFiles.length;
+  const had = !!(window._editOriginalAssign &amp;&amp; window._editOriginalAssign.file_url);
+  if (n) {
+    curEl.innerHTML = `현재 첨부 &lt;b&gt;${n}개&lt;/b&gt;
+      &lt;button class="btn-outline btn-sm" style="margin-left:6px" onclick="removeEditAssignFile()"&gt;전부 제거&lt;/button&gt;
+      &lt;div style="color:var(--text3);font-size:11px;margin-top:4px"&gt;아래 목록에서 하나씩 삭제하거나, 새 파일을 더 추가할 수 있습니다.&lt;/div&gt;`;
+  } else if (had) {
     curEl.innerHTML = '&lt;span style="color:var(--notsubmit-text);font-weight:700"&gt;첨부 없음 — 저장하면 기존 첨부가 제거됩니다&lt;/span&gt;';
   } else {
     curEl.innerHTML = '&lt;span style="color:var(--text3)"&gt;첨부파일 없음&lt;/span&gt;';
   }
 }
 function removeEditAssignFile() {
-  window._editKeepFile = false;
-  editAssignUploadedFile = null;
+  editAssignUploadedFiles = [];
   document.getElementById('edit-file-preview').innerHTML = '';
   const inp = document.getElementById('edit-file-input'); if (inp) inp.value = '';
   renderEditFileCurrent();
 }
 function closeEditAssignModal() {
   document.getElementById('modal-edit-assign').classList.remove('open');
-  editAssignUploadedFile = null;
+  editAssignUploadedFiles = [];
 }
 
 async function saveEditAssignment() {
@@ -6515,16 +6582,10 @@ async function saveEditAssignment() {
   if (!title) { toast('과제명을 입력해주세요.'); return; }
 
   // 파일 처리
-  //  · 새로 올린 파일이 있으면 그것으로 교체
-  //  · 없고 '유지' 상태면 서버가 기존 첨부를 그대로 둔다 (keep_file=1)
-  //  · 없고 '제거'를 눌렀으면 빈 값으로 보내 첨부를 지운다
-  let fileParam = '';
-  let keepFile = '';
-  if (editAssignUploadedFile) {
-    fileParam = [editAssignUploadedFile.viewUrl, editAssignUploadedFile.fileName, editAssignUploadedFile.mimeType].join('|||');
-  } else if (window._editKeepFile) {
-    keepFile = '1';
-  }
+  //  ★ 모달을 열 때 기존 첨부를 목록으로 불러오므로, 화면의 목록 전체를 그대로 보낸다.
+  //     (하나씩 지우거나 더 추가한 결과가 그대로 저장된다. 목록이 비면 첨부 제거)
+  const fileParam = packFiles(editAssignUploadedFiles);
+  const keepFile = '';
 
   showLoading('수정 중...');
   const res = await api({ action:'updateAssignment', password:teacherPw, assignment_id:id, title, description:desc, due_date:due, class_target:classTgt, file_url:fileParam, keep_file:keepFile });
@@ -7378,11 +7439,11 @@ window.addEventListener('resize', () =&gt; {
         ondragover="handleDragOver(event,'edit-drop-zone')"
         ondragleave="handleDragLeave('edit-drop-zone')"
         ondrop="handleDrop(event,'edit-file-input','edit-file-preview','teacher')"&gt;
-        &lt;input type="file" id="edit-file-input" accept="image/*,.pdf"
+        &lt;input type="file" id="edit-file-input" accept="image/*,.pdf" multiple
           onchange="handleFileSelect(this,'edit-file-preview','teacher')"&gt;
         &lt;div class="file-drop-icon"&gt;📎&lt;/div&gt;
-        &lt;div class="file-drop-text"&gt;새 파일로 교체하려면 클릭하거나 드래그&lt;/div&gt;
-        &lt;div class="file-drop-hint"&gt;이미지(JPG, PNG 등) · PDF · 최대 50MB&lt;/div&gt;
+        &lt;div class="file-drop-text"&gt;파일을 추가하려면 클릭하거나 드래그 (여러 개 가능)&lt;/div&gt;
+        &lt;div class="file-drop-hint"&gt;이미지(JPG, PNG 등) · PDF · 파일당 최대 50MB&lt;/div&gt;
       &lt;/div&gt;
       &lt;div id="edit-upload-progress" class="upload-progress hidden"&gt;&lt;div class="mini-spinner"&gt;&lt;/div&gt;&lt;span&gt;Drive에 업로드 중...&lt;/span&gt;&lt;/div&gt;
       &lt;div id="edit-file-preview"&gt;&lt;/div&gt;
