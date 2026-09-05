@@ -66,6 +66,7 @@ body{
 .btn-ghost.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .btn-mini{height:38px;padding:0 14px;font-size:13.5px;border-radius:9px}
 .only-mobile{display:none}
+.lbl-short{display:none}
 
 /* ---------- 레이아웃 ---------- */
 .layout{display:flex;align-items:stretch;height:calc(100vh - 64px - 79px)}
@@ -393,17 +394,6 @@ input[type=file]{width:100%;font-size:13px}
   #emojiChips{grid-template-columns:repeat(5,1fr)}
   .themegrid{grid-template-columns:repeat(3,1fr)}
 }
-@media (max-width:900px){
-  .only-mobile{display:inline-block}
-  .layout{flex-direction:column;height:auto}
-  .panel{position:fixed;inset:143px 0 0 0;width:100%;flex:none;z-index:60;display:none}
-  .tabs{position:static;min-height:64px}
-  .tab{flex-direction:column;gap:5px;padding:8px 4px;text-align:center}
-  .panel.open{display:flex}
-  .tab b{font-size:12.5px}
-  .stage{padding:14px 8px 60px}
-  .opening .op-name{font-size:36px}
-}
 
 /* ================= 종이 ================= */
 .pages{display:flex;flex-direction:column;align-items:center;gap:22px;transform-origin:top center}
@@ -555,12 +545,67 @@ input[type=file]{width:100%;font-size:13px}
 .page:not(.writing) .ink-canvas{pointer-events:none}
 
 /* ---------- 반응형 ---------- */
+
+
+/* ================= 모바일 · 태블릿 세로 =================
+   패널을 띄우는 오버레이 대신 위아래로 쌓습니다.
+   설정 → 미리보기 순서라 스크롤만으로 전부 닿습니다. */
 @media (max-width:900px){
-  .only-mobile{display:inline-block}
-  .layout{flex-direction:column}
-  .panel{position:fixed;inset:57px 0 0 0;width:100%;flex:none;max-height:none;z-index:60;display:none}
-  .panel.open{display:block}
-  .stage{padding:14px 8px 60px}
+  /* --- 상단바 --- */
+  .topbar{height:auto;min-height:56px;padding:8px 14px;gap:8px}
+  .brand h1{font-size:22px}
+  .topbar-actions{gap:6px;flex:0 0 auto}
+  .topbar .btn{height:38px;padding:0 12px;font-size:14px}
+  .lbl-full{display:none}
+  .lbl-short{display:inline}
+
+  /* --- 단계 레일: 가로 스크롤 --- */
+  .tabs{
+    display:flex;grid-template-columns:none;
+    min-height:0;overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+    top:0;
+  }
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{
+    flex:0 0 auto;flex-direction:row;gap:8px;
+    padding:10px 14px;text-align:left;
+  }
+  .tab::before{flex:0 0 24px;width:24px;height:24px;font-size:13px}
+  .tab b{font-size:13.5px;white-space:nowrap}
+  .tab i{display:none}
+
+  /* --- 본문: 세로로 쌓기 --- */
+  .layout{flex-direction:column;height:auto;min-height:0}
+  .panel{
+    position:static;width:100%;flex:none;height:auto;
+    border-right:none;border-bottom:1px solid var(--line);
+  }
+  .panel-scroll{overflow:visible;flex:none;min-height:0}
+  .tabpage{padding:18px 16px 6px}
+  .wizard-nav{
+    position:sticky;bottom:0;z-index:20;
+    padding:10px 16px;box-shadow:0 -6px 14px rgba(20,30,45,.06);
+  }
+  .wizard-nav .btn{height:48px;font-size:15px}
+  .panel-credit{padding:10px 16px 12px}
+
+  /* --- 미리보기 --- */
+  .stage{padding:14px 8px 40px;overflow:visible}
+  .phraselist{max-height:220px}
+  .themegrid{grid-template-columns:repeat(2,1fr)}
+  #emojiChips{grid-template-columns:repeat(6,1fr)}
+  .opening .op-name{font-size:36px}
+}
+
+@media (max-width:420px){
+  .brand h1{font-size:20px}
+  .topbar .btn{height:36px;padding:0 10px;font-size:13px}
+  .tabpage{padding:16px 12px 6px}
+  .wizard-nav,.panel-credit{padding-left:12px;padding-right:12px}
+  .titlebox,.tunebox,.phrasebox,.ornbox{padding:12px}
+  .themegrid{grid-template-columns:repeat(2,1fr)}
+  #emojiChips{grid-template-columns:repeat(5,1fr)}
 }
 
 /* ================= 인쇄 ================= */

@@ -332,10 +332,37 @@
     })();
     ps.textContent = '@page { size: A4 ' + S.orient + '; margin: 0; }';
 
-    /* 확대/축소 */
-    pagesEl.style.transform = 'scale(' + (S.zoom / 100) + ')';
+    /* 확대/축소 (좁은 화면에서는 폭에 맞춰 자동으로 줄입니다) */
+    applyZoom();
 
     setupCanvases();
+  }
+
+  /* 화면 폭에 맞춰 미리보기를 줄입니다.
+     transform 은 자리를 차지하지 않으므로 높이를 따로 맞춰 줍니다. */
+  function applyZoom() {
+    var pagesEl = $('#pages'), stage = $('#stage');
+    if (!pagesEl || !stage) return;
+
+    var scale = S.zoom / 100;
+    var first = pagesEl.querySelector('.page');
+    if (first) {
+      var avail = stage.clientWidth - 16;
+      var natural = first.offsetWidth;
+      if (natural > 0 && avail > 0 && natural * scale > avail) {
+        scale = avail / natural;
+      }
+    }
+
+    /* transform 은 원래 크기만큼 자리를 차지하므로,
+       줄어든 만큼을 아래 여백에서 되돌려 빈 공간이 남지 않게 합니다. */
+    pagesEl.style.transform = 'none';
+    pagesEl.style.marginBottom = '';
+    var naturalH = pagesEl.offsetHeight;
+    pagesEl.style.transform = 'scale(' + scale + ')';
+    if (scale < 1) {
+      pagesEl.style.marginBottom = -(naturalH * (1 - scale)) + 'px';
+    }
   }
 
   function paginate(rows, perPage, drawRow) {
@@ -593,7 +620,8 @@
         $('.tabpage[data-page="' + t.dataset.tab + '"]').classList.add('active');
       });
     });
-    $('#btnPanel').addEventListener('click', function () { $('#panel').classList.toggle('open'); });
+    var panelBtn = $('#btnPanel');
+    if (panelBtn) panelBtn.addEventListener('click', function () { $('#panel').classList.toggle('open'); });
 
     var typingTimer;
     $('#inputText').addEventListener('input', function () {
@@ -682,9 +710,9 @@
 
     /* 인쇄 */
     $('#btnPrint').addEventListener('click', function () {
-      var z = S.zoom; S.zoom = 100; $('#pages').style.transform = 'none';
+      var z = S.zoom; S.zoom = 100; $('#pages').style.transform = 'none'; $('#pages').style.marginBottom = '';
       window.print();
-      setTimeout(function () { S.zoom = z; $('#pages').style.transform = 'scale(' + (z / 100) + ')'; }, 400);
+      setTimeout(function () { S.zoom = z; applyZoom(); }, 400);
     });
 
     /* 쓰기 모드 */
@@ -808,6 +836,18 @@
     /* 웹폰트 로딩이 끝나면 폭 계산이 달라지므로 한 번 더 그림 */
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(function () { render(); });
+    }
+
+    var rzTimer;
+    var refit = function () {
+      clearTimeout(rzTimer);
+      rzTimer = setTimeout(applyZoom, 150);
+    };
+    window.addEventListener('resize', refit);
+    window.addEventListener('orientationchange', refit);
+    /* 화면 회전·주소창 접힘처럼 resize 가 안 오는 경우까지 잡습니다 */
+    if (window.ResizeObserver) {
+      new ResizeObserver(refit).observe($('#stage'));
     }
   }
 
