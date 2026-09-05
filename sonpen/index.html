@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!--
+  손펜 (Sonpen) — 손글씨 연습장 만들기
+  Copyright (c) 2026 황성재 (Hwang Seongjae) · Instagram @hirame.ki
+  All Rights Reserved. 모든 권리 보유.
+
+  이 페이지는 오픈소스가 아닙니다.
+  상업적 이용, 개작·2차적 저작물 작성, 재배포를 모두 금지합니다.
+  브라우저에서 소스가 보이는 것은 기술적 특성일 뿐이며
+  코드의 복제·개작을 허락한 것이 아닙니다.
+  전문: LICENSE / 문의: Instagram @hirame.ki
+-->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="author" content="황성재 (@hirame.ki)">
+<meta name="copyright" content="Copyright (c) 2026 황성재. All Rights Reserved.">
+<meta name="license" content="LicenseRef-Sonpen-Restricted — 상업적 이용·개작·재배포 금지">
+<meta name="robots" content="noai, noimageai">
+<link rel="license" href="LICENSE">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%8D%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<title>손펜 · 손글씨 연습 만들기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@300;400;600&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=Hahmlet:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500&family=Noto+Serif+JP:wght@300;400;600&family=Zen+Maru+Gothic:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@300;400;500&family=BIZ+UDPMincho&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=Andika:ital,wght@0,400;0,700&family=Nunito:wght@300;400;600&family=Quicksand:wght@400;600&family=Poppins:wght@300;400;500&family=Lora:wght@400;600&family=Atkinson+Hyperlegible:wght@400;700&family=Gaegu:wght@300;400;700&family=Gamja+Flower&family=Jua&family=Do+Hyeon&family=Song+Myung&family=Black+Han+Sans&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="app-in">
+
+<!-- ============ 오프닝 ============ -->
+<div class="opening no-print" id="opening">
+  <div class="op-grid"></div>
+  <div class="op-frame"></div>
+  <div class="op-body">
+    <div class="op-orn">❋ ⁘ ❋</div>
+    <div class="op-mark">✎</div>
+    <div class="op-name">손펜</div>
+    <div class="op-rule"></div>
+    <div class="op-tag">연습장을 준비했습니다</div>
+  </div>
+  <div class="op-skip">아무 곳이나 누르면 바로 시작합니다</div>
+</div>
+
+<header class="topbar no-print">
+  <div class="brand">
+    <h1>손펜</h1>
+    <p>손글씨 연습장 만들기</p>
+  </div>
+  <div class="topbar-actions">
+    <button id="btnWriteMode" class="btn btn-ghost" title="태블릿/마우스로 바로 쓰기">✍️ 쓰기 모드</button>
+    <button id="btnPrint" class="btn btn-primary" title="A4로 인쇄">🖨️ 인쇄 / PDF 저장</button>
+    <button id="btnPanel" class="btn btn-ghost only-mobile">⚙️</button>
+  </div>
+</header>
+
+<nav class="tabs no-print">
+  <button class="tab active" data-tab="text"><b>문구 넣기</b><i>연습할 문장</i></button>
+  <button class="tab" data-tab="head"><b>머리말과 꼬리말</b><i>제목 · 이름칸 · 응원 문구</i></button>
+  <button class="tab" data-tab="grid"><b>격자</b><i>칸 모양 · 크기</i></button>
+  <button class="tab" data-tab="font"><b>글씨체</b><i>서체 · 굵기</i></button>
+  <button class="tab" data-tab="design"><b>꾸미기</b><i>분위기 · 문양</i></button>
+  <button class="tab" data-tab="paper"><b>용지와 인쇄</b><i>A4 · 여백 · 저장</i></button>
+</nav>
+
+<main class="layout">
+
+  <!-- ============ 설정 패널 ============ -->
+  <aside class="panel no-print" id="panel">
+
+    <div class="panel-scroll">
+
+    <!-- ---- 1. 문구 ---- -->
+    <section class="tabpage active" data-page="text">
+      <h2 class="steptitle">어떤 문장을 연습할까요?</h2>
+      <label class="field">
+        <textarea id="inputText" rows="5" placeholder="연습하고 싶은 문장을 입력하세요.&#10;줄바꿈으로 여러 문장을 넣을 수 있어요."></textarea>
+        <span class="hint">줄을 바꾸면 문장이 하나 더 늘어납니다.</span>
+      </label>
+
+      <div class="row">
+        <label class="check"><input type="checkbox" id="autoCorrect" checked> 맞춤법 · 띄어쓰기 자동 교정</label>
+        <button id="btnCorrectNow" class="btn btn-mini">지금 교정</button>
+      </div>
+      <div id="correctionReport" class="report hidden"></div>
+
+      <div class="phrasebox">
+        <div class="ornhead">
+          <h3>추천 문구</h3>
+          <span>누르면 바로 들어갑니다</span>
+        </div>
+        <div class="phrasecats" id="phraseCats"></div>
+        <div class="phraselist" id="phraseList"></div>
+        <div class="phrasefoot">
+          <button id="btnPhraseRandom" class="btn btn-mini" type="button">🎲 아무거나 하나</button>
+          <span class="phrasenote">페이지를 열 때마다 다른 문구가 놓입니다.</span>
+        </div>
+      </div>
+
+      <label class="field">
+        <span class="label">언어 / 격자 방식</span>
+        <select id="scriptMode">
+          <option value="auto">자동 감지</option>
+          <option value="ko">한글 (네모칸)</option>
+          <option value="ja">일본어 (원고지칸)</option>
+          <option value="zh">중국어 (전자격 田)</option>
+          <option value="en">알파벳 (4선 노트)</option>
+        </select>
+        <span class="hint" id="scriptHint">입력한 글자를 보고 알아서 골라줍니다.</span>
+      </label>
+
+      <div class="slidercard">
+        <label class="field">
+          <span class="label">한 문장 반복 횟수 <b id="repeatVal">3</b>줄</span>
+          <input type="range" id="repeat" min="1" max="10" value="3">
+        </label>
+        <label class="field">
+          <span class="label">따라쓰기 진하기 <b id="opacityVal">28</b>%</span>
+          <input type="range" id="ghostOpacity" min="5" max="70" value="28">
+        </label>
+      </div>
+
+      <label class="check"><input type="checkbox" id="firstSolid" checked> 첫 줄은 진하게(견본), 나머지는 흐리게</label>
+      <label class="check"><input type="checkbox" id="fadeOut"> 반복할수록 점점 흐려지기</label>
+      <label class="check"><input type="checkbox" id="showNumbers"> 줄 번호 표시</label>
+    </section>
+
+    <!-- ---- 2. 머리말과 꼬리말 ---- -->
+    <section class="tabpage" data-page="head">
+      <h2 class="steptitle">위아래에 무엇을 넣을까요?</h2>
+      <div class="titlebox">
+        <div class="ornhead">
+          <h3>제목</h3>
+          <span>연습장 맨 위에 들어갑니다</span>
+        </div>
+        <label class="field">
+          <input type="text" id="sheetTitle" placeholder="예: 오늘의 손글씨 연습">
+          <span class="hint">비워두면 제목 줄이 통째로 숨겨집니다.</span>
+        </label>
+        <div class="field">
+          <span class="label">글씨체</span>
+          <select id="titleFont"></select>
+        </div>
+        <div class="row">
+          <label class="mini"><span class="mlab">크기 <b class="numv" id="titleSizeVal">20</b>pt</span><input type="range" id="titleSize" min="10" max="40" value="20"></label>
+          <label class="mini">굵기
+            <select id="titleWeight">
+              <option value="300">가늘게</option>
+              <option value="400" selected>보통</option>
+              <option value="500">조금 굵게</option>
+              <option value="700">굵게</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label class="mini"><span class="mlab">자간 <b class="numv" id="titleSpaceVal">1</b>px</span><input type="range" id="titleSpace" min="-2" max="10" step="0.5" value="1"></label>
+          <label class="mini"><span class="mlab">아래 간격 <b class="numv" id="titleGapVal">3</b>mm</span><input type="range" id="titleGap" min="0" max="20" value="3"></label>
+        </div>
+        <div class="row">
+          <label class="mini">정렬
+            <select id="titleAlign">
+              <option value="left">왼쪽</option>
+              <option value="center" selected>가운데</option>
+              <option value="right">오른쪽</option>
+            </select>
+          </label>
+          <label class="mini"><span class="mlab">진하기 <b class="numv" id="titleOpacityVal">100</b>%</span><input type="range" id="titleOpacity" min="20" max="100" value="100"></label>
+        </div>
+        <label class="check"><input type="checkbox" id="showMeta" checked> 이름 / 날짜 칸 넣기</label>
+      </div>
+
+      <div class="titlebox">
+        <div class="ornhead">
+          <h3>아래쪽 응원 문구</h3>
+          <span>페이지 맨 아래 한 줄</span>
+        </div>
+        <label class="field">
+          <input type="text" id="sheetFooter" placeholder="예: 천천히, 또박또박">
+          <span class="hint">비워두면 아래쪽 줄이 숨겨집니다.</span>
+        </label>
+        <div class="field">
+          <span class="label">글씨체</span>
+          <select id="footFont"></select>
+        </div>
+        <div class="row">
+          <label class="mini"><span class="mlab">크기 <b class="numv" id="footSizeVal">10</b>pt</span><input type="range" id="footSize" min="7" max="24" value="10"></label>
+          <label class="mini">굵기
+            <select id="footWeight">
+              <option value="300">가늘게</option>
+              <option value="400" selected>보통</option>
+              <option value="500">조금 굵게</option>
+              <option value="700">굵게</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label class="mini"><span class="mlab">자간 <b class="numv" id="footSpaceVal">0</b>px</span><input type="range" id="footSpace" min="-2" max="10" step="0.5" value="0"></label>
+          <label class="mini"><span class="mlab">위 간격 <b class="numv" id="footGapVal">4</b>mm</span><input type="range" id="footGap" min="0" max="20" value="4"></label>
+        </div>
+        <div class="row">
+          <label class="mini">정렬
+            <select id="footAlign">
+              <option value="left">왼쪽</option>
+              <option value="center" selected>가운데</option>
+              <option value="right">오른쪽</option>
+            </select>
+          </label>
+          <label class="mini"><span class="mlab">진하기 <b class="numv" id="footOpacityVal">65</b>%</span><input type="range" id="footOpacity" min="20" max="100" value="65"></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- 3. 격자 ---- -->
+    <section class="tabpage" data-page="grid">
+      <h2 class="steptitle">칸은 어떤 모양으로 할까요?</h2>
+      <div class="field">
+        <div class="optgrid" id="gridStyleOpts">
+          <label class="opt"><input type="radio" name="gridStyle" value="cross" checked><span>십자 격자</span></label>
+          <label class="opt"><input type="radio" name="gridStyle" value="cross-dot"><span>점선 십자</span></label>
+          <label class="opt"><input type="radio" name="gridStyle" value="mi"><span>미자 격자 (米)</span></label>
+          <label class="opt"><input type="radio" name="gridStyle" value="box"><span>네모칸만</span></label>
+          <label class="opt"><input type="radio" name="gridStyle" value="baseline"><span>밑줄만</span></label>
+          <label class="opt"><input type="radio" name="gridStyle" value="none"><span>격자 없이</span></label>
+        </div>
+      </div>
+
+      <div class="slidercard">
+        <label class="field">
+          <span class="label">한 줄에 들어갈 칸 수 <b id="colsVal">10</b>칸</span>
+          <input type="range" id="cols" min="4" max="20" value="10">
+          <span class="hint">알파벳 4선 노트에서는 무시됩니다.</span>
+        </label>
+        <label class="field">
+          <span class="label">칸 사이 간격 <b id="gapVal">2</b></span>
+          <input type="range" id="cellGap" min="0" max="10" value="2">
+        </label>
+        <label class="field">
+          <span class="label">4선 노트 줄 높이 <b id="lineHVal">16</b>mm</span>
+          <input type="range" id="lineHeightMM" min="10" max="26" value="16">
+        </label>
+      </div>
+    </section>
+
+    <!-- ---- 4. 글씨체 ---- -->
+    <section class="tabpage" data-page="font">
+      <h2 class="steptitle">어떤 글씨체로 따라 쓸까요?</h2>
+      <label class="field">
+        <span class="label">글씨체 검색</span>
+        <input type="search" id="fontSearch" placeholder="예: 고딕, Noto, 명조">
+      </label>
+      <div class="fontlist" id="fontList"></div>
+      <div class="slidercard">
+        <label class="field">
+          <span class="label">글자 크기 <b id="fontScaleVal">72</b>%</span>
+          <input type="range" id="fontScale" min="40" max="95" value="72">
+        </label>
+        <label class="field">
+          <span class="label">글자 굵기</span>
+          <select id="fontWeight">
+            <option value="300">얇게</option>
+            <option value="400" selected>보통</option>
+            <option value="500">조금 굵게</option>
+            <option value="700">굵게</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <!-- ---- 5. 꾸미기 ---- -->
+    <section class="tabpage" data-page="design">
+      <h2 class="steptitle">종이 분위기</h2>
+      <div class="field">
+        <div class="themegrid" id="themeGrid"></div>
+      </div>
+
+      <div class="tunebox">
+        <div class="ornhead">
+          <h3>고른 분위기 다듬기</h3>
+          <span>테마를 고른 뒤 마음에 안 드는 부분만</span>
+        </div>
+        <p class="ornnote">아래 값은 위에서 테마를 고를 때마다 그 테마의 색으로 다시 채워집니다. 테마를 먼저 고르고 손보세요.</p>
+        <div class="row">
+          <label class="field" style="flex:1 1 0;min-width:110px">
+            <span class="label">종이 바탕색</span>
+            <input type="color" id="paperColor" value="#fffdf7">
+          </label>
+          <label class="field" style="flex:1 1 0;min-width:110px">
+            <span class="label">격자 색</span>
+            <input type="color" id="gridColor" value="#c9c2b6">
+          </label>
+          <label class="field" style="flex:1 1 0;min-width:110px">
+            <span class="label">글씨 색</span>
+            <input type="color" id="inkColor" value="#3a3a3a">
+          </label>
+        </div>
+        <div class="row">
+          <div class="field" style="flex:1;min-width:170px">
+            <span class="label">용지 테두리</span>
+            <select id="borderStyle">
+              <option value="none">없음</option>
+              <option value="thin" selected>얇은 실선</option>
+              <option value="double">이중선</option>
+              <option value="rounded">둥근 모서리</option>
+              <option value="dashed">점선</option>
+              <option value="dots">동글동글 점무늬</option>
+              <option value="wave">물결무늬</option>
+              <option value="ribbon">리본 프레임</option>
+              <option value="corner">모서리 장식</option>
+            </select>
+          </div>
+          <label class="field" style="flex:0 0 140px">
+            <span class="label">테두리 색</span>
+            <input type="color" id="borderColor" value="#e0b8a0">
+          </label>
+        </div>
+      </div>
+
+      <div class="ornbox">
+        <div class="ornhead">
+          <h3>장식 문양</h3>
+          <span>테두리 색을 그대로 따릅니다</span>
+        </div>
+        <p class="ornnote">알록달록한 이모지 대신 한 가지 색으로 찍히는 활자 문양을 씁니다. 인쇄했을 때 종이와 톤이 맞고, 연습 글씨보다 튀지 않습니다.</p>
+        <div class="ornpacks" id="ornPacks"></div>
+        <div class="chips" id="emojiChips"></div>
+        <div class="row">
+          <label class="mini">놓을 자리
+            <select id="emojiPlace">
+              <option value="corners">네 모서리</option>
+              <option value="top" selected>위쪽 띠</option>
+              <option value="bottom">아래쪽 띠</option>
+              <option value="scatter">흩뿌리기</option>
+              <option value="side">양옆</option>
+            </select>
+          </label>
+          <label class="mini">크기
+            <input type="range" id="emojiSize" min="10" max="48" value="20">
+          </label>
+        </div>
+        <div class="ornfoot">
+          <span class="lb">직접 입력</span>
+          <input type="text" id="emojiCustom" placeholder="이모지를 쓰고 싶다면 여기에 (예: 🌷🍀)" maxlength="20">
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="label">그림 파일 넣기</span>
+        <input type="file" id="imgUpload" accept="image/*">
+        <div class="row" style="margin-top:10px">
+          <label class="mini">위치
+            <select id="imgPlace">
+              <option value="top-left">왼쪽 위</option>
+              <option value="top-right" selected>오른쪽 위</option>
+              <option value="bottom-left">왼쪽 아래</option>
+              <option value="bottom-right">오른쪽 아래</option>
+              <option value="watermark">가운데 워터마크</option>
+              <option value="header">머리말 배너</option>
+            </select>
+          </label>
+          <label class="mini">크기 <input type="range" id="imgSize" min="10" max="120" value="35"></label>
+          <label class="mini">투명도 <input type="range" id="imgOpacity" min="5" max="100" value="100"></label>
+        </div>
+        <button id="btnImgClear" class="btn btn-mini">이미지 제거</button>
+      </div>
+    </section>
+
+    <!-- ---- 6. 용지와 인쇄 ---- -->
+    <section class="tabpage" data-page="paper">
+      <h2 class="steptitle">용지 방향</h2>
+      <div class="field">
+        <div class="optgrid two">
+          <label class="opt"><input type="radio" name="orient" value="portrait" checked><span>세로 (A4)</span></label>
+          <label class="opt"><input type="radio" name="orient" value="landscape"><span>가로 (A4)</span></label>
+        </div>
+      </div>
+      <div class="slidercard">
+        <label class="field">
+          <span class="label">여백 <b id="marginVal">15</b>mm</span>
+          <input type="range" id="margin" min="5" max="30" value="15">
+        </label>
+        <div class="field">
+          <span class="label">미리보기 배율 <b id="zoomVal">100</b>%</span>
+          <input type="range" id="zoom" min="40" max="160" value="100">
+        </div>
+      </div>
+      <div class="field">
+        <span class="label">설정 저장</span>
+        <div class="row">
+          <button id="btnSave" class="btn btn-mini">현재 설정 저장</button>
+          <button id="btnReset" class="btn btn-mini">초기화</button>
+        </div>
+        <span class="hint">브라우저에 저장되어 다음에 열 때 그대로 나옵니다.</span>
+      </div>
+    </section>
+
+    </div><!-- /panel-scroll -->
+
+    <div class="wizard-nav no-print">
+      <button id="wizPrev" class="btn" type="button">이전</button>
+      <button id="wizNext" class="btn btn-primary" type="button">다음 · 격자</button>
+    </div>
+
+    <footer class="panel-credit no-print">
+      <span class="credit-made">만든 사람</span>
+      <b class="credit-name">황성재</b>
+      <a class="credit-sns" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener">@hirame.ki</a>
+      <span class="credit-copy">&copy; 2026 · 무단 복제 · 개작 · 상업적 이용 금지</span>
+    </footer>
+  </aside>
+
+  <!-- ============ 미리보기 ============ -->
+  <div class="stage" id="stage">
+    <div class="pen-toolbar no-print hidden" id="penBar">
+      <span class="pen-label">✍️ 쓰기 모드</span>
+      <input type="color" id="penColor" value="#1b3a5c">
+      <label class="mini">굵기 <input type="range" id="penWidth" min="1" max="12" value="3"></label>
+      <button id="btnEraser" class="btn btn-mini">지우개</button>
+      <button id="btnUndo" class="btn btn-mini">되돌리기</button>
+      <button id="btnClearInk" class="btn btn-mini">전체 지우기</button>
+      <button id="btnExitWrite" class="btn btn-mini">나가기</button>
+    </div>
+    <div id="pages" class="pages"></div>
+  </div>
+</main>
+
+<script src="fonts.js"></script>
+<script src="phrases.js"></script>
+<script src="corrector.js"></script>
+<script src="app.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+손펜 (Sonpen) — 사용 제한 라이선스
+Sonpen Restricted Use License
+
+Copyright (c) 2026 황성재 (Hwang Seongjae, Instagram: @hirame.ki)
+All Rights Reserved. 모든 권리 보유.
+
+────────────────────────────────────────────────────────────────────────
+한국어
+────────────────────────────────────────────────────────────────────────
+
+이 소프트웨어(손펜, 이하 "본 소프트웨어")의 소스 코드, 디자인, 문서, 그 밖의
+모든 구성 요소에 대한 저작권은 저작권자 황성재에게 있습니다.
+
+1. 허용되는 것
+   (1) 개인적·비상업적 목적으로 본 소프트웨어를 실행하여 연습장을 만들고
+       출력·사용하는 것.
+   (2) 학교·학원 등에서 수업 자료로 쓰기 위해 만든 연습장을 학습자에게
+       나누어 주는 것. (연습장 결과물에 한하며, 소프트웨어 자체의 배포는
+       포함되지 않습니다.)
+
+2. 금지되는 것
+   아래 행위는 저작권자의 사전 서면 허락 없이는 일절 금지됩니다.
+
+   (1) 상업적 이용
+       본 소프트웨어 또는 그 일부를 판매, 대여, 유상 서비스 제공, 광고 수익
+       창출, 유료 강의·상품의 구성 요소로 사용하는 등 직접적·간접적으로
+       영리를 목적으로 이용하는 행위.
+
+   (2) 개작 · 2차적 저작물 작성
+       본 소프트웨어의 소스 코드, 디자인, 문구, 구조를 수정·변경·번역·각색
+       하거나, 이를 기반으로 새로운 저작물(포크, 파생 프로젝트, 재작성본,
+       다른 언어·플랫폼으로의 이식 등)을 만드는 행위.
+
+   (3) 재배포
+       본 소프트웨어의 전부 또는 일부를 복제하여 제3자에게 배포·전송·공중
+       송신하거나, 저장소·웹사이트·앱스토어·패키지 저장소 등에 게시하는 행위.
+       원본 그대로의 복제본이라도 동일하게 금지됩니다.
+
+   (4) 표시 제거
+       소스 파일의 저작권 표시, SPDX 표기, 본 라이선스 파일, NOTICE 파일을
+       삭제하거나 변경하는 행위.
+
+   (5) 학습 데이터 이용
+       본 소프트웨어를 인공지능·기계학습 모델의 학습, 미세조정, 평가용
+       데이터셋으로 수집·이용하는 행위.
+
+3. 소스 코드가 보이는 것에 대하여
+   본 소프트웨어는 웹 브라우저에서 동작하므로 소스 코드가 이용자에게 노출됩니다.
+   그러나 이는 기술적 특성일 뿐이며, 코드의 이용·복제·개작을 허락한 것으로
+   해석되지 않습니다.
+
+4. 폰트
+   본 소프트웨어가 불러와 사용하는 웹폰트는 저작권자의 저작물이 아니며,
+   각 폰트의 라이선스(SIL Open Font License 1.1)를 따릅니다.
+   자세한 내용은 THIRD_PARTY_NOTICES.md 를 참고하십시오.
+   본 라이선스의 제한은 폰트에는 적용되지 않습니다.
+
+5. 사용자가 만든 결과물
+   본 소프트웨어로 만든 연습장(인쇄물·PDF·이미지)에 대해 저작권자는 어떠한
+   권리도 주장하지 않습니다. 단, 입력한 문구가 타인의 저작물인 경우 그 권리는
+   원저작자에게 있으며, 이에 대한 책임은 이용자에게 있습니다.
+
+6. 보증의 부인 및 책임의 제한
+   본 소프트웨어는 어떠한 명시적·묵시적 보증도 없이 "있는 그대로" 제공됩니다.
+   저작권자는 상품성, 특정 목적에의 적합성, 권리 비침해에 대하여 보증하지
+   않으며, 본 소프트웨어의 사용 또는 사용 불능으로 인해 발생한 어떠한 손해에
+   대해서도 책임지지 않습니다.
+
+7. 위반 및 종료
+   본 라이선스를 위반하는 즉시 이용 권한은 자동으로 종료되며, 저작권자는
+   저작권법에 따른 민·형사상 조치를 취할 수 있습니다.
+
+8. 별도 허락
+   위에서 금지한 이용을 원하는 경우 인스타그램 @hirame.ki 로 문의하십시오.
+   개별 협의를 통해 서면으로 허락을 받을 수 있습니다.
+
+9. 준거법
+   본 라이선스는 대한민국 법률에 따라 해석되며, 분쟁 발생 시 저작권자의
+   주소지를 관할하는 법원을 전속 관할 법원으로 합니다.
+
+────────────────────────────────────────────────────────────────────────
+English (Summary Translation)
+────────────────────────────────────────────────────────────────────────
+
+All rights in this software are reserved by 황성재 (Hwang Seongjae, @hirame.ki).
+
+PERMITTED: Running the software for personal, non-commercial use, and handing
+out the practice sheets it produces (including in a classroom).
+
+STRICTLY PROHIBITED without prior written permission from the copyright holder:
+  - Any commercial use, direct or indirect.
+  - Any modification, adaptation, translation, port, fork, rewrite, or other
+    derivative work.
+  - Any redistribution of the software, in whole or in part, modified or
+    verbatim, through any channel.
+  - Removal or alteration of copyright notices, this license, or NOTICE.
+  - Use of this software as training, fine-tuning, or evaluation data for
+    artificial intelligence or machine learning systems.
+
+The source being visible in the browser is a technical necessity and does not
+grant any license to copy, modify, or reuse it.
+
+Web fonts loaded by this software are not covered by this license; they remain
+under the SIL Open Font License 1.1 (see THIRD_PARTY_NOTICES.md).
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. THE COPYRIGHT
+HOLDER SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING
+FROM THE SOFTWARE OR ITS USE.
+
+Any breach terminates your rights immediately. For permission requests, contact
+Instagram @hirame.ki. Governed by the laws of the Republic of Korea.
