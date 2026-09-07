@@ -715,6 +715,17 @@
       setTimeout(function () { S.zoom = z; applyZoom(); }, 400);
     });
 
+    /* 미리보기 위 도구 (상단바와 같은 동작) */
+    $('#btnPrint2').addEventListener('click', function () { $('#btnPrint').click(); });
+    $('#btnWriteMode2').addEventListener('click', toggleWrite);
+    var foldKey = 'sonpen.stageActionsFolded';
+    try { if (localStorage.getItem(foldKey) === '1') setStageFold(true); } catch (e) {}
+    $('#btnStageFold').addEventListener('click', function () {
+      var folded = !$('#stageActions').classList.contains('folded');
+      setStageFold(folded);
+      try { localStorage.setItem(foldKey, folded ? '1' : '0'); } catch (e) {}
+    });
+
     /* 쓰기 모드 */
     $('#btnWriteMode').addEventListener('click', toggleWrite);
     $('#btnExitWrite').addEventListener('click', toggleWrite);
@@ -746,10 +757,19 @@
     });
   }
 
+  function setStageFold(folded) {
+    $('#stageActions').classList.toggle('folded', folded);
+    $('#btnStageFold').setAttribute('aria-expanded', folded ? 'false' : 'true');
+    $('#btnStageFold').title = folded ? '도구 펴기' : '도구 접기';
+  }
+
   function toggleWrite() {
     writeMode = !writeMode;
     $('#penBar').classList.toggle('hidden', !writeMode);
+    /* 쓰기 모드에선 펜 툴바와 겹치므로 숨깁니다 (나가기는 펜 툴바에 있습니다) */
+    $('#stageActions').classList.toggle('hidden', writeMode);
     $('#btnWriteMode').classList.toggle('active', writeMode);
+    $('#btnWriteMode2').classList.toggle('active', writeMode);
     $$('#pages .page').forEach(function (p) { p.classList.toggle('writing', writeMode); });
   }
 

@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@300;400;600&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=Hahmlet:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500&family=Noto+Serif+JP:wght@300;400;600&family=Zen+Maru+Gothic:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@300;400;500&family=BIZ+UDPMincho&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=Andika:ital,wght@0,400;0,700&family=Nunito:wght@300;400;600&family=Quicksand:wght@400;600&family=Poppins:wght@300;400;500&family=Lora:wght@400;600&family=Atkinson+Hyperlegible:wght@400;700&family=Gaegu:wght@300;400;700&family=Gamja+Flower&family=Jua&family=Do+Hyeon&family=Song+Myung&family=Black+Han+Sans&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260905c">
+<link rel="stylesheet" href="styles.css?v=20260907a">
 </head>
 <body class="app-in">
 
@@ -409,6 +409,14 @@
 
   <!-- ============ 미리보기 ============ -->
   <div class="stage" id="stage">
+    <div class="stage-actions no-print" id="stageActions">
+      <button id="btnStageFold" class="sa-fold" title="도구 접기/펴기" aria-expanded="true" aria-controls="stageActionBtns">✎</button>
+      <div class="sa-btns" id="stageActionBtns">
+        <button id="btnWriteMode2" class="btn btn-ghost sa-btn" title="태블릿/마우스로 바로 쓰기">✍️<span> 쓰기 모드</span></button>
+        <button id="btnPrint2" class="btn btn-primary sa-btn" title="A4로 인쇄">🖨️<span> 인쇄 / PDF 저장</span></button>
+      </div>
+    </div>
+
     <div class="pen-toolbar no-print hidden" id="penBar">
       <span class="pen-label">✍️ 쓰기 모드</span>
       <input type="color" id="penColor" value="#1b3a5c">
@@ -422,10 +430,10 @@
   </div>
 </main>
 
-<script src="fonts.js?v=20260905c"></script>
-<script src="phrases.js?v=20260905c"></script>
-<script src="corrector.js?v=20260905c"></script>
-<script src="app.js?v=20260905c"></script>
-<script src="ui.js?v=20260905c"></script>
+<script src="fonts.js?v=20260907a"></script>
+<script src="phrases.js?v=20260907a"></script>
+<script src="corrector.js?v=20260907a"></script>
+<script src="app.js?v=20260907a"></script>
+<script src="ui.js?v=20260907a"></script>
 </body>
 </html>
