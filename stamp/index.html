@@ -12,7 +12,45 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f6f1e7">
-<meta name="description" content="학교에 찾아오던 도장 아저씨를 대신하는 전자도장. 이름을 넣으면 배경이 투명한 도장 PNG를 만들어 줍니다. 글씨체·모양·색과 잉크 번짐까지 조절할 수 있습니다.">
+<!-- ── 공유용 메타 / 공유 카드 · 제작 황성재 (@hirame.ki) ──
+     og:image 는 절대경로여야 합니다. 카카오톡·네이버 등은 상대경로 썸네일을 읽지 못합니다.
+     배포 주소가 https://hirame-ki.github.io/stamp/ 가 아니면 아래 세 곳(canonical·og:url·og:image)을 함께 고쳐 주세요. -->
+<meta name="description" content="이름을 넣으면 배경이 투명한 도장 PNG를 만들어 줍니다. 글씨체·모양·색과 잉크 번짐까지 조절할 수 있어 결재란이나 서류에 그대로 얹을 수 있습니다.">
+<meta name="keywords" content="전자도장,투명배경 도장,도장 만들기,인장,직인,결재란,PNG 도장,교사 업무,도장 아저씨">
+<meta name="author" content="황성재">
+<meta name="creator" content="황성재 (@hirame.ki)">
+<meta name="copyright" content="© 2026 황성재 (@hirame.ki)">
+<meta name="theme-color" content="#b23b30">
+<meta name="format-detection" content="telephone=no">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://hirame-ki.github.io/stamp/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="도장 아저씨">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:url" content="https://hirame-ki.github.io/stamp/">
+<meta property="og:title" content="도장 아저씨 — 배경이 투명한 전자도장 만들기">
+<meta property="og:description" content="이름을 넣으면 배경이 투명한 도장 PNG를 만들어 줍니다. 글씨체·모양·색과 잉크 번짐까지 조절할 수 있어 결재란이나 서류에 그대로 얹을 수 있습니다.">
+<meta property="og:image" content="https://hirame-ki.github.io/stamp/og.png">
+<meta property="og:image:secure_url" content="https://hirame-ki.github.io/stamp/og.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="도장 아저씨 — 투명 배경 위에 찍힌 붉은 인장 그림">
+<meta property="article:author" content="황성재 (@hirame.ki)">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="도장 아저씨 — 배경이 투명한 전자도장 만들기">
+<meta name="twitter:description" content="이름을 넣으면 배경이 투명한 도장 PNG를 만들어 줍니다. 글씨체·모양·색과 잉크 번짐까지 조절할 수 있어 결재란이나 서류에 그대로 얹을 수 있습니다.">
+<meta name="twitter:image" content="https://hirame-ki.github.io/stamp/og.png">
+<meta name="twitter:image:alt" content="도장 아저씨 — 투명 배경 위에 찍힌 붉은 인장 그림">
+<meta name="twitter:creator" content="@hirame.ki">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="도장 아저씨">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="og.png">
+<!-- ── 메타 끝 ── -->
   <!-- 탭 아이콘 — 헤더의 도장 아저씨를 얼굴만 16×16 으로 다시 그린 것.
        외부 파일 없이 data URI 로 박아 index.html 하나로 열리는 성질을 지킨다.
        PNG 를 먼저 두고 SVG 를 뒤에 둔다: SVG 를 아는 브라우저는 뒤엣것을 골라
