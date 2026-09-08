@@ -185,8 +185,14 @@
   .empty-state{text-align:center;padding:40px 20px;color:var(--text3);}
   .empty-state .icon{margin-bottom:10px;display:flex;justify-content:center;color:var(--text3);}
   .toast{position:fixed;bottom:70px;right:24px;background:var(--text);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;max-width:300px;}
-  .credit-chip{position:fixed;bottom:16px;right:16px;background:rgba(28,36,48,0.85);color:#fff;padding:7px 14px;border-radius:20px;font-size:11.5px;font-weight:600;text-decoration:none;z-index:9998;box-shadow:0 2px 8px rgba(0,0,0,0.2);transition:background 0.15s;}
-  .credit-chip:hover{background:rgba(176,138,78,0.9);}
+  /* 제작자 칩: 평소엔 인스타 아이콘만, 마우스를 올리면 스르륵 펼쳐짐 */
+  .credit-chip{position:fixed;bottom:16px;right:16px;display:inline-flex;align-items:center;height:38px;padding:0 10px;background:rgba(28,36,48,0.85);color:#fff;border-radius:19px;font-size:11.5px;font-weight:600;text-decoration:none;z-index:9998;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden;white-space:nowrap;transition:background 0.3s ease,box-shadow 0.3s ease;}
+  .credit-chip svg{flex:none;}
+  .credit-chip .credit-text{display:inline-block;max-width:0;opacity:0;margin-left:0;overflow:hidden;
+    transition:max-width 0.9s cubic-bezier(0.22,0.61,0.36,1),opacity 0.5s ease 0.2s,margin-left 0.9s cubic-bezier(0.22,0.61,0.36,1);}
+  .credit-chip:hover,.credit-chip:focus-visible,.credit-chip:active{background:rgba(176,138,78,0.9);box-shadow:0 3px 12px rgba(0,0,0,0.28);}
+  .credit-chip:hover .credit-text,.credit-chip:focus-visible .credit-text,.credit-chip:active .credit-text{max-width:160px;opacity:1;margin-left:7px;}
+  @media(prefers-reduced-motion:reduce){.credit-chip .credit-text{transition:none;}}
   .toast.show{opacity:1;transform:translateY(0);}
   @media print{
     @page{size:landscape;margin:10mm;}
@@ -344,7 +350,7 @@
     <div class="card">
       <div class="tt-help">
         <b>여기서 하는 일:</b> 학생별 선택과목 현황(어떤 학생이 어떤 선택과목을 보는지)을 엑셀로 한 번에 등록합니다. <b>공통과목은 반 전체가 응시</b>하므로 입력할 필요가 없고, <b>선택과목만</b> 넣으면 됩니다.<br>
-        <b>호실(선택 입력)</b> 열에 학생 한 명 한 명이 실제로 가는 호실을 적으면 그대로 저장됩니다(비워두면 고사 시간표에 적은 그 과목의 기본 호실 적용). 같은 과목이라도 학생마다 다른 호실을 적을 수 있어, <b>한 과목이 여러 방으로 나뉘는 경우</b>나 <b>일부 학생만 본인 교실에 남는 경우</b>를 그대로 반영할 수 있습니다. 이 호실 값은 자리배치 탭의 "시간표 기반 일괄 배치"에서 같은 과목이라도 호실별로 배치표를 따로 만드는 기준이 되고, 학생별 개인 시간표에도 그대로 표시됩니다.<br>
+        <b>호실</b> 열에 학생 한 명 한 명이 실제로 가는 호실을 적습니다. <b>호실을 정하는 곳은 여기 한 곳뿐</b>이며(고사 시간표에는 호실을 입력하지 않습니다), 비워두면 그 학생들은 "호실 미지정"으로 묶입니다. 같은 과목이라도 학생마다 다른 호실을 적을 수 있어, <b>한 과목이 여러 방으로 나뉘는 경우</b>나 <b>일부 학생만 본인 교실에 남는 경우</b>를 그대로 반영할 수 있습니다. 이 호실 값은 자리배치 탭의 "시간표 기반 일괄 배치"에서 같은 과목이라도 호실별로 배치표를 따로 만드는 기준이 되고, 학생별 개인 시간표에도 그대로 표시됩니다.<br>
         <span style="color:var(--danger);font-weight:600">⚠ 엑셀의 <b>과목명</b>은 위 고사 시간표에 적은 선택과목명과 <b>띄어쓰기·특수문자까지 완전히 똑같이</b> 입력해야 매칭됩니다. 한 글자라도 다르면 해당 과목이 연결되지 않습니다.</span>
       </div>
       <div class="form-row">
@@ -510,9 +516,9 @@
       <div class="card-title" style="font-size:13px;color:var(--text3)"><span class="step-badge">2</span>시험 정보</div>
       <div class="form-row" style="justify-content:space-between;margin-bottom:0">
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
-          <div class="form-group"><label>날짜</label><select id="ownDate"></select></div>
-          <div class="form-group"><label>학급</label><select id="ownClass" onchange="loadOwnStudentGrid()"></select></div>
-          <div class="form-group"><label>교시</label><input type="number" id="ownPeriod" min="1" max="9" value="1" style="width:70px" /></div>
+          <div class="form-group"><label>날짜</label><select id="ownDate" onchange="applyOwnAuto()"></select></div>
+          <div class="form-group"><label>학급</label><select id="ownClass" onchange="onOwnClassChange()"></select></div>
+          <div class="form-group"><label>교시</label><input type="number" id="ownPeriod" min="1" max="9" value="1" style="width:70px" oninput="applyOwnAuto()" /></div>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
           <div class="form-group"><label>교실 행 수</label><input type="number" id="ownRows" value="6" min="1" max="12" style="width:70px" oninput="renderSeatEditor('own')" /></div>
@@ -541,36 +547,27 @@
       </div>
       <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;border:1px dashed var(--primary)">
         <div style="font-weight:800;font-size:13px;color:var(--primary);display:flex;align-items:center;gap:6px;margin-bottom:6px"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><line x1="8" y1="8" x2="16" y2="8"></line><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="16" x2="13" y2="16"></line></svg>시간표 기반 일괄 배치 (권장)</div>
-        <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:10px">설정 탭의 <b>고사 시간표</b>에 입력된 이 학년의 모든 <b>선택과목</b>과 <b>선택과목 응시자 명단</b>을 읽어, 과목별 배치표를 한 번에 만들어 저장합니다. 위 <b>2단계의 좌석 설정</b>(행·열·방향·좌석 편집)이 모든 과목에 공통 적용되며, 과목별 호실은 시간표에 입력한 값이 쓰입니다. (개별 교실 크기 조정은 저장 후 '저장된 배치표 불러오기'에서 가능)</p>
-        <button type="button" class="btn btn-primary btn-sm" onclick="generateBatchSeatCharts()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>이 학년 선택과목 일괄 배치 생성·저장</button>
+        <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:10px">설정 탭의 <b>고사 시간표</b>에 입력된 이 학년의 모든 <b>선택과목</b>과 <b>선택과목 응시자 명단</b>을 읽어, 과목별 배치표를 한 번에 만들어 저장합니다. <b>전체 학년</b> 버튼을 쓰면 학급이 등록된 모든 학년을 한 번에 처리합니다. 위 <b>2단계의 좌석 설정</b>(행·열·방향·좌석 편집)이 모든 과목에 공통 적용됩니다. 호실은 <b>선택과목 응시자 명단 엑셀의 "호실" 열</b> 하나만 보고 나눕니다 — 같은 과목이라도 호실이 다르면 방마다 배치표가 따로 만들어지고, 호실을 비워둔 학생들은 "호실 미지정" 한 장으로 묶입니다. (개별 교실 크기 조정은 저장 후 '저장된 배치표 불러오기'에서 가능)</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-primary btn-sm" onclick="generateBatchSeatCharts(false)"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>이 학년만 생성·저장</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="generateBatchSeatCharts(true)"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>전체 학년 한 번에 생성·저장</button>
+        </div>
         <div id="batchSeatStatus" style="margin-top:8px;font-size:12.5px"></div>
       </div>
       <hr class="divider" style="margin:4px 0 14px" />
-      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:10px">또는 — 과목 하나씩 직접 배치</div>
-      <div class="form-row">
-        <div class="form-group" style="flex:1"><label>과목명</label><input type="text" id="subjectName" placeholder="예: 경제" /></div>
-        <div class="form-group" style="flex:1"><label>별실 호실</label><input type="text" id="roomName" placeholder="예: 3-1교실" /></div>
-      </div>
-      <div class="form-group" style="background:var(--surface2);border-radius:var(--radius);padding:12px;margin-bottom:14px">
-        <label style="font-size:12px;color:var(--text3);display:inline-flex;align-items:center;gap:5px;margin-bottom:8px"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><polyline points="7 10 12 15 17 10"></polyline><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path></svg>엑셀로 응시자 일괄 등록 (선택한 학년 기준, 반/번호/이름으로 매칭)</label>
-        <div style="margin-bottom:8px">
-          <button type="button" class="btn btn-outline btn-sm" onclick="downloadSeatExamineeTemplate()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"></path><polyline points="15 2 15 7 20 7"></polyline><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="16" x2="14" y2="16"></line></svg>양식 다운로드</button>
+      <details style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+        <summary style="font-size:12px;font-weight:700;color:var(--text3);cursor:pointer">예외 상황 — 과목·응시자를 직접 골라 한 장만 만들기</summary>
+        <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin:10px 0">시간표에 없는 과목이거나, 응시자 명단과 다르게 이번만 특정 학생들로 한 장을 만들어야 할 때만 쓰세요. 평소에는 위 <b>일괄 배치</b>로 충분합니다.</p>
+        <div class="form-row">
+          <div class="form-group" style="flex:1"><label>과목명</label><input type="text" id="subjectName" placeholder="예: 경제" /></div>
+          <div class="form-group" style="flex:1"><label>별실 호실</label><input type="text" id="roomName" placeholder="예: 3-1교실" /></div>
         </div>
-        <div class="dropzone" id="seatExcelDropzone"
-          onclick="document.getElementById('seatExcelUploadInput').click()"
-          ondragover="event.preventDefault();this.classList.add('dragover')"
-          ondragleave="this.classList.remove('dragover')"
-          ondrop="handleSeatExamineeDrop(event)">
-          <div style="font-size:13px;color:var(--text2);display:flex;align-items:center;justify-content:center;gap:6px"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11.5 11 19.5a4.5 4.5 0 0 1-6.4-6.4l8.6-8.6a3 3 0 0 1 4.3 4.3L9 17.3a1.5 1.5 0 0 1-2.1-2.1l7.1-7.1"></path></svg>엑셀 파일을 여기로 끌어다 놓거나 클릭해서 선택하세요</div>
-          <input type="file" id="seatExcelUploadInput" accept=".xlsx,.xls" onchange="handleSeatExamineeUpload(event)" style="display:none" />
+        <div class="form-group" style="margin-bottom:10px"><label style="color:var(--primary);font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17.5V20h2.5L18.4 8.1a1.7 1.7 0 0 0 0-2.4l-.1-.1a1.7 1.7 0 0 0-2.4 0L4 17.5z"></path><line x1="14.5" y1="5" x2="17.5" y2="8"></line></svg>응시 학생 선택 (클릭으로 선택/해제 — 번호순 배치)</label></div>
+        <div class="seat-grade-groups" id="seatStudentGrid"></div>
+        <div class="form-row" style="margin-top:14px;margin-bottom:0">
+          <button class="btn btn-primary" onclick="generateSeatChart()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>배치표 생성</button>
         </div>
-        <div id="seatExcelUploadStatus" style="margin-top:8px;font-size:13px"></div>
-      </div>
-      <div class="form-group" style="margin-bottom:10px"><label style="color:var(--primary);font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17.5V20h2.5L18.4 8.1a1.7 1.7 0 0 0 0-2.4l-.1-.1a1.7 1.7 0 0 0-2.4 0L4 17.5z"></path><line x1="14.5" y1="5" x2="17.5" y2="8"></line></svg>응시 학생 선택 (클릭으로 선택/해제 — 위 엑셀 업로드로 자동 선택 후에도 조정 가능, 번호순 배치)</label></div>
-      <div class="seat-grade-groups" id="seatStudentGrid"></div>
-      <div class="form-row" style="margin-top:14px;margin-bottom:0">
-        <button class="btn btn-primary" onclick="generateSeatChart()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>배치표 생성</button>
-      </div>
+      </details>
     </div>
 
     <!-- STEP 3: 각자교실 -->
@@ -579,20 +576,40 @@
         <span style="display:inline-flex;align-items:center;gap:8px"><span class="step-badge">3</span>각자교실 응시자 설정</span>
         <button type="button" class="btn btn-outline btn-sm" onclick="openSeatChartListModal()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5"></path><path d="M4.6 15a8 8 0 1 0 2-8.4L4 9"></path></svg>저장된 배치표 불러오기</button>
       </div>
-      <div class="form-row">
-        <div class="form-group" style="flex:1"><label>과목명</label><input type="text" id="ownSubjectName" placeholder="예: 수학 I" /></div>
-      </div>
-      <div class="form-group" style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-        <label style="color:var(--primary);font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17.5V20h2.5L18.4 8.1a1.7 1.7 0 0 0 0-2.4l-.1-.1a1.7 1.7 0 0 0-2.4 0L4 17.5z"></path><line x1="14.5" y1="5" x2="17.5" y2="8"></line></svg>응시 학생 선택 (클릭으로 선택)</label>
-        <div style="display:flex;gap:6px">
-          <button type="button" class="btn btn-outline btn-sm" onclick="selectAllOwnStudents(true)">전체 선택</button>
-          <button type="button" class="btn btn-outline btn-sm" onclick="selectAllOwnStudents(false)">전체 해제</button>
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;border:1px dashed var(--primary)">
+        <div style="font-weight:800;font-size:13px;color:var(--primary);display:flex;align-items:center;gap:6px;margin-bottom:6px"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>이 학년 전체 일괄 배치 (권장)</div>
+        <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:10px">2단계에서 고른 학급의 <b>학년 전체 학급 × 모든 날짜·교시</b>를 돌면서, 그 교실에서 시험이 있는 칸만 골라 배치표를 <b>한 번에 만들어 저장</b>합니다. <b>전체 학년</b> 버튼을 쓰면 학급이 등록된 모든 학년을 한 번에 처리합니다. 위 <b>2단계의 좌석 설정</b>(행·열·방향·좌석 편집)이 모든 학급에 공통 적용됩니다. 전원이 별실로 가거나 자습인 교시는 건너뜁니다. (교실마다 크기가 다르면 저장 후 '저장된 배치표 불러오기'에서 개별 조정)</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn btn-primary btn-sm" onclick="generateBatchOwnSeatCharts(false)"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>이 학년만 생성·저장</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="generateBatchOwnSeatCharts(true)"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>전체 학년 한 번에 생성·저장</button>
         </div>
+        <div id="batchOwnStatus" style="margin-top:8px;font-size:12.5px"></div>
       </div>
-      <div class="student-grid" id="ownStudentGrid"></div>
-      <div class="form-row" style="margin-top:14px;margin-bottom:0">
-        <button class="btn btn-primary" onclick="generateOwnSeatChart()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>배치표 생성</button>
+      <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;border:1px dashed var(--border)">
+        <div style="font-weight:800;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px;margin-bottom:6px"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><line x1="8" y1="8" x2="16" y2="8"></line><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="16" x2="13" y2="16"></line></svg>또는 — 이 학급·교시 한 장만</div>
+        <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:10px">위 <b>2단계</b>에서 날짜·학급·교시를 고르면, <b>고사 시간표의 공통과목</b>과 <b>선택과목 응시자 명단</b>을 읽어 <b>이 교실에서 시험 보는 학생</b>을 자동으로 골라냅니다. 별실로 가는 학생은 <b>미응시</b>로 뒤로 밀리고, 명단의 호실을 <b>"본인 교실"</b>(또는 이 반 이름)로 적은 선택과목 학생은 이 교실에 남는 것으로 계산됩니다.</p>
+        <div id="ownAutoStatus" style="font-size:12.5px;margin-bottom:10px"></div>
+        <button class="btn btn-primary btn-sm" onclick="generateOwnSeatChart()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>배치표 생성</button>
       </div>
+      <hr class="divider" style="margin:4px 0 14px" />
+      <details style="background:var(--surface2);border-radius:var(--radius);padding:12px">
+        <summary style="font-size:12px;font-weight:700;color:var(--text3);cursor:pointer">직접 조정 — 과목명·응시자를 손으로 고치기</summary>
+        <div class="form-row" style="margin-top:10px">
+          <div class="form-group" style="flex:1"><label>과목명 (비워두면 자동 계산된 과목명 사용)</label><input type="text" id="ownSubjectName" placeholder="예: 수학 I" /></div>
+        </div>
+        <div class="form-group" style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <label style="color:var(--primary);font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17.5V20h2.5L18.4 8.1a1.7 1.7 0 0 0 0-2.4l-.1-.1a1.7 1.7 0 0 0-2.4 0L4 17.5z"></path><line x1="14.5" y1="5" x2="17.5" y2="8"></line></svg>응시 학생 선택 (클릭으로 선택)</label>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn btn-outline btn-sm" onclick="applyOwnAuto(true)">시간표 기준으로 다시 계산</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="selectAllOwnStudents(true)">전체 선택</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="selectAllOwnStudents(false)">전체 해제</button>
+          </div>
+        </div>
+        <div class="student-grid" id="ownStudentGrid"></div>
+        <div class="form-row" style="margin-top:14px;margin-bottom:0">
+          <button class="btn btn-primary" onclick="generateOwnSeatChart()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>배치표 생성</button>
+        </div>
+      </details>
     </div>
 
     <div id="seatResult" style="display:none">
@@ -621,7 +638,7 @@
 
   </div><!-- /main -->
 </div><!-- /appScreen -->
-<a class="credit-chip no-print" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener">제작 @hirame.ki</a>
+<a class="credit-chip no-print" href="https://instagram.com/hirame.ki" target="_blank" rel="noopener" title="제작 @hirame.ki" aria-label="제작자 인스타그램 @hirame.ki"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" stroke="none"></circle></svg><span class="credit-text">제작 @hirame.ki</span></a>
 <div class="toast" id="toast"></div>
 <div class="modal-overlay no-print" id="seatChartListModal" style="display:none" onclick="if(event.target===this)closeSeatChartListModal()">
   <div class="modal-box">
@@ -652,9 +669,7 @@
         <span style="font-size:11.5px;color:var(--text3);line-height:1.5">반마다 보는 공통과목이 다르면(예: 앞반 기술가정 / 뒷반 한문) 이 과목을 볼 반만 체크하세요. 같은 교시에 다른 반이 볼 과목을 <b>[+ 과목]</b>으로 하나 더 추가하고 나머지 반을 체크하면 됩니다.</span>
       </div>
       <div class="form-group" id="ttRoomField" style="display:none">
-        <label>별실 호실 (기본값 — 여러 호실로 나뉘면 비워두세요)</label>
-        <input type="text" id="ttSubjRoom" placeholder="예: 3-1교실 (호실이 하나뿐일 때만 입력)" onkeydown="if(event.key==='Enter')saveTtSubject()" />
-        <span style="font-size:11.5px;color:var(--text3);line-height:1.5">이 과목이 호실 하나로 끝나면 여기 입력하세요. 여러 호실로 나뉘거나 학생마다 다르면 여기는 비워두고, 아래 <b>선택과목 응시자 명단</b> 엑셀의 "호실" 열에서 학생별로 지정하세요.</span>
+        <span style="font-size:11.5px;color:var(--text3);line-height:1.5">선택과목이 <b>어느 호실에서</b> 치러지는지는 여기서 입력하지 않습니다. 아래 <b>선택과목 응시자 명단</b> 엑셀의 <b>"호실"</b> 열에 학생별로 적으면 그대로 쓰입니다(한 과목이 여러 방으로 나뉘어도 그대로 반영됨).</span>
       </div>
       <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="saveTtSubject()">확인</button>
     </div>
@@ -1748,7 +1763,7 @@ function populateSeatSelects(){
     grades.map(g=>`<option value="${g}">${g}학년</option>`).join('')||'<option>학급 없음</option>';
   document.getElementById('ownClass').innerHTML=
     classes.map(c=>`<option value="${c.id}">${c.grade}-${c.class_num}반</option>`).join('')||'<option>학급 없음</option>';
-  loadSeatGradeGrid();loadOwnStudentGrid();
+  loadSeatGradeGrid();loadOwnStudentGrid();applyOwnAuto();
   renderSeatEditor('sep');renderSeatEditor('own');
   document.getElementById('seatResult').style.display='none';
 }
@@ -1814,123 +1829,6 @@ function toggleExaminee(id,el){
   if(selectedExamineeIds.has(id)){selectedExamineeIds.delete(id);el.classList.remove('selected');}
   else{selectedExamineeIds.add(id);el.classList.add('selected');}
 }
-async function downloadSeatExamineeTemplate(){
-  if(!await ensureLibs('exceljs'))return;
-  const wb=new ExcelJS.Workbook();
-  const ws=wb.addWorksheet('응시자명단');
-  ws.columns=[{key:'class_num',width:10},{key:'number',width:10},{key:'name',width:16}];
-
-  const FONT='맑은 고딕';
-  ws.mergeCells('A1:C1');
-  const noteCell=ws.getCell('A1');
-  noteCell.value='반 / 번호 / 이름 칸에 이 과목 응시자만 입력하세요. (학년은 화면에서 선택한 학년이 자동 적용됩니다. 제목 글자는 그대로 두세요)';
-  noteCell.font={name:FONT,italic:true,size:10,color:{argb:'FF8A6D3B'}};
-  noteCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF6E8'}};
-  noteCell.alignment={vertical:'middle',wrapText:true};
-  ws.getRow(1).height=34;
-
-  const headerRow=ws.getRow(2);
-  headerRow.values=['반','번호','이름'];
-  headerRow.height=24;
-  headerRow.eachCell(cell=>{
-    cell.font={name:FONT,bold:true,color:{argb:'FFFFFFFF'},size:12};
-    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2D6BE4'}};
-    cell.alignment={horizontal:'center',vertical:'middle'};
-    cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
-  });
-  const sample=[
-    {class_num:1,number:3,name:'홍길동'},
-    {class_num:1,number:11,name:'김철수'},
-    {class_num:2,number:5,name:'이영희'}
-  ];
-  sample.forEach((s,i)=>{
-    const row=ws.addRow(s);
-    row.eachCell(cell=>{
-      cell.font={name:FONT};
-      cell.alignment={horizontal:'center',vertical:'middle'};
-      cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
-      cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?'FFEEF2FD':'FFFFFFFF'}};
-    });
-  });
-  ws.views=[{state:'frozen',ySplit:2}];
-  const buf=await wb.xlsx.writeBuffer();
-  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='별실_응시자명단_양식.xlsx';document.body.appendChild(a);a.click();a.remove();
-  URL.revokeObjectURL(url);
-}
-function handleSeatExamineeUpload(e){
-  const file=e.target.files[0];if(!file)return;
-  processSeatExamineeExcel(file);
-  e.target.value='';
-}
-function handleSeatExamineeDrop(e){
-  e.preventDefault();
-  e.currentTarget.classList.remove('dragover');
-  const file=e.dataTransfer.files[0];
-  if(file)processSeatExamineeExcel(file);
-}
-async function processSeatExamineeExcel(file){
-  const statusEl=document.getElementById('seatExcelUploadStatus');
-  const grade=parseInt(document.getElementById('sepGrade').value);
-  if(!grade){statusEl.innerHTML='<span class="badge badge-danger">먼저 학년을 선택하세요</span>';return;}
-  if(!/\.(xlsx|xls)$/i.test(file.name)){statusEl.innerHTML='<span class="badge badge-danger">엑셀 파일(.xlsx, .xls)만 업로드할 수 있습니다</span>';return;}
-  statusEl.textContent='읽는 중...';
-  if(!await ensureLibs('xlsx')){statusEl.textContent='';return;}
-  try{
-    const buf=await file.arrayBuffer();
-    const wb=XLSX.read(buf,{type:'array'});
-
-    let aoa=null,colIdx={},headerRowIdx=-1;
-    for(const sheetName of wb.SheetNames){
-      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:''});
-      for(let r=0;r<Math.min(rows.length,10);r++){
-        const idx={};
-        (rows[r]||[]).forEach((v,ci)=>{const s=String(v).trim();if(s)idx[s]=ci;});
-        if(['반','번호','이름'].every(k=>k in idx)){aoa=rows;colIdx=idx;headerRowIdx=r;break;}
-      }
-      if(aoa)break;
-    }
-    if(!aoa){statusEl.innerHTML='<span class="badge badge-danger">형식 오류: 반/번호/이름 열을 확인하세요</span>';return;}
-
-    const gStudents=gradeStudents(grade);
-    const byKey={};gStudents.forEach(s=>{byKey[s.class_num+'-'+s.number]=s;});
-
-    const matched=new Set(),notFound=[],nameMismatch=[];
-    for(let r=headerRowIdx+1;r<aoa.length;r++){
-      const row=aoa[r]||[];
-      const class_num=parseInt(row[colIdx['반']]);
-      const number=parseInt(row[colIdx['번호']]);
-      const name=String(row[colIdx['이름']]||'').trim();
-      if(!class_num||!number||!name)continue;
-      if('학년' in colIdx){
-        const g=parseInt(row[colIdx['학년']]);
-        if(g&&g!==grade){notFound.push(`${g}학년 ${class_num}반 ${number}번 ${name} (선택된 학년과 다름)`);continue;}
-      }
-      const s=byKey[class_num+'-'+number];
-      if(!s){notFound.push(`${class_num}반 ${number}번 ${name} (등록된 학생 없음)`);continue;}
-      if(s.name!==name)nameMismatch.push(`${class_num}반 ${number}번: 명단 "${name}" ↔ 등록 "${s.name}"`);
-      matched.add(s.id);
-    }
-    if(!matched.size){statusEl.innerHTML='<span class="badge badge-danger">일치하는 학생을 찾지 못했습니다</span>';return;}
-
-    document.querySelectorAll('#seatStudentGrid .student-item.selected').forEach(el=>el.classList.remove('selected'));
-    selectedExamineeIds=matched;
-    selectedExamineeIds.forEach(id=>{
-      const el=document.getElementById('seat-si-'+id);
-      if(el)el.classList.add('selected');
-    });
-
-    let msg=`<span class="badge badge-success">${icon('checkCircle',12)}${matched.size}명 선택됨</span>`;
-    if(notFound.length)msg+=`<div style="margin-top:6px;color:var(--danger)">매칭 실패 ${notFound.length}건: ${esc(notFound.slice(0,5).join(', '))}${notFound.length>5?' 외 '+(notFound.length-5)+'건':''}</div>`;
-    if(nameMismatch.length)msg+=`<div style="margin-top:4px;color:var(--warning)">이름 불일치 ${nameMismatch.length}건(반/번호 기준으로는 선택됨): ${esc(nameMismatch.slice(0,5).join(', '))}${nameMismatch.length>5?' 외 '+(nameMismatch.length-5)+'건':''}</div>`;
-    statusEl.innerHTML=msg;
-    showToast(`엑셀로 ${matched.size}명 선택 완료`);
-  }catch(err){
-    console.error(err);
-    statusEl.innerHTML='<span class="badge badge-danger">업로드 실패: '+esc(err.message)+'</span>';
-  }
-}
 function loadOwnStudentGrid(){
   const classId=parseInt(document.getElementById('ownClass').value);
   currentSeatChartId=null;lastChartParams=null;
@@ -1939,6 +1837,79 @@ function loadOwnStudentGrid(){
     `<div class="student-item" id="own-si-${s.id}" onclick="toggleOwnExaminee(${s.id},this)">
       <span class="student-num">${s.number}</span><span>${esc(s.name)}</span></div>`).join('')
     :'<p style="font-size:13px;color:var(--text3)">등록된 학생이 없습니다</p>';
+}
+function onOwnClassChange(){loadOwnStudentGrid();applyOwnAuto();}
+/* ---- 각자교실: 시간표+응시자 명단으로 "이 교실에 남는 학생" 자동 계산 ---- */
+// 명단의 호실이 자기 반 교실을 가리키는지 판정 ("본인 교실", "3-2", "3-2교실", "2반" 등)
+function ownRoomIsHome(room,cls){
+  const r=(room||'').replace(/\s/g,'');
+  if(!r)return false;
+  if(r.includes('본인')||r.includes('자기')||r.includes('원반'))return true;
+  const g=cls.grade,n=cls.class_num;
+  return [g+'-'+n,g+'-'+n+'반',g+'-'+n+'교실',g+'학년'+n+'반',n+'반',n+'반교실'].includes(r);
+}
+// 학년별 응시자 명단을 {학생id:{과목명:호실}}로 정리
+function enrollmentByStudent(grade){
+  const enroll={};
+  subjectEnrollment.filter(e=>e.grade===grade).forEach(e=>{
+    (enroll[e.student_id]=enroll[e.student_id]||{})[e.subject_name]=(e.room||'').trim();
+  });
+  return enroll;
+}
+// 한 학급·한 교시에 대해 교실 잔류/별실 이동/자습을 가른다
+function ownPlacement(cls,sts,ttRow,enroll){
+  const subs=ttRow.subjects||[];
+  const selSubs=subs.filter(x=>x.type==='선택');
+  const comSubs=subs.filter(x=>x.type==='공통'&&(!x.classes||!x.classes.length||x.classes.includes(cls.class_num)));
+  const stay=[],leave=[],free=[],subjNames=new Set();
+  sts.forEach(st=>{
+    const mine=selSubs.filter(su=>enroll[st.id]&&(su.name in enroll[st.id]));
+    if(mine.length){
+      const su=mine[0],room=enroll[st.id][su.name];
+      if(ownRoomIsHome(room,cls)){stay.push(st);subjNames.add(su.name);}
+      else leave.push({st,name:su.name,room:room||'호실 미지정'});
+    }else if(comSubs.length){
+      stay.push(st);comSubs.forEach(su=>subjNames.add(su.name));
+    }else free.push(st);
+  });
+  return{cls,stay,leave,free,subjects:[...subjNames]};
+}
+function computeOwnAuto(){
+  const classId=parseInt(document.getElementById('ownClass').value);
+  const cls=classes.find(c=>c.id===classId);
+  const date=document.getElementById('ownDate').value;
+  const period=parseInt(document.getElementById('ownPeriod').value);
+  const sts=(students[classId]||[]).slice().sort((a,b)=>a.number-b.number);
+  if(!cls||!date||isNaN(period)||!sts.length)return null;
+  const ttRow=examTimetable.find(r=>r.grade===cls.grade&&r.exam_date===date&&r.period===period);
+  if(!ttRow)return{cls,noTt:true};
+  return ownPlacement(cls,sts,ttRow,enrollmentByStudent(cls.grade));
+}
+// 자동 계산 결과를 학생 선택/과목명에 반영 (사용자가 2단계를 바꿀 때마다 호출)
+function applyOwnAuto(manual){
+  const el=document.getElementById('ownAutoStatus');
+  const r=computeOwnAuto();
+  currentSeatChartId=null;lastChartParams=null;
+  if(!r){if(el)el.innerHTML='<span style="color:var(--text3)">날짜·학급·교시를 고르면 이 교실 응시자가 자동으로 선택됩니다.</span>';return;}
+  if(r.noTt){
+    if(el)el.innerHTML='<span class="badge badge-danger">이 날짜·교시의 고사 시간표가 없습니다</span><div style="margin-top:6px;color:var(--text3)">설정 탭에서 시간표를 입력하거나, 아래 <b>직접 조정</b>에서 과목명과 응시자를 직접 지정하세요.</div>';
+    return;
+  }
+  document.querySelectorAll('#ownStudentGrid .student-item.selected').forEach(x=>x.classList.remove('selected'));
+  ownExamineeIds=new Set(r.stay.map(x=>x.id));
+  ownExamineeIds.forEach(id=>{const x=document.getElementById('own-si-'+id);if(x)x.classList.add('selected');});
+  document.getElementById('ownSubjectName').value=r.subjects.join(' · ');
+  let msg=r.stay.length
+    ?`<span class="badge badge-success">${icon('checkCircle',12)}이 교실 응시 ${r.stay.length}명 자동 선택${r.subjects.length?' — '+esc(r.subjects.join(' · ')):''}</span>`
+    :'<span class="badge badge-danger">이 교실에서 시험 보는 학생이 없습니다 (전원 별실 이동 또는 자습)</span>';
+  if(r.leave.length){
+    const byKey={};
+    r.leave.forEach(x=>{const k=x.name+' → '+x.room;byKey[k]=(byKey[k]||0)+1;});
+    msg+=`<div style="margin-top:6px;color:var(--text2)">별실 이동 ${r.leave.length}명(미응시 처리): ${esc(Object.entries(byKey).map(([k,n])=>k+' '+n+'명').join(', '))}</div>`;
+  }
+  if(r.free.length)msg+=`<div style="margin-top:4px;color:var(--text3)">자습 ${r.free.length}명(미응시 처리)</div>`;
+  if(el)el.innerHTML=msg;
+  if(manual)showToast(`시간표 기준으로 ${r.stay.length}명 선택`);
 }
 function toggleOwnExaminee(id,el){
   if(ownExamineeIds.has(id)){ownExamineeIds.delete(id);el.classList.remove('selected');}
@@ -1997,7 +1968,7 @@ async function generateOwnSeatChart(){
   const startSide=document.getElementById('ownStartSide').value;
   const date=document.getElementById('ownDate').value;
   const period=parseInt(document.getElementById('ownPeriod').value);
-  const subj=document.getElementById('ownSubjectName').value||'시험';
+  const subj=document.getElementById('ownSubjectName').value.trim()||'시험';
   const sts=students[classId]||[];
   const classInfo=classes.find(c=>c.id===classId);
   const{data:abData}=await sb.from('absences').select('student_id')
@@ -2162,6 +2133,7 @@ function applySavedSeatChart(c){
       if(el)el.classList.add('selected');
     });
     currentSeatChartId=c.id;
+    const detOwn=document.querySelector('#ownSettings details');if(detOwn)detOwn.open=true;
     closeSeatChartListModal();
     generateOwnSeatChart();
     showToast('저장된 배치표를 불러왔습니다');
@@ -2185,6 +2157,7 @@ function applySavedSeatChart(c){
     if(el)el.classList.add('selected');
   });
   currentSeatChartId=c.id;
+  const det=document.querySelector('#separateSettings details');if(det)det.open=true;
   closeSeatChartListModal();
   generateSeatChart();
   showToast('저장된 배치표를 불러왔습니다');
@@ -2322,7 +2295,10 @@ function renderTtCell(g,date,p){
   const subs=ttData[key]||[];
   let h=subs.map((s,i)=>{
     let extra='';
-    if(s.type==='선택'&&s.room)extra='·'+esc(s.room);
+    if(s.type==='선택'){
+      const cnt=subjectEnrollment.filter(e=>e.grade===g&&e.subject_name===s.name).length;
+      extra=cnt?'·'+cnt+'명':'·명단없음';
+    }
     else if(s.type==='공통'&&s.classes&&s.classes.length)extra='·'+s.classes.slice().sort((a,b)=>a-b).map(c=>c+'반').join(',');
     return`<span class="tt-chip type-${s.type}" title="클릭해서 편집" onclick="openTtSubjectModal(${g},'${date}',${p},${i})">${esc(s.name)}<small>(${s.type}${extra})</small><span class="tt-x" title="삭제" onclick="event.stopPropagation();removeTtSubject(${g},'${date}',${p},${i})">×</span></span>`;
   }).join('');
@@ -2335,7 +2311,6 @@ function openTtSubjectModal(g,date,p,index){
   document.getElementById('ttSubjectModalTitle').textContent=existing?'과목 편집':'과목 추가';
   document.getElementById('ttSubjName').value=existing?existing.name:'';
   document.getElementById('ttSubjType').value=existing?existing.type:'공통';
-  document.getElementById('ttSubjRoom').value=existing&&existing.room?existing.room:'';
   renderTtClassChecks(g,existing&&existing.classes?existing.classes:null);
   toggleTtRoomField();
   document.getElementById('ttSubjectModal').style.display='flex';
@@ -2362,11 +2337,10 @@ function saveTtSubject(){
   const name=document.getElementById('ttSubjName').value.trim();
   if(!name){showToast('과목명을 입력하세요');return;}
   const type=document.getElementById('ttSubjType').value;
-  const room=type==='선택'?document.getElementById('ttSubjRoom').value.trim():'';
   const{g,date,p,index}=ttModalCtx;
   const key=g+'|'+date+'|'+p;
   if(!ttData[key])ttData[key]=[];
-  const obj={name,type,room};
+  const obj={name,type};
   if(type==='공통'){
     const totalClasses=classes.filter(c=>c.grade===g).length;
     const checkedNums=[...document.querySelectorAll('#ttClassChecks input:checked')].map(el=>parseInt(el.value));
@@ -2438,12 +2412,12 @@ async function downloadEnrollmentTemplate(){
   ws.columns=[{key:'subject',width:20},{key:'class_num',width:8},{key:'number',width:8},{key:'name',width:16},{key:'room',width:16,style:{numFmt:'@'}}];
   ws.mergeCells('A1:E1');
   const note=ws.getCell('A1');
-  note.value='과목명 / 반 / 번호 / 이름 / 호실을 입력하세요. 같은 과목 응시자는 여러 줄로 나눠 적습니다. 학년은 화면에서 선택합니다. ※ 과목명은 고사 시간표의 선택과목명과 띄어쓰기·특수문자까지 똑같이 입력하세요. ※ 호실은 한 과목이 여러 방으로 나뉘거나 학생마다 다른 경우에 채우세요(본인 교실 유지 시 "본인 교실"처럼 적어도 됨) — 비워두면 고사 시간표에 입력한 해당 과목의 기본 호실이 적용됩니다.';
+  note.value='과목명 / 반 / 번호 / 이름 / 호실을 입력하세요. 같은 과목 응시자는 여러 줄로 나눠 적습니다. 학년은 화면에서 선택합니다. ※ 과목명은 고사 시간표의 선택과목명과 띄어쓰기·특수문자까지 똑같이 입력하세요. ※ 호실은 그 학생이 실제로 가는 방을 적으세요(본인 교실 유지 시 "본인 교실"처럼 적어도 됨). 호실을 정하는 곳은 이 열 하나뿐이며, 비워두면 "호실 미지정"으로 묶여 배치표 제목에 호실이 표시되지 않습니다.';
   note.font={name:FONT,italic:true,size:10,color:{argb:'FF8A6D3B'}};
   note.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF6E8'}};
   note.alignment={vertical:'middle',wrapText:true};
   ws.getRow(1).height=58;
-  const hr=ws.getRow(2);hr.values=['과목명','반','번호','이름','호실(선택 입력)'];hr.height=24;
+  const hr=ws.getRow(2);hr.values=['과목명','반','번호','이름','호실'];hr.height=24;
   hr.eachCell(c=>{c.font={name:FONT,bold:true,color:{argb:'FFFFFFFF'},size:12};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFB08A4E'}};c.alignment={horizontal:'center',vertical:'middle'};c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};});
   const sample=[
     {subject:'경제',class_num:1,number:3,name:'홍길동',room:'3-1교실'},
@@ -2552,62 +2526,136 @@ async function clearEnrollment(g){
 }
 
 /* ---- 시간표 기반 일괄 자리배치 (질문1) ---- */
-async function generateBatchSeatCharts(){
-  const grade=parseInt(document.getElementById('sepGrade').value);
-  if(!grade){showToast('먼저 2단계에서 학년을 선택하세요');return;}
+// allGrades=true면 학급이 등록된 모든 학년을 한 번에 처리
+async function generateBatchSeatCharts(allGrades){
+  const st=document.getElementById('batchSeatStatus');
+  const grades=allGrades
+    ?[...new Set(classes.map(c=>c.grade))].sort((a,b)=>a-b)
+    :[parseInt(document.getElementById('sepGrade').value)].filter(g=>g);
+  if(!grades.length){showToast(allGrades?'등록된 학급이 없습니다':'먼저 2단계에서 학년을 선택하세요');return;}
   const rows=parseInt(document.getElementById('sepRows').value)||6;
   const cols=parseInt(document.getElementById('sepCols').value)||5;
   const startSide=document.getElementById('sepStartSide').value;
   const disabled=[...disabledSeats.sep];
-  const st=document.getElementById('batchSeatStatus');
-  const jobs=[];
-  examTimetable.filter(r=>r.grade===grade).forEach(r=>{
-    (r.subjects||[]).filter(s=>s.type==='선택').forEach(s=>{jobs.push({date:r.exam_date,period:r.period,name:s.name,room:s.room||''});});
-  });
-  if(!jobs.length){st.innerHTML='<span class="badge badge-danger">시간표에 이 학년 선택과목이 없습니다. 설정 탭에서 고사 시간표를 먼저 입력·저장하세요.</span>';return;}
-  // 학생별로 지정된 호실이 있으면 그 호실로, 없으면 과목의 기본 호실로 묶는다 (한 과목 = 여러 호실 가능)
-  const enBySubject={};
-  subjectEnrollment.filter(e=>e.grade===grade).forEach(e=>{
-    (enBySubject[e.subject_name]=enBySubject[e.subject_name]||[]).push({id:e.student_id,room:(e.room||'').trim()});
-  });
-  const gIds=new Set(gradeStudents(grade).map(s=>s.id));
   const slotCount=seatFillSlots(rows,cols,startSide,disabledSeats.sep).length;
+  // 호실은 응시자 명단에 학생별로 적힌 값 하나만 사용한다 (한 과목 = 여러 호실 가능, 비어 있으면 '호실 미지정'으로 한 묶음)
+  const jobs=[];
+  grades.forEach(grade=>{
+    const enBySubject={};
+    subjectEnrollment.filter(e=>e.grade===grade).forEach(e=>{
+      (enBySubject[e.subject_name]=enBySubject[e.subject_name]||[]).push({id:e.student_id,room:(e.room||'').trim()});
+    });
+    const gIds=new Set(gradeStudents(grade).map(s=>s.id));
+    examTimetable.filter(r=>r.grade===grade).forEach(r=>{
+      (r.subjects||[]).filter(s=>s.type==='선택').forEach(s=>{
+        jobs.push({grade,date:r.exam_date,period:r.period,name:s.name,
+          enrolled:(enBySubject[s.name]||[]).filter(x=>gIds.has(x.id))});
+      });
+    });
+  });
+  if(!jobs.length){
+    st.innerHTML=`<span class="badge badge-danger">시간표에 ${allGrades?'':grades[0]+'학년 '}선택과목이 없습니다. 설정 탭에서 고사 시간표를 먼저 입력·저장하세요.</span>`;
+    return;
+  }
   // 실제 생성될 (과목,호실) 조합 수를 미리 계산해서 확인창에 정확히 안내
   let groupCount=0;
-  jobs.forEach(job=>{
-    const enrolled=(enBySubject[job.name]||[]).filter(x=>gIds.has(x.id));
-    const rooms=new Set(enrolled.map(x=>x.room||job.room||''));
-    groupCount+=rooms.size||0;
-  });
-  if(!confirm(`${grade}학년 선택과목 ${jobs.length}개(호실 기준 ${groupCount}개 배치표)를 생성·저장합니다.\n같은 과목·호실·날짜·교시로 이미 저장된 배치표는 갱신됩니다.\n(좌석: ${rows}행 ${cols}열, 사용가능 ${slotCount}석)\n진행할까요?`))return;
+  jobs.forEach(job=>{groupCount+=new Set(job.enrolled.map(x=>x.room||'')).size;});
+  const scopeLabel=allGrades?`전체 학년(${grades.join('·')}학년)`:`${grades[0]}학년`;
+  if(!confirm(`${scopeLabel} 선택과목 ${jobs.length}개(호실 기준 ${groupCount}개 배치표)를 생성·저장합니다.
+같은 학년·과목·호실·날짜·교시로 이미 저장된 배치표는 갱신됩니다.
+(좌석: ${rows}행 ${cols}열, 사용가능 ${slotCount}석)
+진행할까요?`))return;
   st.textContent='생성 중...';
-  const{data:existing}=await sb.from('seat_charts').select('id,exam_date,period,subject_name,room_name').eq('school_code',SCHOOL_CODE).eq('mode','separate').eq('grade',grade);
-  const exMap={};(existing||[]).forEach(c=>{exMap[c.exam_date+'|'+c.period+'|'+c.subject_name+'|'+(c.room_name||'')]=c.id;});
-  let created=0,updated=0;const skipped=[];
+  const{data:existing}=await sb.from('seat_charts').select('id,grade,exam_date,period,subject_name,room_name')
+    .eq('school_code',SCHOOL_CODE).eq('mode','separate').in('grade',grades);
+  const exMap={};(existing||[]).forEach(c=>{exMap[c.grade+'|'+c.exam_date+'|'+c.period+'|'+c.subject_name+'|'+(c.room_name||'')]=c.id;});
+  let created=0,updated=0;const skipped=[],noRoomSubjects=[];
+  const pre=job=>allGrades?`${job.grade}학년 ${job.name}`:job.name;
   for(const job of jobs){
-    const enrolled=(enBySubject[job.name]||[]).filter(x=>gIds.has(x.id));
-    if(!enrolled.length){skipped.push(`${job.name}(응시자 명단 없음)`);continue;}
+    if(!job.enrolled.length){skipped.push(`${pre(job)}(응시자 명단 없음)`);continue;}
     const byRoom={};
-    enrolled.forEach(x=>{
-      const room=x.room||job.room||'';
-      (byRoom[room]=byRoom[room]||[]).push(x.id);
-    });
+    job.enrolled.forEach(x=>{const room=x.room||'';(byRoom[room]=byRoom[room]||[]).push(x.id);});
+    if(Object.keys(byRoom).some(r=>!r))noRoomSubjects.push(pre(job));
     for(const[room,ids] of Object.entries(byRoom)){
-      const label=room?`${job.name}(${room})`:job.name;
+      const label=room?`${pre(job)}(${room})`:pre(job);
       if(ids.length>slotCount){skipped.push(`${label}: ${ids.length}명 > 좌석 ${slotCount}석`);continue;}
-      const payload={school_code:SCHOOL_CODE,mode:'separate',exam_date:job.date,period:job.period,grade,class_id:null,
+      const payload={school_code:SCHOOL_CODE,mode:'separate',exam_date:job.date,period:job.period,grade:job.grade,class_id:null,
         rows,cols,start_side:startSide,subject_name:job.name,room_name:room||null,
         disabled_seats:disabled,student_ids:ids,updated_at:new Date().toISOString()};
-      const exId=exMap[job.date+'|'+job.period+'|'+job.name+'|'+room];
+      const exId=exMap[job.grade+'|'+job.date+'|'+job.period+'|'+job.name+'|'+room];
       if(exId){const{error}=await sb.from('seat_charts').update(payload).eq('id',exId);if(!error)updated++;else skipped.push(label+'(저장오류)');}
       else{const{error}=await sb.from('seat_charts').insert(payload);if(!error)created++;else skipped.push(label+'(저장오류)');}
     }
   }
-  let msg=`<span class="badge badge-success">${icon('checkCircle',12)}완료: 신규 ${created}개 · 갱신 ${updated}개</span>`;
+  let msg=`<span class="badge badge-success">${icon('checkCircle',12)}${scopeLabel} 완료: 신규 ${created}개 · 갱신 ${updated}개</span>`;
+  if(noRoomSubjects.length)msg+=`<div style="margin-top:6px;color:var(--warning)">호실 미지정 ${noRoomSubjects.length}개 과목(${esc(noRoomSubjects.join(', '))}) — 응시자 명단 엑셀의 "호실" 열이 비어 있어 방 이름 없이 한 장으로 만들었습니다.</div>`;
   if(skipped.length)msg+=`<div style="margin-top:6px;color:var(--warning)">건너뜀 ${skipped.length}개: ${esc(skipped.join(', '))}</div>`;
   msg+=`<div style="margin-top:6px;color:var(--text3);font-size:12px">한 과목이 여러 호실로 나뉜 경우 호실별로 배치표가 따로 생성됩니다. 위 '저장된 배치표 불러오기'에서 각 배치표를 확인·인쇄·개별 조정할 수 있습니다.</div>`;
   st.innerHTML=msg;
   showToast(`일괄 배치 완료 (신규 ${created} · 갱신 ${updated})`);
+}
+
+/* ---- 각자교실 일괄 자리배치 (학년 전체 학급 × 모든 날짜·교시) ---- */
+// allGrades=true면 학급이 등록된 모든 학년을 한 번에 처리
+async function generateBatchOwnSeatCharts(allGrades){
+  const classId=parseInt(document.getElementById('ownClass').value);
+  const baseCls=classes.find(c=>c.id===classId);
+  const grades=allGrades
+    ?[...new Set(classes.map(c=>c.grade))].sort((a,b)=>a-b)
+    :(baseCls?[baseCls.grade]:[]);
+  if(!grades.length){showToast(allGrades?'등록된 학급이 없습니다':'먼저 2단계에서 학급을 선택하세요');return;}
+  const scopeLabel=allGrades?`전체 학년(${grades.join('·')}학년)`:`${grades[0]}학년`;
+  const rows=parseInt(document.getElementById('ownRows').value)||6;
+  const cols=parseInt(document.getElementById('ownCols').value)||5;
+  const startSide=document.getElementById('ownStartSide').value;
+  const disabled=[...disabledSeats.own];
+  const st=document.getElementById('batchOwnStatus');
+  const targetClasses=classes.filter(c=>grades.includes(c.grade))
+    .sort((a,b)=>a.grade===b.grade?a.class_num-b.class_num:a.grade-b.grade);
+  const ttByGrade={};
+  grades.forEach(g=>{
+    ttByGrade[g]=examTimetable.filter(r=>r.grade===g)
+      .sort((a,b)=>a.exam_date===b.exam_date?a.period-b.period:a.exam_date.localeCompare(b.exam_date));
+  });
+  if(!grades.some(g=>ttByGrade[g].length)){st.innerHTML=`<span class="badge badge-danger">${scopeLabel} 고사 시간표가 없습니다. 설정 탭에서 먼저 입력·저장하세요.</span>`;return;}
+  const enrollByGrade={};grades.forEach(g=>{enrollByGrade[g]=enrollmentByStudent(g);});
+  const slotCount=seatFillSlots(rows,cols,startSide,disabledSeats.own).length;
+  // 실제로 만들 칸만 미리 골라낸다 (전원 별실 이동/자습인 교시는 제외)
+  const jobs=[],skipped=[];
+  targetClasses.forEach(cls=>{
+    const sts=(students[cls.id]||[]).slice().sort((a,b)=>a.number-b.number);
+    if(!sts.length)return;
+    (ttByGrade[cls.grade]||[]).forEach(r=>{
+      const pl=ownPlacement(cls,sts,r,enrollByGrade[cls.grade]);
+      if(!pl.stay.length)return;
+      const label=`${cls.grade}-${cls.class_num}반 ${fmtDate(r.exam_date)} ${r.period}교시`;
+      if(sts.length>slotCount){skipped.push(`${label}: 학급 ${sts.length}명 > 좌석 ${slotCount}석`);return;}
+      jobs.push({cls,date:r.exam_date,period:r.period,subject:pl.subjects.join(' · ')||'시험',ids:pl.stay.map(x=>x.id),label});
+    });
+  });
+  if(!jobs.length){st.innerHTML='<span class="badge badge-danger">만들 배치표가 없습니다 (모든 교시가 전원 별실 이동이거나 자습, 또는 좌석 부족)</span>'+(skipped.length?`<div style="margin-top:6px;color:var(--warning)">건너뜀: ${esc(skipped.join(', '))}</div>`:'');return;}
+  if(!confirm(`${scopeLabel} ${targetClasses.length}개 학급의 각자교실 배치표 ${jobs.length}장을 생성·저장합니다.
+같은 학급·날짜·교시로 이미 저장된 배치표는 갱신됩니다.
+(좌석: ${rows}행 ${cols}열, 사용가능 ${slotCount}석)
+진행할까요?`))return;
+  st.textContent='생성 중...';
+  const{data:existing}=await sb.from('seat_charts').select('id,exam_date,period,class_id')
+    .eq('school_code',SCHOOL_CODE).eq('mode','own').in('class_id',targetClasses.map(c=>c.id));
+  const exMap={};(existing||[]).forEach(c=>{exMap[c.exam_date+'|'+c.period+'|'+c.class_id]=c.id;});
+  let created=0,updated=0;
+  for(const job of jobs){
+    const payload={school_code:SCHOOL_CODE,mode:'own',exam_date:job.date,period:job.period,grade:null,class_id:job.cls.id,
+      rows,cols,start_side:startSide,subject_name:job.subject,room_name:null,
+      disabled_seats:disabled,student_ids:job.ids,updated_at:new Date().toISOString()};
+    const exId=exMap[job.date+'|'+job.period+'|'+job.cls.id];
+    if(exId){const{error}=await sb.from('seat_charts').update(payload).eq('id',exId);if(!error)updated++;else skipped.push(job.label+'(저장오류)');}
+    else{const{error}=await sb.from('seat_charts').insert(payload);if(!error)created++;else skipped.push(job.label+'(저장오류)');}
+  }
+  let msg=`<span class="badge badge-success">${icon('checkCircle',12)}${scopeLabel} 완료: 신규 ${created}장 · 갱신 ${updated}장</span>`;
+  if(skipped.length)msg+=`<div style="margin-top:6px;color:var(--warning)">건너뜀 ${skipped.length}건: ${esc(skipped.join(', '))}</div>`;
+  msg+=`<div style="margin-top:6px;color:var(--text3);font-size:12px">전원이 별실로 가거나 자습인 교시는 만들지 않았습니다. 위 '저장된 배치표 불러오기'에서 각 배치표를 확인·인쇄·개별 조정할 수 있습니다.</div>`;
+  st.innerHTML=msg;
+  showToast(`각자교실 일괄 배치 완료 (신규 ${created} · 갱신 ${updated})`);
 }
 
 /* ---- 학생별 개인 시간표 (질문2) ---- */
@@ -2660,7 +2708,7 @@ function printStudentTimetables(){
             if(!su.classes||!su.classes.length||su.classes.includes(s.class_num))
               applicable.push({name:su.name,place:'본인 교실('+s.grade+'-'+s.class_num+'반)'});
           }
-          else if(su.name in enrolled)applicable.push({name:su.name,place:enrolled[su.name]||su.room||'별실'});
+          else if(su.name in enrolled)applicable.push({name:su.name,place:enrolled[su.name]||'별실(호실 미지정)'});
         });
         if(!applicable.length)return`<td class="free">자습</td>`;
         const inner=applicable.map(a=>`<div class="subj">${esc(a.name)}</div><div class="place">${esc(a.place)}</div>`).join('');
