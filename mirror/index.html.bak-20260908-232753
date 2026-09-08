@@ -24,45 +24,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>생기부돋보기 · 생기부 점검 도우미</title>
-<meta name="author" content="황성재">
-<meta name="creator" content="황성재 (@hirame.ki)">
+<meta name="author" content="@hirame.ki">
 <meta name="copyright" content="Copyright (c) 2026 @hirame.ki. All rights reserved. 무단 복제·개작·재배포 금지.">
-<!-- ── 공유용 메타 / 공유 카드 · 제작 황성재 (@hirame.ki) ──
-     og:image 는 절대경로여야 합니다. 카카오톡·네이버 등은 상대경로 썸네일을 읽지 못합니다.
-     배포 주소가 https://hirame-ki.github.io/mirror/ 가 아니면 아래 세 곳(canonical·og:url·og:image)을 함께 고쳐 주세요. -->
-<meta name="description" content="반 전체 생기부 기록의 유사도를 브라우저 안에서 점검하고, 맞춤법·띄어쓰기·기재 주의 표현까지 훑어 줍니다. 유사도 분석은 완전 로컬이며 기록은 이 브라우저를 벗어나지 않습니다.">
-<meta name="keywords" content="생기부,생활기록부,세특,유사도 검사,복사 점검,표현 점검,기재 주의 표현,나이스,NEIS,학교생활기록부,담임,생기부돋보기">
-<meta name="theme-color" content="#1d3d70">
-<meta name="format-detection" content="telephone=no">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://hirame-ki.github.io/mirror/">
-
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="생기부돋보기">
-<meta property="og:locale" content="ko_KR">
-<meta property="og:url" content="https://hirame-ki.github.io/mirror/">
-<meta property="og:title" content="생기부돋보기 — 반 전체 생기부 유사도·표현 점검">
-<meta property="og:description" content="반 전체 생기부 기록의 유사도를 브라우저 안에서 점검하고, 맞춤법·띄어쓰기·기재 주의 표현까지 훑어 줍니다. 유사도 분석은 완전 로컬이며 기록은 이 브라우저를 벗어나지 않습니다.">
-<meta property="og:image" content="https://hirame-ki.github.io/mirror/og.png">
-<meta property="og:image:secure_url" content="https://hirame-ki.github.io/mirror/og.png">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="생기부돋보기 — 두 기록을 나란히 놓고 겹치는 대목을 돋보기로 짚는 그림">
-<meta property="article:author" content="황성재 (@hirame.ki)">
-
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="생기부돋보기 — 반 전체 생기부 유사도·표현 점검">
-<meta name="twitter:description" content="반 전체 생기부 기록의 유사도를 브라우저 안에서 점검하고, 맞춤법·띄어쓰기·기재 주의 표현까지 훑어 줍니다. 유사도 분석은 완전 로컬이며 기록은 이 브라우저를 벗어나지 않습니다.">
-<meta name="twitter:image" content="https://hirame-ki.github.io/mirror/og.png">
-<meta name="twitter:image:alt" content="생기부돋보기 — 두 기록을 나란히 놓고 겹치는 대목을 돋보기로 짚는 그림">
-<meta name="twitter:creator" content="@hirame.ki">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="생기부돋보기">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="apple-touch-icon" href="og.png">
-<!-- ── 메타 끝 ── -->
+<meta name="description" content="반 전체 생기부 기록의 유사도를 브라우저 안에서 점검하고, 맞춤법·띄어쓰기·기재 주의 표현까지 훑어 주는 도구. 유사도 분석은 완전 로컬이며, AI 정밀 검사·AI 추천을 쓸 때만 기록 본문이 NVIDIA API로 전송됩니다.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%232f7d76%22 stroke-width=%222%22 stroke-linecap=%22round%22><circle cx=%2210%22 cy=%2210%22 r=%226.5%22 fill=%22%23f7f8fa%22/><line x1=%2215%22 y1=%2215%22 x2=%2221%22 y2=%2221%22/><line x1=%227.5%22 y1=%229.2%22 x2=%2212.5%22 y2=%229.2%22 stroke-width=%221.4%22 opacity=%22.55%22/><line x1=%227.5%22 y1=%2212%22 x2=%2211%22 y2=%2212%22 stroke-width=%221.4%22 opacity=%22.55%22/></svg>">
 <style>
   :root{
