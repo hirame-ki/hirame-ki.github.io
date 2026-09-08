@@ -4,6 +4,35 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📊 성적 상담 공장</title>
+
+<!-- ══ 메타 태그 / 공유 카드 ══
+     og:image·og:url 은 배포 주소가 정해지면 절대경로(https://도메인/thumbnail.png)로 바꿔주세요.
+     카카오톡·네이버 등 일부 서비스는 상대경로 썸네일을 읽지 못합니다. -->
+<meta name="description" content="NEIS 교과학습발달상황·전과목 성적 일람표를 올리면 과목별 등급 분석, 방사형 그래프, 과목군별 등급 막대, 등급 경계 과목 순위, 상담 프롬프트를 자동으로 만들어 줍니다. 학생별 인쇄·PDF와 엑셀 저장까지 한 번에. 파일은 브라우저 안에서만 처리되어 서버로 전송되지 않습니다.">
+<meta name="keywords" content="성적분석,생기부,나이스,NEIS,교과학습발달상황,전과목 성적 일람표,등급 계산,5등급제,9등급제,상담자료,학급 담임,진학 상담,성적 그래프,방사형 그래프,성적 상담 공장">
+<meta name="author" content="황성재">
+<meta name="theme-color" content="#0d9488">
+<meta name="format-detection" content="telephone=no">
+<meta name="robots" content="index, follow">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="성적 상담 공장">
+<meta property="og:title" content="성적 상담 공장 — 학급 성적 자동 분석 · 상담 자료 생성">
+<meta property="og:description" content="성적 파일 업로드 한 번으로 과목별 분석·방사형 그래프·과목군별 등급 막대·상담 프롬프트까지. 학생별 인쇄/PDF 지원, 데이터는 브라우저에서만 처리됩니다.">
+<meta property="og:image" content="thumbnail.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="성적 상담 공장 — 과목별 방사형 그래프와 과목군별 등급 막대 미리보기">
+<meta property="og:locale" content="ko_KR">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="성적 상담 공장 — 학급 성적 자동 분석 · 상담 자료 생성">
+<meta name="twitter:description" content="성적 파일 업로드 한 번으로 과목별 분석·방사형 그래프·과목군별 등급 막대·상담 프롬프트까지. 학생별 인쇄/PDF 지원, 데이터는 브라우저에서만 처리됩니다.">
+<meta name="twitter:image" content="thumbnail.png">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📊%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="thumbnail.png">
 <!-- 웹폰트: 렌더링을 막지 않게 비동기 로드. 오프라인이면 시스템 폰트로 자동 폴백됩니다. -->
 <link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
       href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Gothic:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap">
@@ -120,8 +149,8 @@ body{display:flex;flex-direction:column;min-height:100vh;overflow:hidden}
 .mob-tabs button{flex:1;padding:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:none;color:var(--muted);border-bottom:2.5px solid transparent;transition:all .18s}
 .mob-tabs button.active{color:var(--mint-d);border-bottom-color:var(--mint);background:var(--mint-l)}
 .main{display:flex;flex:1;min-height:0;overflow:hidden}
-.lp{width:50%;flex-shrink:0;border-right:1.5px solid var(--border);overflow-y:auto;overflow-x:hidden;padding:14px 12px 60px;background:var(--bg);transition:background .3s}
-.rp{width:50%;flex-shrink:0;overflow-y:auto;overflow-x:hidden;padding:14px 14px 60px;background:var(--surface);transition:background .3s}
+.lp{width:33.333%;flex-shrink:0;border-right:1.5px solid var(--border);overflow-y:auto;overflow-x:hidden;padding:14px 12px 60px;background:var(--bg);transition:background .3s}
+.rp{width:66.667%;flex-shrink:0;overflow-y:auto;overflow-x:hidden;padding:14px 14px 60px;background:var(--surface);transition:background .3s}
 .sw{margin-bottom:8px}
 .sh{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:9px 12px 8px;border-radius:10px;background:var(--surface2);border:1.5px solid var(--border2);cursor:pointer;user-select:none;transition:all .15s}
 .sh:hover{background:var(--mint-l);border-color:var(--mint)}
@@ -165,6 +194,12 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .subj-all-btn{font-size:11px;font-weight:800;color:var(--mint-d);background:none;border:none;cursor:pointer;padding:3px 6px;text-decoration:underline}
 /* Result panels */
 .result-card{background:var(--surface2);border:1.5px solid var(--border2);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+/* 결과 카드 가로 배치 — 폭이 좁아지면 자동으로 세로 스택 */
+.dual-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:12px;align-items:start}
+.dual-row>.result-card{margin-bottom:12px;height:100%;min-width:0;overflow:hidden}
+/* 등급 경계 아쉬운 과목 카드 목록도 가로 2열 */
+.nm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:8px;align-items:start}
+.nm-grid>*{min-width:0}
 .result-title{font-size:12px;font-weight:800;color:var(--sub);margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .grade-table{width:100%;border-collapse:collapse;font-size:11.5px}
 .grade-table th{background:var(--bg2);color:var(--muted);font-weight:800;font-size:10px;padding:5px 8px;border-bottom:1.5px solid var(--border2);text-align:left}
@@ -175,6 +210,8 @@ select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns
 .g3{background:#fef3c7;color:#92400e}.g4{background:#ffe4e6;color:#9f1239}.g5{background:#fce7f3;color:#831843}
 .g6{background:#fecaca;color:#7f1d1d}.g7{background:#fca5a5;color:#7f1d1d}.g8{background:#f87171;color:#fff}.g9{background:#ef4444;color:#fff}
 .chart-wrap{position:relative;height:220px;margin-top:8px}
+.radar-wrap{position:relative;height:330px;margin-top:8px}
+.catbar-wrap{position:relative;height:250px;margin-top:8px}
 /* Prompt area */
 .prompt-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:12px}
 .prompt-hdr{background:var(--surface2);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1.5px solid var(--border2)}
@@ -243,7 +280,15 @@ footer a{color:var(--mint-d);text-decoration:none;font-weight:700}
   .rp{width:100% !important;display:block !important;overflow:visible !important;padding:0 !important;border:none !important;background:#fff !important}
   #result-area{display:block !important}
   .result-card{break-inside:avoid;page-break-inside:avoid;box-shadow:none;margin-bottom:10px;border-color:#cfe6de}
-  .chart-wrap{height:250px !important}
+  .radar-wrap,.catbar-wrap,.chart-wrap{break-inside:avoid;page-break-inside:avoid}
+  .chart-wrap{height:210px !important}
+  .radar-wrap{height:230px !important}
+  .catbar-wrap{height:230px !important}
+  /* 인쇄에서도 가로 2단 유지 — 세로 길이를 줄인다 */
+  .dual-row{display:grid !important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;gap:8px !important;
+    break-inside:avoid !important;page-break-inside:avoid !important}
+  .dual-row>.result-card{margin-bottom:0 !important;min-width:0 !important}
+  .nm-grid{display:grid !important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;gap:6px !important}
   .print-only{display:block !important}
   .print-head{display:flex !important;align-items:flex-end;justify-content:space-between;
     border-bottom:2.5px solid var(--mint-d);padding-bottom:7px;margin-bottom:12px}
@@ -264,6 +309,8 @@ body.batch-print #batch-print-area{display:block}
   .bp-student{page-break-after:always;break-after:page}
   .bp-student:last-child{page-break-after:auto;break-after:auto}
   .bp-chart{width:100%;max-width:100%;margin-top:8px;border:1px solid #dcefe9;border-radius:8px}
+  .bp-charts2{display:flex;gap:7px;align-items:flex-start;margin-top:8px}
+  .bp-charts2 .bp-chart2{flex:1 1 0;min-width:0;width:50%;border:1px solid #dcefe9;border-radius:8px}
   .bp-sec{font-size:11.5px;font-weight:800;color:#0d9488;margin:12px 0 6px;padding-bottom:3px;border-bottom:1.5px solid #cfe6de}
   .bp-nm{font-size:10.5px;color:#33564a;line-height:1.85;white-space:pre-wrap}
   .bp-nm-table{width:100%;border-collapse:collapse;font-size:10px;table-layout:fixed}
@@ -682,6 +729,25 @@ body.batch-print #batch-print-area{display:block}
     <div id="chart-tabs" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px"></div>
     <div class="chart-wrap"><canvas id="trend-chart"></canvas></div>
   </div>
+
+  <!-- 방사형 · 과목군별 막대 — 가로 2단 -->
+  <div class="dual-row" id="chart-dual-row">
+
+  <!-- Radar: 과목별 방사형 -->
+  <div class="result-card" id="radar-card">
+    <div class="result-title"><span class="ico">🕸️</span> 과목별 방사형 그래프</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">※ 바깥쪽으로 갈수록 좋은 등급 · 과목별(전 학기) 평균 등급 기준</div>
+    <div class="radar-wrap"><canvas id="radar-chart"></canvas></div>
+  </div>
+
+  <!-- 과목군별 등급 분석 (세로 막대) -->
+  <div class="result-card" id="catbar-card">
+    <div class="result-title"><span class="ico">📊</span> 과목군별 등급 분석</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">※ 막대가 높을수록 좋은 등급 · 과목군별 평균 등급</div>
+    <div class="catbar-wrap"><canvas id="catbar-chart"></canvas></div>
+  </div>
+
+  </div><!-- /chart-dual-row -->
 
   <!-- Near Miss Card -->
   <div class="result-card" id="near-miss-card">
@@ -1833,6 +1899,8 @@ function generateAll() {
   buildTable();
   if (isIlamMode) buildIlamAnalysis();
   buildChart();
+  buildRadarChart();
+  buildCatBarChart();
   buildNearMiss();
   buildPrompt();
 
@@ -2410,6 +2478,275 @@ function buildChart() {
   });
 }
 
+// ════════════════
+// 과목별 방사형(레이더) · 과목군별 세로 막대
+// ════════════════
+let radarChart = null, catBarChart = null;
+const ACH_LETTER = { 1:'A', 2:'B', 3:'C', 4:'D', 5:'E' };
+
+// 등급 값 → 표시 문자열 (중학교는 성취도 A~E)
+function fmtGrade(v) {
+  if (v == null || isNaN(v)) return '-';
+  if (currentSchoolLevel === 'middle') return ACH_LETTER[Math.round(v)] || String(v);
+  return String(parseFloat(v.toFixed(2))) + '등급';
+}
+
+// 과목(기반명)별 평균 등급 — 축 순서는 과목군 → 가나다
+function getRadarEntries(data, subjSet) {
+  const m = {};
+  Object.values(data || {}).forEach(d => {
+    if (!subjSet.has(d.subject)) return;
+    if (typeof d.grade !== 'number' || isNaN(d.grade)) return;
+    const b = getBaseName(d.subject) || d.subject;
+    if (!m[b]) m[b] = { sum: 0, cnt: 0, cat: classifySubject(d.subject) };
+    m[b].sum += d.grade; m[b].cnt++;
+  });
+  const order = CATEGORY_MAP.slice(1).map(c => c.name);
+  return Object.entries(m).map(([name, v]) => ({
+    name, cat: v.cat, cnt: v.cnt,
+    avg: parseFloat((v.sum / v.cnt).toFixed(2))
+  })).sort((a, b) =>
+    (order.indexOf(a.cat) - order.indexOf(b.cat)) || a.name.localeCompare(b.name, 'ko'));
+}
+
+// 과목군별 평균 등급
+function getCategoryAvgList(data, subjSet) {
+  const g = {};
+  Object.values(data || {}).forEach(d => {
+    if (!subjSet.has(d.subject)) return;
+    if (typeof d.grade !== 'number' || isNaN(d.grade)) return;
+    const c = classifySubject(d.subject);
+    if (!g[c]) g[c] = { sum: 0, cnt: 0, subjs: new Set() };
+    g[c].sum += d.grade; g[c].cnt++; g[c].subjs.add(d.subject);
+  });
+  return CATEGORY_MAP.slice(1).filter(c => g[c.name]).map(c => ({
+    cat: c.name, color: c.color, cnt: g[c.name].cnt, subjCnt: g[c.name].subjs.size,
+    avg: parseFloat((g[c.name].sum / g[c.name].cnt).toFixed(2))
+  }));
+}
+
+// 등급(작을수록 좋음) → 축 값(클수록 좋음)
+function toAxisVal(avg) { return parseFloat((gradeSystemMax + 1 - avg).toFixed(2)); }
+function axisTick(v) {
+  return (v >= 1 && v <= gradeSystemMax && Number.isInteger(v))
+    ? fmtGrade(gradeSystemMax + 1 - v) : '';
+}
+
+// 데이터 포인트/막대에 등급 숫자를 직접 표시하는 인라인 플러그인
+function shortGrade(v) {
+  if (v == null || isNaN(v)) return '';
+  if (currentSchoolLevel === 'middle') return ACH_LETTER[Math.round(v)] || String(v);
+  return String(parseFloat(v.toFixed(2)));
+}
+const LABEL_FONT = '"Nanum Gothic","Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+
+// 흰 테두리를 깔아 배경 위에서도 읽히게 그린다
+function _strokeLabel(ctx, txt, x, y, size, color) {
+  ctx.font = `800 ${size}px ${LABEL_FONT}`;
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(255,255,255,.92)';
+  ctx.lineJoin = 'round';
+  ctx.strokeText(txt, x, y);
+  ctx.fillStyle = color;
+  ctx.fillText(txt, x, y);
+}
+
+// 레이더: 각 꼭짓점 옆에 등급 숫자
+const radarLabelPlugin = {
+  id: 'radarGradeLabel',
+  afterDatasetsDraw(chart, args, opts) {
+    const ctx = chart.ctx, scale = chart.scales.r;
+    if (!scale) return;
+    const size = (opts && opts.size) || 10, color = (opts && opts.color) || '#0f766e';
+    chart.data.datasets.forEach((ds, di) => {
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden || !ds._raw) return;
+      ctx.save();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      meta.data.forEach((el, i) => {
+        const txt = shortGrade(ds._raw[i]);
+        if (!txt) return;
+        const dx = el.x - scale.xCenter, dy = el.y - scale.yCenter;
+        const len = Math.hypot(dx, dy);
+        let tx, ty;
+        if (len < 10) { tx = el.x; ty = el.y - 13; }
+        else {
+          // 바깥쪽 점은 안쪽으로 밀어 과목명과 겹치지 않게
+          const dir = (len / (scale.drawingArea || 1)) > 0.72 ? -1 : 1;
+          tx = el.x + (dx / len) * 14 * dir;
+          ty = el.y + (dy / len) * 14 * dir;
+        }
+        _strokeLabel(ctx, txt, tx, ty, size, color);
+      });
+      ctx.restore();
+    });
+  }
+};
+
+// 세로 막대: 막대 상단에 등급 표시
+const barLabelPlugin = {
+  id: 'barGradeLabel',
+  afterDatasetsDraw(chart, args, opts) {
+    const ctx = chart.ctx, area = chart.chartArea;
+    const size = (opts && opts.size) || 11;
+    chart.data.datasets.forEach((ds, di) => {
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden || !ds._raw) return;
+      ctx.save();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      meta.data.forEach((el, i) => {
+        const raw = ds._raw[i];
+        if (raw == null) return;
+        const txt = currentSchoolLevel === 'middle' ? shortGrade(raw) : shortGrade(raw) + '등급';
+        const y = Math.max(area.top + size + 2, el.y - 6);
+        _strokeLabel(ctx, txt, el.x, y, size, (ds.borderColor && ds.borderColor[i]) || '#334155');
+      });
+      ctx.restore();
+    });
+  }
+};
+
+function radarConfig(entries, opts) {
+  const o = opts || {};
+  const many = entries.length > 10;
+  return {
+    type: 'radar',
+    plugins: [radarLabelPlugin],
+    data: {
+      labels: entries.map(e => e.name),
+      datasets: [{
+        label: '평균 등급',
+        data: entries.map(e => toAxisVal(e.avg)),
+        _raw: entries.map(e => e.avg),
+        _cnt: entries.map(e => e.cnt),
+        backgroundColor: 'rgba(45,212,191,.22)',
+        borderColor: '#0d9488', borderWidth: 2.5,
+        pointBackgroundColor: '#0d9488', pointBorderColor: '#ffffff',
+        pointBorderWidth: 1.5, pointRadius: 4.5, pointHoverRadius: 8
+      }]
+    },
+    options: {
+      animation: false, responsive: !o.png, maintainAspectRatio: false,
+      layout: { padding: o.png ? 10 : 6 },
+      scales: {
+        r: {
+          min: 0, max: gradeSystemMax, beginAtZero: true,
+          ticks: { stepSize: 1, font: { size: 9 }, color: '#6b8f83',
+            backdropColor: 'rgba(255,255,255,.8)',
+            // 점마다 등급 숫자를 찍으므로 눈금은 최상/최하만 남겨 겹침을 줄인다
+            callback: v => (v === gradeSystemMax || v === 1) ? axisTick(v) : '' },
+          pointLabels: { font: { size: many ? 9.5 : 11, weight: 'bold' }, color: '#33564a' },
+          grid: { color: 'rgba(0,0,0,.09)' },
+          angleLines: { color: 'rgba(0,0,0,.09)' }
+        }
+      },
+      plugins: {
+        title: o.title ? { display: true, text: o.title, font: { size: 13, weight: 'bold' }, color: '#0d3b32' } : { display: false },
+        legend: { display: false },
+        tooltip: { callbacks: { label: c =>
+          `${c.label}: ${fmtGrade(c.dataset._raw[c.dataIndex])} (${c.dataset._cnt[c.dataIndex]}개 학기 평균)` } }
+      }
+    }
+  };
+}
+
+function catBarConfig(list, opts) {
+  const o = opts || {};
+  return {
+    type: 'bar',
+    plugins: [barLabelPlugin],
+    data: {
+      labels: list.map(x => x.cat),
+      datasets: [{
+        label: '평균 등급',
+        data: list.map(x => toAxisVal(x.avg)),
+        _raw: list.map(x => x.avg),
+        _cnt: list.map(x => x.cnt),
+        _sub: list.map(x => x.subjCnt),
+        backgroundColor: list.map(x => x.color + 'cc'),
+        borderColor: list.map(x => x.color),
+        borderWidth: 1.5, borderRadius: 6, maxBarThickness: 62
+      }]
+    },
+    options: {
+      animation: false, responsive: !o.png, maintainAspectRatio: false,
+      layout: { padding: o.png ? 6 : 0 },
+      scales: {
+        y: { min: 0, max: gradeSystemMax, beginAtZero: true,
+          ticks: { stepSize: 1, font: { size: 10 }, color: '#6b8f83', callback: axisTick },
+          grid: { color: 'rgba(0,0,0,.07)' } },
+        x: { ticks: { font: { size: 10.5, weight: 'bold' }, color: '#33564a' },
+          grid: { display: false } }
+      },
+      plugins: {
+        title: o.title ? { display: true, text: o.title, font: { size: 13, weight: 'bold' }, color: '#0d3b32' } : { display: false },
+        legend: { display: false },
+        tooltip: { callbacks: { label: c =>
+          `평균 ${fmtGrade(c.dataset._raw[c.dataIndex])} · 과목 ${c.dataset._sub[c.dataIndex]}개 / ${c.dataset._cnt[c.dataIndex]}개 학기` } }
+      }
+    }
+  };
+}
+
+
+// 인쇄 시 차트가 화면 크기 그대로 그려져 페이지를 넘어가는 문제 방지 —
+// 인쇄 스타일이 적용된 뒤 컨테이너 크기에 맞춰 다시 그린다.
+function _resizeChartsForPrint() {
+  [typeof trendChart !== 'undefined' ? trendChart : null, radarChart, catBarChart]
+    .forEach(c => { if (c) { try { c.resize(); } catch (e) {} } });
+}
+window.addEventListener('beforeprint', _resizeChartsForPrint);
+window.addEventListener('afterprint', _resizeChartsForPrint);
+if (window.matchMedia) {
+  const mq = window.matchMedia('print');
+  if (mq.addEventListener) mq.addEventListener('change', _resizeChartsForPrint);
+}
+
+function buildRadarChart() {
+  const card = document.getElementById('radar-card');
+  const entries = getRadarEntries(allStudents[currentStudent], checkedSubjects);
+  if (radarChart) { radarChart.destroy(); radarChart = null; }
+  if (entries.length < 3) { card.style.display = 'none'; return; }  // 축 3개 미만이면 방사형이 의미 없음
+  card.style.display = '';
+  radarChart = new Chart(document.getElementById('radar-chart').getContext('2d'), radarConfig(entries, {}));
+}
+
+function buildCatBarChart() {
+  const card = document.getElementById('catbar-card');
+  const list = getCategoryAvgList(allStudents[currentStudent], checkedSubjects);
+  if (catBarChart) { catBarChart.destroy(); catBarChart = null; }
+  if (list.length < 2) { card.style.display = 'none'; return; }
+  card.style.display = '';
+  catBarChart = new Chart(document.getElementById('catbar-chart').getContext('2d'), catBarConfig(list, {}));
+}
+
+// 오프스크린 캔버스 → PNG base64 (일괄 인쇄 · 엑셀용)
+function renderConfigToBase64(w, h, config) {
+  return new Promise(resolve => {
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+    const chart = new Chart(ctx, config);
+    setTimeout(() => {
+      const b64 = canvas.toDataURL('image/png').split(',')[1];
+      chart.destroy(); canvas.remove(); resolve(b64);
+    }, 200);
+  });
+}
+
+async function renderRadarToBase64(subjSet, title) {
+  const entries = getRadarEntries(allStudents[currentStudent], subjSet);
+  if (entries.length < 3) return null;
+  return renderConfigToBase64(520, 430, radarConfig(entries, { png: true, title: title || '과목별 방사형 그래프' }));
+}
+
+async function renderCatBarToBase64(subjSet, title) {
+  const list = getCategoryAvgList(allStudents[currentStudent], subjSet);
+  if (list.length < 2) return null;
+  return renderConfigToBase64(520, 360, catBarConfig(list, { png: true, title: title || '과목군별 등급 분석' }));
+}
+
 // 기준 색상에서 n개 팔레트 생성
 function generatePalette(baseHex, n) {
   if (n <= 1) return [baseHex];
@@ -2523,7 +2860,7 @@ function buildNearMiss() {
   }
 
   const GC = {1:'#34C759',2:'#34C759',3:'#f59e0b',4:'#e06b8b',5:'#e06b8b',6:'#c0392b',7:'#a93226',8:'#922b21',9:'#7b241c'};
-  let html = '<div style="display:flex;flex-direction:column;gap:8px">';
+  let html = '<div class="nm-grid">';
   items.forEach((it, idx) => {
     const rank = idx+1;
     const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':`<span style="font-size:11px;font-weight:700;color:var(--muted)">${rank}위</span>`;
@@ -3204,7 +3541,7 @@ function _pushCtx() { return { s: currentStudent, c: checkedSubjects }; }
 function _popCtx(ctx) {
   currentStudent = ctx.s; checkedSubjects = ctx.c;
   if (currentStudent && document.getElementById('result-area').style.display !== 'none') {
-    buildSummary(); buildTable(); buildChart(); buildNearMiss(); buildPrompt();
+    buildSummary(); buildTable(); buildChart(); buildRadarChart(); buildCatBarChart(); buildNearMiss(); buildPrompt();
   }
 }
 function _setCtx(name) { currentStudent = name; checkedSubjects = _subjectsOf(name); }
@@ -3233,10 +3570,14 @@ async function _buildStudentBlock(name, idx, total, withChart) {
   const table = document.getElementById('grade-table-wrap').innerHTML;
   const nmItems = getNearMissItems(allStudents[name], TERM_ORDER_STD);
   const avg = _avgOf(name, checkedSubjects);
-  let chartImg = '';
+  let chartImg = '', radarImg = '', catBarImg = '';
   if (withChart) {
     const b64 = await renderChartToBase64([...checkedSubjects], '전체과목');
     if (b64) chartImg = `<img class="bp-chart" src="data:image/png;base64,${b64}" alt="등급 변화 추이">`;
+    const rb64 = await renderRadarToBase64(checkedSubjects, '과목별 방사형 그래프');
+    if (rb64) radarImg = `<img class="bp-chart2" src="data:image/png;base64,${rb64}" alt="과목별 방사형 그래프">`;
+    const cb64 = await renderCatBarToBase64(checkedSubjects, '과목군별 등급 분석');
+    if (cb64) catBarImg = `<img class="bp-chart2" src="data:image/png;base64,${cb64}" alt="과목군별 등급 분석">`;
   }
   const meta = `${currentSchoolLevel === 'middle' ? '중학교' : '고등학교'} · 과목 ${checkedSubjects.size}개` +
     (avg !== null ? ` · 평균 ${avg.toFixed(2)}${currentSchoolLevel === 'middle' ? '' : '등급'}` : '');
@@ -3251,6 +3592,7 @@ async function _buildStudentBlock(name, idx, total, withChart) {
     <div class="bp-sec">과목별 성적 현황</div>
     <div>${table}</div>
     ${chartImg ? `<div class="bp-sec">등급 변화 추이</div>${chartImg}` : ''}
+    ${(radarImg || catBarImg) ? `<div class="bp-sec">과목별 방사형 그래프 · 과목군별 등급 분석</div><div class="bp-charts2">${radarImg}${catBarImg}</div>` : ''}
     ${nmItems.length ? `<div class="bp-sec">등급 경계 아쉬운 과목</div>
     <table class="bp-nm-table"><thead><tr><th>순위</th><th>과목</th><th>학기</th><th>등급</th><th>한 등급 상승에 필요한 조건</th></tr></thead><tbody>${
       nmItems.map((it, i) => `<tr><td class="c">${i + 1}</td><td class="s">${escHtml(it.subj)}</td><td class="c">${escHtml(it.term.replace('학년 ', '-'))}</td><td class="c g">${it.grade}&rarr;${it.grade - 1}</td><td>${
