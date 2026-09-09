@@ -399,7 +399,7 @@
     <div class="card">
       <div class="tt-help">
         <b>여기서 하는 일:</b> 학생별 선택과목 현황(어떤 학생이 어떤 선택과목을 보는지)을 엑셀로 한 번에 등록합니다. <b>공통과목은 반 전체가 응시</b>하므로 입력할 필요가 없고, <b>선택과목만</b> 넣으면 됩니다.<br>
-        <b>호실</b> 열에 학생 한 명 한 명이 실제로 가는 호실을 적습니다. <b>호실을 정하는 곳은 여기 한 곳뿐</b>이며(고사 시간표에는 호실을 입력하지 않습니다), 비워두면 그 학생들은 "호실 미지정"으로 묶입니다. 같은 과목이라도 학생마다 다른 호실을 적을 수 있어, <b>한 과목이 여러 방으로 나뉘는 경우</b>나 <b>일부 학생만 본인 교실에 남는 경우</b>를 그대로 반영할 수 있습니다. 이 호실 값은 자리배치 탭의 "시간표 기반 일괄 배치"에서 같은 과목이라도 호실별로 배치표를 따로 만드는 기준이 되고, 학생별 개인 시간표에도 그대로 표시됩니다.<br>
+        <b>호실</b> 열에 학생 한 명 한 명이 실제로 가는 호실을 적습니다. <b>호실을 정하는 곳은 여기 한 곳뿐</b>이며(고사 시간표에는 호실을 입력하지 않습니다), 비워두면 그 학생들은 <b>본인 교실</b>에서 응시하는 것으로 처리됩니다(반별로 배치표가 따로 만들어집니다). 같은 과목이라도 학생마다 다른 호실을 적을 수 있어, <b>한 과목이 여러 방으로 나뉘는 경우</b>나 <b>일부 학생만 본인 교실에 남는 경우</b>를 그대로 반영할 수 있습니다. 이 호실 값은 자리배치 탭의 "시간표 기반 일괄 배치"에서 같은 과목이라도 호실별로 배치표를 따로 만드는 기준이 되고, 학생별 개인 시간표에도 그대로 표시됩니다.<br>
         <span style="color:var(--danger);font-weight:600">⚠ 엑셀의 <b>과목명</b>은 위 고사 시간표에 적은 선택과목명과 <b>띄어쓰기·특수문자까지 완전히 똑같이</b> 입력해야 매칭됩니다. 한 글자라도 다르면 해당 과목이 연결되지 않습니다.</span>
       </div>
       <div class="form-row">
@@ -596,7 +596,7 @@
       </div>
       <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;border:1px dashed var(--primary)">
         <div style="font-weight:800;font-size:13px;color:var(--primary);display:flex;align-items:center;gap:6px;margin-bottom:6px"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><line x1="8" y1="8" x2="16" y2="8"></line><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="16" x2="13" y2="16"></line></svg>시간표 기반 일괄 배치 (권장)</div>
-        <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:10px">설정 탭의 <b>고사 시간표</b>에 입력된 이 학년의 모든 <b>선택과목</b>과 <b>선택과목 응시자 명단</b>을 읽어, 과목별 배치표를 한 번에 만들어 저장합니다. <b>전체 학년</b> 버튼을 쓰면 학급이 등록된 모든 학년을 한 번에 처리합니다. 위 <b>2단계의 좌석 설정</b>(행·열·방향·좌석 편집)이 모든 과목에 공통 적용됩니다. 호실은 <b>선택과목 응시자 명단 엑셀의 "호실" 열</b> 하나만 보고 나눕니다 — 같은 과목이라도 호실이 다르면 방마다 배치표가 따로 만들어지고, 호실을 비워둔 학생들은 "호실 미지정" 한 장으로 묶입니다. (개별 교실 크기 조정은 저장 후 '저장된 배치표 불러오기'에서 가능)</p>
+        <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:10px">설정 탭의 <b>고사 시간표</b>에 입력된 이 학년의 모든 <b>선택과목</b>과 <b>선택과목 응시자 명단</b>을 읽어, 과목별 배치표를 한 번에 만들어 저장합니다. <b>전체 학년</b> 버튼을 쓰면 학급이 등록된 모든 학년을 한 번에 처리합니다. 위 <b>2단계의 좌석 설정</b>(행·열·방향·좌석 편집)이 모든 과목에 공통 적용됩니다. 호실은 <b>선택과목 응시자 명단 엑셀의 "호실" 열</b> 하나만 보고 나눕니다 — 같은 과목이라도 호실이 다르면 방마다 배치표가 따로 만들어지고, 호실을 비워둔 학생들은 <b>본인 교실</b>에서 응시하는 것으로 보아 반별(예: 2-1반)로 배치표가 나뉩니다. (개별 교실 크기 조정은 저장 후 '저장된 배치표 불러오기'에서 가능)</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button type="button" class="btn btn-primary btn-sm" onclick="generateBatchSeatCharts(false)"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>이 학년만 생성·저장</button>
           <button type="button" class="btn btn-outline btn-sm" onclick="generateBatchSeatCharts(true)"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>전체 학년 한 번에 생성·저장</button>
@@ -1916,7 +1916,8 @@ function ownPlacement(cls,sts,ttRow,enroll){
     const mine=selSubs.filter(su=>enroll[st.id]&&(su.name in enroll[st.id]));
     if(mine.length){
       const su=mine[0],room=enroll[st.id][su.name];
-      if(ownRoomIsHome(room,cls)){stay.push(st);subjNames.add(su.name);}
+      // 호실을 비워두면 본인 교실에서 응시하는 것으로 본다
+      if(!room||ownRoomIsHome(room,cls)){stay.push(st);subjNames.add(su.name);}
       else leave.push({st,name:su.name,room:room||'호실 미지정'});
     }else if(comSubs.length){
       stay.push(st);comSubs.forEach(su=>subjNames.add(su.name));
@@ -2462,7 +2463,7 @@ async function downloadEnrollmentTemplate(){
   ws.columns=[{key:'subject',width:20},{key:'class_num',width:8},{key:'number',width:8},{key:'name',width:16},{key:'room',width:16,style:{numFmt:'@'}}];
   ws.mergeCells('A1:E1');
   const note=ws.getCell('A1');
-  note.value='과목명 / 반 / 번호 / 이름 / 호실을 입력하세요. 같은 과목 응시자는 여러 줄로 나눠 적습니다. 학년은 화면에서 선택합니다. ※ 과목명은 고사 시간표의 선택과목명과 띄어쓰기·특수문자까지 똑같이 입력하세요. ※ 호실은 그 학생이 실제로 가는 방을 적으세요(본인 교실 유지 시 "본인 교실"처럼 적어도 됨). 호실을 정하는 곳은 이 열 하나뿐이며, 비워두면 "호실 미지정"으로 묶여 배치표 제목에 호실이 표시되지 않습니다.';
+  note.value='과목명 / 반 / 번호 / 이름 / 호실을 입력하세요. 같은 과목 응시자는 여러 줄로 나눠 적습니다. 학년은 화면에서 선택합니다. ※ 과목명은 고사 시간표의 선택과목명과 띄어쓰기·특수문자까지 똑같이 입력하세요. ※ 호실은 그 학생이 실제로 가는 방을 적으세요(본인 교실 유지 시 "본인 교실"처럼 적어도 됨). 호실을 정하는 곳은 이 열 하나뿐이며, 비워두면 그 학생은 본인 교실에서 응시하는 것으로 처리됩니다.';
   note.font={name:FONT,italic:true,size:10,color:{argb:'FF8A6D3B'}};
   note.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF6E8'}};
   note.alignment={vertical:'middle',wrapText:true};
@@ -2548,16 +2549,16 @@ function renderEnrollmentSummary(){
     subjectEnrollment.filter(e=>e.grade===g).forEach(e=>{
       if(!subs[e.subject_name])subs[e.subject_name]={total:0,rooms:{}};
       subs[e.subject_name].total++;
-      const r=(e.room||'').trim()||'호실 미지정';
+      const r=(e.room||'').trim()||'본인 교실';
       subs[e.subject_name].rooms[r]=(subs[e.subject_name].rooms[r]||0)+1;
     });
     const cards=Object.keys(subs).sort().map(name=>{
       const info=subs[name];
       const roomKeys=Object.keys(info.rooms);
       const multiRoom=roomKeys.length>1;
-      const hasUnassigned=!!info.rooms['호실 미지정'];
+      const hasUnassigned=!!info.rooms['본인 교실'];
       const roomDetail=(multiRoom||hasUnassigned)
-        ?`<div style="font-size:11.5px;color:var(--text3);margin-top:3px">${roomKeys.sort().map(r=>`<span${r==='호실 미지정'?' style="color:var(--warning);font-weight:600"':''}>${esc(r)} ${info.rooms[r]}명</span>`).join(' · ')}</div>`
+        ?`<div style="font-size:11.5px;color:var(--text3);margin-top:3px">${roomKeys.sort().map(r=>`<span${r==='본인 교실'?' style="color:var(--text2);font-weight:600"':''}>${esc(r)} ${info.rooms[r]}명</span>`).join(' · ')}</div>`
         :'';
       return`<div style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px">
         <div style="font-size:13px;font-weight:700">${esc(name)} <span style="color:var(--text3);font-weight:400">${info.total}명</span></div>
@@ -2588,18 +2589,22 @@ async function generateBatchSeatCharts(allGrades){
   const startSide=document.getElementById('sepStartSide').value;
   const disabled=[...disabledSeats.sep];
   const slotCount=seatFillSlots(rows,cols,startSide,disabledSeats.sep).length;
-  // 호실은 응시자 명단에 학생별로 적힌 값 하나만 사용한다 (한 과목 = 여러 호실 가능, 비어 있으면 '호실 미지정'으로 한 묶음)
+  // 호실은 응시자 명단에 학생별로 적힌 값 하나만 사용한다 (한 과목 = 여러 호실 가능, 비어 있으면 그 학생의 본인 교실)
   const jobs=[];
   grades.forEach(grade=>{
     const enBySubject={};
     subjectEnrollment.filter(e=>e.grade===grade).forEach(e=>{
       (enBySubject[e.subject_name]=enBySubject[e.subject_name]||[]).push({id:e.student_id,room:(e.room||'').trim()});
     });
-    const gIds=new Set(gradeStudents(grade).map(s=>s.id));
+    const gsts=gradeStudents(grade);
+    const gIds=new Set(gsts.map(s=>s.id));
+    // 호실을 비워둔 학생은 본인 교실에서 응시하므로 반별로 나눠 배치표를 만든다
+    const clsById={};gsts.forEach(s=>{clsById[s.id]=s.grade+'-'+s.class_num+'반';});
     examTimetable.filter(r=>r.grade===grade).forEach(r=>{
       (r.subjects||[]).filter(s=>s.type==='선택').forEach(s=>{
         jobs.push({grade,date:r.exam_date,period:r.period,name:s.name,
-          enrolled:(enBySubject[s.name]||[]).filter(x=>gIds.has(x.id))});
+          enrolled:(enBySubject[s.name]||[]).filter(x=>gIds.has(x.id))
+            .map(x=>({...x,room:x.room||clsById[x.id]||''}))});
       });
     });
   });
@@ -2619,13 +2624,12 @@ async function generateBatchSeatCharts(allGrades){
   const{data:existing}=await sb.from('seat_charts').select('id,grade,exam_date,period,subject_name,room_name')
     .eq('school_code',SCHOOL_CODE).eq('mode','separate').in('grade',grades);
   const exMap={};(existing||[]).forEach(c=>{exMap[c.grade+'|'+c.exam_date+'|'+c.period+'|'+c.subject_name+'|'+(c.room_name||'')]=c.id;});
-  let created=0,updated=0;const skipped=[],noRoomSubjects=[];
+  let created=0,updated=0;const skipped=[];
   const pre=job=>allGrades?`${job.grade}학년 ${job.name}`:job.name;
   for(const job of jobs){
     if(!job.enrolled.length){skipped.push(`${pre(job)}(응시자 명단 없음)`);continue;}
     const byRoom={};
     job.enrolled.forEach(x=>{const room=x.room||'';(byRoom[room]=byRoom[room]||[]).push(x.id);});
-    if(Object.keys(byRoom).some(r=>!r))noRoomSubjects.push(pre(job));
     for(const[room,ids] of Object.entries(byRoom)){
       const label=room?`${pre(job)}(${room})`:pre(job);
       if(ids.length>slotCount){skipped.push(`${label}: ${ids.length}명 > 좌석 ${slotCount}석`);continue;}
@@ -2638,7 +2642,6 @@ async function generateBatchSeatCharts(allGrades){
     }
   }
   let msg=`<span class="badge badge-success">${icon('checkCircle',12)}${scopeLabel} 완료: 신규 ${created}개 · 갱신 ${updated}개</span>`;
-  if(noRoomSubjects.length)msg+=`<div style="margin-top:6px;color:var(--warning)">호실 미지정 ${noRoomSubjects.length}개 과목(${esc(noRoomSubjects.join(', '))}) — 응시자 명단 엑셀의 "호실" 열이 비어 있어 방 이름 없이 한 장으로 만들었습니다.</div>`;
   if(skipped.length)msg+=`<div style="margin-top:6px;color:var(--warning)">건너뜀 ${skipped.length}개: ${esc(skipped.join(', '))}</div>`;
   msg+=`<div style="margin-top:6px;color:var(--text3);font-size:12px">한 과목이 여러 호실로 나뉜 경우 호실별로 배치표가 따로 생성됩니다. 위 '저장된 배치표 불러오기'에서 각 배치표를 확인·인쇄·개별 조정할 수 있습니다.</div>`;
   st.innerHTML=msg;
@@ -2758,7 +2761,8 @@ function printStudentTimetables(){
             if(!su.classes||!su.classes.length||su.classes.includes(s.class_num))
               applicable.push({name:su.name,place:'본인 교실('+s.grade+'-'+s.class_num+'반)'});
           }
-          else if(su.name in enrolled)applicable.push({name:su.name,place:enrolled[su.name]||'별실(호실 미지정)'});
+          // 호실을 비워둔 학생은 본인 교실에서 응시하는 것으로 본다
+          else if(su.name in enrolled)applicable.push({name:su.name,place:enrolled[su.name]||('본인 교실('+s.grade+'-'+s.class_num+'반)')});
         });
         if(!applicable.length)return`<td class="free">자습</td>`;
         const inner=applicable.map(a=>`<div class="subj">${esc(a.name)}</div><div class="place">${esc(a.place)}</div>`).join('');
