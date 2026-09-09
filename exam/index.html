@@ -2770,9 +2770,18 @@ function printStudentTimetables(){
       `<table class="stt-table"><thead><tr><th></th>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
   });
   // 절취선으로 자를 수 있게 A4 한 장에 2열×5행(10명씩) 배치, 10명 단위로 페이지 구분
+  // 반이 바뀌면 새 페이지에서 시작하도록 반별로 먼저 묶는다
   const CARDS_PER_PAGE=10;
   const pagesHtml=[];
-  for(let i=0;i<cards.length;i+=CARDS_PER_PAGE)pagesHtml.push(`<div class="stt-page">${cards.slice(i,i+CARDS_PER_PAGE).join('')}</div>`);
+  const byClass=[];
+  sts.forEach((s,i)=>{
+    const last=byClass[byClass.length-1];
+    if(last&&last.class_num===s.class_num)last.cards.push(cards[i]);
+    else byClass.push({class_num:s.class_num,cards:[cards[i]]});
+  });
+  byClass.forEach(g=>{
+    for(let i=0;i<g.cards.length;i+=CARDS_PER_PAGE)pagesHtml.push(`<div class="stt-page">${g.cards.slice(i,i+CARDS_PER_PAGE).join('')}</div>`);
+  });
   const win=window.open('','_blank','width=900,height=920');
   if(!win){showToast('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요');return;}
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>개인 고사 시간표</title>
@@ -2780,7 +2789,7 @@ function printStudentTimetables(){
   @page{size:A4 portrait;margin:10mm;}
   *{box-sizing:border-box;}
   body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;margin:0;padding:0;color:#1c2430;}
-  .stt-page{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(5,1fr);width:190mm;height:277mm;page-break-after:always;}
+  .stt-page{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(5,55.4mm);grid-auto-rows:55.4mm;align-content:start;width:190mm;height:277mm;page-break-after:always;}
   .stt-page:last-child{page-break-after:auto;}
   .stt-card{border:1px dashed #999;padding:4px 6px;display:flex;flex-direction:column;overflow:hidden;page-break-inside:avoid;}
   .stt-head{display:flex;flex-direction:column;border-bottom:1.5px solid #1c2430;padding-bottom:2px;margin-bottom:3px;}
