@@ -648,16 +648,16 @@
           <button type="button" class="btn btn-outline btn-sm" onclick="generateBatchOwnSeatCharts(false)"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>이 학년만 생성·저장</button>
         </div>
         <div id="batchOwnStatus" style="margin-top:8px;font-size:12.5px"></div>
-      </div>
-      <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;border:1px dashed var(--border)">
-        <div style="font-weight:800;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px;margin-bottom:6px"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><line x1="8" y1="8" x2="16" y2="8"></line><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="16" x2="13" y2="16"></line></svg>또는 — 이 학급·교시 한 장만</div>
-        <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:10px">위 <b>2단계</b>에서 날짜·학급·교시를 고르면, <b>고사 시간표의 공통과목</b>과 <b>선택과목 응시자 명단</b>을 읽어 <b>이 교실에서 시험 보는 학생</b>을 자동으로 골라냅니다. 별실로 가는 학생은 <b>미응시</b>로 뒤로 밀리고, 명단의 호실을 <b>"본인 교실"</b>(또는 이 반 이름)로 적은 선택과목 학생은 이 교실에 남는 것으로 계산됩니다.</p>
-        <div id="ownAutoStatus" style="font-size:12.5px;margin-bottom:10px"></div>
-        <button class="btn btn-primary btn-sm" onclick="generateOwnSeatChart()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="8" rx="1"></rect><path d="M6 11v3h12v-3"></path><line x1="7" y1="14" x2="7" y2="20"></line><line x1="17" y1="14" x2="17" y2="20"></line></svg>배치표 생성</button>
+        <hr style="border:none;border-top:1px solid var(--border);margin:12px 0 9px" />
+        <div style="font-size:11.5px;font-weight:700;color:var(--text3);margin-bottom:5px">2단계에서 고른 날짜·학급·교시 미리보기 — 명단의 <b>호실</b> 표기가 제대로 붙었는지 확인하고 일괄 배치를 누르세요</div>
+        <div id="ownAutoStatus" style="font-size:12.5px"></div>
       </div>
       <hr class="divider" style="margin:4px 0 14px" />
       <details style="background:var(--surface2);border-radius:var(--radius);padding:12px">
-        <summary style="font-size:12px;font-weight:700;color:var(--text3);cursor:pointer">직접 조정 — 과목명·응시자를 손으로 고치기</summary>
+        <summary style="font-size:12px;font-weight:700;color:var(--text3);cursor:pointer">예외 상황 — 이 학급·교시 한 장만 만들기</summary>
+        <p style="font-size:12.5px;color:var(--text2);line-height:1.6;margin:10px 0">시간표에 없는 교시이거나, <b>좌석이 부족해 일괄 배치에서 건너뛴 학급</b>처럼 <b>한 장만</b> 따로 만들어야 할 때 쓰세요. 평소에는 위 <b>일괄 배치</b>로 충분하고, 만들어진 배치표는 <b>저장된 배치표 불러오기</b>에서 모두 확인·인쇄할 수 있습니다.<br>
+        위 <b>2단계</b>의 날짜·학급·교시를 기준으로 <b>고사 시간표의 공통과목</b>과 <b>선택과목 응시자 명단</b>을 읽어 <b>이 교실에서 시험 보는 학생</b>이 이미 자동 선택되어 있습니다. 별실로 가는 학생은 <b>미응시</b>로 뒤로 밀리고, 명단의 호실을 <b>"본인 교실"</b>(또는 이 반 이름)로 적은 선택과목 학생은 이 교실에 남는 것으로 계산됩니다. 필요하면 아래에서 과목명·응시자를 손으로 고친 뒤 <b>[배치표 생성]</b> → <b>[현재 자리배치 저장]</b> 하세요.</p>
+        <p style="font-size:12px;color:var(--warning);line-height:1.6;margin:0 0 10px">⚠️ 여기서 손으로 고쳐 저장한 배치표도 <b>일괄 배치를 다시 누르면 자동 계산 값으로 덮어써집니다.</b></p>
         <div class="form-row" style="margin-top:10px">
           <div class="form-group" style="flex:1"><label>과목명 (비워두면 자동 계산된 과목명 사용)</label><input type="text" id="ownSubjectName" placeholder="예: 수학 I" /></div>
         </div>
@@ -1977,7 +1977,7 @@ function applyOwnAuto(manual){
   currentSeatChartId=null;lastChartParams=null;
   if(!r){if(el)el.innerHTML='<span style="color:var(--text3)">날짜·학급·교시를 고르면 이 교실 응시자가 자동으로 선택됩니다.</span>';return;}
   if(r.noTt){
-    if(el)el.innerHTML='<span class="badge badge-danger">이 날짜·교시의 고사 시간표가 없습니다</span><div style="margin-top:6px;color:var(--text3)">설정 탭에서 시간표를 입력하거나, 아래 <b>직접 조정</b>에서 과목명과 응시자를 직접 지정하세요.</div>';
+    if(el)el.innerHTML='<span class="badge badge-danger">이 날짜·교시의 고사 시간표가 없습니다</span><div style="margin-top:6px;color:var(--text3)">설정 탭에서 시간표를 입력하거나, 아래 <b>예외 상황 — 이 학급·교시 한 장만 만들기</b>를 펼쳐 과목명과 응시자를 직접 지정하세요.</div>';
     return;
   }
   document.querySelectorAll('#ownStudentGrid .student-item.selected').forEach(x=>x.classList.remove('selected'));
