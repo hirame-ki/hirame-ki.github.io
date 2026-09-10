@@ -2025,12 +2025,39 @@ const AI_BASE  = 'https://hirameki.esquire0.workers.dev/v1';
    ⇒ **NVIDIA 가 안정된 뒤 `test/model-bench.js` 로 다시 재고 그때 정한다.**
    지금은 죽은 모델을 치워 사슬을 둘로 되돌리는 것까지만 한다.
 
+   ⚠️ **같은 날, 20b 를 걸고 나서 "느리고 자주 실패한다"던 것은 모델 탓이 아니라
+   우리 스트리밍 코드 탓이었다.** ① 첫-토큰 시계를 본문(`delta.content`)으로만 껐고
+   ② 시간 초과에 `modelGone` 을 세워 전역 `aiChainAt` 을 영구히 밀었으며
+   ③ `max_tokens` 를 생각과 본문이 나눠 쓰는 것을 셈에 넣지 않았다.
+   셋 다 고쳤다 — `aiStream`·`aiChatOnce`·`aiChat`·`aiCorrectOne`·`aiRewriteSpan` 주석 참고.
+
    ⚠️⚠️ **`reasoning_effort:'low'` 를 빼면 안 된다.** 빼고 걸었더니 20b 가
    추론만 989자 내놓고 **본문을 한 글자도 안 줬다**(10.7초). 이 도구는 응답이
    JSON 이기를 기대하므로 그대로 두면 파싱이 통째로 깨진다. */
+/* ⚠️⚠️ **2026-09-10 저녁: 순서를 뒤집었다.** 낮에는 「선두를 gemma 로 둔 근거는
+   속도가 아니라 일관성·과교정·오안내」라며 그대로 뒀는데, **그 판단은 gemma 를
+   실제로 부를 수 있을 때만 성립한다.** 재 보니 못 부른다:
+
+     경로              gemma-4-31b-it          gpt-oss-20b
+     중계 경유(앱)     100초 동안 바이트 0개    첫바이트 10.4초
+     NVIDIA 직접       첫바이트 19~31초         첫바이트 0.3~1.1초
+
+   앱의 첫 글자 관문은 30초(AI_FIRST_TOKEN_MS)다. 그래서 **건마다 30초를 버리고**
+   20b 로 넘어가고 있었다 — 학생 30명이면 그것만으로 몇 분이다. 1순위에 둔 값이
+   하나도 없었다.
+
+   ⚠️ **품질은 gemma 가 여전히 낫다.** 앱의 진짜 프롬프트로 4판씩 재면:
+
+     gpt-oss-20b     4판 모두 3건 ·  7~11초   (역활·격는·발표할때)
+     gemma-4-31b     4판 모두 4건 · 27~43초   (+ 조리있게)
+
+   둘 다 일관성은 4/4 다. 20b 는 「조리있게→조리 있게」 한 건을 놓친다. 그
+   한 건을 잃더라도 **지금은 전부를 못 잡고 있으므로** 도는 쪽을 앞에 세운다.
+   ⚠️ gemma 를 지우지 않는다 — 중계가 나아지면 다시 앞으로 올릴 자리다.
+   그때는 `test/model-bench.js` 로 다시 재고 정할 것. */
 const AI_CHAIN = [
-  { id:'google/gemma-4-31b-it', extra:{} },
-  { id:'openai/gpt-oss-20b',    extra:{ reasoning_effort:'low' } },   // 예비 (120b 는 09-03 수명 종료)
+  { id:'openai/gpt-oss-20b',    extra:{ reasoning_effort:'low' } },   // 09-10: 중계 위에서 실제로 도는 유일한 모델
+  { id:'google/gemma-4-31b-it', extra:{} },                           // 품질은 낫지만 중계에서 첫 글자가 안 온다
 ];
 let aiChainAt = 0;                 // 살아 있는 모델을 한 번 찾으면 그 뒤로는 그것부터 쓴다
 /* 첫 글자가 나오기까지 기다리는 한도. 이 한도가 없으면 화면이 "0/N"에서 영원히 멎는다 —
@@ -2039,8 +2066,20 @@ let aiChainAt = 0;                 // 살아 있는 모델을 한 번 찾으면 
    그 모델을 '못 쓰는 것'으로 보고 체인의 다음 모델로 넘어간다. 첫 글자가 나온 뒤에는
    생성이 진행 중이라는 뜻이므로 시계를 끈다.
    30초로 잡은 것은 실사용 관찰에 따른 것이다 — 45초로 뒀더니 느린 모델에 걸렸을 때
-   "멈춘 것 같다"는 체감이 너무 길었다. 정상 모델은 몇 초 안에 첫 글자를 낸다. */
+   "멈춘 것 같다"는 체감이 너무 길었다. 정상 모델은 몇 초 안에 첫 글자를 낸다.
+
+   ⚠️ **2026-09-10: 이 시계는 '본문 첫 글자'가 아니라 '아무 토큰이나 첫 토큰'으로 끈다.**
+   gpt-oss 같은 추론형 모델은 생각을 `delta.reasoning`(또는 `reasoning_content`)으로 따로
+   흘리고 본문 `delta.content`는 추론이 **다 끝난 뒤에야** 낸다. 본문만 보고 시계를 끄면
+   모델이 멀쩡히 토큰을 뱉는 내내 시계가 돌아, **정상 생성 중인 모델을 죽었다고 판정해
+   끊어 버린다.** 이것이 20b 를 예비로 걸고 나서 "느리고 자주 실패한다"던 증상의 정체다.
+   대신 첫 토큰 뒤에는 시계를 끄지 않고 AI_STALL_MS 로 다시 감는다 — 토큰이 끊기면
+   여전히 걸러내되, 오래 생각하는 것은 기다려 준다. */
 const AI_FIRST_TOKEN_MS = 30000;
+/* 첫 토큰이 나온 뒤, 다음 토큰까지 기다리는 한도. 업스트림이 도중에 말없이 죽는 경우를
+   잡는다(첫-토큰 시계를 껐다고 무한정 매달리지 않게). 생각이 길어도 토큰은 계속 흐르므로
+   정상 생성은 여기 걸리지 않는다. */
+const AI_STALL_MS = 45000;
 const AI_KEY_STORE = 'mirror_nvapi_v1';
 const saveAiKey = k => { try { localStorage.setItem(AI_KEY_STORE, k); } catch(_){} };
 const loadAiKey = () => { try { return localStorage.getItem(AI_KEY_STORE) || ''; } catch(_){ return ''; } };
@@ -2126,14 +2165,26 @@ async function aiChat(messages, opts = {}){
   for (let i = aiChainAt; i < AI_CHAIN.length; i++){
     try { return await aiChatOnce(AI_CHAIN[i], messages, opts); }
     catch (e){
-      if (!e || !e.modelGone) throw e;
+      if (!e || !(e.modelGone || e.tryNext)) throw e;
       last = e;
-      aiChainAt = Math.max(aiChainAt, i + 1);   // 동시에 여러 건이 돌아도 되돌아가지 않게
+      /* ⚠️ **2026-09-10: 시간 초과로는 aiChainAt 을 밀지 않는다.**
+         예전에는 시간 초과에도 modelGone 을 세워 여기서 aiChainAt 을 밀었다. 그런데
+         aiChainAt 은 전역이고 되돌아오지 않으므로, **체인 마지막 칸(20b)이 한 번이라도
+         시간 초과를 내면 aiChainAt 이 체인 밖으로 나가 그 뒤 모든 건이 호출조차 못 해 보고
+         "쓸 수 있는 AI 모델이 없습니다"로 즉사했다.** 학생 20~30명을 연달아 돌리는 도구에서
+         한 건의 일시적 지연이 나머지 전부를 실패로 만든 것이다.
+         모델이 정말 없어진 것(404·410)만 영구히 건너뛰고, 지연은 이번 호출에서만 넘긴다. */
+      if (e.modelGone) aiChainAt = Math.max(aiChainAt, i + 1);   // 동시에 여러 건이 돌아도 되돌아가지 않게
       console.warn('[AI] 모델을 쓸 수 없어 다음으로 넘어갑니다:', AI_CHAIN[i].id,
-                   '→', (AI_CHAIN[i + 1] || {}).id || '(없음)', e.message);
+                   '→', (AI_CHAIN[i + 1] || {}).id || '(없음)',
+                   e.modelGone ? '(영구)' : '(이번 건만)', e.message);
     }
   }
-  throw new Error('쓸 수 있는 AI 모델이 없습니다 — ' + ((last && last.message) || '모델 목록을 확인해 주세요') );
+  /* 사유를 구분해 보여 준다 — '모델이 없어졌다'와 '지금 느리다'는 선생님이 할 일이 다르다
+     (앞은 모델 목록을 고쳐야 하고, 뒤는 잠시 뒤 다시 누르면 된다). */
+  throw new Error(last && last.tryNext && !last.modelGone
+    ? '지금은 AI 서버 응답이 늦습니다 — ' + last.message + '. 잠시 뒤 다시 시도해 주세요'
+    : '쓸 수 있는 AI 모델이 없습니다 — ' + ((last && last.message) || '모델 목록을 확인해 주세요'));
 }
 
 // 모델 하나로 실제 호출. 모델이 없어졌거나 너무 느리면 err.modelGone을 세워 위에서 건너뛰게 한다.
@@ -2147,16 +2198,26 @@ async function aiChatOnce(m, messages, { temperature = 0, top_p = 1, seed = 1234
     if (signal.aborted) ctl.abort();
     else signal.addEventListener('abort', relay);
   }
-  let timedOut = false;
-  let timer = setTimeout(() => { timedOut = true; ctl.abort(); }, AI_FIRST_TOKEN_MS);
+  let timedOut = false, started = false, timer = null, armedAt = 0;
+  const arm = ms => { if (timer) clearTimeout(timer); armedAt = Date.now();
+                      timer = setTimeout(() => { timedOut = true; ctl.abort(); }, ms); };
   const stopClock = () => { if (timer){ clearTimeout(timer); timer = null; } };
+  /* 토큰이 올 때마다 시계를 다시 감는다. 첫 토큰은 생각(reasoning)이어도 좋다 — 생성이
+     시작됐다는 뜻이므로. 되감기는 1초에 한 번으로 묶는다(토큰마다 타이머를 새로 걸지 않게). */
+  const onActivity = () => {
+    started = true;
+    if (Date.now() - armedAt >= 1000) arm(AI_STALL_MS);
+  };
+  arm(AI_FIRST_TOKEN_MS);
 
   try {
-    return await aiStream(m, messages, { temperature, top_p, seed, max_tokens }, ctl.signal, stopClock);
+    return await aiStream(m, messages, { temperature, top_p, seed, max_tokens }, ctl.signal, onActivity);
   } catch (e){
     if (timedOut){
-      const t = aiErr(0, `${m.id} 모델이 ${AI_FIRST_TOKEN_MS / 1000}초 안에 응답을 시작하지 못했습니다`);
-      t.modelGone = true;                       // 살아는 있지만 쓸 수 없으니 다음 모델로
+      const t = aiErr(0, started
+        ? `${m.id} 모델이 응답 도중 ${AI_STALL_MS / 1000}초 넘게 멈췄습니다`
+        : `${m.id} 모델이 ${AI_FIRST_TOKEN_MS / 1000}초 안에 응답을 시작하지 못했습니다`);
+      t.tryNext = true;                         // 이번 건만 다음 모델로 (체인은 그대로 둔다)
       throw t;
     }
     throw e;                                    // 사용자가 닫은 것(AbortError)도 그대로 올려보낸다
@@ -2166,8 +2227,9 @@ async function aiChatOnce(m, messages, { temperature = 0, top_p = 1, seed = 1234
   }
 }
 
-// 실제 스트리밍 수신. 첫 글자를 받으면 onFirstToken()으로 첫-토큰 시계를 끈다.
-async function aiStream(m, messages, params, signal, onFirstToken){
+/* 실제 스트리밍 수신. 토큰이 올 때마다 onActivity()로 시계를 되감는다(생각 토큰 포함).
+   본문은 delta.content 만 모은다 — 생각은 세기만 하고 버린다. */
+async function aiStream(m, messages, params, signal, onActivity){
   const res = await fetch(AI_BASE + '/chat/completions', {
     method:'POST',
     headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + state.aiKey },
@@ -2176,7 +2238,7 @@ async function aiStream(m, messages, params, signal, onFirstToken){
   });
   if (!res.ok || !res.body) throw aiErr(res.status, '연결 실패 (' + res.status + ')');
   const reader = res.body.getReader(), dec = new TextDecoder();
-  let buf = '', out = '';
+  let buf = '', out = '', reasonLen = 0, finish = '';
   for (;;){
     const { value, done } = await reader.read();
     if (done) break;
@@ -2194,11 +2256,29 @@ async function aiStream(m, messages, params, signal, onFirstToken){
       if (data === '[DONE]') { buf = ''; break; }
       let ev; try { ev = JSON.parse(data); } catch(_){ continue; }
       if (ev.error) throw aiErr(ev.error.status, ev.error.message || 'API 오류 (' + (ev.error.status || '') + ')');
-      const piece = ev.choices?.[0]?.delta?.content || '';
-      if (piece && !out) onFirstToken();      // 생성이 시작됐다 — 첫-토큰 시계를 끈다
+      const ch = ev.choices?.[0] || {};
+      if (ch.finish_reason) finish = ch.finish_reason;
+      /* 추론형 모델(gpt-oss 등)은 생각을 delta.reasoning(또는 reasoning_content)으로 따로
+         흘린다. 본문이 아니므로 out 에 담지는 않되, **생성이 돌고 있다는 신호로는 쓴다.** */
+      const think = ch.delta?.reasoning || ch.delta?.reasoning_content || '';
+      const piece = ch.delta?.content || '';
+      if (think || piece) onActivity();
+      reasonLen += think.length;
       out += piece;
     }
   }
+  /* ⚠️ 상한에 걸려 잘린 응답을 **여기서** 오류로 세운다. 예전에는 이걸 놓쳐서 반토막 JSON 이
+     그대로 흘러가 파싱이 깨진 뒤에야("교정본이 중간에서 잘렸습니다") 알 수 있었다.
+     추론형 모델은 max_tokens 를 생각과 본문이 **나눠 쓰므로** 특히 자주 걸린다. */
+  if (finish === 'length'){
+    const e = aiErr(0, out.trim()
+      ? `응답이 상한(max_tokens ${params.max_tokens})에 걸려 잘렸습니다`
+      : `모델이 상한(max_tokens ${params.max_tokens})까지 생각만 하고(${reasonLen}자) 본문을 내지 않았습니다`);
+    e.tryNext = true;                          // 다른 모델이면 될 수도 있다 — 체인은 그대로
+    throw e;
+  }
+  if (!out.trim() && reasonLen)
+    throw aiErr(0, `모델이 본문 없이 생각만 ${reasonLen}자 출력했습니다`);
   return stripThink(out);
 }
 
@@ -2224,7 +2304,14 @@ async function aiCorrectOne(text, name){
     '5. 반드시 아래 JSON만 출력한다(그 외 어떤 말도 하지 마라): ' +
     '{"corrected":"교정된 전체 본문","changes":[{"cat":"맞춤법","bad":"고치기 전","good":"고친 후","why":"짧은 이유"}]}\n' +
     '6. 고칠 맞춤법·띄어쓰기가 없으면 corrected는 원문을 글자 그대로 두고 changes는 빈 배열로 둔다.';
-  const raw = await aiChat([{ role:'system', content: sys }, { role:'user', content: sent }], { temperature: 0 });
+  /* ⚠️ **max_tokens 를 본문 길이에 맞춰 잡는다.** 이 호출은 교정본(`corrected`)에 본문을
+     **통째로 다시** 받으므로, 필요한 출력이 곧 본문 길이만큼이다. 게다가 추론형 모델은
+     같은 상한을 생각과 나눠 쓴다. 예전 기본값 2048 은 세특 한 건(보통 500~1,500자)에
+     이미 빠듯해서 finish=length 로 잘리고 JSON 이 반토막 났다.
+     한글은 대략 글자당 1토큰 안팎이므로 본문의 2배(교정본+changes)에 생각 몫 1,024 를 얹는다. */
+  const budget = Math.min(8192, Math.max(2048, sent.length * 2 + 1024));
+  const raw = await aiChat([{ role:'system', content: sys }, { role:'user', content: sent }],
+                           { temperature: 0, max_tokens: budget });
   /* 응답을 못 읽으면 **오류로 올려보낸다.**
      예전에는 조용히 { corrected: 원문, changes: [] }를 돌려줬는데, 그러면 화면에는
      "AI 검사 완료 · 지적 0건"으로 뜬다 — 검사가 실패한 것과 오류가 없는 것이 구분되지 않아
@@ -2297,9 +2384,13 @@ async function aiRewriteSpan(text, s, e, name, signal){
     '7. 반드시 아래 JSON만 출력한다(그 외 어떤 말도 하지 마라): ' +
     '{"options":[{"text":"후보 문장","note":"짧은 설명"}]}';
   const user = JSON.stringify({ 앞: before, 고칠부분: target, 고칠부분글자수: target.length, 뒤: after }, null, 0);
+  /* max_tokens 도 고칠 구간 길이를 따라간다 — 후보 3개(길게 쓰는 후보3은 원문의 135%까지)에
+     note 까지 담아야 하므로 대략 원문의 4배가 필요하고, 추론형 모델은 그 상한을 생각과
+     나눠 쓴다. 고정 900 은 구간이 조금만 길어도 잘렸다(aiCorrectOne 쪽 주석 참고). */
+  const budget = Math.min(4096, Math.max(900, target.length * 4 + 1024));
   const raw = await aiChat([{ role:'system', content: sys }, { role:'user', content: user }],
                            { temperature: 0.7, top_p: 0.9, seed: Math.floor(Math.random() * 1e6),
-                             max_tokens: 900, signal });
+                             max_tokens: budget, signal });
   const m = raw.match(/\{[\s\S]*\}/);
   if (!m) throw new Error('응답을 읽지 못했습니다');
   let obj; try { obj = JSON.parse(m[0]); } catch(_){ throw new Error('응답을 읽지 못했습니다'); }
