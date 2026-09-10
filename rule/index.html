@@ -11,7 +11,7 @@
 <meta name="author" content="황성재">
 <meta name="creator" content="황성재 (@hirame.ki)">
 <meta name="copyright" content="© 2026 황성재 (@hirame.ki)">
-<meta name="theme-color" content="#1d3d70">
+<meta name="theme-color" content="#0b1a33">
 <meta name="format-detection" content="telephone=no">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://hirame-ki.github.io/rule/">
@@ -655,8 +655,17 @@ function nextEmbedModel(){
    둘 다 첫 글자를 제때 못 내놓아 화면이 멎었다. 활성 파라미터가 작은 것부터 세운다. */
 const CHAT_CHAIN = [
   /* 실측(2026-08-27, 같은 키): gpt-oss-120b 0.3초 / gemma-4-31b-it 25~29초.
-     스트리밍 화면이라 첫 응답이 빠른 쪽이 앞이다. */
-  { id:"openai/gpt-oss-120b",   label:"GPT-OSS 120B", extra:{ reasoning_effort:"low" } },
+     스트리밍 화면이라 첫 응답이 빠른 쪽이 앞이다.
+
+     ⚠️⚠️ **2026-09-10: `gpt-oss-120b` 를 뺐다.** NVIDIA 가 09-03 에 내렸다 —
+     410 Gone "has reached its end of life on 2026-09-03T08:00:00Z".
+     `isModelGone()` 이 알아보고 다음으로 넘겨 주므로 **답은 나왔지만**,
+     그 대가로 **요청마다 410 을 한 번씩 받고 시작**했다. 이 화면은
+     스트리밍이라 첫 글자까지의 시간이 곧 체감 속도인데 그만큼을 버린 것이다.
+     넘어간 것을 알아채기도 어려웠다 — 콘솔 경고와 작은 이름표뿐이라,
+     실제로 "잘 되는데?" 로 며칠을 보냈다.
+     ⚠️ 사슬은 여전히 둘이다(20B → Gemma 4). 하나로 줄이면 그 하나가
+     죽는 날 화면이 통째로 멎는다. */
   { id:"openai/gpt-oss-20b",    label:"GPT-OSS 20B",  extra:{ reasoning_effort:"low" } },
   { id:"google/gemma-4-31b-it", label:"Gemma 4 31B",  extra:{} },
 ];
