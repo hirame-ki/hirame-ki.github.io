@@ -29,18 +29,23 @@
 <meta name="copyright" content="Copyright (c) 2026 @hirame.ki. All rights reserved. 무단 복제·개작·재배포 금지.">
 <!-- ── 공유용 메타 / 공유 카드 · 제작 황성재 (@hirame.ki) ──
      og:image 는 절대경로여야 합니다. 카카오톡·네이버 등은 상대경로 썸네일을 읽지 못합니다.
-     배포 주소가 https://hirame-ki.github.io/mirror/ 가 아니면 아래 세 곳(canonical·og:url·og:image)을 함께 고쳐 주세요. -->
+     이 앱은 두 곳에 올라간다 — 워커(mirror.esquire0.workers.dev)와 GitHub Pages.
+     공유되는 주소는 워커이므로 canonical·og:url 은 그쪽을 가리키고,
+     og:image 는 이 파일이 놓인 Pages 쪽 og.png 를 쓴다(워커 사본은 자기 public/og.png 를 쓴다).
+     각 사본이 제 호스트의 이미지를 가리켜야 한쪽 배포가 밀려도 미리보기가 깨지지 않는다.
+     ※ 이 파일은 Pages 용이다. 워커에 반영하려면 도름스 공유용/public/index.html 을 고친 뒤
+        그 폴더에서 `npx wrangler deploy` 를 돌려야 한다. -->
 <meta name="description" content="반 전체 생기부 기록의 유사도를 브라우저 안에서 점검하고, 맞춤법·띄어쓰기·기재 주의 표현까지 훑어 줍니다. 유사도 분석은 완전 로컬이며 기록은 이 브라우저를 벗어나지 않습니다.">
 <meta name="keywords" content="생기부,생활기록부,세특,유사도 검사,복사 점검,표현 점검,기재 주의 표현,나이스,NEIS,학교생활기록부,담임,생기부돋보기">
-<meta name="theme-color" content="#1d3d70">
+<meta name="theme-color" content="#2f7d76">
 <meta name="format-detection" content="telephone=no">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://hirame-ki.github.io/mirror/">
+<link rel="canonical" href="https://mirror.esquire0.workers.dev/">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="생기부돋보기">
 <meta property="og:locale" content="ko_KR">
-<meta property="og:url" content="https://hirame-ki.github.io/mirror/">
+<meta property="og:url" content="https://mirror.esquire0.workers.dev/">
 <meta property="og:title" content="생기부돋보기 — 반 전체 생기부 유사도·표현 점검">
 <meta property="og:description" content="반 전체 생기부 기록의 유사도를 브라우저 안에서 점검하고, 맞춤법·띄어쓰기·기재 주의 표현까지 훑어 줍니다. 유사도 분석은 완전 로컬이며 기록은 이 브라우저를 벗어나지 않습니다.">
 <meta property="og:image" content="https://hirame-ki.github.io/mirror/og.png">
@@ -2006,9 +2011,26 @@ const AI_BASE  = 'https://hirameki.esquire0.workers.dev/v1';
        그럴듯한 이유까지 붙어 화면에 오르므로 검토를 통과해 버릴 수 있다.
      · **과교정** — gemma는 0.0. 고칠 것이 없는 기록에 손대지 않았다.
    검출률 9%p 차이는 대부분 5·6번의 맞춤법인데, 그 낱말들은 로컬 규칙(firm)이 이미 확정 처리한다. */
+/* ⚠️⚠️ **2026-09-10: 예비를 `gpt-oss-120b` → `20b` 로 갈았다.**
+   NVIDIA 가 09-03 에 120b 를 내렸다 — 410 Gone "has reached its end of life
+   on 2026-09-03T08:00:00Z". 그대로 두면 **예비가 없는 것과 같다**: 선두가
+   30초 관문에 걸려 넘어가도 그 다음이 죽은 모델이라 거기서 사슬이 끝난다.
+   위 머리글이 적어 둔 2026-07-27 qwen3-next 종료 때와 **똑같은 상황**이다.
+
+   ⚠️ **순서는 일부러 안 바꿨다.** 09-10 실측으로는 20b 가 훨씬 빠르다
+   (본문 첫 글자 2.7초 vs gemma 23~56초 — gemma 는 벤치 기록 1,344ms 에서
+   크게 느려져 있다). 그런데 ① 그날 NVIDIA 가 전반적으로 불안정했고(여러
+   모델이 타임아웃·503) ② 선두를 gemma 로 둔 까닭은 속도가 아니라 **일관성·
+   과교정·오안내**였다(아래 표). 그 잣대로 20b 를 아직 안 재 봤다.
+   ⇒ **NVIDIA 가 안정된 뒤 `test/model-bench.js` 로 다시 재고 그때 정한다.**
+   지금은 죽은 모델을 치워 사슬을 둘로 되돌리는 것까지만 한다.
+
+   ⚠️⚠️ **`reasoning_effort:'low'` 를 빼면 안 된다.** 빼고 걸었더니 20b 가
+   추론만 989자 내놓고 **본문을 한 글자도 안 줬다**(10.7초). 이 도구는 응답이
+   JSON 이기를 기대하므로 그대로 두면 파싱이 통째로 깨진다. */
 const AI_CHAIN = [
   { id:'google/gemma-4-31b-it', extra:{} },
-  { id:'openai/gpt-oss-120b',   extra:{ reasoning_effort:'low' } },   // 예비 — 검출은 높으나 답이 흔들린다
+  { id:'openai/gpt-oss-20b',    extra:{ reasoning_effort:'low' } },   // 예비 (120b 는 09-03 수명 종료)
 ];
 let aiChainAt = 0;                 // 살아 있는 모델을 한 번 찾으면 그 뒤로는 그것부터 쓴다
 /* 첫 글자가 나오기까지 기다리는 한도. 이 한도가 없으면 화면이 "0/N"에서 영원히 멎는다 —
