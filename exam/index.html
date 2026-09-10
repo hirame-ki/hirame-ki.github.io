@@ -92,6 +92,8 @@
   .login-btn:hover{background:var(--primary-dark);}
   .login-notice{font-size:12px;color:var(--text3);text-align:center;margin-top:16px;line-height:1.6;}
   .login-error{background:var(--danger-light);color:var(--danger);border-radius:8px;padding:10px 14px;font-size:13px;margin-top:12px;display:none;}
+  .login-guide{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:18px;padding:10px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--primary);text-decoration:none;transition:all 0.15s;}
+  .login-guide:hover{border-color:var(--primary);background:var(--primary-light);}
 
   .header{background:var(--primary);color:#fff;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:54px;box-shadow:0 2px 10px rgba(22,50,79,0.25);position:sticky;top:0;z-index:100;border-bottom:2px solid var(--accent);}
   .header-title{font-family:var(--font-display);font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;}
@@ -101,6 +103,8 @@
   .status-dot.connected{background:#4ade80;box-shadow:0 0 6px #4ade80;}
   .db-status{display:flex;align-items:center;gap:5px;font-size:11px;opacity:0.9;}
   .logout-btn{background:rgba(255,255,255,0.15);border:none;color:#fff;padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;}
+  .guide-btn{background:rgba(255,255,255,0.15);color:#fff;padding:5px 12px;border-radius:6px;font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:5px;line-height:1.5;transition:background 0.15s;}
+  .guide-btn:hover{background:rgba(255,255,255,0.3);}
   .logout-btn:hover{background:rgba(255,255,255,0.25);}
   .idle-banner{background:var(--warning-light);color:#7a5a26;font-size:12px;font-weight:600;text-align:center;padding:6px 12px;border-bottom:1px solid var(--warning);display:flex;align-items:center;justify-content:center;gap:6px;}
 
@@ -215,6 +219,15 @@
   .layout-wrap{display:flex;gap:10px;align-items:flex-start;}
   .seat-grid-col{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0;}
   .seat-row{display:flex;gap:6px;width:100%;}
+  /* 인쇄 세트: 교실 자리배치표 + 교사 시선(상하좌우 반전) 배치표 */
+  .seat-view-tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--acc-seat);background:var(--acc-seat-light);border:1px solid #e6d7b8;border-radius:20px;padding:3px 11px;margin-bottom:12px;}
+  .seat-set-note{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--text2);background:var(--acc-seat-light);border:1px solid #e6d7b8;border-radius:8px;padding:10px 12px;margin-bottom:10px;line-height:1.65;}
+  .seat-set-note b{color:var(--text);}
+  .seat-set-note svg{flex:none;color:var(--acc-seat);margin-top:2px;}
+  @media print{
+    #seatTeacherCard{page-break-before:always;break-before:page;}
+    .seat-view-tag{font-size:13px;margin-bottom:14px;}
+  }
 
   .modal-overlay{position:fixed;inset:0;background:rgba(20,26,34,0.45);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
   .modal-box{background:#fff;border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,0.25);width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;}
@@ -294,6 +307,7 @@
       처음 접속하는 경우 이 코드로 학교 데이터가 생성됩니다.<br>
       동료 교사에게 이 사이트 주소 + 학교코드를 함께 공유하세요.
     </div>
+    <a class="login-guide" href="https://www.notion.so/3d57fde37cfc81588b7bec25cacbcee2" target="_blank" rel="noopener" title="사용 설명서(노션)를 새 탭에서 엽니다"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H10a2.5 2.5 0 0 1 2 1 2.5 2.5 0 0 1 2-1h4.5A1.5 1.5 0 0 1 20 4.5v13a1.5 1.5 0 0 1-1.5 1.5H14a2.5 2.5 0 0 0-2 1 2.5 2.5 0 0 0-2-1H5.5A1.5 1.5 0 0 1 4 17.5z"></path><line x1="12" y1="5" x2="12" y2="20"></line></svg>사용 설명서 보기</a>
   </div>
 </div>
 
@@ -307,6 +321,7 @@
     <div class="header-right">
       <div class="db-status"><div class="status-dot connected"></div><span>연결됨</span></div>
       <div class="db-status" id="onlineCountBox" title="현재 우리 학교 접속자 수"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.2"></circle><path d="M2.5 20a5.5 5.5 0 0 1 11 0"></path><circle cx="17" cy="9" r="2.4"></circle><path d="M14.8 20a4.6 4.6 0 0 1 7.2-3.8"></path></svg><span id="onlineCount">-</span>명 접속</div>
+      <a class="guide-btn" href="https://www.notion.so/3d57fde37cfc81588b7bec25cacbcee2" target="_blank" rel="noopener" title="사용 설명서(노션)를 새 탭에서 엽니다"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H10a2.5 2.5 0 0 1 2 1 2.5 2.5 0 0 1 2-1h4.5A1.5 1.5 0 0 1 20 4.5v13a1.5 1.5 0 0 1-1.5 1.5H14a2.5 2.5 0 0 0-2 1 2.5 2.5 0 0 0-2-1H5.5A1.5 1.5 0 0 1 4 17.5z"></path><line x1="12" y1="5" x2="12" y2="20"></line></svg>설명서</a>
       <button class="logout-btn" onclick="doLogout()">로그아웃</button>
     </div>
   </div>
@@ -662,13 +677,15 @@
     </div>
 
     <div id="seatResult" style="display:none">
-      <div class="card">
+      <div class="card" id="seatStudentCard">
+        <div class="seat-set-note no-print"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16.5"></line><line x1="12" y1="7.8" x2="12" y2="7.81"></line></svg><span><b>[인쇄]를 누르면 두 장이 한 세트로 나옵니다.</b> 1쪽 <b>교실 자리배치표</b>(칠판을 바라본 방향), 2쪽 <b>교사 시선 배치표</b>(교탁에서 바라본 상하좌우 반전본)가 이어서 출력됩니다. [PDF로 저장]도 두 쪽이 함께 저장됩니다.</span></div>
         <div class="no-print" style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px">
           <button class="btn btn-outline btn-sm" id="saveSeatChartBtn" style="display:none" onclick="saveSeatChart()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M8 3v5h8V3"></path><rect x="7" y="13" width="10" height="7"></rect></svg><span id="saveSeatChartBtnLabel">현재 자리배치 저장</span></button>
           <button class="btn btn-outline btn-sm" id="pdfSeatChartBtn" onclick="exportSeatChartPDF()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"></path><polyline points="15 2 15 7 20 7"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="13" y2="17"></line></svg>PDF로 저장</button>
           <button class="btn btn-outline btn-sm" onclick="window.print()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"></path><rect x="4" y="9" width="16" height="8" rx="1"></rect><path d="M6 14h12v7H6z"></path></svg>인쇄</button>
         </div>
         <div class="seat-print-header" id="seatResultTitle"></div>
+        <div class="seat-view-tag">1쪽 · 교실 자리배치표 (칠판을 바라본 방향)</div>
         <div class="board-area">칠판</div>
         <div style="display:flex;gap:14px;margin-bottom:12px;font-size:12px;color:var(--text3)">
           <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:3px;display:inline-block"></span>응시</span>
@@ -681,6 +698,23 @@
           <div class="window-label">복도 (오른쪽) →</div>
         </div>
         <div id="seatSummaryText" style="margin-top:14px;font-size:13px;color:var(--text2)"></div>
+      </div>
+
+      <div class="card" id="seatTeacherCard">
+        <div class="seat-print-header" id="seatResultTitleTeacher"></div>
+        <div class="seat-view-tag">2쪽 · 교사 시선 배치표 (교탁에서 바라본 방향 · 상하좌우 반전)</div>
+        <div style="display:flex;gap:14px;margin-bottom:12px;font-size:12px;color:var(--text3)">
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--primary-light);border:1.5px solid var(--primary);border-radius:3px;display:inline-block"></span>응시</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:var(--surface2);border:1.5px solid var(--border);border-radius:3px;display:inline-block"></span>미응시</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:13px;height:13px;background:transparent;border:1.5px dashed var(--danger);border-radius:3px;display:inline-block"></span>결시(자리 유지)</span>
+        </div>
+        <div class="layout-wrap">
+          <div class="window-label">← 복도 (교사 기준 왼쪽)</div>
+          <div class="seat-grid-col" id="seatLayoutTeacher"></div>
+          <div class="window-label">창가 (교사 기준 오른쪽) →</div>
+        </div>
+        <div class="board-area" style="margin-bottom:0;margin-top:20px">교탁 · 칠판</div>
+        <div id="seatSummaryTextTeacher" style="margin-top:14px;font-size:13px;color:var(--text2)"></div>
       </div>
     </div>
   </div>
@@ -1999,6 +2033,7 @@ async function generateSeatChart(){
   const absentCount=examinees.filter(s=>s.isAbsent).length;
   const examCount=examinees.length-absentCount;
   document.getElementById('seatSummaryText').textContent=`응시 ${examCount}명 · 결시 ${absentCount}명(빈자리 처리) · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
+  renderSeatTeacherView();
   document.getElementById('seatResult').style.display='block';
   lastChartParams={
     mode:'separate',
@@ -2041,6 +2076,7 @@ async function generateOwnSeatChart(){
   const nonExamCount=roster.length-examCount-absentCount;
   document.getElementById('seatSummaryText').textContent=
     `응시 ${examCount}명 · 미응시 ${nonExamCount}명 · 결시 ${absentCount}명(빈자리 처리) · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터, 응시자 우선 배치)`;
+  renderSeatTeacherView();
   document.getElementById('seatResult').style.display='block';
   lastChartParams={
     mode:'own',
@@ -2055,6 +2091,20 @@ async function generateOwnSeatChart(){
   updateSaveSeatChartBtnLabel();
 }
 
+/* 교사 시선(교탁에서 바라본) 배치표 — 학생 기준 배치표를 상하좌우 반전해 다시 그린다 */
+function renderSeatTeacherView(){
+  const src=document.getElementById('seatLayout');
+  const dst=document.getElementById('seatLayoutTeacher');
+  if(!src||!dst)return;
+  const rows=[...src.querySelectorAll('.seat-row')].reverse();
+  dst.innerHTML=rows.map(r=>
+    `<div class="seat-row">${[...r.children].reverse().map(c=>c.outerHTML).join('')}</div>`
+  ).join('');
+  const t=document.getElementById('seatResultTitle'),tt=document.getElementById('seatResultTitleTeacher');
+  if(t&&tt)tt.innerHTML=t.innerHTML;
+  const sm=document.getElementById('seatSummaryText'),smt=document.getElementById('seatSummaryTextTeacher');
+  if(sm&&smt)smt.textContent=sm.textContent;
+}
 function setSeatResultTitle(subject,roomLabel){
   document.getElementById('seatResultTitle').innerHTML=
     `<div class="seat-subject">${esc(subject)}</div><div class="seat-room">${esc(roomLabel)}</div>`;
@@ -2080,26 +2130,30 @@ async function saveSeatChart(){
 }
 async function exportSeatChartPDF(){
   if(!lastChartParams){showToast('먼저 배치표를 생성하세요');return;}
-  const card=document.querySelector('#seatResult .card');
-  if(!card)return;
+  // 1쪽 교실 배치표 + 2쪽 교사 시선 배치표를 한 파일로
+  const cards=[document.getElementById('seatStudentCard'),document.getElementById('seatTeacherCard')].filter(Boolean);
+  if(!cards.length)return;
   showToast('PDF 생성 중...');
   if(!await ensureLibs('html2canvas','jspdf'))return;
   try{
-    const canvas=await html2canvas(card,{
-      scale:2,backgroundColor:'#ffffff',
-      ignoreElements:el=>el.classList&&el.classList.contains('no-print')
-    });
-    const imgData=canvas.toDataURL('image/png');
     const{jsPDF}=window.jspdf;
     const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
     const pageW=doc.internal.pageSize.getWidth();
     const pageH=doc.internal.pageSize.getHeight();
     const margin=8;
     const maxW=pageW-margin*2,maxH=pageH-margin*2;
-    const ratio=Math.min(maxW/canvas.width,maxH/canvas.height);
-    const imgW=canvas.width*ratio,imgH=canvas.height*ratio;
-    const x=(pageW-imgW)/2,y=(pageH-imgH)/2;
-    doc.addImage(imgData,'PNG',x,y,imgW,imgH);
+    for(let i=0;i<cards.length;i++){
+      const canvas=await html2canvas(cards[i],{
+        scale:2,backgroundColor:'#ffffff',
+        ignoreElements:el=>el.classList&&el.classList.contains('no-print')
+      });
+      const imgData=canvas.toDataURL('image/png');
+      const ratio=Math.min(maxW/canvas.width,maxH/canvas.height);
+      const imgW=canvas.width*ratio,imgH=canvas.height*ratio;
+      const x=(pageW-imgW)/2,y=(pageH-imgH)/2;
+      if(i>0)doc.addPage();
+      doc.addImage(imgData,'PNG',x,y,imgW,imgH);
+    }
     const subjectEl=document.querySelector('#seatResultTitle .seat-subject');
     const roomEl=document.querySelector('#seatResultTitle .seat-room');
     const subject=(subjectEl?subjectEl.textContent:'배치표').trim()||'배치표';
