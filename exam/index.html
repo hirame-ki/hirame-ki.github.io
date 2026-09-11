@@ -325,7 +325,7 @@
       <button class="logout-btn" onclick="doLogout()">로그아웃</button>
     </div>
   </div>
-  <div class="idle-banner no-print"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><polyline points="12 7.5 12 12 15.5 14"></polyline></svg>5분간 활동이 없으면 자동 로그아웃됩니다</div>
+  <div class="idle-banner no-print"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><polyline points="12 7.5 12 12 15.5 14"></polyline></svg><span><b class="idle-min">2</b>분간 활동이 없으면 자동 로그아웃됩니다 (입력하던 내용은 자동으로 임시 저장됩니다)</span></div>
   <div class="tabs">
     <div class="tab active" onclick="showPage('input')" id="tab-input" style="--tab-accent:var(--acc-input)"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17.5V20h2.5L18.4 8.1a1.7 1.7 0 0 0 0-2.4l-.1-.1a1.7 1.7 0 0 0-2.4 0L4 17.5z"></path><line x1="14.5" y1="5" x2="17.5" y2="8"></line></svg>결시 입력</div>
     <div class="tab" onclick="showPage('hq')" id="tab-hq" style="--tab-accent:var(--acc-hq)"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="10" height="18"></rect><rect x="14" y="9" width="6" height="12"></rect><line x1="7" y1="7" x2="7" y2="7.01"></line><line x1="11" y1="7" x2="11" y2="7.01"></line><line x1="7" y1="11" x2="7" y2="11.01"></line><line x1="11" y1="11" x2="11" y2="11.01"></line><line x1="7" y1="15" x2="7" y2="15.01"></line><line x1="11" y1="15" x2="11" y2="15.01"></line><line x1="17" y1="13" x2="17" y2="13.01"></line><line x1="17" y1="17" x2="17" y2="17.01"></line></svg>고사본부</div>
@@ -377,10 +377,11 @@
       </div>
       <div class="card">
         <div class="card-title"><svg class="icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"></circle><path d="M5 20a7 7 0 0 1 14 0"></path></svg>학생 등록</div>
-        <div class="form-row"><div class="form-group" style="flex:1"><label>학급 선택</label><select id="studentClassSel" onchange="renderClassStudentRoster()"></select></div></div>
+        <div class="form-row"><div class="form-group" style="flex:1"><label>학급 선택</label><select id="studentClassSel" onchange="onStudentClassChange()"></select></div></div>
         <div class="form-group" style="margin-bottom:10px">
           <label>학생 목록 (번호. 이름 형식) — 저장 시 이 학급 명단 전체를 덮어씁니다</label>
-          <textarea id="studentListInput" placeholder="1. 홍길동&#10;2. 김철수&#10;3. 이영희"></textarea>
+          <textarea id="studentListInput" placeholder="1. 홍길동&#10;2. 김철수&#10;3. 이영희" oninput="scheduleStudentDraftSave()"></textarea>
+          <div id="studentDraftStatus" style="margin-top:4px;font-size:12px;color:var(--text3)"></div>
         </div>
         <button class="btn btn-primary" onclick="saveStudents()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M8 3v5h8V3"></path><rect x="7" y="13" width="10" height="7"></rect></svg>전체 저장(덮어쓰기)</button>
         <div id="studentSaveStatus" style="margin-top:8px;font-size:13px"></div>
@@ -482,7 +483,7 @@
       </div>
       <div class="card no-print">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-          <div style="font-size:13px;color:var(--text2)">입력 내용은 실시간으로 고사본부에 반영됩니다<br><span style="color:var(--warning);font-weight:600;display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2z"></path><line x1="12" y1="9.5" x2="12" y2="14"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>입력이 끝나면 로그아웃해주세요 (다른 선생님 접속을 위해 자리를 비워주세요)</span><br><span style="font-size:11.5px;color:var(--text3)">이 시스템은 여러 학교가 함께 사용하며 동시 접속 인원이 200명으로 제한되어 있어 로그아웃이 꼭 필요합니다. 5분간 입력이 없으면 자동으로 로그아웃됩니다.</span></div>
+          <div style="font-size:13px;color:var(--text2)">입력 내용은 실시간으로 고사본부에 반영됩니다<br><span style="color:var(--warning);font-weight:600;display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2z"></path><line x1="12" y1="9.5" x2="12" y2="14"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>입력이 끝나면 로그아웃해주세요 (다른 선생님 접속을 위해 자리를 비워주세요)</span><br><span style="font-size:11.5px;color:var(--text3)">이 시스템은 여러 학교가 함께 사용하며 동시 접속 인원이 200명으로 제한되어 있어 로그아웃이 꼭 필요합니다. <b class="idle-min">2</b>분간 입력이 없으면 자동으로 로그아웃됩니다.</span></div>
           <button class="btn btn-primary" id="completeInputBtn" onclick="completeInput()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M8 3v5h8V3"></path><rect x="7" y="13" width="10" height="7"></rect></svg>저장하기</button>
         </div>
       </div>
@@ -772,6 +773,8 @@ let hqChannel=null,currentHQPeriod=null,hqAllAbsences=[],hqAllCompletions=[];
 let periodReportRows=[];
 let currentSeatChartId=null,lastChartParams=null,savedSeatCharts=[];
 let examTimetable=[],subjectEnrollment=[],ttData={},ttTimes={},ttPeriodCount=3,ttModalCtx=null;
+// 저장 버튼을 누르기 전 편집 내용을 브라우저에 임시 저장(자동 로그아웃·새로고침 대비)
+let ttDraftPending=false,ttDraftSavedAt=0,stuDraftClassId=null,stuDraftTimer=null;
 const ABSENCE_REASONS=['인정','미인정','질병','기타'];
 const REASON_COLORS={'인정':'#2d6be4','미인정':'#d63384','질병':'#f4a228','기타':'#4a5060'};
 function reasonColor(r){return REASON_COLORS[r]||REASON_COLORS['미인정'];}
@@ -804,18 +807,29 @@ async function ensureLibs(...names){
 }
 
 let idleTimer=null;
-const IDLE_LIMIT_MS=5*60*1000;
+// 유휴 자동 로그아웃 시간. 이 값만 바꾸면 화면 안내 문구(.idle-min)도 같이 바뀐다
+const IDLE_LIMIT_MIN=2;
+const IDLE_LIMIT_MS=IDLE_LIMIT_MIN*60*1000;
+document.querySelectorAll('.idle-min').forEach(el=>{el.textContent=IDLE_LIMIT_MIN;});
 function resetIdleTimer(){
   clearTimeout(idleTimer);
   if(!sb)return;
   idleTimer=setTimeout(()=>{
-    showToast('5분간 활동이 없어 자동 로그아웃되었습니다');
+    showToast(IDLE_LIMIT_MIN+'분간 활동이 없어 자동 로그아웃되었습니다');
     doLogout();
   },IDLE_LIMIT_MS);
 }
 ['mousemove','keydown','click','touchstart','scroll'].forEach(evt=>{
   document.addEventListener(evt,resetIdleTimer,{passive:true});
 });
+// 자동 로그아웃·창 닫기·탭 전환 직전에 편집 중이던 내용을 마지막으로 한 번 더 임시 저장
+function flushDrafts(){
+  if(!SCHOOL_CODE)return;
+  saveStudentDraft();
+  if(ttDraftPending)persistTtDraft();
+}
+window.addEventListener('pagehide',flushDrafts);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushDrafts();});
 
 window.onload=()=>{
   const code=localStorage.getItem('schoolCode');
@@ -847,6 +861,7 @@ async function doLogin(silent=false){
 }
 
 function doLogout(){
+  flushDrafts();   // SCHOOL_CODE를 지우기 전에 임시 저장 마무리 (임시본 키가 학교코드 기준)
   clearTimeout(idleTimer);
   if(sb&&hqChannel)sb.removeChannel(hqChannel);
   hqChannel=null;
@@ -919,7 +934,7 @@ async function loadAllData(){
   const{data:enRows}=await fetchAll(()=>sb.from('subject_enrollment').select('*').eq('school_code',SCHOOL_CODE).order('id'));
   subjectEnrollment=enRows||[];
   buildTtFromRows();
-  renderClassList();renderStudentSummary();renderStudentClassSelect();renderClassStudentRoster();populateDateSelects();
+  renderClassList();renderStudentSummary();renderStudentClassSelect();renderClassStudentRoster();loadStudentDraft();populateDateSelects();
   renderSetupExtras();
 }
 
@@ -1001,6 +1016,7 @@ async function saveStudents(){
   students[classId]=(data||[]).slice().sort((a,b)=>a.number-b.number);
   document.getElementById('studentSaveStatus').innerHTML=`<span class="badge badge-success">${icon('checkCircle',12)}${parsed.length}명 저장됨</span>`;
   document.getElementById('studentListInput').value='';
+  clearStudentDraft(classId);
   renderClassesUI();
 }
 async function downloadExcelTemplate(){
@@ -1144,6 +1160,52 @@ function renderStudentClassSelect(){
   const prev=sel.value;
   sel.innerHTML=classes.map(c=>`<option value="${c.id}">${c.grade}-${c.class_num}반</option>`).join('')||'<option>학급 없음</option>';
   if(classes.some(c=>String(c.id)===prev))sel.value=prev;
+}
+/* ---- 학생 목록 입력칸 임시 저장(수시 저장) ----
+   붙여넣기/타이핑 중인 명단은 [전체 저장(덮어쓰기)]을 눌러야 서버에 들어가므로,
+   입력이 멈출 때마다 학급별로 브라우저에 임시 저장한다. 학급을 바꾸거나 자동 로그아웃된 뒤
+   같은 학급을 다시 열면 쓰던 내용이 그대로 복구되고, 서버 저장에 성공하면 임시본은 지운다. */
+function stuDraftKey(cid){return 'stuDraft_'+SCHOOL_CODE+'_'+cid;}
+function scheduleStudentDraftSave(){
+  clearTimeout(stuDraftTimer);
+  stuDraftTimer=setTimeout(saveStudentDraft,800);
+}
+function saveStudentDraft(){
+  clearTimeout(stuDraftTimer);
+  const ta=document.getElementById('studentListInput');
+  if(!ta||!SCHOOL_CODE||!stuDraftClassId)return;
+  const text=ta.value;
+  try{
+    if(text.trim())localStorage.setItem(stuDraftKey(stuDraftClassId),JSON.stringify({text,savedAt:Date.now()}));
+    else localStorage.removeItem(stuDraftKey(stuDraftClassId));
+  }catch(e){}
+  setStudentDraftStatus(text.trim()?Date.now():0);
+}
+function clearStudentDraft(cid){clearTimeout(stuDraftTimer);try{localStorage.removeItem(stuDraftKey(cid));}catch(e){}setStudentDraftStatus(0);}
+function setStudentDraftStatus(ts){
+  const el=document.getElementById('studentDraftStatus');
+  if(el)el.innerHTML=ts?`${icon('save',12)} 임시 저장됨 ${fmtDraftTime(ts)} — 아직 서버에 반영되지 않았습니다. <b>[전체 저장(덮어쓰기)]</b>을 눌러주세요`:'';
+}
+// 선택한 학급의 임시본을 입력칸에 되살린다 (로그인 직후·학급 변경 시에만 호출)
+function loadStudentDraft(){
+  const ta=document.getElementById('studentListInput');
+  if(!ta)return;
+  const cid=parseInt(document.getElementById('studentClassSel').value);
+  stuDraftClassId=cid||null;
+  let text='',savedAt=0;
+  if(stuDraftClassId){
+    try{
+      const raw=localStorage.getItem(stuDraftKey(stuDraftClassId));
+      if(raw){const o=JSON.parse(raw);text=o.text||'';savedAt=o.savedAt||0;}
+    }catch(e){}
+  }
+  ta.value=text;
+  setStudentDraftStatus(text.trim()?savedAt:0);
+}
+function onStudentClassChange(){
+  saveStudentDraft();      // 옮기기 전 학급의 입력분을 먼저 보관
+  renderClassStudentRoster();
+  loadStudentDraft();
 }
 function renderClassStudentRoster(){
   const el=document.getElementById('classStudentRoster');
@@ -2339,8 +2401,28 @@ function renderSetupExtras(){
 }
 function persistTtTimes(){try{localStorage.setItem('ttTimes_'+SCHOOL_CODE,JSON.stringify({count:ttPeriodCount,times:ttTimes}));}catch(e){}}
 function loadTtTimesLocal(){try{const raw=localStorage.getItem('ttTimes_'+SCHOOL_CODE);if(raw){const o=JSON.parse(raw);if(o.count)ttPeriodCount=o.count;if(o.times)ttTimes=o.times;}}catch(e){}}
+/* ---- 고사 시간표 임시 저장(수시 저장) ----
+   시간표는 [고사 시간표 저장]을 눌러야 서버에 반영되므로, 과목을 추가·수정·삭제할 때마다
+   편집 중 내용을 브라우저(localStorage)에 즉시 임시 저장한다. 자동 로그아웃·새로고침·창 닫힘으로
+   서버에 못 올린 내용이 날아가지 않게 하려는 것이며, 같은 학교코드로 다시 접속하면 그대로 복구된다.
+   서버 저장에 성공하면 임시본은 지운다. (교시 수·시간은 기존처럼 ttTimes_ 키에 계속 보관) */
+function ttDraftKey(){return 'ttDraft_'+SCHOOL_CODE;}
+function persistTtDraft(){
+  persistTtTimes();
+  if(!SCHOOL_CODE)return;
+  ttDraftSavedAt=Date.now();
+  try{localStorage.setItem(ttDraftKey(),JSON.stringify({data:ttData,savedAt:ttDraftSavedAt}));}catch(e){}
+  ttDraftPending=true;
+}
+function clearTtDraft(){ttDraftPending=false;ttDraftSavedAt=0;try{localStorage.removeItem(ttDraftKey());}catch(e){}}
+// 서버 시간표와 임시본이 실제로 다른지 비교하기 위한 정규화(키 순서·반 목록 순서에 영향받지 않게)
+function ttCanon(data){
+  return Object.keys(data||{}).filter(k=>(data[k]||[]).length).sort().map(k=>
+    k+'='+(data[k]||[]).map(s=>[s.name,s.type,(s.classes||[]).slice().sort((a,b)=>a-b).join('.')].join('~')).join(',')
+  ).join('|');
+}
 function buildTtFromRows(){
-  ttData={};ttTimes={};ttPeriodCount=3;
+  ttData={};ttTimes={};ttPeriodCount=3;ttDraftPending=false;
   loadTtTimesLocal();
   examTimetable.forEach(r=>{
     ttData[r.grade+'|'+r.exam_date+'|'+r.period]=Array.isArray(r.subjects)?r.subjects:[];
@@ -2349,6 +2431,29 @@ function buildTtFromRows(){
       ttTimes[r.period]={prep:r.prep_bell||'',ready:r.ready_bell||'',start:r.start_time||'',end:r.end_time||''};
     }
   });
+  // 저장하지 못한 임시본이 남아 있으면 그걸로 화면을 채우고, 서버와 다르면 안내 배너를 띄운다
+  try{
+    const raw=localStorage.getItem(ttDraftKey());
+    if(raw){
+      const o=JSON.parse(raw);
+      if(o&&o.data){
+        if(ttCanon(o.data)===ttCanon(ttData))clearTtDraft();
+        else{ttData=o.data;ttDraftPending=true;ttDraftSavedAt=o.savedAt||0;}
+      }
+    }
+  }catch(e){}
+}
+function discardTtDraft(){
+  if(!confirm('임시 저장된 편집 내용을 버리고, 서버에 저장된 시간표로 되돌릴까요?'))return;
+  clearTtDraft();
+  buildTtFromRows();
+  renderTimetableEditor();
+  showToast('서버에 저장된 시간표로 되돌렸습니다');
+}
+function fmtDraftTime(ts){
+  if(!ts)return '';
+  const d=new Date(ts);
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
 }
 // 5분 단위 08:00~17:00 시간 선택 옵션. 기존에 직접입력으로 저장된 5분 단위/범위 밖의 값도 보존해서 선택지에 포함
 function ttTimeOptions(selected){
@@ -2392,7 +2497,12 @@ function renderTimetableEditor(){
     }
     gridHtml+='</tbody></table></div>';
   });
-  el.innerHTML=`<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px">교시 수 · 시간 (모든 날짜 공통)</div>`+
+  const draftHtml=ttDraftPending?
+    `<div class="tt-help" style="background:var(--warning-light);color:#7a5a26;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <span>${icon('save',13)} <b>저장하지 않은 편집 내용이 있습니다</b> (임시 저장 ${fmtDraftTime(ttDraftSavedAt)}). 자동 로그아웃되거나 창을 닫아도 이 내용은 남아 있지만, 아래 <b>[고사 시간표 저장]</b>을 눌러야 다른 선생님 화면에 반영됩니다.</span>
+      <button type="button" class="btn btn-outline btn-sm" onclick="discardTtDraft()">서버 내용으로 되돌리기</button>
+    </div>`:'';
+  el.innerHTML=draftHtml+`<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:4px">교시 수 · 시간 (모든 날짜 공통)</div>`+
     `<label style="font-size:12px;color:var(--text3)">교시 수 <input type="number" min="1" max="9" value="${ttPeriodCount}" style="width:56px;padding:3px;text-align:center" onchange="setTtPeriodCount(this.value)"></label>${timesHtml}</div>${gridHtml}`;
 }
 function renderTtCell(g,date,p){
@@ -2455,14 +2565,15 @@ function saveTtSubject(){
   }
   if(index>=0)ttData[key][index]=obj;else ttData[key].push(obj);
   closeTtSubjectModal();
+  persistTtDraft();
   renderTimetableEditor();
 }
 function removeTtSubject(g,date,p,index){
   const key=g+'|'+date+'|'+p;
-  if(ttData[key]){ttData[key].splice(index,1);renderTimetableEditor();}
+  if(ttData[key]){ttData[key].splice(index,1);persistTtDraft();renderTimetableEditor();}
 }
-function setTtPeriodCount(v){ttPeriodCount=Math.max(1,Math.min(9,parseInt(v)||1));persistTtTimes();renderTimetableEditor();}
-function updateTtTime(p,field,value){ttTimes[p]=ttTimes[p]||{};ttTimes[p][field]=value.trim();persistTtTimes();if(field==='start'||field==='end')renderTimetableEditor();}
+function setTtPeriodCount(v){ttPeriodCount=Math.max(1,Math.min(9,parseInt(v)||1));persistTtDraft();renderTimetableEditor();}
+function updateTtTime(p,field,value){ttTimes[p]=ttTimes[p]||{};ttTimes[p][field]=value.trim();persistTtDraft();if(field==='start'||field==='end')renderTimetableEditor();}
 async function saveTimetable(){
   if(!SCHOOL_CODE)return;
   const grades=getGrades();
@@ -2498,6 +2609,8 @@ async function saveTimetable(){
   }
   examTimetable=rows.map(r=>({...r}));
   persistTtTimes();
+  clearTtDraft();
+  renderTimetableEditor();
   st.innerHTML=`<span class="badge badge-success">${icon('checkCircle',12)}시간표 저장 완료 (${rows.length}칸)</span>`;
   showToast('고사 시간표를 저장했습니다');
 }
