@@ -2627,22 +2627,50 @@ async function downloadEnrollmentTemplate(){
   const ws=wb.addWorksheet('선택과목응시자');
   const FONT='맑은 고딕';
   // 호실 열은 "2-1"처럼 입력하면 엑셀이 날짜로 자동 변환해버리므로, 텍스트 서식으로 고정해 방지
-  ws.columns=[{key:'subject',width:20},{key:'class_num',width:8},{key:'number',width:8},{key:'name',width:16},{key:'room',width:16,style:{numFmt:'@'}}];
-  ws.mergeCells('A1:E1');
+  // F열 '비고'는 업로드 시 읽지 않는 참고용 열(예시 설명용)
+  ws.columns=[{key:'subject',width:22},{key:'class_num',width:7},{key:'number',width:7},{key:'name',width:12},{key:'room',width:18,style:{numFmt:'@'}},{key:'memo',width:44}];
+  ws.mergeCells('A1:F1');
   const note=ws.getCell('A1');
-  note.value='과목명 / 반 / 번호 / 이름 / 호실을 입력하세요. 같은 과목 응시자는 여러 줄로 나눠 적습니다. 학년은 화면에서 선택합니다. ※ 과목명은 고사 시간표의 선택과목명과 띄어쓰기·특수문자까지 똑같이 입력하세요. ※ 호실은 그 학생이 실제로 가는 방을 적으세요(본인 교실 유지 시 "본인 교실"처럼 적어도 됨). 호실을 정하는 곳은 이 열 하나뿐이며, 비워두면 그 학생은 본인 교실에서 응시하는 것으로 처리됩니다.';
-  note.font={name:FONT,italic:true,size:10,color:{argb:'FF8A6D3B'}};
+  const nf={name:FONT,size:10,color:{argb:'FF5C4A2E'}};
+  const nb={...nf,bold:true,size:11,color:{argb:'FF8A5A1E'}};
+  note.value={richText:[
+    {font:nb,text:'📌 작성 방법\n'},
+    {font:nf,text:'• 한 줄에 학생 1명씩 과목명 / 반 / 번호 / 이름 / 호실을 입력합니다. (학년은 업로드 화면에서 선택)\n'},
+    {font:nf,text:'• 선택과목만 입력합니다. 한 학생이 선택과목을 여러 개 보면 과목마다 한 줄씩 따로 적습니다.\n'},
+    {font:nf,text:'• 과목명은 고사 시간표의 선택과목명과 띄어쓰기·특수문자까지 똑같이 입력하세요.\n'},
+    {font:nb,text:'📍 호실 입력 (선택)\n'},
+    {font:{...nf,bold:true,color:{argb:'FFC0392B'}},text:'• 호실을 비워두면 → 그 학생은 기본으로 본인 교실(자기 반 교실)에서 응시합니다.\n'},
+    {font:nf,text:'• 호실을 입력하면 → 그 학생은 입력한 호실로 이동해서 응시합니다. (예: 시청각실, 2-5교실)\n'},
+    {font:nf,text:'• 같은 과목이라도 학생마다 호실을 다르게 적을 수 있고, 호실별로 자리배치표가 따로 만들어집니다.\n'},
+    {font:{...nf,bold:true,color:{argb:'FFC0392B'}},text:'⚠ 아래 3~10행은 입력 예시입니다. 실제 명단을 입력하기 전에 반드시 지우세요. (F열 "비고"는 업로드 시 무시됩니다)'}
+  ]};
   note.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEF6E8'}};
-  note.alignment={vertical:'middle',wrapText:true};
-  ws.getRow(1).height=58;
-  const hr=ws.getRow(2);hr.values=['과목명','반','번호','이름','호실'];hr.height=24;
+  note.alignment={vertical:'top',horizontal:'left',wrapText:true,indent:1};
+  ws.getRow(1).height=175;
+  const hr=ws.getRow(2);hr.values=['과목명','반','번호','이름','호실','비고(참고용)'];hr.height=24;
   hr.eachCell(c=>{c.font={name:FONT,bold:true,color:{argb:'FFFFFFFF'},size:12};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFB08A4E'}};c.alignment={horizontal:'center',vertical:'middle'};c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};});
+  ws.getCell('F2').fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF9E9E9E'}};
   const sample=[
-    {subject:'경제',class_num:1,number:3,name:'홍길동',room:'3-1교실'},
-    {subject:'경제',class_num:2,number:5,name:'이영희',room:'시청각실'},
-    {subject:'정치와 법',class_num:1,number:7,name:'김철수',room:''}
+    {subject:'경제',class_num:1,number:3,name:'홍길동',room:'',memo:'호실 비움 → 본인 교실(1반)에서 응시'},
+    {subject:'경제',class_num:2,number:5,name:'이영희',room:'',memo:'호실 비움 → 본인 교실(2반)에서 응시'},
+    {subject:'경제',class_num:3,number:12,name:'박민수',room:'시청각실',memo:'시청각실로 이동해서 응시'},
+    {subject:'경제',class_num:4,number:8,name:'최지우',room:'시청각실',memo:'시청각실로 이동해서 응시 (위 학생과 같은 방)'},
+    {subject:'정치와 법',class_num:1,number:7,name:'김철수',room:'과학실',memo:'과학실로 이동해서 응시'},
+    {subject:'정치와 법',class_num:2,number:15,name:'정하늘',room:'',memo:'호실 비움 → 본인 교실(2반)에서 응시'},
+    {subject:'정치와 법',class_num:3,number:2,name:'강바다',room:'2-5교실',memo:'2-5교실로 이동해서 응시'},
+    {subject:'정치와 법',class_num:1,number:3,name:'홍길동',room:'',memo:'한 학생이 두 과목 응시 시 과목별로 한 줄씩'}
   ];
-  sample.forEach((s,i)=>{const row=ws.addRow(s);row.eachCell(c=>{c.font={name:FONT};c.alignment={horizontal:'center',vertical:'middle'};c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?'FFF6EFE2':'FFFFFFFF'}};});});
+  sample.forEach(s=>{
+    const row=ws.addRow(s);
+    const bg=s.subject==='경제'?'FFF6EFE2':'FFEAF1F8';
+    for(let ci=1;ci<=6;ci++){
+      const c=row.getCell(ci);
+      c.font=ci===6?{name:FONT,size:10,color:{argb:'FF7A7A7A'}}:{name:FONT,color:{argb:'FF555555'}};
+      c.alignment={horizontal:ci===6?'left':'center',vertical:'middle'};
+      c.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+      c.fill={type:'pattern',pattern:'solid',fgColor:{argb:bg}};
+    }
+  });
   ws.views=[{state:'frozen',ySplit:2}];
   const buf=await wb.xlsx.writeBuffer();
   const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
