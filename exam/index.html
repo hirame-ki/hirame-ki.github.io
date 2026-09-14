@@ -275,6 +275,7 @@
   /* 고사 시간표 편집기 */
   .tt-help{font-size:12.5px;color:var(--text2);background:var(--surface2);border-radius:var(--radius);padding:10px 12px;margin-bottom:12px;line-height:1.65;}
   .tt-help b{color:var(--text);}
+  .tt-empty-note{font-size:11px;color:var(--text3);margin-right:6px;}
   .tt-times-table{border-collapse:collapse;font-size:12px;margin:6px 0 4px;}
   .tt-times-table th,.tt-times-table td{border:1px solid var(--border);padding:3px 6px;text-align:center;}
   .tt-times-table th{background:var(--surface2);font-weight:700;}
@@ -333,7 +334,7 @@
       <button class="logout-btn" onclick="doLogout()">로그아웃</button>
     </div>
   </div>
-  <div class="idle-banner no-print"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><polyline points="12 7.5 12 12 15.5 14"></polyline></svg><span><b class="idle-min">2</b>분간 활동이 없으면 자동 로그아웃됩니다 (입력하던 내용은 자동으로 임시 저장됩니다)</span></div>
+  <div class="idle-banner no-print"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><polyline points="12 7.5 12 12 15.5 14"></polyline></svg><span><b class="idle-min">1</b>분간 활동이 없으면 자동 로그아웃됩니다 (입력하던 내용은 자동으로 임시 저장됩니다)</span></div>
   <div class="tabs">
     <div class="tab active" onclick="showPage('input')" id="tab-input" style="--tab-accent:var(--acc-input)"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17.5V20h2.5L18.4 8.1a1.7 1.7 0 0 0 0-2.4l-.1-.1a1.7 1.7 0 0 0-2.4 0L4 17.5z"></path><line x1="14.5" y1="5" x2="17.5" y2="8"></line></svg>결시 입력</div>
     <div class="tab" onclick="showPage('hq')" id="tab-hq" style="--tab-accent:var(--acc-hq)"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="10" height="18"></rect><rect x="14" y="9" width="6" height="12"></rect><line x1="7" y1="7" x2="7" y2="7.01"></line><line x1="11" y1="7" x2="11" y2="7.01"></line><line x1="7" y1="11" x2="7" y2="11.01"></line><line x1="11" y1="11" x2="11" y2="11.01"></line><line x1="7" y1="15" x2="7" y2="15.01"></line><line x1="11" y1="15" x2="11" y2="15.01"></line><line x1="17" y1="13" x2="17" y2="13.01"></line><line x1="17" y1="17" x2="17" y2="17.01"></line></svg>고사본부</div>
@@ -406,7 +407,7 @@
     <div class="section-title"><svg class="icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="16" rx="2"></rect><line x1="3.5" y1="9.5" x2="20.5" y2="9.5"></line><line x1="8" y1="13" x2="8" y2="13.01"></line><line x1="12" y1="13" x2="12" y2="13.01"></line><line x1="16" y1="13" x2="16" y2="13.01"></line><line x1="8" y1="17" x2="8" y2="17.01"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>고사 시간표</div>
     <div class="card">
       <div class="tt-help">
-        <b>여기서 하는 일:</b> 학년별로 <b>날짜 · 교시</b>마다 어떤 과목을 시험 보는지 미리 입력합니다. 한 칸에 <b>[+ 과목]</b>으로 여러 과목을 넣을 수 있고(같은 교시에 선택과목이 여러 개인 경우), 각 과목은 <b>공통</b>(반 학생 전체가 응시) 또는 <b>선택</b>(응시자 명단에 있는 학생만 응시)으로 구분합니다. <b>교실을 옮기는지와는 상관없습니다</b> — 선택과목을 본인 교실에서 그대로 보더라도 <b>선택</b>으로 두고, 아래 응시자 명단의 호실을 비워두면 됩니다(각자교실 배치표에서 응시자가 앞자리, 나머지 학생은 미응시로 뒤에 배치). 비워두면 그 교시는 <b>자습</b>이 됩니다.<br>
+        <b>여기서 하는 일:</b> 학년별로 <b>날짜 · 교시</b>마다 어떤 과목을 시험 보는지 미리 입력합니다. 한 칸에 <b>[+ 과목]</b>으로 여러 과목을 넣을 수 있고(같은 교시에 선택과목이 여러 개인 경우), 각 과목은 <b>공통</b>(반 학생 전체가 응시) 또는 <b>선택</b>(응시자 명단에 있는 학생만 응시)으로 구분합니다. <b>교실을 옮기는지와는 상관없습니다</b> — 선택과목을 본인 교실에서 그대로 보더라도 <b>선택</b>으로 두고, 아래 응시자 명단의 호실을 비워두면 됩니다(각자교실 배치표에서 응시자가 앞자리, 나머지 학생은 미응시로 뒤에 배치). 비워두면 그 교시는 <b>자습</b>이 되고, <b>그날 그 학년의 마지막 시험 뒤 교시</b>는 자습이 아니라 <b>하교</b>로 보아 개인 시간표·배치표 인쇄에서 빈칸으로 둡니다.<br>
         <b>같은 교시에 반마다 다른 공통과목을 보는 경우</b>(예: 1~2반은 기술가정, 3~4반은 한문)에는 두 과목 모두 <b>공통</b>으로 각각 추가한 뒤, 과목마다 <b>적용 학급</b>에서 해당하는 반만 체크하세요. 개인 시간표에는 그 반 학생에게 해당하는 과목만 표시됩니다.<br>
         이 시간표가 아래 <b>선택과목 응시자 명단</b>과 합쳐져 → <b>자리배치표 일괄 생성</b>과 <b>학생별 개인 시간표</b>의 바탕이 됩니다. (먼저 위에서 <b>고사 날짜</b>와 <b>학급</b>을 등록하세요)<br>
         <b>선택과목의 호실이 여러 개로 나뉘거나 학생마다 다르면</b>(정원 초과로 방을 여러 개 쓰는 경우, 일부는 본인 교실에 남는 경우 등) 여기서는 호실을 비워두고, 아래 <b>선택과목 응시자 명단</b> 엑셀의 "호실" 열에 학생 한 명 한 명의 호실을 직접 입력하세요. 여기 입력한 호실은 응시자 명단에 호실을 안 채운 학생에게만 기본값으로 적용됩니다.<br>
@@ -447,7 +448,7 @@
     <div class="section-title"><svg class="icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><line x1="4" y1="9" x2="20" y2="9"></line><line x1="9" y1="9" x2="9" y2="20"></line></svg>학생별 개인 시간표</div>
     <div class="card">
       <div class="tt-help">
-        <b>여기서 하는 일:</b> 위 <b>고사 시간표</b> + <b>선택과목 응시자 명단</b>을 학생 기준으로 합쳐, 학생마다 제각각인 개인 고사 시간표(날짜·교시·시간·과목·장소)를 A4로 인쇄합니다. 선택과목을 신청하지 않은 교시는 <b>자습</b>으로 표시됩니다. (학급을 "전체"로 두면 그 학년 전원이 한 번에 출력됩니다)
+        <b>여기서 하는 일:</b> 위 <b>고사 시간표</b> + <b>선택과목 응시자 명단</b>을 학생 기준으로 합쳐, 학생마다 제각각인 개인 고사 시간표(날짜·교시·시간·과목·장소)를 A4로 인쇄합니다. 선택과목을 신청하지 않은 교시는 <b>자습</b>으로 표시되고, 그날 그 학년 시험이 모두 끝난 뒤의 교시는 <b>하교</b>라 빈칸으로 나옵니다. (학급을 "전체"로 두면 그 학년 전원이 한 번에 출력됩니다)
       </div>
       <div class="form-row" style="margin-bottom:0">
         <div class="form-group"><label>학년</label><select id="pttGrade" onchange="onPttGradeChange()"></select></div>
@@ -491,7 +492,7 @@
       </div>
       <div class="card no-print">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
-          <div style="font-size:13px;color:var(--text2)">입력 내용은 실시간으로 고사본부에 반영됩니다<br><span style="color:var(--warning);font-weight:600;display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2z"></path><line x1="12" y1="9.5" x2="12" y2="14"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>입력이 끝나면 로그아웃해주세요 (다른 선생님 접속을 위해 자리를 비워주세요)</span><br><span style="font-size:11.5px;color:var(--text3)">이 시스템은 여러 학교가 함께 사용하며 동시 접속 인원이 200명으로 제한되어 있어 로그아웃이 꼭 필요합니다. <b class="idle-min">2</b>분간 입력이 없으면 자동으로 로그아웃됩니다.</span></div>
+          <div style="font-size:13px;color:var(--text2)">입력 내용은 실시간으로 고사본부에 반영됩니다<br><span style="color:var(--warning);font-weight:600;display:inline-flex;align-items:center;gap:5px"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20H2z"></path><line x1="12" y1="9.5" x2="12" y2="14"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>입력이 끝나면 로그아웃해주세요 (다른 선생님 접속을 위해 자리를 비워주세요)</span><br><span style="font-size:11.5px;color:var(--text3)">이 시스템은 여러 학교가 함께 사용하며 동시 접속 인원이 200명으로 제한되어 있어 로그아웃이 꼭 필요합니다. <b class="idle-min">1</b>분간 입력이 없으면 자동으로 로그아웃됩니다.</span></div>
           <button class="btn btn-primary" id="completeInputBtn" onclick="completeInput()"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"></path><path d="M8 3v5h8V3"></path><rect x="7" y="13" width="10" height="7"></rect></svg>저장하기</button>
         </div>
       </div>
@@ -842,7 +843,7 @@ async function ensureLibs(...names){
 
 let idleTimer=null;
 // 유휴 자동 로그아웃 시간. 이 값만 바꾸면 화면 안내 문구(.idle-min)도 같이 바뀐다
-const IDLE_LIMIT_MIN=2;
+const IDLE_LIMIT_MIN=1;
 const IDLE_LIMIT_MS=IDLE_LIMIT_MIN*60*1000;
 document.querySelectorAll('.idle-min').forEach(el=>{el.textContent=IDLE_LIMIT_MIN;});
 function resetIdleTimer(){
@@ -2368,7 +2369,7 @@ function renderSeatChartListActions(){
         <option value="slot" ${seatListPrintOrder==='slot'?'selected':''}>인쇄 순서: 교시별 (날짜·교시마다 ${own?'1반 → 끝반':'호실 순'})</option>
       </select>
     </div>
-    ${own?`<div class="scl-row"><label title="시간표의 모든 날짜·교시 중 저장된 배치표가 없는 교시(자습 등)를 학급 전원 미응시 배치표로 채워 인쇄합니다"><input type="checkbox" ${seatListIncludeFree?'checked':''} onchange="seatListIncludeFree=this.checked">선택한 반의 자습 교시도 포함 (첫날 1교시 ~ 마지막 교시 빠짐없이)</label></div>`:''}
+    ${own?`<div class="scl-row"><label title="시간표의 모든 날짜·교시 중 저장된 배치표가 없는 교시(자습 등)를 학급 전원 미응시 배치표로 채워 인쇄합니다"><input type="checkbox" ${seatListIncludeFree?'checked':''} onchange="seatListIncludeFree=this.checked">선택한 반의 자습 교시도 포함 (그날 마지막 시험 교시까지 — 이후는 하교라 제외)</label></div>`:''}
     <div class="scl-row">
       <button type="button" class="btn btn-primary btn-sm" ${n?'':'disabled'} onclick="printSelectedSeatCharts()">${icon('printer',13)}선택한 ${n}장 인쇄</button>
     </div>`;
@@ -2387,16 +2388,22 @@ function ownMissingSlotItems(list){
   });
   return out;
 }
-// 한 반의 시간표 날짜 × 1~마지막 교시 중 haveSlots에 없는 칸을 인쇄 항목으로 만든다 (slotOk로 날짜·교시 제한)
+// 그날 그 학년의 마지막 시험 교시 (시험이 하나도 없으면 0). 이 교시 뒤로는 아무도 시험을 보지 않으므로 자습이 아니라 하교(빈칸)
+function lastExamPeriod(grade,date){
+  return examTimetable.filter(r=>r.grade===grade&&r.exam_date===date&&(r.subjects||[]).length)
+    .reduce((m,r)=>Math.max(m,r.period),0);
+}
+// 한 반의 시간표 날짜 × 1~그날 마지막 시험 교시 중 haveSlots에 없는 칸을 인쇄 항목으로 만든다 (slotOk로 날짜·교시 제한)
 function classMissingSlotItems(cls,haveSlots,tpl,slotOk){
   const sts=(students[cls.id]||[]).slice().sort((a,b)=>a.number-b.number);if(!sts.length)return[];
   const ttRows=examTimetable.filter(r=>r.grade===cls.grade);
   const dates=[...new Set(ttRows.map(r=>r.exam_date))].sort();
-  const maxPeriod=Math.max(ttPeriodCount||0,...ttRows.map(r=>r.period));
   const enroll=enrollmentByStudent(cls.grade);
   const out=[];
   dates.forEach(date=>{
-    for(let p=1;p<=maxPeriod;p++){
+    // 그날 마지막 시험 뒤 교시는 하교라 채우지 않는다
+    const last=lastExamPeriod(cls.grade,date);
+    for(let p=1;p<=last;p++){
       if(haveSlots.has(date+'|'+p)||!slotOk(date,p))continue;
       const ttRow=ttRows.find(r=>r.exam_date===date&&r.period===p);
       const pl=ttRow?ownPlacement(cls,sts,ttRow,enroll):{stay:[],leave:[],free:sts,subjects:[]};
@@ -2512,7 +2519,7 @@ function renderSeatRoomPrintActions(){
       <label><input type="checkbox" ${groups.length&&sel.length===groups.length?'checked':''} onchange="checkAllSeatRooms(this.checked)">교실 ${groups.length}개 모두 선택</label>
       <label><input type="checkbox" ${seatListIncludeTeacher?'checked':''} onchange="seatListIncludeTeacher=this.checked;renderSeatRoomPrintActions()">교사 시선 배치표 포함</label>
     </div>
-    <div class="scl-row"><label title="일반 교실은 시간표의 모든 날짜·교시 중 배치표가 없는 교시(자습 등)를 학급 전원 미응시 배치표로 채웁니다"><input type="checkbox" ${seatListIncludeFree?'checked':''} onchange="seatListIncludeFree=this.checked;renderSeatRoomPrint()">일반 교실의 자습 교시도 포함 (첫날 1교시 ~ 마지막 교시 빠짐없이)</label></div>
+    <div class="scl-row"><label title="일반 교실은 시간표의 모든 날짜·교시 중 배치표가 없는 교시(자습 등)를 학급 전원 미응시 배치표로 채웁니다"><input type="checkbox" ${seatListIncludeFree?'checked':''} onchange="seatListIncludeFree=this.checked;renderSeatRoomPrint()">일반 교실의 자습 교시도 포함 (그날 마지막 시험 교시까지 — 이후는 하교라 제외)</label></div>
     <div class="scl-row"><button type="button" class="btn btn-primary btn-sm" ${sel.length?'':'disabled'} onclick="printSeatRooms()">${icon('printer',13)}선택한 교실 ${sel.length}개 인쇄 (${pageCount}쪽)</button></div>`;
 }
 function toggleSeatRoomCheck(key,on){
@@ -2956,6 +2963,13 @@ function renderTtCell(g,date,p){
     const chipTitle=s.type==='공통'&&extra.includes('⚠')?'응시자 명단이 있는 과목입니다. 신청한 학생만 보는 과목이면 클릭해서 구분을 "선택"으로 바꾸세요':'클릭해서 편집';
     return`<span class="tt-chip type-${s.type}" title="${chipTitle}" onclick="openTtSubjectModal(${g},'${date}',${p},${i})">${esc(s.name)}<small>(${s.type}${extra})</small><span class="tt-x" title="삭제" onclick="event.stopPropagation();removeTtSubject(${g},'${date}',${p},${i})">×</span></span>`;
   }).join('');
+  if(!subs.length){
+    // 그날 이 학년의 마지막 시험 교시(편집 중인 시간표 기준) 뒤는 하교, 그 앞의 빈칸은 자습
+    const prefix=g+'|'+date+'|';
+    const lastP=Object.keys(ttData).filter(k=>k.startsWith(prefix)&&(ttData[k]||[]).length)
+      .reduce((m,k)=>Math.max(m,parseInt(k.slice(prefix.length))||0),0);
+    h+=p>lastP?'<span class="tt-empty-note" title="그날 시험이 모두 끝난 뒤라 하교 — 개인 시간표·배치표 인쇄에서 빈칸">하교</span>':'<span class="tt-empty-note" title="시험 사이에 빈 교시라 자습">자습</span>';
+  }
   h+=`<button class="tt-add-btn" onclick="openTtSubjectModal(${g},'${date}',${p},-1)">+ 과목</button>`;
   return h;
 }
@@ -3394,7 +3408,10 @@ function printStudentTimetables(){
   if(!ttRows.length){showToast('이 학년 고사 시간표가 없습니다. 먼저 고사 시간표를 입력·저장하세요');return;}
   // 세로축=교시, 가로축=날짜인 그리드로 구성
   const dates=[...new Set(ttRows.map(r=>r.exam_date))].sort();
-  const periods=[...new Set(ttRows.map(r=>r.period))].sort((a,b)=>a-b);
+  // 날짜별 마지막 시험 교시 — 그 뒤 교시는 하교라 빈칸, 어느 날에도 시험이 없는 교시 줄은 아예 뺀다
+  const lastByDate={};dates.forEach(d=>{lastByDate[d]=lastExamPeriod(grade,d);});
+  const maxLast=Math.max(0,...Object.values(lastByDate));
+  const periods=[...new Set(ttRows.map(r=>r.period))].filter(p=>p<=maxLast).sort((a,b)=>a-b);
   const timeByPeriod={};
   ttRows.forEach(r=>{if(!timeByPeriod[r.period]&&(r.start_time||r.end_time))timeByPeriod[r.period]={start:r.start_time,end:r.end_time};});
   const subjByKey={};
@@ -3415,6 +3432,7 @@ function printStudentTimetables(){
       const t=timeByPeriod[p];
       const timeLabel=t?((t.start||'')+(t.end?'~'+t.end:'')):'';
       const cellsHtml=dates.map(date=>{
+        if(p>lastByDate[date])return`<td class="off"></td>`;
         const subs=subjByKey[date+'|'+p]||[];
         const applicable=[];
         subs.forEach(su=>{
@@ -3471,6 +3489,7 @@ function printStudentTimetables(){
   .stt-table td .subj{font-weight:700;font-size:7.5px;}
   .stt-table td .place{font-size:6.5px;color:#555;}
   .stt-table td.free{color:#aaa;background:#fafafa;font-weight:400;}
+  .stt-table td.off{background:#fff;}
   .print-btn{display:block;margin:16px auto;padding:10px 22px;font-size:14px;cursor:pointer;}
   @media print{.print-btn{display:none;}}
 </style></head><body>
