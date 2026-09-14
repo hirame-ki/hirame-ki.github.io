@@ -616,7 +616,10 @@
     <div id="separateSettings" class="card no-print">
       <div class="card-title" style="font-size:13px;color:var(--text3);justify-content:space-between;flex-wrap:wrap;gap:8px">
         <span style="display:inline-flex;align-items:center;gap:8px"><span class="step-badge">3</span>별실 응시자 설정</span>
-        <button type="button" class="btn btn-outline btn-sm" onclick="openSeatChartListModal()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5"></path><path d="M4.6 15a8 8 0 1 0 2-8.4L4 9"></path></svg>저장된 배치표 불러오기</button>
+        <span style="display:inline-flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="btn btn-outline btn-sm" onclick="openSeatChartListModal()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5"></path><path d="M4.6 15a8 8 0 1 0 2-8.4L4 9"></path></svg>저장된 배치표 불러오기</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="openSeatRoomPrintModal()" title="각자교실·별실 배치표를 교실 단위로 묶어 시간순으로 한 번에 인쇄"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"></path><rect x="4" y="9" width="16" height="8" rx="1"></rect><path d="M6 14h12v7H6z"></path></svg>교실별 전체 인쇄</button>
+        </span>
       </div>
       <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;border:1px dashed var(--primary)">
         <div style="font-weight:800;font-size:13px;color:var(--primary);display:flex;align-items:center;gap:6px;margin-bottom:6px"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><line x1="8" y1="8" x2="16" y2="8"></line><line x1="8" y1="12" x2="16" y2="12"></line><line x1="8" y1="16" x2="13" y2="16"></line></svg>시간표 기반 일괄 배치 (권장)</div>
@@ -647,7 +650,10 @@
     <div id="ownSettings" class="card no-print" style="display:none">
       <div class="card-title" style="font-size:13px;color:var(--text3);justify-content:space-between;flex-wrap:wrap;gap:8px">
         <span style="display:inline-flex;align-items:center;gap:8px"><span class="step-badge">3</span>각자교실 응시자 설정</span>
-        <button type="button" class="btn btn-outline btn-sm" onclick="openSeatChartListModal()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5"></path><path d="M4.6 15a8 8 0 1 0 2-8.4L4 9"></path></svg>저장된 배치표 불러오기</button>
+        <span style="display:inline-flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="btn btn-outline btn-sm" onclick="openSeatChartListModal()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v5h5"></path><path d="M4.6 15a8 8 0 1 0 2-8.4L4 9"></path></svg>저장된 배치표 불러오기</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="openSeatRoomPrintModal()" title="각자교실·별실 배치표를 교실 단위로 묶어 시간순으로 한 번에 인쇄"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"></path><rect x="4" y="9" width="16" height="8" rx="1"></rect><path d="M6 14h12v7H6z"></path></svg>교실별 전체 인쇄</button>
+        </span>
       </div>
       <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px;border:1px dashed var(--primary)">
         <div style="font-weight:800;font-size:13px;color:var(--primary);display:flex;align-items:center;gap:6px;margin-bottom:6px"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>이 학년 전체 일괄 배치 (권장)</div>
@@ -742,6 +748,16 @@
     <div class="modal-body" id="seatChartListBody"></div>
   </div>
 </div>
+<div class="modal-overlay no-print" id="seatRoomPrintModal" style="display:none" onclick="if(event.target===this)closeSeatRoomPrintModal()">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header">
+      <span>교실별 전체 인쇄 (일반 교실 + 별실)</span>
+      <button type="button" class="modal-close" onclick="closeSeatRoomPrintModal()"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></button>
+    </div>
+    <div class="scl-toolbar" id="seatRoomPrintToolbar" hidden></div>
+    <div class="modal-body" id="seatRoomPrintBody"></div>
+  </div>
+</div>
 <div class="modal-overlay no-print" id="ttSubjectModal" style="display:none" onclick="if(event.target===this)closeTtSubjectModal()">
   <div class="modal-box" style="max-width:380px">
     <div class="modal-header">
@@ -786,6 +802,10 @@ let periodReportRows=[];
 let currentSeatChartId=null,lastChartParams=null,savedSeatCharts=[];
 // 저장된 배치표 목록: 인쇄할 항목 체크, 학년·날짜 필터, 교사 시선 포함 여부
 let seatListChecked=new Set(),seatListFilter={grade:'',slot:''},seatListIncludeTeacher=true;
+// 인쇄 순서: 'class'=학급(호실)별로 첫날 1교시→마지막 교시 / 'slot'=날짜·교시별로 1반→끝반. 자습 교시 채우기(각자교실)
+let seatListPrintOrder='class',seatListIncludeFree=true;
+// 교실별 전체 인쇄: 학교 전체 저장본(각자교실+별실), 학년·날짜 필터, 인쇄에서 뺀 교실 key
+let seatRoomPrint={charts:[],grade:'',date:'',unchecked:new Set(),groups:[]};
 let examTimetable=[],subjectEnrollment=[],ttData={},ttTimes={},ttPeriodCount=3,ttModalCtx=null;
 // 저장 버튼을 누르기 전 편집 내용을 브라우저에 임시 저장(자동 로그아웃·새로고침 대비)
 let ttDraftPending=false,ttDraftSavedAt=0,stuDraftClassId=null,stuDraftTimer=null;
@@ -2184,13 +2204,16 @@ function setSeatResultTitle(subject,roomLabel,when){
   document.getElementById('seatResultTitle').innerHTML=
     `<div class="seat-subject">${esc(subject)}</div><div class="seat-room">${esc([roomLabel,when].filter(Boolean).join(' · '))}</div>`;
 }
-// 한 교실에서 여러 과목을 동시에 보면 좌석에 학생별 과목을 붙인다 (시간표 + 응시자 명단 기준, 과목이 1개면 표시 안 함)
+// 한 교실에서 여러 과목을 동시에 보면 좌석에 학생별 과목을 붙이고, 과목끼리 모아 앉힌다
+// (시간표 + 응시자 명단 기준, 과목이 1개면 그대로). 과목 순서 = 시간표 칸에 입력된 순서,
+// 같은 과목 안에서는 들어온 순서(반·번호순)를 유지. 대상이 아닌 학생(각자교실 미응시)은 그 뒤에 그대로 둔다
 function annotateSeatSubjects(list,grade,date,period,isTarget,classNum){
   const ttRow=examTimetable.find(r=>r.grade===grade&&r.exam_date===date&&r.period===period);
   if(!ttRow)return list;
   const subs=ttRow.subjects||[];
   const selSubs=subs.filter(x=>x.type==='선택');
   const enroll=enrollmentByStudent(grade);
+  const rankOf={};subs.forEach((x,i)=>{if(!(x.name in rankOf))rankOf[x.name]=i;});
   const subjOf=s=>{
     const mine=selSubs.find(su=>enroll[s.id]&&(su.name in enroll[s.id]));
     if(mine)return mine.name;
@@ -2198,7 +2221,15 @@ function annotateSeatSubjects(list,grade,date,period,isTarget,classNum){
     return subs.filter(x=>x.type==='공통'&&(!x.classes||!x.classes.length||x.classes.includes(cn))).map(x=>x.name).join(' · ');
   };
   const out=list.map(s=>isTarget(s)?{...s,subj:subjOf(s)}:s);
-  return new Set(out.map(s=>s.subj).filter(Boolean)).size>=2?out:list;
+  if(new Set(out.map(s=>s.subj).filter(Boolean)).size<2)return list;
+  const rank=s=>{
+    if(!isTarget(s))return Infinity;
+    if(!s.subj)return subs.length;
+    const r=rankOf[s.subj.split(' · ')[0]];
+    return r==null?subs.length:r;
+  };
+  // Array.sort는 안정 정렬이라 같은 과목 안의 반·번호 순서가 유지된다
+  return out.map((s,i)=>({s,i,r:rank(s)})).sort((a,b)=>a.r-b.r||a.i-b.i).map(x=>x.s);
 }
 function updateSaveSeatChartBtnLabel(){
   const el=document.getElementById('saveSeatChartBtnLabel');
@@ -2305,7 +2336,7 @@ function renderSeatChartList(){
       <select aria-label="학년 필터" onchange="seatListFilter.grade=this.value;renderSeatChartList()"><option value="">전체 학년</option>${grades.map(g=>`<option value="${g}" ${String(g)===seatListFilter.grade?'selected':''}>${g}학년</option>`).join('')}</select>
       <select aria-label="날짜·교시 필터" onchange="seatListFilter.slot=this.value;renderSeatChartList()"><option value="">전체 날짜·교시</option>${slots.map(([k,l])=>`<option value="${esc(k)}" ${k===seatListFilter.slot?'selected':''}>${esc(l)}</option>`).join('')}</select>
     </div>
-    <div class="scl-row" id="seatChartListActions"></div>`;
+    <div id="seatChartListActions" style="display:flex;flex-direction:column;gap:8px"></div>`;
   const vis=visibleSeatCharts();
   body.innerHTML=vis.length?vis.map(c=>{
     const dateLabel=seatWhenLabel(c.exam_date,c.period)||'날짜 미지정';
@@ -2326,9 +2357,192 @@ function renderSeatChartListActions(){
   const el=document.getElementById('seatChartListActions');if(!el)return;
   const vis=visibleSeatCharts();
   const n=vis.filter(c=>seatListChecked.has(c.id)).length;
-  el.innerHTML=`<label><input type="checkbox" ${vis.length&&n===vis.length?'checked':''} onchange="checkVisibleSeatCharts(this.checked)">보이는 ${vis.length}장 모두 선택</label>
-    <label><input type="checkbox" ${seatListIncludeTeacher?'checked':''} onchange="seatListIncludeTeacher=this.checked">교사 시선 배치표 포함</label>
-    <button type="button" class="btn btn-primary btn-sm" ${n?'':'disabled'} onclick="printSelectedSeatCharts()">${icon('printer',13)}선택한 ${n}장 인쇄</button>`;
+  const own=currentSeatMode==='own';
+  el.innerHTML=`<div class="scl-row">
+      <label><input type="checkbox" ${vis.length&&n===vis.length?'checked':''} onchange="checkVisibleSeatCharts(this.checked)">보이는 ${vis.length}장 모두 선택</label>
+      <label><input type="checkbox" ${seatListIncludeTeacher?'checked':''} onchange="seatListIncludeTeacher=this.checked">교사 시선 배치표 포함</label>
+    </div>
+    <div class="scl-row">
+      <select aria-label="인쇄 순서" onchange="seatListPrintOrder=this.value">
+        <option value="class" ${seatListPrintOrder==='class'?'selected':''}>인쇄 순서: ${own?'학급별':'호실별'} (첫날 1교시 → 마지막 교시, 다음 ${own?'반':'호실'})</option>
+        <option value="slot" ${seatListPrintOrder==='slot'?'selected':''}>인쇄 순서: 교시별 (날짜·교시마다 ${own?'1반 → 끝반':'호실 순'})</option>
+      </select>
+    </div>
+    ${own?`<div class="scl-row"><label title="시간표의 모든 날짜·교시 중 저장된 배치표가 없는 교시(자습 등)를 학급 전원 미응시 배치표로 채워 인쇄합니다"><input type="checkbox" ${seatListIncludeFree?'checked':''} onchange="seatListIncludeFree=this.checked">선택한 반의 자습 교시도 포함 (첫날 1교시 ~ 마지막 교시 빠짐없이)</label></div>`:''}
+    <div class="scl-row">
+      <button type="button" class="btn btn-primary btn-sm" ${n?'':'disabled'} onclick="printSelectedSeatCharts()">${icon('printer',13)}선택한 ${n}장 인쇄</button>
+    </div>`;
+}
+// 각자교실: 선택한 반마다 시간표의 모든 날짜×교시 중 저장된 배치표가 없는 칸을 채운다
+// (자습 = 학급 전원 미응시, 시험이 있는데 저장 안 된 칸 = 시간표 기준 자동 계산). 좌석 설정은 그 반의 저장된 배치표를 따른다
+function ownMissingSlotItems(list){
+  const byClass={};
+  list.forEach(c=>{(byClass[c.class_id]=byClass[c.class_id]||[]).push(c);});
+  const out=[];
+  Object.entries(byClass).forEach(([cid,charts])=>{
+    const cls=classes.find(x=>x.id===Number(cid));if(!cls)return;
+    // 체크 해제한 저장본이 있는 칸은 자습으로 채우지 않는다 (저장본 전체 기준)
+    const have=new Set(savedSeatCharts.filter(c=>c.class_id===cls.id).map(seatChartSlotKey));
+    out.push(...classMissingSlotItems(cls,have,charts[0],(date,p)=>!seatListFilter.slot||seatListFilter.slot===date+'|'+p));
+  });
+  return out;
+}
+// 한 반의 시간표 날짜 × 1~마지막 교시 중 haveSlots에 없는 칸을 인쇄 항목으로 만든다 (slotOk로 날짜·교시 제한)
+function classMissingSlotItems(cls,haveSlots,tpl,slotOk){
+  const sts=(students[cls.id]||[]).slice().sort((a,b)=>a.number-b.number);if(!sts.length)return[];
+  const ttRows=examTimetable.filter(r=>r.grade===cls.grade);
+  const dates=[...new Set(ttRows.map(r=>r.exam_date))].sort();
+  const maxPeriod=Math.max(ttPeriodCount||0,...ttRows.map(r=>r.period));
+  const enroll=enrollmentByStudent(cls.grade);
+  const out=[];
+  dates.forEach(date=>{
+    for(let p=1;p<=maxPeriod;p++){
+      if(haveSlots.has(date+'|'+p)||!slotOk(date,p))continue;
+      const ttRow=ttRows.find(r=>r.exam_date===date&&r.period===p);
+      const pl=ttRow?ownPlacement(cls,sts,ttRow,enroll):{stay:[],leave:[],free:sts,subjects:[]};
+      out.push({slot:{cls,date,period:p,pl,tpl}});
+    }
+  });
+  return out;
+}
+// 저장된 배치표가 하나도 없는 반의 자습 칸은 2단계(각자교실) 좌석 설정으로 그린다
+function ownStep2SeatTemplate(){
+  return{rows:parseInt(document.getElementById('ownRows').value)||6,cols:parseInt(document.getElementById('ownCols').value)||5,
+    start_side:document.getElementById('ownStartSide').value,disabled_seats:[...disabledSeats.own]};
+}
+
+/* ---- 교실별 전체 인쇄: 일반 교실(각자교실 배치표) + 별실(별실 배치표)을 실제 교실 단위로 묶어 시간순 인쇄 ---- */
+function classRoomRef(cls){return{key:'C'+cls.id,label:`${cls.grade}-${cls.class_num}반`,cls};}
+// 배치표가 놓이는 실제 교실. 별실 호실명이 "2-1반"/"2-1교실"/"2학년 1반" 같은 반 교실이면 그 반 교실로 묶는다
+function seatRoomRefOf(c){
+  if(c.mode==='own'){const cls=classes.find(x=>x.id===c.class_id);return cls?classRoomRef(cls):null;}
+  const raw=(c.room_name||'').trim(),r=raw.replace(/\s/g,'');
+  if(r){
+    const hit=classes.find(cls=>{
+      const g=cls.grade,n=cls.class_num;
+      return[`${g}-${n}`,`${g}-${n}반`,`${g}-${n}교실`,`${g}학년${n}반`,`${g}학년${n}반교실`].includes(r)
+        ||(cls.grade===c.grade&&[`${n}반`,`${n}반교실`].includes(r));
+    });
+    if(hit)return classRoomRef(hit);
+  }
+  return{key:'R'+(r||'-'),label:raw||'호실 미지정',cls:null};
+}
+function buildSeatRoomGroups(){
+  const f=seatRoomPrint;
+  const charts=f.charts.filter(c=>(!f.grade||String(seatChartGrade(c))===f.grade)&&(!f.date||c.exam_date===f.date));
+  const map=new Map();
+  const groupOf=ref=>{let g=map.get(ref.key);if(!g){g={...ref,charts:[]};map.set(ref.key,g);}return g;};
+  charts.forEach(c=>{const ref=seatRoomRefOf(c);if(ref)groupOf(ref).charts.push(c);});
+  // 자습 포함이면 배치표가 없는 반 교실도 목록에 올린다
+  if(seatListIncludeFree)classes.filter(cls=>(!f.grade||String(cls.grade)===f.grade)&&(students[cls.id]||[]).length).forEach(cls=>groupOf(classRoomRef(cls)));
+  const itemKey=it=>it.chart
+    ?{d:it.chart.exam_date||'',p:it.chart.period||0,m:it.chart.mode==='own'?0:1,g:seatChartGrade(it.chart)||0,s:it.chart.subject_name||''}
+    :{d:it.slot.date,p:it.slot.period,m:0,g:it.slot.cls.grade,s:''};
+  const groups=[];
+  map.forEach(g=>{
+    let dup=0;
+    if(g.cls){
+      // 같은 반 교실·같은 교시에 각자교실 배치표가 있으면, 별실 일괄 배치가 만든 그 반 학생용 배치표는 같은 학생들이라 뺀다
+      const ownSlots=new Set(g.charts.filter(c=>c.mode==='own').map(seatChartSlotKey));
+      const kept=g.charts.filter(c=>c.mode==='own'||c.grade!==g.cls.grade||!ownSlots.has(seatChartSlotKey(c)));
+      dup=g.charts.length-kept.length;g.charts=kept;
+    }
+    const items=g.charts.map(c=>({chart:c,place:g.label}));
+    let free=0;
+    if(g.cls&&seatListIncludeFree){
+      const tpl=g.charts.find(c=>c.mode==='own')||g.charts[0]||ownStep2SeatTemplate();
+      const extra=classMissingSlotItems(g.cls,new Set(g.charts.map(seatChartSlotKey)),tpl,date=>!f.date||date===f.date);
+      free=extra.length;extra.forEach(it=>{it.place=g.label;items.push(it);});
+    }
+    if(!items.length)return;
+    items.sort((a,b)=>{const x=itemKey(a),y=itemKey(b);return x.d.localeCompare(y.d)||x.p-y.p||x.m-y.m||x.g-y.g||x.s.localeCompare(y.s,'ko');});
+    groups.push({key:g.key,label:g.label,cls:g.cls,items,free,dup});
+  });
+  // 일반 교실(학년·반 순) 먼저, 그다음 별실(이름 순)
+  return groups.sort((a,b)=>a.cls&&b.cls?(a.cls.grade-b.cls.grade||a.cls.class_num-b.cls.class_num)
+    :a.cls?-1:b.cls?1:a.label.localeCompare(b.label,'ko',{numeric:true}));
+}
+async function openSeatRoomPrintModal(){
+  closeSeatChartListModal();
+  document.getElementById('seatRoomPrintModal').style.display='flex';
+  document.getElementById('seatRoomPrintToolbar').hidden=true;
+  const body=document.getElementById('seatRoomPrintBody');
+  body.innerHTML='<p style="font-size:13px;color:var(--text3)">불러오는 중...</p>';
+  const{data,error}=await fetchAll(()=>sb.from('seat_charts').select('*').eq('school_code',SCHOOL_CODE).order('id'));
+  if(error){body.innerHTML='<p style="font-size:13px;color:var(--danger)">불러오기 실패: '+esc(error.message)+'</p>';return;}
+  seatRoomPrint.charts=data||[];
+  seatRoomPrint.unchecked=new Set();
+  renderSeatRoomPrint();
+}
+function closeSeatRoomPrintModal(){document.getElementById('seatRoomPrintModal').style.display='none';}
+function renderSeatRoomPrint(){
+  const f=seatRoomPrint;
+  const body=document.getElementById('seatRoomPrintBody');
+  const tb=document.getElementById('seatRoomPrintToolbar');
+  const grades=getGrades();
+  const dates=[...new Set([...f.charts.map(c=>c.exam_date),...examTimetable.map(r=>r.exam_date)].filter(Boolean))].sort();
+  if(f.grade&&!grades.some(g=>String(g)===f.grade))f.grade='';
+  if(f.date&&!dates.includes(f.date))f.date='';
+  const groups=f.groups=buildSeatRoomGroups();
+  tb.hidden=false;
+  tb.innerHTML=`<div class="scl-row">
+      <select aria-label="학년 필터" onchange="seatRoomPrint.grade=this.value;renderSeatRoomPrint()"><option value="">전체 학년</option>${grades.map(g=>`<option value="${g}" ${String(g)===f.grade?'selected':''}>${g}학년</option>`).join('')}</select>
+      <select aria-label="날짜 필터" onchange="seatRoomPrint.date=this.value;renderSeatRoomPrint()"><option value="">전체 날짜</option>${dates.map(d=>`<option value="${d}" ${d===f.date?'selected':''}>${fmtDate(d)}</option>`).join('')}</select>
+    </div>
+    <div id="seatRoomPrintActions" style="display:flex;flex-direction:column;gap:8px"></div>`;
+  const whenOf=it=>it.chart?seatWhenLabel(it.chart.exam_date,it.chart.period):seatWhenLabel(it.slot.date,it.slot.period);
+  body.innerHTML=groups.length?`<p style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:10px">각자교실·별실 배치표를 <b>실제 교실 단위</b>로 묶었습니다. 교실마다 첫날 1교시부터 마지막 교시까지 시간순으로 이어서 인쇄되어, 뽑은 뒤 교실별로 그대로 나눠 주면 됩니다.</p>`+groups.map(g=>{
+    const range=`${whenOf(g.items[0])} ~ ${whenOf(g.items[g.items.length-1])}`;
+    return`<label class="saved-chart-item" style="display:flex;align-items:flex-start;gap:10px">
+      <input type="checkbox" class="scl-check" data-key="${esc(g.key)}" ${f.unchecked.has(g.key)?'':'checked'} onchange="toggleSeatRoomCheck(this.dataset.key,this.checked)">
+      <div style="flex:1">
+        <div class="sci-title">${esc(g.label)} <span class="badge ${g.cls?'badge-primary':'badge-success'}" style="margin-left:4px">${g.cls?'일반 교실':'별실'}</span></div>
+        <div class="sci-meta">${esc(range)} · 배치표 ${g.items.length}장${g.free?` (저장본 없는 자습 등 ${g.free}교시 포함)`:''}${g.dup?` · 겹치는 별실 배치표 ${g.dup}장 제외`:''}</div>
+      </div>
+    </label>`;
+  }).join(''):'<p style="font-size:13px;color:var(--text3)">인쇄할 배치표가 없습니다. 먼저 각자교실·별실 일괄 배치로 배치표를 저장하세요.</p>';
+  renderSeatRoomPrintActions();
+}
+function renderSeatRoomPrintActions(){
+  const el=document.getElementById('seatRoomPrintActions');if(!el)return;
+  const f=seatRoomPrint,groups=f.groups||[];
+  const sel=groups.filter(g=>!f.unchecked.has(g.key));
+  const pageCount=sel.reduce((n,g)=>n+g.items.length,0)*(seatListIncludeTeacher?2:1);
+  el.innerHTML=`<div class="scl-row">
+      <label><input type="checkbox" ${groups.length&&sel.length===groups.length?'checked':''} onchange="checkAllSeatRooms(this.checked)">교실 ${groups.length}개 모두 선택</label>
+      <label><input type="checkbox" ${seatListIncludeTeacher?'checked':''} onchange="seatListIncludeTeacher=this.checked;renderSeatRoomPrintActions()">교사 시선 배치표 포함</label>
+    </div>
+    <div class="scl-row"><label title="일반 교실은 시간표의 모든 날짜·교시 중 배치표가 없는 교시(자습 등)를 학급 전원 미응시 배치표로 채웁니다"><input type="checkbox" ${seatListIncludeFree?'checked':''} onchange="seatListIncludeFree=this.checked;renderSeatRoomPrint()">일반 교실의 자습 교시도 포함 (첫날 1교시 ~ 마지막 교시 빠짐없이)</label></div>
+    <div class="scl-row"><button type="button" class="btn btn-primary btn-sm" ${sel.length?'':'disabled'} onclick="printSeatRooms()">${icon('printer',13)}선택한 교실 ${sel.length}개 인쇄 (${pageCount}쪽)</button></div>`;
+}
+function toggleSeatRoomCheck(key,on){
+  if(on)seatRoomPrint.unchecked.delete(key);else seatRoomPrint.unchecked.add(key);
+  renderSeatRoomPrintActions();
+}
+function checkAllSeatRooms(on){
+  seatRoomPrint.unchecked=on?new Set():new Set((seatRoomPrint.groups||[]).map(g=>g.key));
+  document.querySelectorAll('#seatRoomPrintBody .scl-check').forEach(x=>{x.checked=on;});
+  renderSeatRoomPrintActions();
+}
+async function printSeatRooms(){
+  const sel=(seatRoomPrint.groups||[]).filter(g=>!seatRoomPrint.unchecked.has(g.key));
+  if(!sel.length){showToast('인쇄할 교실을 선택하세요');return;}
+  const win=openSeatPrintWindow();if(!win)return;
+  const nClass=sel.filter(g=>g.cls).length,nRoom=sel.length-nClass;
+  await writeSeatPrintWindow(win,sel.flatMap(g=>g.items),`교실별 시간순 (일반 교실 ${nClass}개 · 별실 ${nRoom}개)`,{placeFirst:true});
+}
+function buildOwnSlotPrint(v,abSet){
+  const{cls,date,period,pl,tpl}=v;
+  const place=`${cls.grade}-${cls.class_num}반`,when=seatWhenLabel(date,period);
+  const ids=new Set(pl.stay.map(s=>s.id));
+  const roster=annotateSeatSubjects(buildOwnRoster(students[cls.id]||[],ids,abSet),cls.grade,date,period,s=>ids.has(s.id),cls.class_num);
+  const{grid,slotCount}=buildSeatGrid(roster,tpl.rows,tpl.cols,tpl.start_side,new Set(tpl.disabled_seats||[]));
+  if(!grid)return{error:`${place} ${when}(좌석 ${slotCount}석 < ${roster.length}명)`};
+  if(pl.stay.length)return{subject:pl.subjects.join(' · ')||'시험',place,when,grid,showClassInfo:false,
+    summary:ownSeatSummary(roster,tpl.rows,tpl.cols,tpl.start_side)+' · 저장된 배치표 없음(시간표 기준 자동 계산)'};
+  const absentCount=roster.filter(s=>s.isAbsent).length;
+  return{subject:pl.leave.length?`자습 · 별실 이동 ${pl.leave.length}명`:'자습',place,when,grid,showClassInfo:false,
+    summary:`자습 교시 · 학급 ${roster.length}명 전원 미응시${absentCount?` · 결시 ${absentCount}명`:''} · ${tpl.rows}행 ${tpl.cols}열 배치`};
 }
 function toggleSeatListCheck(id,on){
   if(on)seatListChecked.add(id);else seatListChecked.delete(id);
@@ -2363,7 +2577,9 @@ function buildSavedSeatChartPrint(c,abSet){
 }
 function seatPrintPageHtml(p,teacher){
   const legend=`<div class="legend"><span><i style="background:var(--primary-light);border:1.5px solid var(--primary)"></i>응시</span><span><i style="background:var(--surface2);border:1.5px solid var(--border)"></i>미응시</span><span><i style="border:1.5px dashed var(--danger)"></i>결시(자리 유지)</span></div>`;
-  const head=`<div class="seat-print-header"><div class="seat-subject">${esc(p.subject)}</div><div class="seat-room">${esc([p.place,p.when].filter(Boolean).join(' · '))}</div></div>`;
+  const head=p.placeFirst
+    ?`<div class="seat-print-header"><div class="seat-subject">${esc(p.place)}</div><div class="seat-room">${esc([p.when,p.subject].filter(Boolean).join(' · '))}</div></div>`
+    :`<div class="seat-print-header"><div class="seat-subject">${esc(p.subject)}</div><div class="seat-room">${esc([p.place,p.when].filter(Boolean).join(' · '))}</div></div>`;
   const summary=`<div class="summary">${esc(p.summary)}</div>`;
   if(!teacher)return`<section class="sp-page">${head}<div class="seat-view-tag">교실 자리배치표 (칠판을 바라본 방향)</div><div class="board-area">칠판</div>${legend}
     <div class="layout-wrap"><div class="window-label">← 창가 (왼쪽)</div><div class="seat-grid-col">${seatGridHtml(p.grid,p.showClassInfo)}</div><div class="window-label">복도 (오른쪽) →</div></div>${summary}</section>`;
@@ -2374,12 +2590,38 @@ function seatPrintPageHtml(p,teacher){
 async function printSelectedSeatCharts(){
   const list=visibleSeatCharts().filter(c=>seatListChecked.has(c.id));
   if(!list.length){showToast('인쇄할 배치표를 선택하세요');return;}
-  // 팝업 차단을 피하려고 클릭 직후 창부터 연다
+  const win=openSeatPrintWindow();if(!win)return;
+  const items=list.map(c=>({chart:c}));
+  if(currentSeatMode==='own'&&seatListIncludeFree)items.push(...ownMissingSlotItems(list));
+  // 정렬 키: 학년 → 반(각자교실) 또는 호실(별실) / 날짜 → 교시
+  const pad=(n,w)=>String(n||0).padStart(w,'0');
+  const keyOf=it=>{
+    if(it.slot)return{place:`${pad(it.slot.cls.grade,2)} ${pad(it.slot.cls.class_num,3)}`,date:it.slot.date,period:it.slot.period,tie:''};
+    const c=it.chart;
+    let place;
+    if(c.mode==='own'){const cls=classes.find(x=>x.id===c.class_id);place=cls?`${pad(cls.grade,2)} ${pad(cls.class_num,3)}`:'99 999';}
+    else place=`${pad(c.grade,2)} ${c.room_name||''}`;
+    return{place,date:c.exam_date||'',period:c.period||0,tie:c.subject_name||''};
+  };
+  const cmpPlace=(a,b)=>a.place.localeCompare(b.place,'ko',{numeric:true});
+  const cmpSlot=(a,b)=>a.date.localeCompare(b.date)||a.period-b.period;
+  const sorted=items.map(it=>({it,k:keyOf(it)})).sort((a,b)=>
+    (seatListPrintOrder==='class'?(cmpPlace(a.k,b.k)||cmpSlot(a.k,b.k)):(cmpSlot(a.k,b.k)||cmpPlace(a.k,b.k)))||a.k.tie.localeCompare(b.k.tie,'ko')
+  ).map(x=>x.it);
+  await writeSeatPrintWindow(win,sorted,`${seatListPrintOrder==='class'?(currentSeatMode==='own'?'학급별':'호실별'):'교시별'} 순서`);
+}
+// 팝업 차단을 피하려고 클릭 직후 창부터 연다
+function openSeatPrintWindow(){
   const win=window.open('','_blank','width=1100,height=820');
-  if(!win){showToast('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요');return;}
+  if(!win){showToast('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요');return null;}
   win.document.write('<p style="font-family:sans-serif;padding:24px;color:#5c6674">배치표를 준비하는 중...</p>');
+  return win;
+}
+// 정렬이 끝난 인쇄 항목({chart}=저장된 배치표 | {slot}=저장본 없는 교시)을 새 창에 한 쪽씩 이어 쓴다
+// opt.placeFirst=true면 쪽 제목을 교실(호실) 이름으로 크게 표시 (교실별 배부용)
+async function writeSeatPrintWindow(win,sorted,orderLabel,opt={}){
   // 결시는 저장 시점이 아니라 인쇄 시점 기준으로 반영 (화면에서 불러올 때와 동일)
-  const dates=[...new Set(list.map(c=>c.exam_date).filter(Boolean))];
+  const dates=[...new Set(sorted.map(it=>it.chart?it.chart.exam_date:it.slot.date).filter(Boolean))];
   const abByKey={};
   if(dates.length){
     const{data,error}=await fetchAll(()=>sb.from('absences').select('id,student_id,exam_date,period')
@@ -2388,17 +2630,17 @@ async function printSelectedSeatCharts(){
     (data||[]).forEach(a=>{const k=a.exam_date+'|'+a.period;(abByKey[k]=abByKey[k]||new Set()).add(a.student_id);});
   }
   if(win.closed)return;
-  const order=c=>c.mode==='own'?seatChartPlaceLabel(c):`${c.grade||0} ${c.room_name||''} ${c.subject_name||''}`;
-  const sorted=list.slice().sort((a,b)=>
-    (a.exam_date||'').localeCompare(b.exam_date||'')||(a.period||0)-(b.period||0)||order(a).localeCompare(order(b),'ko',{numeric:true}));
-  const pages=[],skipped=[];
-  sorted.forEach(c=>{
-    const p=buildSavedSeatChartPrint(c,abByKey[c.exam_date+'|'+c.period]||new Set());
+  const pages=[],skipped=[];let doneCount=0,freeCount=0;
+  sorted.forEach(it=>{
+    const date=it.chart?it.chart.exam_date:it.slot.date,period=it.chart?it.chart.period:it.slot.period;
+    const abSet=abByKey[date+'|'+period]||new Set();
+    const p=it.chart?buildSavedSeatChartPrint(it.chart,abSet):buildOwnSlotPrint(it.slot,abSet);
     if(p.error){skipped.push(p.error);return;}
+    if(opt.placeFirst){p.placeFirst=true;if(it.place)p.place=it.place;}
+    doneCount++;if(it.slot)freeCount++;
     pages.push(seatPrintPageHtml(p,false));
     if(seatListIncludeTeacher)pages.push(seatPrintPageHtml(p,true));
   });
-  const doneCount=sorted.length-skipped.length;
   win.document.open();
   win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>자리배치표 일괄 인쇄</title>
 <style>
@@ -2436,7 +2678,7 @@ async function printSelectedSeatCharts(){
   @media screen{body{background:#e9e7e1;}.sp-page{background:#fff;max-width:1060px;margin:0 auto 16px;padding:20px;border-radius:8px;}}
   @media print{.print-bar{display:none;}}
 </style></head><body>
-<div class="print-bar"><div>배치표 <b>${doneCount}개</b> · 총 <b>${pages.length}쪽</b>${seatListIncludeTeacher?' (교실 배치표 + 교사 시선 배치표)':''}${skipped.length?`<div class="skip">건너뜀 ${skipped.length}개: ${esc(skipped.join(', '))}</div>`:''}</div><button onclick="window.print()">인쇄</button></div>
+<div class="print-bar"><div>배치표 <b>${doneCount}개</b>${freeCount?` (저장된 배치표가 없는 자습 등 교시 ${freeCount}개 포함)`:''} · 총 <b>${pages.length}쪽</b>${seatListIncludeTeacher?' (교실 배치표 + 교사 시선 배치표)':''} · ${esc(orderLabel)}${skipped.length?`<div class="skip">건너뜀 ${skipped.length}개: ${esc(skipped.join(', '))}</div>`:''}</div><button onclick="window.print()">인쇄</button></div>
 ${pages.join('')}
 </body></html>`);
   win.document.close();win.focus();
