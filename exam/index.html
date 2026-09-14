@@ -192,7 +192,7 @@
   .mode-label{font-size:14px;font-weight:700;}
   .mode-desc{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.4;}
 
-  .seat{flex:1;min-width:44px;height:56px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;border:1.5px solid transparent;box-sizing:border-box;}
+  .seat{flex:1;min-width:44px;min-height:56px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;border:1.5px solid transparent;box-sizing:border-box;}
   .seat.present{background:var(--primary-light);border-color:var(--primary);color:var(--primary);font-weight:700;}
   .seat.non-exam{background:var(--surface2);border-color:var(--border);color:var(--text3);}
   .seat.empty-seat{background:transparent;border:1.5px dashed #ddd;}
@@ -206,6 +206,7 @@
   .seat-edit-cell.disabled{background:transparent;border:1.5px dashed #ccc;}
   .seat .seat-num{font-size:9px;opacity:0.7;}
   .seat .seat-name{font-size:12px;font-weight:700;}
+  .seat .seat-subj{font-size:9.5px;font-weight:600;margin-top:1px;max-width:100%;padding:0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .board-area{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px;text-align:center;font-size:13px;font-weight:700;color:var(--text2);letter-spacing:4px;margin-bottom:20px;width:100%;box-sizing:border-box;}
   .seat-print-header{margin-bottom:16px;}
   .seat-print-header .seat-subject{font-size:20px;font-weight:800;color:var(--text);}
@@ -239,6 +240,13 @@
   .saved-chart-item:hover{border-color:var(--primary);background:var(--primary-light);}
   .saved-chart-item .sci-title{font-size:13.5px;font-weight:700;color:var(--text);}
   .saved-chart-item .sci-meta{font-size:11.5px;color:var(--text3);margin-top:2px;}
+  .saved-chart-item .scl-check{width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;accent-color:var(--primary);}
+  .scl-toolbar{padding:12px 18px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;flex-direction:column;gap:8px;}
+  .scl-toolbar .scl-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .scl-toolbar select{font-size:12.5px;padding:5px 8px;flex:1;min-width:120px;}
+  .scl-toolbar label{font-size:12px;color:var(--text2);display:inline-flex;align-items:center;gap:5px;cursor:pointer;}
+  .scl-toolbar .btn{margin-left:auto;}
+  .btn:disabled{opacity:0.45;cursor:not-allowed;}
 
   .section-title{font-size:17px;font-weight:800;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--sec-accent,var(--primary));display:flex;align-items:center;gap:9px;}
   .grade-title{font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;padding:4px 10px;background:var(--primary-light);border-radius:6px;display:inline-block;}
@@ -398,7 +406,7 @@
     <div class="section-title"><svg class="icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="16" rx="2"></rect><line x1="3.5" y1="9.5" x2="20.5" y2="9.5"></line><line x1="8" y1="13" x2="8" y2="13.01"></line><line x1="12" y1="13" x2="12" y2="13.01"></line><line x1="16" y1="13" x2="16" y2="13.01"></line><line x1="8" y1="17" x2="8" y2="17.01"></line><line x1="12" y1="17" x2="12" y2="17.01"></line></svg>고사 시간표</div>
     <div class="card">
       <div class="tt-help">
-        <b>여기서 하는 일:</b> 학년별로 <b>날짜 · 교시</b>마다 어떤 과목을 시험 보는지 미리 입력합니다. 한 칸에 <b>[+ 과목]</b>으로 여러 과목을 넣을 수 있고(같은 교시에 선택과목이 여러 개인 경우), 각 과목은 <b>공통</b>(반 전체가 자기 교실에서 응시) 또는 <b>선택</b>(별실에서 응시)으로 구분합니다. 비워두면 그 교시는 <b>자습</b>이 됩니다.<br>
+        <b>여기서 하는 일:</b> 학년별로 <b>날짜 · 교시</b>마다 어떤 과목을 시험 보는지 미리 입력합니다. 한 칸에 <b>[+ 과목]</b>으로 여러 과목을 넣을 수 있고(같은 교시에 선택과목이 여러 개인 경우), 각 과목은 <b>공통</b>(반 학생 전체가 응시) 또는 <b>선택</b>(응시자 명단에 있는 학생만 응시)으로 구분합니다. <b>교실을 옮기는지와는 상관없습니다</b> — 선택과목을 본인 교실에서 그대로 보더라도 <b>선택</b>으로 두고, 아래 응시자 명단의 호실을 비워두면 됩니다(각자교실 배치표에서 응시자가 앞자리, 나머지 학생은 미응시로 뒤에 배치). 비워두면 그 교시는 <b>자습</b>이 됩니다.<br>
         <b>같은 교시에 반마다 다른 공통과목을 보는 경우</b>(예: 1~2반은 기술가정, 3~4반은 한문)에는 두 과목 모두 <b>공통</b>으로 각각 추가한 뒤, 과목마다 <b>적용 학급</b>에서 해당하는 반만 체크하세요. 개인 시간표에는 그 반 학생에게 해당하는 과목만 표시됩니다.<br>
         이 시간표가 아래 <b>선택과목 응시자 명단</b>과 합쳐져 → <b>자리배치표 일괄 생성</b>과 <b>학생별 개인 시간표</b>의 바탕이 됩니다. (먼저 위에서 <b>고사 날짜</b>와 <b>학급</b>을 등록하세요)<br>
         <b>선택과목의 호실이 여러 개로 나뉘거나 학생마다 다르면</b>(정원 초과로 방을 여러 개 쓰는 경우, 일부는 본인 교실에 남는 경우 등) 여기서는 호실을 비워두고, 아래 <b>선택과목 응시자 명단</b> 엑셀의 "호실" 열에 학생 한 명 한 명의 호실을 직접 입력하세요. 여기 입력한 호실은 응시자 명단에 호실을 안 채운 학생에게만 기본값으로 적용됩니다.<br>
@@ -730,6 +738,7 @@
       <span id="seatChartListModalTitle">저장된 배치표 (별실 시험)</span>
       <button type="button" class="modal-close" onclick="closeSeatChartListModal()"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></button>
     </div>
+    <div class="scl-toolbar" id="seatChartListToolbar" hidden></div>
     <div class="modal-body" id="seatChartListBody"></div>
   </div>
 </div>
@@ -743,17 +752,20 @@
       <div class="form-group"><label>과목명 (띄어쓰기·특수문자까지 정확히)</label><input type="text" id="ttSubjName" placeholder="예: 세계시민과 지리" onkeydown="if(event.key==='Enter')saveTtSubject()" /></div>
       <div class="form-group"><label>구분</label>
         <select id="ttSubjType" onchange="toggleTtRoomField()">
-          <option value="공통">공통 — 반 전체가 자기 교실에서 응시</option>
-          <option value="선택">선택 — 별실에서 응시</option>
+          <option value="">구분을 고르세요</option>
+          <option value="공통">공통 — 반 학생 전체가 응시</option>
+          <option value="선택">선택 — 응시자 명단에 있는 학생만 응시</option>
         </select>
+        <span id="ttTypeHint" style="font-size:11.5px;color:var(--text3);line-height:1.5">교실을 옮기는지가 아니라 <b>누가 응시하는지</b>로 고르세요. 선택과목을 자기 교실에서 그대로 봐도 <b>선택</b>입니다.</span>
       </div>
       <div class="form-group" id="ttClassField" style="display:none">
+        <span style="font-size:11.5px;color:var(--warning);line-height:1.5">⚠️ 공통으로 두면 적용 학급의 <b>학생 전원이 응시자</b>로 잡힙니다. 신청한 학생만 보는 과목이면 <b>선택</b>으로 바꾸세요.</span>
         <label>적용 학급 (모두 선택 = 학년 전체)</label>
         <div id="ttClassChecks" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px;border:1px solid var(--border);border-radius:8px"></div>
         <span style="font-size:11.5px;color:var(--text3);line-height:1.5">반마다 보는 공통과목이 다르면(예: 앞반 기술가정 / 뒷반 한문) 이 과목을 볼 반만 체크하세요. 같은 교시에 다른 반이 볼 과목을 <b>[+ 과목]</b>으로 하나 더 추가하고 나머지 반을 체크하면 됩니다.</span>
       </div>
       <div class="form-group" id="ttRoomField" style="display:none">
-        <span style="font-size:11.5px;color:var(--text3);line-height:1.5">선택과목이 <b>어느 호실에서</b> 치러지는지는 여기서 입력하지 않습니다. 아래 <b>선택과목 응시자 명단</b> 엑셀의 <b>"호실"</b> 열에 학생별로 적으면 그대로 쓰입니다(한 과목이 여러 방으로 나뉘어도 그대로 반영됨).</span>
+        <span style="font-size:11.5px;color:var(--text3);line-height:1.5">응시자는 아래 <b>선택과목 응시자 명단</b>으로 정하고, 호실도 여기서 입력하지 않고 명단 엑셀의 <b>"호실"</b> 열에 학생별로 적습니다(한 과목이 여러 방으로 나뉘어도 그대로 반영됨). <b>교실을 옮기지 않으면 호실을 비워두거나 "본인 교실"</b>로 적으세요 — 각자교실 배치표에서 응시자가 앞자리에, 명단에 없는 학생은 미응시로 뒤에 배치됩니다.</span>
       </div>
       <button class="btn btn-primary" style="width:100%;margin-top:6px" onclick="saveTtSubject()">확인</button>
     </div>
@@ -772,6 +784,8 @@ let disabledSeats={sep:new Set(),own:new Set()};
 let hqChannel=null,currentHQPeriod=null,hqAllAbsences=[],hqAllCompletions=[];
 let periodReportRows=[];
 let currentSeatChartId=null,lastChartParams=null,savedSeatCharts=[];
+// 저장된 배치표 목록: 인쇄할 항목 체크, 학년·날짜 필터, 교사 시선 포함 여부
+let seatListChecked=new Set(),seatListFilter={grade:'',slot:''},seatListIncludeTeacher=true;
 let examTimetable=[],subjectEnrollment=[],ttData={},ttTimes={},ttPeriodCount=3,ttModalCtx=null;
 // 저장 버튼을 누르기 전 편집 내용을 브라우저에 임시 저장(자동 로그아웃·새로고침 대비)
 let ttDraftPending=false,ttDraftSavedAt=0,stuDraftClassId=null,stuDraftTimer=null;
@@ -2019,7 +2033,12 @@ function ownPlacement(cls,sts,ttRow,enroll){
       stay.push(st);comSubs.forEach(su=>subjNames.add(su.name));
     }else free.push(st);
   });
-  return{cls,stay,leave,free,subjects:[...subjNames]};
+  // 응시자 명단이 있는데 시간표에는 공통으로 등록된 과목 (반 전원이 응시자로 잡히는 흔한 설정 실수)
+  const rosterCommon=comSubs.filter(su=>subjectEnrollment.some(e=>e.grade===cls.grade&&e.subject_name===su.name)).map(su=>su.name);
+  return{cls,stay,leave,free,subjects:[...subjNames],rosterCommon};
+}
+function rosterCommonWarning(names){
+  return`<div style="margin-top:6px;color:var(--warning)">⚠️ <b>${esc(names.join(', '))}</b>은(는) 응시자 명단이 있는데 시간표에 <b>공통</b>으로 등록되어 있어 <b>반 학생 전원이 응시자</b>로 잡힙니다. 신청한 학생만 보는 과목이면 설정 탭 고사 시간표에서 구분을 <b>선택</b>으로 바꿔 저장한 뒤 다시 배치하세요.</div>`;
 }
 function computeOwnAuto(){
   const classId=parseInt(document.getElementById('ownClass').value);
@@ -2055,6 +2074,7 @@ function applyOwnAuto(manual){
     msg+=`<div style="margin-top:6px;color:var(--text2)">별실 이동 ${r.leave.length}명(미응시 처리): ${esc(Object.entries(byKey).map(([k,n])=>k+' '+n+'명').join(', '))}</div>`;
   }
   if(r.free.length)msg+=`<div style="margin-top:4px;color:var(--text3)">자습 ${r.free.length}명(미응시 처리)</div>`;
+  if(r.rosterCommon.length)msg+=rosterCommonWarning(r.rosterCommon);
   if(el)el.innerHTML=msg;
   if(manual)showToast(`시간표 기준으로 ${r.stay.length}명 선택`);
 }
@@ -2089,12 +2109,10 @@ async function generateSeatChart(){
       .in('student_id',examineesBase.map(s=>s.id));
     abIds=new Set((abData||[]).map(a=>a.student_id));
   }
-  const examinees=examineesBase.map(s=>({...s,isAbsent:abIds.has(s.id)}));
-  setSeatResultTitle(subj,room);
+  const examinees=annotateSeatSubjects(examineesBase.map(s=>({...s,isAbsent:abIds.has(s.id)})),grade,date,period,()=>true);
+  setSeatResultTitle(subj,room,seatWhenLabel(date,period));
   if(!drawSeats(examinees,[],rows,cols,startSide,true,disabledSeats.sep))return;
-  const absentCount=examinees.filter(s=>s.isAbsent).length;
-  const examCount=examinees.length-absentCount;
-  document.getElementById('seatSummaryText').textContent=`응시 ${examCount}명 · 결시 ${absentCount}명(빈자리 처리) · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
+  document.getElementById('seatSummaryText').textContent=sepSeatSummary(examinees,rows,cols,startSide);
   renderSeatTeacherView();
   document.getElementById('seatResult').style.display='block';
   lastChartParams={
@@ -2123,21 +2141,12 @@ async function generateOwnSeatChart(){
     .eq('school_code',SCHOOL_CODE).eq('exam_date',date).eq('period',period).eq('class_id',classId);
   const abIds=new Set((abData||[]).map(a=>a.student_id));
   if(!ownExamineeIds.size){showToast('응시 학생을 선택하세요');return;}
-  const selectedGroup=sts.filter(s=>ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
-  const nonSelectedGroup=sts.filter(s=>!ownExamineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
-  const roster=[...selectedGroup,...nonSelectedGroup].map(s=>({
-    ...s,
-    isAbsent:abIds.has(s.id),
-    isExaminee:ownExamineeIds.has(s.id)&&!abIds.has(s.id)
-  }));
+  let roster=buildOwnRoster(sts,ownExamineeIds,abIds);
+  if(classInfo)roster=annotateSeatSubjects(roster,classInfo.grade,date,period,s=>ownExamineeIds.has(s.id),classInfo.class_num);
   const cn=classInfo?`${classInfo.grade}-${classInfo.class_num}반`:'';
-  setSeatResultTitle(subj,cn);
+  setSeatResultTitle(subj,cn,seatWhenLabel(date,period));
   if(!drawSeatsRoster(roster,rows,cols,startSide,disabledSeats.own))return;
-  const examCount=roster.filter(s=>s.isExaminee).length;
-  const absentCount=roster.filter(s=>s.isAbsent).length;
-  const nonExamCount=roster.length-examCount-absentCount;
-  document.getElementById('seatSummaryText').textContent=
-    `응시 ${examCount}명 · 미응시 ${nonExamCount}명 · 결시 ${absentCount}명(빈자리 처리) · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터, 응시자 우선 배치)`;
+  document.getElementById('seatSummaryText').textContent=ownSeatSummary(roster,rows,cols,startSide);
   renderSeatTeacherView();
   document.getElementById('seatResult').style.display='block';
   lastChartParams={
@@ -2167,9 +2176,29 @@ function renderSeatTeacherView(){
   const sm=document.getElementById('seatSummaryText'),smt=document.getElementById('seatSummaryTextTeacher');
   if(sm&&smt)smt.textContent=sm.textContent;
 }
-function setSeatResultTitle(subject,roomLabel){
+function seatWhenLabel(date,period){
+  if(!date)return'';
+  return fmtDate(date)+(period?` ${period}교시`:'');
+}
+function setSeatResultTitle(subject,roomLabel,when){
   document.getElementById('seatResultTitle').innerHTML=
-    `<div class="seat-subject">${esc(subject)}</div><div class="seat-room">${esc(roomLabel)}</div>`;
+    `<div class="seat-subject">${esc(subject)}</div><div class="seat-room">${esc([roomLabel,when].filter(Boolean).join(' · '))}</div>`;
+}
+// 한 교실에서 여러 과목을 동시에 보면 좌석에 학생별 과목을 붙인다 (시간표 + 응시자 명단 기준, 과목이 1개면 표시 안 함)
+function annotateSeatSubjects(list,grade,date,period,isTarget,classNum){
+  const ttRow=examTimetable.find(r=>r.grade===grade&&r.exam_date===date&&r.period===period);
+  if(!ttRow)return list;
+  const subs=ttRow.subjects||[];
+  const selSubs=subs.filter(x=>x.type==='선택');
+  const enroll=enrollmentByStudent(grade);
+  const subjOf=s=>{
+    const mine=selSubs.find(su=>enroll[s.id]&&(su.name in enroll[s.id]));
+    if(mine)return mine.name;
+    const cn=s.class_num||classNum;
+    return subs.filter(x=>x.type==='공통'&&(!x.classes||!x.classes.length||x.classes.includes(cn))).map(x=>x.name).join(' · ');
+  };
+  const out=list.map(s=>isTarget(s)?{...s,subj:subjOf(s)}:s);
+  return new Set(out.map(s=>s.subj).filter(Boolean)).size>=2?out:list;
 }
 function updateSaveSeatChartBtnLabel(){
   const el=document.getElementById('saveSeatChartBtnLabel');
@@ -2227,40 +2256,191 @@ async function exportSeatChartPDF(){
   }
 }
 async function openSeatChartListModal(){
+  seatListChecked=new Set();
   document.getElementById('seatChartListModal').style.display='flex';
   const titleEl=document.getElementById('seatChartListModalTitle');
   if(titleEl)titleEl.textContent=currentSeatMode==='own'?'저장된 배치표 (각자교실 시험)':'저장된 배치표 (별실 시험)';
+  await loadSeatChartList();
+}
+// 목록만 다시 불러온다 (체크·필터 상태 유지 — 삭제 후 갱신용)
+async function loadSeatChartList(){
   const body=document.getElementById('seatChartListBody');
+  document.getElementById('seatChartListToolbar').hidden=true;
   body.innerHTML='<p style="font-size:13px;color:var(--text3)">불러오는 중...</p>';
   const{data,error}=await sb.from('seat_charts').select('*')
     .eq('school_code',SCHOOL_CODE).eq('mode',currentSeatMode)
     .order('exam_date',{ascending:false}).order('period',{ascending:false}).order('id',{ascending:false});
   if(error){body.innerHTML='<p style="font-size:13px;color:var(--danger)">불러오기 실패: '+esc(error.message)+'</p>';return;}
   savedSeatCharts=data||[];
-  if(!savedSeatCharts.length){body.innerHTML='<p style="font-size:13px;color:var(--text3)">저장된 배치표가 없습니다</p>';return;}
-  body.innerHTML=savedSeatCharts.map(c=>{
-    const dateLabel=c.exam_date?fmtDate(c.exam_date)+(c.period?` ${c.period}교시`:''):'날짜 미지정';
-    const deleteBtn=`<button type="button" class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);flex-shrink:0" onclick="event.stopPropagation();deleteSavedSeatChart(${c.id})">삭제</button>`;
-    if(c.mode==='own'){
-      const cls=classes.find(x=>x.id===c.class_id);
-      const clsLabel=cls?`${cls.grade}-${cls.class_num}반`:'학급 정보 없음';
-      return`<div class="saved-chart-item" style="display:flex;align-items:flex-start;gap:10px">
-        <div style="flex:1;cursor:pointer" onclick="applySavedSeatChartById(${c.id})">
-          <div class="sci-title">${esc(c.subject_name||'과목명 없음')} · ${clsLabel}</div>
-          <div class="sci-meta">${dateLabel} · 응시자 ${(c.student_ids||[]).length}명</div>
-        </div>
-        ${deleteBtn}
-      </div>`;
-    }
-    const gradeLabel=c.grade?`${c.grade}학년 · `:'';
+  const ids=new Set(savedSeatCharts.map(c=>c.id));
+  seatListChecked=new Set([...seatListChecked].filter(id=>ids.has(id)));
+  renderSeatChartList();
+}
+function seatChartGrade(c){
+  if(c.mode==='own'){const cls=classes.find(x=>x.id===c.class_id);return cls?cls.grade:null;}
+  return c.grade||null;
+}
+function seatChartSlotKey(c){return(c.exam_date||'')+'|'+(c.period||'');}
+function seatChartPlaceLabel(c){
+  if(c.mode==='own'){const cls=classes.find(x=>x.id===c.class_id);return cls?`${cls.grade}-${cls.class_num}반`:'학급 정보 없음';}
+  return c.room_name||'호실 미지정';
+}
+function visibleSeatCharts(){
+  return savedSeatCharts.filter(c=>
+    (!seatListFilter.grade||String(seatChartGrade(c))===seatListFilter.grade)&&
+    (!seatListFilter.slot||seatChartSlotKey(c)===seatListFilter.slot));
+}
+function renderSeatChartList(){
+  const body=document.getElementById('seatChartListBody');
+  const tb=document.getElementById('seatChartListToolbar');
+  if(!savedSeatCharts.length){tb.hidden=true;body.innerHTML='<p style="font-size:13px;color:var(--text3)">저장된 배치표가 없습니다</p>';return;}
+  const grades=[...new Set(savedSeatCharts.map(seatChartGrade).filter(g=>g!=null))].sort((a,b)=>a-b);
+  const slots=[...new Map(savedSeatCharts.map(c=>[seatChartSlotKey(c),seatWhenLabel(c.exam_date,c.period)||'날짜 미지정'])).entries()]
+    .sort((a,b)=>a[0].localeCompare(b[0],'ko',{numeric:true}));
+  // 목록이 바뀌어 필터 값이 사라졌으면 전체로 되돌림
+  if(seatListFilter.grade&&!grades.some(g=>String(g)===seatListFilter.grade))seatListFilter.grade='';
+  if(seatListFilter.slot&&!slots.some(([k])=>k===seatListFilter.slot))seatListFilter.slot='';
+  tb.hidden=false;
+  tb.innerHTML=`<div class="scl-row">
+      <select aria-label="학년 필터" onchange="seatListFilter.grade=this.value;renderSeatChartList()"><option value="">전체 학년</option>${grades.map(g=>`<option value="${g}" ${String(g)===seatListFilter.grade?'selected':''}>${g}학년</option>`).join('')}</select>
+      <select aria-label="날짜·교시 필터" onchange="seatListFilter.slot=this.value;renderSeatChartList()"><option value="">전체 날짜·교시</option>${slots.map(([k,l])=>`<option value="${esc(k)}" ${k===seatListFilter.slot?'selected':''}>${esc(l)}</option>`).join('')}</select>
+    </div>
+    <div class="scl-row" id="seatChartListActions"></div>`;
+  const vis=visibleSeatCharts();
+  body.innerHTML=vis.length?vis.map(c=>{
+    const dateLabel=seatWhenLabel(c.exam_date,c.period)||'날짜 미지정';
+    const gradeLabel=c.mode!=='own'&&c.grade?`${c.grade}학년 · `:'';
     return`<div class="saved-chart-item" style="display:flex;align-items:flex-start;gap:10px">
+      <input type="checkbox" class="scl-check" ${seatListChecked.has(c.id)?'checked':''} aria-label="인쇄할 배치표로 선택" onclick="event.stopPropagation()" onchange="toggleSeatListCheck(${c.id},this.checked)">
       <div style="flex:1;cursor:pointer" onclick="applySavedSeatChartById(${c.id})">
-        <div class="sci-title">${esc(c.subject_name||'과목명 없음')} · ${esc(c.room_name||'호실 미지정')}</div>
-        <div class="sci-meta">${gradeLabel}${dateLabel} · 응시자 ${(c.student_ids||[]).length}명</div>
+        <div class="sci-title">${esc(c.subject_name||'과목명 없음')} · ${esc(seatChartPlaceLabel(c))}</div>
+        <div class="sci-meta">${gradeLabel}${esc(dateLabel)} · 응시자 ${(c.student_ids||[]).length}명</div>
       </div>
-      ${deleteBtn}
+      <button type="button" class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);flex-shrink:0" onclick="event.stopPropagation();deleteSavedSeatChart(${c.id})">삭제</button>
     </div>`;
-  }).join('');
+  }).join(''):'<p style="font-size:13px;color:var(--text3)">조건에 맞는 배치표가 없습니다</p>';
+  renderSeatChartListActions();
+}
+// 체크 상태만 바뀔 때는 목록을 다시 그리지 않고(스크롤 유지) 하단 버튼 줄만 갱신
+function renderSeatChartListActions(){
+  const el=document.getElementById('seatChartListActions');if(!el)return;
+  const vis=visibleSeatCharts();
+  const n=vis.filter(c=>seatListChecked.has(c.id)).length;
+  el.innerHTML=`<label><input type="checkbox" ${vis.length&&n===vis.length?'checked':''} onchange="checkVisibleSeatCharts(this.checked)">보이는 ${vis.length}장 모두 선택</label>
+    <label><input type="checkbox" ${seatListIncludeTeacher?'checked':''} onchange="seatListIncludeTeacher=this.checked">교사 시선 배치표 포함</label>
+    <button type="button" class="btn btn-primary btn-sm" ${n?'':'disabled'} onclick="printSelectedSeatCharts()">${icon('printer',13)}선택한 ${n}장 인쇄</button>`;
+}
+function toggleSeatListCheck(id,on){
+  if(on)seatListChecked.add(id);else seatListChecked.delete(id);
+  renderSeatChartListActions();
+}
+function checkVisibleSeatCharts(on){
+  visibleSeatCharts().forEach(c=>{if(on)seatListChecked.add(c.id);else seatListChecked.delete(c.id);});
+  document.querySelectorAll('#seatChartListBody .scl-check').forEach(x=>{x.checked=on;});
+  renderSeatChartListActions();
+}
+// 저장된 배치표 한 건을 인쇄용 데이터로 (화면 배치표 생성과 같은 규칙)
+function buildSavedSeatChartPrint(c,abSet){
+  const disabledSet=new Set(c.disabled_seats||[]);
+  const when=seatWhenLabel(c.exam_date,c.period);
+  const ids=new Set(c.student_ids||[]);
+  if(c.mode==='own'){
+    const cls=classes.find(x=>x.id===c.class_id);
+    if(!cls)return{error:`${c.subject_name||'배치표'}(학급 정보 없음)`};
+    const place=`${cls.grade}-${cls.class_num}반`;
+    const roster=annotateSeatSubjects(buildOwnRoster(students[cls.id]||[],ids,abSet),cls.grade,c.exam_date,c.period,s=>ids.has(s.id),cls.class_num);
+    const{grid,slotCount}=buildSeatGrid(roster,c.rows,c.cols,c.start_side,disabledSet);
+    if(!grid)return{error:`${place} ${when}(좌석 ${slotCount}석 < ${roster.length}명)`};
+    return{subject:c.subject_name||'시험',place,when,grid,showClassInfo:false,summary:ownSeatSummary(roster,c.rows,c.cols,c.start_side)};
+  }
+  const place=c.room_name||'별실';
+  const examinees=annotateSeatSubjects(
+    gradeStudents(c.grade).filter(s=>ids.has(s.id)).map(s=>({...s,isExaminee:true,isAbsent:abSet.has(s.id)})),
+    c.grade,c.exam_date,c.period,()=>true);
+  const{grid,slotCount}=buildSeatGrid(examinees,c.rows,c.cols,c.start_side,disabledSet);
+  if(!grid)return{error:`${c.subject_name||'배치표'}(${place}) ${when}(좌석 ${slotCount}석 < ${examinees.length}명)`};
+  return{subject:c.subject_name||'선택과목',place,when,grid,showClassInfo:true,summary:sepSeatSummary(examinees,c.rows,c.cols,c.start_side)};
+}
+function seatPrintPageHtml(p,teacher){
+  const legend=`<div class="legend"><span><i style="background:var(--primary-light);border:1.5px solid var(--primary)"></i>응시</span><span><i style="background:var(--surface2);border:1.5px solid var(--border)"></i>미응시</span><span><i style="border:1.5px dashed var(--danger)"></i>결시(자리 유지)</span></div>`;
+  const head=`<div class="seat-print-header"><div class="seat-subject">${esc(p.subject)}</div><div class="seat-room">${esc([p.place,p.when].filter(Boolean).join(' · '))}</div></div>`;
+  const summary=`<div class="summary">${esc(p.summary)}</div>`;
+  if(!teacher)return`<section class="sp-page">${head}<div class="seat-view-tag">교실 자리배치표 (칠판을 바라본 방향)</div><div class="board-area">칠판</div>${legend}
+    <div class="layout-wrap"><div class="window-label">← 창가 (왼쪽)</div><div class="seat-grid-col">${seatGridHtml(p.grid,p.showClassInfo)}</div><div class="window-label">복도 (오른쪽) →</div></div>${summary}</section>`;
+  return`<section class="sp-page">${head}<div class="seat-view-tag">교사 시선 배치표 (교탁에서 바라본 방향 · 상하좌우 반전)</div>${legend}
+    <div class="layout-wrap"><div class="window-label">← 복도 (교사 기준 왼쪽)</div><div class="seat-grid-col">${seatGridHtml(flipSeatGrid(p.grid),p.showClassInfo)}</div><div class="window-label">창가 (교사 기준 오른쪽) →</div></div>
+    <div class="board-area" style="margin-bottom:0;margin-top:20px">교탁 · 칠판</div>${summary}</section>`;
+}
+async function printSelectedSeatCharts(){
+  const list=visibleSeatCharts().filter(c=>seatListChecked.has(c.id));
+  if(!list.length){showToast('인쇄할 배치표를 선택하세요');return;}
+  // 팝업 차단을 피하려고 클릭 직후 창부터 연다
+  const win=window.open('','_blank','width=1100,height=820');
+  if(!win){showToast('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요');return;}
+  win.document.write('<p style="font-family:sans-serif;padding:24px;color:#5c6674">배치표를 준비하는 중...</p>');
+  // 결시는 저장 시점이 아니라 인쇄 시점 기준으로 반영 (화면에서 불러올 때와 동일)
+  const dates=[...new Set(list.map(c=>c.exam_date).filter(Boolean))];
+  const abByKey={};
+  if(dates.length){
+    const{data,error}=await fetchAll(()=>sb.from('absences').select('id,student_id,exam_date,period')
+      .eq('school_code',SCHOOL_CODE).in('exam_date',dates).order('id'));
+    if(error){win.close();showToast('결시 정보 불러오기 실패: '+error.message);return;}
+    (data||[]).forEach(a=>{const k=a.exam_date+'|'+a.period;(abByKey[k]=abByKey[k]||new Set()).add(a.student_id);});
+  }
+  if(win.closed)return;
+  const order=c=>c.mode==='own'?seatChartPlaceLabel(c):`${c.grade||0} ${c.room_name||''} ${c.subject_name||''}`;
+  const sorted=list.slice().sort((a,b)=>
+    (a.exam_date||'').localeCompare(b.exam_date||'')||(a.period||0)-(b.period||0)||order(a).localeCompare(order(b),'ko',{numeric:true}));
+  const pages=[],skipped=[];
+  sorted.forEach(c=>{
+    const p=buildSavedSeatChartPrint(c,abByKey[c.exam_date+'|'+c.period]||new Set());
+    if(p.error){skipped.push(p.error);return;}
+    pages.push(seatPrintPageHtml(p,false));
+    if(seatListIncludeTeacher)pages.push(seatPrintPageHtml(p,true));
+  });
+  const doneCount=sorted.length-skipped.length;
+  win.document.open();
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>자리배치표 일괄 인쇄</title>
+<style>
+  @page{size:A4 landscape;margin:10mm;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{--primary:#16324f;--primary-light:#e9eef3;--surface2:#f1efe7;--border:#e6e1d3;--danger:#a9463d;--text:#1c2430;--text2:#5c6674;--text3:#97a1ac;--acc-seat:#96702e;--acc-seat-light:#f8f1e1;}
+  body{font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;color:var(--text);background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .sp-page{padding:2mm;page-break-after:always;break-after:page;page-break-inside:avoid;break-inside:avoid;}
+  .sp-page:last-of-type{page-break-after:auto;break-after:auto;}
+  .seat-print-header{text-align:center;margin-bottom:12px;}
+  .seat-subject{font-size:26px;font-weight:800;}
+  .seat-room{font-size:15px;color:var(--text2);margin-top:2px;}
+  .seat-view-tag{display:inline-flex;font-size:13px;font-weight:700;color:var(--acc-seat);background:var(--acc-seat-light);border:1px solid #e6d7b8;border-radius:20px;padding:3px 11px;margin-bottom:12px;}
+  .board-area{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px;text-align:center;font-size:13px;font-weight:700;color:var(--text2);letter-spacing:4px;margin-bottom:16px;width:100%;}
+  .legend{display:flex;gap:14px;margin-bottom:10px;font-size:12px;color:var(--text3);}
+  .legend span{display:flex;align-items:center;gap:5px;}
+  .legend i{width:13px;height:13px;border-radius:3px;display:inline-block;}
+  .layout-wrap{display:flex;gap:10px;align-items:flex-start;}
+  .window-label{writing-mode:vertical-rl;font-size:11px;color:var(--text3);padding:4px 0;flex-shrink:0;}
+  .seat-grid-col{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .seat-row{display:flex;gap:6px;width:100%;}
+  .seat{flex:1;min-width:44px;min-height:56px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;border:1.5px solid transparent;}
+  .seat.present{background:var(--primary-light);border-color:var(--primary);color:var(--primary);font-weight:700;}
+  .seat.non-exam{background:var(--surface2);border-color:var(--border);color:var(--text3);}
+  .seat.empty-seat{border:1.5px dashed #ddd;}
+  .seat.seat-none{border:none;}
+  .seat.absent-seat{border:1.5px dashed var(--danger);color:var(--danger);}
+  .seat .seat-num{font-size:9px;opacity:0.7;}
+  .seat .seat-name{font-size:12px;font-weight:700;}
+  .seat .seat-subj{font-size:9.5px;font-weight:600;margin-top:1px;max-width:100%;padding:0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .summary{margin-top:12px;font-size:13px;color:var(--text2);}
+  .print-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;margin-bottom:16px;background:#f7f5f0;border-bottom:1px solid var(--border);font-size:13px;}
+  .print-bar .skip{color:#b1823a;margin-top:4px;}
+  .print-bar button{padding:8px 20px;font-size:14px;cursor:pointer;}
+  @media screen{body{background:#e9e7e1;}.sp-page{background:#fff;max-width:1060px;margin:0 auto 16px;padding:20px;border-radius:8px;}}
+  @media print{.print-bar{display:none;}}
+</style></head><body>
+<div class="print-bar"><div>배치표 <b>${doneCount}개</b> · 총 <b>${pages.length}쪽</b>${seatListIncludeTeacher?' (교실 배치표 + 교사 시선 배치표)':''}${skipped.length?`<div class="skip">건너뜀 ${skipped.length}개: ${esc(skipped.join(', '))}</div>`:''}</div><button onclick="window.print()">인쇄</button></div>
+${pages.join('')}
+</body></html>`);
+  win.document.close();win.focus();
+  if(pages.length)setTimeout(()=>{if(!win.closed)win.print();},300);
 }
 function closeSeatChartListModal(){document.getElementById('seatChartListModal').style.display='none';}
 async function deleteSavedSeatChart(id){
@@ -2274,7 +2454,7 @@ async function deleteSavedSeatChart(id){
     updateSaveSeatChartBtnLabel();
   }
   showToast('삭제되었습니다');
-  openSeatChartListModal();
+  loadSeatChartList();
 }
 function applySavedSeatChartById(id){
   const c=savedSeatCharts.find(x=>x.id===id);
@@ -2340,55 +2520,66 @@ function seatFillSlots(rows,cols,startSide,disabledSet){
   });
   return slots;
 }
-function drawSeats(examinees,nonExam,rows,cols,startSide,showClassInfo=false,disabledSet=new Set()){
-  const all=[...examinees,...nonExam];
+// 명단을 좌석 채우는 순서대로 격자(행×열)에 넣는다. 제외한 자리=undefined, 빈 자리=null. 좌석이 모자라면 grid=null
+function buildSeatGrid(list,rows,cols,startSide,disabledSet){
   const slots=seatFillSlots(rows,cols,startSide,disabledSet);
-  if(all.length>slots.length){
-    showToast(`사용 가능한 좌석(${slots.length}석)보다 배치할 학생 수(${all.length}명)가 많습니다. 좌석 편집 또는 행/열 수를 확인하세요`);
-    return false;
-  }
+  if(list.length>slots.length)return{grid:null,slotCount:slots.length};
   const grid=Array.from({length:rows},()=>Array(cols).fill(null));
   for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
     if(disabledSet.has(seatKey(r,c)))grid[r][c]=undefined;
   }
   slots.forEach((slot,idx)=>{
-    if(idx<all.length)grid[slot.row][slot.col]={...all[idx],isExaminee:idx<examinees.length};
+    if(idx<list.length)grid[slot.row][slot.col]=list[idx];
   });
-  const layout=document.getElementById('seatLayout');
-  layout.innerHTML=grid.map(row=>
+  return{grid,slotCount:slots.length};
+}
+function seatGridHtml(grid,showClassInfo){
+  return grid.map(row=>
     `<div class="seat-row">${row.map(s=>{
       if(s===undefined)return`<div class="seat seat-none"></div>`;
       if(!s)return`<div class="seat empty-seat"></div>`;
       const numLabel=showClassInfo?`${s.grade}-${s.class_num} ${s.number}번`:`${s.number}번`;
-      if(s.isAbsent)return`<div class="seat absent-seat"><div class="seat-num">${numLabel}</div><div class="seat-name">결시</div></div>`;
+      const subjLine=s.subj?`<div class="seat-subj">${esc(s.subj)}</div>`:'';
+      if(s.isAbsent)return`<div class="seat absent-seat"><div class="seat-num">${numLabel}</div><div class="seat-name">결시</div>${subjLine}</div>`;
       const cls=s.isExaminee?'present':'non-exam';
-      return`<div class="seat ${cls}"><div class="seat-num">${numLabel}</div><div class="seat-name">${esc(s.name)}</div></div>`;
+      return`<div class="seat ${cls}"><div class="seat-num">${numLabel}</div><div class="seat-name">${esc(s.name)}</div>${subjLine}</div>`;
     }).join('')}</div>`).join('');
+}
+// 교사 시선(교탁에서 바라본 방향): 상하좌우 반전
+function flipSeatGrid(grid){return grid.slice().reverse().map(r=>r.slice().reverse());}
+function drawSeats(examinees,nonExam,rows,cols,startSide,showClassInfo=false,disabledSet=new Set()){
+  const all=[...examinees.map(s=>({...s,isExaminee:true})),...nonExam.map(s=>({...s,isExaminee:false}))];
+  const{grid,slotCount}=buildSeatGrid(all,rows,cols,startSide,disabledSet);
+  if(!grid){
+    showToast(`사용 가능한 좌석(${slotCount}석)보다 배치할 학생 수(${all.length}명)가 많습니다. 좌석 편집 또는 행/열 수를 확인하세요`);
+    return false;
+  }
+  document.getElementById('seatLayout').innerHTML=seatGridHtml(grid,showClassInfo);
   return true;
 }
 function drawSeatsRoster(roster,rows,cols,startSide,disabledSet=new Set()){
-  const slots=seatFillSlots(rows,cols,startSide,disabledSet);
-  if(roster.length>slots.length){
-    showToast(`사용 가능한 좌석(${slots.length}석)보다 학급 인원(${roster.length}명)이 많습니다. 좌석 편집 또는 행/열 수를 확인하세요`);
+  const{grid,slotCount}=buildSeatGrid(roster,rows,cols,startSide,disabledSet);
+  if(!grid){
+    showToast(`사용 가능한 좌석(${slotCount}석)보다 학급 인원(${roster.length}명)이 많습니다. 좌석 편집 또는 행/열 수를 확인하세요`);
     return false;
   }
-  const grid=Array.from({length:rows},()=>Array(cols).fill(null));
-  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-    if(disabledSet.has(seatKey(r,c)))grid[r][c]=undefined;
-  }
-  slots.forEach((slot,idx)=>{
-    if(idx<roster.length)grid[slot.row][slot.col]=roster[idx];
-  });
-  const layout=document.getElementById('seatLayout');
-  layout.innerHTML=grid.map(row=>
-    `<div class="seat-row">${row.map(s=>{
-      if(s===undefined)return`<div class="seat seat-none"></div>`;
-      if(!s)return`<div class="seat empty-seat"></div>`;
-      if(s.isAbsent)return`<div class="seat absent-seat"><div class="seat-num">${s.number}번</div><div class="seat-name">결시</div></div>`;
-      const cls=s.isExaminee?'present':'non-exam';
-      return`<div class="seat ${cls}"><div class="seat-num">${s.number}번</div><div class="seat-name">${esc(s.name)}</div></div>`;
-    }).join('')}</div>`).join('');
+  document.getElementById('seatLayout').innerHTML=seatGridHtml(grid,false);
   return true;
+}
+// 각자교실 명단: 응시자(결시 포함) 번호순 → 미응시 번호순
+function buildOwnRoster(sts,examineeIds,abIds){
+  const selected=sts.filter(s=>examineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
+  const rest=sts.filter(s=>!examineeIds.has(s.id)).sort((a,b)=>a.number-b.number);
+  return[...selected,...rest].map(s=>({...s,isAbsent:abIds.has(s.id),isExaminee:examineeIds.has(s.id)&&!abIds.has(s.id)}));
+}
+function sepSeatSummary(examinees,rows,cols,startSide){
+  const absentCount=examinees.filter(s=>s.isAbsent).length;
+  return`응시 ${examinees.length-absentCount}명 · 결시 ${absentCount}명(빈자리 처리) · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터)`;
+}
+function ownSeatSummary(roster,rows,cols,startSide){
+  const examCount=roster.filter(s=>s.isExaminee).length;
+  const absentCount=roster.filter(s=>s.isAbsent).length;
+  return`응시 ${examCount}명 · 미응시 ${roster.length-examCount-absentCount}명 · 결시 ${absentCount}명(빈자리 처리) · ${rows}행 ${cols}열 배치 (${startSide==='corridor'?'복도':'창가'}부터, 응시자 우선 배치)`;
 }
 
 /* ===== 고사 시간표 / 선택과목 응시자 / 개인 시간표 ===== */
@@ -2514,8 +2705,14 @@ function renderTtCell(g,date,p){
       const cnt=subjectEnrollment.filter(e=>e.grade===g&&e.subject_name===s.name).length;
       extra=cnt?'·'+cnt+'명':'·명단없음';
     }
-    else if(s.type==='공통'&&s.classes&&s.classes.length)extra='·'+s.classes.slice().sort((a,b)=>a-b).map(c=>c+'반').join(',');
-    return`<span class="tt-chip type-${s.type}" title="클릭해서 편집" onclick="openTtSubjectModal(${g},'${date}',${p},${i})">${esc(s.name)}<small>(${s.type}${extra})</small><span class="tt-x" title="삭제" onclick="event.stopPropagation();removeTtSubject(${g},'${date}',${p},${i})">×</span></span>`;
+    else if(s.type==='공통'){
+      if(s.classes&&s.classes.length)extra='·'+s.classes.slice().sort((a,b)=>a-b).map(c=>c+'반').join(',');
+      // 응시자 명단이 있는 과목을 공통으로 등록하면 반 전원이 응시자로 잡히므로 경고
+      const cnt=subjectEnrollment.filter(e=>e.grade===g&&e.subject_name===s.name).length;
+      if(cnt)extra+=`·⚠명단 ${cnt}명`;
+    }
+    const chipTitle=s.type==='공통'&&extra.includes('⚠')?'응시자 명단이 있는 과목입니다. 신청한 학생만 보는 과목이면 클릭해서 구분을 "선택"으로 바꾸세요':'클릭해서 편집';
+    return`<span class="tt-chip type-${s.type}" title="${chipTitle}" onclick="openTtSubjectModal(${g},'${date}',${p},${i})">${esc(s.name)}<small>(${s.type}${extra})</small><span class="tt-x" title="삭제" onclick="event.stopPropagation();removeTtSubject(${g},'${date}',${p},${i})">×</span></span>`;
   }).join('');
   h+=`<button class="tt-add-btn" onclick="openTtSubjectModal(${g},'${date}',${p},-1)">+ 과목</button>`;
   return h;
@@ -2525,7 +2722,8 @@ function openTtSubjectModal(g,date,p,index){
   const existing=index>=0?(ttData[g+'|'+date+'|'+p]||[])[index]:null;
   document.getElementById('ttSubjectModalTitle').textContent=existing?'과목 편집':'과목 추가';
   document.getElementById('ttSubjName').value=existing?existing.name:'';
-  document.getElementById('ttSubjType').value=existing?existing.type:'공통';
+  // 신규 입력은 구분을 비워 두고 직접 고르게 한다 (기본값 "공통" 때문에 선택과목이 공통으로 잘못 등록되던 문제)
+  document.getElementById('ttSubjType').value=existing?existing.type:'';
   renderTtClassChecks(g,existing&&existing.classes?existing.classes:null);
   toggleTtRoomField();
   document.getElementById('ttSubjectModal').style.display='flex';
@@ -2545,6 +2743,7 @@ function toggleTtRoomField(){
   const type=document.getElementById('ttSubjType').value;
   document.getElementById('ttRoomField').style.display=type==='선택'?'block':'none';
   document.getElementById('ttClassField').style.display=type==='공통'?'block':'none';
+  document.getElementById('ttTypeHint').style.display=type?'none':'block';
 }
 function closeTtSubjectModal(){document.getElementById('ttSubjectModal').style.display='none';ttModalCtx=null;}
 function saveTtSubject(){
@@ -2552,7 +2751,12 @@ function saveTtSubject(){
   const name=document.getElementById('ttSubjName').value.trim();
   if(!name){showToast('과목명을 입력하세요');return;}
   const type=document.getElementById('ttSubjType').value;
+  if(!type){showToast('구분(공통/선택)을 고르세요');return;}
   const{g,date,p,index}=ttModalCtx;
+  if(type==='공통'){
+    const rosterCnt=subjectEnrollment.filter(e=>e.grade===g&&e.subject_name===name).length;
+    if(rosterCnt&&!confirm(`"${name}"은(는) 선택과목 응시자 명단에 ${rosterCnt}명이 등록된 과목입니다.\n공통으로 두면 명단과 상관없이 반 학생 전원이 응시자로 잡혀, 자리배치표에 미응시 학생이 표시되지 않습니다.\n\n그래도 공통으로 저장할까요? (신청한 학생만 보는 과목이면 [취소] 후 "선택"으로 바꾸세요)`))return;
+  }
   const key=g+'|'+date+'|'+p;
   if(!ttData[key])ttData[key]=[];
   const obj={name,type};
@@ -2785,7 +2989,8 @@ async function generateBatchSeatCharts(allGrades){
   const disabled=[...disabledSeats.sep];
   const slotCount=seatFillSlots(rows,cols,startSide,disabledSeats.sep).length;
   // 호실은 응시자 명단에 학생별로 적힌 값 하나만 사용한다 (한 과목 = 여러 호실 가능, 비어 있으면 그 학생의 본인 교실)
-  const jobs=[];
+  // 같은 날짜·교시에 같은 호실에서 보는 과목들은 한 교실이므로 배치표 한 장으로 합친다 (좌석에 학생별 과목 표시)
+  const jobs=[];let subjectTotal=0;
   grades.forEach(grade=>{
     const enBySubject={};
     subjectEnrollment.filter(e=>e.grade===grade).forEach(e=>{
@@ -2794,51 +2999,69 @@ async function generateBatchSeatCharts(allGrades){
     const gsts=gradeStudents(grade);
     const gIds=new Set(gsts.map(s=>s.id));
     // 호실을 비워둔 학생은 본인 교실에서 응시하므로 반별로 나눠 배치표를 만든다
-    const clsById={};gsts.forEach(s=>{clsById[s.id]=s.grade+'-'+s.class_num+'반';});
+    // "본인 교실"/"2-1" 같은 자기 반 표기도 반 이름으로 통일해야 같은 교실끼리 한 장으로 합쳐진다
+    const clsById={},homeRoom={};gsts.forEach(s=>{clsById[s.id]=s.grade+'-'+s.class_num+'반';homeRoom[s.id]={grade:s.grade,class_num:s.class_num};});
+    const roomOf=x=>(!x.room||ownRoomIsHome(x.room,homeRoom[x.id]||{}))?(clsById[x.id]||x.room||''):x.room;
     examTimetable.filter(r=>r.grade===grade).forEach(r=>{
-      (r.subjects||[]).filter(s=>s.type==='선택').forEach(s=>{
-        jobs.push({grade,date:r.exam_date,period:r.period,name:s.name,
-          enrolled:(enBySubject[s.name]||[]).filter(x=>gIds.has(x.id))
-            .map(x=>({...x,room:x.room||clsById[x.id]||''}))});
+      const sel=(r.subjects||[]).filter(s=>s.type==='선택');
+      if(!sel.length)return;
+      subjectTotal+=sel.length;
+      const byRoom={},seen=new Set(),noRoster=[];
+      sel.forEach(s=>{
+        const en=(enBySubject[s.name]||[]).filter(x=>gIds.has(x.id));
+        if(!en.length){noRoster.push(s.name);return;}
+        en.forEach(x=>{
+          if(seen.has(x.id))return;seen.add(x.id);
+          const room=roomOf(x);
+          const g=byRoom[room]=byRoom[room]||{ids:[],subjects:[]};
+          g.ids.push(x.id);if(!g.subjects.includes(s.name))g.subjects.push(s.name);
+        });
       });
+      jobs.push({grade,date:r.exam_date,period:r.period,byRoom,noRoster});
     });
   });
   if(!jobs.length){
     st.innerHTML=`<span class="badge badge-danger">시간표에 ${allGrades?'':grades[0]+'학년 '}선택과목이 없습니다. 설정 탭에서 고사 시간표를 먼저 입력·저장하세요.</span>`;
     return;
   }
-  // 실제 생성될 (과목,호실) 조합 수를 미리 계산해서 확인창에 정확히 안내
-  let groupCount=0;
-  jobs.forEach(job=>{groupCount+=new Set(job.enrolled.map(x=>x.room||'')).size;});
+  // 실제 생성될 (교시,호실) 배치표 수를 미리 계산해서 확인창에 정확히 안내
+  const groupCount=jobs.reduce((n,job)=>n+Object.keys(job.byRoom).length,0);
   const scopeLabel=allGrades?`전체 학년(${grades.join('·')}학년)`:`${grades[0]}학년`;
-  if(!confirm(`${scopeLabel} 선택과목 ${jobs.length}개(호실 기준 ${groupCount}개 배치표)를 생성·저장합니다.
-같은 학년·과목·호실·날짜·교시로 이미 저장된 배치표는 갱신됩니다.
+  if(!confirm(`${scopeLabel} 선택과목 ${subjectTotal}개로 배치표 ${groupCount}장을 생성·저장합니다.
+같은 날짜·교시에 같은 호실에서 보는 과목은 한 장으로 합쳐지고, 좌석에 학생별 과목이 표시됩니다.
+같은 학년·호실·날짜·교시로 이미 저장된 배치표는 갱신됩니다(과목별로 따로 저장돼 있던 것은 한 장으로 합쳐짐).
 (좌석: ${rows}행 ${cols}열, 사용가능 ${slotCount}석)
 진행할까요?`))return;
   st.textContent='생성 중...';
   const{data:existing}=await sb.from('seat_charts').select('id,grade,exam_date,period,subject_name,room_name')
     .eq('school_code',SCHOOL_CODE).eq('mode','separate').in('grade',grades);
-  const exMap={};(existing||[]).forEach(c=>{exMap[c.grade+'|'+c.exam_date+'|'+c.period+'|'+c.subject_name+'|'+(c.room_name||'')]=c.id;});
-  let created=0,updated=0;const skipped=[];
-  const pre=job=>allGrades?`${job.grade}학년 ${job.name}`:job.name;
+  const exMap={};(existing||[]).forEach(c=>{(exMap[c.grade+'|'+c.exam_date+'|'+c.period+'|'+(c.room_name||'')]=exMap[c.grade+'|'+c.exam_date+'|'+c.period+'|'+(c.room_name||'')]||[]).push(c);});
+  let created=0,updated=0,merged=0;const skipped=[];
+  const pre=(job,name)=>`${allGrades?job.grade+'학년 ':''}${fmtDate(job.date)} ${job.period}교시 ${name}`;
   for(const job of jobs){
-    if(!job.enrolled.length){skipped.push(`${pre(job)}(응시자 명단 없음)`);continue;}
-    const byRoom={};
-    job.enrolled.forEach(x=>{const room=x.room||'';(byRoom[room]=byRoom[room]||[]).push(x.id);});
-    for(const[room,ids] of Object.entries(byRoom)){
-      const label=room?`${pre(job)}(${room})`:pre(job);
-      if(ids.length>slotCount){skipped.push(`${label}: ${ids.length}명 > 좌석 ${slotCount}석`);continue;}
+    job.noRoster.forEach(n=>skipped.push(`${pre(job,n)}(응시자 명단 없음)`));
+    for(const[room,g] of Object.entries(job.byRoom)){
+      const name=g.subjects.join(' · ');
+      const label=room?`${pre(job,name)}(${room})`:pre(job,name);
+      if(g.ids.length>slotCount){skipped.push(`${label}: ${g.ids.length}명 > 좌석 ${slotCount}석`);continue;}
       const payload={school_code:SCHOOL_CODE,mode:'separate',exam_date:job.date,period:job.period,grade:job.grade,class_id:null,
-        rows,cols,start_side:startSide,subject_name:job.name,room_name:room||null,
-        disabled_seats:disabled,student_ids:ids,updated_at:new Date().toISOString()};
-      const exId=exMap[job.grade+'|'+job.date+'|'+job.period+'|'+job.name+'|'+room];
-      if(exId){const{error}=await sb.from('seat_charts').update(payload).eq('id',exId);if(!error)updated++;else skipped.push(label+'(저장오류)');}
-      else{const{error}=await sb.from('seat_charts').insert(payload);if(!error)created++;else skipped.push(label+'(저장오류)');}
+        rows,cols,start_side:startSide,subject_name:name,room_name:room||null,
+        disabled_seats:disabled,student_ids:g.ids,updated_at:new Date().toISOString()};
+      // 같은 호실·교시에 이 과목들 중 하나라도 들어간 기존 배치표 → 첫 건은 갱신, 나머지(과목별로 쪼개져 있던 것)는 삭제
+      const cands=(exMap[job.grade+'|'+job.date+'|'+job.period+'|'+room]||[]).filter(c=>
+        (c.subject_name||'').split(' · ').some(n=>g.subjects.includes(n)));
+      if(cands.length){
+        const{error}=await sb.from('seat_charts').update(payload).eq('id',cands[0].id);
+        if(error){skipped.push(label+'(저장오류)');continue;}
+        updated++;
+        const extra=cands.slice(1).map(c=>c.id);
+        if(extra.length){const{error:delErr}=await sb.from('seat_charts').delete().in('id',extra);if(!delErr)merged+=extra.length;}
+      }else{const{error}=await sb.from('seat_charts').insert(payload);if(!error)created++;else skipped.push(label+'(저장오류)');}
     }
   }
-  let msg=`<span class="badge badge-success">${icon('checkCircle',12)}${scopeLabel} 완료: 신규 ${created}개 · 갱신 ${updated}개</span>`;
+  let msg=`<span class="badge badge-success">${icon('checkCircle',12)}${scopeLabel} 완료: 신규 ${created}장 · 갱신 ${updated}장${merged?` · 합쳐서 정리 ${merged}장`:''}</span>`;
   if(skipped.length)msg+=`<div style="margin-top:6px;color:var(--warning)">건너뜀 ${skipped.length}개: ${esc(skipped.join(', '))}</div>`;
-  msg+=`<div style="margin-top:6px;color:var(--text3);font-size:12px">한 과목이 여러 호실로 나뉜 경우 호실별로 배치표가 따로 생성됩니다. 위 '저장된 배치표 불러오기'에서 각 배치표를 확인·인쇄·개별 조정할 수 있습니다.</div>`;
+  msg+=`<div style="margin-top:6px;color:var(--text3);font-size:12px">같은 교시에 같은 호실에서 보는 과목은 한 장으로 합쳐지고, 한 과목이 여러 호실로 나뉘면 호실별로 따로 생성됩니다. 위 '저장된 배치표 불러오기'에서 여러 장을 골라 한 번에 인쇄할 수 있습니다.</div>`;
   st.innerHTML=msg;
   showToast(`일괄 배치 완료 (신규 ${created} · 갱신 ${updated})`);
 }
@@ -2869,12 +3092,13 @@ async function generateBatchOwnSeatCharts(allGrades){
   const enrollByGrade={};grades.forEach(g=>{enrollByGrade[g]=enrollmentByStudent(g);});
   const slotCount=seatFillSlots(rows,cols,startSide,disabledSeats.own).length;
   // 실제로 만들 칸만 미리 골라낸다 (전원 별실 이동/자습인 교시는 제외)
-  const jobs=[],skipped=[];
+  const jobs=[],skipped=[],rosterCommon=new Set();
   targetClasses.forEach(cls=>{
     const sts=(students[cls.id]||[]).slice().sort((a,b)=>a.number-b.number);
     if(!sts.length)return;
     (ttByGrade[cls.grade]||[]).forEach(r=>{
       const pl=ownPlacement(cls,sts,r,enrollByGrade[cls.grade]);
+      pl.rosterCommon.forEach(n=>rosterCommon.add(n));
       if(!pl.stay.length)return;
       const label=`${cls.grade}-${cls.class_num}반 ${fmtDate(r.exam_date)} ${r.period}교시`;
       if(sts.length>slotCount){skipped.push(`${label}: 학급 ${sts.length}명 > 좌석 ${slotCount}석`);return;}
@@ -2901,6 +3125,7 @@ async function generateBatchOwnSeatCharts(allGrades){
   }
   let msg=`<span class="badge badge-success">${icon('checkCircle',12)}${scopeLabel} 완료: 신규 ${created}장 · 갱신 ${updated}장</span>`;
   if(skipped.length)msg+=`<div style="margin-top:6px;color:var(--warning)">건너뜀 ${skipped.length}건: ${esc(skipped.join(', '))}</div>`;
+  if(rosterCommon.size)msg+=rosterCommonWarning([...rosterCommon]);
   msg+=`<div style="margin-top:6px;color:var(--text3);font-size:12px">전원이 별실로 가거나 자습인 교시는 만들지 않았습니다. 위 '저장된 배치표 불러오기'에서 각 배치표를 확인·인쇄·개별 조정할 수 있습니다.</div>`;
   st.innerHTML=msg;
   showToast(`각자교실 일괄 배치 완료 (신규 ${created} · 갱신 ${updated})`);
