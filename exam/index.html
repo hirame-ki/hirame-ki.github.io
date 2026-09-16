@@ -2021,13 +2021,32 @@ function loadOwnStudentGrid(){
 }
 function onOwnClassChange(){loadOwnStudentGrid();applyOwnAuto();}
 /* ---- 각자교실: 시간표+응시자 명단으로 "이 교실에 남는 학생" 자동 계산 ---- */
+// 명단에 적힌 호실이 어느 반 교실을 가리키는지 판정한다 (아니면 null = 시청각실 같은 일반 별실)
+// "본인 교실"/"3-2"/"3-2반"/"3-2 교실"/"3학년 2반"은 모두 같은 교실 한 곳이므로 반드시 같은 값으로 묶여야 한다
+// (누가 쓴 표기냐에 따라 키가 갈리면 한 교실이 배치표 두 장으로 쪼개진다)
+// grade: 그 명단의 학년("2반"처럼 학년을 뺀 표기를 해석할 기준) / home: 그 학생의 본인 반 {grade,class_num}
+function roomClassRef(room,grade,home){
+  const r=(room||'').replace(/\s/g,'');
+  if(!r)return home||null;
+  if(r.includes('본인')||r.includes('자기')||r.includes('원반'))return home||null;
+  const at=(g,n)=>(home&&home.grade===g&&home.class_num===n)?home:(classes.find(c=>c.grade===g&&c.class_num===n)||null);
+  let m=r.match(/^(\d+)-(\d+)(반|교실|반교실)?$/)||r.match(/^(\d+)학년(\d+)반(교실)?$/);
+  if(m)return at(+m[1],+m[2]);
+  m=r.match(/^(\d+)반(교실)?$/);
+  if(m&&grade)return at(grade,+m[1]);
+  return null;
+}
+// 호실 표기를 실제 교실 기준 하나의 이름으로 통일한다 (반 교실이면 "3-2반", 아니면 원래 이름)
+function canonicalRoomName(room,grade,home){
+  const c=roomClassRef(room,grade,home);
+  if(c)return c.grade+'-'+c.class_num+'반';
+  return (room||'').trim().replace(/\s+/g,' ');
+}
 // 명단의 호실이 자기 반 교실을 가리키는지 판정 ("본인 교실", "3-2", "3-2교실", "2반" 등)
 function ownRoomIsHome(room,cls){
-  const r=(room||'').replace(/\s/g,'');
-  if(!r)return false;
-  if(r.includes('본인')||r.includes('자기')||r.includes('원반'))return true;
-  const g=cls.grade,n=cls.class_num;
-  return [g+'-'+n,g+'-'+n+'반',g+'-'+n+'교실',g+'학년'+n+'반',n+'반',n+'반교실'].includes(r);
+  if(!(room||'').replace(/\s/g,''))return false;
+  const c=roomClassRef(room,cls.grade,cls);
+  return !!c&&c.grade===cls.grade&&c.class_num===cls.class_num;
 }
 // 학년별 응시자 명단을 {학생id:{과목명:호실}}로 정리
 function enrollmentByStudent(grade){
@@ -2425,11 +2444,9 @@ function seatRoomRefOf(c){
   if(c.mode==='own'){const cls=classes.find(x=>x.id===c.class_id);return cls?classRoomRef(cls):null;}
   const raw=(c.room_name||'').trim(),r=raw.replace(/\s/g,'');
   if(r){
-    const hit=classes.find(cls=>{
-      const g=cls.grade,n=cls.class_num;
-      return[`${g}-${n}`,`${g}-${n}반`,`${g}-${n}교실`,`${g}학년${n}반`,`${g}학년${n}반교실`].includes(r)
-        ||(cls.grade===c.grade&&[`${n}반`,`${n}반교실`].includes(r));
-    });
+    // 호실 표기 해석은 명단·배치 생성과 같은 규칙(roomClassRef) 하나만 쓴다
+    const ref=roomClassRef(raw,c.grade,null);
+    const hit=ref&&classes.find(cls=>cls.grade===ref.grade&&cls.class_num===ref.class_num);
     if(hit)return classRoomRef(hit);
   }
   return{key:'R'+(r||'-'),label:raw||'호실 미지정',cls:null};
@@ -2450,8 +2467,11 @@ function buildSeatRoomGroups(){
     let dup=0,outdated=0;
     if(g.cls){
       // 같은 반 교실·같은 교시에 각자교실 배치표가 있으면, 별실 일괄 배치가 만든 그 반 학생용 배치표는 같은 학생들이라 뺀다
+      // 단 다른 반 학생이 한 명이라도 들어온 배치표는 "그 반 학생용"이 아니라 그 교실을 별실로 쓰는 것이므로 빼면 안 된다
       const ownSlots=new Set(g.charts.filter(c=>c.mode==='own').map(seatChartSlotKey));
-      const kept=g.charts.filter(c=>c.mode==='own'||c.grade!==g.cls.grade||!ownSlots.has(seatChartSlotKey(c)));
+      const clsIds=new Set((students[g.cls.id]||[]).map(s=>s.id));
+      const onlyThisClass=c=>(c.student_ids||[]).every(id=>clsIds.has(id));
+      const kept=g.charts.filter(c=>c.mode==='own'||c.grade!==g.cls.grade||!ownSlots.has(seatChartSlotKey(c))||!onlyThisClass(c));
       dup=g.charts.length-kept.length;g.charts=kept;
       // 저장 후 시간표·응시자 명단이 바뀌어 지금 계산한 응시자와 다른 각자교실 배치표 (다시 일괄 배치하지 않으면 예전 응시자로 인쇄됨)
       const sts=students[g.cls.id]||[],enroll=enrollmentByStudent(g.cls.grade);
@@ -2464,6 +2484,12 @@ function buildSeatRoomGroups(){
         return ids.length!==stay.size||ids.some(id=>!stay.has(id));
       }).length;
     }
+    // 같은 교실·같은 교시에 배치표가 2장 이상이면 그 교실이 겹쳐 쓰이는 것이다
+    // (호실 표기가 갈려 한 교실이 두 장으로 쪼개졌거나, 반 교실을 다른 과목 별실로도 쓰는 경우)
+    const bySlot={};g.charts.forEach(c=>{(bySlot[seatChartSlotKey(c)]=bySlot[seatChartSlotKey(c)]||[]).push(c);});
+    const clash=Object.values(bySlot).filter(a=>a.length>1)
+      .map(a=>({when:seatWhenLabel(a[0].exam_date,a[0].period),
+        names:a.map(c=>c.mode==='own'?'각자교실':(c.subject_name||'별실')+(c.room_name?' ('+c.room_name+')':'')+' '+(c.student_ids||[]).length+'명')}));
     const items=g.charts.map(c=>({chart:c,place:g.label}));
     let free=0;
     if(g.cls&&seatListIncludeFree){
@@ -2473,7 +2499,7 @@ function buildSeatRoomGroups(){
     }
     if(!items.length)return;
     items.sort((a,b)=>{const x=itemKey(a),y=itemKey(b);return x.d.localeCompare(y.d)||x.p-y.p||x.m-y.m||x.g-y.g||x.s.localeCompare(y.s,'ko');});
-    groups.push({key:g.key,label:g.label,cls:g.cls,items,free,dup,outdated});
+    groups.push({key:g.key,label:g.label,cls:g.cls,items,free,dup,outdated,clash});
   });
   // 일반 교실(학년·반 순) 먼저, 그다음 별실(이름 순)
   return groups.sort((a,b)=>a.cls&&b.cls?(a.cls.grade-b.cls.grade||a.cls.class_num-b.cls.class_num)
@@ -2509,13 +2535,16 @@ function renderSeatRoomPrint(){
     <div id="seatRoomPrintActions" style="display:flex;flex-direction:column;gap:8px"></div>`;
   const whenOf=it=>it.chart?seatWhenLabel(it.chart.exam_date,it.chart.period):seatWhenLabel(it.slot.date,it.slot.period);
   const outdatedTotal=groups.reduce((n,g)=>n+(g.outdated||0),0);
-  body.innerHTML=groups.length?(outdatedTotal?`<p style="font-size:12px;color:var(--warning);line-height:1.6;margin-bottom:10px;background:var(--warning-light);border-radius:8px;padding:8px 10px">⚠️ 현재 시간표·응시자 명단으로 계산한 응시자와 <b>다른 각자교실 배치표가 ${outdatedTotal}장</b> 있습니다. 시간표나 명단을 고친 뒤 일괄 배치를 다시 하지 않은 경우로, 그대로 인쇄하면 <b>예전 응시자</b>로 나옵니다. 각자교실(필요하면 별실도) <b>[전체 학년 한 번에 생성·저장]</b>을 다시 누르면 갱신·정리됩니다. (직접 고친 배치표라면 무시하세요)</p>`:'')+`<p style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:10px">각자교실·별실 배치표를 <b>실제 교실 단위</b>로 묶었습니다. 교실마다 첫날 1교시부터 마지막 교시까지 시간순으로 이어서 인쇄되어, 뽑은 뒤 교실별로 그대로 나눠 주면 됩니다.</p>`+groups.map(g=>{
+  // 한 교실·한 교시에 배치표가 2장 이상인 경우 (교실이 겹쳐 쓰임) — 인쇄 전에 반드시 보이게 한다
+  const clashRooms=groups.filter(g=>(g.clash||[]).length);
+  const clashBanner=clashRooms.length?`<p style="font-size:12px;color:var(--danger);line-height:1.6;margin-bottom:10px;background:var(--danger-light);border:1.5px solid var(--danger);border-radius:8px;padding:8px 10px">⛔ <b>같은 교실·같은 교시에 배치표가 2장 이상인 곳이 ${clashRooms.length}곳</b> 있습니다. 그대로 인쇄하면 <b>한 교실에 배치표가 두 장</b> 나가고(둘 다 1번 자리부터 시작) 자리가 겹칩니다.<br>${clashRooms.map(g=>`· <b>${esc(g.label)}</b> ${g.clash.map(x=>`${esc(x.when)} → ${esc(x.names.join(' + '))}`).join(' / ')}`).join('<br>')}<br><b>확인할 것</b> ①응시자 명단에서 같은 교실을 <b>다르게 적은 경우</b>("3-8 교실"과 "3-8반" 등)라면 자리배치 탭의 <b>[시간표 기반 일괄 배치]</b>를 다시 눌러 한 장으로 합치세요. ②반 교실을 다른 과목 별실로도 쓰는 경우라면 <b>그 반 학생들이 갈 교실</b>을 명단 호실 열에 적어야 합니다.</p>`:'';
+  body.innerHTML=groups.length?clashBanner+(outdatedTotal?`<p style="font-size:12px;color:var(--warning);line-height:1.6;margin-bottom:10px;background:var(--warning-light);border-radius:8px;padding:8px 10px">⚠️ 현재 시간표·응시자 명단으로 계산한 응시자와 <b>다른 각자교실 배치표가 ${outdatedTotal}장</b> 있습니다. 시간표나 명단을 고친 뒤 일괄 배치를 다시 하지 않은 경우로, 그대로 인쇄하면 <b>예전 응시자</b>로 나옵니다. 각자교실(필요하면 별실도) <b>[전체 학년 한 번에 생성·저장]</b>을 다시 누르면 갱신·정리됩니다. (직접 고친 배치표라면 무시하세요)</p>`:'')+`<p style="font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:10px">각자교실·별실 배치표를 <b>실제 교실 단위</b>로 묶었습니다. 교실마다 첫날 1교시부터 마지막 교시까지 시간순으로 이어서 인쇄되어, 뽑은 뒤 교실별로 그대로 나눠 주면 됩니다.</p>`+groups.map(g=>{
     const range=`${whenOf(g.items[0])} ~ ${whenOf(g.items[g.items.length-1])}`;
     return`<label class="saved-chart-item" style="display:flex;align-items:flex-start;gap:10px">
       <input type="checkbox" class="scl-check" data-key="${esc(g.key)}" ${f.unchecked.has(g.key)?'':'checked'} onchange="toggleSeatRoomCheck(this.dataset.key,this.checked)">
       <div style="flex:1">
         <div class="sci-title">${esc(g.label)} <span class="badge ${g.cls?'badge-primary':'badge-success'}" style="margin-left:4px">${g.cls?'일반 교실':'별실'}</span></div>
-        <div class="sci-meta">${esc(range)} · 배치표 ${g.items.length}장${g.free?` (저장본 없는 자습 등 ${g.free}교시 포함)`:''}${g.dup?` · 겹치는 별실 배치표 ${g.dup}장 제외`:''}${g.outdated?` · <span style="color:var(--warning);font-weight:700">⚠ 시간표·명단과 다른 배치표 ${g.outdated}장</span>`:''}</div>
+        <div class="sci-meta">${esc(range)} · 배치표 ${g.items.length}장${g.free?` (저장본 없는 자습 등 ${g.free}교시 포함)`:''}${g.dup?` · 겹치는 별실 배치표 ${g.dup}장 제외`:''}${g.outdated?` · <span style="color:var(--warning);font-weight:700">⚠ 시간표·명단과 다른 배치표 ${g.outdated}장</span>`:''}${(g.clash||[]).length?` · <span style="color:var(--danger);font-weight:700">⛔ 같은 교시에 배치표 2장 이상 (${esc(g.clash.map(x=>x.when).join(', '))})</span>`:''}</div>
       </div>
     </label>`;
   }).join(''):'<p style="font-size:13px;color:var(--text3)">인쇄할 배치표가 없습니다. 먼저 각자교실·별실 일괄 배치로 배치표를 저장하세요.</p>';
@@ -3212,11 +3241,20 @@ function renderEnrollmentSummary(){
   const grades=[...new Set(subjectEnrollment.map(e=>e.grade))].sort((a,b)=>a-b);
   el.innerHTML=grades.map(g=>{
     const subs={};
+    // 호실은 배치표를 만들 때와 똑같은 기준(canonicalRoomName)으로 세어야 카드와 실제 생성 결과가 어긋나지 않는다
+    const home={};gradeStudents(g).forEach(s=>{home[s.id]={grade:s.grade,class_num:s.class_num};});
     subjectEnrollment.filter(e=>e.grade===g).forEach(e=>{
-      if(!subs[e.subject_name])subs[e.subject_name]={total:0,rooms:{}};
+      if(!subs[e.subject_name])subs[e.subject_name]={total:0,rooms:{},raw:[]};
       subs[e.subject_name].total++;
-      const r=(e.room||'').trim()||'본인 교실';
-      subs[e.subject_name].rooms[r]=(subs[e.subject_name].rooms[r]||0)+1;
+      subs[e.subject_name].raw.push(e);
+    });
+    Object.values(subs).forEach(info=>{
+      // 전원이 호실을 비워둔 과목은 "본인 교실 N명"으로 짧게, 한 명이라도 호실을 적었으면 실제 교실별로 나눠 보여준다
+      const allBlank=info.raw.every(e=>!(e.room||'').trim());
+      info.raw.forEach(e=>{
+        const r=allBlank?'본인 교실':(canonicalRoomName(e.room,g,home[e.student_id])||'본인 교실');
+        info.rooms[r]=(info.rooms[r]||0)+1;
+      });
     });
     const cards=Object.keys(subs).sort().map(name=>{
       const info=subs[name];
@@ -3266,9 +3304,10 @@ async function generateBatchSeatCharts(allGrades){
     const gsts=gradeStudents(grade);
     const gIds=new Set(gsts.map(s=>s.id));
     // 호실을 비워둔 학생은 본인 교실에서 응시하므로 반별로 나눠 배치표를 만든다
-    // "본인 교실"/"2-1" 같은 자기 반 표기도 반 이름으로 통일해야 같은 교실끼리 한 장으로 합쳐진다
-    const clsById={},homeRoom={};gsts.forEach(s=>{clsById[s.id]=s.grade+'-'+s.class_num+'반';homeRoom[s.id]={grade:s.grade,class_num:s.class_num};});
-    const roomOf=x=>(!x.room||ownRoomIsHome(x.room,homeRoom[x.id]||{}))?(clsById[x.id]||x.room||''):x.room;
+    // "본인 교실"/"2-1"/"2-1 교실" 같은 표기는 모두 "2-1반"으로 통일해야 같은 교실끼리 한 장으로 합쳐진다
+    // (누가 적었냐에 따라 나누면 안 된다 — 본인 반 학생이 "2-1 교실"로 적고 다른 반 학생도 "2-1 교실"로 적으면 같은 교실이다)
+    const homeRoom={};gsts.forEach(s=>{homeRoom[s.id]={grade:s.grade,class_num:s.class_num};});
+    const roomOf=x=>canonicalRoomName(x.room,grade,homeRoom[x.id]);
     examTimetable.filter(r=>r.grade===grade).forEach(r=>{
       const sel=(r.subjects||[]).filter(s=>s.type==='선택');
       if(!sel.length)return;
