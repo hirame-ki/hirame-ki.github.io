@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>상담 일지 — 학생별 상담 기록 타임라인 & 학부모 상담 AI 프롬프트</title>
+<meta name="description" content="설치·로그인 없이 브라우저에서 바로 쓰는 교사용 상담 일지. 학생별 상담 기록을 타임라인으로 정리하고, 누적 기록으로 학부모 상담용 AI 프롬프트를 만들어 줍니다. 모든 데이터는 내 컴퓨터에만 저장됩니다.">
+<meta name="keywords" content="상담 일지, 학생 상담 기록, 교사 상담일지, 학부모 상담, 학부모 상담 프롬프트, 담임 업무, 상담 기록 양식, 교사 도구">
+<meta name="author" content="hirame.ki">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#2A3B73">
+<link rel="canonical" href="https://hirame-ki.github.io/counsel/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232A3B73'/%3E%3Cpath d='M16 20h32a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H30l-9 8v-8h-5a4 4 0 0 1-4-4V24a4 4 0 0 1 4-4z' fill='%23fff'/%3E%3Ccircle cx='24' cy='31' r='2.6' fill='%232A3B73'/%3E%3Ccircle cx='32' cy='31' r='2.6' fill='%232A3B73'/%3E%3Ccircle cx='40' cy='31' r='2.6' fill='%232A3B73'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="images/og-thumbnail.png">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="상담 일지 by hirame.ki">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="상담 일지 — 흩어진 상담 기록, 한 줄 타임라인으로">
+<meta property="og:description" content="설치 없이 바로 쓰는 교사용 상담 일지. 학생별 타임라인 기록 + 학부모 상담 AI 프롬프트 생성. 데이터는 내 컴퓨터에만 저장.">
+<meta property="og:url" content="https://hirame-ki.github.io/counsel/">
+<meta property="og:image" content="https://hirame-ki.github.io/counsel/images/og-thumbnail.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="상담 일지 앱 화면 — 학생별 상담 기록 타임라인과 학부모 상담 프롬프트 버튼">
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="상담 일지 — 흩어진 상담 기록, 한 줄 타임라인으로">
+<meta name="twitter:description" content="설치 없이 바로 쓰는 교사용 상담 일지. 학생별 타임라인 + 학부모 상담 AI 프롬프트.">
+<meta name="twitter:image" content="https://hirame-ki.github.io/counsel/images/og-thumbnail.png">
+<style>
+/* ============================================================
+   상담 일지 (Standalone) — 외부 리소스 없음 / 로컬 저장(localStorage)
+   ============================================================ */
+:root{
+  --accent:#2A3B73; --accent-d:#1E2C58; --accent-l:#EAECF4; --accent-l2:#DBE0EE; --accent-ink:#fff;
+  --bg:#F4F0E6; --bg2:#EBE5D6; --surface:#FFFFFF; --surface2:#FBF8F1;
+  --border:#E5DECF; --border2:#EFE9DC;
+  --ink:#222A3F; --sub:#54607A; --muted:#8C8E9B;
+  --ok:#3C7458; --ok-bg:#EAF2EC;
+  --warn:#9A6B16; --warn-bg:#FAF3E2; --warn-bd:#EAD9B2;
+  --danger:#A23B47;
+  --shadow:0 1px 2px rgba(34,42,63,.04), 0 6px 20px rgba(34,42,63,.05);
+  --shadow-lg:0 12px 36px rgba(34,42,63,.12);
+  --r-lg:16px; --r-md:12px; --r-sm:9px;
+  --hh:62px; --gap:14px; --pad:18px;
+}
+body[data-accent="indigo"]{--accent:#3D45A8;--accent-d:#2C338A;--accent-l:#ECEDF8;--accent-l2:#DDDFF2;}
+body[data-accent="slate"]{--accent:#38516E;--accent-d:#2A3E55;--accent-l:#E9EDF2;--accent-l2:#D8E0EA;}
+body[data-bg="cool"]{--bg:#EFF2F6;--bg2:#E4E9EF;--surface2:#F7F9FB;--border:#DDE3EB;--border2:#E9EDF3;}
+body[data-density="compact"]{--gap:10px;--pad:13px;}
+body.dark{
+  --bg:#13151D; --bg2:#181B25; --surface:#1B1E2A; --surface2:#20242F;
+  --border:#2D3242; --border2:#272C3A;
+  --ink:#E7E9F1; --sub:#A8AEC1; --muted:#6C7286;
+  --ok:#5FB089; --ok-bg:#16241D;
+  --warn:#D6B36C; --warn-bg:#241D0E; --warn-bd:#473A1C;
+  --danger:#DB8993;
+  --shadow:0 2px 16px rgba(0,0,0,.4); --shadow-lg:0 16px 40px rgba(0,0,0,.5);
+}
+body.dark[data-accent="navy"]{--accent:#8E9CDD;--accent-d:#A8B2E7;--accent-l:#212747;--accent-l2:#2B3258;--accent-ink:#101321;}
+body.dark[data-accent="indigo"]{--accent:#9aa1ee;--accent-d:#b2b7f2;--accent-l:#1f2150;--accent-l2:#2a2d63;--accent-ink:#0e0f22;}
+body.dark[data-accent="slate"]{--accent:#8FB2D8;--accent-d:#a8c4e2;--accent-l:#172636;--accent-l2:#203247;--accent-ink:#0c1722;}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은 고딕',system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);
+  display:flex;flex-direction:column;min-height:100vh;overflow:hidden;
+  -webkit-font-smoothing:antialiased;transition:background .35s,color .35s;
+  letter-spacing:-.01em;word-break:keep-all;
+}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;border:2px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+svg.ic{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.12em;flex-shrink:0}
+
+/* ── header ── */
+.hdr{height:var(--hh);min-height:var(--hh);flex-shrink:0;background:var(--surface);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;z-index:200;
+  transition:background .35s,border-color .35s}
+.brand{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.brand-mark{width:38px;height:38px;border-radius:11px;background:var(--accent);color:var(--accent-ink);
+  display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;box-shadow:0 2px 8px rgba(42,59,115,.22)}
+body.dark .brand-mark{box-shadow:none}
+.brand-name{font-size:16px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.brand-sub{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-acts{display:flex;gap:7px;flex-shrink:0;align-items:center}
+.ghost-btn{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:var(--r-sm);
+  background:var(--surface);border:1px solid var(--border);color:var(--sub);
+  font-size:12.5px;font-weight:600;cursor:pointer;transition:all .16s;white-space:nowrap;font-family:inherit}
+.ghost-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.ghost-btn svg{color:var(--muted);font-size:14px;transition:color .16s}
+.ghost-btn:hover svg{color:var(--accent)}
+.icon-btn{width:36px;height:36px;border-radius:var(--r-sm);background:var(--surface);border:1px solid var(--border);
+  color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .16s}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+.hdr select{padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-sm);
+  font-size:13px;font-family:inherit;background:var(--surface2);color:var(--ink);outline:none;cursor:pointer;max-width:150px}
+.hdr select:focus{border-color:var(--accent)}
+.search-wrap{position:relative;display:flex;align-items:center}
+.search-wrap input{padding:7px 10px 7px 30px;border:1px solid var(--border);border-radius:var(--r-sm);
+  font-size:13px;font-family:inherit;background:var(--surface2);color:var(--ink);outline:none;width:140px;transition:border-color .15s}
+.search-wrap input:focus{border-color:var(--accent);background:var(--surface)}
+.search-wrap input::placeholder{color:var(--muted)}
+.search-wrap .search-ic{position:absolute;left:9px;color:var(--muted);font-size:13px;pointer-events:none;display:flex}
+
+/* ── layout ── */
+.main{display:flex;flex:1;overflow:hidden}
+.student-panel{width:210px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;transition:background .35s,border-color .35s}
+.student-panel-header{padding:12px 14px 8px;font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border2);flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between}
+.student-list{flex:1;overflow-y:auto}
+.student-item{display:flex;align-items:center;justify-content:space-between;gap:6px;
+  padding:10px 12px 10px 14px;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.student-item:hover{background:var(--surface2)}
+.student-item.active{background:var(--accent-l);border-left-color:var(--accent)}
+.student-item-main{display:flex;align-items:baseline;gap:7px;min-width:0}
+.student-no{font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;
+  flex-shrink:0;min-width:18px;text-align:right}
+.student-item.active .student-no{color:var(--accent)}
+.student-item-name{font-size:13px;font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.student-item.active .student-item-name{color:var(--accent);font-weight:600}
+.student-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.student-badge{font-size:10px;font-weight:700;padding:2px 7px;background:var(--accent);color:var(--accent-ink);border-radius:99px}
+.student-badge.zero{background:var(--bg2);color:var(--muted)}
+.stu-del{opacity:0;border:none;background:none;color:var(--muted);cursor:pointer;padding:2px;border-radius:5px;
+  display:flex;align-items:center;font-size:13px;transition:all .15s}
+.student-item:hover .stu-del{opacity:1}
+.stu-del:hover{color:var(--danger);background:var(--bg2)}
+.student-empty{padding:20px 14px;font-size:12px;color:var(--muted);text-align:center;line-height:1.7}
+.panel-foot{padding:9px 12px;border-top:1px solid var(--border2);flex-shrink:0}
+.panel-foot button{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;
+  border-radius:var(--r-sm);border:1px dashed var(--border);background:var(--surface2);color:var(--sub);
+  font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.panel-foot button:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+
+.counsel-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);transition:background .35s}
+.no-select{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--muted);padding:24px;text-align:center}
+.no-select-icon{width:64px;height:64px;border-radius:18px;background:var(--accent-l);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:28px}
+.no-select-ill{width:240px;height:auto;display:block;user-select:none;-webkit-user-drag:none}
+body.dark .no-select-ill{opacity:.85;filter:brightness(.92)}
+.no-select-text{font-size:14px;font-weight:700;color:var(--sub)}
+.no-select-desc{font-size:12.5px;line-height:1.9;color:var(--muted)}
+.counsel-content{flex:1;display:none;flex-direction:column;overflow:hidden}
+
+.student-header{padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;transition:background .35s,border-color .35s}
+.student-header-left{display:flex;align-items:center;gap:10px;min-width:0}
+.student-avatar{width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;
+  justify-content:center;font-size:14px;font-weight:700;color:var(--accent-ink);flex-shrink:0}
+.student-header-name{font-size:15px;font-weight:700;color:var(--ink)}
+.student-header-count{font-size:12px;color:var(--sub);margin-top:2px}
+.hdr-btn-row{display:flex;gap:7px;flex-shrink:0}
+.btn-prompt{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--surface);color:var(--accent);
+  border:1.5px solid var(--accent);border-radius:var(--r-sm);font-size:13px;font-weight:700;font-family:inherit;
+  cursor:pointer;transition:all .15s}
+.btn-prompt:hover{background:var(--accent-l)}
+.btn-add-counsel{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--accent);color:var(--accent-ink);
+  border:none;border-radius:var(--r-sm);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s}
+.btn-add-counsel:hover{background:var(--accent-d)}
+
+/* ── timeline ── */
+.timeline-wrap{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.timeline-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);padding:40px 0}
+.timeline-empty-icon{width:52px;height:52px;border-radius:14px;background:var(--accent-l);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:24px}
+.timeline-empty-text{font-size:13px;color:var(--sub)}
+.timeline-item{display:flex;gap:12px;position:relative}
+.timeline-item::before{content:'';position:absolute;left:15px;top:32px;bottom:-12px;width:2px;background:var(--border)}
+.timeline-item:last-child::before{display:none}
+.timeline-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:15px;flex-shrink:0;margin-top:2px;border:2px solid var(--surface);background:var(--surface);z-index:1;color:var(--accent)}
+.timeline-body{flex:1;background:var(--surface);border-radius:var(--r-md);border:1px solid var(--border2);
+  padding:12px 14px;box-shadow:var(--shadow);min-width:0}
+.timeline-meta{display:flex;align-items:center;gap:8px;margin-bottom:7px;flex-wrap:wrap}
+.timeline-date{font-size:12px;font-weight:600;color:var(--sub)}
+.type-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+.type-학업{background:#E3F2FD;color:#1565C0}
+.type-생활{background:#E8F5E9;color:#2E7D32}
+.type-진로{background:#FFF3E0;color:#E65100}
+.type-기타{background:#F3E5F5;color:#6A1B9A}
+body.dark .type-학업{background:#1C2C44;color:#7EB3F0}
+body.dark .type-생활{background:#1A3324;color:#7ECF96}
+body.dark .type-진로{background:#3A2A14;color:#F0A868}
+body.dark .type-기타{background:#2E1F38;color:#CB9AE0}
+.timeline-text{font-size:13px;line-height:1.7;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.timeline-actions{display:flex;gap:4px;margin-top:8px;justify-content:flex-end}
+.tl-act{font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;
+  padding:3px 7px;border-radius:5px;transition:all .15s;display:flex;align-items:center;gap:4px}
+.tl-act:hover{color:var(--accent);background:var(--surface2)}
+.tl-act.del:hover{color:var(--danger)}
+
+/* ── input panel ── */
+.input-panel{background:var(--surface);border-top:1px solid var(--border);padding:14px 20px;flex-shrink:0;
+  display:none;transition:background .35s,border-color .35s}
+.input-panel.open{display:block}
+.input-row{display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap}
+.input-label{font-size:12px;font-weight:600;color:var(--sub);white-space:nowrap}
+.input-date{padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;
+  font-family:inherit;color:var(--ink);outline:none;background:var(--surface2)}
+.input-date:focus{border-color:var(--accent);background:var(--surface)}
+.type-select-wrap{display:flex;gap:6px}
+.type-btn{padding:5px 12px;border-radius:99px;border:1.5px solid var(--border);font-size:12px;font-weight:600;
+  cursor:pointer;background:var(--surface);color:var(--sub);font-family:inherit;transition:all .15s}
+.type-btn:hover{border-color:var(--accent);color:var(--accent)}
+.type-btn.active{color:#fff;border-color:transparent}
+.type-btn.active[data-type="학업"]{background:#1565C0}
+.type-btn.active[data-type="생활"]{background:#2E7D32}
+.type-btn.active[data-type="진로"]{background:#E65100}
+.type-btn.active[data-type="기타"]{background:#6A1B9A}
+.input-textarea{width:100%;height:84px;resize:vertical;padding:10px 12px;border:1px solid var(--border);
+  border-radius:var(--r-sm);font-size:13px;font-family:inherit;line-height:1.6;color:var(--ink);
+  background:var(--surface2);outline:none;transition:border-color .2s,background .2s,box-shadow .15s}
+.input-textarea:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px var(--accent-l)}
+.input-textarea::placeholder{color:var(--muted)}
+.input-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:10px;align-items:center}
+.btn-cancel{padding:7px 16px;background:var(--surface2);color:var(--ink);border:1px solid var(--border);
+  border-radius:var(--r-sm);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.btn-cancel:hover{background:var(--bg2)}
+.btn-save{padding:7px 20px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:var(--r-sm);
+  font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s}
+.btn-save:hover{background:var(--accent-d)}
+.edit-hint{font-size:11.5px;color:var(--warn);font-weight:600;margin-right:auto}
+
+/* ── modal ── */
+.modal-bg{position:fixed;inset:0;background:rgba(20,24,35,.5);z-index:1000;display:none;align-items:center;
+  justify-content:center;padding:18px;backdrop-filter:blur(5px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:20px;padding:24px;max-width:560px;width:100%;max-height:88vh;
+  overflow-y:auto;box-shadow:var(--shadow-lg);border:1px solid var(--border2)}
+.modal.wide{max-width:760px}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px}
+.modal-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.modal-title svg{color:var(--accent);font-size:17px}
+.modal-x{background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:32px;height:32px;
+  border-radius:9px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0}
+.modal-x:hover{border-color:var(--danger);color:var(--danger)}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.field{margin-bottom:13px}
+.field-lbl{font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px;display:block}
+.inp{width:100%;padding:10px 12px;border-radius:var(--r-sm);background:var(--surface2);border:1px solid var(--border);
+  font-size:13.5px;font-family:inherit;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-l)}
+.inp::placeholder{color:var(--muted)}
+textarea.inp{resize:vertical;line-height:1.7}
+select.inp{cursor:pointer}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:7px 13px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);color:var(--sub);
+  font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.check-row{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--sub);line-height:1.6;cursor:pointer;
+  background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 12px}
+.check-row input{margin-top:2px;accent-color:var(--accent);width:15px;height:15px;cursor:pointer;flex-shrink:0}
+.mini-list{border:1px solid var(--border2);border-radius:var(--r-sm);max-height:220px;overflow-y:auto;background:var(--surface2)}
+.mini-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;
+  border-bottom:1px solid var(--border2);font-size:13px}
+.mini-row:last-child{border-bottom:none}
+.mini-row .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini-row .sb{font-size:11.5px;color:var(--muted);font-weight:500}
+.mini-acts{display:flex;gap:4px;flex-shrink:0}
+.mini-btn{border:1px solid var(--border);background:var(--surface);color:var(--sub);border-radius:6px;
+  padding:4px 8px;font-size:11.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
+.mini-btn:hover{border-color:var(--accent);color:var(--accent)}
+.mini-btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+.modal-btn{background:var(--accent);color:var(--accent-ink);border:none;padding:10px 24px;border-radius:var(--r-md);
+  font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;
+  display:flex;align-items:center;gap:7px}
+.modal-btn:hover{background:var(--accent-d)}
+.modal-btn.sec{background:var(--surface2);color:var(--ink);border:1px solid var(--border)}
+.modal-btn.sec:hover{background:var(--bg2)}
+.callout{display:flex;align-items:flex-start;gap:9px;border-radius:var(--r-md);padding:11px 13px;font-size:12.5px;line-height:1.65;margin-bottom:14px}
+.callout svg{font-size:15px;flex-shrink:0;margin-top:2px}
+.callout-info{background:var(--accent-l);border:1px solid var(--accent-l2);color:var(--accent-d)}
+.callout-info svg{color:var(--accent)}
+body.dark .callout-info{color:var(--ink)}
+.callout-warn{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn)}
+.callout-warn svg{color:var(--warn)}
+.prompt-out{width:100%;height:340px;resize:vertical;padding:14px;border-radius:var(--r-sm);
+  background:var(--surface2);border:1px solid var(--border);font-size:12.5px;line-height:1.65;color:var(--ink);
+  font-family:'Consolas','D2Coding','Malgun Gothic',monospace;outline:none;white-space:pre;overflow:auto}
+.prompt-stat{display:flex;gap:14px;font-size:11.5px;color:var(--muted);margin-top:7px;font-weight:600}
+
+#toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  padding:12px 20px;border-radius:var(--r-md);font-size:13px;font-weight:600;z-index:9999;opacity:0;
+  transition:opacity .3s;pointer-events:none;box-shadow:var(--shadow-lg);max-width:80vw;text-align:center}
+#toast.show{opacity:1}
+
+footer{background:var(--surface);border-top:1px solid var(--border);padding:9px 18px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:flex-end;transition:background .35s,border-color .35s}
+.credit{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--border);
+  border-radius:99px;background:var(--bg2);color:var(--muted);font-size:11.5px;font-weight:600;
+  letter-spacing:.01em;text-decoration:none;cursor:pointer;
+  transition:color .16s,background .16s,border-color .16s}
+.credit:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-l)}
+.credit svg{font-size:14px;color:currentColor}
+
+/* ── design panel ── */
+.tw-backdrop{position:fixed;inset:0;z-index:900;display:none}
+.tw-backdrop.show{display:block}
+.tw-panel{position:fixed;right:16px;top:calc(var(--hh) + 8px);z-index:901;width:270px;display:none;
+  flex-direction:column;background:var(--surface);color:var(--ink);border:1px solid var(--border);
+  border-radius:16px;box-shadow:var(--shadow-lg);font-size:12px;overflow:hidden}
+.tw-panel.show{display:flex}
+.tw-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 12px 13px 17px;border-bottom:1px solid var(--border2)}
+.tw-hd b{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.tw-hd b svg{color:var(--accent);font-size:15px}
+.tw-body{padding:6px 16px 16px;display:flex;flex-direction:column;gap:9px}
+.tw-sect{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:8px}
+.tw-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.tw-lbl{font-weight:600;color:var(--sub)}
+.tw-seg{display:flex;padding:3px;border-radius:9px;background:var(--bg2);gap:3px;flex:1}
+.tw-seg button{flex:1;border:0;background:transparent;color:var(--sub);font:inherit;font-weight:600;
+  padding:6px 4px;border-radius:6px;cursor:pointer;transition:all .15s}
+.tw-seg button.on{background:var(--surface);color:var(--accent);box-shadow:var(--shadow)}
+.tw-sw-row{display:flex;gap:7px}
+.tw-sw{flex:1;border:1px solid var(--border);background:var(--surface2);border-radius:9px;padding:8px 4px 7px;
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .15s;font-family:inherit}
+.tw-sw-dot{width:20px;height:20px;border-radius:50%;background:var(--c)}
+.tw-sw-lbl{font-size:10.5px;font-weight:600;color:var(--sub)}
+.tw-sw.on{border-color:var(--c);background:var(--accent-l)}
+.tw-toggle{position:relative;width:38px;height:22px;border:0;border-radius:999px;background:var(--border);
+  cursor:pointer;padding:0;transition:background .15s;flex-shrink:0}
+.tw-toggle[data-on="1"]{background:var(--accent)}
+.tw-toggle i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+.tw-toggle[data-on="1"] i{transform:translateX(16px)}
+.tw-foot{padding:11px 16px;border-top:1px solid var(--border2);display:flex;justify-content:flex-end}
+.tw-reset{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--sub);
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;cursor:pointer;font-family:inherit}
+.tw-reset:hover{border-color:var(--accent);color:var(--accent)}
+.tw-x{border:0;background:transparent;color:var(--muted);width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:13px}
+.tw-x:hover{background:var(--bg2);color:var(--ink)}
+
+@media(max-width:900px){
+  .brand-sub{display:none}
+  .ghost-btn span{display:none}
+  .ghost-btn{padding:8px 10px}
+  .student-panel{width:150px}
+  .hdr{padding:0 12px;gap:7px}
+}
+</style>
+</head>
+<body>
+
+<!-- ───────── 헤더 ───────── -->
+<header class="hdr">
+  <div class="brand">
+    <div class="brand-mark" data-ic="messages-square"></div>
+    <div>
+      <div class="brand-name">상담 일지</div>
+      <div class="brand-sub">학생별 상담 기록 타임라인 · 로컬 저장</div>
+    </div>
+  </div>
+  <div class="hdr-acts">
+    <select id="class-select"><option value="">— 반 선택 —</option></select>
+    <button class="ghost-btn" id="btn-classes" title="반 관리"><span data-ic="graduation-cap"></span><span>반 관리</span></button>
+    <div class="search-wrap">
+      <span class="search-ic" data-ic="search"></span>
+      <input type="text" id="search-input" placeholder="학생 검색">
+    </div>
+    <button class="ghost-btn" id="btn-export"><span data-ic="download"></span><span>엑셀(CSV)</span></button>
+    <button class="ghost-btn" id="btn-backup" title="백업 / 복원"><span data-ic="save"></span><span>백업</span></button>
+    <button class="icon-btn" id="design-btn" title="디자인 설정"><span data-ic="palette"></span></button>
+    <button class="icon-btn" id="dark-btn" title="다크 모드"><span data-ic="moon"></span></button>
+  </div>
+</header>
+
+<!-- ───────── 메인 ───────── -->
+<div class="main">
+  <div class="student-panel">
+    <div class="student-panel-header">
+      <span>학생 목록</span><span id="stu-count"></span>
+    </div>
+    <div class="student-list" id="student-list">
+      <div class="student-empty">반을 선택하세요</div>
+    </div>
+    <div class="panel-foot">
+      <button id="btn-add-student"><span data-ic="user-plus"></span>학생 추가</button>
+    </div>
+  </div>
+
+  <div class="counsel-panel">
+    <div class="no-select" id="no-select">
+      <img class="no-select-ill" src="images/empty-illustration.png" alt="상담 기록 타임라인 일러스트" width="240" height="160" onerror="this.outerHTML='<div class=&quot;no-select-icon&quot; data-ic=&quot;messages-square&quot;></div>';if(window.icons)icons()">
+      <div class="no-select-text">학생을 선택하세요</div>
+      <div class="no-select-desc" id="no-select-desc">
+        먼저 <b>반 관리</b>에서 반을 만들고 학생을 등록하세요.<br>
+        모든 기록은 이 컴퓨터(브라우저)에만 저장됩니다.
+      </div>
+    </div>
+
+    <div class="counsel-content" id="counsel-content">
+      <div class="student-header">
+        <div class="student-header-left">
+          <div class="student-avatar" id="student-avatar"></div>
+          <div>
+            <div class="student-header-name" id="student-header-name"></div>
+            <div class="student-header-count" id="student-header-count"></div>
+          </div>
+        </div>
+        <div class="hdr-btn-row">
+          <button class="btn-prompt" id="btn-prompt"><span data-ic="sparkles"></span>프롬프트 생성</button>
+          <button class="btn-add-counsel" id="btn-add-counsel"><span data-ic="plus"></span>상담 추가</button>
+        </div>
+      </div>
+
+      <div class="timeline-wrap" id="timeline-wrap"></div>
+
+      <div class="input-panel" id="input-panel">
+        <div class="input-row">
+          <span class="input-label">날짜</span>
+          <input type="date" id="input-date" class="input-date">
+          <span class="input-label" style="margin-left:8px;">유형</span>
+          <div class="type-select-wrap" id="type-select-wrap">
+            <button class="type-btn active" data-type="학업">학업</button>
+            <button class="type-btn" data-type="생활">생활</button>
+            <button class="type-btn" data-type="진로">진로</button>
+            <button class="type-btn" data-type="기타">기타</button>
+          </div>
+        </div>
+        <textarea class="input-textarea" id="input-textarea" placeholder="상담 내용을 입력하세요…  (Ctrl+Enter 로 저장)"></textarea>
+        <div class="input-btns">
+          <span class="edit-hint" id="edit-hint" style="display:none;">수정 중</span>
+          <button class="btn-cancel" id="btn-cancel">취소</button>
+          <button class="btn-save" id="btn-save-entry">저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer><a class="credit" href="https://www.instagram.com/hirame.ki/" target="_blank" rel="noopener noreferrer"
+  title="제작자 인스타그램으로 이동"><span data-ic="instagram"></span><span>제작 @hirame.ki</span></a></footer>
+
+<!-- ───────── 반 관리 모달 ───────── -->
+<div class="modal-bg" id="modal-classes">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title"><span data-ic="graduation-cap"></span>반 관리</div>
+      <button class="modal-x" data-close><span data-ic="x"></span></button>
+    </div>
+    <div class="field">
+      <label class="field-lbl">새 반 추가</label>
+      <div style="display:flex;gap:7px">
+        <input class="inp" id="new-class-name" placeholder="예: 3학년 2반" style="flex:1">
+        <button class="modal-btn" id="btn-create-class"><span data-ic="plus"></span>추가</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-lbl">등록된 반</label>
+      <div class="mini-list" id="class-mini-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── 학생 추가 모달 ───────── -->
+<div class="modal-bg" id="modal-students">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title"><span data-ic="users"></span>학생 추가</div>
+      <button class="modal-x" data-close><span data-ic="x"></span></button>
+    </div>
+    <div class="callout callout-info">
+      <span data-ic="info"></span>
+      <div>한 줄에 한 명씩 <b>번호 이름</b> 순서로 입력하세요. (예: <b>1 김민준</b>) 번호와 이름 사이는 공백·쉼표·점 모두 가능합니다.
+      번호를 생략하면 뒤 번호가 자동으로 매겨집니다.</div>
+    </div>
+    <div class="field">
+      <label class="field-lbl">학생 번호 · 이름</label>
+      <textarea class="inp" id="bulk-students" rows="8" placeholder="1 김민준&#10;2 이서연&#10;3 박지호"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="modal-btn sec" data-close>취소</button>
+      <button class="modal-btn" id="btn-save-students"><span data-ic="check"></span>등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── 백업 모달 ───────── -->
+<div class="modal-bg" id="modal-backup">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title"><span data-ic="save"></span>백업 / 복원</div>
+      <button class="modal-x" data-close><span data-ic="x"></span></button>
+    </div>
+    <div class="callout callout-warn">
+      <span data-ic="alert"></span>
+      <div>브라우저 데이터(쿠키·사이트 데이터)를 삭제하면 기록이 함께 지워집니다. 학기마다 백업 파일을 따로 보관해 두세요.</div>
+    </div>
+    <div class="field">
+      <label class="field-lbl">현재 저장된 데이터</label>
+      <div class="mini-list"><div class="mini-row"><span class="nm" id="backup-stat"></span></div></div>
+    </div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <button class="modal-btn sec" id="btn-import"><span data-ic="upload"></span>백업 파일에서 복원</button>
+      <button class="modal-btn" id="btn-export-json"><span data-ic="download"></span>백업 파일 저장</button>
+    </div>
+    <input type="file" id="import-file" accept=".json,application/json" style="display:none">
+  </div>
+</div>
+
+<!-- ───────── 프롬프트 생성 모달 (설정) ───────── -->
+<div class="modal-bg" id="modal-prompt">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title"><span data-ic="sparkles"></span>학부모 상담 프롬프트 생성</div>
+      <button class="modal-x" data-close><span data-ic="x"></span></button>
+    </div>
+    <div class="callout callout-info">
+      <span data-ic="info"></span>
+      <div><b id="pm-target"></b> 학생의 누적 상담 기록을 바탕으로, 학부모 상담용 정리·발문·예상 답변을 만들어 달라는 프롬프트를 생성합니다.</div>
+    </div>
+    <div class="field">
+      <label class="field-lbl">상담 예정일 (선택)</label>
+      <input type="date" class="inp" id="pm-date">
+    </div>
+    <div class="field">
+      <label class="field-lbl">상담 방식</label>
+      <div class="chip-row" id="pm-method">
+        <button class="chip on" data-v="대면 상담">대면</button>
+        <button class="chip" data-v="전화 상담">전화</button>
+        <button class="chip" data-v="화상 상담">화상</button>
+        <button class="chip" data-v="알림장·메신저 등 서면 소통">서면</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-lbl">포함할 기록 기간</label>
+      <select class="inp" id="pm-range">
+        <option value="0">전체 기록</option>
+        <option value="3">최근 3개월</option>
+        <option value="6">최근 6개월</option>
+        <option value="12">최근 1년</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="field-lbl">이번 상담에서 특히 다루고 싶은 내용 (선택)</label>
+      <textarea class="inp" id="pm-focus" rows="3" placeholder="예: 최근 교우관계 변화와 학습 습관, 고등학교 진학 방향에 대한 학부모 의견 확인"></textarea>
+    </div>
+    <div class="field">
+      <label class="check-row"><input type="checkbox" id="pm-anon" checked>
+        <span>개인정보 보호 — 학생 이름을 <b>○○</b>으로 바꾸고 반 이름도 제외합니다. (외부 AI 서비스에 붙여넣을 때 권장)</span></label>
+    </div>
+    <div class="modal-foot">
+      <button class="modal-btn sec" data-close>취소</button>
+      <button class="modal-btn" id="btn-make-prompt"><span data-ic="sparkles"></span>프롬프트 만들기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── 프롬프트 결과 모달 ───────── -->
+<div class="modal-bg" id="modal-result">
+  <div class="modal wide">
+    <div class="modal-hd">
+      <div class="modal-title"><span data-ic="file-text"></span>생성된 프롬프트</div>
+      <button class="modal-x" data-close><span data-ic="x"></span></button>
+    </div>
+    <div class="callout callout-info">
+      <span data-ic="info"></span>
+      <div>아래 내용을 복사해 ChatGPT·Claude 등 원하는 AI에 그대로 붙여넣으세요. <b>바탕화면에 저장</b>을 누르면 저장 위치 선택 창이 바탕화면에서 열립니다.</div>
+    </div>
+    <textarea class="prompt-out" id="prompt-out" spellcheck="false"></textarea>
+    <div class="prompt-stat"><span id="prompt-stat-len"></span><span id="prompt-stat-rec"></span></div>
+    <div class="modal-foot">
+      <button class="modal-btn sec" data-close>닫기</button>
+      <button class="modal-btn sec" id="btn-copy-prompt"><span data-ic="copy"></span>복사</button>
+      <button class="modal-btn" id="btn-save-prompt"><span data-ic="download"></span>바탕화면에 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── 공용 확인 모달 ───────── -->
+<div class="modal-bg" id="modal-confirm">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hd"><div class="modal-title"><span data-ic="alert"></span><span id="cf-title">확인</span></div></div>
+    <div style="font-size:13.5px;line-height:1.75;color:var(--sub)" id="cf-msg"></div>
+    <div class="modal-foot">
+      <button class="modal-btn sec" id="cf-no">취소</button>
+      <button class="modal-btn" id="cf-yes">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── 공용 입력 모달 ───────── -->
+<div class="modal-bg" id="modal-input">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hd"><div class="modal-title"><span data-ic="pencil"></span><span id="ip-title">입력</span></div></div>
+    <input class="inp" id="ip-field">
+    <div class="modal-foot">
+      <button class="modal-btn sec" id="ip-no">취소</button>
+      <button class="modal-btn" id="ip-yes">확인</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   1. 인라인 아이콘 (외부 CDN 없음)
+   ============================================================ */
+const ICONS = {
+  'messages-square':'<path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/>',
+  'search':'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  'download':'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  'upload':'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  'moon':'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  'sun':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  'plus':'<path d="M5 12h14M12 5v14"/>',
+  'book-open':'<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  'home':'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  'target':'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  'lightbulb':'<path d="M15 14c.2-1 .7-1.7 1.5-2.5A5.7 5.7 0 0 0 18 8a6 6 0 0 0-12 0c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+  'inbox':'<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  'sparkles':'<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/><path d="M5 3v4M19 17v4M3 5h4M17 19h4"/>',
+  'copy':'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  'users':'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  'user-plus':'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/>',
+  'trash':'<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/>',
+  'pencil':'<path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>',
+  'x':'<path d="M18 6 6 18M6 6l12 12"/>',
+  'palette':'<circle cx="13.5" cy="6.5" r=".6" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".6" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".6" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".6" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.83-.44-1.12-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2A5.56 5.56 0 0 0 22 10.84C21.97 6.01 17.46 2 12 2z"/>',
+  'rotate':'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>',
+  'save':'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
+  'check':'<polyline points="20 6 9 17 4 12"/>',
+  'file-text':'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  'graduation-cap':'<path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/>',
+  'info':'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  'alert':'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  'instagram':'<rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>'
+};
+function svgFor(name){
+  return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + (ICONS[name]||ICONS['info']) + '</svg>';
+}
+function icons(root){
+  (root||document).querySelectorAll('[data-ic]').forEach(el=>{
+    const n = el.getAttribute('data-ic');
+    if(el.dataset.icDone === n) return;
+    el.innerHTML = svgFor(n);
+    el.dataset.icDone = n;
+  });
+}
+
+/* ============================================================
+   2. 디자인 설정 (다크모드 / 포인트컬러 / 배경 / 밀도)
+   ============================================================ */
+window.Design = (function(){
+  const KEY='sgb-design-prefs-v1';
+  const DEFAULTS={accent:'navy', bg:'cool', density:'compact', dark:false};
+  const ACCENTS={navy:{label:'네이비',swatch:'#2A3B73'},indigo:{label:'인디고',swatch:'#3D45A8'},slate:{label:'슬레이트',swatch:'#38516E'}};
+  const SEGS={bg:[{val:'ivory',label:'아이보리'},{val:'cool',label:'쿨 그레이'}],
+              density:[{val:'roomy',label:'넉넉'},{val:'compact',label:'조밀'}]};
+  let state=load(), panel, backdrop, built=false, open=false;
+
+  function load(){let s={};try{s=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){}return Object.assign({},DEFAULTS,s);}
+  function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+  function apply(){
+    const b=document.body;
+    b.setAttribute('data-accent',state.accent);
+    b.setAttribute('data-bg',state.bg);
+    b.setAttribute('data-density',state.density);
+    b.classList.toggle('dark',!!state.dark);
+    const dk=document.getElementById('dark-btn');
+    if(dk){dk.innerHTML=svgFor(state.dark?'sun':'moon');}
+  }
+  function set(k,v){state[k]=v;apply();persist();syncUI();}
+  function toggleDark(){set('dark',!state.dark);}
+  function reset(){state=Object.assign({},DEFAULTS);apply();persist();syncUI();}
+  function el(t,c,h){const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
+  function seg(key){
+    const w=el('div','tw-seg');
+    SEGS[key].forEach(o=>{const b=el('button',null,o.label);b.type='button';b.dataset.key=key;b.dataset.val=o.val;
+      b.onclick=()=>set(key,o.val);w.appendChild(b);});
+    return w;
+  }
+  function swatches(){
+    const w=el('div','tw-sw-row');
+    Object.entries(ACCENTS).forEach(([val,o])=>{
+      const b=el('button','tw-sw','<span class="tw-sw-dot"></span><span class="tw-sw-lbl">'+o.label+'</span>');
+      b.type='button';b.dataset.key='accent';b.dataset.val=val;b.style.setProperty('--c',o.swatch);
+      b.onclick=()=>set('accent',val);w.appendChild(b);
+    });
+    return w;
+  }
+  function build(){
+    backdrop=el('div','tw-backdrop');backdrop.onclick=hide;document.body.appendChild(backdrop);
+    panel=el('div','tw-panel');
+    const hd=el('div','tw-hd','<b><span data-ic="palette"></span> 디자인 설정</b>');
+    const x=el('button','tw-x','✕');x.onclick=hide;hd.appendChild(x);panel.appendChild(hd);
+    const body=el('div','tw-body');
+    body.appendChild(el('div','tw-sect','포인트 컬러'));body.appendChild(swatches());
+    body.appendChild(el('div','tw-sect','배경 톤'));body.appendChild(seg('bg'));
+    body.appendChild(el('div','tw-sect','정보 밀도'));body.appendChild(seg('density'));
+    body.appendChild(el('div','tw-sect','테마'));
+    const r=el('div','tw-row');r.appendChild(el('div','tw-lbl','다크 모드'));
+    const tg=el('button','tw-toggle','<i></i>');tg.type='button';tg.onclick=toggleDark;r.appendChild(tg);
+    body.appendChild(r);panel.appendChild(body);
+    const ft=el('div','tw-foot');const rs=el('button','tw-reset','<span data-ic="rotate"></span> 기본값으로');
+    rs.onclick=reset;ft.appendChild(rs);panel.appendChild(ft);
+    document.body.appendChild(panel);built=true;icons(panel);syncUI();
+  }
+  function syncUI(){
+    if(!panel)return;
+    panel.querySelectorAll('.tw-seg button, .tw-sw').forEach(b=>{
+      b.classList.toggle('on', String(state[b.dataset.key])===String(b.dataset.val));});
+    const tg=panel.querySelector('.tw-toggle'); if(tg) tg.dataset.on=state.dark?'1':'0';
+  }
+  function show(){if(!built)build();panel.classList.add('show');backdrop.classList.add('show');open=true;syncUI();}
+  function hide(){if(panel){panel.classList.remove('show');backdrop.classList.remove('show');}open=false;}
+  function toggle(){open?hide():show();}
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&open)hide();});
+  apply();
+  return {toggle,show,hide,set,toggleDark,reset};
+})();
+
+/* ============================================================
+   3. 데이터 저장소 (localStorage)
+   ============================================================ */
+const STORE_KEY='ssam-counsel-standalone-v1';
+const TYPES=['학업','생활','진로','기타'];
+const TYPE_ICON={학업:'book-open',생활:'home',진로:'target',기타:'lightbulb'};
+const TYPE_COLOR={학업:'#1565C0',생활:'#2E7D32',진로:'#E65100',기타:'#6A1B9A'};
+
+let DB={version:1, classes:[]};
+let curClassId=null, curStudentId=null, editingRecId=null, selectedType='학업';
+let promptMethod='대면 상담', lastPrompt='', lastPromptName='';
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function loadDB(){
+  try{
+    const raw=localStorage.getItem(STORE_KEY);
+    if(raw){const p=JSON.parse(raw); if(p&&Array.isArray(p.classes)) DB=p;}
+  }catch(e){ toast('저장된 데이터를 읽지 못했습니다'); }
+  if(!Array.isArray(DB.classes)) DB.classes=[];
+  // 구버전 데이터 호환 — 번호가 없는 학생에게 목록 순서대로 번호 부여
+  DB.classes.forEach(c=>{
+    if(!Array.isArray(c.students)) c.students=[];
+    c.students.forEach((s,i)=>{ if(!s.no) s.no=i+1; });
+    sortStudents(c);
+  });
+}
+function saveDB(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(DB)); }
+  catch(e){ toast('저장 실패 — 브라우저 저장 공간을 확인하세요'); }
+}
+function getClass(id){ return DB.classes.find(c=>c.id===id)||null; }
+function getStudent(cid,sid){ const c=getClass(cid); return c? (c.students.find(s=>s.id===sid)||null) : null; }
+function recordsOf(cid,sid){ const s=getStudent(cid,sid); return s? (s.records||[]) : []; }
+/* 학생 표기: '번호 이름' / 반까지 포함한 '반 번호 이름' */
+function stuLabel(stu){ return (stu && stu.no ? stu.no+'번 ' : '')+(stu?stu.name:''); }
+function stuFullLabel(cls,stu){ return (cls?cls.name+' ':'')+stuLabel(stu); }
+function nextStuNo(cls){
+  return cls.students.reduce((m,s)=>Math.max(m, Number(s.no)||0), 0) + 1;
+}
+function sortStudents(cls){
+  cls.students.sort((a,b)=>{
+    const x=Number(a.no)||9999, y=Number(b.no)||9999;
+    return x!==y ? x-y : String(a.name).localeCompare(String(b.name),'ko');
+  });
+}
+/* '1 김민준' · '1.김민준' · '1,김민준' · '1번 김민준' · '김민준' 모두 허용 */
+function parseStudentLine(line){
+  const m=String(line).match(/^\s*(\d{1,3})\s*(?:번)?\s*[.,:)\-\s]?\s*(.+?)\s*$/);
+  if(m && m[2]) return {no:Number(m[1]), name:m[2]};
+  return {no:null, name:String(line).trim()};
+}
+
+/* ============================================================
+   4. 공용 UI 헬퍼
+   ============================================================ */
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('[data-close]').forEach(b=>{
+  b.addEventListener('click',()=>b.closest('.modal-bg').classList.remove('open'));
+});
+document.querySelectorAll('.modal-bg').forEach(bg=>{
+  bg.addEventListener('mousedown',e=>{ if(e.target===bg && bg.id!=='modal-confirm' && bg.id!=='modal-input') bg.classList.remove('open'); });
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape') return;
+  const open=[...document.querySelectorAll('.modal-bg.open')].pop();
+  if(open) open.classList.remove('open');
+});
+
+function askConfirm(msg,title){
+  return new Promise(res=>{
+    document.getElementById('cf-title').textContent=title||'확인';
+    document.getElementById('cf-msg').textContent=msg;
+    openModal('modal-confirm');
+    const yes=document.getElementById('cf-yes'), no=document.getElementById('cf-no');
+    function done(v){ closeModal('modal-confirm'); yes.onclick=null; no.onclick=null; res(v); }
+    yes.onclick=()=>done(true); no.onclick=()=>done(false);
+  });
+}
+function askText(title,initial,placeholder){
+  return new Promise(res=>{
+    document.getElementById('ip-title').textContent=title;
+    const f=document.getElementById('ip-field');
+    f.value=initial||''; f.placeholder=placeholder||'';
+    openModal('modal-input');
+    setTimeout(()=>{f.focus();f.select();},50);
+    const yes=document.getElementById('ip-yes'), no=document.getElementById('ip-no');
+    function done(v){ closeModal('modal-input'); yes.onclick=null; no.onclick=null; f.onkeydown=null; res(v); }
+    yes.onclick=()=>done(f.value.trim());
+    no.onclick=()=>done(null);
+    f.onkeydown=e=>{ if(e.key==='Enter'){e.preventDefault();done(f.value.trim());} };
+  });
+}
+
+function todayStr(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function formatDate(str){
+  if(!str) return '';
+  const d=new Date(str+'T00:00:00');
+  if(isNaN(d)) return str;
+  const days=['일','월','화','수','목','금','토'];
+  return d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+days[d.getDay()]+')';
+}
+function escHtml(str){
+  return String(str==null?'':str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* 파일 저장 — 가능하면 바탕화면에서 저장 창을 연다 */
+async function saveTextFile(filename, text, mime){
+  const type = mime || 'text/plain;charset=utf-8';
+  if(window.showSaveFilePicker){
+    try{
+      const handle=await window.showSaveFilePicker({
+        suggestedName: filename,
+        startIn: 'desktop',
+        types:[{description:'파일', accept:{[type.split(';')[0]]:['.'+filename.split('.').pop()]}}]
+      });
+      const w=await handle.createWritable();
+      await w.write(new Blob([text],{type}));
+      await w.close();
+      toast('저장했습니다: '+filename);
+      return true;
+    }catch(err){
+      if(err && err.name==='AbortError'){ return false; }   // 사용자가 취소
+      /* 그 외 오류는 아래 다운로드 방식으로 대체 */
+    }
+  }
+  const blob=new Blob([text],{type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+  toast('다운로드 폴더에 저장했습니다: '+filename);
+  return true;
+}
+
+/* ============================================================
+   5. 렌더링
+   ============================================================ */
+function renderClassSelect(){
+  const sel=document.getElementById('class-select');
+  const prev=curClassId;
+  sel.innerHTML='<option value="">— 반 선택 —</option>';
+  DB.classes.forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.id; o.textContent=c.name;
+    sel.appendChild(o);
+  });
+  sel.value = prev && getClass(prev) ? prev : '';
+}
+
+function renderStudentList(){
+  const list=document.getElementById('student-list');
+  const cls=getClass(curClassId);
+  const q=document.getElementById('search-input').value.trim().toLowerCase();
+  list.innerHTML='';
+
+  if(!cls){
+    list.innerHTML='<div class="student-empty">'+(DB.classes.length?'반을 선택하세요':'‘반 관리’에서<br>반을 먼저 만들어 주세요')+'</div>';
+    document.getElementById('stu-count').textContent='';
+    return;
+  }
+  document.getElementById('stu-count').textContent=cls.students.length+'명';
+  if(!cls.students.length){
+    list.innerHTML='<div class="student-empty">등록된 학생이 없습니다<br>아래 <b>학생 추가</b>를 눌러주세요</div>';
+    return;
+  }
+  let shown=0;
+  cls.students.forEach(stu=>{
+    if(q && !(stu.name.toLowerCase().includes(q) || String(stu.no||'').includes(q))) return;
+    shown++;
+    const n=(stu.records||[]).length;
+    const item=document.createElement('div');
+    item.className='student-item'+(stu.id===curStudentId?' active':'');
+    item.innerHTML='<span class="student-item-main">'+
+        (stu.no?'<span class="student-no">'+escHtml(String(stu.no))+'</span>':'')+
+        '<span class="student-item-name">'+escHtml(stu.name)+'</span></span>'+
+      '<span class="student-right">'+
+        '<span class="student-badge'+(n===0?' zero':'')+'">'+n+'</span>'+
+        '<button class="stu-del" title="학생 삭제"><span data-ic="trash"></span></button>'+
+      '</span>';
+    item.addEventListener('click',()=>selectStudent(stu.id));
+    item.querySelector('.stu-del').addEventListener('click',async e=>{
+      e.stopPropagation();
+      const ok=await askConfirm('‘'+stuLabel(stu)+'’ 학생과 상담 기록 '+n+'건을 모두 삭제합니다. 되돌릴 수 없습니다.','학생 삭제');
+      if(!ok) return;
+      cls.students=cls.students.filter(s=>s.id!==stu.id);
+      if(curStudentId===stu.id){ curStudentId=null; showNoSelect(); }
+      saveDB(); renderStudentList(); toast('삭제했습니다');
+    });
+    list.appendChild(item);
+    icons(item);
+  });
+  if(!shown) list.innerHTML='<div class="student-empty">검색 결과 없음</div>';
+}
+
+function showNoSelect(){
+  document.getElementById('no-select').style.display='flex';
+  document.getElementById('counsel-content').style.display='none';
+  closeInputPanel();
+}
+function selectStudent(sid){
+  const stu=getStudent(curClassId,sid);
+  if(!stu) return;
+  curStudentId=sid;
+  editingRecId=null;
+  document.getElementById('no-select').style.display='none';
+  document.getElementById('counsel-content').style.display='flex';
+  document.getElementById('student-avatar').textContent=stu.no?String(stu.no):stu.name.charAt(0);
+  document.getElementById('student-header-name').textContent=stuFullLabel(getClass(curClassId),stu);
+  closeInputPanel();
+  renderStudentList();
+  renderTimeline();
+}
+
+function sortedRecords(cid,sid){
+  return recordsOf(cid,sid).slice().sort((a,b)=>{
+    const d=String(b.date).localeCompare(String(a.date));
+    return d!==0 ? d : String(b.id).localeCompare(String(a.id));
+  });
+}
+
+function renderTimeline(){
+  const recs=sortedRecords(curClassId,curStudentId);
+  const counts={};
+  TYPES.forEach(t=>counts[t]=0);
+  recs.forEach(r=>{ if(counts[r.type]!=null) counts[r.type]++; });
+  const parts=TYPES.filter(t=>counts[t]>0).map(t=>t+' '+counts[t]);
+  document.getElementById('student-header-count').textContent=
+    '총 '+recs.length+'건'+(parts.length?' · '+parts.join(' / '):'');
+
+  const wrap=document.getElementById('timeline-wrap');
+  wrap.innerHTML='';
+  if(!recs.length){
+    wrap.innerHTML='<div class="timeline-empty"><div class="timeline-empty-icon" data-ic="inbox"></div>'+
+      '<div class="timeline-empty-text">아직 상담 기록이 없습니다</div></div>';
+    icons(wrap); return;
+  }
+  recs.forEach(rec=>{
+    const color=TYPE_COLOR[rec.type]||'var(--accent)';
+    const item=document.createElement('div');
+    item.className='timeline-item';
+    item.innerHTML=
+      '<div class="timeline-dot" style="box-shadow:0 0 0 2px '+color+';color:'+color+'" data-ic="'+(TYPE_ICON[rec.type]||'lightbulb')+'"></div>'+
+      '<div class="timeline-body">'+
+        '<div class="timeline-meta">'+
+          '<span class="timeline-date">'+formatDate(rec.date)+'</span>'+
+          '<span class="type-badge type-'+rec.type+'">'+rec.type+'</span>'+
+        '</div>'+
+        '<div class="timeline-text">'+escHtml(rec.content)+'</div>'+
+        '<div class="timeline-actions">'+
+          '<button class="tl-act edit"><span data-ic="pencil"></span>수정</button>'+
+          '<button class="tl-act del"><span data-ic="trash"></span>삭제</button>'+
+        '</div>'+
+      '</div>';
+    item.querySelector('.edit').addEventListener('click',()=>startEdit(rec.id));
+    item.querySelector('.del').addEventListener('click',()=>deleteRecord(rec.id));
+    wrap.appendChild(item);
+    icons(item);
+  });
+}
+
+/* ============================================================
+   6. 상담 기록 입력 / 수정 / 삭제
+   ============================================================ */
+function openInputPanel(){
+  document.getElementById('input-panel').classList.add('open');
+  document.getElementById('input-textarea').focus();
+}
+function closeInputPanel(){
+  document.getElementById('input-panel').classList.remove('open');
+  document.getElementById('edit-hint').style.display='none';
+  editingRecId=null;
+}
+function setType(t){
+  selectedType=t;
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===t));
+}
+function startEdit(rid){
+  const rec=recordsOf(curClassId,curStudentId).find(r=>r.id===rid);
+  if(!rec) return;
+  editingRecId=rid;
+  document.getElementById('input-date').value=rec.date;
+  document.getElementById('input-textarea').value=rec.content;
+  setType(rec.type);
+  document.getElementById('edit-hint').style.display='';
+  openInputPanel();
+}
+async function deleteRecord(rid){
+  const ok=await askConfirm('이 상담 기록을 삭제할까요?','상담 기록 삭제');
+  if(!ok) return;
+  const stu=getStudent(curClassId,curStudentId);
+  stu.records=stu.records.filter(r=>r.id!==rid);
+  saveDB(); renderTimeline(); renderStudentList(); toast('삭제했습니다');
+}
+function saveEntry(){
+  if(!curStudentId){ toast('학생을 먼저 선택하세요'); return; }
+  const date=document.getElementById('input-date').value;
+  const content=document.getElementById('input-textarea').value.trim();
+  if(!date){ toast('날짜를 선택하세요'); return; }
+  if(!content){ toast('상담 내용을 입력하세요'); return; }
+  const stu=getStudent(curClassId,curStudentId);
+  if(!stu.records) stu.records=[];
+  if(editingRecId){
+    const rec=stu.records.find(r=>r.id===editingRecId);
+    if(rec){ rec.date=date; rec.type=selectedType; rec.content=content; rec.updatedAt=new Date().toISOString(); }
+    toast('수정했습니다');
+  }else{
+    stu.records.push({id:uid(),date,type:selectedType,content,createdAt:new Date().toISOString()});
+    toast('저장했습니다');
+  }
+  saveDB();
+  document.getElementById('input-textarea').value='';
+  closeInputPanel();
+  renderTimeline(); renderStudentList();
+}
+
+/* ============================================================
+   7. 프롬프트 생성 — 학생별 누적 기록 → 학부모 상담 준비 프롬프트
+   ============================================================ */
+function monthsAgo(n){
+  const d=new Date(); d.setMonth(d.getMonth()-n);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function buildPrompt(opts){
+  const cls=getClass(curClassId), stu=getStudent(curClassId,curStudentId);
+  const anon=opts.anon;
+  const name = anon ? '○○' : stuLabel(stu);
+  const className = anon ? '(학급 정보 비공개)' : cls.name;
+
+  let recs=sortedRecords(curClassId,curStudentId).slice().reverse(); // 오래된 순
+  if(opts.months>0){
+    const cut=monthsAgo(opts.months);
+    recs=recs.filter(r=>String(r.date)>=cut);
+  }
+
+  const counts={}; TYPES.forEach(t=>counts[t]=0);
+  recs.forEach(r=>{ if(counts[r.type]!=null) counts[r.type]++; });
+  const first=recs.length?recs[0].date:'-';
+  const last=recs.length?recs[recs.length-1].date:'-';
+
+  const L=[];
+  L.push('당신은 초·중등 학교 현장에서 15년간 담임을 맡아 온 교사이자, 학부모 상담 커뮤니케이션 전문가입니다.');
+  L.push('아래는 담임교사가 한 학생에 대해 누적해 온 상담 일지입니다.');
+  L.push('이 기록만을 근거로, 곧 있을 **학부모 상담**을 준비할 수 있도록 내용을 정리하고 상담용 발문과 답변을 만들어 주세요.');
+  L.push('');
+  L.push('────────────────────────────');
+  L.push('[ 기본 정보 ]');
+  L.push('- 학급: '+className);
+  L.push('- 학생: '+name);
+  L.push('- 기록 범위: '+first+' ~ '+last+(opts.months>0?' (최근 '+opts.months+'개월)':' (전체 기록)'));
+  L.push('- 총 기록 수: '+recs.length+'건 (학업 '+counts['학업']+' / 생활 '+counts['생활']+' / 진로 '+counts['진로']+' / 기타 '+counts['기타']+')');
+  if(opts.meetDate) L.push('- 상담 예정일: '+opts.meetDate);
+  L.push('- 상담 방식: '+opts.method);
+  if(opts.focus) L.push('- 교사가 이번 상담에서 특히 다루고 싶은 내용: '+opts.focus);
+  L.push('');
+  L.push('────────────────────────────');
+  L.push('[ 누적 상담 기록 ] (오래된 순)');
+  if(!recs.length){
+    L.push('(선택한 기간에 해당하는 기록이 없습니다.)');
+  }else{
+    recs.forEach((r,i)=>{
+      L.push('');
+      L.push((i+1)+'. '+r.date+' · ['+r.type+']');
+      String(r.content).split(/\r?\n/).forEach(line=>L.push('   '+line));
+    });
+  }
+  L.push('');
+  L.push('────────────────────────────');
+  L.push('[ 요청 사항 ] — 아래 8가지를 순서대로 작성해 주세요.');
+  L.push('');
+  L.push('1. 학생 종합 요약');
+  L.push('   - 기록 전체를 관통하는 이 학생의 모습을 5~7문장으로 정리해 주세요.');
+  L.push('   - 학부모가 읽었을 때 "우리 아이를 잘 보고 계시는구나"라고 느낄 수 있는 구체적 사실 중심으로 써 주세요.');
+  L.push('');
+  L.push('2. 영역별 변화 추이 (학업 / 생활·교우관계 / 진로 / 기타)');
+  L.push('   - 각 영역을 표로 정리: [영역 | 관찰된 사실 | 시간에 따른 변화 | 현재 상태]');
+  L.push('   - 기록이 없는 영역은 "기록 없음"으로 표시하고 추측해서 채우지 마세요.');
+  L.push('');
+  L.push('3. 강점 3가지와 성장 포인트 3가지');
+  L.push('   - 각 항목마다 근거가 된 기록의 날짜를 괄호로 함께 적어 주세요. 예: (2025-04-12 기록)');
+  L.push('');
+  L.push('4. 학부모에게 꼭 전달할 핵심 메시지 3가지');
+  L.push('   - 각 메시지를 "관찰한 사실 → 교사의 해석 → 가정에서의 협력 요청" 순서의 3문장 스크립트로 작성해 주세요.');
+  L.push('   - 평가·판단하는 말투 대신, 함께 돕는 동료로서의 말투를 사용해 주세요.');
+  L.push('');
+  L.push('5. 상담에서 사용할 발문 목록');
+  L.push('   - (1) 여는 발문 3개 — 학부모의 긴장을 풀고 신뢰를 여는 질문');
+  L.push('   - (2) 탐색 발문 5개 — 가정에서의 모습, 학부모의 관점·걱정을 끌어내는 열린 질문');
+  L.push('   - (3) 협력 발문 4개 — 구체적인 역할 분담과 실행 약속을 이끌어내는 질문');
+  L.push('   - (4) 마무리 발문 2개 — 상담 내용을 정리하고 다음 소통을 약속하는 질문');
+  L.push('   - 각 발문 아래에 "이 질문을 하는 이유"를 한 줄로 덧붙여 주세요.');
+  L.push('');
+  L.push('6. 학부모가 할 만한 질문과 답변 예시 (6쌍)');
+  L.push('   - 이 학생의 기록에서 실제로 나올 법한 질문을 고르고, 교사가 바로 말할 수 있는 구어체 답변을 작성해 주세요.');
+  L.push('   - 답변은 3~4문장 이내로, 근거 → 현재 상황 → 앞으로의 계획 순서로 구성해 주세요.');
+  L.push('');
+  L.push('7. 민감한 상황 대응 화법');
+  L.push('   - 학부모가 감정적으로 반응하거나, 학교의 조치에 이의를 제기하거나, 다른 학생과 비교할 때 쓸 수 있는 완충 표현을 상황별로 정리해 주세요.');
+  L.push('   - 피해야 할 표현과 대체 표현을 [피할 말 → 바꿔 말하기] 형태로 5쌍 제시해 주세요.');
+  L.push('');
+  L.push('8. 상담 후 후속 조치 제안');
+  L.push('   - 교사가 할 일 / 가정에서 할 일 / 함께 점검할 시점을 표로 정리하고, 다음 소통 시기를 제안해 주세요.');
+  L.push('   - 마지막에 상담 기록지에 그대로 옮겨 적을 수 있는 5~6줄 요약문을 작성해 주세요.');
+  L.push('');
+  L.push('────────────────────────────');
+  L.push('[ 작성 지침 ]');
+  L.push('- 위 상담 기록에 없는 사실은 절대 지어내지 마세요. 정보가 부족하면 "기록에 없음 — 상담 중 확인 필요"로 표시해 주세요.');
+  L.push('- 의학적·심리학적 진단명(ADHD, 우울증, 장애 등)으로 단정하지 마세요. 관찰된 행동으로만 서술합니다.');
+  L.push('- 다른 학생의 실명이나 특정 가정사가 드러날 수 있는 표현은 일반화해서 써 주세요.');
+  L.push('- 어조는 따뜻하되 전문적으로, 모든 문장은 존댓말로 작성해 주세요.');
+  L.push('- 표와 번호 목록을 적극 활용해, 상담 당일 인쇄해서 바로 보고 말할 수 있는 형태로 만들어 주세요.');
+  L.push('- 분량은 A4 2~3장 정도로 충실하게 작성해 주세요.');
+  return {text:L.join('\n'), count:recs.length};
+}
+
+document.getElementById('btn-prompt').addEventListener('click',()=>{
+  if(!curStudentId){ toast('학생을 먼저 선택하세요'); return; }
+  const stu=getStudent(curClassId,curStudentId);
+  if(!recordsOf(curClassId,curStudentId).length){ toast('상담 기록이 있어야 프롬프트를 만들 수 있습니다'); return; }
+  document.getElementById('pm-target').textContent=stuFullLabel(getClass(curClassId),stu);
+  document.getElementById('pm-date').value=document.getElementById('pm-date').value||'';
+  openModal('modal-prompt');
+});
+document.querySelectorAll('#pm-method .chip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('#pm-method .chip').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on'); promptMethod=c.dataset.v;
+  });
+});
+document.getElementById('btn-make-prompt').addEventListener('click',()=>{
+  const opts={
+    meetDate:document.getElementById('pm-date').value||'',
+    method:promptMethod,
+    months:parseInt(document.getElementById('pm-range').value,10)||0,
+    focus:document.getElementById('pm-focus').value.trim(),
+    anon:document.getElementById('pm-anon').checked
+  };
+  const stu=getStudent(curClassId,curStudentId);
+  const res=buildPrompt(opts);
+  if(res.count===0){ toast('선택한 기간에 기록이 없습니다'); return; }
+  lastPrompt=res.text;
+  lastPromptName=(getClass(curClassId).name+'_'+(stu.no?stu.no+'번_':'')+stu.name+'_학부모상담_프롬프트_'+todayStr()+'.txt').replace(/[\\/:*?"<>|]/g,'_');
+  document.getElementById('prompt-out').value=res.text;
+  document.getElementById('prompt-stat-len').textContent='글자 수 '+res.text.length.toLocaleString()+'자';
+  document.getElementById('prompt-stat-rec').textContent='포함된 상담 기록 '+res.count+'건';
+  closeModal('modal-prompt');
+  openModal('modal-result');
+});
+document.getElementById('btn-copy-prompt').addEventListener('click',async ()=>{
+  const ta=document.getElementById('prompt-out');
+  try{
+    await navigator.clipboard.writeText(ta.value);
+    toast('클립보드에 복사했습니다');
+  }catch(e){
+    ta.select(); ta.setSelectionRange(0,ta.value.length);
+    try{ document.execCommand('copy'); toast('클립보드에 복사했습니다'); }
+    catch(e2){ toast('복사에 실패했습니다 — 직접 선택해 복사해 주세요'); }
+  }
+});
+document.getElementById('btn-save-prompt').addEventListener('click',()=>{
+  saveTextFile(lastPromptName||('학부모상담_프롬프트_'+todayStr()+'.txt'), document.getElementById('prompt-out').value);
+});
+
+/* ============================================================
+   8. 반 / 학생 관리
+   ============================================================ */
+function renderClassMiniList(){
+  const box=document.getElementById('class-mini-list');
+  box.innerHTML='';
+  if(!DB.classes.length){
+    box.innerHTML='<div class="mini-row"><span class="sb">아직 등록된 반이 없습니다</span></div>';
+    return;
+  }
+  DB.classes.forEach(c=>{
+    const recCount=c.students.reduce((n,s)=>n+((s.records||[]).length),0);
+    const row=document.createElement('div');
+    row.className='mini-row';
+    row.innerHTML='<div style="min-width:0"><div class="nm">'+escHtml(c.name)+'</div>'+
+      '<div class="sb">학생 '+c.students.length+'명 · 기록 '+recCount+'건</div></div>'+
+      '<div class="mini-acts">'+
+        '<button class="mini-btn" data-act="rename">이름 변경</button>'+
+        '<button class="mini-btn" data-act="select">열기</button>'+
+        '<button class="mini-btn danger" data-act="del">삭제</button>'+
+      '</div>';
+    row.querySelector('[data-act="rename"]').addEventListener('click',async ()=>{
+      const v=await askText('반 이름 변경',c.name);
+      if(!v) return;
+      c.name=v; saveDB(); renderClassSelect(); renderClassMiniList(); toast('변경했습니다');
+    });
+    row.querySelector('[data-act="select"]').addEventListener('click',()=>{
+      curClassId=c.id; curStudentId=null;
+      document.getElementById('class-select').value=c.id;
+      renderStudentList(); showNoSelect(); closeModal('modal-classes');
+    });
+    row.querySelector('[data-act="del"]').addEventListener('click',async ()=>{
+      const ok=await askConfirm('‘'+c.name+'’ 반과 학생 '+c.students.length+'명, 상담 기록 '+recCount+'건이 모두 삭제됩니다. 되돌릴 수 없습니다.','반 삭제');
+      if(!ok) return;
+      DB.classes=DB.classes.filter(x=>x.id!==c.id);
+      if(curClassId===c.id){ curClassId=null; curStudentId=null; showNoSelect(); }
+      saveDB(); renderClassSelect(); renderStudentList(); renderClassMiniList(); toast('삭제했습니다');
+    });
+    box.appendChild(row);
+  });
+}
+document.getElementById('btn-classes').addEventListener('click',()=>{
+  renderClassMiniList(); openModal('modal-classes');
+  setTimeout(()=>document.getElementById('new-class-name').focus(),60);
+});
+function createClass(){
+  const inp=document.getElementById('new-class-name');
+  const name=inp.value.trim();
+  if(!name){ toast('반 이름을 입력하세요'); return; }
+  const cls={id:uid(),name,students:[]};
+  DB.classes.push(cls); saveDB();
+  inp.value='';
+  curClassId=cls.id; curStudentId=null;
+  renderClassSelect();
+  document.getElementById('class-select').value=cls.id;
+  renderStudentList(); showNoSelect(); renderClassMiniList();
+  toast('‘'+name+'’ 반을 만들었습니다');
+}
+document.getElementById('btn-create-class').addEventListener('click',createClass);
+document.getElementById('new-class-name').addEventListener('keydown',e=>{ if(e.key==='Enter') createClass(); });
+
+document.getElementById('btn-add-student').addEventListener('click',()=>{
+  if(!curClassId){ toast('반을 먼저 선택하세요'); return; }
+  document.getElementById('bulk-students').value='';
+  openModal('modal-students');
+  setTimeout(()=>document.getElementById('bulk-students').focus(),60);
+});
+document.getElementById('btn-save-students').addEventListener('click',()=>{
+  const cls=getClass(curClassId);
+  if(!cls){ toast('반을 먼저 선택하세요'); return; }
+  const raw=document.getElementById('bulk-students').value;
+  const lines=raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  if(!lines.length){ toast('학생 번호와 이름을 입력하세요'); return; }
+  let added=0, dup=0, dupNo=0;
+  lines.forEach(line=>{
+    const parsed=parseStudentLine(line);
+    if(!parsed.name) return;
+    if(cls.students.some(s=>s.name===parsed.name && (!parsed.no || Number(s.no)===parsed.no))){ dup++; return; }
+    let no=parsed.no;
+    if(no && cls.students.some(s=>Number(s.no)===no)){ dupNo++; no=null; }
+    if(!no) no=nextStuNo(cls);
+    cls.students.push({id:uid(),no:no,name:parsed.name,records:[]});
+    added++;
+  });
+  sortStudents(cls);
+  saveDB(); renderStudentList(); closeModal('modal-students');
+  toast(added+'명 등록'+(dup?' · 중복 '+dup+'명 제외':'')+(dupNo?' · 번호 중복 '+dupNo+'명은 뒤 번호로 배정':''));
+});
+
+/* ============================================================
+   9. 내보내기 / 백업 / 복원
+   ============================================================ */
+function csvCell(v){
+  const s=String(v==null?'':v);
+  return '"'+s.replace(/"/g,'""')+'"';
+}
+document.getElementById('btn-export').addEventListener('click',()=>{
+  const cls=getClass(curClassId);
+  if(!cls){ toast('반을 먼저 선택하세요'); return; }
+  const rows=[['번호','이름','날짜','요일','유형','상담 내용']];
+  let total=0;
+  cls.students.forEach((stu,i)=>{
+    const no=stu.no||(i+1);
+    const recs=(stu.records||[]).slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+    if(!recs.length){ rows.push([no,stu.name,'','','','(상담 기록 없음)']); return; }
+    recs.forEach(r=>{
+      total++;
+      const d=new Date(r.date+'T00:00:00');
+      const wd=isNaN(d)?'':['일','월','화','수','목','금','토'][d.getDay()];
+      rows.push([no,stu.name,r.date,wd,r.type,r.content]);
+    });
+  });
+  const csv='﻿'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
+  const fname=(cls.name+'_상담일지_'+todayStr()+'.csv').replace(/[\\/:*?"<>|]/g,'_');
+  saveTextFile(fname,csv,'text/csv;charset=utf-8');
+});
+
+document.getElementById('btn-backup').addEventListener('click',()=>{
+  const cCount=DB.classes.length;
+  const sCount=DB.classes.reduce((n,c)=>n+c.students.length,0);
+  const rCount=DB.classes.reduce((n,c)=>n+c.students.reduce((m,s)=>m+((s.records||[]).length),0),0);
+  document.getElementById('backup-stat').textContent='반 '+cCount+'개 · 학생 '+sCount+'명 · 상담 기록 '+rCount+'건';
+  openModal('modal-backup');
+});
+document.getElementById('btn-export-json').addEventListener('click',()=>{
+  const data=JSON.stringify({app:'ssam-counsel',version:1,exportedAt:new Date().toISOString(),classes:DB.classes},null,2);
+  saveTextFile('상담일지_백업_'+todayStr()+'.json',data,'application/json;charset=utf-8');
+});
+document.getElementById('btn-import').addEventListener('click',()=>document.getElementById('import-file').click());
+document.getElementById('import-file').addEventListener('change',e=>{
+  const f=e.target.files[0];
+  if(!f) return;
+  const reader=new FileReader();
+  reader.onload=async ()=>{
+    let parsed=null;
+    try{ parsed=JSON.parse(reader.result); }catch(err){ toast('올바른 백업 파일이 아닙니다'); return; }
+    if(!parsed||!Array.isArray(parsed.classes)){ toast('올바른 백업 파일이 아닙니다'); return; }
+    const sCount=parsed.classes.reduce((n,c)=>n+((c.students||[]).length),0);
+    const ok=await askConfirm('백업 파일의 반 '+parsed.classes.length+'개 / 학생 '+sCount+'명으로 현재 데이터를 모두 대체합니다. 계속할까요?','백업 복원');
+    if(!ok) return;
+    DB={version:1,classes:parsed.classes};
+    DB.classes.forEach(c=>{
+      if(!c.id) c.id=uid();
+      if(!Array.isArray(c.students)) c.students=[];
+      c.students.forEach(s=>{
+        if(!s.id) s.id=uid();
+        if(!Array.isArray(s.records)) s.records=[];
+        s.records.forEach(r=>{ if(!r.id) r.id=uid(); });
+      });
+    });
+    saveDB();
+    curClassId=DB.classes[0]?DB.classes[0].id:null; curStudentId=null;
+    renderClassSelect();
+    document.getElementById('class-select').value=curClassId||'';
+    renderStudentList(); showNoSelect(); closeModal('modal-backup');
+    toast('복원했습니다');
+  };
+  reader.readAsText(f,'utf-8');
+  e.target.value='';
+});
+
+/* ============================================================
+   10. 이벤트 바인딩 & 초기화
+   ============================================================ */
+document.getElementById('class-select').addEventListener('change',e=>{
+  curClassId=e.target.value||null;
+  curStudentId=null;
+  renderStudentList(); showNoSelect();
+});
+document.getElementById('search-input').addEventListener('input',renderStudentList);
+document.getElementById('btn-add-counsel').addEventListener('click',()=>{
+  const panel=document.getElementById('input-panel');
+  if(panel.classList.contains('open') && !editingRecId){ closeInputPanel(); return; }
+  editingRecId=null;
+  document.getElementById('edit-hint').style.display='none';
+  document.getElementById('input-date').value=todayStr();
+  document.getElementById('input-textarea').value='';
+  setType('학업');
+  openInputPanel();
+});
+document.getElementById('btn-cancel').addEventListener('click',closeInputPanel);
+document.getElementById('btn-save-entry').addEventListener('click',saveEntry);
+document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=>setType(b.dataset.type)));
+document.getElementById('input-textarea').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); saveEntry(); }
+});
+document.getElementById('dark-btn').addEventListener('click',()=>Design.toggleDark());
+document.getElementById('design-btn').addEventListener('click',()=>Design.toggle());
+
+function init(){
+  loadDB();
+  icons();
+  renderClassSelect();
+  if(DB.classes.length===1){
+    curClassId=DB.classes[0].id;
+    document.getElementById('class-select').value=curClassId;
+  }
+  renderStudentList();
+  document.getElementById('input-date').value=todayStr();
+  document.getElementById('pm-date').value='';
+  const dk=document.getElementById('dark-btn');
+  if(dk) dk.innerHTML=svgFor(document.body.classList.contains('dark')?'sun':'moon');
+}
+init();
+</script>
+</body>
+</html>
