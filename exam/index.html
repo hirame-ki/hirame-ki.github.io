@@ -105,8 +105,12 @@
   .login-newcode-code{font-family:ui-monospace,Consolas,monospace;font-size:20px;font-weight:700;letter-spacing:2px;color:var(--text);word-break:break-all;}
   .login-newcode-copy{flex-shrink:0;padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
   .login-newcode-help{font-size:12px;color:var(--text2);line-height:1.6;margin-top:10px;}
-  .login-privacy{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;margin-top:10px;padding:4px;background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:3px;}
-  .login-privacy:hover{color:var(--primary);}
+  .login-privacy{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:12px;padding:6px 4px;background:none;border:none;font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;font-family:inherit;line-height:1.5;text-align:center;}
+  .login-privacy>span{text-decoration:underline;text-underline-offset:3px;}
+  .login-privacy .icon{flex-shrink:0;}
+  .login-privacy-sub{font-size:12px;font-weight:600;}
+  .login-privacy:hover{color:var(--primary-dark);}
+  .login-notice-strong{display:block;font-weight:700;color:var(--danger);font-size:12.5px;margin-bottom:4px;}
   .privacy-body{font-size:13px;line-height:1.7;color:var(--text2);}
   .privacy-body p{margin:0 0 10px;}
   .privacy-body h4{font-size:13.5px;color:var(--primary);margin:16px 0 6px;}
@@ -346,11 +350,11 @@
       <button class="login-btn" onclick="enterNewSchool()">이 코드로 시작하기</button>
     </div>
     <div class="login-notice">
-      이미 사용 중인 학교는 새로 만들지 말고 고사 담당 선생님께 학교코드를 받으세요.<br>
+      <span class="login-notice-strong">이미 사용 중인 학교는 새로 만들지 말고 고사 담당 선생님께 학교코드를 받으세요.</span>
       학교코드는 우리 학교 선생님끼리만 공유해 주세요.
     </div>
     <a class="login-guide" href="https://www.notion.so/3d57fde37cfc81588b7bec25cacbcee2" target="_blank" rel="noopener" title="사용 설명서(노션)를 새 탭에서 엽니다"><svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H10a2.5 2.5 0 0 1 2 1 2.5 2.5 0 0 1 2-1h4.5A1.5 1.5 0 0 1 20 4.5v13a1.5 1.5 0 0 1-1.5 1.5H14a2.5 2.5 0 0 0-2 1 2.5 2.5 0 0 0-2-1H5.5A1.5 1.5 0 0 1 4 17.5z"></path><line x1="12" y1="5" x2="12" y2="20"></line></svg>사용 설명서 보기</a>
-    <button type="button" class="login-privacy" onclick="openPrivacyModal()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>개인정보 처리 안내</button>
+    <button type="button" class="login-privacy" onclick="openPrivacyModal()"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6z"></path><polyline points="9 12 11 14 15 10"></polyline></svg><span>개인정보 처리 안내 <span class="login-privacy-sub">(필요 시 학교 제출용 문서 내려받기)</span></span></button>
   </div>
 </div>
 
@@ -374,7 +378,7 @@
       <p class="privacy-muted">주민등록번호, 생년월일, 연락처, 주소, 성적, 사진, 학부모 정보, 교사의 이름·이메일은 받지 않습니다. 모든 정보는 선생님이 직접 입력한 것입니다.</p>
 
       <h4>저장 위치</h4>
-      <p>여러 선생님이 함께 쓰고 실시간으로 공유하기 위해 브라우저가 아니라 <b>클라우드 데이터베이스(Supabase)</b>에 저장됩니다. 서버는 <b>일본(도쿄, Amazon Web Services)</b>에 있어 국외로 이전됩니다. 주고받는 데이터는 HTTPS로, 저장된 데이터는 AES-256으로 암호화됩니다.</p>
+      <p>여러 선생님이 함께 쓰고 실시간으로 공유하기 위해 브라우저가 아니라 <b>클라우드 데이터베이스</b>에 저장됩니다. 데이터는 Supabase가 운영하는 <b>Amazon Web Services 도쿄 데이터센터(일본)</b>에 보관됩니다. 전 세계 기업들이 쓰는 클라우드 인프라이며, 주고받는 데이터(HTTPS)와 저장된 데이터(AES-256) 모두 암호화됩니다.</p>
 
       <h4>누가 볼 수 있나요</h4>
       <ul>
@@ -389,7 +393,7 @@
       <div class="privacy-note">결시 사유 "기타"에는 병명 등 민감한 내용을 적지 말아 주세요. 여러 사람이 쓰는 컴퓨터에서는 사용 후 [로그아웃]을 눌러 주세요.</div>
 
       <a class="btn btn-primary privacy-download" href="docs/privacy-notice.docx" download="정기고사관리시스템_개인정보처리안내.docx"><svg class="icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><polyline points="7 10 12 15 17 10"></polyline><path d="M5 19h14"></path></svg>학교 제출용 문서 내려받기 (Word)</a>
-      <p class="privacy-muted">국외 이전, 보관 기간, 안전성 확보 조치, 학교에서 검토할 사항까지 담은 전체 문서입니다. 한글(HWP)에서도 열립니다. 궁금한 점은 제작자(인스타그램 @hirame.ki)에게 문의해 주세요. · 2026년 9월 18일 기준</p>
+      <p class="privacy-muted">저장 위치, 보관 기간, 안전성 확보 조치, 학교에서 검토할 사항까지 담은 전체 문서입니다. 한글(HWP)에서도 열립니다. 궁금한 점은 제작자(인스타그램 @hirame.ki)에게 문의해 주세요. · 2026년 9월 18일 기준</p>
     </div>
   </div>
 </div>
