@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>수업 공장 썸네일</title>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--mint:#2dd4bf;--mint-d:#0d9488;--mint-l:#ccfbef;--bg:#f0fdf8;--text:#1a3a30;--sub:#3d6b5c;--amber:#f59e0b;--rose:#e06b8b;--blue:#3b82f6;--purple:#8b5cf6}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{font-family:'Nanum Gothic',sans-serif;color:var(--text);
+  background:radial-gradient(circle at 88% 12%,#ccfbef 0,transparent 42%),radial-gradient(circle at 8% 95%,#d4f5ec 0,transparent 40%),var(--bg);
+  position:relative}
+/* dot grid */
+body::before{content:"";position:absolute;inset:0;background-image:radial-gradient(#b2e0d4 1.2px,transparent 1.2px);background-size:26px 26px;opacity:.55}
+.wrap{position:relative;display:flex;height:100%;padding:56px 56px 0 64px}
+.left{width:560px;flex-shrink:0;padding-top:6px}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.logo{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--mint),#4dd9b8);display:flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 8px 22px rgba(45,212,191,.35)}
+.ver{font-size:15px;font-weight:800;color:var(--mint-d);background:#fff;border:2px solid var(--mint);padding:5px 12px;border-radius:20px}
+h1{font-family:'Gaegu',cursive;font-size:104px;line-height:.95;letter-spacing:-1px;word-spacing:-28px;color:var(--text)}
+h1 span{color:var(--mint-d)}
+.lead{margin-top:18px;font-size:30px;font-weight:800;line-height:1.35;color:var(--text)}
+.lead mark{background:linear-gradient(transparent 55%,#fde68a 55%);color:inherit;padding:0 2px}
+.sets{display:flex;gap:8px;margin-top:22px}
+.set{display:flex;align-items:center;gap:6px;background:#fff;border:2px solid;border-radius:14px;padding:9px 14px;font-size:18px;font-weight:800}
+.set.s1{border-color:#7dd9bf;color:#1a6e54}
+.set.s2{border-color:#f5c980;color:#8a4a00}
+.set.s3{border-color:#c0a0e8;color:#45226e}
+.plus{align-self:center;font-weight:900;color:var(--mint-d);font-size:20px}
+.foot{position:absolute;left:64px;bottom:0;right:0;height:62px;background:linear-gradient(90deg,var(--mint-d),var(--mint));display:flex;align-items:center;gap:26px;padding:0 64px;margin-left:-64px;color:#fff;font-size:18px;font-weight:800}
+.foot .dot{opacity:.5}
+.foot .by{margin-left:auto;font-weight:700;opacity:.92;font-size:16px}
+
+/* RIGHT: output mockups */
+.right{position:relative;flex:1;height:500px}
+.card{position:absolute;background:#fff;border-radius:16px;box-shadow:0 14px 34px rgba(13,148,136,.18),0 2px 6px rgba(0,0,0,.06);overflow:hidden}
+.tag{position:absolute;top:-2px;left:16px;font-size:13px;font-weight:800;color:#fff;padding:6px 12px;border-radius:0 0 10px 10px}
+/* slide */
+.slide{width:400px;height:236px;left:40px;top:0;transform:rotate(-3deg);border:2px solid #b2e0d4}
+.slide .bar{height:40px;background:linear-gradient(90deg,var(--mint-d),var(--mint));display:flex;align-items:center;padding:0 16px 0 110px;color:#fff;font-weight:800;font-size:17px}
+.slide .body{display:flex;gap:16px;padding:18px 18px}
+.bul{flex:1}
+.bul div{display:flex;align-items:center;gap:8px;margin-bottom:13px;font-size:14px;font-weight:700;color:var(--sub)}
+.bul i{width:9px;height:9px;border-radius:50%;background:var(--mint);flex-shrink:0}
+.chart{width:130px;height:130px;display:flex;align-items:flex-end;gap:9px;padding:10px;background:#f0fdf8;border-radius:12px;border:1.5px dashed #7dd9bf}
+.chart b{flex:1;border-radius:5px 5px 0 0;background:var(--mint)}
+.dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:5px}
+.dots i{width:7px;height:7px;border-radius:50%;background:#cdeee5}.dots i:first-child{background:var(--mint-d);width:18px;border-radius:4px}
+/* worksheet */
+.ws{width:250px;height:320px;left:0;top:190px;transform:rotate(4deg);border:2px solid #f5c980}
+.ws .hd{padding:44px 18px 10px;border-bottom:2px solid #fef3d4}
+.ws h4{font-size:17px;font-weight:800;color:#8a4a00}
+.ws .meta{font-size:11px;color:#a57a3a;margin-top:4px}
+.ws .q{padding:10px 18px 0;font-size:13px;font-weight:800;color:var(--text)}
+.ws .box{margin:7px 18px 0;height:46px;border:1.5px dashed #f5c980;border-radius:8px;background:repeating-linear-gradient(transparent 0 14px,#fdeccc 14px 15px)}
+/* teacher question sheet */
+.tq{width:300px;height:292px;left:250px;top:212px;transform:rotate(-1.5deg);border:2px solid #c0a0e8}
+.tq .hd{padding:44px 18px 8px;border-bottom:2px solid #f0eafc;display:flex;align-items:center;justify-content:space-between}
+.tq h4{font-size:17px;font-weight:800;color:#45226e}
+.st{font-size:11px;font-weight:800;padding:3px 8px;border-radius:10px;background:#f0eafc;color:#6b35b5}
+.ln{padding:9px 18px 0;font-size:14px;line-height:1.55;font-weight:700;color:var(--text)}
+.ln .n{display:inline-block;width:22px;height:22px;border-radius:50%;background:#8b5cf6;color:#fff;font-size:12px;text-align:center;line-height:22px;margin-right:6px}
+.hl{background:#fde68a;padding:0 3px;border-radius:3px}
+.hb{background:#bfdbfe;padding:0 3px;border-radius:3px}
+.ul{text-decoration:underline;text-decoration-thickness:2.5px;text-decoration-color:#e06b8b;text-underline-offset:3px}
+.ans{margin:6px 18px 0 46px;font-size:12px;color:#7aaa97;font-weight:700}
+/* sparkle */
+.spark{position:absolute;font-size:34px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="left">
+    <div class="brand"><div class="logo">🏭</div><div class="ver">Ver.5 · 무료</div></div>
+    <h1>수업 <span>공장</span></h1>
+    <p class="lead">클릭 몇 번이면<br><mark>수업 3종 세트</mark>가 뚝딱! ✨</p>
+    <div class="sets">
+      <div class="set s1">📊 슬라이드</div><div class="plus">+</div>
+      <div class="set s2">📝 활동지</div><div class="plus">+</div>
+      <div class="set s3">💬 교사 발문지</div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card slide">
+      <div class="tag" style="background:#0d9488;top:9px;left:14px;border-radius:8px">📊 SLIDE</div>
+      <div class="bar">광합성의 원리</div>
+      <div class="body">
+        <div class="bul">
+          <div><i></i>빛 에너지 → 화학 에너지</div>
+          <div><i></i>엽록체에서 일어나요</div>
+          <div><i></i>이산화탄소 + 물</div>
+          <div><i></i>포도당과 산소 생성</div>
+        </div>
+        <div class="chart"><b style="height:40%"></b><b style="height:72%;background:#0d9488"></b><b style="height:55%"></b><b style="height:90%;background:#0d9488"></b></div>
+      </div>
+      <div class="dots"><i></i><i></i><i></i><i></i></div>
+    </div>
+
+    <div class="card ws">
+      <div class="tag" style="background:#f59e0b">📝 활동지</div>
+      <div class="hd"><h4>🔍 탐구 활동 1</h4><div class="meta">2학년 ___반 이름 ________</div></div>
+      <div class="q">Q1. 잎이 초록색인 까닭은?</div>
+      <div class="box"></div>
+      <div class="q">Q2. 실험 결과를 정리해 봅시다</div>
+      <div class="box"></div>
+    </div>
+
+    <div class="card tq">
+      <div class="tag" style="background:#8b5cf6">💬 교사 발문지</div>
+      <div class="hd"><h4>도입 · 전개 · 정리</h4><span class="st">발산형</span></div>
+      <div class="ln"><span class="n">1</span>식물은 <span class="ul">무엇을 먹고</span> 자랄까요?</div>
+      <div class="ans">→ 기대 답변: 햇빛, 물, 흙</div>
+      <div class="ln"><span class="n">2</span><span class="hl">빛이 없으면</span> 어떻게 될까요?</div>
+      <div class="ans">→ 광합성 불가 · 녹말 X</div>
+      <div class="ln"><span class="n">3</span><span class="hb">핵심 개념</span>을 <span class="ul">한 문장</span>으로!</div>
+    </div>
+
+    <div class="spark" style="right:6px;top:150px">✨</div>
+    <div class="spark" style="left:-8px;top:120px;font-size:26px">⭐</div>
+  </div>
+
+  <div class="foot">
+    <span>📚 2022 개정 교육과정</span><span class="dot">●</span>
+    <span>성취기준 2,862개 내장</span><span class="dot">●</span>
+    <span>🤖 Claude 프롬프트 자동 생성</span>
+    <span class="by">@hirame.ki</span>
+  </div>
+</div>
+</body>
+</html>
