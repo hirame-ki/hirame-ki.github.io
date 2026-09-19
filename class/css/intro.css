@@ -1,5 +1,7 @@
 /* ==========================================================
    오프닝 — 서랍이 열리고 도구가 올라온다
+   Copyright (c) 2026 황성재 (@hirame.ki). All rights reserved.
+   상업적 이용·개작·무단 재배포 금지 — LICENSE 참고
    ========================================================== */
 .intro {
   position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;

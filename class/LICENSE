@@ -1,0 +1,87 @@
+수업서랍 (Class Drawer) 이용 허락 조건
+Copyright (c) 2026 황성재 (@hirame.ki). All rights reserved.
+
+이 문서는 「수업서랍」의 소스 코드(HTML·CSS·JavaScript), 디자인, 로고,
+아이콘, 오프닝 애니메이션, 문구, 이미지 등 이 폴더에 들어 있는 모든 저작물
+(이하 "저작물")에 적용됩니다.
+
+──────────────────────────────────────────────
+1. 허락하는 것
+──────────────────────────────────────────────
+  • 선생님·학생·학부모가 학교, 학원 수업, 가정 학습 등 교육 목적으로
+    저작물을 무료로 사용하는 것
+  • 교실 TV·전자칠판에 띄우거나, 수업 장면을 촬영·녹화·방송하는 것
+    (예: 공개수업, 연수 자료, 수업 영상)
+  • 원래 주소(https://hirame-ki.github.io/class/)를 그대로 알리거나
+    링크로 공유하는 것
+
+──────────────────────────────────────────────
+2. 금지하는 것
+──────────────────────────────────────────────
+  (1) 상업적 이용 금지
+      • 저작물이나 그 일부를 판매·유료 제공하는 것
+      • 유료 강의, 유료 플랫폼, 유료 앱·프로그램, 유료 콘텐츠에 넣어 제공하는 것
+      • 광고 수익을 목적으로 저작물을 게시하거나 배포하는 것
+      • 기업·기관이 영리 목적으로 쓰는 것
+
+  (2) 개작(2차적 저작물 작성) 금지
+      • 코드, 디자인, 로고, 아이콘, 문구를 고치거나 덧붙이거나 번역하여
+        새로운 버전을 만드는 것
+      • 저작물의 일부(도구, 아이콘, 애니메이션, 스타일 등)를 떼어내어
+        다른 작품에 넣는 것
+      • 제작자 표시(화면 오른쪽 아래 제작자 칩, 하단 저작권 표시,
+        소스 코드의 저작권 주석, 이 LICENSE 파일)를 지우거나 가리는 것
+
+  (3) 무단 재배포 금지
+      • 저작물을 다른 웹사이트·서버·저장소·자료실에 복사해 올리거나
+        파일로 나눠 주는 것
+      • 자신이 만든 것처럼 소개하는 것
+
+──────────────────────────────────────────────
+3. 따로 허락을 받으면 가능한 것
+──────────────────────────────────────────────
+위 2번에 해당하더라도 제작자에게 미리 서면(메시지·이메일 포함)으로
+허락을 받으면 이용할 수 있습니다.
+  문의: 인스타그램 @hirame.ki (https://www.instagram.com/hirame.ki/)
+
+──────────────────────────────────────────────
+4. 외부 구성 요소
+──────────────────────────────────────────────
+아래 구성 요소는 이 조건이 아니라 각자의 라이선스를 따릅니다.
+  • Pretendard 글꼴 — SIL Open Font License 1.1
+  • Outfit 글꼴 — SIL Open Font License 1.1
+  • qrcodejs — MIT License
+
+──────────────────────────────────────────────
+5. 책임의 한계
+──────────────────────────────────────────────
+저작물은 "있는 그대로" 제공됩니다. 제작자는 저작물의 사용으로 생긴 어떠한
+손해에 대해서도 책임지지 않습니다. 명단·점수 등은 사용하는 브라우저에만
+저장되며 제작자는 이를 수집하지 않습니다.
+
+이 조건을 어기면 이용 허락은 자동으로 끝나며, 저작권법에 따라
+민·형사상 책임을 질 수 있습니다.
+
+
+==============================================
+English summary
+==============================================
+Copyright (c) 2026 Hwang Seongjae (@hirame.ki). All rights reserved.
+
+You MAY use Class Drawer free of charge for non-commercial educational
+purposes (classrooms, lessons, home learning) and share a link to the
+original address: https://hirame-ki.github.io/class/
+
+You may NOT, without prior written permission from the author:
+  - use it commercially (sell it, bundle it into paid products, courses,
+    apps or platforms, or publish it for ad revenue);
+  - modify, adapt, translate or build upon it, or extract any part of it
+    (code, design, logo, icons, animation, text) for use elsewhere;
+  - redistribute or re-host copies, or remove or obscure the author credit
+    and copyright notices.
+
+Third-party components (Pretendard, Outfit — SIL OFL 1.1; qrcodejs — MIT)
+remain under their own licenses.
+
+THE WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+Contact: https://www.instagram.com/hirame.ki/

@@ -1,5 +1,7 @@
 /* ==========================================================
    수업서랍 · app — 오프닝, 서랍(홈), 화면 분할, 명단
+   Copyright (c) 2026 황성재 (@hirame.ki). All rights reserved.
+   상업적 이용·개작·무단 재배포 금지 — LICENSE 참고
    ========================================================== */
 (function () {
   'use strict';
@@ -232,7 +234,7 @@
 
   /* ================= 공통: 보기 전환·모달·전체화면 ================= */
   function show(v) {
-    $('#home').hidden = v !== 'home'; $('#workspace').hidden = v !== 'workspace';
+    $('#home').hidden = v !== 'home'; $('#workspace').hidden = v !== 'workspace'; document.body.dataset.view = v;
     if (v === 'home') { renderHome(); setSelecting(false); if (location.hash) history.replaceState(null, '', location.pathname + location.search); }
   }
   function showModal(id) { $('#m-' + id).hidden = false; setTimeout(() => $(`#m-${id} input, #m-${id} button.tool-card`)?.focus(), 50); }
@@ -247,6 +249,19 @@
     if (selecting) setSelecting(false);
   });
   $('#brand').onclick = () => show('home');
+  $('#open-license').onclick = () => showModal('license');
+
+  /* 제작자 칩: 마우스가 가까이(90px) 오면 열리고, 충분히 멀어지면(140px) 닫힘 */
+  const maker = $('#maker-chip');
+  addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const r = maker.getBoundingClientRect();
+    const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right), dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
+    const d = Math.hypot(dx, dy), on = maker.classList.contains('open');
+    if (!on && d < 90) maker.classList.add('open');
+    else if (on && d > 140) maker.classList.remove('open');
+  }, { passive: true });
+  document.documentElement.addEventListener('mouseleave', () => maker.classList.remove('open'));
   $('#fs').onclick = () => {
     if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.().catch(() => toast('이 브라우저에서는 전체 화면을 쓸 수 없어요'));
   };
