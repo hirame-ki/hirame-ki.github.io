@@ -1,0 +1,88 @@
+/* ==========================================================
+   오프닝 — 서랍이 열리고 도구가 올라온다
+   ========================================================== */
+.intro {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
+  background:
+    radial-gradient(900px 500px at 50% 42%, #FFFFFF 0%, rgba(255, 255, 255, 0) 70%),
+    var(--bg);
+  transition: opacity .6s var(--ease), transform .6s var(--ease), visibility .6s;
+}
+.intro.out { opacity: 0; visibility: hidden; transform: scale(1.04); pointer-events: none; }
+.intro-stage { position: relative; width: 360px; height: 420px; display: flex; flex-direction: column; align-items: center; }
+
+/* 도구 아이콘 */
+.intro-icons { position: absolute; left: 50%; top: 190px; width: 0; height: 0; }
+.intro-icon {
+  position: absolute; left: -26px; top: -26px; width: 52px; height: 52px; border-radius: 16px;
+  display: grid; place-items: center; background: #fff; color: var(--c);
+  box-shadow: 0 10px 24px rgba(60, 44, 20, .12), inset 0 0 0 1px rgba(0, 0, 0, .03);
+  opacity: 0; transform: translate(0, 30px) scale(.2) rotate(0deg);
+}
+.intro-icon::before { content: ''; position: absolute; inset: 5px; border-radius: 12px; background: var(--c-soft); }
+.intro-icon .ico { position: relative; font-size: 25px; }
+.intro.play .intro-icon { animation: iconPop .9s var(--spring) forwards, iconFloat 2.4s ease-in-out 1.6s infinite alternate; animation-delay: calc(.95s + var(--i) * 70ms), calc(1.8s + var(--i) * 90ms); }
+@keyframes iconPop {
+  0% { opacity: 0; transform: translate(0, 30px) scale(.2) rotate(0deg); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: translate(var(--x), var(--y)) scale(1) rotate(var(--r)); }
+}
+@keyframes iconFloat {
+  from { transform: translate(var(--x), var(--y)) scale(1) rotate(var(--r)); }
+  to { transform: translate(var(--x), calc(var(--y) - 7px)) scale(1) rotate(calc(var(--r) * -1)); }
+}
+
+/* 서랍장 */
+.cabinet {
+  position: absolute; top: 170px; left: 50%; width: 230px; height: 150px; margin-left: -115px;
+  opacity: 0; transform: translateY(24px);
+}
+.intro.play .cabinet { animation: rise .7s var(--ease) .1s forwards; }
+@keyframes rise { to { opacity: 1; transform: none; } }
+.cab-body {
+  position: absolute; inset: 0; border-radius: 28px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F7F1E8 100%);
+  box-shadow: 0 30px 50px -20px rgba(120, 80, 40, .28), 0 2px 0 #fff inset, 0 0 0 1px #EDE4D6;
+}
+.cab-slot {
+  position: absolute; left: 18px; right: 18px; top: 18px; height: 52px; border-radius: 14px;
+  background: linear-gradient(180deg, #E9DDCB, #F3EADD);
+  box-shadow: inset 0 6px 12px rgba(120, 80, 40, .18);
+}
+.cab-drawer {
+  position: absolute; left: 14px; right: 14px; top: 14px; height: 60px; border-radius: 16px;
+  background: linear-gradient(180deg, #FFFFFF, #FBF6EF);
+  box-shadow: 0 1px 0 #fff inset, 0 0 0 1px #EDE4D6, 0 6px 12px rgba(120, 80, 40, .08);
+  display: grid; place-items: center; transform-origin: 50% 100%;
+}
+.intro.play .cab-drawer { animation: pull .75s var(--spring) .55s forwards; }
+@keyframes pull { to { transform: translateY(34px) scale(1.06); box-shadow: 0 1px 0 #fff inset, 0 0 0 1px #EDE4D6, 0 18px 26px rgba(120, 80, 40, .18); } }
+.cab-drawer2 {
+  position: absolute; left: 14px; right: 14px; bottom: 14px; height: 60px; border-radius: 16px;
+  background: linear-gradient(180deg, #FFFFFF, #FBF6EF);
+  box-shadow: 0 1px 0 #fff inset, 0 0 0 1px #EDE4D6;
+  display: grid; place-items: center;
+}
+.intro.play .cab-drawer2 { animation: hideBack .75s var(--ease) .55s forwards; }
+@keyframes hideBack { to { opacity: .0; } }
+.handle { width: 54px; height: 10px; border-radius: 10px; background: linear-gradient(90deg, #FF9A7C, var(--brand-deep)); box-shadow: 0 3px 8px rgba(232, 94, 63, .35); }
+.cab-drawer2 .handle { background: #EFE5D6; box-shadow: none; }
+
+/* 워드마크 */
+.intro-word { position: absolute; top: 345px; left: 0; right: 0; text-align: center; }
+.intro-word h1 { font-size: 40px; font-weight: 800; letter-spacing: -0.05em; opacity: 0; transform: translateY(12px); }
+.intro-word h1 span { font-family: var(--num); font-weight: 600; font-size: 13px; letter-spacing: .32em; display: block; color: var(--ink-3); margin-bottom: 6px; }
+.intro-word p { margin-top: 10px; font-size: 16px; color: var(--ink-2); opacity: 0; transform: translateY(10px); }
+.intro.play .intro-word h1 { animation: rise .8s var(--ease) 1.35s forwards; }
+.intro.play .intro-word p { animation: rise .8s var(--ease) 1.55s forwards; }
+
+.intro-skip { position: absolute; right: 24px; bottom: 22px; font-size: 13px; font-weight: 600; color: var(--ink-3); padding: 8px 12px; border-radius: 10px; }
+.intro-skip:hover { background: rgba(0, 0, 0, .04); color: var(--ink); }
+
+/* 홈 등장 */
+.home.enter .hero, .home.enter .combo-row, .home.enter .drawer { animation: homeIn .8s var(--ease) both; }
+.home.enter .combo-row { animation-delay: .08s; }
+.home.enter .drawer { animation-delay: calc(.14s + var(--d, 0) * 70ms); }
+@keyframes homeIn { from { opacity: 0; transform: translateY(18px); } }
+
+@media (max-height: 560px) { .intro-stage { transform: scale(.8); } }

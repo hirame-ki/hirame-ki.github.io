@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>수업서랍 · 꺼내면 바로, 수업이 됩니다</title>
+
+  <!-- 기본 메타 -->
+  <meta name="description" content="초등 선생님을 위한 수업 도구 서랍. 타이머·한 명 뽑기·룰렛·사다리·모둠 편성·점수판·소음 측정·QR 코드까지 12가지 도구를 한 곳에 모았고, 점수판과 타이머처럼 여러 도구를 한 화면에 나란히 띄워 쓸 수 있어요. 설치·로그인 없이 바로 사용하세요.">
+  <meta name="keywords" content="수업서랍, 수업 도구, 초등 수업, 교실 타이머, 랜덤 뽑기, 발표자 뽑기, 룰렛, 사다리 타기, 모둠 편성, 점수판, 소음 측정기, 백색소음, QR 코드, 교사 도구, 전자칠판">
+  <meta name="author" content="황성재 (@hirame.ki)">
+  <meta name="application-name" content="수업서랍">
+  <meta name="theme-color" content="#FAF7F2">
+  <meta name="color-scheme" content="light">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="robots" content="index, follow">
+  <!-- 배포 주소가 정해지면 아래 주석을 풀고 실제 주소로 바꿔 주세요 -->
+  <!-- <link rel="canonical" href="https://example.com/"> -->
+
+  <!-- 공유 미리보기 (카카오톡·페이스북·밴드 등) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="수업서랍">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="수업서랍 · 꺼내면 바로, 수업이 됩니다">
+  <meta property="og:description" content="타이머·뽑기·점수판·모둠 편성까지, 초등 교실에 필요한 12가지 도구를 한 서랍에. 여러 도구를 한 화면에 나란히 띄워 쓰세요.">
+  <!-- 공유 미리보기 이미지는 절대 주소여야 합니다. 배포 후 https://배포주소/assets/og-image.png 로 바꿔 주세요 -->
+  <meta property="og:image" content="assets/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="수업서랍 — 서랍에서 타이머, 뽑기, 점수판 도구가 올라오는 이미지와 '꺼내면 바로, 수업이 됩니다' 문구">
+  <!-- <meta property="og:url" content="https://example.com/"> -->
+
+  <!-- X(트위터) -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="수업서랍 · 꺼내면 바로, 수업이 됩니다">
+  <meta name="twitter:description" content="초등 교실에 필요한 12가지 수업 도구를 한 서랍에. 점수판과 타이머를 한 화면에 나란히.">
+  <meta name="twitter:image" content="assets/og-image.png">
+  <meta name="twitter:image:alt" content="수업서랍 대표 이미지">
+
+  <!-- 아이콘 -->
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-title" content="수업서랍">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- 검색엔진용 구조화 데이터 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "수업서랍",
+    "alternateName": "Class Drawer",
+    "description": "초등 선생님을 위한 수업 도구 모음. 타이머, 스톱워치, 알림 종, 한 명 뽑기, 여러 명 뽑기, 룰렛, 사다리 타기, 모둠 편성, 점수판, 소음 측정, 집중 소리, QR 코드를 한 화면에서 나란히 사용할 수 있습니다.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web",
+    "inLanguage": "ko",
+    "audience": { "@type": "EducationalAudience", "educationalRole": "teacher" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+    "author": { "@type": "Person", "name": "황성재" }
+  }
+  </script>
+
+  <!-- 글꼴 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&display=swap">
+
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/intro.css">
+  <link rel="stylesheet" href="css/tools.css">
+</head>
+<body>
+  <div class="bg-deco" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <!-- 오프닝 -->
+  <div class="intro" id="intro" hidden>
+    <div class="intro-stage">
+      <div class="intro-icons"></div>
+      <div class="cabinet">
+        <div class="cab-body"></div>
+        <div class="cab-slot"></div>
+        <div class="cab-drawer2"><span class="handle"></span></div>
+        <div class="cab-drawer"><span class="handle"></span></div>
+      </div>
+      <div class="intro-word">
+        <h1><span>CLASS DRAWER</span>수업서랍</h1>
+        <p>꺼내면 바로, 수업이 됩니다</p>
+      </div>
+    </div>
+    <button class="intro-skip" type="button">건너뛰기</button>
+  </div>
+
+  <div class="app">
+    <header class="topbar">
+      <button class="brand" id="brand" type="button" aria-label="수업서랍 처음 화면">
+        <img class="brand-mark" src="assets/favicon.svg" alt="">
+        <span class="brand-name">수업서랍<small>Class Drawer</small></span>
+      </button>
+      <span class="spacer"></span>
+      <button class="chip-btn" id="class-chip" type="button" title="우리 반 명단 관리">
+        <svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20.5a6.5 6.5 0 0 1 13 0"/><path d="M15.5 4.8a3.4 3.4 0 0 1 0 6.4"/><path d="M21.5 20.5a6.5 6.5 0 0 0-3.8-5.9"/></svg>
+        <span class="lbl">우리 반</span><span class="count">0명</span>
+      </button>
+      <button class="icon-btn" id="fs" type="button" title="전체 화면 (TV·전자칠판)"></button>
+    </header>
+
+    <main class="main">
+      <!-- 서랍 (처음 화면) -->
+      <div class="view home" id="home">
+        <div class="home-inner">
+          <div class="hero">
+            <div>
+              <span class="hero-eyebrow">초등 교실을 위한 수업 도구 서랍</span>
+              <h1>꺼내면 바로,<br><em>수업이 됩니다.</em></h1>
+              <p>12가지 도구를 비슷한 것끼리 다섯 칸에 정리했어요.<br>두 개 이상 골라 한 화면에 나란히 띄울 수도 있어요.</p>
+            </div>
+            <div class="row">
+              <button class="btn btn-soft" id="resume" type="button" hidden><svg class="ico" viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v4.5H8"/></svg><span></span></button>
+              <button class="btn btn-primary" id="select-toggle" type="button"></button>
+            </div>
+          </div>
+          <div class="combo-row" id="combos"></div>
+          <div id="drawers"></div>
+          <footer class="home-foot">
+            <span>명단과 점수는 이 브라우저에만 저장되고, 어디로도 전송되지 않아요.</span>
+            <span><button class="btn-ghost" id="replay-intro" type="button" style="font-size:12.5px;color:inherit;text-decoration:underline;text-underline-offset:3px">오프닝 다시 보기</button> · Engineered by 황성재 · @hirame.ki</span>
+          </footer>
+        </div>
+      </div>
+
+      <!-- 작업 공간 (화면 분할) -->
+      <div class="view workspace" id="workspace" hidden>
+        <div class="ws-bar">
+          <button class="btn btn-ghost btn-sm" id="ws-home" type="button"><svg class="ico" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>서랍</button>
+          <div class="ws-tabs" id="ws-tabs"></div>
+          <button class="ws-add" id="ws-add" type="button"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>도구 추가</button>
+          <span class="spacer" style="flex:1"></span>
+          <div class="seg" id="ws-layout"></div>
+        </div>
+        <div class="panes" id="panes"></div>
+        <div class="splitter v" id="splitter" hidden title="끌어서 크기 조절 · 두 번 누르면 반반"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 여러 개 고르기 바 -->
+  <div class="select-bar" id="select-bar" role="region" aria-label="도구 고르기">
+    <span class="sel-info"></span>
+    <span class="sel-pills"></span>
+    <button class="btn btn-ghost btn-sm" id="sel-cancel" type="button">취소</button>
+    <button class="btn btn-brand btn-sm" id="sel-open" type="button"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="16" rx="2"/><rect x="13" y="4" width="8" height="16" rx="2"/></svg><span>나란히 열기</span></button>
+  </div>
+
+  <!-- 모달: 도구 추가 -->
+  <div class="modal-wrap" id="m-picker" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="picker-title">
+      <div class="modal-head"><div style="flex:1"><h2 id="picker-title">옆에 띄울 도구 고르기</h2><p>최대 4개까지 한 화면에 나란히 띄울 수 있어요</p></div>
+        <button class="icon-btn" data-close-modal type="button" aria-label="닫기"><svg class="ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-body" id="picker-body"></div>
+    </div>
+  </div>
+
+  <!-- 모달: 우리 반 명단 -->
+  <div class="modal-wrap" id="m-roster" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="roster-title">
+      <div class="modal-head"><div style="flex:1"><h2 id="roster-title">우리 반 명단</h2><p>뽑기·룰렛·사다리·모둠 편성에 쓰여요. 이 브라우저에만 저장돼요.</p></div>
+        <button class="icon-btn" data-close-modal type="button" aria-label="닫기"><svg class="ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-body">
+        <div class="roster">
+          <div class="class-list" id="class-list"></div>
+          <div class="class-editor">
+            <div><label class="field-label" for="class-name">반 이름</label><input class="input" id="class-name" maxlength="20"></div>
+            <div style="display:flex;flex-direction:column;flex:1">
+              <label class="field-label" for="class-students">학생 이름 · 한 줄에 한 명 <b id="class-count" style="color:var(--brand-deep)"></b></label>
+              <textarea class="textarea" id="class-students" placeholder="김하늘&#10;이바다&#10;박새봄&#10;(엑셀에서 이름 열을 복사해 붙여 넣어도 돼요)"></textarea>
+            </div>
+            <div class="row">
+              <span class="hint">이름 대신 번호로:</span>
+              <div class="stepper"><input type="number" id="class-fill-n" min="1" max="60" value="24"><span class="unit">명</span></div>
+              <button class="btn btn-soft btn-sm" id="class-fill" type="button">1번부터 채우기</button>
+              <span style="flex:1"></span>
+              <button class="btn btn-ghost btn-sm" id="class-del" type="button" style="color:var(--danger)">이 반 지우기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot"><span class="hint" style="flex:1">바뀐 내용은 바로 저장돼요.</span><button class="btn btn-primary btn-sm" data-close-modal type="button">완료</button></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script src="js/core.js" defer></script>
+  <script src="js/tools-time.js" defer></script>
+  <script src="js/tools-pick.js" defer></script>
+  <script src="js/tools-more.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
