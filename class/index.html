@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+  수업서랍 (Class Drawer)
+  Copyright (c) 2026 황성재 (@hirame.ki). All rights reserved.
+  비상업적 교육 목적으로만 무료 사용 가능 · 상업적 이용, 개작, 무단 재배포 금지.
+  자세한 조건은 LICENSE 파일을 확인해 주세요.
+-->
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -9,6 +15,7 @@
   <meta name="description" content="초등 선생님을 위한 수업 도구 서랍. 타이머·한 명 뽑기·룰렛·사다리·모둠 편성·점수판·소음 측정·QR 코드까지 12가지 도구를 한 곳에 모았고, 점수판과 타이머처럼 여러 도구를 한 화면에 나란히 띄워 쓸 수 있어요. 설치·로그인 없이 바로 사용하세요.">
   <meta name="keywords" content="수업서랍, 수업 도구, 초등 수업, 교실 타이머, 랜덤 뽑기, 발표자 뽑기, 룰렛, 사다리 타기, 모둠 편성, 점수판, 소음 측정기, 백색소음, QR 코드, 교사 도구, 전자칠판">
   <meta name="author" content="황성재 (@hirame.ki)">
+  <meta name="copyright" content="© 2026 황성재 (@hirame.ki). All rights reserved.">
   <meta name="application-name" content="수업서랍">
   <meta name="theme-color" content="#FAF7F2">
   <meta name="color-scheme" content="light">
@@ -59,7 +66,11 @@
     "inLanguage": "ko",
     "audience": { "@type": "EducationalAudience", "educationalRole": "teacher" },
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
-    "author": { "@type": "Person", "name": "황성재" }
+    "author": { "@type": "Person", "name": "황성재", "sameAs": "https://www.instagram.com/hirame.ki/" },
+    "copyrightHolder": { "@type": "Person", "name": "황성재" },
+    "copyrightYear": 2026,
+    "copyrightNotice": "© 2026 황성재 (@hirame.ki). 비상업적 교육 목적 무료 사용 · 상업적 이용·개작·무단 재배포 금지",
+    "isAccessibleForFree": true
   }
   </script>
 
@@ -128,7 +139,7 @@
           <div id="drawers"></div>
           <footer class="home-foot">
             <span>명단과 점수는 이 브라우저에만 저장되고, 어디로도 전송되지 않아요.</span>
-            <span><button class="btn-ghost" id="replay-intro" type="button" style="font-size:12.5px;color:inherit;text-decoration:underline;text-underline-offset:3px">오프닝 다시 보기</button> · Engineered by 황성재 · @hirame.ki</span>
+            <span><button class="btn-ghost" id="replay-intro" type="button" style="font-size:12.5px;color:inherit;text-decoration:underline;text-underline-offset:3px">오프닝 다시 보기</button> · <button class="btn-ghost" id="open-license" type="button" style="font-size:12.5px;color:inherit;text-decoration:underline;text-underline-offset:3px">이용 안내</button> · © 2026 황성재. All rights reserved.</span>
           </footer>
         </div>
       </div>
@@ -192,6 +203,40 @@
       <div class="modal-foot"><span class="hint" style="flex:1">바뀐 내용은 바로 저장돼요.</span><button class="btn btn-primary btn-sm" data-close-modal type="button">완료</button></div>
     </div>
   </div>
+
+  <!-- 모달: 이용 안내 (저작권) -->
+  <div class="modal-wrap" id="m-license" hidden>
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="license-title">
+      <div class="modal-head"><div style="flex:1"><h2 id="license-title">이용 안내</h2><p>© 2026 황성재 (@hirame.ki). All rights reserved.</p></div>
+        <button class="icon-btn" data-close-modal type="button" aria-label="닫기"><svg class="ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+      <div class="modal-body license">
+        <section class="lic ok">
+          <h3><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.7 2.7L16 9.6"/></svg>이렇게 써 주세요</h3>
+          <ul>
+            <li>학교·학원 수업, 가정 학습 등 <b>교육 목적이라면 무료</b>로 쓸 수 있어요.</li>
+            <li>교실 TV·전자칠판에 띄우거나 수업 장면을 촬영·방송해도 괜찮아요.</li>
+            <li>다른 선생님께는 <b>이 주소(링크)로</b> 알려 주세요.</li>
+          </ul>
+        </section>
+        <section class="lic no">
+          <h3><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>이건 안 돼요</h3>
+          <ul>
+            <li><b>상업적 이용</b> — 판매, 유료 강의·플랫폼·앱·콘텐츠에 포함, 광고 수익 목적의 게시</li>
+            <li><b>개작</b> — 코드·디자인·로고·아이콘·문구를 고치거나 번역해 새 버전을 만드는 것, 일부를 떼어 다른 작품에 쓰는 것</li>
+            <li><b>무단 재배포</b> — 다른 사이트·자료실에 복사해 올리기, 파일로 나눠 주기, 제작자 표시 지우기</li>
+          </ul>
+        </section>
+        <p class="hint">위 내용 중 필요한 것이 있다면 인스타그램 <a href="https://www.instagram.com/hirame.ki/" target="_blank" rel="noopener noreferrer">@hirame.ki</a>로 먼저 문의해 주세요. 글꼴(Pretendard·Outfit, SIL OFL 1.1)과 QR 라이브러리(qrcodejs, MIT)는 각자의 라이선스를 따릅니다. 전체 조건은 함께 들어 있는 <b>LICENSE</b> 파일에 있어요.</p>
+      </div>
+      <div class="modal-foot"><button class="btn btn-primary btn-sm" data-close-modal type="button">확인</button></div>
+    </div>
+  </div>
+
+  <!-- 제작자 칩 -->
+  <a class="maker-chip" id="maker-chip" href="https://www.instagram.com/hirame.ki/" target="_blank" rel="noopener noreferrer" aria-label="제작자 인스타그램 @hirame.ki (새 창)">
+    <svg class="ico maker-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.1"/><circle cx="17.3" cy="6.7" r=".6" fill="currentColor"/></svg>
+    <span class="maker-label">@hirame.ki</span>
+  </a>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
