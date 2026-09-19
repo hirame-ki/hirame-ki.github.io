@@ -20,11 +20,9 @@
       if (el.classList.contains('out')) return;
       el.classList.add('out'); home.classList.add('enter');
       setTimeout(() => { el.hidden = true; home.classList.remove('enter'); }, 900);
-      try { sessionStorage.setItem('sd.intro', '1'); } catch (e) {}
     };
-    let seen = false; try { seen = sessionStorage.getItem('sd.intro') === '1'; } catch (e) {}
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (seen || reduce) { el.hidden = true; home.classList.add('enter'); setTimeout(() => home.classList.remove('enter'), 1200); return; }
+    if (reduce) { el.hidden = true; home.classList.add('enter'); setTimeout(() => home.classList.remove('enter'), 1200); return; }
     const pick = ['timer', 'pickOne', 'trophy', 'roulette', 'bell', 'groups', 'qr'];
     const grp = ['time', 'pick', 'team', 'pick', 'time', 'team', 'share'];
     const n = pick.length;
@@ -41,7 +39,6 @@
     addEventListener('keydown', skip, { once: true });
   }
   $('#replay-intro')?.addEventListener('click', () => {
-    try { sessionStorage.removeItem('sd.intro'); } catch (e) {}
     const el = $('#intro'); el.classList.remove('out', 'play'); void el.offsetWidth; intro();
   });
 
