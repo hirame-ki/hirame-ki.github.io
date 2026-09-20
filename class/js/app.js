@@ -48,18 +48,28 @@
     return `<button class="tool-card ${extra}" data-id="${t.id}" style="${gc(t.group)}">
       <span class="tool-check">${ico('check')}</span>
       <span class="tool-ico">${ico(t.icon)}</span>
-      <span><span class="tool-name">${t.name}</span><span class="tool-desc" style="display:block">${t.desc}</span></span>
+      <span><span class="tool-name">${t.name}</span><span class="tool-desc">${t.desc}</span></span>
       <span class="open-hint">열기 ${ico('arrow')}</span>
     </button>`;
+  }
+  /* 서랍을 두 줄에 나눠 담을 때 한 줄에 들어갈 도구 수 — 한 화면에 다 보이게 */
+  function rowCap(counts) {
+    const total = counts.reduce((a, b) => a + b, 0);
+    const rows = (cap) => counts.reduce((r, n) => (r.at(-1) + n <= cap ? r[r.length - 1] += n : r.push(n), r), [0]).length;
+    let cap = Math.max(...counts, Math.ceil(total / 2));
+    while (cap < total && rows(cap) > 2) cap++;
+    return cap;
   }
   function renderHome() {
     $('#combos').innerHTML = `<span class="combo-label">${ico('layers')}자주 쓰는 조합</span>` + COMBOS.map(c => {
       const ts = c.map(byId);
       return `<button class="combo" data-combo="${c.join(',')}"><span class="dots">${ts.map(t => `<span style="${gc(t.group)};background:var(--c-soft);color:var(--c)">${ico(t.icon)}</span>`).join('')}</span>${ts.map(t => t.name).join('<span class="plus"> + </span>')}</button>`;
     }).join('');
+    const counts = GROUPS.map(g => TOOLS.filter(t => t.group === g.id).length);
+    $('#drawers').style.setProperty('--row', rowCap(counts));
     $('#drawers').innerHTML = GROUPS.map((g, gi) => {
       const ts = TOOLS.filter(t => t.group === g.id);
-      return `<section class="drawer" style="${gc(g.id)};--d:${gi}">
+      return `<section class="drawer" style="${gc(g.id)};--d:${gi};--n:${ts.length}">
         <div class="drawer-head"><span class="drawer-no">${g.no}</span><h2 class="drawer-title">${g.name}</h2><span class="drawer-desc">${g.desc}</span><span class="drawer-line"></span></div>
         <div class="tool-grid">${ts.map(t => card(t)).join('')}</div>
       </section>`;

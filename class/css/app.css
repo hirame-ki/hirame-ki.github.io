@@ -177,7 +177,7 @@ svg { display: block; }
 .tool-ico { width: 48px; height: 48px; border-radius: 15px; background: var(--c-soft); color: var(--c); display: grid; place-items: center; }
 .tool-ico .ico { font-size: 25px; stroke-width: 1.9; }
 .tool-name { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
-.tool-desc { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; margin-top: 4px; }
+.tool-desc { display: block; font-size: 13.5px; color: var(--ink-2); line-height: 1.5; margin-top: 4px; }
 .tool-check {
   position: absolute; top: 16px; right: 16px; width: 26px; height: 26px; border-radius: 50%;
   border: 2px solid var(--line-2); background: #fff; display: grid; place-items: center; color: #fff;
@@ -350,6 +350,44 @@ body[data-view="workspace"] .maker-chip { opacity: 0; visibility: hidden; transf
 /* 토스트 */
 .toast { position: fixed; left: 50%; top: 80px; z-index: 60; transform: translate(-50%, -20px); opacity: 0; pointer-events: none; transition: all .35s var(--spring); background: var(--ink); color: #fff; font-size: 14px; font-weight: 600; padding: 11px 18px; border-radius: 14px; box-shadow: var(--shadow-3); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- 한 화면에 다 보이는 서랍 (넓은 화면·전자칠판) ---------- */
+@media (min-width: 1000px) and (min-height: 600px) {
+  .view.home { overflow: hidden; }
+  .home { height: 100%; padding: clamp(16px, 2.6vh, 36px) clamp(20px, 2.4vw, 34px) clamp(12px, 1.8vh, 24px); }
+  .home-inner { max-width: 1560px; height: 100%; display: flex; flex-direction: column; gap: clamp(10px, 1.8vh, 22px); }
+
+  .hero { margin-bottom: 0; align-items: center; gap: 20px; }
+  .hero-eyebrow { margin-bottom: clamp(6px, 1.1vh, 14px); }
+  .hero h1 { font-size: clamp(24px, 2vw + .8vh, 40px); }
+  .hero p { margin-top: clamp(4px, .9vh, 10px); font-size: clamp(13.5px, 1.6vh, 16px); }
+  .combo-row { margin-bottom: 0; gap: 8px; }
+
+  /* 서랍 다섯 칸을 두 줄에: 칸 너비는 그 안의 도구 수에 비례 (--n / --row) */
+  #drawers { --dg: 14px; flex: 1; min-height: 0; display: flex; flex-wrap: wrap; align-content: stretch; gap: clamp(10px, 1.8vh, 22px) var(--dg); }
+  .drawer {
+    margin-bottom: 0; min-width: 0; min-height: 0; container-type: inline-size;
+    display: flex; flex-direction: column;
+    flex: var(--n, 3) 1 calc(var(--n, 3) * (100% - var(--dg)) / var(--row, 7));
+  }
+  .drawer-head { margin-bottom: clamp(6px, 1.1vh, 14px); flex-wrap: nowrap; gap: 10px; }
+  .drawer-desc { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @container (max-width: 400px) { .drawer-desc { display: none; } }
+
+  #drawers .tool-grid { flex: 1; min-height: 0; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: clamp(8px, .9vw, 14px); }
+  #drawers .tool-card { min-height: 0; justify-content: center; container-type: inline-size; padding: clamp(12px, 1.8vh, 20px); gap: clamp(8px, 1.3vh, 14px); }
+  #drawers .tool-ico { width: clamp(36px, 4.6vh, 48px); height: clamp(36px, 4.6vh, 48px); border-radius: 14px; }
+  #drawers .tool-ico .ico { font-size: clamp(19px, 2.4vh, 25px); }
+  #drawers .tool-name { font-size: clamp(14.5px, 1.9vh, 17px); }
+  #drawers .tool-desc { font-size: clamp(12px, 1.5vh, 13.5px); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+  @container (max-width: 120px) { #drawers .tool-desc { display: none; } }
+
+  .home-foot { margin-top: 0; padding-top: clamp(8px, 1.3vh, 18px); }
+  .home.selecting .home-foot { visibility: hidden; }
+}
+@media (min-width: 1000px) and (max-height: 700px) {
+  .hero p { display: none; }
+}
 
 @media (max-width: 860px) {
   .topbar { padding: 0 12px; gap: 6px; }

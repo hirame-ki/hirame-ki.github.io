@@ -7,6 +7,10 @@
   'use strict';
   const { ico, audio, roster, $, $$, esc, shuffle, rand, lines, register, WHEEL, PALETTE, fitCanvas, confetti } = SD;
   const emptyNote = () => `<div class="empty">${ico('users')}<div>명단이 비어 있어요.<br>위쪽 <b>우리 반</b> 버튼에서 이름을 넣어주세요.</div></div>`;
+  /* 움직임을 불편해하는 설정이면 굴리는 시간을 확 줄여요 */
+  const slow = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* 이름이 바뀔 때마다 조금씩 높아지는 소리 — 긴장감 */
+  const tick = (i) => audio.tone(760 + i * 26, 0, .05, .07, 'triangle');
 
   /* ---------------- 1명 뽑기 ---------------- */
   register({
@@ -37,14 +41,20 @@
         let p = pool();
         if (!p.length) { used.clear(); p = pool(); SD.toast('모두 한 번씩 뽑혔어요. 처음부터 다시 뽑아요.'); }
         clearTimeout(timer); go.disabled = true; nameEl.classList.remove('win'); nameEl.classList.add('rolling');
-        let i = 0; const steps = 22;
+        sub.textContent = '두구두구…';
+        const w = p[rand(p.length)];           /* 결과는 미리 정해두고, 굴리는 동안 감춰요 */
+        let i = 0; const steps = slow() ? 26 : 5;
         const spin = () => {
-          nameEl.textContent = all[rand(all.length)]; audio.chime('tick'); i++;
-          if (i < steps) { timer = setTimeout(spin, 30 + i * i * .45); return; }
-          const w = p[rand(p.length)]; used.add(w);
-          nameEl.textContent = w; nameEl.classList.remove('rolling'); void nameEl.offsetWidth; nameEl.classList.add('win');
-          audio.chime('pop'); confetti(stage); go.disabled = false;
-          sub.textContent = nodup.checked ? `축하해요! · 남은 친구 ${pool().length}명` : '축하해요!';
+          nameEl.textContent = all[rand(all.length)]; tick(i); i++;
+          if (i > steps * .62) nameEl.classList.add('beat');   /* 뒤로 갈수록 두근두근 */
+          /* 처음엔 빠르게, 끝으로 갈수록 눈에 띄게 느려지게 */
+          if (i < steps) { timer = setTimeout(spin, 24 + 430 * Math.pow(i / steps, 3.6)); return; }
+          timer = setTimeout(() => {           /* 마지막 한 박자 쉬고 공개 */
+            used.add(w);
+            nameEl.textContent = w; nameEl.classList.remove('rolling', 'beat'); void nameEl.offsetWidth; nameEl.classList.add('win');
+            audio.chime('pop'); confetti(stage); go.disabled = false;
+            sub.textContent = nodup.checked ? `축하해요! · 남은 친구 ${pool().length}명` : '축하해요!';
+          }, slow() ? 620 : 80);
         };
         spin();
       };
@@ -68,16 +78,45 @@
           </div>
           <div class="chips"></div>
         </div>`;
-      const cnt = $('.cnt', el), chips = $('.chips', el);
+      const cnt = $('.cnt', el), chips = $('.chips', el), go = $('.go', el);
+      let timers = [], roll = 0;
+      const stop = () => { timers.forEach(clearTimeout); timers = []; clearInterval(roll); roll = 0; };
+      const later = (ms, fn) => timers.push(setTimeout(fn, ms));
       $$('.stepper button', el).forEach(b => b.onclick = () => { cnt.value = Math.max(1, (+cnt.value || 1) + +b.dataset.d); });
-      $('.go', el).onclick = () => {
+      go.onclick = () => {
         const s = roster.students();
         if (!s.length) { chips.innerHTML = emptyNote(); return; }
+        stop();
         const n = Math.min(Math.max(1, +cnt.value || 1), s.length);
-        chips.innerHTML = shuffle(s).slice(0, n).map((x, i) => `<div class="name-chip" style="animation-delay:${i * 90}ms"><i>${i + 1}</i>${esc(x)}</div>`).join('');
-        audio.chime('pop');
+        const win = shuffle(s).slice(0, n);
+        /* 이름이 바뀌어도 칸이 들썩이지 않게, 가장 긴 이름에 너비를 맞춰요 */
+        chips.style.setProperty('--nw', Math.min(6, Math.max(3, ...s.map(x => [...x].length))));
+        chips.innerHTML = win.map((x, i) => `<div class="name-chip rolling" style="animation-delay:${i * 60}ms"><i>${i + 1}</i><span class="nm">?</span></div>`).join('');
+        const cells = $$('.name-chip', chips);
+        go.disabled = true;
+        /* 먼저 전부 드르륵 돌아가고 */
+        let k = 0;
+        roll = setInterval(() => {
+          cells.forEach(c => { if (c.classList.contains('rolling')) $('.nm', c).textContent = s[rand(s.length)]; });
+          if (k % 2 === 0) tick(k % 12);   /* 소리는 한 번 걸러 — 너무 시끄럽지 않게 */
+          k++;
+        }, 70);
+        /* 한 명씩 천천히 멈춰요 — 마지막 한 명은 한 박자 더 끌고 */
+        const gap = slow() ? Math.max(280, Math.min(820, 4200 / n)) : 90;
+        win.forEach((name, i) => {
+          const last = i === n - 1;
+          later((slow() ? 800 : 120) + gap * i + (last ? gap * .8 : 0), () => {
+            const c = cells[i]; $('.nm', c).textContent = name;
+            c.classList.remove('rolling'); c.classList.add('win');
+            if (last) { stop(); go.disabled = false; audio.chime('pop'); confetti(chips); }
+            else audio.tone(600 + i * 60, 0, .22, .15, 'triangle');
+          });
+        });
       };
-      return {};
+      return {
+        destroy() { stop(); },
+        onRoster() { stop(); chips.innerHTML = ''; go.disabled = false; },
+      };
     },
   });
 
