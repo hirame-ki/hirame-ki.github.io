@@ -16,6 +16,7 @@ const CORE_NAMES = [
   "guessArea", "isOtherArea",
   "onlyDigits", "sameNumStr",
   "nameNfc", "acNameKey", "headKey",
+  "parseNamePiece", "findByName", "splitPeople", "splitNums",
   "parseStudentNo", "parseClassNumbers",
   "HEAD_WORDS", "findHeaderRow", "guessAcRoles",
   "planAcSheet",
