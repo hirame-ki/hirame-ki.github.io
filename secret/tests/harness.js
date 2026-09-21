@@ -13,7 +13,7 @@ const vm = require("vm");
 const SRC = path.join(__dirname, "..", "index.html");
 
 const CORE_NAMES = [
-  "guessArea", "isOtherArea",
+  "guessArea", "isOtherArea", "targetScope",
   "onlyDigits", "sameNumStr",
   "nameNfc", "acNameKey", "headKey",
   "parseNamePiece", "findByName", "splitPeople", "splitNums",
