@@ -19,6 +19,13 @@
     trophy: '<path d="M8 21h8M12 16.5V21"/><path d="M7 3.5h10v5.5a5 5 0 0 1-10 0z"/><path d="M17 5.5h3v1.5a3.5 3.5 0 0 1-3.2 3.5M7 5.5H4v1.5a3.5 3.5 0 0 0 3.2 3.5"/>',
     gauge: '<path d="M3.5 16.5a8.5 8.5 0 1 1 17 0"/><path d="M12 16.5l4.2-5.2"/><circle cx="12" cy="16.5" r="1.4"/><path d="M6.4 10.4l1 .8M12 6.5v1.3M17.6 10.4l-1 .8"/>',
     headphones: '<path d="M3.5 17v-5a8.5 8.5 0 0 1 17 0v5"/><rect x="3" y="13.5" width="5" height="7.5" rx="2"/><rect x="16" y="13.5" width="5" height="7.5" rx="2"/>',
+    order: '<path d="M4 7h9M4 12h9M4 17h9"/><path d="M18 7.5v9"/><path d="M15.4 14l2.6 2.6 2.6-2.6"/>',
+    dice: '<rect x="3" y="3" width="18" height="18" rx="4.5"/><circle cx="8.6" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.35" fill="currentColor" stroke="none"/>',
+    roles: '<path d="M12 3.2 5.2 5.6v5.7c0 4.2 2.9 7.6 6.8 8.9 3.9-1.3 6.8-4.7 6.8-8.9V5.6z"/><path d="M9.2 11.8 11.3 14l3.8-4"/>',
+    signal: '<rect x="7" y="2.5" width="10" height="19" rx="5"/><circle cx="12" cy="7.2" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="16.8" r="1.7"/>',
+    dday: '<rect x="3" y="5" width="18" height="16" rx="3.4"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8.6 15.6h6.8"/>',
+    board: '<rect x="2.5" y="4" width="19" height="13" rx="2.6"/><path d="M12 17v3M8.5 20.5h7"/><path d="M6.5 8.5h8M6.5 12h5"/>',
+    cards: '<rect x="6.5" y="3.5" width="14" height="14" rx="3"/><path d="M17 20.5H6a2.5 2.5 0 0 1-2.5-2.5V7"/><path d="M10.5 10.5h6"/>',
     qr: '<rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><path d="M14 14h3v3h-3zM20 14v.01M20 17.5V21h-3.5M14 20.5v.01"/>',
     /* UI */
     plus: '<path d="M12 5v14M5 12h14"/>',

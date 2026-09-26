@@ -9,9 +9,21 @@
   const MAX = 4;
   const byId = (id) => TOOLS.find(t => t.id === id);
   const gc = (g) => `--c:var(--${g});--c-soft:var(--${g}-soft)`;
+  /* 자주 쓰는 조합 — 몇 개를 나란히 띄울지로 묶어 보여줘요.
+     3개 이상은 도구 이름을 다 늘어놓으면 길어서, 쓰임새를 이름으로 붙였어요. */
   const COMBOS = [
-    ['scoreboard', 'timer'], ['pickOne', 'timer'], ['groups', 'scoreboard'], ['noise', 'timer'],
+    { ids: ['scoreboard', 'timer'] },
+    { ids: ['pickOne', 'timer'] },
+    { ids: ['groups', 'roles'] },
+    { ids: ['noise', 'signal'] },
+    { ids: ['board', 'timer', 'scoreboard'], label: '수업 진행 한 판' },
+    { ids: ['groups', 'roles', 'scoreboard'], label: '모둠 만들고 시작' },
+    { ids: ['order', 'timer', 'scoreboard'], label: '발표 수업' },
+    { ids: ['board', 'timer', 'scoreboard', 'signal'], label: '한 차시 통째로' },
+    { ids: ['order', 'timer', 'scoreboard', 'board'], label: '발표회 준비' },
+    { ids: ['cards', 'timer', 'pickOne', 'scoreboard'], label: '낱말 퀴즈' },
   ];
+  const COMBO_SIZES = [2, 3, 4];
 
   /* ================= 오프닝 ================= */
   function intro() {
@@ -61,9 +73,15 @@
     return cap;
   }
   function renderHome() {
-    $('#combos').innerHTML = `<span class="combo-label">${ico('layers')}자주 쓰는 조합</span>` + COMBOS.map(c => {
-      const ts = c.map(byId);
-      return `<button class="combo" data-combo="${c.join(',')}"><span class="dots">${ts.map(t => `<span style="${gc(t.group)};background:var(--c-soft);color:var(--c)">${ico(t.icon)}</span>`).join('')}</span>${ts.map(t => t.name).join('<span class="plus"> + </span>')}</button>`;
+    $('#combos').innerHTML = `<span class="combo-label">${ico('layers')}자주 쓰는 조합</span>` + COMBO_SIZES.map(n => {
+      const group = COMBOS.filter(c => c.ids.length === n && c.ids.every(byId));
+      if (!group.length) return '';
+      return `<div class="combo-grp"><span class="combo-n">${n}개</span>` + group.map(c => {
+        const ts = c.ids.map(byId);
+        const body = c.label ? `<span class="combo-nick">${esc(c.label)}</span>` : ts.map(t => t.name).join('<span class="plus"> + </span>');
+        const tip = ts.map(t => t.name).join(' + ');
+        return `<button class="combo" data-combo="${c.ids.join(',')}" title="${tip}"><span class="dots">${ts.map(t => `<span style="${gc(t.group)};background:var(--c-soft);color:var(--c)">${ico(t.icon)}</span>`).join('')}</span>${body}</button>`;
+      }).join('') + '</div>';
     }).join('');
     const counts = GROUPS.map(g => TOOLS.filter(t => t.group === g.id).length);
     $('#drawers').style.setProperty('--row', rowCap(counts));
@@ -165,6 +183,12 @@
     seg.hidden = !seg.innerHTML;
     placeSplitter();
   }
+  /* 도구끼리 이어 쓰기 — 한 도구가 다른 도구를 옆에 불러올 수 있게 */
+  document.addEventListener('sd:open-tool', (e) => {
+    const id = e.detail; if (!byId(id)) return;
+    if (open.includes(id)) { setFocus(null); return; }
+    if (document.body.dataset.view === 'workspace') addTool(id); else openWorkspace([id]);
+  });
   $('#ws-tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-close]'); if (b) closeTool(b.dataset.close); });
   $('#ws-layout').addEventListener('click', (e) => {
     const b = e.target.closest('[data-l]'); if (!b) return;

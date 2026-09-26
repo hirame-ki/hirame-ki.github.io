@@ -20,10 +20,17 @@
             <button class="btn t-btn go">${ico('shuffle')}편성하기</button>
             <button class="btn btn-soft to-score" hidden>${ico('trophy')}점수판으로</button>
           </div>
+          <div class="next-step" hidden>
+            <span class="ns-msg">${ico('roles')}이 모둠 그대로 <b>역할</b>도 나눠 볼까요?</span>
+            <button class="btn btn-brand btn-sm ns-go">역할 나누기 열기</button>
+            <button class="icon-btn ns-no" type="button" aria-label="닫기">${ico('x')}</button>
+          </div>
           <div class="group-grid"></div>
         </div>`;
       const num = $('.num', el), unit = $('.unit', el), grid = $('.group-grid', el), toScore = $('.to-score', el);
+      const nextStep = $('.next-step', el);
       let mode = 'count', last = null;
+      const rolesOpen = () => !!document.querySelector('.pane[data-id="roles"]');
       $$('.mode .pill', el).forEach(p => p.onclick = () => { mode = p.dataset.m; $$('.mode .pill', el).forEach(x => x.classList.toggle('on', x === p)); unit.textContent = mode === 'count' ? '모둠' : '명씩'; });
       $$('.stepper button', el).forEach(b => b.onclick = () => { num.value = Math.max(1, (+num.value || 1) + +b.dataset.d); });
       $('.go', el).onclick = () => {
@@ -35,7 +42,18 @@
         last = g;
         grid.innerHTML = g.map((m, i) => `<div class="group-card" style="--gc:${PALETTE[i % PALETTE.length]};animation-delay:${i * 70}ms"><h4>${i + 1}모둠<span>${m.length}명</span></h4><ul>${m.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`).join('');
         toScore.hidden = false; audio.chime('pop');
+        /* 편성 결과를 내보내요 — 역할 나누기가 이 모둠을 그대로 이어받아요 */
+        store.set('team.groups', g);
+        document.dispatchEvent(new CustomEvent('sd:groups'));
+        /* 역할 나누기가 이미 옆에 떠 있으면 저절로 따라오니, 없을 때만 물어봐요 */
+        nextStep.hidden = rolesOpen();
+        if (rolesOpen()) SD.toast('역할 나누기도 이 모둠으로 맞췄어요');
       };
+      $('.ns-go', el).onclick = () => {
+        nextStep.hidden = true;
+        document.dispatchEvent(new CustomEvent('sd:open-tool', { detail: 'roles' }));
+      };
+      $('.ns-no', el).onclick = () => { nextStep.hidden = true; };
       toScore.onclick = () => {
         if (!last) return;
         store.set('score.teams', last.map((_, i) => ({ id: uid(), name: `${i + 1}모둠`, score: 0 })));
@@ -234,6 +252,240 @@
       $('.gen', el).onclick = gen; input.onkeydown = (e) => { if (e.key === 'Enter') gen(); };
       dl.onclick = () => { const c = $('canvas', box); const a = document.createElement('a'); a.download = 'qrcode.png'; a.href = c ? c.toDataURL('image/png') : $('img', box).src; a.click(); };
       const lastV = store.get('qr.last', ''); if (lastV) { input.value = lastV; setTimeout(gen, 0); }
+      return {};
+    },
+  });
+
+  /* ---------------- 역할 나누기 ---------------- */
+  register({
+    id: 'roles', group: 'team', name: '역할 나누기', icon: 'roles',
+    desc: '모둠장·기록이처럼 정해 둔 역할을 고르게 배정해요.',
+    mount(el) {
+      el.innerHTML = `
+        <div class="t top roles">
+          <div class="row">
+            <div class="pills mode">
+              <button class="pill" data-m="link">편성된 모둠 그대로</button>
+              <button class="pill" data-m="group">새로 섞어서</button>
+              <button class="pill" data-m="all">반 전체에</button>
+            </div>
+            <div class="stepper g-box"><button data-d="-1">−</button><input type="number" class="gn" min="1" max="12" value="4"><span class="unit">모둠</span><button data-d="1">+</button></div>
+            <button class="btn t-btn go">${ico('shuffle')}역할 나누기</button>
+          </div>
+          <div class="link-note" hidden></div>
+          <div class="roles-body">
+            <div class="roles-input"><label class="field-label">역할 · 한 줄에 하나</label><textarea class="textarea rl" placeholder="모둠장&#10;기록이&#10;발표이&#10;지킴이"></textarea></div>
+            <div class="roles-out"><div class="empty">${ico('roles')}<div>역할을 적고 <b>역할 나누기</b>를 눌러 주세요.</div></div></div>
+          </div>
+        </div>`;
+      const rl = $('.rl', el), out = $('.roles-out', el), gn = $('.gn', el), gBox = $('.g-box', el);
+      const note = $('.link-note', el);
+      const linked = () => store.get('team.groups', null);
+      /* 모둠 편성 결과가 있으면 그걸 이어받는 게 기본 */
+      let mode = store.get('roles.mode', 'link');
+      if (mode === 'link' && !linked()) mode = 'group';
+      rl.value = store.get('roles.list', '모둠장\n기록이\n발표이\n지킴이');
+      gn.value = store.get('roles.gn', 4);
+      const syncMode = () => {
+        $$('.mode .pill', el).forEach(x => x.classList.toggle('on', x.dataset.m === mode));
+        gBox.hidden = mode !== 'group';
+        const g = linked();
+        note.hidden = mode !== 'link';
+        if (mode === 'link') {
+          note.innerHTML = g
+            ? `${ico('groups')}<b>모둠 편성</b>에서 만든 ${g.length}모둠(${g.reduce((a, m) => a + m.length, 0)}명)을 그대로 쓰고, 역할만 나눠요.`
+            : `${ico('groups')}아직 편성된 모둠이 없어요. <b>모둠 편성</b>에서 먼저 모둠을 만들어 주세요.`;
+        }
+      };
+      const card = (title, count, rows, c) =>
+        `<div class="group-card" style="--gc:${c};animation-delay:${Math.random() * 120}ms"><h4>${esc(title)}<span>${count}명</span></h4><ul class="role-list">${rows}</ul></div>`;
+      const assign = (quiet) => {
+        const rs = SD.lines(rl.value), s = shuffle(roster.students());
+        store.set('roles.list', rl.value);
+        if (!rs.length) { if (!quiet) SD.toast('역할을 한 줄에 하나씩 적어 주세요'); return; }
+        if (mode === 'link') {
+          const src = linked();
+          if (!src || !src.length) { if (!quiet) SD.toast('모둠 편성에서 먼저 모둠을 만들어 주세요'); return; }
+          /* 모둠 구성원은 건드리지 않고, 그 안에서 역할만 섞어요 */
+          out.innerHTML = `<div class="group-grid">${src.map((m, i) => card(`${i + 1}모둠`, m.length,
+            shuffle(m).map((x, j) => `<li><b>${esc(j < rs.length ? rs[j] : '모둠원')}</b><span>${esc(x)}</span></li>`).join(''),
+            PALETTE[i % PALETTE.length])).join('')}</div>`;
+          audio.chime('pop'); return;
+        }
+        if (!s.length) { out.innerHTML = `<div class="empty">${ico('users')}<div>명단이 비어 있어요.<br>위쪽 <b>우리 반</b> 버튼에서 이름을 넣어주세요.</div></div>`; return; }
+        if (mode === 'group') {
+          const k = Math.max(1, Math.min(12, +gn.value || 1)); store.set('roles.gn', k);
+          const g = Array.from({ length: Math.min(k, s.length) }, () => []);
+          s.forEach((x, i) => g[i % g.length].push(x));
+          /* 역할은 모둠마다 한 번씩만 — 모둠장이 둘 나오지 않게, 남는 사람은 모둠원 */
+          out.innerHTML = `<div class="group-grid">${g.map((m, i) => card(`${i + 1}모둠`, m.length,
+            m.map((x, j) => `<li><b>${esc(j < rs.length ? rs[j] : '모둠원')}</b><span>${esc(x)}</span></li>`).join(''),
+            PALETTE[i % PALETTE.length])).join('')}</div>`;
+        } else {
+          const by = rs.map(() => []);
+          s.forEach((x, i) => by[i % rs.length].push(x));
+          out.innerHTML = `<div class="group-grid">${rs.map((r, i) => card(r, by[i].length,
+            by[i].map(x => `<li><span>${esc(x)}</span></li>`).join(''),
+            PALETTE[i % PALETTE.length])).join('')}</div>`;
+        }
+        audio.chime('pop');
+      };
+      $('.go', el).onclick = () => assign(false);
+      $$('.mode .pill', el).forEach(p => p.onclick = () => { mode = p.dataset.m; store.set('roles.mode', mode); syncMode(); });
+      $$('.g-box button', el).forEach(b => b.onclick = () => { gn.value = Math.max(1, Math.min(12, (+gn.value || 1) + +b.dataset.d)); store.set('roles.gn', +gn.value); });
+      /* 옆에서 모둠을 새로 편성하면 역할도 그 모둠에 맞춰 바로 다시 나눠요 */
+      const onGroups = () => { syncMode(); if (mode === 'link') assign(true); };
+      document.addEventListener('sd:groups', onGroups);
+      syncMode();
+      if (mode === 'link' && linked()) assign(true);
+      return { destroy() { document.removeEventListener('sd:groups', onGroups); } };
+    },
+  });
+
+  /* ---------------- 수업 신호등 ---------------- */
+  register({
+    id: 'signal', group: 'mood', name: '수업 신호등', icon: 'signal',
+    desc: '지금은 어떻게 이야기할 때인지 색으로 알려줘요.',
+    mount(el) {
+      const S = [
+        ['green', '초록불', '자유롭게 이야기해요', '함께 이야기해요', '#2FBF9B'],
+        ['yellow', '노란불', '짝과 소곤소곤', '소곤소곤 이야기해요', '#F2AE2E'],
+        ['red', '빨간불', '혼자 조용히', '혼자 조용히 해요', '#F2594B'],
+      ];
+      el.innerHTML = `
+        <div class="t signal">
+          <div class="signal-msg"></div>
+          <div class="lamps">${S.map(([k, n, d, , c]) => `<button class="lamp" data-k="${k}" style="--lc:${c}"><span class="bulb"></span><b>${n}</b><span class="ld">${d}</span></button>`).join('')}</div>
+        </div>`;
+      const root = $('.signal', el), msg = $('.signal-msg', el);
+      let cur = store.get('signal.k', '');
+      function render() {
+        const hit = S.find(x => x[0] === cur);
+        $$('.lamp', el).forEach(b => b.classList.toggle('on', b.dataset.k === cur));
+        msg.textContent = hit ? hit[3] : '신호를 골라 주세요';
+        root.classList.toggle('picked', !!hit);
+        root.style.setProperty('--sc', hit ? hit[4] : 'var(--ink-3)');
+      }
+      $$('.lamp', el).forEach(b => b.onclick = () => {
+        cur = cur === b.dataset.k ? '' : b.dataset.k;
+        store.set('signal.k', cur); render(); if (cur) audio.chime('pop');
+      });
+      render();
+      return {};
+    },
+  });
+
+  /* ---------------- 화면 칠판 ---------------- */
+  register({
+    id: 'board', group: 'share', name: '화면 칠판', icon: 'board',
+    desc: '학습 문제나 할 일을 큰 글씨로 띄워 둬요.',
+    mount(el) {
+      el.innerHTML = `
+        <div class="t top board">
+          <div class="row board-bar">
+            <div class="board-size" title="글씨 크기">
+              <span class="bs-mark sm">가</span>
+              <input type="range" class="range bsr" min="4" max="34" step="1" value="10" aria-label="글씨 크기">
+              <span class="bs-mark lg">가</span>
+            </div>
+            <div class="pills skin">${[['light', '흰 칠판'], ['dark', '초록 칠판']].map(([k, n]) => `<button class="pill" data-k="${k}">${n}</button>`).join('')}</div>
+            <button class="btn btn-ghost btn-sm clear">${ico('trash')}지우기</button>
+          </div>
+          <div class="board-sheet" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="화면 칠판"></div>
+        </div>`;
+      const sheet = $('.board-sheet', el), root = $('.board', el), bsr = $('.bsr', el);
+      /* 예전에 'm' 같은 단계로 저장해 둔 값이 있으면 보통 크기로 */
+      const saved = store.get('board.size', 10);
+      let size = typeof saved === 'number' ? saved : 10, skin = store.get('board.skin', 'light'), deb = 0;
+      bsr.value = size;
+      sheet.textContent = store.get('board.text', '');
+      function render() {
+        root.style.setProperty('--bs', size); root.dataset.skin = skin;
+        $$('.skin .pill', el).forEach(p => p.classList.toggle('on', p.dataset.k === skin));
+        sheet.classList.toggle('blank', !sheet.textContent.trim());
+        SD.initRanges(el);
+      }
+      sheet.addEventListener('input', () => {
+        sheet.classList.toggle('blank', !sheet.textContent.trim());
+        clearTimeout(deb); deb = setTimeout(() => store.set('board.text', sheet.innerText), 300);
+      });
+      /* 서식 없이 글자만 붙여 넣기 — 칠판 글씨가 뒤섞이지 않게 */
+      sheet.addEventListener('paste', (e) => {
+        e.preventDefault();
+        document.execCommand('insertText', false, (e.clipboardData || window.clipboardData).getData('text'));
+      });
+      bsr.oninput = () => { size = +bsr.value; store.set('board.size', size); render(); };
+      $$('.skin .pill', el).forEach(p => p.onclick = () => { skin = p.dataset.k; store.set('board.skin', skin); render(); });
+      $('.clear', el).onclick = () => {
+        if (sheet.textContent.trim() && !confirm('칠판에 쓴 내용을 모두 지울까요?')) return;
+        sheet.textContent = ''; store.set('board.text', ''); render(); sheet.focus();
+      };
+      render();
+      return { destroy() { clearTimeout(deb); store.set('board.text', sheet.innerText); } };
+    },
+  });
+
+  /* ---------------- 낱말 카드 ---------------- */
+  register({
+    id: 'cards', group: 'share', name: '낱말 카드', icon: 'cards',
+    desc: '낱말이나 문장을 한 장씩 아주 크게 띄워요.',
+    mount(el) {
+      el.innerHTML = `
+        <div class="t cards">
+          <div class="cards-setup">
+            <label class="field-label">카드 내용 · 한 줄에 하나</label>
+            <textarea class="textarea cl" placeholder="apple, 사과&#10;book, 책&#10;pencil, 연필"></textarea>
+            <p class="hint">쉼표로 나누면 뒤집는 카드가 돼요. 예) apple, 사과</p>
+            <button class="btn t-btn t-big start">${ico('cards')}카드 띄우기</button>
+          </div>
+          <div class="cards-stage" hidden>
+            <div class="card-step"></div>
+            <div class="card-face"><span class="card-text"></span></div>
+            <div class="row">
+              <button class="btn btn-soft prev">${ico('back')}이전</button>
+              <button class="btn t-btn t-big flip" hidden>${ico('reset')}뒤집기</button>
+              <button class="btn t-btn t-big nextc">다음${ico('arrow')}</button>
+            </div>
+            <div class="row">
+              <button class="btn btn-ghost btn-sm shuf">${ico('shuffle')}섞기</button>
+              <button class="btn btn-ghost btn-sm edit">${ico('edit')}다시 입력</button>
+            </div>
+          </div>
+        </div>`;
+      const setup = $('.cards-setup', el), stageBox = $('.cards-stage', el), cl = $('.cl', el);
+      const step = $('.card-step', el), face = $('.card-face', el), txt = $('.card-text', el);
+      const flipB = $('.flip', el), root = $('.cards', el);
+      let deck = [], i = 0, back = false;
+      cl.value = store.get('cards.text', '');
+      const parse = () => SD.lines(cl.value).map(line => {
+        const k = line.indexOf(',');
+        return k > 0 ? { a: line.slice(0, k).trim(), b: line.slice(k + 1).trim() } : { a: line, b: '' };
+      }).filter(c => c.a);
+      function render() {
+        const n = deck.length; if (!n) return;
+        i = Math.max(0, Math.min(n - 1, i));
+        const c = deck[i], hasBack = !!c.b;
+        step.textContent = `${i + 1} / ${n}`;
+        txt.textContent = back && hasBack ? c.b : c.a;
+        face.classList.toggle('back', back && hasBack);
+        /* 글자가 많아지면 저절로 작아지게 — 뒤에서도 읽히는 크기로 */
+        const len = [...txt.textContent].length;
+        root.dataset.len = len <= 3 ? 'xs' : len <= 7 ? 's' : len <= 16 ? 'm' : 'l';
+        flipB.hidden = !hasBack;
+        $('.prev', el).disabled = i === 0;
+      }
+      const move = (d) => { const n = deck.length; if (!n) return; i = (i + d + n) % n; back = false; render(); audio.chime('tick'); };
+      $('.start', el).onclick = () => {
+        deck = parse(); store.set('cards.text', cl.value);
+        if (!deck.length) { SD.toast('카드 내용을 한 줄에 하나씩 넣어주세요'); return; }
+        i = 0; back = false; setup.hidden = true; stageBox.hidden = false; render();
+      };
+      $('.nextc', el).onclick = () => move(1);
+      $('.prev', el).onclick = () => move(-1);
+      face.onclick = () => { const c = deck[i]; if (c && c.b) { back = !back; render(); audio.chime('tick'); } else move(1); };
+      flipB.onclick = () => { back = !back; render(); audio.chime('tick'); };
+      $('.shuf', el).onclick = () => { deck = shuffle(deck); i = 0; back = false; render(); audio.chime('pop'); };
+      $('.edit', el).onclick = () => { setup.hidden = false; stageBox.hidden = true; };
       return {};
     },
   });

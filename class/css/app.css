@@ -135,6 +135,10 @@ svg { display: block; }
 .home { padding: 40px 32px 120px; }
 .home-inner { max-width: 1180px; margin: 0 auto; }
 .hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 30px; }
+/* 네 개짜리 조합을 이어서 쓸 때 이름이 길어져도 버튼이 화면을 넘지 않게 */
+.hero > div, .hero .row { min-width: 0; max-width: 100%; }
+#resume { max-width: 100%; min-width: 0; }
+#resume span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--brand-deep); background: var(--brand-soft); padding: 6px 12px; border-radius: 999px; margin-bottom: 14px; }
 .hero h1 { font-size: clamp(28px, 3.4vw, 42px); font-weight: 800; letter-spacing: -0.045em; line-height: 1.2; }
 .hero h1 em { font-style: normal; background: linear-gradient(120deg, #FF8C6B, #E85E3F 60%); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -142,10 +146,15 @@ svg { display: block; }
 
 .combo-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 36px; align-items: center; }
 .combo-label { font-size: 13px; font-weight: 700; color: var(--ink-3); margin-right: 4px; display: inline-flex; align-items: center; gap: 6px; }
+/* 가짓수별 묶음 — 묶음끼리는 줄이 바뀌어도 흩어지지 않게 */
+.combo-grp { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; max-width: 100%; padding: 4px 8px 4px 4px; border-radius: 22px; background: color-mix(in srgb, var(--bg-2) 70%, transparent); }
+.combo-n { font-family: var(--num); font-size: 12px; font-weight: 700; letter-spacing: .02em; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); padding: 5px 10px; border-radius: 999px; white-space: nowrap; }
+.combo-nick { white-space: nowrap; }
 .combo {
   display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: 999px;
   background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-1);
   font-size: 14px; font-weight: 600; transition: all .2s var(--ease);
+  white-space: nowrap; flex-shrink: 0;
 }
 .combo:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
 .combo .dots { display: flex; }
@@ -361,10 +370,18 @@ body[data-view="workspace"] .maker-chip { opacity: 0; visibility: hidden; transf
   .hero-eyebrow { margin-bottom: clamp(6px, 1.1vh, 14px); }
   .hero h1 { font-size: clamp(24px, 2vw + .8vh, 40px); }
   .hero p { margin-top: clamp(4px, .9vh, 10px); font-size: clamp(13.5px, 1.6vh, 16px); }
-  .combo-row { margin-bottom: 0; gap: 8px; }
+  .combo-row { margin-bottom: 0; gap: 8px; flex-shrink: 0; }
+  /* 화면이 낮으면 조합 줄을 살짝 눌러 서랍 자리를 남겨요 */
+  @media (max-height: 780px) {
+    .combo-grp { gap: 6px; padding: 3px 6px 3px 3px; }
+    .combo { padding: 6px 12px 6px 6px; font-size: 13px; }
+    .combo .dots span { width: 22px; height: 22px; font-size: 11px; }
+    .combo-n { padding: 4px 9px; }
+  }
 
   /* 서랍 다섯 칸을 두 줄에: 칸 너비는 그 안의 도구 수에 비례 (--n / --row) */
-  #drawers { --dg: 14px; flex: 1; min-height: 0; display: flex; flex-wrap: wrap; align-content: stretch; gap: clamp(10px, 1.8vh, 22px) var(--dg); }
+  /* 칸이 다 안 들어가면 서랍 영역 안에서만 스크롤 — 아래 제작자·안내 줄을 덮지 않게 */
+  #drawers { --dg: 14px; flex: 1 1 0; min-height: 0; overflow: auto; overscroll-behavior: contain; display: flex; flex-wrap: wrap; align-content: stretch; gap: clamp(10px, 1.8vh, 22px) var(--dg); }
   .drawer {
     margin-bottom: 0; min-width: 0; min-height: 0; container-type: inline-size;
     display: flex; flex-direction: column;

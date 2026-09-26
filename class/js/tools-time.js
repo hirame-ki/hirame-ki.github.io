@@ -1,5 +1,5 @@
 /* ==========================================================
-   01 시간 — 타이머 · 스톱워치 · 알림 종
+   01 시간 — 타이머 · 스톱워치 · 알림 종 · 남은 날
    Copyright (c) 2026 황성재 (@hirame.ki). All rights reserved.
    상업적 이용·개작·무단 재배포 금지 — LICENSE 참고
    ========================================================== */
@@ -142,6 +142,66 @@
         }
       });
       return {};
+    },
+  });
+
+  /* ---------------- 남은 날 (디데이) ---------------- */
+  register({
+    id: 'dday', group: 'time', name: '남은 날', icon: 'dday',
+    desc: '시험·행사까지 며칠 남았는지 크게 세어 보여줘요.',
+    mount(el) {
+      el.innerHTML = `
+        <div class="t top dday">
+          <div class="dday-add">
+            <input class="input nm" placeholder="무슨 날인가요? (예: 중간고사)" maxlength="18">
+            <input class="input dt" type="date">
+            <button class="btn t-btn add">${ico('plus')}추가</button>
+          </div>
+          <div class="dday-list"></div>
+        </div>`;
+      const nm = $('.nm', el), dt = $('.dt', el), box = $('.dday-list', el);
+      let items = store.get('dday.items', null) || [];
+      const midnight = (d) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+      const today = () => midnight(new Date());
+      const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      const days = (ymd) => Math.round((midnight(ymd + 'T00:00:00') - today()) / 86400000);
+      const WD = ['일', '월', '화', '수', '목', '금', '토'];
+      dt.value = iso(today());
+      const save = () => store.set('dday.items', items);
+
+      function render() {
+        if (!items.length) { box.innerHTML = `<div class="empty">${ico('dday')}<div>기다리는 날을 위에서 추가해 주세요.<br>시험, 현장학습, 발표회처럼요.</div></div>`; return; }
+        const sorted = [...items].sort((a, b) => Math.abs(days(a.date)) - Math.abs(days(b.date)));
+        box.innerHTML = sorted.map((it, i) => {
+          const n = days(it.date), d = new Date(it.date + 'T00:00:00');
+          const tag = n === 0 ? 'D-DAY' : n > 0 ? `D-${n}` : `D+${-n}`;
+          const sub = n === 0 ? '바로 오늘이에요' : n > 0 ? `${n}일 남았어요` : `${-n}일 지났어요`;
+          return `<div class="dday-card ${i === 0 ? 'lead' : ''} ${n === 0 ? 'today' : n < 0 ? 'past' : ''}" style="animation-delay:${i * 60}ms">
+            <button class="dd-del" data-id="${it.id}" title="지우기">${ico('x')}</button>
+            <div class="dd-name">${SD.esc(it.name)}</div>
+            <div class="dd-num">${tag}</div>
+            <div class="dd-sub">${sub}</div>
+            <div class="dd-date">${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}. (${WD[d.getDay()]})</div>
+          </div>`;
+        }).join('');
+      }
+      const add = () => {
+        const name = nm.value.trim(), date = dt.value;
+        if (!name) { SD.toast('무슨 날인지 이름을 넣어주세요'); nm.focus(); return; }
+        if (!date) { SD.toast('날짜를 골라주세요'); return; }
+        items.push({ id: SD.uid(), name: name.slice(0, 18), date });
+        nm.value = ''; save(); render(); audio.chime('pop');
+      };
+      $('.add', el).onclick = add;
+      nm.onkeydown = (e) => { if (e.key === 'Enter') add(); };
+      box.addEventListener('click', (e) => {
+        const b = e.target.closest('.dd-del'); if (!b) return;
+        items = items.filter(x => x.id !== b.dataset.id); save(); render();
+      });
+      render();
+      /* 자정을 넘기면 숫자가 저절로 하루 줄어들게 */
+      const iv = setInterval(render, 60000);
+      return { destroy() { clearInterval(iv); } };
     },
   });
 })();

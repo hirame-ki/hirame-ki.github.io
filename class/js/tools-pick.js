@@ -1,5 +1,5 @@
 /* ==========================================================
-   02 뽑기 — 1명 뽑기 · 여러 명 뽑기 · 룰렛 · 사다리
+   02 뽑기 — 1명 뽑기 · 여러 명 뽑기 · 룰렛 · 사다리 · 순서 정하기 · 주사위
    Copyright (c) 2026 황성재 (@hirame.ki). All rights reserved.
    상업적 이용·개작·무단 재배포 금지 — LICENSE 참고
    ========================================================== */
@@ -272,6 +272,213 @@
       $('.all', el).onclick = () => { if (L) L.names.forEach((_, i) => setTimeout(() => go(i), i * 160)); };
       $('.edit', el).onclick = () => { setup.hidden = false; wrap.hidden = true; L = null; starts.innerHTML = ''; resBox.innerHTML = ''; $('.all', el).hidden = true; $('.edit', el).hidden = true; $('.make', el).innerHTML = `${ico('ladder')}사다리 만들기`; };
       return { destroy() { cancelAnimationFrame(raf); }, onResize: draw, onRoster() { if (!L) fillNames(); } };
+    },
+  });
+
+  /* ---------------- 순서 정하기 ---------------- */
+  register({
+    id: 'order', group: 'pick', name: '순서 정하기', icon: 'order',
+    desc: '발표 순서를 섞어 두고 한 명씩 차례를 넘겨요.',
+    mount(el) {
+      el.innerHTML = `
+        <div class="t order">
+          <div class="order-stage">
+            <div class="order-step"></div>
+            <div class="order-now">?</div>
+            <div class="order-next"></div>
+            <div class="order-clock" hidden>
+              <div class="ck-time">00:00</div>
+              <div class="ck-ctrl">
+                <button class="ck-btn ck-go" type="button">${ico('play')}<span>시작</span></button>
+                <button class="ck-btn ck-rs" type="button">${ico('reset')}<span>다시</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <button class="btn t-btn t-big next">${ico('arrow')}<span>다음 차례</span></button>
+            <button class="btn btn-soft shuf">${ico('shuffle')}순서 섞기</button>
+          </div>
+          <div class="row">
+            <label class="switch"><input type="checkbox" class="uselim"><i></i>한 명당 시간 재기</label>
+            <div class="stepper lim-box"><button data-d="-30">−</button><input type="number" class="lim" min="10" max="900" value="90"><span class="unit">초</span><button data-d="30">+</button></div>
+          </div>
+          <div class="order-queue"></div>
+        </div>`;
+      const stage = $('.order-stage', el), step = $('.order-step', el), nowEl = $('.order-now', el), nextEl = $('.order-next', el);
+      const clock = $('.order-clock', el), ckTime = $('.ck-time', el), ckGo = $('.ck-go', el);
+      const queue = $('.order-queue', el), nextB = $('.next', el);
+      const useLim = $('.uselim', el), lim = $('.lim', el), limBox = $('.lim-box', el);
+      let list = SD.store.get('order.list', []) || [], idx = SD.store.get('order.idx', -1);
+      let limSec = 90, remain = 90, running = false, iv = 0, endAt = 0, rang = false, lastSec = -1;
+      useLim.checked = !!SD.store.get('order.uselim', false);
+      lim.value = limSec = remain = SD.store.get('order.limsec', 90);
+      const pad2 = (n) => String(n).padStart(2, '0');
+      const save = () => { SD.store.set('order.list', list); SD.store.set('order.idx', idx); };
+
+      function paintClock() {
+        const s = Math.max(0, Math.ceil(remain - 1e-6));
+        ckTime.textContent = `${pad2(Math.floor(s / 60))}:${pad2(s % 60)}`;
+        clock.classList.toggle('over', remain <= 0);
+        clock.classList.toggle('running', running);
+        /* 멈췄다가 다시 누를 때는 '이어서' — 처음부터인지 이어가는지 한눈에 */
+        const label = running ? '일시정지' : (remain < limSec && remain > 0 ? '이어서' : '시작');
+        ckGo.innerHTML = `${ico(running ? 'pause' : 'play')}<span>${label}</span>`;
+        ckGo.disabled = remain <= 0;
+      }
+      function pauseClock() {
+        if (running) remain = Math.max(0, (endAt - performance.now()) / 1000);
+        clearInterval(iv); iv = 0; running = false; paintClock();
+      }
+      function startClock() {
+        if (remain <= 0 || !useLim.checked || idx < 0 || idx >= list.length) return;
+        running = true; rang = false; lastSec = -1;
+        endAt = performance.now() + remain * 1000;
+        clearInterval(iv); iv = setInterval(beat, 200); paintClock();
+      }
+      function beat() {
+        remain = Math.max(0, (endAt - performance.now()) / 1000);
+        const s = Math.ceil(remain - 1e-6);
+        if (s !== lastSec && s <= 5 && s > 0) audio.chime('tick');
+        lastSec = s;
+        if (remain <= 0 && !rang) { rang = true; clearInterval(iv); iv = 0; running = false; audio.chime('end'); }
+        paintClock();
+      }
+      /* 발표자가 바뀌거나 '다시'를 누르면 — 시간만 처음으로 돌리고 멈춘 채로 기다려요 */
+      function armClock() {
+        clearInterval(iv); iv = 0; running = false; rang = false; lastSec = -1;
+        limSec = Math.max(10, Math.min(900, +lim.value || 90)); remain = limSec;
+        limBox.hidden = !useLim.checked;
+        clock.hidden = !(useLim.checked && idx >= 0 && idx < list.length);
+        paintClock();
+      }
+      function render() {
+        const n = list.length;
+        limBox.hidden = !useLim.checked;
+        if (!n) {
+          step.textContent = ''; nowEl.textContent = '?'; nextEl.textContent = '순서 섞기를 눌러 시작해요';
+          queue.innerHTML = ''; nextB.disabled = true; clock.hidden = true; stage.classList.remove('done'); return;
+        }
+        const done = idx >= n;
+        nextB.disabled = false;
+        step.textContent = done ? `${n}명 모두 끝났어요` : `${idx + 1} / ${n}`;
+        nowEl.textContent = done ? '끝!' : list[idx];
+        nextEl.textContent = done ? '수고했어요' : (idx + 1 < n ? `다음 · ${list[idx + 1]}` : '마지막 차례예요');
+        stage.classList.toggle('done', done);
+        $('span', nextB).textContent = done ? '처음부터' : '다음 차례';
+        queue.innerHTML = list.map((x, i) => `<button class="q-item ${i < idx ? 'past' : i === idx ? 'on' : ''}" data-i="${i}"><i>${i + 1}</i>${esc(x)}</button>`).join('');
+      }
+      function goTo(i) { idx = i; save(); render(); armClock(); }
+      $('.shuf', el).onclick = () => {
+        const s = roster.students();
+        if (!s.length) { queue.innerHTML = emptyNote(); return; }
+        list = shuffle(s); goTo(0); audio.chime('pop');
+      };
+      nextB.onclick = () => {
+        if (!list.length) return;
+        if (idx >= list.length) return goTo(0);
+        idx++; save(); render(); armClock();
+        if (idx >= list.length) { audio.chime('done'); confetti(stage); }
+        else audio.chime('pop');
+      };
+      queue.addEventListener('click', (e) => { const b = e.target.closest('.q-item'); if (b) goTo(+b.dataset.i); });
+      ckGo.onclick = () => { running ? pauseClock() : startClock(); };
+      $('.ck-rs', el).onclick = armClock;
+      useLim.onchange = () => { SD.store.set('order.uselim', useLim.checked); armClock(); };
+      const setLim = (v) => {
+        lim.value = Math.max(10, Math.min(900, v || 90));
+        SD.store.set('order.limsec', +lim.value); armClock();
+      };
+      $$('.lim-box button', el).forEach(b => b.onclick = () => setLim((+lim.value || 90) + +b.dataset.d));
+      lim.onchange = () => setLim(+lim.value);
+      render(); armClock();
+      return { destroy() { clearInterval(iv); }, onRoster() { if (idx < 0 || !list.length) { list = []; idx = -1; save(); render(); armClock(); } } };
+    },
+  });
+
+  /* ---------------- 주사위·숫자 ---------------- */
+  const PIPS = {
+    1: [[50, 50]], 2: [[31, 31], [69, 69]], 3: [[31, 31], [50, 50], [69, 69]],
+    4: [[31, 31], [69, 31], [31, 69], [69, 69]], 5: [[31, 31], [69, 31], [50, 50], [31, 69], [69, 69]],
+    6: [[31, 28], [69, 28], [31, 50], [69, 50], [31, 72], [69, 72]],
+  };
+  const dieFace = (v) => `<svg viewBox="0 0 100 100"><rect x="3" y="3" width="94" height="94" rx="21" fill="#fff" stroke="var(--line-2)" stroke-width="2"/>${PIPS[v].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="var(--pick)"/>`).join('')}</svg>`;
+  register({
+    id: 'dice', group: 'pick', name: '주사위·숫자', icon: 'dice',
+    desc: '주사위를 굴리고, 범위를 정해 숫자나 앞뒤를 뽑아요.',
+    mount(el) {
+      el.innerHTML = `
+        <div class="t dice-t">
+          <div class="pills mode"><button class="pill on" data-m="dice">주사위</button><button class="pill" data-m="num">숫자</button><button class="pill" data-m="coin">동전</button></div>
+          <div class="dice-stage"></div>
+          <div class="row opt opt-dice"><span class="label-sm">주사위</span>
+            <div class="stepper"><button data-d="-1">−</button><input type="number" class="dn" min="1" max="6" value="2"><span class="unit">개</span><button data-d="1">+</button></div>
+          </div>
+          <div class="row opt opt-num" hidden><span class="label-sm">범위</span>
+            <div class="stepper"><input type="number" class="n1" value="1"></div><span class="label-sm">부터</span>
+            <div class="stepper"><input type="number" class="n2" value="100"></div><span class="label-sm">까지</span>
+          </div>
+          <button class="btn t-btn t-big go">${ico('dice')}<span>굴리기</span></button>
+        </div>`;
+      const stage = $('.dice-stage', el), go = $('.go', el), dn = $('.dn', el), n1 = $('.n1', el), n2 = $('.n2', el);
+      let mode = SD.store.get('dice.mode', 'dice'), timer = 0, busy = false;
+      dn.value = SD.store.get('dice.n', 2); n1.value = SD.store.get('dice.min', 1); n2.value = SD.store.get('dice.max', 100);
+      const count = () => Math.max(1, Math.min(6, +dn.value || 1));
+
+      const sample = () => {
+        if (mode === 'dice') return Array.from({ length: count() }, () => rand(6) + 1);
+        if (mode === 'coin') return rand(2) ? '앞' : '뒤';
+        let a = Math.round(+n1.value || 0), b = Math.round(+n2.value || 0);
+        if (a > b) [a, b] = [b, a];
+        return a + rand(b - a + 1);
+      };
+      function paint(v, fin) {
+        const w = fin ? ' win' : '';
+        if (mode === 'dice') {
+          stage.innerHTML = `<div class="dice-row">${v.map(x => `<div class="die${w}">${dieFace(x)}</div>`).join('')}</div>`
+            + (v.length > 1 ? `<div class="dice-sum">모두 더하면 <b>${v.reduce((a, b) => a + b, 0)}</b></div>` : '');
+        } else if (mode === 'num') stage.innerHTML = `<div class="big-num${w}">${v}</div>`;
+        else stage.innerHTML = `<div class="coin ${v === '앞' ? 'head' : 'tail'}${w}"><span>${v}</span></div>`;
+      }
+      function ready() {
+        clearTimeout(timer); busy = false; go.disabled = false;
+        /* 굴리기 전에는 합을 보여주지 않아요 */
+        if (mode === 'dice') stage.innerHTML = `<div class="dice-row">${Array.from({ length: count() }, () => `<div class="die">${dieFace(1)}</div>`).join('')}</div>`;
+        else if (mode === 'num') stage.innerHTML = `<div class="big-num muted">?</div>`;
+        else stage.innerHTML = `<div class="coin head"><span>?</span></div>`;
+      }
+      go.onclick = () => {
+        if (busy) return;
+        if (mode === 'num') {
+          const a = Math.round(+n1.value || 0), b = Math.round(+n2.value || 0);
+          if (a === b) { SD.toast('범위를 다르게 넣어주세요'); return; }
+          SD.store.set('dice.min', a); SD.store.set('dice.max', b);
+        }
+        busy = true; go.disabled = true;
+        let i = 0; const steps = slow() ? 16 : 3;
+        const spin = () => {
+          paint(sample()); tick(i); i++;
+          if (i < steps) { timer = setTimeout(spin, 30 + 320 * Math.pow(i / steps, 3.4)); return; }
+          timer = setTimeout(() => {
+            paint(sample(), true); audio.chime('pop'); confetti(stage);
+            busy = false; go.disabled = false;
+          }, slow() ? 280 : 50);
+        };
+        spin();
+      };
+      $$('.mode .pill', el).forEach(p => p.onclick = () => {
+        mode = p.dataset.m; SD.store.set('dice.mode', mode);
+        $$('.mode .pill', el).forEach(x => x.classList.toggle('on', x === p));
+        $('.opt-dice', el).hidden = mode !== 'dice'; $('.opt-num', el).hidden = mode !== 'num';
+        ready();
+      });
+      $$('.opt-dice .stepper button', el).forEach(b => b.onclick = () => {
+        dn.value = Math.max(1, Math.min(6, (+dn.value || 1) + +b.dataset.d)); SD.store.set('dice.n', count()); ready();
+      });
+      dn.onchange = () => { dn.value = count(); SD.store.set('dice.n', count()); ready(); };
+      $$('.mode .pill', el).forEach(p => p.classList.toggle('on', p.dataset.m === mode));
+      $('.opt-dice', el).hidden = mode !== 'dice'; $('.opt-num', el).hidden = mode !== 'num';
+      ready();
+      return { destroy() { clearTimeout(timer); } };
     },
   });
 })();
