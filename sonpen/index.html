@@ -56,21 +56,36 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@300;400;600&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=Hahmlet:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500&family=Noto+Serif+JP:wght@300;400;600&family=Zen+Maru+Gothic:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@300;400;500&family=BIZ+UDPMincho&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=Andika:ital,wght@0,400;0,700&family=Nunito:wght@300;400;600&family=Quicksand:wght@400;600&family=Poppins:wght@300;400;500&family=Lora:wght@400;600&family=Atkinson+Hyperlegible:wght@400;700&family=Gaegu:wght@300;400;700&family=Gamja+Flower&family=Jua&family=Do+Hyeon&family=Song+Myung&family=Black+Han+Sans&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css?v=20260930a">
+<link rel="stylesheet" href="opening_sample.css?v=20260930a">
 </head>
-<body class="app-in">
+<body class="op2-lock">
 
-<!-- ============ 오프닝 ============ -->
-<div class="opening no-print" id="opening">
-  <div class="op-grid"></div>
-  <div class="op-frame"></div>
-  <div class="op-body">
-    <div class="op-orn">❋ ⁘ ❋</div>
-    <div class="op-mark">✎</div>
-    <div class="op-name">손펜</div>
-    <div class="op-rule"></div>
-    <div class="op-tag">연습장을 준비했습니다</div>
+<!-- ============ 오프닝 (샘플 · 모션 그래픽) ============
+     원본 index.html 의 오프닝 대신 opening_sample.css / opening_sample.js 가 그립니다. -->
+<div class="op2 no-print" id="op2" role="region" aria-label="손펜 오프닝 애니메이션">
+  <div class="op2-paper"><div class="op2-grain"></div></div>
+  <div class="op2-boot"></div>
+  <canvas class="op2-gl"></canvas>
+  <svg class="op2-svg" aria-hidden="true">
+    <defs>
+      <filter id="op2-rough" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="7" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="3" result="d"/>
+        <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.4 2.05" result="m"/>
+        <feComposite in="d" in2="m" operator="in"/>
+      </filter>
+    </defs>
+  </svg>
+  <div class="op2-deck"><div class="op2-ring"></div></div>
+  <div class="op2-hud">
+    <button class="op2-btn op2-sound" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="mute" d="M16 9.5l5 5M21 9.5l-5 5"/><path class="wave" style="display:none" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
+      <span class="lb">소리 켜기</span>
+    </button>
+    <button class="op2-btn op2-skip" type="button">건너뛰기 <span aria-hidden="true">→</span></button>
+    <div class="op2-cap" aria-live="polite"><span></span><span></span></div>
+    <div class="op2-prog"><span>삐뚤빼뚤</span><span>격자</span><span>따라쓰기</span><span>꾸미기</span><span>인쇄</span></div>
   </div>
-  <div class="op-skip">아무 곳이나 누르면 바로 시작합니다</div>
 </div>
 
 <header class="topbar no-print">
@@ -489,5 +504,8 @@
 <script src="corrector.js?v=20260907a"></script>
 <script src="app.js?v=20260907a"></script>
 <script src="ui.js?v=20260930a"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="opening_sample.js?v=20260930a"></script>
 </body>
 </html>

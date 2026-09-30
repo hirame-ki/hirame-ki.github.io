@@ -1,0 +1,168 @@
+/*!
+ * 손펜 (Sonpen) — 손글씨 연습장 만들기 · 오프닝 샘플
+ * Copyright (c) 2026 황성재 (Hwang Seongjae) · Instagram @hirame.ki
+ * All Rights Reserved. 모든 권리 보유.
+ * SPDX-License-Identifier: LicenseRef-Sonpen-Restricted
+ */
+/* index_opening_sample.html 전용. 원본 index.html 은 이 파일을 읽지 않습니다. */
+
+body.op2-lock{overflow:hidden}
+
+.op2{
+  position:fixed;inset:0;z-index:300;overflow:hidden;
+  color:#2f2b26;font-family:'IBM Plex Sans KR','Noto Sans KR',system-ui,sans-serif;
+  -webkit-user-select:none;user-select:none;
+}
+.op2-paper{
+  position:absolute;inset:0;background:#fffdf7;
+  background-image:
+    radial-gradient(ellipse at 50% 46%,rgba(255,253,247,0) 38%,rgba(206,190,162,.38) 100%),
+    linear-gradient(#efe9dc 1px,transparent 1px),
+    linear-gradient(90deg,#efe9dc 1px,transparent 1px);
+  background-size:auto,28px 28px,28px 28px;
+  background-position:center,center,center;
+}
+.op2-grain{
+  position:absolute;inset:0;opacity:.28;mix-blend-mode:multiply;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .48 0 0 0 0 .38 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.op2-boot{
+  position:absolute;left:50%;top:46%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;
+  background:#35618f;animation:op2-boot 1s ease-in-out infinite;
+}
+.op2-boot.off{opacity:0 !important;animation:none;transform:scale(.3);transition:opacity .3s,transform .3s}
+@keyframes op2-boot{0%,100%{transform:scale(.6);opacity:.35}50%{transform:scale(1.25);opacity:.9}}
+
+.op2-gl,.op2-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.op2-svg{overflow:visible;pointer-events:none}
+.op2-svg text{font-family:'IBM Plex Sans KR','Noto Sans KR',sans-serif}
+.op2-svg .pen{filter:drop-shadow(7px 12px 7px rgba(52,40,24,.24))}
+
+/* ---------- 3D 연습장 회전목마 ---------- */
+.op2-deck{position:absolute;inset:0;perspective:1500px;perspective-origin:50% 42%;pointer-events:none;opacity:0}
+.op2-ring{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d}
+.op2-sheet{
+  position:absolute;left:0;top:0;width:var(--w);height:var(--h);
+  margin-left:calc(var(--w) / -2);margin-top:calc(var(--h) / -2);
+  background:var(--paper);color:var(--ink);border-radius:3px;
+  box-shadow:0 22px 44px rgba(60,46,26,.16),0 3px 8px rgba(60,46,26,.12);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;will-change:transform;
+}
+.op2-sheet .sh-frame{position:absolute;inset:3.6%;border:1px solid var(--bc);pointer-events:none}
+.op2-sheet .sh-frame.b-none{border:0}
+.op2-sheet .sh-frame.b-double{border:3px double var(--bc)}
+.op2-sheet .sh-frame.b-rounded{border-width:1.5px;border-radius:14px}
+.op2-sheet .sh-frame.b-dashed{border:1.5px dashed var(--bc)}
+.op2-sheet .sh-frame.b-dots{border:2.5px dotted var(--bc)}
+.op2-sheet .sh-frame.b-wave{border:2px dashed var(--bc);border-radius:12px}
+.op2-sheet .sh-frame.b-ribbon{border:5px solid var(--bc);outline:1px solid var(--bc);outline-offset:3px;border-radius:4px;inset:5%}
+.op2-sheet .sh-frame.b-corner{
+  border:0;
+  background:
+    linear-gradient(var(--bc),var(--bc)) left top/16% 2px no-repeat,
+    linear-gradient(var(--bc),var(--bc)) left top/2px 12% no-repeat,
+    linear-gradient(var(--bc),var(--bc)) right top/16% 2px no-repeat,
+    linear-gradient(var(--bc),var(--bc)) right top/2px 12% no-repeat,
+    linear-gradient(var(--bc),var(--bc)) left bottom/16% 2px no-repeat,
+    linear-gradient(var(--bc),var(--bc)) left bottom/2px 12% no-repeat,
+    linear-gradient(var(--bc),var(--bc)) right bottom/16% 2px no-repeat,
+    linear-gradient(var(--bc),var(--bc)) right bottom/2px 12% no-repeat;
+}
+.op2-sheet .sh-in{position:absolute;inset:8% 8.5% 7%;display:flex;flex-direction:column;gap:2.4%}
+.op2-sheet .sh-orn{text-align:center;color:var(--bc);font-size:calc(var(--w) * .05);letter-spacing:.5em;line-height:1;height:4%}
+.op2-sheet .sh-title{
+  height:9%;display:flex;align-items:center;justify-content:center;
+  font-family:'Gowun Dodum','Noto Sans KR',sans-serif;font-size:calc(var(--w) * .07);letter-spacing:.08em;
+}
+.op2-sheet .sh-logo{height:10%;width:100%;display:block}
+.op2-sheet .sh-meta{display:flex;justify-content:flex-end;gap:10%;font-size:calc(var(--w) * .03);opacity:.62}
+.op2-sheet .sh-meta span{border-bottom:1px solid var(--grid);padding:0 12% 1px 0;white-space:nowrap}
+.op2-sheet .sh-rows{flex:1;display:flex;flex-direction:column;gap:3.2%}
+.op2-sheet .sh-row{display:flex}
+.op2-sheet .sh-c{
+  flex:1 1 0;aspect-ratio:1/1;position:relative;display:grid;place-items:center;
+  border:1px solid var(--grid);margin-left:-1px;
+}
+.op2-sheet .sh-c:first-child{margin-left:0}
+.op2-sheet .sh-cross .sh-c::before,.op2-sheet .sh-mi .sh-c::before{
+  content:'';position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed var(--grid);opacity:.85
+}
+.op2-sheet .sh-cross .sh-c::after,.op2-sheet .sh-mi .sh-c::after{
+  content:'';position:absolute;top:50%;left:0;right:0;border-top:1px dashed var(--grid);opacity:.85
+}
+.op2-sheet .sh-mi .sh-c{
+  background:
+    linear-gradient(45deg,transparent calc(50% - .6px),var(--grid) 50%,transparent calc(50% + .6px)),
+    linear-gradient(-45deg,transparent calc(50% - .6px),var(--grid) 50%,transparent calc(50% + .6px));
+}
+.op2-sheet .sh-genko .sh-c{border-color:var(--bc)}
+.op2-sheet .sh-rows.sh-ja{gap:1.6%}
+.op2-sheet .sh-c em{
+  position:relative;z-index:1;font-style:normal;line-height:1;font-size:calc(var(--w) * .086)
+}
+.op2-sheet .sh-ko em{font-family:'Gowun Dodum','Noto Sans KR',sans-serif}
+.op2-sheet .sh-zh em{font-family:'Noto Serif SC','Noto Sans SC',serif}
+.op2-sheet .sh-ja em{font-family:'Zen Maru Gothic','Noto Sans JP',sans-serif}
+.op2-sheet .sh-four{position:relative;flex:1 1 0;overflow:hidden}
+.op2-sheet .sh-four i{position:absolute;left:0;right:0;border-top:1px solid var(--grid)}
+.op2-sheet .sh-four i:nth-child(1){top:10%}
+.op2-sheet .sh-four i:nth-child(2){top:40%;border-top-style:dashed;opacity:.8}
+.op2-sheet .sh-four i:nth-child(3){top:70%;border-top-width:1.5px}
+.op2-sheet .sh-four i:nth-child(4){top:96%}
+.op2-sheet .sh-four b{
+  position:absolute;left:3%;bottom:calc(30% - .22em);font-weight:400;line-height:1;white-space:nowrap;
+  font-family:'Andika','Nunito',sans-serif;font-size:calc(var(--h) * .074);letter-spacing:.04em;
+}
+.op2-sheet .sh-foot{text-align:center;font-size:calc(var(--w) * .032);opacity:.6;font-family:'Gowun Batang','Noto Serif KR',serif}
+.op2-sheet .sh-name{
+  position:absolute;left:50%;top:calc(100% + 14px);transform:translateX(-50%);white-space:nowrap;
+  font-size:12px;line-height:1;padding:5px 11px;border-radius:999px;
+  background:rgba(255,255,255,.78);border:1px solid var(--bc);color:var(--ink);
+}
+.op2-sheet .sh-scan{
+  position:absolute;left:-3%;right:-3%;height:16%;top:-16%;pointer-events:none;opacity:0;
+  background:linear-gradient(to bottom,rgba(53,97,143,0),rgba(53,97,143,.12) 72%,rgba(53,97,143,.6) 97%,rgba(53,97,143,0));
+}
+
+/* ---------- 자막 · 진행 · 버튼 ---------- */
+.op2-hud{position:absolute;inset:0;pointer-events:none}
+.op2-cap{
+  position:absolute;left:16px;right:16px;bottom:74px;height:30px;text-align:center;
+  font-family:'Gowun Batang','Noto Serif KR',serif;font-size:clamp(16px,2.1vw,21px);letter-spacing:.04em;color:#4a4238;
+}
+.op2-cap span{position:absolute;left:0;right:0;top:0;opacity:0;text-shadow:0 0 14px #fffdf7,0 0 6px #fffdf7,0 0 2px #fffdf7}
+.op2-prog{
+  position:absolute;left:50%;bottom:34px;transform:translateX(-50%);
+  display:flex;gap:20px;white-space:nowrap;
+}
+.op2-prog span{display:flex;align-items:center;gap:7px;font-size:12px;color:#bcb09c;transition:color .35s}
+.op2-prog span::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;transition:transform .35s}
+.op2-prog span.past{color:#8c9db1}
+.op2-prog span.on{color:#35618f;font-weight:600}
+.op2-prog span.on::before{transform:scale(1.6)}
+@media (max-width:560px){
+  .op2-prog{gap:12px}
+  .op2-prog span:not(.on){font-size:0;gap:0}
+}
+.op2-btn{
+  position:absolute;top:18px;pointer-events:auto;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 16px;border-radius:999px;
+  font:500 14px 'IBM Plex Sans KR','Noto Sans KR',sans-serif;color:#4a4238;
+  background:rgba(255,253,247,.82);border:1px solid #e1d6c2;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:background .2s,border-color .2s;
+}
+.op2-btn:hover{background:#fff;border-color:#cdbd9f}
+.op2-btn:focus-visible{outline:2px solid #35618f;outline-offset:2px}
+.op2-btn svg{width:18px;height:18px}
+.op2-sound{left:18px}
+.op2-sound[aria-pressed="true"]{color:#35618f;border-color:#9fb6cf}
+.op2-skip{right:18px}
+
+/* ---------- 앱이 이어서 들어오는 모션 ---------- */
+.op2-in>.topbar{animation:om-in .6s cubic-bezier(.2,.8,.2,1) both}
+.op2-in>.tabs{animation:om-in .6s cubic-bezier(.2,.8,.2,1) .08s both}
+
+@media (prefers-reduced-motion:reduce){
+  .op2{display:none}
+  .op2-in>*{animation:none !important}
+}
