@@ -55,7 +55,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@300;400;600&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=Hahmlet:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500&family=Noto+Serif+JP:wght@300;400;600&family=Zen+Maru+Gothic:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@300;400;500&family=BIZ+UDPMincho&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;500&family=Andika:ital,wght@0,400;0,700&family=Nunito:wght@300;400;600&family=Quicksand:wght@400;600&family=Poppins:wght@300;400;500&family=Lora:wght@400;600&family=Atkinson+Hyperlegible:wght@400;700&family=Gaegu:wght@300;400;700&family=Gamja+Flower&family=Jua&family=Do+Hyeon&family=Song+Myung&family=Black+Han+Sans&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20260907a">
+<link rel="stylesheet" href="styles.css?v=20260930a">
 </head>
 <body class="app-in">
 
@@ -79,7 +79,10 @@
     <p>손글씨 연습장 만들기</p>
   </div>
   <div class="topbar-actions">
-    <button id="btnWriteMode" class="btn btn-ghost" title="태블릿/마우스로 바로 쓰기">✍️<span class="lbl-full"> 쓰기 모드</span></button>
+    <button id="btnVideos" class="btn btn-video" type="button" title="손글씨가 왜 중요할까요? 영상 보기" aria-haspopup="dialog">
+      <span class="play-dot" aria-hidden="true"></span><span class="lbl-full">왜 손글씨일까요?</span><span class="lbl-short">영상</span>
+    </button>
+    <button id="btnWriteMode"class="btn btn-ghost" title="태블릿/마우스로 바로 쓰기">✍️<span class="lbl-full"> 쓰기 모드</span></button>
     <button id="btnPrint" class="btn btn-primary" title="A4로 인쇄">🖨️<span class="lbl-full"> 인쇄 / PDF 저장</span><span class="lbl-short"> 인쇄</span></button>
   </div>
 </header>
@@ -461,10 +464,30 @@
   </div>
 </main>
 
+<!-- ============ 손글씨 영상 팝업 ============ -->
+<div class="vmodal no-print" id="videoModal" role="dialog" aria-modal="true" aria-labelledby="vmTitle" hidden>
+  <div class="vm-backdrop" data-vclose></div>
+  <div class="vm-card">
+    <div class="vm-head">
+      <div>
+        <p class="vm-kicker">📺 KBS 다큐프라임에서 보는</p>
+        <h2 id="vmTitle">왜 손글씨일까요?</h2>
+      </div>
+      <button class="vm-close" type="button" title="닫기" aria-label="닫기" data-vclose>✕</button>
+    </div>
+    <div class="vm-list" id="vmList" role="tablist"></div>
+    <div class="vm-player" id="vmPlayer"></div>
+    <div class="vm-foot">
+      <span id="vmDesc"></span>
+      <a id="vmOpen" href="#" target="_blank" rel="noopener">유튜브에서 보기 ↗</a>
+    </div>
+  </div>
+</div>
+
 <script src="fonts.js?v=20260907a"></script>
 <script src="phrases.js?v=20260907a"></script>
 <script src="corrector.js?v=20260907a"></script>
 <script src="app.js?v=20260907a"></script>
-<script src="ui.js?v=20260907a"></script>
+<script src="ui.js?v=20260930a"></script>
 </body>
 </html>

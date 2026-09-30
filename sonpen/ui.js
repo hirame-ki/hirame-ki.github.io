@@ -91,4 +91,70 @@
     filter();
     new MutationObserver(filter).observe(box, { childList: true });
   }
+
+  /* ---------- 4. 손글씨 영상 팝업 ---------- */
+  var VIDEOS = [
+    { id: '0haMrMpiUR4', vertical: true, tag: '1분 쇼츠', title: '아이들 글씨, 알아볼 수 있나요?',
+      desc: '요즘 아이들의 손글씨, 한번 들여다볼까요?' },
+    { id: 'A0Geav86hPk', tag: '다큐', title: 'AI 시대, 한글 쓰기가 힘든 아이들',
+      desc: '손글씨가 뇌에 미치는 놀라운 영향' },
+    { id: 'iCddt0fdl0o', tag: '다큐', title: '하루 1시간 손글씨의 힘',
+      desc: '손으로 썼더니 자기 효능감과 기억력이 자랐어요' }
+  ];
+  var vModal = $('#videoModal'), vBtn = $('#btnVideos');
+  if (vModal && vBtn) {
+    var vList = $('#vmList'), vPlayer = $('#vmPlayer'), vDesc = $('#vmDesc'), vOpen = $('#vmOpen');
+    var lastFocus = null;
+
+    var play = function (i) {
+      var v = VIDEOS[i];
+      $$('.vm-item').forEach(function (b, k) {
+        b.classList.toggle('on', k === i);
+        b.setAttribute('aria-selected', k === i ? 'true' : 'false');
+      });
+      vPlayer.classList.toggle('vertical', !!v.vertical);
+      vPlayer.innerHTML = '';
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/' + v.id + '?autoplay=1&rel=0&playsinline=1';
+      f.title = v.title;
+      f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      f.allowFullScreen = true;
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      vPlayer.appendChild(f);
+      vDesc.textContent = v.desc;
+      vOpen.href = v.vertical ? 'https://youtube.com/shorts/' + v.id : 'https://youtu.be/' + v.id;
+    };
+
+    VIDEOS.forEach(function (v, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'vm-item';
+      b.setAttribute('role', 'tab');
+      b.innerHTML = '<span class="vi-tag"></span><b></b>';
+      b.querySelector('.vi-tag').textContent = '▶ ' + v.tag;
+      b.querySelector('b').textContent = v.title;
+      b.addEventListener('click', function () { play(i); });
+      vList.appendChild(b);
+    });
+
+    var openV = function () {
+      lastFocus = document.activeElement;
+      vModal.hidden = false;
+      document.body.classList.add('vm-open');
+      play(0);
+      var c = vModal.querySelector('.vm-close');
+      if (c) c.focus();
+    };
+    var closeV = function () {
+      if (vModal.hidden) return;
+      vModal.hidden = true;
+      vPlayer.innerHTML = '';            /* iframe 을 지워야 소리가 멈춥니다 */
+      document.body.classList.remove('vm-open');
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    };
+
+    vBtn.addEventListener('click', openV);
+    $$('[data-vclose]').forEach(function (el) { el.addEventListener('click', closeV); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeV(); });
+  }
 })();

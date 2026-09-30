@@ -416,6 +416,81 @@ input[type=file]{width:100%;font-size:13px}
   .opening,.opening *,.app-in>*{animation-duration:.01ms !important;animation-delay:0ms !important}
 }
 
+/* ---------- 손글씨 영상 버튼 · 팝업 ---------- */
+.btn-video{
+  display:inline-flex;align-items:center;gap:8px;
+  border-color:#ecd9c6;background:linear-gradient(180deg,#fffaf3,#fbefe2);
+  color:#7a4f2e;font-weight:600;border-radius:999px;padding:0 18px 0 8px;
+}
+.btn-video:hover{background:linear-gradient(180deg,#fff6ea,#f7e4d0);border-color:#dcbfa3;transform:translateY(-1px)}
+.play-dot{
+  position:relative;flex:0 0 28px;width:28px;height:28px;border-radius:50%;
+  background:#e2553f;box-shadow:0 2px 6px rgba(226,85,63,.35);
+}
+.play-dot::before{
+  content:"";position:absolute;left:11px;top:8px;
+  border-left:9px solid #fff;border-top:6px solid transparent;border-bottom:6px solid transparent;
+}
+.play-dot::after{
+  content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid #e2553f;
+  opacity:0;animation:vp-ring 2.4s ease-out 4s infinite;
+}
+@keyframes vp-ring{0%{opacity:.55;transform:scale(.8)}70%,100%{opacity:0;transform:scale(1.35)}}
+
+.vmodal{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
+.vmodal[hidden]{display:none}
+.vm-backdrop{position:absolute;inset:0;background:rgba(24,28,34,.62);backdrop-filter:blur(3px);animation:vm-fade .2s ease both}
+.vm-card{
+  position:relative;width:min(860px,100%);max-height:calc(100vh - 32px);overflow:auto;
+  background:#fffdf8;border-radius:18px;padding:20px 22px 16px;
+  box-shadow:0 24px 60px rgba(0,0,0,.28);animation:vm-pop .25s ease both;
+}
+.vm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.vm-kicker{margin:0 0 4px;font-size:13px;color:var(--orn);font-weight:600}
+.vm-head h2{margin:0;font-size:22px;color:var(--text);letter-spacing:-.02em}
+.vm-close{
+  flex:0 0 40px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);
+  background:#fff;font-size:16px;color:var(--muted);cursor:pointer;font-family:inherit;
+}
+.vm-close:hover{background:#f4f5f7;color:var(--text)}
+.vm-list{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.vm-item{
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;
+  padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;
+  cursor:pointer;font-family:inherit;color:var(--text);transition:.15s;
+}
+.vm-item:hover{border-color:#dcbfa3;background:#fffaf3}
+.vm-item.on{border-color:#e2553f;background:#fff4f1;box-shadow:0 0 0 3px rgba(226,85,63,.12)}
+.vm-item .vi-tag{font-size:11.5px;font-weight:700;color:#e2553f}
+.vm-item b{font-size:14.5px;line-height:1.35}
+.vm-player{
+  position:relative;width:100%;aspect-ratio:16/9;background:#111;border-radius:12px;overflow:hidden;
+  margin:0 auto;
+}
+.vm-player.vertical{aspect-ratio:9/16;width:auto;height:min(62vh,560px);max-width:100%}
+.vm-player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vm-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;font-size:13.5px;color:var(--muted)}
+.vm-foot a{flex:0 0 auto;color:var(--accent);font-weight:600;text-decoration:none}
+.vm-foot a:hover{text-decoration:underline}
+body.vm-open{overflow:hidden}
+@keyframes vm-fade{from{opacity:0}to{opacity:1}}
+@keyframes vm-pop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+@media (max-width:700px){
+  .btn-video{padding:0 12px 0 5px;gap:6px}
+  .play-dot{flex-basis:24px;width:24px;height:24px}
+  .play-dot::before{left:9px;top:6px}
+  .vm-card{padding:16px 14px 12px;border-radius:16px}
+  .vm-head h2{font-size:19px}
+  .vm-list{grid-template-columns:1fr;gap:6px}
+  .vm-item{flex-direction:row;align-items:center;gap:8px;padding:9px 12px}
+  .vm-item b{font-size:13.5px}
+  .vm-player.vertical{height:min(56vh,520px)}
+  .vm-foot{flex-direction:column;align-items:flex-start;gap:6px}
+}
+@media (prefers-reduced-motion:reduce){
+  .play-dot::after,.vm-card,.vm-backdrop{animation:none}
+}
+
 /* 장식 문양은 테두리 색을 따릅니다 */
 .deco .em{color:var(--bcol)}
 
