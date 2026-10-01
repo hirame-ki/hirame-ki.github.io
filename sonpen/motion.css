@@ -1,0 +1,101 @@
+/*!
+ * 손펜 (Sonpen) — 손글씨 연습장 만들기 · 인터랙션 모션
+ * Copyright (c) 2026 황성재 (Hwang Seongjae) · Instagram @hirame.ki
+ * All Rights Reserved. 모든 권리 보유.
+ * SPDX-License-Identifier: LicenseRef-Sonpen-Restricted
+ */
+/* 버튼을 누를 때의 반응 · 종이가 바뀔 때의 전환. 동작은 motion.js 가 붙입니다.
+   클래스명/치수/인쇄 규칙은 건드리지 않고, 화면 전용 장식만 얹습니다. */
+
+@media screen and (prefers-reduced-motion:no-preference){
+
+  /* ---------- 공통: 누름 · 물결 ---------- */
+  .btn,.ornpack,.phrase,.vm-item,.vm-close,.sa-fold,.tab,.opt>span{position:relative}
+  .btn:active,.ornpack:active,.phrase:active,.vm-item:active,.vm-close:active,.sa-fold:active{transform:scale(.965)}
+  .opt:active>span{transform:scale(.97)}
+
+  .mo-rip{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:0}
+  .mo-rip i{
+    position:absolute;border-radius:50%;background:currentColor;opacity:.2;transform:scale(0);
+    animation:mo-rip .62s cubic-bezier(.2,.7,.3,1) forwards;
+  }
+  @keyframes mo-rip{to{transform:scale(1);opacity:0}}
+
+  /* ---------- 단계 레일: 미끄러지는 밑줄 · 번호 튀어오름 ---------- */
+  .tabs.mo-ready .tab.active{border-bottom-color:transparent}
+  .mo-tabbar{
+    position:absolute;left:0;bottom:0;height:3px;width:0;z-index:2;pointer-events:none;
+    background:var(--accent);border-radius:3px 3px 0 0;
+  }
+  .tabpage{overflow-x:clip}   /* 옆에서 밀려 들어오는 동안 가로 스크롤이 생기지 않게 */
+  .tab.mo-pop::before{animation:mo-pop .5s cubic-bezier(.3,1.6,.5,1)}
+  @keyframes mo-pop{0%{transform:scale(.55)}100%{transform:scale(1)}}
+
+  /* 다음 단계 버튼 위를 빛이 한 번 지나갑니다 */
+  #wizNext{overflow:hidden}
+  #wizNext.mo-shine::after{
+    content:'';position:absolute;top:0;bottom:0;left:-40%;width:40%;pointer-events:none;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.38),transparent);
+    animation:mo-shine .8s ease-out forwards;
+  }
+  @keyframes mo-shine{to{left:110%}}
+
+  /* ---------- 고른 것이 톡 튀어오르기 ---------- */
+  .opt input:checked+span{animation:mo-bump .42s cubic-bezier(.3,1.5,.5,1)}
+  .phrase.on{animation:mo-bump-soft .4s cubic-bezier(.3,1.5,.5,1)}
+  .ornpack.on{animation:mo-bump .38s cubic-bezier(.3,1.6,.5,1)}
+  .check input:checked{animation:mo-tick .32s cubic-bezier(.3,1.8,.5,1)}
+  .mo-hit{animation:mo-bump .45s cubic-bezier(.3,1.6,.5,1)}
+  .fontitem.mo-hit{animation:mo-pick .55s ease-out}
+  @keyframes mo-bump{0%{transform:scale(.88)}100%{transform:scale(1)}}
+  @keyframes mo-bump-soft{0%{transform:scale(.97)}100%{transform:scale(1)}}
+  @keyframes mo-tick{0%{transform:scale(.6)}100%{transform:scale(1)}}
+  @keyframes mo-pick{
+    0%{box-shadow:inset 0 0 0 var(--accent);background:#e3edf7}
+    40%{box-shadow:inset 6px 0 0 var(--accent)}
+    100%{box-shadow:inset 2px 0 0 var(--accent);background:var(--accent-soft)}
+  }
+
+  /* 문구가 들어가면 입력칸이 살짝 물듭니다 */
+  #inputText.mo-flash{animation:mo-flash .8s ease-out}
+  @keyframes mo-flash{0%{background:#e3edf7;box-shadow:0 0 0 4px rgba(53,97,143,.16)}100%{background:var(--field);box-shadow:0 0 0 0 rgba(53,97,143,0)}}
+
+  /* 슬라이더 숫자 */
+  .label b{display:inline-block}
+
+  /* ---------- 미리보기 종이 ---------- */
+  .stage{position:relative}
+  #pages{position:relative;z-index:1}
+  .mo-ghost{position:absolute;z-index:0;margin:0 !important;pointer-events:none}
+
+  /* 쓰기 모드에 들어갈 때 종이 둘레가 한 번 번집니다 */
+  .page.mo-glow{animation:mo-glow .9s ease-out}
+  @keyframes mo-glow{
+    0%{box-shadow:0 4px 22px rgba(80,62,45,.16),0 0 0 0 rgba(53,97,143,.5)}
+    100%{box-shadow:0 4px 22px rgba(80,62,45,.16),0 0 0 18px rgba(53,97,143,0)}
+  }
+
+  /* 인쇄 헤드가 종이를 훑고 지나갑니다 (오프닝 5장과 같은 결) */
+  .mo-scan{
+    position:absolute;left:-2%;right:-2%;height:14%;top:-14%;z-index:12;pointer-events:none;
+    background:linear-gradient(to bottom,rgba(53,97,143,0),rgba(53,97,143,.1) 70%,rgba(53,97,143,.55) 96%,rgba(53,97,143,0));
+    animation:mo-scan .62s cubic-bezier(.5,0,.4,1) forwards;
+  }
+  @keyframes mo-scan{to{top:100%}}
+
+  /* 전체 지우기 — 지우개가 한 번 쓸고 갑니다 */
+  .mo-sweep{
+    position:absolute;top:0;bottom:0;left:-35%;width:35%;z-index:12;pointer-events:none;
+    background:linear-gradient(90deg,transparent,var(--paper,#fffdf7) 40%,var(--paper,#fffdf7) 60%,transparent);
+    animation:mo-sweep .55s cubic-bezier(.5,0,.4,1) forwards;
+  }
+  @keyframes mo-sweep{to{left:100%}}
+
+  /* ---------- 영상 팝업 목록 ---------- */
+  .vmodal:not([hidden]) .vm-item{animation:mo-up .42s cubic-bezier(.2,.8,.2,1) both}
+  .vmodal:not([hidden]) .vm-item:nth-child(1){animation-delay:.08s}
+  .vmodal:not([hidden]) .vm-item:nth-child(2){animation-delay:.14s}
+  .vmodal:not([hidden]) .vm-item:nth-child(3){animation-delay:.2s}
+  .vmodal:not([hidden]) .vm-player{animation:mo-up .5s cubic-bezier(.2,.8,.2,1) .18s both}
+  @keyframes mo-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+}
