@@ -1,0 +1,96 @@
+자리 뽑기 스튜디오 이용 허락 (License)
+=====================================
+
+Copyright (c) 2026 hirameki (@hirame.ki). All rights reserved.
+
+대상: 자리 뽑기 스튜디오 (https://hirame-ki.github.io/seat/) 의 소스 코드, 화면 디자인,
+오프닝·진행 모션, 문구, 이름과 로고, 홍보 이미지(og-image.jpg 등) — 이하 "이 소프트웨어".
+
+
+1. 허용하는 것
+--------------
+가. 선생님·학교·학생 누구나 이 소프트웨어를 무료로 사용할 수 있습니다.
+    수업, 학급 활동, 학교 행사, 교사 연수 시연에 자유롭게 쓰세요.
+나. 이 소프트웨어의 주소(링크)를 공유할 수 있습니다.
+다. 사용하는 모습을 캡처·촬영해 후기, 블로그, SNS, 수업 자료에 올릴 수 있습니다.
+    이때 "자리 뽑기 스튜디오 · 제작 @hirame.ki" 처럼 출처를 밝혀 주세요.
+라. 이 소프트웨어로 만든 자리표(인쇄물·PDF)는 사용자가 자유롭게 쓸 수 있습니다.
+
+
+2. 금지하는 것 (제작자의 서면 허락 없이)
+----------------------------------------
+가. 이 소프트웨어의 전부 또는 일부를 복제해 다른 주소·저장소·앱·플랫폼에 다시 배포하는 것
+나. 고치거나 이름을 바꿔 자기 것처럼 공개하는 것, 제작자 표시와 이 고지를 지우는 것
+다. 판매하거나, 유료 강의·유료 자료·유료 앱·유료 서비스에 포함하는 것
+라. 이 소프트웨어의 디자인·연출을 그대로 본뜬 서비스를 만드는 것
+
+
+3. 함께 쓰인 외부 구성요소
+--------------------------
+아래 구성요소는 위 권리 표시의 대상이 아니며, 각자의 라이선스를 따릅니다.
+
+- SUIT Variable (sun-typeface) ............ SIL Open Font License 1.1
+- Black Han Sans (Zess Type) .............. SIL Open Font License 1.1
+- Feather Icons 일부 (선 아이콘) ........... MIT License (아래 전문)
+
+    The MIT License (MIT)
+
+    Copyright (c) 2013-2017 Cole Bemis
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+효과음은 외부 음원 없이 브라우저에서 직접 합성합니다.
+
+
+4. 사용자가 넣는 자료
+---------------------
+가. 사용자가 올린 학생 사진, 퀴즈 사진, 명단의 권리는 원래 주인에게 있습니다.
+나. 이 소프트웨어는 사진과 명단을 서버로 보내지 않습니다. 사용자의 브라우저
+    (메모리, localStorage, IndexedDB) 안에만 저장됩니다.
+다. 학생 사진은 개인정보·초상권 대상입니다. 학급 안에서만 쓰고, 촬영해 공개할 때는
+    얼굴을 가리거나 보호자 동의를 받아 주세요. 퀴즈에는 직접 찍은 사진을 권장합니다.
+    자료 사용에 대한 책임은 사용자에게 있습니다.
+
+
+5. 보증 없음 · 책임 제한
+------------------------
+이 소프트웨어는 "있는 그대로" 무료로 제공되며, 어떤 보증도 하지 않습니다.
+브라우저 저장소의 명단·문제가 지워지거나, 기기·브라우저를 바꿔 사라지거나,
+이 소프트웨어 사용으로 생긴 손해에 대해 제작자는 책임지지 않습니다.
+중요한 명단은 따로 보관해 주세요.
+
+
+6. 문의
+-------
+재배포·협업·연수 사용 등 위에서 금지한 이용을 원하시면
+인스타그램 @hirame.ki 로 DM 주세요. (https://www.instagram.com/hirame.ki/)
+
+
+-----------------------------------------------------------------------------
+English summary
+
+Copyright (c) 2026 hirameki (@hirame.ki). All rights reserved.
+
+You may use this software free of charge for teaching and classroom activities,
+share its link, and post screenshots or videos of it with attribution.
+You may NOT copy, redistribute, modify and republish, rebrand, sell, or include
+it in any paid product or service without prior written permission.
+Third-party components (SUIT, Black Han Sans: SIL OFL 1.1; parts of Feather
+Icons: MIT) remain under their own licenses. Provided "AS IS" without warranty.
+Contact: https://www.instagram.com/hirame.ki/
