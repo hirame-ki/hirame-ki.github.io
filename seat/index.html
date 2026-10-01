@@ -465,6 +465,68 @@ body{font-family:var(--display);letter-spacing:-.015em}
 .opening canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .opening.done{display:none}
 @media print{.opening{display:none!important}}
+
+/* ---------- 진행 중 모션 (오프닝과 같은 결: 형광 노랑 · 보라 · 먹색 · 스프링) ---------- */
+#fx-layer{position:fixed;inset:0;z-index:990;pointer-events:none;overflow:hidden}
+@media print{#fx-layer,.curtain{display:none!important}}
+.fx-spark{position:absolute;height:4px;margin-top:-2px;border-radius:3px;transform-origin:0 50%}
+.fx-ring{position:absolute;border:3px solid var(--hl);border-radius:14px}
+.fx-fly{position:absolute;border-radius:20px;background-size:cover;background-position:center;background-color:#fff;border:3px solid #fff;box-shadow:6px 6px 0 #000;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--accent-d);transform-origin:50% 50%;will-change:transform}
+.fx-tip{position:absolute;transform:translate(-50%,0);white-space:nowrap;font-size:13px;font-weight:800;color:var(--on-hl);background:var(--hl);border:2px solid var(--bd);border-radius:99px;padding:5px 12px;box-shadow:2px 2px 0 var(--bd)}
+#fx-layer .confetti{position:absolute}
+
+/* 모드 탭: 형광펜 알약이 옆 탭으로 미끄러진다 */
+.modes{position:relative}
+.mode-tab{position:relative;z-index:1}
+.mode-tab.pill-wait{background:transparent!important;border-color:transparent!important;box-shadow:none!important}
+.tab-pill{position:absolute;z-index:0;pointer-events:none;background:var(--hl);border:2px solid var(--bd);border-radius:999px;box-shadow:2px 2px 0 var(--bd)}
+@keyframes wiggle{0%,100%{transform:none}30%{transform:rotate(-14deg) scale(1.15)}65%{transform:rotate(10deg)}}
+.mode-tab:hover .em .ic{animation:wiggle .45s ease}
+
+/* 설정 화면 */
+@keyframes rowIn{from{opacity:0;transform:translateX(-16px) scale(.96)}to{opacity:1;transform:none}}
+.rrow.row-in{animation:rowIn .38s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes segOn{0%{transform:scale(.9)}55%{transform:scale(1.06)}100%{transform:none}}
+.seg-btn.on{animation:segOn .32s cubic-bezier(.3,1.4,.5,1)}
+.manualbar{animation:fadeUp .35s var(--ease) both}
+#done-msg:not([hidden]){animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
+
+/* 자리 룰렛 */
+.seat.roul{background-color:var(--hl)!important;border:2px solid var(--bd)!important;box-shadow:3px 3px 0 var(--bd);transform:scale(1.08);z-index:2}
+.seat.roul .ph{border-color:var(--bd)}
+.seat.roul-lock{animation:seatPulse .5s ease-in-out 2}
+
+/* 공개 오버레이: 카드가 뒤집히며 들어온다 */
+@keyframes cardIn{
+  0%{opacity:0;transform:perspective(900px) translateY(60px) rotateY(-110deg) scale(.55)}
+  55%{opacity:1;transform:perspective(900px) translateY(-6px) rotateY(14deg) scale(1.03)}
+  100%{opacity:1;transform:none}
+}
+.overlay.show .ovside{animation:cardIn .62s cubic-bezier(.2,.8,.3,1) both}
+.overlay.show .ovrow > .ovside + .ovmid + .ovside{animation-delay:.12s}
+.overlay.show .ovmid{animation:pop .5s .3s cubic-bezier(.34,1.56,.64,1) both}
+.overlay.show .ovcaption{animation:fadeUp .4s .16s var(--ease) both}
+.overlay.show .ovbtns{animation:fadeUp .4s .26s var(--ease) both}
+.ovname .mk{display:inline-block;font-size:23px;padding:2px 12px;border-radius:9px;color:#fff;
+  background:linear-gradient(var(--hl),var(--hl)) no-repeat 0 0/0% 100%;animation:mkSweep .42s .05s cubic-bezier(.6,0,.2,1) forwards}
+@keyframes mkSweep{to{background-size:100% 100%;color:#120d22}}
+.ovwinner{position:relative;animation:pop .45s cubic-bezier(.34,1.56,.64,1)}
+.ptfloat{position:absolute;left:50%;top:-6px;font-family:var(--headline);font-size:26px;color:var(--hl);pointer-events:none;animation:ptUp .9s ease-out forwards}
+@keyframes ptUp{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}25%{opacity:1;transform:translate(-50%,-14px) scale(1.15)}100%{opacity:0;transform:translate(-50%,-46px) scale(1)}}
+
+/* 시작 전환: 분단처럼 세로 띠가 덮었다가 빠진다 */
+.curtain{position:fixed;inset:0;z-index:980;overflow:hidden;cursor:pointer}
+.cstrip{position:absolute;top:0;bottom:0;background:radial-gradient(rgba(170,150,255,.24) 1.3px,transparent 1.3px) 0 0/22px 22px,#120d22}
+.cstrip::after{content:"";position:absolute;left:0;right:0;height:6px;background:var(--hl)}
+.cstrip.top::after{bottom:0}
+.cstrip.bot::after{top:0}
+.cbadge{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:16px;pointer-events:none;text-align:center;width:min(92vw,720px)}
+.cicon{width:88px;height:88px;border-radius:24px;background:var(--hl);color:#120d22;border:3px solid #000;box-shadow:6px 6px 0 var(--accent);display:grid;place-items:center}
+.cicon .ic{width:46px;height:46px;stroke-width:1.9}
+.ctitle{font-family:var(--headline);font-size:clamp(34px,6.4vw,62px);line-height:1.15;color:#fff;word-break:keep-all}
+.ctitle span{padding:0 .12em;background:linear-gradient(var(--accent),var(--accent)) no-repeat 0 88%/0% 40%;animation:ctHl .45s .55s cubic-bezier(.6,0,.2,1) forwards}
+@keyframes ctHl{to{background-size:100% 40%}}
+.csub{font-size:15px;font-weight:800;color:#120d22;background:#fff;border:2px solid #000;border-radius:99px;padding:7px 18px;box-shadow:3px 3px 0 var(--accent)}
 </style>
 </head>
 <body data-mode="photo">
@@ -1246,6 +1308,9 @@ body{font-family:var(--display);letter-spacing:-.015em}
 <!-- 최종 1위 시상 -->
 <div class="celebrate" id="celebrate" aria-live="polite"></div>
 
+<!-- 진행 중 모션 (불꽃 · 날아가는 카드 · 색종이) -->
+<div id="fx-layer" aria-hidden="true"></div>
+
 <div id="print-sheet" style="position:fixed;left:-10000px;top:0;width:296mm;height:208mm;box-sizing:border-box;padding:6mm;background:#fff;color:#14181f;display:flex;flex-direction:column;gap:2.5mm;overflow:hidden;page-break-inside:avoid;break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact"></div>
 
 <script>
@@ -1573,6 +1638,344 @@ body{font-family:var(--display);letter-spacing:-.015em}
       pluck(now+i*0.05, f*2, 0.04, 1.2, 'sine');
     });
   }
+  // 룰렛이 자리를 하나씩 짚을 때
+  function playTick(k){
+    if (muted || !ensureAudio()) return;
+    pluck(audioCtx.currentTime, [1046.50,1174.66,1318.51,1567.98][k % 4], 0.035, 0.09, 'triangle');
+  }
+  // 정답 · 결과 공개
+  function playReveal(){
+    if (muted || !ensureAudio()) return;
+    var now = audioCtx.currentTime;
+    [783.99,1174.66,1567.98].forEach(function(f,i){ pluck(now+i*0.06, f, 0.08, 0.7, 'sine'); });
+  }
+  // 화면 전환 휙 소리 (잡음을 대역 필터로 쓸어 올린다)
+  function playWhoosh(){
+    if (muted || !ensureAudio()) return;
+    var now = audioCtx.currentTime, len = 0.42;
+    var buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate*len), audioCtx.sampleRate), d = buf.getChannelData(0);
+    for (var i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+    var src = audioCtx.createBufferSource(), bp = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+    src.buffer = buf; bp.type = 'bandpass'; bp.Q.value = 1.1;
+    bp.frequency.setValueAtTime(380, now); bp.frequency.exponentialRampToValueAtTime(2600, now+len);
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.16, now+0.1); g.gain.exponentialRampToValueAtTime(0.0005, now+len);
+    src.connect(bp); bp.connect(g); g.connect(masterGain); src.start(now); src.stop(now+len+0.02);
+  }
+
+  /* =====================================================================
+     모션 도구 — 오프닝과 같은 결 (형광 노랑 · 보라 · 먹색, 스프링)
+     동작 줄이기 설정이거나 Web Animations 를 못 쓰면 전부 건너뛰고 결과만 보여 준다.
+     ===================================================================== */
+  var FX_ON = !!document.body.animate && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches);
+  var FX_HL = '#ffe14a', FX_PUR = '#5b2eff', FX_INK = '#120d22', FX_PINK = '#ff8fc8';
+  var SPRING = 'cubic-bezier(.34,1.56,.64,1)';
+  var booted = false;          // 첫 화면을 다 그린 뒤부터만 움직인다
+  var introDelay = 0;          // 시작 전환이 덮고 있는 동안 자리표 등장을 미룬다
+  var fxTimers = [];
+  function fxLayer(){ return document.getElementById('fx-layer'); }
+  function fxLater(fn, ms){ fxTimers.push(setTimeout(fn, ms)); }
+  function fxClear(){
+    fxTimers.forEach(clearTimeout); fxTimers = [];
+    stopRouletteSkip();
+    var l = fxLayer();
+    if (l) Array.prototype.forEach.call(l.querySelectorAll('.fx-fly,.fx-tip'), function(x){ x.remove(); });
+    Array.prototype.forEach.call(document.querySelectorAll('.seat.roul,.seat.roul-lock'), function(x){ x.classList.remove('roul','roul-lock'); });
+  }
+  function fxCenter(el){ var r = el.getBoundingClientRect(); return { x:r.left+r.width/2, y:r.top+r.height/2, w:r.width, h:r.height }; }
+  function fxBump(el, k){
+    if (!FX_ON || !el) return;
+    k = k || 1.12;
+    el.animate([{transform:'none'},{transform:'scale(' + k + ')', offset:.4},{transform:'none'}], { duration:420, easing:'ease-out' });
+  }
+  function fxSparks(x, y, o){
+    if (!FX_ON) return;
+    o = o || {};
+    var n = o.n || 10, cols = o.cols || [FX_HL,'#fff',FX_PINK], r0 = o.r0 || 10, r1 = o.r1 || 70, l = fxLayer();
+    for (var i=0;i<n;i++){
+      var a = (i/n)*360 + Math.random()*24, d = r1*(.75 + Math.random()*.5);
+      var s = document.createElement('i');
+      s.className = 'fx-spark';
+      s.style.left = x + 'px'; s.style.top = y + 'px';
+      s.style.width = (8 + Math.random()*12) + 'px';
+      s.style.background = cols[i % cols.length];
+      l.appendChild(s);
+      s.animate([
+        { transform:'rotate(' + a + 'deg) translateX(' + r0 + 'px) scaleX(1)', opacity:1 },
+        { transform:'rotate(' + a + 'deg) translateX(' + d + 'px) scaleX(.2)', opacity:0 }
+      ], { duration:(o.dur || 520) + Math.random()*120, easing:'cubic-bezier(.2,.8,.3,1)', fill:'forwards' }).onfinish = (function(el){ return function(){ el.remove(); }; })(s);
+    }
+  }
+  function fxRing(x, y, w, h, o){
+    if (!FX_ON) return;
+    o = o || {};
+    var r = document.createElement('i');
+    r.className = 'fx-ring';
+    r.style.left = (x - w/2) + 'px'; r.style.top = (y - h/2) + 'px';
+    r.style.width = w + 'px'; r.style.height = h + 'px';
+    r.style.borderColor = o.col || FX_HL;
+    if (o.round) r.style.borderRadius = '50%';
+    fxLayer().appendChild(r);
+    r.animate([{ transform:'scale(1)', opacity:1 },{ transform:'scale(' + (o.grow || 1.55) + ')', opacity:0 }],
+      { duration:o.dur || 480, easing:'cubic-bezier(.2,.8,.3,1)', fill:'forwards' }).onfinish = function(){ r.remove(); };
+  }
+  // 공개 순간: 사진이 한 번 튀고 둘레로 불꽃
+  function fxRevealPop(el, cols){
+    if (!FX_ON || !el) return;
+    var c = fxCenter(el);
+    fxBump(el, 1.06);
+    fxSparks(c.x, c.y, { n:16, r0:c.w*.5, r1:c.w*.78, cols:cols });
+    fxRing(c.x, c.y, c.w, c.h, { col:FX_HL, grow:1.25 });
+  }
+  // 자리에 내려앉는 순간: 찌그러졌다 펴지고, 테두리 물결 + 작은 불꽃
+  function seatLand(el){
+    if (!FX_ON || !el) return;
+    el.animate([
+      { transform:'scale(1.28,.72)' },{ transform:'scale(.9,1.12)', offset:.35 },{ transform:'scale(1.04,.97)', offset:.65 },{ transform:'none' }
+    ], { duration:480, easing:'ease-out' });
+    var c = fxCenter(el);
+    fxRing(c.x, c.y, c.w, c.h, { col:FX_PUR, grow:1.5 });
+    fxSparks(c.x, c.y, { n:8, r0:c.w*.42, r1:c.w*.95, cols:[FX_INK,FX_PUR,FX_HL] });
+  }
+
+  /* 날아가는 카드 — 출발 칸 위에 복제본을 띄우고 transform 만으로 움직인다 */
+  function makeFlyer(s, rect){
+    var f = document.createElement('div');
+    f.className = 'fx-fly';
+    f.style.left = rect.left + 'px'; f.style.top = rect.top + 'px';
+    f.style.width = rect.width + 'px'; f.style.height = rect.height + 'px';
+    if (s.url) f.style.backgroundImage = 'url(' + s.url + ')';
+    else { f.textContent = initialOf(s); f.style.fontSize = Math.max(14, rect.width*.3) + 'px'; }
+    if (rect.width < 80){ f.style.borderRadius = '10px'; f.style.borderWidth = '2px'; f.style.boxShadow = '3px 3px 0 #000'; }
+    f._base = rect; f._st = { x:0, y:0, s:1, r:0 }; f._rad = rect.width < 80 ? 10 : 20;
+    fxLayer().appendChild(f);
+    return f;
+  }
+  function flyTf(st){ return 'translate(' + st.x + 'px,' + st.y + 'px) rotate(' + st.r + 'deg) scale(' + st.s + ')'; }
+  // 카드 중심을 (cx,cy) 로, 화면 크기 px 로 옮긴다
+  function flyHover(f, cx, cy, px, dur){
+    var b = f._base, to = { x:cx - (b.left + b.width/2), y:cy - (b.top + b.height/2), s:px / b.width, r:-4 };
+    f.animate([{ transform:flyTf(f._st) },{ transform:flyTf(to) }], { duration:dur, easing:SPRING, fill:'forwards' });
+    f._st = to;
+    // 둥실둥실
+    fxLater(function(){
+      if (!f.isConnected) return;
+      var up = { x:to.x, y:to.y - 7, s:to.s, r:3 };
+      f.animate([{ transform:flyTf(to) },{ transform:flyTf(up) },{ transform:flyTf(to) }], { duration:900, iterations:Infinity, easing:'ease-in-out', fill:'forwards' });
+    }, dur);
+  }
+  // 포물선을 그리며 자리로 날아간다
+  function flyArc(f, destEl, dur, done){
+    var b = f._base, d = destEl.getBoundingClientRect(), from = f._st;
+    var bx = b.left + b.width/2, by = b.top + b.height/2;
+    var sx = bx + from.x, sy = by + from.y, dx = d.left + d.width/2, dy = d.top + d.height/2;
+    var s1 = d.width / b.width, cx = (sx + dx)/2, cy = Math.min(sy, dy) - Math.max(70, Math.abs(dx - sx)*.28);
+    var spin = dx > sx ? 1 : -1, frames = [], N = 14;
+    for (var k=0;k<=N;k++){
+      var u = k/N, m = 1-u;
+      var x = m*m*sx + 2*m*u*cx + u*u*dx, y = m*m*sy + 2*m*u*cy + u*u*dy;
+      var sc = (from.s + (s1 - from.s)*u) * (1 + .22*Math.sin(Math.PI*u));
+      frames.push({ transform:flyTf({ x:x-bx, y:y-by, s:sc, r:from.r*(1-u) + spin*16*Math.sin(Math.PI*u) }),
+                    borderRadius:(f._rad + (12/s1 - f._rad)*u) + 'px' });
+    }
+    f.getAnimations().forEach(function(a){ a.cancel(); });
+    f.animate(frames, { duration:dur, easing:'cubic-bezier(.45,.05,.35,1)', fill:'forwards' }).onfinish = function(){
+      f.remove(); done();
+    };
+  }
+
+  /* 자리 룰렛 — 빈자리를 빠르게 짚다가 점점 느려져 정해진 자리에 멈춘다 (아무 데나 누르면 바로 멈춤) */
+  var rouletteFast = false;
+  function rouletteSkipper(){ rouletteFast = true; }
+  function stopRouletteSkip(){ document.removeEventListener('pointerdown', rouletteSkipper, true); }
+  function roulette(cands, target, cb){
+    var N = 10, prev = -1, seq = [];
+    for (var k=0;k<N-1;k++){
+      var j = Math.floor(Math.random()*cands.length);
+      if (j === prev) j = (j + 1) % cands.length;
+      prev = j; seq.push(cands[j]);
+    }
+    seq.push(target);
+    rouletteFast = false;
+    document.addEventListener('pointerdown', rouletteSkipper, true);
+    var lit = [];
+    function light(seats, cls){
+      lit.forEach(function(el){ el.classList.remove('roul','roul-lock'); });
+      lit = seats.map(function(i){ return $('seat-' + i); }).filter(Boolean);
+      lit.forEach(function(el){ el.classList.add('roul'); if (cls) el.classList.add(cls); });
+    }
+    function step(k){
+      if (rouletteFast) k = seq.length - 1;
+      var last = k === seq.length - 1;
+      light(seq[k], last ? 'roul-lock' : null);
+      playTick(k);
+      if (last){
+        stopRouletteSkip();
+        fxLater(function(){ lit.forEach(function(el){ el.classList.remove('roul','roul-lock'); }); cb(); }, rouletteFast ? 120 : 300);
+        return;
+      }
+      var u = (k + 1)/(N - 1);
+      fxLater(function(){ step(k + 1); }, 42 + 150*Math.pow(u, 2.2));
+    }
+    step(0);
+  }
+
+  /* 추첨함 흔들기 — 칩이 마구 흔들리다 뽑힌 칩이 가운데로 커진다 */
+  function drumShuffle(ids, cb){
+    var drum = $('drum');
+    var chips = drum ? drum.querySelectorAll('.chip') : [];
+    if (!FX_ON || !drum || !drum.offsetParent){ cb(); return; }
+    var w = drum.clientWidth, h = drum.clientHeight;
+    drum.animate([{ transform:'none' },{ transform:'rotate(-1.2deg)' },{ transform:'rotate(1.2deg)' },{ transform:'rotate(-.6deg)' },{ transform:'none' }], { duration:520, easing:'ease-in-out' });
+    Array.prototype.forEach.call(chips, function(c){
+      var fr = [{ transform:'none' }];
+      for (var i=0;i<5;i++) fr.push({ transform:'translate(' + (Math.random()*28-14) + 'px,' + (Math.random()*28-14) + 'px) rotate(' + (Math.random()*50-25) + 'deg)' });
+      fr.push({ transform:'none' });
+      c.animate(fr, { duration:520, easing:'ease-in-out' });
+    });
+    var picked = Array.prototype.filter.call(chips, function(c){ return ids.indexOf(parseInt(c.getAttribute('data-sid'),10)) !== -1; });
+    if (!picked.length){
+      // 퀴즈 문제는 칩이 없으니 '?' 카드가 솟아오른다
+      var q = document.createElement('div');
+      q.className = 'chip';
+      q.style.cssText = 'left:' + (w/2-23) + 'px;top:' + (h/2-23) + 'px;animation:none;background:' + FX_HL + ';font-family:var(--headline);font-size:26px;font-weight:400;color:' + FX_INK + ';z-index:5';
+      q.textContent = '?';
+      drum.appendChild(q);
+      q.animate([{ transform:'scale(0) rotate(-200deg)' },{ transform:'scale(2.2) rotate(8deg)', offset:.7 },{ transform:'scale(1.9)' }], { duration:520, delay:180, easing:'ease-out', fill:'both' });
+      picked = [];
+    }
+    fxLater(function(){
+      picked.forEach(function(c, i){
+        var tx = w/2 - 23 + (picked.length > 1 ? (i ? 34 : -34) : 0) - parseFloat(c.style.left);
+        var ty = h/2 - 23 - parseFloat(c.style.top);
+        c.style.zIndex = 5;
+        c.animate([{ transform:'none' },{ transform:'translate(' + tx + 'px,' + ty + 'px) scale(1.9)' }], { duration:300, easing:SPRING, fill:'forwards' });
+      });
+    }, 260);
+    fxLater(cb, 640);
+  }
+
+  /* 자리표가 칠판 앞에서부터 한 줄씩 깔린다 */
+  function introSeats(delay){
+    if (!FX_ON) return;
+    var grid = $('seat-grid');
+    var board = grid.parentNode.querySelector('.board');
+    if (board) board.animate([{ opacity:0, transform:'translateY(-14px) scaleX(.6)' },{ opacity:1, transform:'none' }], { duration:420, delay:delay, easing:SPRING, fill:'backwards' });
+    Array.prototype.forEach.call(grid.querySelectorAll('.seatrow'), function(row, r){
+      Array.prototype.forEach.call(row.querySelectorAll('.seat'), function(el, c){
+        el.animate([
+          { opacity:0, transform:'translateY(-18px) scale(.55)' },{ opacity:1, transform:'scale(1.06)', offset:.65 },{ opacity:1, transform:'none' }
+        ], { duration:420, delay:delay + 120 + r*70 + c*22, easing:'ease-out', fill:'backwards' });
+      });
+    });
+  }
+
+  /* 다 앉았을 때: 자리표에 파도 + 색종이 */
+  function finale(withConfetti){
+    if (!FX_ON) return;
+    Array.prototype.forEach.call($('seat-grid').querySelectorAll('.seatrow'), function(row, r){
+      Array.prototype.forEach.call(row.querySelectorAll('.seat.filled'), function(el, c){
+        el.animate([
+          { transform:'none' },{ transform:'translateY(-14px) rotate(-4deg)', offset:.35 },{ transform:'translateY(3px)', offset:.65 },{ transform:'none' }
+        ], { duration:620, delay:r*90 + c*30, easing:'ease-out' });
+      });
+    });
+    if (withConfetti){ playFanfare(); burstConfetti(110, fxLayer()); }
+  }
+
+  /* 시작 전환 — 세로 띠가 분단처럼 내려와 덮고, 모드 배지가 튀어나온 뒤, 띠가 빠지며 진행 화면이 드러난다 */
+  function curtain(mid){
+    if (!FX_ON){ mid(); return; }
+    var m = MODES[currentMode];
+    var box = document.createElement('div');
+    box.className = 'curtain';
+    var n = window.innerWidth < 720 ? 4 : 6, strips = [];
+    for (var i=0;i<n;i++){
+      var s = document.createElement('div');
+      s.className = 'cstrip ' + (i % 2 ? 'bot' : 'top');
+      s.style.left = (i*100/n) + '%'; s.style.width = (100/n + .3) + '%';
+      box.appendChild(s); strips.push(s);
+    }
+    var badge = document.createElement('div');
+    badge.className = 'cbadge';
+    badge.innerHTML = '<div class="cicon">' + ic(m.icon) + '</div><div class="ctitle"><span>' + esc(m.label) + '</span></div><div class="csub">자리 추첨 시작!</div>';
+    box.appendChild(badge);
+    document.body.appendChild(box);
+    playWhoosh();
+    var IN = 420, inEnd = IN + (n-1)*40;
+    strips.forEach(function(s, i){
+      s.animate([{ transform:'translateY(' + (i % 2 ? 101 : -101) + '%)' },{ transform:'none' }], { duration:IN, delay:i*40, easing:'cubic-bezier(.7,0,.25,1)', fill:'both' });
+    });
+    var kids = badge.children;
+    kids[0].animate([{ opacity:0, transform:'scale(0) rotate(-40deg)' },{ opacity:1, transform:'scale(1.18) rotate(6deg)', offset:.65 },{ opacity:1, transform:'none' }], { duration:480, delay:inEnd-160, easing:'ease-out', fill:'both' });
+    kids[1].animate([{ opacity:0, transform:'translateY(26px) scale(.85)' },{ opacity:1, transform:'none' }], { duration:420, delay:inEnd-60, easing:SPRING, fill:'both' });
+    kids[2].animate([{ opacity:0, transform:'translateY(16px) rotate(-6deg)' },{ opacity:1, transform:'none' }], { duration:380, delay:inEnd+60, easing:SPRING, fill:'both' });
+
+    var midDone = false, leaving = false;
+    function doMid(){
+      if (midDone) return;
+      midDone = true;
+      introDelay = leaving ? 120 : 560;
+      mid();
+      introDelay = 0;
+    }
+    function leave(){
+      if (leaving) return;
+      leaving = true;
+      clearTimeout(tMid); clearTimeout(tOut);
+      var early = !midDone;
+      doMid();
+      if (early){       // 덮는 도중에 눌렀으면 그냥 빠르게 걷어 낸다
+        box.animate([{ opacity:1 },{ opacity:0 }], { duration:220, fill:'forwards' }).onfinish = function(){ box.remove(); };
+        return;
+      }
+      playWhoosh();
+      badge.animate([{ opacity:1, transform:'translate(-50%,-50%)' },{ opacity:0, transform:'translate(-50%,-70%) scale(.7)' }], { duration:280, easing:'ease-in', fill:'forwards' });
+      strips.forEach(function(s, i){
+        s.animate([{ transform:'none' },{ transform:'translateY(' + (i % 2 ? -101 : 101) + '%)' }], { duration:IN, delay:80 + i*40, easing:'cubic-bezier(.7,0,.25,1)', fill:'forwards' });
+      });
+      setTimeout(function(){ box.remove(); }, 80 + IN + (n-1)*40 + 40);
+    }
+    var tMid = setTimeout(doMid, inEnd);
+    var tOut = setTimeout(leave, inEnd + 560);
+    box.addEventListener('pointerdown', leave);
+  }
+
+  /* 모드 탭: 형광펜 알약이 이전 탭에서 새 탭으로 늘어났다 줄며 미끄러진다 */
+  function slideTabPill(fromRect){
+    if (!FX_ON || !fromRect) return;
+    var nav = $('mode-tabs'), on = nav.querySelector('.mode-tab.on');
+    if (!on) return;
+    var nr = nav.getBoundingClientRect(), to = on.getBoundingClientRect();
+    if (Math.abs(to.left - fromRect.left) < 1 && Math.abs(to.top - fromRect.top) < 1) return;
+    var a = { l:fromRect.left - nr.left, t:fromRect.top - nr.top, w:fromRect.width, h:fromRect.height };
+    var b = { l:to.left - nr.left, t:to.top - nr.top, w:to.width, h:to.height };
+    var ml = Math.min(a.l, b.l), mw = Math.max(a.l + a.w, b.l + b.w) - ml;
+    var pill = document.createElement('span');
+    pill.className = 'tab-pill';
+    nav.appendChild(pill);
+    on.classList.add('pill-wait');
+    var px = function(o){ return { left:o.l + 'px', top:o.t + 'px', width:o.w + 'px', height:o.h + 'px' }; };
+    var midF = (a.t === b.t) ? { left:ml + 'px', top:a.t + 'px', width:mw + 'px', height:a.h + 'px', offset:.45 } : px({ l:(a.l+b.l)/2, t:(a.t+b.t)/2, w:(a.w+b.w)/2, h:a.h });
+    if (midF.offset === undefined) midF.offset = .45;
+    pill.animate([px(a), midF, px(b)], { duration:380, easing:'cubic-bezier(.5,0,.2,1)' }).onfinish = function(){
+      pill.remove();
+      on.classList.remove('pill-wait');
+      on.animate([{ transform:'scale(1.08)' },{ transform:'none' }], { duration:260, easing:SPRING });
+    };
+  }
+
+  /* 모드를 바꾸면 설정 카드들이 차례로 다시 올라온다 */
+  function paneStagger(){
+    if (!FX_ON || $('screen-setup').hidden) return;
+    var k = 0;
+    Array.prototype.forEach.call(document.querySelectorAll('#screen-setup .pane > *'), function(el){
+      if (el.offsetParent === null) return;
+      el.animate([{ opacity:0, transform:'translateY(18px)' },{ opacity:1, transform:'none' }], { duration:380, delay:k*35, easing:'cubic-bezier(.2,.9,.3,1.1)', fill:'backwards' });
+      k++;
+    });
+    var bem = $('mode-banner').querySelector('.bem');
+    if (bem) bem.animate([{ transform:'scale(.4) rotate(-30deg)' },{ transform:'scale(1.15) rotate(8deg)', offset:.6 },{ transform:'none' }], { duration:520, delay:80, easing:'ease-out', fill:'backwards' });
+  }
 
   /* =====================================================================
      레이아웃
@@ -1652,11 +2055,18 @@ body{font-family:var(--display);letter-spacing:-.015em}
     } else if (G){
       exitToSetup();
     }
+    var changed = booted && k !== currentMode;
+    var oldTab = changed ? document.querySelector('#mode-tabs .mode-tab.on') : null;
+    var oldRect = oldTab ? oldTab.getBoundingClientRect() : null;
     currentMode = k;
     document.body.setAttribute('data-mode', k);
     $('brand-dot').innerHTML = ic(MODES[k].icon);
     if (MODES[k].pair && grouping !== 'pair'){ grouping = 'pair'; }
     renderTabs();
+    if (changed){
+      slideTabPill(oldRect);
+      if (FX_ON) $('brand-dot').animate([{ transform:'none' },{ transform:'rotateY(180deg) scale(1.2)', offset:.5 },{ transform:'rotateY(360deg)' }], { duration:520, easing:'ease-in-out' });
+    }
     renderBanner();
     renderRuleCard();
     renderGroupingSeg();
@@ -1674,6 +2084,7 @@ body{font-family:var(--display);letter-spacing:-.015em}
     setDropLabel(MODES[k].dropLabel);
     $('start-label').textContent = MODES[k].label + ' 시작하기';
     check();
+    if (changed) paneStagger();
   }
 
   function renderBanner(){
@@ -1801,16 +2212,32 @@ body{font-family:var(--display);letter-spacing:-.015em}
      ===================================================================== */
   var ICON_X = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>';
   var photoTargetId = null;   // 명단에서 썸네일을 눌러 한 명에게만 사진을 넣을 때 쓰는 대상
+  var rowSeen = {};           // 이미 화면에 나온 학생 줄 (새로 들어온 줄만 미끄러져 들어온다)
+  var thumbBumpId = null;     // 방금 사진을 바꾼 학생
+
+  // 줄을 빼기 전에 옆으로 밀려 사라지게 한다
+  function slideOutRow(row, done){
+    if (!FX_ON){ done(); return; }
+    row.style.pointerEvents = 'none';
+    row.animate([{ opacity:1, transform:'none' },{ opacity:0, transform:'translateX(28px) scale(.94)' }], { duration:200, easing:'ease-in', fill:'forwards' }).onfinish = done;
+  }
 
   function renderRoster(){
     var box = $('roster');
     box.innerHTML = '';
     $('roster-empty').hidden = students.length > 0;
-    $('roster-count').textContent = students.length + '명';
+    var countEl = $('roster-count');
+    if (countEl.textContent !== students.length + '명' && booted) fxBump(countEl, 1.25);
+    countEl.textContent = students.length + '명';
+    var fresh = 0;
 
     students.forEach(function(s, i){
       var row = document.createElement('div');
       row.className = 'rrow';
+      if (!rowSeen[s.id]){
+        rowSeen[s.id] = true;
+        if (booted){ row.className += ' row-in'; row.style.animationDelay = Math.min(fresh++*35, 700) + 'ms'; }
+      }
 
       var idx = document.createElement('span');
       idx.className = 'ridx';
@@ -1823,6 +2250,10 @@ body{font-family:var(--display);letter-spacing:-.015em}
       if (s.url) th.style.backgroundImage = 'url(' + s.url + ')';
       else th.textContent = initialOf(s);
       th.onclick = function(){ photoTargetId = s.id; $('single-photo').click(); };
+      if (thumbBumpId === s.id){
+        thumbBumpId = null;
+        if (FX_ON) th.animate([{ transform:'scale(.4) rotate(-12deg)' },{ transform:'scale(1.25) rotate(4deg)', offset:.6 },{ transform:'none' }], { duration:480, easing:'ease-out' });
+      }
 
       var inp = document.createElement('input');
       inp.type = 'text'; inp.className = 'field';
@@ -1854,8 +2285,10 @@ body{font-family:var(--display);letter-spacing:-.015em}
       var del = document.createElement('button');
       del.className = 'rdel'; del.innerHTML = ICON_X; del.title = '명단에서 빼기';
       del.onclick = function(){
-        students = students.filter(function(x){ return x !== s; });
-        renderRoster(); check();
+        slideOutRow(row, function(){
+          students = students.filter(function(x){ return x !== s; });
+          renderRoster(); check();
+        });
       };
       row.appendChild(del);
       box.appendChild(row);
@@ -1909,15 +2342,23 @@ body{font-family:var(--display);letter-spacing:-.015em}
   }
 
   /* ---------- 퀴즈 문제 (퀴즈 자리 뽑기 전용) ---------- */
+  var qRowSeen = {};
   function renderQuizList(){
     var box = $('quiz-list');
     if (!box) return;
     box.innerHTML = '';
     $('quiz-empty').hidden = quizzes.length > 0;
-    $('quiz-count').textContent = quizzes.length + '문제';
+    var countEl = $('quiz-count');
+    if (countEl.textContent !== quizzes.length + '문제' && booted) fxBump(countEl, 1.25);
+    countEl.textContent = quizzes.length + '문제';
+    var fresh = 0;
     quizzes.forEach(function(q, i){
       var row = document.createElement('div');
       row.className = 'rrow';
+      if (!qRowSeen[q.id]){
+        qRowSeen[q.id] = true;
+        if (booted){ row.className += ' row-in'; row.style.animationDelay = Math.min(fresh++*35, 700) + 'ms'; }
+      }
       var idx = document.createElement('span');
       idx.className = 'ridx';
       idx.textContent = i+1;
@@ -1932,8 +2373,10 @@ body{font-family:var(--display);letter-spacing:-.015em}
       var del = document.createElement('button');
       del.className = 'rdel'; del.innerHTML = ICON_X; del.title = '문제 빼기';
       del.onclick = function(){
-        quizzes = quizzes.filter(function(x){ return x !== q; });
-        renderQuizList(); check(); autoSaveQuiz();
+        slideOutRow(row, function(){
+          quizzes = quizzes.filter(function(x){ return x !== q; });
+          renderQuizList(); check(); autoSaveQuiz();
+        });
       };
       row.appendChild(idx); row.appendChild(th); row.appendChild(inp); row.appendChild(del);
       box.appendChild(row);
@@ -2263,6 +2706,7 @@ body{font-family:var(--display);letter-spacing:-.015em}
       restored: true,
       restoredDate: r.date
     };
+    fxClear();
     hideCelebrate();
     $('screen-setup').hidden = true;
     $('screen-play').hidden = false;
@@ -2272,6 +2716,7 @@ body{font-family:var(--display);letter-spacing:-.015em}
     $('score-card').hidden = true;
     buildSeatGrid();
     G.seats.forEach(function(s, i){ var el = $('seat-' + i); if (s && el) fillSeat(el, s, i); });
+    introSeats(0);
     renderDrum();
     updateProgress();
     window.scrollTo(0,0);
@@ -2296,11 +2741,14 @@ body{font-family:var(--display);letter-spacing:-.015em}
   /* =====================================================================
      미리보기 / 요약 / 검사
      ===================================================================== */
+  var prevSeatKeys = null;    // 직전 미리보기에 있던 좌석 (새로 생긴 좌석만 톡 튀어나온다)
+  var toggledSeatKey = null;  // 방금 눌러서 빈자리로 바꾼 좌석
   function renderLayout(){
     var layout = buildLayout();
     indexLayout(layout);
     var grid = $('layout-grid');
     grid.innerHTML = '';
+    var keys = {}, fresh = 0;
     layout.forEach(function(row){
       var rowEl = document.createElement('div');
       rowEl.className = 'seatrow';
@@ -2315,14 +2763,24 @@ body{font-family:var(--display);letter-spacing:-.015em}
           s.onclick = function(){
             if (disabledSeats[seat.key]) delete disabledSeats[seat.key];
             else disabledSeats[seat.key] = true;
+            toggledSeatKey = seat.key;
             renderLayout(); check();
           };
           gEl.appendChild(s);
+          keys[seat.key] = true;
+          if (booted && FX_ON){
+            if (seat.key === toggledSeatKey)
+              s.animate([{ transform:'scale(.5) rotate(-20deg)' },{ transform:'scale(1.25) rotate(6deg)', offset:.6 },{ transform:'none' }], { duration:380, easing:'ease-out' });
+            else if (prevSeatKeys && !prevSeatKeys[seat.key])
+              s.animate([{ opacity:0, transform:'scale(0)' },{ opacity:1, transform:'scale(1.2)', offset:.6 },{ opacity:1, transform:'none' }], { duration:360, delay:Math.min(fresh++*18, 500), easing:'ease-out', fill:'backwards' });
+          }
         });
         rowEl.appendChild(gEl);
       });
       grid.appendChild(rowEl);
     });
+    prevSeatKeys = keys;
+    toggledSeatKey = null;
     renderStats();
   }
 
@@ -2345,7 +2803,16 @@ body{font-family:var(--display);letter-spacing:-.015em}
       html += '<div class="stat"><div class="k">이름 있음</div><div class="v">' + students.filter(function(s){ return (s.name||'').trim(); }).length + '</div></div>';
     }
     $('stats').innerHTML = html;
+    // 바뀐 숫자만 톡 튄다 (모드가 바뀌어 칸 이름이 달라진 건 건너뜀)
+    var now = {};
+    Array.prototype.forEach.call($('stats').querySelectorAll('.stat'), function(st){
+      var k = st.querySelector('.k').textContent, v = st.querySelector('.v');
+      now[k] = v.textContent;
+      if (booted && prevStats[k] !== undefined && prevStats[k] !== v.textContent) fxBump(v, 1.3);
+    });
+    prevStats = now;
   }
+  var prevStats = {};
 
   function check(){
     renderStats();
@@ -2398,7 +2865,11 @@ body{font-family:var(--display);letter-spacing:-.015em}
 
     $('setup-warnings').innerHTML = warns.map(function(w){ return '<div class="warnbox">' + esc(w) + '</div>'; }).join('');
     var btn = $('start-btn');
+    var becameReady = btn.disabled && !blocking;
     btn.disabled = blocking;
+    // 막혀 있던 시작 버튼이 열리면 '이제 눌러도 돼요' 하고 한 번 들썩인다
+    if (becameReady && booted && FX_ON)
+      btn.animate([{ transform:'none' },{ transform:'scale(1.05) rotate(-1.2deg)', offset:.3 },{ transform:'scale(.98) rotate(1deg)', offset:.6 },{ transform:'none' }], { duration:520, easing:'ease-out' });
     autoSave();
   }
 
@@ -2468,8 +2939,10 @@ body{font-family:var(--display);letter-spacing:-.015em}
       answerer: null,  // 이번 라운드 정답자
       hintStage: 1,
       quizQueue: (currentMode === 'item') ? shuffle(quizzes.filter(function(q){ return !!q.url; })) : [],
-      celebrated: false
+      celebrated: false,
+      introDelay: introDelay
     };
+    fxClear();
     hideCelebrate();
 
     $('screen-setup').hidden = true;
@@ -2481,6 +2954,7 @@ body{font-family:var(--display);letter-spacing:-.015em}
     $('score-card').hidden = !gameOn();
     renderScoreboard();
     buildSeatGrid();
+    introSeats(G.introDelay);
     renderDrum();
     updateProgress();
     window.scrollTo(0,0);
@@ -2524,26 +2998,45 @@ body{font-family:var(--display);letter-spacing:-.015em}
     var drum = $('drum');
     drum.innerHTML = '';
     var w = drum.clientWidth || 360, h = drum.clientHeight || 236;
+    // 칩 자리는 한 번 정하면 그대로 둔다 → 뽑힌 칩만 빠지고, 되돌아온 칩만 톡 튀어나온다
+    if (!G.chipPos) G.chipPos = {};
+    var prevShown = G.chipShown || null, shown = {}, k = 0;
     remainingStudents().forEach(function(s){
       var b = document.createElement('div');
       b.className = 'chip';
+      b.setAttribute('data-sid', s.id);
       if (s.url) b.style.backgroundImage = 'url(' + s.url + ')';
       else b.textContent = initialOf(s);
-      b.style.left = (16 + Math.random()*Math.max(10, w-78)) + 'px';
-      b.style.top  = (16 + Math.random()*Math.max(10, h-78)) + 'px';
-      b.style.animationDuration = (2.6 + Math.random()*1.6) + 's';
-      b.style.animationDelay = (Math.random()*1.5) + 's';
+      var p = G.chipPos[s.id] || (G.chipPos[s.id] = {
+        x:16 + Math.random()*Math.max(10, w-78), y:16 + Math.random()*Math.max(10, h-78),
+        dur:(2.6 + Math.random()*1.6), delay:(Math.random()*1.5)
+      });
+      b.style.left = Math.min(p.x, Math.max(16, w-62)) + 'px';
+      b.style.top  = Math.min(p.y, Math.max(16, h-62)) + 'px';
+      b.style.animationDuration = p.dur + 's';
+      b.style.animationDelay = p.delay + 's';
+      shown[s.id] = true;
+      if (FX_ON && (!prevShown || !prevShown[s.id]))
+        b.animate([{ opacity:0, transform:'scale(0) rotate(-90deg)' },{ opacity:1, transform:'scale(1.2)', offset:.6 },{ opacity:1, transform:'none' }],
+          { duration:440, delay: prevShown ? 0 : (G.introDelay||0) + 250 + Math.min(k++*28, 800), easing:'ease-out', fill:'backwards' });
       b.title = MODES[currentMode].pair ? '이 학생이 포함된 짝을 뽑기' : (currentMode === 'item' ? '다음 문제 뽑기' : '이 사진 뽑기');
       // 퀴즈 모드는 앉을 학생도 무작위라 어느 칩을 눌러도 랜덤으로 뽑는다
       b.onclick = function(e){ e.stopPropagation(); if (currentMode === 'item') draw(); else draw(s.id); };
       drum.appendChild(b);
     });
+    G.chipShown = shown;
   }
 
   function updateProgress(){
     var totalStudents = G.totalStudents;
     $('count-label').textContent = '배정 ' + G.placed + ' / ' + totalStudents + '명';
     $('progress-bar').style.width = totalStudents ? (G.placed/totalStudents*100) + '%' : '0%';
+    if (G.fxPlaced === undefined) G.fxPlaced = G.placed;
+    if (G.placed > G.fxPlaced){
+      fxBump($('count-label'), 1.15);
+      if (FX_ON) $('progress-bar').animate([{ filter:'brightness(1.6) saturate(1.4)' },{ filter:'none' }], { duration:600 });
+    }
+    G.fxPlaced = G.placed;
     var done = G.queue.length === 0;
     var noSeat = (G.pairSlots.length === 0 && G.soloSlots.length === 0);
     $('draw-btn').disabled = done || noSeat || G.busy;
@@ -2557,6 +3050,11 @@ body{font-family:var(--display);letter-spacing:-.015em}
     if (finished) saveLastResult();
     if (finished){
       var hasWinner = gameOn() && topScorers().length > 0;
+      if (!G.finaled && G.placed > 0){
+        // 1위 시상이 있으면 시상식이 팡파르·색종이를 맡고, 여기선 자리표 파도만
+        G.finaled = true;
+        fxLater(function(){ finale(!hasWinner); }, 200);
+      }
       $('done-msg').innerHTML = ((G.placed >= G.totalStudents)
         ? ic('check') + ' 모든 자리 배정이 끝났어요!'
         : '자리가 부족해 ' + (G.totalStudents - G.placed) + '명은 배정되지 않았어요. 설정으로 돌아가 자리를 늘려주세요.') +
@@ -2586,6 +3084,8 @@ body{font-family:var(--display);letter-spacing:-.015em}
   function awardPoint(student, pts){
     G.scores[student.id] = scoreOf(student.id) + pts;
     renderScoreboard();
+    var row = $('scoreboard').querySelector('[data-sid="' + student.id + '"]');
+    if (row && FX_ON) row.animate([{ transform:'translateX(-10px) scale(1.06)', background:'#ffe14a' },{ transform:'none' }], { duration:520, easing:SPRING });
   }
 
   /* 최고 점수를 받은 학생들 (공동 1위 포함) */
@@ -2610,7 +3110,7 @@ body{font-family:var(--display);letter-spacing:-.015em}
       var best = rows[0].p, rank = 0, prev = null;
       box.innerHTML = rows.map(function(r, i){
         if (r.p !== prev){ rank = i + 1; prev = r.p; }
-        return '<div class="scorerow' + (r.p === best ? ' top' : '') + '"><span class="rk">' + rank + '</span>' +
+        return '<div class="scorerow' + (r.p === best ? ' top' : '') + '" data-sid="' + r.s.id + '"><span class="rk">' + rank + '</span>' +
                '<span class="nm">' + esc(r.s.name) + '</span>' +
                '<span class="pt">' + r.p + '점</span></div>';
       }).join('');
@@ -2659,8 +3159,12 @@ body{font-family:var(--display);letter-spacing:-.015em}
     var box = $('ov-pick');
     box.innerHTML = '<div class="ovwinner">' + ic('check') + ' <span>' + esc(who.name) + '</span> 정답!' +
       (pts ? ' +' + pts + '점 (총 ' + scoreOf(who.id) + '점)' : '') +
-      '<button class="pickredo" id="pick-redo">다시 고르기</button></div>';
+      '<button class="pickredo" id="pick-redo">다시 고르기</button>' +
+      (pts && FX_ON ? '<span class="ptfloat">+' + pts + '</span>' : '') + '</div>';
     $('pick-redo').onclick = undoAnswer;
+    playTick(2);
+    var wbox = box.querySelector('.ovwinner');
+    if (wbox){ var wc = fxCenter(wbox); fxSparks(wc.x, wc.y, { n:10, r0:wc.w*.3, r1:wc.w*.55, cols:[FX_HL,'#fff'] }); }
     if (currentMode === 'item'){
       // 정답자가 곧 이번에 앉을 학생 — 자리를 직접 고른다
       G.pending.a = who;
@@ -2785,11 +3289,13 @@ body{font-family:var(--display);letter-spacing:-.015em}
     }, 400);
   }
 
-  function burstConfetti(n){
-    var box = $('celebrate');
+  function burstConfetti(n, box){
+    var inCelebrate = !box;
+    box = box || $('celebrate');
     if (!box) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
     var colors = ['#ffe14a','#5b2eff','#ff5d8f','#2ec4b6','#ff9f1c','#ffffff'];
+    var pieces = [];
     for (var i = 0; i < n; i++){
       var c = document.createElement('i');
       c.className = 'confetti';
@@ -2803,6 +3309,11 @@ body{font-family:var(--display);letter-spacing:-.015em}
       c.style.animationDuration = (2.4 + Math.random()*2.4) + 's';
       c.style.animationDelay = (Math.random()*0.9) + 's';
       box.appendChild(c);
+      pieces.push(c);
+    }
+    if (!inCelebrate){
+      setTimeout(function(){ pieces.forEach(function(x){ x.remove(); }); }, 6000);
+      return;
     }
     clearTimeout(confettiTimer);
     confettiTimer = setTimeout(function(){
@@ -2839,11 +3350,18 @@ body{font-family:var(--display);letter-spacing:-.015em}
       G.pending.q = null;
       G.pending.fromQuiz = false;
     }
-    renderDrum();
     updateProgress();
     playDraw();
-    showOverlay();
+    // 추첨함을 한바탕 흔든 뒤 공개 화면을 연다 (그 사이 취소·초기화되면 열지 않음)
+    var my = ++drawSeq, it = G.pending;
+    var ids = [it.a && it.a.id, it.b && it.b.id].filter(function(x){ return x != null; });
+    drumShuffle(ids, function(){
+      if (my !== drawSeq || !G || G.pending !== it) return;
+      renderDrum();
+      showOverlay();
+    });
   }
+  var drawSeq = 0;
 
   function ovPhotoHtml(s, cls, id){
     var style = s.url ? 'background-image:url(' + s.url + ')' : '';
@@ -2956,6 +3474,13 @@ body{font-family:var(--display);letter-spacing:-.015em}
     if (!G || !G.pending || G.revealed || G.hintStage >= HINT_MAX) return;
     G.hintStage++;
     applyHint();
+    // 찰칵 — 사진이 번쩍하고 새로 켜진 점이 튄다
+    playTick(G.hintStage);
+    if (FX_ON){
+      var hb = $('ov-hintbox'), dots = $('ov-hintbar') && $('ov-hintbar').querySelectorAll('.hintdot');
+      if (hb) hb.animate([{ filter:'brightness(2.2)', transform:'scale(.97)' },{ filter:'none', transform:'none' }], { duration:420, easing:'ease-out' });
+      if (dots && dots[G.hintStage-1]) dots[G.hintStage-1].animate([{ transform:'scale(2.4)' },{ transform:'none' }], { duration:420, easing:SPRING });
+    }
     if (G.hintStage >= HINT_MAX){
       $('ov-hint').hidden = true;
     } else {
@@ -2976,7 +3501,10 @@ body{font-family:var(--display);letter-spacing:-.015em}
     if (it.type === 'solo'){
       var n = $('ov-name-a');
       var answer = it.q ? ((it.q.answer || '').trim() || '(정답 미입력)') : (it.a.name || '이름 없음');
-      if (n) n.textContent = answer;
+      // 이름이 형광펜으로 쓱 칠해지며 나온다
+      if (n) n.innerHTML = '<span class="mk">' + esc(answer) + '</span>';
+      playReveal();
+      fxRevealPop($('ov-hintbox') || $('ov-q') || $('ov-a'));
       $('ov-caption').textContent = '정답은 「' + answer + '」!' + (it.q ? ' 맞힌 학생을 골라 주세요.' : '');
       if (hintOn()){ G.revealStage = G.hintStage; G.hintStage = HINT_MAX; applyHint(); }
       if (it.q) $('ov-place').hidden = false;
@@ -2990,6 +3518,15 @@ body{font-family:var(--display);letter-spacing:-.015em}
       $('ov-score').textContent = '×';
       $('ov-score-label').textContent = MBTI_RULES[mbtiRule].label;
       $('ov-caption').textContent = mbtiCaption(it.a, it.b, mbtiRule) + pairNote(it);
+      // 두 사진이 가운데로 '쿵' 부딪히고, × 가 튀어나온다
+      playReveal();
+      if (FX_ON){
+        $('ov-a').animate([{ transform:'none' },{ transform:'translateX(22px) rotate(4deg)', offset:.4 },{ transform:'none' }], { duration:460, easing:'ease-out' });
+        $('ov-b').animate([{ transform:'none' },{ transform:'translateX(-22px) rotate(-4deg)', offset:.4 },{ transform:'none' }], { duration:460, easing:'ease-out' });
+        $('ov-score').animate([{ transform:'scale(0) rotate(-180deg)' },{ transform:'scale(1.5) rotate(10deg)', offset:.6 },{ transform:'none' }], { duration:520, delay:120, easing:'ease-out', fill:'backwards' });
+        var mc = fxCenter($('ov-score'));
+        fxLater(function(){ fxSparks(mc.x, mc.y, { n:14, r0:18, r1:90 }); }, 180);
+      }
     }
   }
 
@@ -3012,7 +3549,16 @@ body{font-family:var(--display);letter-spacing:-.015em}
     clearCalc();
     var box = $('ov-calc');
     var finish = function(){
-      countUpScore(it.compat);
+      countUpScore(it.compat, function(){
+        // 숫자가 다 올라가면 '탁' 튀고, 궁합이 높을수록 불꽃이 커진다
+        var sc = $('ov-score');
+        if (!sc || !G || G.pending !== it) return;
+        playReveal();
+        fxBump(sc, 1.35);
+        var c = fxCenter(sc), big = it.compat >= 90;
+        fxSparks(c.x, c.y, { n:big ? 24 : 12, r0:c.w*.4, r1:big ? 150 : 90, cols:big ? [FX_HL,FX_PINK,'#fff',FX_PINK] : [FX_HL,'#fff'] });
+        if (big) fxRing(c.x, c.y, c.w*1.4, c.w*1.4, { round:true, col:FX_PINK, grow:2.4, dur:700 });
+      });
       $('ov-caption').textContent = compatComment(it.compat) + pairNote(it);
     };
     if (!box || nameOpts.method !== 'classic'){ finish(); return; }
@@ -3096,39 +3642,94 @@ body{font-family:var(--display);letter-spacing:-.015em}
   function autoPlace(){
     var it = G.pending;
     if (!it) return;
+    // 랜덤 배치일 때 룰렛이 짚어 볼 후보 (짝이면 짝 자리, 혼자면 빈자리)
+    var cands = null;
+    if (seatOrder() === 'random'){
+      if (it.type === 'pair' && G.pairSlots.length) cands = G.pairSlots.slice();
+      else if (it.type !== 'pair' && G.soloSlots.length) cands = G.soloSlots.map(function(x){ return [x]; });
+    }
     var seatIdxs = (it.type === 'pair') ? takePair() : [takeSolo()];
     seatIdxs = seatIdxs.filter(function(x){ return x !== null && x !== undefined; });
     if (!seatIdxs.length) return;
-    doPlace(it, seatIdxs);
+    doPlace(it, seatIdxs, (cands && cands.length > 1) ? cands : null);
   }
 
-  function doPlace(it, seatIdxs){
+  /* 자리 배치 연출
+     ① 공개 화면의 사진(퀴즈 정답자는 자리 지정 막대의 썸네일)이 그대로 떠올라
+     ② 랜덤 배치면 추첨함 위에서 둥실 떠 있는 동안 룰렛이 빈자리를 훑고
+     ③ 정해진 자리로 포물선을 그리며 날아가 찌그러지듯 내려앉는다 */
+  function doPlace(it, seatIdxs, cands){
     var people = (it.type === 'pair') ? [it.a, it.b] : [it.a];
+    // 출발 위치는 오버레이·자리 지정 막대를 치우기 전에 재 둔다
+    var srcs = people.map(function(p, i){
+      var el = $(i ? 'ov-b' : 'ov-a') || (i === 0 ? $('manual-thumb') : null);
+      if (!el) return null;
+      var r = el.getBoundingClientRect();
+      return (r.width > 4) ? r : null;
+    });
     if (it.fromQuiz){                     // 퀴즈 정답자는 이제 앉았으니 남은 명단에서 뺀다
       G.queue = G.queue.filter(function(x){ return x.a !== it.a; });
       renderDrum();
     }
     G.pending = null;
-    playPlace();
     $('overlay').classList.remove('show');
     exitManual();
 
-    var srcIds = ['ov-a','ov-b'];
-    var doneCount = 0;
+    var g = G, doneCount = 0, sounded = false;
+    function landed(p, seatIdx){
+      if (G !== g) return;              // 그 사이 초기화·설정으로 나갔으면 무시
+      var el = $('seat-' + seatIdx);
+      if (el){ fillSeat(el, p, seatIdx); seatLand(el); }
+      if (!sounded){ sounded = true; playPlace(); }
+      G.seats[seatIdx] = p;
+      G.placed++;
+      doneCount++;
+      if (doneCount === people.length){ G.busy = false; updateProgress(); }
+    }
+    var jobs = [];
     people.forEach(function(p, i){
       var seatIdx = seatIdxs[i];
       if (seatIdx === undefined || seatIdx === null){ doneCount++; return; }
-      flyToSeat(p, seatIdx, $(srcIds[i]), function(){
-        G.seats[seatIdx] = p;
-        G.placed++;
-        doneCount++;
-        if (doneCount === people.length){
-          G.busy = false;
-          updateProgress();
-        }
-      });
+      jobs.push({ p:p, seat:seatIdx, f:(FX_ON && srcs[i]) ? makeFlyer(p, srcs[i]) : null });
     });
-    if (doneCount === people.length){ G.busy = false; updateProgress(); }
+    if (!jobs.length){ G.busy = false; updateProgress(); return; }
+
+    function flyAll(){
+      if (G !== g){ jobs.forEach(function(j){ if (j.f) j.f.remove(); }); return; }
+      Array.prototype.forEach.call(fxLayer().querySelectorAll('.fx-tip'), function(x){ x.remove(); });
+      jobs.forEach(function(j, k){
+        var seatEl = $('seat-' + j.seat);
+        if (!j.f || !seatEl){ if (j.f) j.f.remove(); landed(j.p, j.seat); return; }
+        fxLater(function(){
+          if (G !== g){ j.f.remove(); return; }
+          flyArc(j.f, seatEl, 560, function(){ landed(j.p, j.seat); });
+        }, k*90);
+      });
+    }
+
+    if (!cands || !FX_ON){ flyAll(); return; }
+
+    // 룰렛: 카드는 추첨함 위(안 보이면 화면 위쪽)에 둥실 떠서 기다린다
+    var drum = $('drum'), dr = drum.getBoundingClientRect();
+    var vis = dr.bottom > 60 && dr.top < window.innerHeight - 60 && dr.width > 0;
+    var hx = vis ? dr.left + dr.width/2 : window.innerWidth/2, hy = vis ? dr.top + dr.height/2 : 110;
+    jobs.forEach(function(j, k){
+      if (j.f) flyHover(j.f, hx + (jobs.length > 1 ? (k ? 62 : -62) : 0), hy, 110, 420);
+    });
+    var tip = document.createElement('div');
+    tip.className = 'fx-tip';
+    tip.textContent = '어디에 앉을까?';
+    tip.style.left = hx + 'px'; tip.style.top = (hy + 66) + 'px';
+    fxLayer().appendChild(tip);
+    tip.animate([{ opacity:0, transform:'translate(-50%,10px) scale(.7)' },{ opacity:1, transform:'translate(-50%,0)' }], { duration:320, delay:200, easing:SPRING, fill:'backwards' });
+
+    // 좁은 화면이면 자리표가 보이게 먼저 굴려 둔다
+    var grid = $('seat-grid'), gr = grid.getBoundingClientRect(), wait = 0;
+    if (gr.top < 0 || gr.bottom > window.innerHeight){ grid.scrollIntoView({ behavior:'smooth', block:'center' }); wait = 380; }
+    fxLater(function(){
+      if (G !== g) return;
+      roulette(cands, seatIdxs, flyAll);
+    }, 260 + wait);
   }
 
   function fillSeat(el, s, seatIdx){
@@ -3159,33 +3760,6 @@ body{font-family:var(--display);letter-spacing:-.015em}
       mtag.textContent = s.mbti;
       el.appendChild(mtag);
     }
-    el.style.animation = 'pop .35s ease';
-    setTimeout(function(){ el.style.animation = ''; }, 400);
-  }
-
-  function flyToSeat(s, seatIdx, srcEl, done){
-    var seatEl = $('seat-' + seatIdx);
-    if (!seatEl){ done(); return; }
-    var sr = seatEl.getBoundingClientRect();
-    if (!srcEl){ fillSeat(seatEl, s, seatIdx); done(); return; }
-    var rr = srcEl.getBoundingClientRect();
-
-    var f = document.createElement('div');
-    f.style.cssText = 'position:fixed;border-radius:20px;background-size:cover;background-position:center;border:3px solid #fff;z-index:999;pointer-events:none;box-shadow:0 12px 30px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-weight:700;color:#3B7365;background-color:#fff;';
-    if (s.url) f.style.backgroundImage = 'url(' + s.url + ')';
-    else { f.textContent = initialOf(s); f.style.fontSize = '32px'; }
-    f.style.left = rr.left+'px'; f.style.top = rr.top+'px';
-    f.style.width = rr.width+'px'; f.style.height = rr.height+'px';
-    f.style.transition = 'all .55s cubic-bezier(.4,.6,.3,1)';
-    document.body.appendChild(f);
-
-    requestAnimationFrame(function(){ requestAnimationFrame(function(){
-      f.style.left = sr.left+'px'; f.style.top = sr.top+'px';
-      f.style.width = sr.width+'px'; f.style.height = sr.height+'px';
-      f.style.borderRadius = '12px'; f.style.fontSize = '13px';
-    }); });
-
-    setTimeout(function(){ f.remove(); fillSeat(seatEl, s, seatIdx); done(); }, 570);
   }
 
   /* ---------- 자리 지정 ---------- */
@@ -3281,6 +3855,8 @@ body{font-family:var(--display);letter-spacing:-.015em}
     }
     G.pending = null;
     G.busy = false;
+    drawSeq++;
+    fxClear();
     $('overlay').classList.remove('show');
     exitManual();
     renderDrum();
@@ -3433,7 +4009,7 @@ body{font-family:var(--display);letter-spacing:-.015em}
     photoTargetId = null;
     if (!target) return;
     var r = new FileReader();
-    r.onload = function(){ downscale(r.result, function(url){ target.url = url; renderRoster(); check(); }); };
+    r.onload = function(){ downscale(r.result, function(url){ target.url = url; thumbBumpId = target.id; renderRoster(); check(); }); };
     r.readAsDataURL(f);
   };
 
@@ -3457,7 +4033,16 @@ body{font-family:var(--display);letter-spacing:-.015em}
   $('bulk-toggle').onclick = function(){ $('bulk-wrap').hidden = !$('bulk-wrap').hidden; };
   $('bulk-add').onclick = function(){ parseBulk($('bulk-text').value); $('bulk-text').value = ''; $('bulk-wrap').hidden = true; };
   $('add-one').onclick = function(){ students.push({ id:++seq, name:'', url:null, mbti:'', gender:'' }); renderRoster(); check(); };
-  $('clear-roster').onclick = function(){ students = []; renderRoster(); check(); };
+  $('clear-roster').onclick = function(){
+    var rows = $('roster').querySelectorAll('.rrow');
+    var clear = function(){ students = []; renderRoster(); check(); };
+    if (!FX_ON || !rows.length){ clear(); return; }
+    // 줄들이 위에서부터 차례로 옆으로 쓸려 나간다
+    Array.prototype.forEach.call(rows, function(r, i){
+      r.animate([{ opacity:1, transform:'none' },{ opacity:0, transform:'translateX(40px)' }], { duration:220, delay:Math.min(i*25, 300), easing:'ease-in', fill:'forwards' });
+    });
+    setTimeout(clear, 220 + Math.min((rows.length-1)*25, 300));
+  };
 
   document.querySelectorAll('[data-step]').forEach(function(btn){
     btn.onclick = function(){
@@ -3491,6 +4076,8 @@ body{font-family:var(--display);letter-spacing:-.015em}
   };
 
   function exitToSetup(){
+    fxClear();
+    drawSeq++;
     hideCelebrate();
     $('overlay').classList.remove('show');
     exitManual();
@@ -3501,7 +4088,10 @@ body{font-family:var(--display);letter-spacing:-.015em}
     window.scrollTo(0,0);
   }
 
-  $('start-btn').onclick = startGame;
+  $('start-btn').onclick = function(){
+    if ($('start-btn').disabled || document.querySelector('.curtain')) return;
+    curtain(startGame);
+  };
   $('draw-btn').onclick = function(){ draw(); };
   $('drum').onclick = function(){ draw(); };
   $('ov-hint').onclick = nextHint;
@@ -3531,6 +4121,7 @@ body{font-family:var(--display);letter-spacing:-.015em}
   renderQuizSaved();
   renderLastResult();
   check();
+  booted = true;
   Promise.all([
     idbGet(IDB_KEY_AUTO).catch(function(){ return null; }),
     idbGet(IDB_KEY_LAST).catch(function(){ return null; })
