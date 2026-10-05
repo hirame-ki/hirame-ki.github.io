@@ -3,27 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>프롬프터 — 대본 보면서 찍어도 녹화엔 안 보여요</title>
-<meta name="description" content="OBS·줌·유튜브 촬영 중에도 내 화면에만 보이는 무료 투명 프롬프터. 녹화·화면 공유에서 자동으로 숨겨지고, 마우스는 창 뒤로 그대로 클릭돼요.">
+<title>쉿대본 — 대본 보면서 찍어도 녹화엔 안 보여요</title>
+<meta name="description" content="쉿대본 — OBS·줌·유튜브 촬영 중에도 내 화면에만 보이는 무료 투명 프롬프터. 녹화·화면 공유에서 자동으로 숨겨지고, 마우스는 창 뒤로 그대로 클릭돼요.">
 <meta name="theme-color" content="#FFE14D">
+<meta name="author" content="hirame.ki">
+<meta name="copyright" content="© 2026 hirame.ki. All rights reserved.">
+<link rel="canonical" href="https://hirame-ki.github.io/prompter/">
 
-<!-- 공유 미리보기 (카카오톡·인스타·페이스북·X 등)
-     ※ 사이트 주소가 정해지면 아래 두 곳의 https://내사이트주소/ 를 실제 주소로 바꿔 주세요.
-        (og:image는 반드시 https:// 로 시작하는 전체 주소여야 미리보기 이미지가 뜹니다) -->
+<!-- 공유 미리보기 (카카오톡·인스타·페이스북·X 등) -->
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="프롬프터">
+<meta property="og:site_name" content="쉿대본">
 <meta property="og:locale" content="ko_KR">
-<meta property="og:title" content="대본 보면서 찍어도, 녹화엔 안 보여요 👀 | 무료 프롬프터">
+<meta property="og:title" content="쉿, 대본 보면서 찍어도 녹화엔 안 보여요 🤫 | 쉿대본">
 <meta property="og:description" content="OBS·줌·유튜브 촬영용. 내 눈에만 보이는 투명 대본 창 — Windows 무료 다운로드">
-<meta property="og:url" content="https://내사이트주소/">
-<meta property="og:image" content="https://내사이트주소/img/og-image.png">
+<meta property="og:url" content="https://hirame-ki.github.io/prompter/">
+<meta property="og:image" content="https://hirame-ki.github.io/prompter/img/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="내 화면에는 대본이 보이고, 녹화 화면에는 대본이 없는 비교 이미지">
+<meta property="og:image:alt" content="쉿대본: 내 화면에는 대본이 보이고, 녹화 화면에는 대본이 없는 비교 이미지">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="대본 보면서 찍어도, 녹화엔 안 보여요 👀">
-<meta name="twitter:description" content="OBS·줌·유튜브 촬영용 무료 투명 프롬프터 (Windows)">
-<meta name="twitter:image" content="https://내사이트주소/img/og-image.png">
+<meta name="twitter:title" content="쉿, 대본 보면서 찍어도 녹화엔 안 보여요 🤫 | 쉿대본">
+<meta name="twitter:description" content="쉿대본 · OBS·줌·유튜브 촬영용 무료 투명 프롬프터 (Windows)">
+<meta name="twitter:image" content="https://hirame-ki.github.io/prompter/img/og-image.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23FFE14D'/%3E%3Crect x='14' y='18' width='36' height='6' rx='3' fill='%2314130F'/%3E%3Crect x='14' y='30' width='26' height='6' rx='3' fill='%2314130F'/%3E%3Crect x='14' y='42' width='31' height='6' rx='3' fill='%2314130F' opacity='.35'/%3E%3Ccircle cx='49' cy='45' r='6' fill='%235B6CF0'/%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -98,6 +99,8 @@ mark::before{content:"";position:absolute;left:-.08em;right:-.08em;bottom:.06em;
 .headline span:nth-child(2){animation:fadeup .6s 2.9s forwards}
 .headline mark::before{background:#fff;--hl:0;animation:hl .7s 3.3s cubic-bezier(.2,.8,.2,1) forwards}
 @keyframes hl{to{transform:scaleX(1)}}
+.ibrand{font-weight:900;font-size:clamp(18px,2.6vw,24px);padding:10px 22px;border-radius:999px;
+  background:var(--ink);color:var(--yellow);opacity:0;animation:fadeup .5s 3.55s forwards}
 #skip{position:absolute;right:20px;bottom:20px;font-size:14px;font-weight:700;color:var(--ink-2);
   padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.55)}
 #skip:hover{background:#fff}
@@ -322,15 +325,16 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;
       <div class="rec"><span>녹화 화면</span></div>
     </div>
     <div class="headline"><span>대본은 나만 보고,</span><span><mark>녹화엔 안 보이게.</mark></span></div>
+    <div class="ibrand">🤫 쉿대본</div>
   </div>
   <button id="skip" type="button">건너뛰기</button>
 </div>
 
 <header>
   <div class="wrap">
-    <a class="logo" href="#top" aria-label="프롬프터 처음으로">
+    <a class="logo" href="#top" aria-label="쉿대본 처음으로">
       <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#FFE14D"/><rect x="14" y="18" width="36" height="6" rx="3" fill="#14130F"/><rect x="14" y="30" width="26" height="6" rx="3" fill="#14130F"/><rect x="14" y="42" width="31" height="6" rx="3" fill="#14130F" opacity=".35"/><circle cx="49" cy="45" r="6" fill="#5B6CF0"/></svg>
-      프롬프터
+      쉿대본
     </a>
     <nav>
       <a href="#features">기능</a>
@@ -418,7 +422,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;
         <div>
           <span class="num">2</span>
           <h3>대본 창 위를 눌러도<br>뒤의 화면이 클릭돼요</h3>
-          <p>프롬프터는 마우스를 통과시켜요. 대본을 띄운 채로 슬라이드를 넘기고, 브라우저를 클릭하고, 바탕화면 아이콘을 눌러도 돼요. 녹화 영상에서 마우스 커서가 가려지지도 않아요.</p>
+          <p>쉿대본은 마우스를 통과시켜요. 대본을 띄운 채로 슬라이드를 넘기고, 브라우저를 클릭하고, 바탕화면 아이콘을 눌러도 돼요. 녹화 영상에서 마우스 커서가 가려지지도 않아요.</p>
           <ul class="ticks">
             <li>버튼 조작 · 창 이동은 <kbd>Ctrl</kbd>을 누른 채로</li>
             <li>편집할 때만 자동으로 통과가 꺼져요</li>
@@ -505,7 +509,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;
           <button class="tab" role="tab" aria-selected="false" data-img="img/settings-keys.png">단축키<small>전역 · 창 안 단축키</small></button>
           <button class="tab" role="tab" aria-selected="false" data-img="img/settings-about.png">정보 · 업데이트<small>새 버전 확인</small></button>
         </div>
-        <div class="frame"><img id="galleryImg" src="img/settings-text.png" alt="프롬프터 설정 창" loading="lazy"></div>
+        <div class="frame"><img id="galleryImg" src="img/settings-text.png" alt="쉿대본 설정 창" loading="lazy"></div>
       </div>
     </div>
   </section>
@@ -526,12 +530,12 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;
         </div>
         <div class="step reveal">
           <h4>설치하기</h4>
-          <p>받은 파일을 두 번 클릭해서 설치해요. 시작 메뉴에 '프롬프터'가 생겨요.</p>
+          <p>받은 파일을 두 번 클릭해서 설치해요. 시작 메뉴에 '쉿대본'이 생겨요.</p>
           <div class="warn"><b>"Windows의 PC 보호" 창이 뜨면?</b>새로 나온 프로그램이라 뜨는 안내예요. <u>추가 정보</u> → <u>실행</u>을 누르면 돼요.</div>
         </div>
         <div class="step reveal">
           <h4>대본 열고 재생</h4>
-          <p>메모장에 대본을 써서 저장(.txt)하고, 프롬프터의 [열기]로 불러온 뒤 <kbd>Space</kbd>를 누르면 스크롤이 시작돼요.</p>
+          <p>메모장에 대본을 써서 저장(.txt)하고, 쉿대본의 [열기]로 불러온 뒤 <kbd>Space</kbd>를 누르면 스크롤이 시작돼요.</p>
         </div>
       </div>
 
@@ -582,7 +586,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;
 
 <footer>
   <div class="wrap">
-    <span>프롬프터 v1.0 · Windows 10 · 11</span>
+    <span>© 2026 hirame.ki. All rights reserved. · 쉿대본 v1.0 · <a href="LICENSE.txt" style="text-decoration:underline">라이선스</a><br><small>무료로 사용할 수 있지만, 허락 없이 프로그램 파일을 복제·재배포·판매할 수 없습니다. 공유는 이 페이지 링크로 해 주세요.</small></span>
     <a class="credit" href="https://www.instagram.com/hirame.ki/" target="_blank" rel="noopener">
       제작 :
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>
@@ -594,8 +598,8 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;
 <div id="toast" role="status"></div>
 
 <script>
-/* ▼ 설치 파일의 구글 드라이브 공유 링크를 여기에 넣으세요 (비워 두면 '준비 중' 안내가 떠요) */
-const DOWNLOAD_URL = "";
+/* 설치 파일이 있는 구글 드라이브 폴더 (새 버전도 같은 폴더에 올리면 링크가 그대로 유지됨) */
+const DOWNLOAD_URL = "https://drive.google.com/drive/folders/1UqZBjSyDmJK4oE29vLoalk6zgc4OxghB?usp=sharing";
 
 (() => {
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
