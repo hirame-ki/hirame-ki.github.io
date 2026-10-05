@@ -1,0 +1,152 @@
+==============================================================
+ 프롬프터 소프트웨어 이용 허락 계약 (라이선스)
+ Prompter Software License Agreement
+==============================================================
+ 버전 1.0 · 시행일 2026년 10월 5일
+
+ Copyright (c) 2026 hirame.ki. All rights reserved.
+ 제작 : @hirame.ki (https://www.instagram.com/hirame.ki/)
+ 공식 배포처 : https://hirame-ki.github.io/prompter/
+
+이 프로그램을 설치하거나 사용하면 아래 내용에 동의한 것으로 봅니다.
+동의하지 않으면 설치하거나 사용하지 마세요.
+
+
+제1조 (목적)
+이 계약은 저작권자 hirame.ki(이하 "저작권자")가 만든 "프롬프터"
+프로그램(이하 "소프트웨어")을 사용하는 조건을 정합니다.
+
+
+제2조 (저작권)
+1. 소프트웨어의 저작권과 모든 지식재산권은 저작권자에게 있습니다.
+   여기에는 설치 파일, 실행 파일, 소스 코드, 화면 디자인, 아이콘,
+   설명서, 소개 페이지의 글과 이미지가 모두 포함됩니다.
+2. 소프트웨어는 대한민국 저작권법과 국제 저작권 조약의 보호를 받습니다.
+3. 이 계약은 소프트웨어를 "사용할 권리"를 허락하는 것이며,
+   소프트웨어나 저작권을 넘겨주는 것이 아닙니다.
+   이 계약에서 명시적으로 허락하지 않은 모든 권리는 저작권자에게 있습니다.
+
+
+제3조 (허락하는 사용) - 아래는 무료로 자유롭게 할 수 있습니다.
+1. 개인, 교육, 업무 목적으로 소프트웨어를 설치하고 사용하는 것
+2. 자신이 사용하는 여러 대의 컴퓨터에 설치하는 것
+3. 소프트웨어를 사용해 만든 결과물(영상, 강의, 화면 공유, 라이브 방송 등)을
+   상업적 목적을 포함해 자유롭게 이용하는 것 (출처 표시 의무 없음)
+4. 공식 배포처 주소(소개 페이지 링크)를 다른 사람에게 알려 주는 것
+   - 소프트웨어를 소개하고 싶다면 파일 대신 공식 배포처 링크를 공유해 주세요.
+
+
+제4조 (금지 행위)
+저작권자의 사전 허락(서면, 이메일, 메시지 포함) 없이 다음 행위를 할 수 없습니다.
+1. 소프트웨어 파일(설치 파일, 실행 파일, 소스 코드)을 다른 웹사이트, 클라우드,
+   블로그, 카페, 자료실, 메신저 단체방 등에 올리거나 다시 배포하는 것
+2. 소프트웨어를 판매, 대여하거나 유료 강의·유료 자료·유료 상품의 구성품으로
+   포함하는 것
+3. 소프트웨어를 수정, 번역, 개작하거나 이를 바탕으로 한 2차적저작물을
+   만들거나 배포하는 것
+4. 제작자 표시, 저작권 표시, 이 라이선스 문구를 삭제·변경하거나 가리는 것
+5. 이름이나 아이콘을 바꾸는 등의 방법으로 자신이 만든 것처럼 배포하는 것
+6. 관련 법률이 명시적으로 허용하는 경우를 제외하고 역설계, 디컴파일,
+   디스어셈블하는 것
+7. 소프트웨어를 변조하거나 악성 코드를 넣어 배포하는 것
+
+
+제5조 (공식 배포처)
+1. 소프트웨어는 공식 배포처(소개 페이지)와 그 페이지가 안내하는 다운로드
+   링크를 통해서만 배포됩니다.
+2. 다른 곳에서 받은 파일은 변조되었을 수 있으니 사용하지 마세요.
+   공식 배포처가 아닌 곳에서 받은 파일로 생긴 문제에 대해 저작권자는
+   책임지지 않습니다.
+
+
+제6조 (개인정보)
+1. 소프트웨어는 이름, 연락처, 대본 내용 등 개인정보를 수집하거나
+   외부로 보내지 않습니다.
+2. 설정은 사용자 컴퓨터(사용자 폴더의 .prompter_settings.json)에만
+   저장됩니다.
+3. "새 버전 자동 확인"이 켜져 있으면, 실행할 때 공식 배포처에서 버전 정보
+   파일(version.json)만 받아옵니다. 이 과정에서 일반적인 웹 접속 기록(IP 주소 등)이
+   웹 호스팅 서비스(GitHub)에 남을 수 있습니다.
+   자동 확인은 [설정 > 정보 · 업데이트]에서 끌 수 있습니다.
+
+
+제7조 (보증의 부인)
+1. 소프트웨어는 "있는 그대로(AS IS)" 무료로 제공되며, 특정 목적에의 적합성,
+   오류가 없음 등 어떠한 명시적·묵시적 보증도 하지 않습니다.
+2. "녹화·화면 공유에서 숨기기" 기능은 Windows의 화면 캡처 제외 기능을 사용하며,
+   모든 녹화·화면 공유 프로그램과 환경에서 동작한다고 보장하지 않습니다.
+   (예: 카메라·휴대폰으로 모니터를 직접 촬영, HDMI 캡처보드, 일부 프로그램)
+   중요한 촬영이나 발표 전에는 반드시 직접 확인해 주세요.
+
+
+제8조 (책임의 제한)
+법이 허용하는 최대 범위에서, 저작권자는 소프트웨어를 사용하거나 사용하지
+못해서 생긴 손해(대본 노출, 녹화 실패, 데이터 손실, 업무 중단 등)에 대해
+책임지지 않습니다. 다만 저작권자의 고의 또는 중대한 과실로 인한 손해는
+예외로 합니다.
+
+
+제9조 (계약의 종료와 권리 보호)
+1. 이 계약을 위반하면 소프트웨어를 사용할 권리는 즉시 자동으로 종료되며,
+   사용자는 소프트웨어와 모든 사본을 삭제해야 합니다.
+2. 저작권자는 저작권 침해 행위에 대해 저작권법에 따른 침해 정지 청구,
+   손해배상 청구 및 형사 고소 등 법적 조치를 할 수 있습니다.
+   (저작권법 제123조, 제125조, 제136조 등)
+
+
+제10조 (계약의 변경)
+저작권자는 이 계약을 바꿀 수 있으며, 바뀐 계약은 이후 배포되는 버전부터
+적용됩니다. 최신 계약은 공식 배포처에서 확인할 수 있습니다.
+
+
+제11조 (준거법 및 관할)
+이 계약은 대한민국 법을 따르며, 이 계약과 관련된 분쟁은 민사소송법에 따른
+관할 법원에서 해결합니다.
+
+
+제12조 (문의)
+재배포, 기관·학교 단위 배포, 제휴, 기타 문의는 인스타그램 @hirame.ki로
+메시지를 보내 주세요.
+
+
+--------------------------------------------------------------
+ English Summary (참고용 요약 - 한국어 원문이 우선합니다)
+--------------------------------------------------------------
+Copyright (c) 2026 hirame.ki. All rights reserved.
+
+This software is protected by the Copyright Act of the Republic of Korea
+and international copyright treaties. It is licensed, not sold.
+
+You MAY, free of charge:
+ - install and use it for personal, educational, or business purposes;
+ - use anything you create with it (videos, lectures, streams), including
+   commercially, without attribution;
+ - share the link to the official download page.
+
+You MAY NOT, without prior permission from the copyright holder:
+ - redistribute, upload, or mirror the installer, program, or source code;
+ - sell, rent, or bundle it with any paid product or course;
+ - modify, translate, or create derivative works;
+ - remove or alter the author credit, copyright notice, or this license;
+ - reverse engineer it, except as expressly permitted by applicable law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. TO THE
+MAXIMUM EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDER SHALL NOT BE LIABLE
+FOR ANY DAMAGES ARISING FROM ITS USE OR INABILITY TO USE IT.
+Governed by the laws of the Republic of Korea.
+Contact: Instagram @hirame.ki
+
+
+--------------------------------------------------------------
+ 제3자 구성요소 고지 (Third-Party Notices)
+--------------------------------------------------------------
+설치판 프로그램에는 아래 오픈소스 구성요소가 포함되어 있으며, 각 구성요소는
+자신의 라이선스를 따릅니다. 이 계약의 제한 사항은 아래 구성요소에는
+적용되지 않습니다. 전문은 설치 폴더의 licenses 폴더에 있습니다.
+
+ - Python 실행 환경 : Python Software Foundation License
+   Copyright (c) 2001 Python Software Foundation. All Rights Reserved.
+ - Tcl/Tk (화면 구성) : Tcl/Tk License (BSD 계열)
+ - OpenSSL, bzip2, zlib, libffi, Zstandard 등 Python에 포함된 구성요소 :
+   각 라이선스 (licenses\Python_LICENSE.txt 참고)
+ - PyInstaller 부트로더 : GPL 2.0 (부트로더 예외 조항에 따라 배포)
