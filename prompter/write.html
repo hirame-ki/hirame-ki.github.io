@@ -56,11 +56,14 @@ kbd{font-family:inherit;font-weight:800;font-size:.85em;padding:2px 8px;border-r
 header{position:sticky;top:0;z-index:50;background:rgba(255,253,245,.86);backdrop-filter:blur(14px);
   -webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(239,233,214,.8)}
 header .wrap{display:flex;align-items:center;gap:28px;height:64px}
-.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px;white-space:nowrap;flex:none}
 .logo img{width:30px;height:30px;border-radius:8px}
-nav{display:flex;gap:22px;margin-left:auto;font-weight:600;font-size:15px;color:var(--ink-2)}
+nav{display:flex;align-items:center;gap:22px;margin-left:auto;font-weight:600;font-size:15px;color:var(--ink-2);white-space:nowrap}
 nav a:hover{color:var(--violet)}
-nav a[aria-current]{color:var(--violet)}
+/* 소개 페이지와 같은 노란 버튼. 지금 보고 있는 페이지라 깜박임·NEW는 없음 */
+nav a.nav-make{display:inline-flex;align-items:center;gap:6px;margin:-7px 0;padding:7px 15px;border-radius:999px;
+  background:var(--yellow);color:var(--ink);font-weight:800;box-shadow:inset 0 0 0 1.5px rgba(20,19,15,.12)}
+nav a.nav-make:hover{color:var(--ink);background:var(--yellow-2)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;border-radius:999px;
   padding:12px 22px;font-size:15px;transition:transform .2s,box-shadow .2s,background .2s,border-color .2s;white-space:nowrap}
 .btn:hover{transform:translateY(-1px)}
@@ -223,6 +226,10 @@ html.warp{--base:.85s}
   .palette{grid-template-columns:repeat(3,auto)}
   .card{padding:20px}
 }
+@media (max-width:420px){
+  nav a.nav-make{padding:7px 13px}
+  nav a.nav-make > span{display:none}
+}
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important}
   .enter,.guide{animation:none!important}
@@ -248,7 +255,7 @@ html.warp{--base:.85s}
     <nav>
       <a href="./#features" class="hide-m">기능</a>
       <a href="./#start" class="hide-m">사용법</a>
-      <a href="write.html" aria-current="page">대본 만들기</a>
+      <a href="write.html" class="nav-make" aria-current="page"><span aria-hidden="true">✍️</span>대본 만들기</a>
     </nav>
     <a class="btn btn-primary btn-sm" href="./#start">프로그램 받기</a>
   </div>
