@@ -315,6 +315,12 @@ html.warp{--base:.85s}
               <option value="300">5분</option>
               <option value="600">10분</option>
               <option value="900">15분</option>
+              <option value="1200">20분</option>
+              <option value="1500">25분</option>
+              <option value="1800">30분</option>
+              <option value="2400">40분</option>
+              <option value="3000">50분</option>
+              <option value="3600">1시간</option>
             </select>
           </label>
           <div class="bar" id="goalBar"><i></i></div>
@@ -728,7 +734,8 @@ html.warp{--base:.85s}
   }
   const fmt = sec => {
     sec = Math.round(sec);
-    const m = Math.floor(sec / 60), s = sec % 60;
+    const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+    if (h) return m ? `${h}시간 ${m}분` : `${h}시간`;  // 1시간이 넘으면 초는 생략
     return m ? (s ? `${m}분 ${s}초` : `${m}분`) : `${s}초`;
   };
 
