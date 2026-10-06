@@ -20,6 +20,14 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/icon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="img/icon-180.png">
 
+<script>
+/* 소개 페이지의 [대본 만들기]로 넘어왔을 때만 도착 장면을 보여 줌 */
+try {
+  if (sessionStorage.getItem("shhWarp") && !matchMedia("(prefers-reduced-motion: reduce)").matches)
+    document.documentElement.classList.add("warp");
+  sessionStorage.removeItem("shhWarp");
+} catch (e) {}
+</script>
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 
@@ -171,6 +179,33 @@ footer a{text-decoration:underline}
   padding:13px 22px;border-radius:999px;font-weight:700;z-index:90;transition:.3s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 
+/* ---------- 들어올 때 모션 ---------- */
+/* 소개 페이지에서 넘어오면: 노란 막(종이에 마지막 줄이 써짐)이 위로 걷히고, 내용이 차례로 올라옴 */
+#arrive{display:none}
+html.warp #arrive{display:grid;position:fixed;inset:0;z-index:300;place-items:center;background:var(--yellow);
+  animation:lift .75s .55s cubic-bezier(.76,0,.24,1) forwards}
+@keyframes lift{to{transform:translateY(-100%);visibility:hidden}}
+#arrive .box{display:grid;justify-items:center;gap:22px;animation:boxOut .45s .5s ease-in forwards}
+@keyframes boxOut{to{opacity:0;transform:translateY(-24px) scale(.96)}}
+#arrive .paper{position:relative;width:132px;height:164px;border-radius:16px;background:#fff;box-shadow:0 26px 50px -20px rgba(80,60,0,.5);
+  padding:30px 22px;display:grid;align-content:start;gap:16px}
+#arrive .paper i{display:block;height:9px;border-radius:5px;background:#E9E3CC;transform-origin:left}
+#arrive .paper i:nth-child(2){width:72%;background:var(--yellow)}
+#arrive .paper i:nth-child(3){width:86%}
+#arrive .paper i:nth-child(4){width:58%;background:var(--violet);transform:scaleX(0);animation:draw .35s .1s cubic-bezier(.3,.7,.3,1) forwards}
+#arrive .paper b{position:absolute;right:-18px;bottom:-12px;font-size:44px;filter:drop-shadow(0 6px 8px rgba(0,0,0,.2))}
+#arrive p{font-weight:900;font-size:clamp(24px,4vw,34px);letter-spacing:-.02em}
+@keyframes draw{to{transform:scaleX(1)}}
+
+.enter{animation:enterUp .6s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--d,0s) + var(--base,0s))}
+.tpl.enter{animation-name:enterPop}
+html.warp{--base:.85s}
+@keyframes enterUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes guideDraw{from{transform:scaleX(0)}to{transform:none}}
+@keyframes enterPop{from{opacity:0;transform:translateY(10px) scale(.85)}to{opacity:1;transform:none}}
+/* 처음 들어오면 미리보기 가이드선이 한 번 그어짐 */
+.guide{transform-origin:left;animation:guideDraw .7s cubic-bezier(.3,.7,.3,1) backwards;animation-delay:calc(.45s + var(--base,0s))}
+
 @media (max-width:960px){
   .work,.help{grid-template-columns:1fr}
   textarea#src,.prev-wrap{min-height:360px}
@@ -188,10 +223,21 @@ footer a{text-decoration:underline}
   .palette{grid-template-columns:repeat(3,auto)}
   .card{padding:20px}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+  .enter,.guide{animation:none!important}
+  #arrive{display:none!important}
+}
 </style>
 </head>
 <body>
+
+<div id="arrive" aria-hidden="true">
+  <div class="box">
+    <div class="paper"><i></i><i></i><i></i><i></i><b>✍️</b></div>
+    <p>대본 만들기</p>
+  </div>
+</div>
 
 <header>
   <div class="wrap">
@@ -209,25 +255,25 @@ footer a{text-decoration:underline}
 </header>
 
 <main class="wrap">
-  <section class="intro">
+  <section class="intro enter">
     <span class="kicker">SCRIPT MAKER</span>
     <h1>대본 만들기</h1>
     <p class="sub">틀을 골라 빈칸(○○)만 채우고, 버튼으로 강조하고, 길이를 확인한 다음 txt로 받으세요. 받은 파일은 쉿대본의 [열기]로 바로 열려요.</p>
   </section>
 
   <div class="tpls" role="group" aria-label="대본 틀 고르기">
-    <span class="tpl-label">틀 고르기</span>
-    <button class="tpl" data-tpl="blank"><b>📄</b>빈 대본</button>
-    <button class="tpl" data-tpl="youtube"><b>🎬</b>유튜브 강의</button>
-    <button class="tpl" data-tpl="class"><b>🏫</b>원격 수업</button>
-    <button class="tpl" data-tpl="talk"><b>💻</b>연수 · 발표</button>
-    <button class="tpl" data-tpl="tutorial"><b>🖱️</b>화면 녹화 사용법</button>
-    <button class="tpl" data-tpl="shorts"><b>📱</b>쇼츠 · 릴스 60초</button>
+    <span class="tpl-label enter" style="--d:.12s">틀 고르기</span>
+    <button class="tpl enter" style="--d:.16s" data-tpl="blank"><b>📄</b>빈 대본</button>
+    <button class="tpl enter" style="--d:.21s" data-tpl="youtube"><b>🎬</b>유튜브 강의</button>
+    <button class="tpl enter" style="--d:.26s" data-tpl="class"><b>🏫</b>원격 수업</button>
+    <button class="tpl enter" style="--d:.31s" data-tpl="talk"><b>💻</b>연수 · 발표</button>
+    <button class="tpl enter" style="--d:.36s" data-tpl="tutorial"><b>🖱️</b>화면 녹화 사용법</button>
+    <button class="tpl enter" style="--d:.41s" data-tpl="shorts"><b>📱</b>쇼츠 · 릴스 60초</button>
   </div>
 
   <div class="work">
     <!-- 쓰기 -->
-    <section class="panel" aria-label="대본 쓰기">
+    <section class="panel enter" style="--d:.2s" aria-label="대본 쓰기">
       <div class="panel-head">
         <h2>쓰기<small>자동 저장돼요</small></h2>
         <button class="tool" id="splitBtn" title="마침표·물음표·느낌표 뒤에서 줄을 나눠요">↵ 문장마다 줄 나누기</button>
@@ -278,7 +324,7 @@ footer a{text-decoration:underline}
     </section>
 
     <!-- 미리보기 -->
-    <section class="panel" aria-label="쉿대본 화면 미리보기">
+    <section class="panel enter" style="--d:.3s" aria-label="쉿대본 화면 미리보기">
       <div class="panel-head">
         <h2>미리보기<small>쉿대본에서 이렇게 보여요</small></h2>
       </div>
@@ -297,7 +343,7 @@ footer a{text-decoration:underline}
     </section>
   </div>
 
-  <div class="save">
+  <div class="save enter" style="--d:.4s">
     <label class="name" aria-label="파일 이름">
       <input id="fname" value="대본" maxlength="60" autocomplete="off"><em>.txt</em>
     </label>
@@ -312,7 +358,7 @@ footer a{text-decoration:underline}
     <input type="file" id="fileIn" accept=".txt,text/plain" hidden>
   </div>
 
-  <div class="help">
+  <div class="help enter" style="--d:.5s">
     <div class="card">
       <h3>강조 기호 (버튼을 누르면 자동으로 들어가요)</h3>
       <div class="syntax">
