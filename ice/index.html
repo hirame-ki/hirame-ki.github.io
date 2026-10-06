@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>document.documentElement.classList.add('js')</script>
+
+<title>아이스크림 연수 수강자 제공 자료</title>
+<meta name="description" content="아이스크림 원격연수 수강자에게만 제공하는 차시별 연수 자료입니다. 쌤보드·이지테스트·과제관리·연수 전자서명과 추가 업무 도구를 모았습니다. 타인 공유와 재배포를 삼가 주세요.">
+<meta name="author" content="황성재 · 히라메키(@hirame.ki)">
+<meta name="copyright" content="© 2026 황성재 · 히라메키(@hirame.ki). 연수 수강자 전용 자료">
+<!-- 수강자 전용 자료이므로 검색엔진 노출을 막습니다 -->
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="theme-color" content="#2A1E18">
+
+<!-- 공유 미리보기(카카오톡·밴드·메신저) -->
+<link rel="canonical" href="https://hirame-ki.github.io/ice/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:site_name" content="아이스크림 연수 수강자 제공 자료">
+<meta property="og:title" content="아이스크림 연수 · 수강자 제공 자료">
+<meta property="og:description" content="연수 수강자 전용 자료실 — 1~3차시 수업·업무 도구 모음. 타인에게 전달하지 말아 주세요.">
+<meta property="og:url" content="https://hirame-ki.github.io/ice/">
+<meta property="og:image" content="https://hirame-ki.github.io/ice/thumbnail.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="아이스크림 콘 위에 1·2·3 숫자가 적힌 세 스쿱과 '수강자 제공 자료' 문구">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="아이스크림 연수 · 수강자 제공 자료">
+<meta name="twitter:description" content="연수 수강자 전용 자료실 — 1~3차시 수업·업무 도구 모음.">
+<meta name="twitter:image" content="https://hirame-ki.github.io/ice/thumbnail.png">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M20 30h24L32 62z' fill='%23E3A95F'/%3E%3Ccircle cx='32' cy='26' r='14' fill='%23EF6F8E'/%3E%3Ccircle cx='32' cy='14' r='11' fill='%233DBB97'/%3E%3Ccircle cx='32' cy='5' r='4' fill='%23E23B55'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+<style>
+:root{
+  --bg:#FFF7EE; --surface:#FFFFFF; --surface-2:#FFF1E2;
+  --ink:#2A1E18; --muted:#6E5D52; --line:#EADCCD;
+  --straw:#EF6F8E; --straw-deep:#C2456A; --straw-ink:#B93A5A; --straw-soft:#FDE4EA;
+  --mint:#3DBB97; --mint-deep:#1A8566; --mint-ink:#1A7259; --mint-soft:#DDF4EC;
+  --choco:#8A5636; --choco-ink:#7A4B32; --choco-soft:#F2E4D8;
+  --vanilla:#F7D88A; --vanilla-soft:#FCEFC9;
+  --btn:#2A1E18; --btn-ink:#FFF7EE;
+  --shadow:0 1px 0 rgba(42,30,24,.04), 0 10px 30px -18px rgba(42,30,24,.35);
+  --radius:20px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1A1411; --surface:#241C18; --surface-2:#2C221D;
+    --ink:#F6ECE4; --muted:#BBA99C; --line:#3B2F28;
+    --straw-ink:#F58FA8; --straw-soft:#3A2028;
+    --mint-ink:#6FD6B6; --mint-soft:#183229;
+    --choco:#B07A55; --choco-ink:#D9A47D; --choco-soft:#33261E;
+    --vanilla-soft:#3A311C;
+    --btn:#F6ECE4; --btn-ink:#1A1411;
+    --shadow:0 1px 0 rgba(0,0,0,.2), 0 12px 30px -18px rgba(0,0,0,.7);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1A1411; --surface:#241C18; --surface-2:#2C221D;
+  --ink:#F6ECE4; --muted:#BBA99C; --line:#3B2F28;
+  --straw-ink:#F58FA8; --straw-soft:#3A2028;
+  --mint-ink:#6FD6B6; --mint-soft:#183229;
+  --choco:#B07A55; --choco-ink:#D9A47D; --choco-soft:#33261E;
+  --vanilla-soft:#3A311C;
+  --btn:#F6ECE4; --btn-ink:#1A1411;
+  --shadow:0 1px 0 rgba(0,0,0,.2), 0 12px 30px -18px rgba(0,0,0,.7);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  font-size:16px;line-height:1.65;word-break:keep-all;overflow-wrap:break-word;
+  -webkit-font-smoothing:antialiased;
+}
+body.locked{overflow:hidden}
+a{color:inherit}
+h1,h2,h3{line-height:1.25;margin:0;letter-spacing:-.02em}
+p{margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+@media (min-width:720px){.wrap{padding:0 28px}}
+.hero-grid>*,.session-grid>*,.cards>*,.wide-in>*{min-width:0}
+.i{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ───────── Opening ───────── */
+.opening{
+  position:fixed;inset:0;z-index:100;background:#2A1E18;color:#FFF4E6;
+  display:grid;place-items:center;cursor:pointer;
+  transition:transform 1s cubic-bezier(.75,0,.25,1);
+}
+html:not(.js) .opening{display:none}
+.opening.leave{transform:translateY(calc(-100% - 130px))}
+.op-drip{position:absolute;left:0;top:calc(100% - 1px);width:100%;height:120px;fill:#2A1E18;pointer-events:none}
+.op-stage{display:flex;align-items:center;gap:48px;padding:24px;max-width:960px}
+.op-cone{width:min(220px,34vw);height:auto;overflow:visible;flex:none}
+.op-text{min-width:0}
+.op-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:clamp(15px,2vw,19px);
+  color:#F7D88A;letter-spacing:.02em;opacity:0;animation:fadeUp .6s 1.45s ease-out both;
+}
+.op-eyebrow::before{content:"";width:28px;height:2px;background:#F7D88A;border-radius:2px}
+.op-title{font-size:clamp(40px,7.4vw,84px);font-weight:800;letter-spacing:-.04em;margin:10px 0 18px;line-height:1.1}
+.op-title span{display:inline-block;opacity:0;animation:pop .55s calc(1.6s + var(--i) * .06s) cubic-bezier(.2,1.4,.4,1) both}
+.op-title .gap{width:.28em}
+.op-sub{font-size:clamp(14px,1.8vw,17px);color:#D9C7B8;opacity:0;animation:fadeUp .6s 2.25s ease-out both}
+.op-line{display:block;height:6px;width:0;margin-top:20px;border-radius:6px;
+  background:linear-gradient(90deg,#EF6F8E 0 33%,#3DBB97 33% 66%,#B07A55 66%);
+  animation:grow .8s 2.35s cubic-bezier(.6,0,.2,1) forwards}
+.op-skip{
+  position:absolute;right:16px;bottom:20px;font:inherit;font-size:14px;font-weight:600;
+  color:#FFF4E6;background:rgba(255,244,230,.08);border:1px solid rgba(255,244,230,.25);
+  border-radius:999px;padding:8px 16px;cursor:pointer;
+}
+.op-skip:hover{background:rgba(255,244,230,.16)}
+
+.op-cone .cone{transform-box:fill-box;transform-origin:50% 0;animation:coneIn .6s .1s cubic-bezier(.2,.9,.3,1.2) both}
+.op-cone .scoop{transform-box:fill-box;transform-origin:50% 100%;animation:drop .75s cubic-bezier(.35,.1,.35,1) both}
+.op-cone .sc1{animation-delay:.5s}
+.op-cone .sc2{animation-delay:.82s}
+.op-cone .sc3{animation-delay:1.14s}
+.op-cone .cherry{transform-box:fill-box;transform-origin:50% 100%;animation:cherry .5s 1.62s cubic-bezier(.2,1.6,.4,1) both}
+.op-cone .burst rect{transform-box:fill-box;transform-origin:center;animation:spark .5s calc(1.7s + var(--i) * .035s) cubic-bezier(.2,1.5,.4,1) both}
+.op-cone .sn{font:800 19px "Pretendard Variable",Pretendard,sans-serif;fill:#fff}
+
+@keyframes coneIn{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
+@keyframes drop{
+  0%{opacity:0;transform:translateY(-460px)}
+  10%{opacity:1}
+  62%{transform:translateY(0) scale(1.08,.86)}
+  78%{transform:translateY(-12px) scale(.97,1.04)}
+  100%{opacity:1;transform:none}
+}
+@keyframes cherry{from{opacity:0;transform:translateY(-30px) scale(.3)}to{opacity:1;transform:none}}
+@keyframes spark{from{opacity:0;transform:scale(0) rotate(0)}to{opacity:1;transform:scale(1)}}
+@keyframes pop{from{opacity:0;transform:translateY(.45em) scale(.85)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes grow{to{width:min(320px,60vw)}}
+
+@media (max-width:640px){
+  .op-stage{flex-direction:column;gap:20px;text-align:center}
+  .op-cone{width:150px}
+  .op-eyebrow::before{display:none}
+  .op-line{margin-left:auto;margin-right:auto}
+}
+
+/* ───────── Page entrance ───────── */
+html.js .rise{opacity:0}
+body.ready .rise{animation:fadeUp .7s calc(.35s + var(--d,0) * .08s) cubic-bezier(.2,.7,.3,1) both}
+body.instant .rise{animation:none;opacity:1}
+
+/* ───────── Notice strip ───────── */
+.strip{background:var(--ink);color:var(--bg);font-size:13.5px}
+.strip .wrap{display:flex;align-items:center;justify-content:center;gap:8px;padding-top:9px;padding-bottom:9px;text-align:center}
+.strip .i{font-size:15px;color:var(--vanilla)}
+
+/* ───────── Hero ───────── */
+.hero{padding:56px 0 40px;position:relative;overflow:hidden}
+.hero-grid{display:grid;gap:32px;align-items:end}
+@media (min-width:880px){.hero-grid{grid-template-columns:1.35fr 1fr;gap:48px}}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--straw-ink);letter-spacing:.01em}
+.eyebrow .dots{display:inline-flex;gap:4px}
+.eyebrow .dots i{width:9px;height:9px;border-radius:50%;display:block}
+h1{font-size:clamp(38px,7vw,68px);font-weight:800;letter-spacing:-.045em;margin:14px 0 18px}
+h1 em{font-style:normal;background:linear-gradient(transparent 62%,var(--straw-soft) 62%)}
+.hero-lead{font-size:clamp(16px,2vw,18px);color:var(--muted);max-width:34em}
+.jump{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.jump a{
+  display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:600;font-size:14.5px;
+  padding:9px 14px 9px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);
+  transition:transform .15s, border-color .15s;
+}
+.jump a:hover{transform:translateY(-2px);border-color:var(--ink)}
+.jump b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;color:#fff;font-size:13px}
+.jump .n1 b{background:var(--straw-deep)} .jump .n2 b{background:var(--mint-deep)} .jump .n3 b{background:var(--choco)}
+.jump .nx b{background:var(--ink);color:var(--bg)}
+.jump .nx b .i{font-size:12px}
+
+.legend{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 22px 20px;box-shadow:var(--shadow)}
+.legend h2{font-size:15px;font-weight:700;color:var(--muted);margin-bottom:14px}
+.legend ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.legend li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;font-size:14.5px}
+.legend li .badge{margin-top:1px}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:999px;line-height:1.3}
+.badge.base{background:var(--ink);color:var(--bg)}
+.badge.extra{background:var(--vanilla);color:#4A2F1F}
+.badge.sheet{background:var(--mint-soft);color:var(--mint-ink)}
+.badge.kind{background:var(--surface-2);color:var(--muted);font-weight:600}
+
+/* ───────── Sessions ───────── */
+main{padding-bottom:24px}
+.session{padding:44px 0;border-top:1px dashed var(--line)}
+.session-grid{display:grid;gap:22px}
+@media (min-width:980px){.session-grid{grid-template-columns:220px 1fr;gap:40px}}
+.s-head{align-self:start}
+@media (min-width:980px){.s-head{position:sticky;top:28px}}
+.scoop-no{
+  width:66px;height:66px;border-radius:50% 50% 46% 46%;display:grid;place-items:center;
+  color:#fff;font-size:30px;font-weight:800;position:relative;margin-bottom:14px;
+  box-shadow:inset -6px -8px 0 rgba(0,0,0,.08);
+}
+.scoop-no::after{content:"";position:absolute;left:14px;top:12px;width:14px;height:9px;border-radius:50%;background:rgba(255,255,255,.35);transform:rotate(-25deg)}
+.s1 .scoop-no{background:var(--straw-deep)} .s2 .scoop-no{background:var(--mint-deep)} .s3 .scoop-no{background:var(--choco)}
+.s-kicker{font-size:13px;font-weight:700;letter-spacing:.08em}
+.s1 .s-kicker{color:var(--straw-ink)} .s2 .s-kicker{color:var(--mint-ink)} .s3 .s-kicker{color:var(--choco-ink)}
+.s-head h2{font-size:clamp(24px,3vw,28px);font-weight:800;margin:6px 0 8px}
+.s-head p{color:var(--muted);font-size:15px}
+.s-count{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}
+
+.cards{display:grid;gap:18px}
+@media (min-width:760px){.cards{grid-template-columns:1fr 1fr}.card.wide{grid-column:1/-1}}
+
+.card{
+  position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;
+  transition:transform .2s, box-shadow .2s;
+}
+.card:hover{transform:translateY(-3px);box-shadow:0 1px 0 rgba(42,30,24,.04),0 18px 40px -20px rgba(42,30,24,.45)}
+.card.is-extra{border:1.5px dashed color-mix(in srgb,var(--vanilla) 60%,var(--choco))}
+.card.is-extra::before{
+  content:"강사 추가 제공";position:absolute;top:-11px;right:20px;font-size:11.5px;font-weight:800;letter-spacing:.04em;
+  background:var(--vanilla);color:#4A2F1F;padding:3px 10px;border-radius:999px;
+}
+.card-top{display:flex;align-items:center;gap:12px}
+.ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;flex:none}
+.s1 .ico{background:var(--straw-soft);color:var(--straw-ink)}
+.s2 .ico{background:var(--mint-soft);color:var(--mint-ink)}
+.s3 .ico{background:var(--choco-soft);color:var(--choco-ink)}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.card h3{font-size:22px;font-weight:800}
+.card h3 small{font-size:14px;font-weight:600;color:var(--muted);margin-left:6px;letter-spacing:0}
+.lead{font-weight:600;font-size:16px;margin-top:4px}
+.desc{color:var(--muted);font-size:15px}
+
+.feat{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.feat li{display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:14.5px;align-items:baseline}
+.feat li::before{content:"";width:7px;height:7px;border-radius:50%;transform:translateY(-2px)}
+.s1 .feat li::before{background:var(--straw)} .s2 .feat li::before{background:var(--mint)} .s3 .feat li::before{background:var(--choco)}
+.feat b{font-weight:700}
+
+.tools4{display:grid;gap:10px;grid-template-columns:1fr}
+@media (min-width:560px){.tools4{grid-template-columns:1fr 1fr}}
+.tool{background:var(--surface-2);border-radius:14px;padding:14px 16px}
+.tool b{display:block;font-size:15px}
+.tool span{font-size:14px;color:var(--muted)}
+
+.tip{display:flex;gap:10px;align-items:flex-start;background:var(--surface-2);border-radius:14px;padding:12px 14px;font-size:14px;color:var(--muted)}
+.tip .i{font-size:17px;margin-top:2px;color:var(--ink)}
+.tip strong{color:var(--ink)}
+
+.wide-in{display:grid;gap:20px}
+@media (min-width:760px){.wide-in{grid-template-columns:1.1fr 1fr;gap:28px}}
+.wide-in > div{display:flex;flex-direction:column;gap:14px}
+
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:st}
+.steps li{position:relative;display:grid;grid-template-columns:34px 1fr;gap:12px;padding-bottom:16px}
+.steps li:not(:last-child)::after{content:"";position:absolute;left:16px;top:34px;bottom:2px;width:2px;background:var(--line)}
+.steps li::before{
+  counter-increment:st;content:counter(st);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  background:var(--choco-soft);color:var(--choco-ink);font-weight:800;font-size:15px;
+}
+.steps b{display:block;font-size:15.5px;margin-top:5px}
+.steps span{font-size:14px;color:var(--muted)}
+.steps code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:var(--surface-2);padding:1px 6px;border-radius:6px;color:var(--ink);word-break:break-all}
+
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:700;font-size:15px;
+  padding:12px 18px;border-radius:12px;background:var(--btn);color:var(--btn-ink);
+  transition:transform .15s, box-shadow .15s;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px -10px rgba(42,30,24,.6)}
+.btn:focus-visible,.jump a:focus-visible,.op-skip:focus-visible,.foot a:focus-visible{outline:3px solid var(--straw);outline-offset:3px}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.btn .i{font-size:16px}
+.btn small{font-weight:600;opacity:.75;font-size:12.5px}
+.url{font-size:12.5px;color:var(--muted);font-family:ui-monospace,Consolas,monospace;word-break:break-all}
+
+/* ───────── Copyright ───────── */
+.legal{padding:40px 0 56px}
+.legal-box{
+  background:var(--surface);border:1.5px solid var(--ink);border-radius:24px;padding:28px 24px;
+  display:grid;gap:22px;box-shadow:var(--shadow)
+}
+@media (min-width:860px){.legal-box{grid-template-columns:260px 1fr;padding:34px 36px;gap:36px}}
+.legal-head .lock{width:52px;height:52px;border-radius:16px;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:24px;margin-bottom:14px}
+.legal-head h2{font-size:24px;font-weight:800}
+.legal-head p{color:var(--muted);font-size:14.5px;margin-top:8px}
+.rules{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.rules li{display:grid;grid-template-columns:26px 1fr;gap:10px;font-size:15px;align-items:start}
+.rules .mk{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:800}
+.rules .ok{background:var(--mint-soft);color:var(--mint-ink)}
+.rules .no{background:var(--straw-soft);color:var(--straw-ink)}
+.rules .ok .i,.rules .no .i{font-size:14px;stroke-width:2.6}
+.legal-note{margin-top:4px;padding-top:16px;border-top:1px dashed var(--line);font-size:13.5px;color:var(--muted)}
+
+.foot{border-top:1px solid var(--line);padding:22px 0 34px;font-size:13px;color:var(--muted)}
+.foot .wrap{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between;align-items:center}
+.foot a{text-decoration:none;border-bottom:1px solid var(--line)}
+.foot a:hover{color:var(--ink);border-color:var(--ink)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html.js .rise{opacity:1}
+}
+@media print{
+  .opening,.strip,.jump,.actions{display:none!important}
+  .card{break-inside:avoid;box-shadow:none}
+}
+</style>
+<noscript><style>.opening{display:none}</style></noscript>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+  <symbol id="i-drawer" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8M10 12h4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.5-4.5"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-yes" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-no" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+</svg>
+
+<!-- ───────── Opening motion ───────── -->
+<div class="opening" id="opening">
+  <div class="op-stage">
+    <svg class="op-cone" viewBox="0 -24 220 362" aria-hidden="true">
+      <defs>
+        <pattern id="waffle" width="15" height="15" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="15" height="15" fill="#E3A95F"/><path d="M0 0H15M0 0V15" stroke="#C3853F" stroke-width="3"/>
+        </pattern>
+      </defs>
+      <g class="cone">
+        <path d="M52 198 L168 198 L110 334 Z" fill="url(#waffle)"/>
+        <rect x="44" y="190" width="132" height="14" rx="7" fill="#D0924A"/>
+      </g>
+      <g class="scoop sc1">
+        <circle cx="110" cy="172" r="56" fill="#EF6F8E"/>
+        <g fill="#EF6F8E"><circle cx="62" cy="196" r="11"/><circle cx="79" cy="201" r="11"/><circle cx="96" cy="204" r="11"/><circle cx="113" cy="205" r="11"/><circle cx="130" cy="203" r="11"/><circle cx="146" cy="200" r="11"/><circle cx="160" cy="194" r="10"/></g>
+        <ellipse cx="86" cy="146" rx="15" ry="9" fill="#F9A8BB" transform="rotate(-28 86 146)"/>
+        <g fill="#FFF4E6"><rect x="120" y="150" width="11" height="4" rx="2" transform="rotate(30 125 152)"/><rect x="72" y="182" width="11" height="4" rx="2" transform="rotate(-20 77 184)"/></g>
+        <text class="sn" x="136" y="186">1</text>
+      </g>
+      <g class="scoop sc2">
+        <circle cx="110" cy="112" r="50" fill="#3DBB97"/>
+        <g fill="#3DBB97"><circle cx="70" cy="140" r="10"/><circle cx="88" cy="148" r="10"/><circle cx="108" cy="151" r="10"/><circle cx="128" cy="149" r="10"/><circle cx="146" cy="142" r="10"/></g>
+        <ellipse cx="89" cy="90" rx="13" ry="8" fill="#80DAC0" transform="rotate(-28 89 90)"/>
+        <g fill="#FFF4E6"><rect x="126" y="92" width="10" height="4" rx="2" transform="rotate(-35 131 94)"/><rect x="80" y="122" width="10" height="4" rx="2" transform="rotate(25 85 124)"/></g>
+        <text class="sn" x="133" y="128" style="fill:#0F3A2D">2</text>
+      </g>
+      <g class="scoop sc3">
+        <circle cx="110" cy="60" r="44" fill="#8A5636"/>
+        <g fill="#8A5636"><circle cx="76" cy="84" r="9"/><circle cx="92" cy="92" r="9"/><circle cx="110" cy="95" r="9"/><circle cx="128" cy="92" r="9"/><circle cx="144" cy="84" r="9"/></g>
+        <ellipse cx="92" cy="40" rx="11" ry="7" fill="#AD7752" transform="rotate(-28 92 40)"/>
+        <g fill="#F7D88A"><rect x="124" y="40" width="10" height="4" rx="2" transform="rotate(25 129 42)"/><rect x="84" y="66" width="10" height="4" rx="2" transform="rotate(-30 89 68)"/></g>
+        <text class="sn" x="130" y="76">3</text>
+      </g>
+      <g class="cherry">
+        <path d="M110 8 q2 -14 18 -22" stroke="#7A4B32" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <circle cx="110" cy="14" r="12" fill="#E23B55"/><circle cx="105" cy="10" r="3.5" fill="#FF8A9C"/>
+      </g>
+      <g class="burst">
+        <rect style="--i:0" x="14" y="40" width="14" height="5" rx="2.5" fill="#F7D88A" transform="rotate(-30 21 42)"/>
+        <rect style="--i:1" x="188" y="22" width="14" height="5" rx="2.5" fill="#7FC8F8" transform="rotate(25 195 24)"/>
+        <rect style="--i:2" x="196" y="110" width="14" height="5" rx="2.5" fill="#FFB3C6" transform="rotate(-15 203 112)"/>
+        <rect style="--i:3" x="6" y="128" width="14" height="5" rx="2.5" fill="#7FC8F8" transform="rotate(40 13 130)"/>
+        <rect style="--i:4" x="34" y="-6" width="14" height="5" rx="2.5" fill="#FFB3C6" transform="rotate(15 41 -4)"/>
+        <rect style="--i:5" x="176" y="176" width="14" height="5" rx="2.5" fill="#F7D88A" transform="rotate(-40 183 178)"/>
+        <rect style="--i:6" x="22" y="212" width="14" height="5" rx="2.5" fill="#FFF4E6" transform="rotate(20 29 214)"/>
+        <rect style="--i:7" x="160" y="-14" width="14" height="5" rx="2.5" fill="#FFF4E6" transform="rotate(-20 167 -12)"/>
+      </g>
+    </svg>
+    <div class="op-text">
+      <p class="op-eyebrow">아이스크림 연수</p>
+      <p class="op-title" aria-label="수강자 제공 자료">
+        <span style="--i:0">수</span><span style="--i:1">강</span><span style="--i:2">자</span><span class="gap"></span><span style="--i:3">제</span><span style="--i:4">공</span><span class="gap"></span><span style="--i:5">자</span><span style="--i:6">료</span>
+      </p>
+      <p class="op-sub">세 차시의 자료를 한 스쿱씩 담아 드립니다</p>
+      <span class="op-line"></span>
+    </div>
+  </div>
+  <button type="button" class="op-skip" id="opSkip">건너뛰기</button>
+  <svg class="op-drip" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 0 H1200 V28 L1134 28 C1114 28 1131 63 1100 63 C1069 63 1086 28 1066 28 L964 28 C944 28 961 98 930 98 C899 98 916 28 896 28 L814 28 C794 28 811 73 780 73 C749 73 766 28 746 28 L634 28 C614 28 631 118 600 118 C569 118 586 28 566 28 L454 28 C434 28 451 58 420 58 C389 58 406 28 386 28 L294 28 C274 28 291 103 260 103 C229 103 246 28 226 28 L124 28 C104 28 121 68 90 68 C59 68 76 28 56 28 L0 28 Z"/>
+  </svg>
+</div>
+
+<div class="strip" role="note">
+  <div class="wrap"><svg class="i"><use href="#i-lock"/></svg><span>연수 수강자에게만 제공되는 자료입니다. 이 페이지 주소를 다른 분께 전달하지 말아 주세요.</span></div>
+</div>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow rise" style="--d:0"><span class="dots"><i style="background:var(--straw)"></i><i style="background:var(--mint)"></i><i style="background:var(--choco)"></i></span>아이스크림 원격연수 · 수강자 전용</p>
+      <h1 class="rise" style="--d:1">수강자 <em>제공 자료</em></h1>
+      <p class="hero-lead rise" style="--d:2">연수에서 다룬 도구를 차시별로 정리했습니다. 기본 제공 자료에 더해, 학교 업무에 바로 보탬이 될 도구도 추가로 담아 두었어요.</p>
+      <nav class="jump rise" style="--d:3" aria-label="차시 바로가기">
+        <a class="n1" href="#s1"><b>1</b>쌤보드</a>
+        <a class="n2" href="#s2"><b>2</b>이지테스트</a>
+        <a class="n3" href="#s3"><b>3</b>과제관리 · 전자서명</a>
+        <a class="nx" href="#legal"><b><svg class="i"><use href="#i-lock"/></svg></b>이용 안내</a>
+      </nav>
+    </div>
+    <aside class="legend rise" style="--d:4" aria-labelledby="legend-t">
+      <h2 id="legend-t">자료 표시 보는 법</h2>
+      <ul>
+        <li><span class="badge base">기본 제공</span><span>차시 영상에서 함께 다룬 자료입니다.</span></li>
+        <li><span class="badge extra">추가 제공</span><span>업무에 도움이 되도록 강사가 덧붙여 드리는 자료입니다.</span></li>
+        <li><span class="badge sheet">시트 사본</span><span>구글 계정으로 로그인해 <b>내 드라이브에 사본</b>을 만들어 씁니다.</span></li>
+      </ul>
+    </aside>
+  </div>
+</header>
+
+<main>
+
+  <!-- ───────── 1차시 ───────── -->
+  <section class="session s1" id="s1" aria-labelledby="s1-t">
+    <div class="wrap session-grid">
+      <div class="s-head rise" style="--d:5">
+        <div class="scoop-no" aria-hidden="true">1</div>
+        <p class="s-kicker">SESSION 01 · 1차시</p>
+        <h2 id="s1-t">바탕화면 위의 교무실, 쌤보드</h2>
+        <p>교시·급식·시간표부터 수업 도구와 업무 도구까지 한 화면에서.</p>
+        <div class="s-count"><span class="badge base">기본 1</span><span class="badge extra">추가 2</span></div>
+      </div>
+
+      <div class="cards">
+        <article class="card wide rise" style="--d:6">
+          <div class="card-top">
+            <span class="ico"><svg class="i"><use href="#i-monitor"/></svg></span>
+            <div class="tags"><span class="badge base">기본 제공</span><span class="badge kind">Windows 프로그램 · 무료</span></div>
+          </div>
+          <div class="wide-in">
+            <div>
+              <div>
+                <h3>쌤보드 <small>SsamBoard</small></h3>
+                <p class="lead">바탕화면 자체가 교무실 책상이 되는 교사 전용 위젯</p>
+              </div>
+              <p class="desc">지금이 몇 교시인지, 이 시간이 몇 분 남았는지가 바탕화면 위에 늘 떠 있습니다. 시간표·급식·학사일정은 NEIS에서 자동으로 불러오고, 수업 도구와 업무 도구도 바로 꺼내 씁니다.</p>
+              <div class="tip"><svg class="i"><use href="#i-info"/></svg><span>처음 설치할 때 파란색 Windows 보안 창이 뜨면 <strong>[추가 정보] → [실행]</strong>을 누르세요. 설치 파일은 <strong>SsamBoard.Setup.x.x.x.exe</strong> 하나만 받으면 됩니다.</span></div>
+            </div>
+            <div>
+              <ul class="feat">
+                <li><span><b>위젯 21종</b> — 시간표, 교시 타이머, 급식, 날씨, 학사일정, 할 일, D-DAY, 명렬표 등</span></li>
+                <li><span><b>수업 도구</b> — 무작위 추첨, 타이머, 사다리, 룰렛, QR코드, 소음측정기</span></li>
+                <li><span><b>업무 도구 12종</b> — 상담 일지, 진도 체크, 성적 분석, 공문서 도우미, 생기부 초안</span></li>
+                <li><span><b>휴대폰 연동</b> — 구글 계정 한 번 연결로 PC의 기록을 휴대폰에서 이어서 확인·입력</span></li>
+                <li><span><b>학사일정 내보내기</b> — 학교 일정을 구글 캘린더·엑셀로 한 번에</span></li>
+              </ul>
+              <div class="actions">
+                <a class="btn" href="https://hirame-ki.github.io/2/factory/" target="_blank" rel="noopener">다운로드 · 사용 설명서 <svg class="i"><use href="#i-out"/></svg></a>
+              </div>
+              <p class="url">hirame-ki.github.io/2/factory</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="card is-extra rise" style="--d:7">
+          <div class="card-top">
+            <span class="ico"><svg class="i"><use href="#i-drawer"/></svg></span>
+            <div class="tags"><span class="badge extra">추가 제공</span><span class="badge kind">웹 · 설치 없음</span></div>
+          </div>
+          <div>
+            <h3>수업서랍 <small>수업도구 모음</small></h3>
+            <p class="lead">꺼내면 바로, 수업이 됩니다</p>
+          </div>
+          <p class="desc">타이머, 한 명 뽑기, 룰렛, 사다리, 모둠 편성, 점수판, 신호등, 소음 측정, 화면 칠판, 낱말 카드, QR 코드까지 19가지 도구를 한 서랍에 모았습니다. 점수판과 타이머처럼 여러 도구를 한 화면에 나란히 띄워 쓸 수 있어요.</p>
+          <div class="tip"><svg class="i"><use href="#i-info"/></svg><span>설치·로그인 없이 교실 컴퓨터 브라우저에서 바로 열립니다. <strong>즐겨찾기</strong>에 넣어 두시면 편해요.</span></div>
+          <div class="actions">
+            <a class="btn" href="https://hirame-ki.github.io/class/" target="_blank" rel="noopener">수업서랍 열기 <svg class="i"><use href="#i-out"/></svg></a>
+          </div>
+          <p class="url">hirame-ki.github.io/class</p>
+        </article>
+
+        <article class="card is-extra rise" style="--d:8">
+          <div class="card-top">
+            <span class="ico"><svg class="i"><use href="#i-search"/></svg></span>
+            <div class="tags"><span class="badge extra">추가 제공</span><span class="badge sheet">시트 사본</span></div>
+          </div>
+          <div>
+            <h3>찾아줘요 <small>분실물 찾기 시스템</small></h3>
+            <p class="lead">교내 분실물, 시트 하나로 등록하고 돌려주기</p>
+          </div>
+          <p class="desc">주인을 기다리는 분실물을 등록해 두고, 찾아갈 때까지의 과정을 구글 스프레드시트 하나로 관리합니다. 사본을 만들면 우리 학교 전용으로 바로 쓸 수 있어요.</p>
+          <div class="tip"><svg class="i"><use href="#i-info"/></svg><span>버튼을 누르고 구글 계정으로 로그인한 뒤 <strong>[사본 만들기]</strong>를 누르면 내 드라이브에 저장됩니다.</span></div>
+          <div class="actions">
+            <a class="btn" href="https://docs.google.com/spreadsheets/d/1sF1PuBvRzPNdShmt3uU4mIA5INA07URXeQJnsKfw3kI/copy" target="_blank" rel="noopener"><svg class="i"><use href="#i-copy"/></svg> 내 드라이브에 사본 만들기</a>
+          </div>
+          <p class="url">Google 스프레드시트 · 사본 만들기</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── 2차시 ───────── -->
+  <section class="session s2" id="s2" aria-labelledby="s2-t">
+    <div class="wrap session-grid">
+      <div class="s-head rise" style="--d:9">
+        <div class="scoop-no" aria-hidden="true">2</div>
+        <p class="s-kicker">SESSION 02 · 2차시</p>
+        <h2 id="s2-t">시험지가 저절로, 이지테스트</h2>
+        <p>교과서와 기출만 올리면 원안지 양식까지 맞춰 줍니다.</p>
+        <div class="s-count"><span class="badge base">기본 1</span></div>
+      </div>
+
+      <div class="cards">
+        <article class="card wide rise" style="--d:10">
+          <div class="card-top">
+            <span class="ico"><svg class="i"><use href="#i-file"/></svg></span>
+            <div class="tags"><span class="badge base">기본 제공</span><span class="badge kind">Windows 프로그램</span></div>
+          </div>
+          <div class="wide-in">
+            <div>
+              <div>
+                <h3>이지테스트 <small>EzTest</small></h3>
+                <p class="lead">교과서·기출만 올리면 시험 원안지를 만들어 주는 교사용 프로그램</p>
+              </div>
+              <p class="desc">양식을 따로 준비하실 필요가 없습니다. 학교 로고와 학교 정보가 양식에 저절로 들어가고, 만든 문항은 스스로 검산합니다. 새 버전이 나오면 프로그램이 알려 드려요.</p>
+              <div class="tip"><svg class="i"><use href="#i-info"/></svg><span><strong>시작 전 확인</strong> — 한글(HWP)이 설치되어 있어야 하고, 안내 페이지에 따라 API 키를 받아 넣어야 합니다. 압축을 풀기 전에 파일 속성에서 <strong>‘차단 해제’</strong>를 먼저 해 주세요.</span></div>
+            </div>
+            <div>
+              <div class="tools4">
+                <div class="tool"><b>이지메이커</b><span>문제 만들기 — 없던 문항을 새로 만듭니다</span></div>
+                <div class="tool"><b>이지폼</b><span>옮겨 적기 — 있는 시험지를 한글 파일로</span></div>
+                <div class="tool"><b>이지커스텀</b><span>학습지 만들기 — 수업용 학습지</span></div>
+                <div class="tool"><b>문제은행</b><span>만든 문항을 모아 두고 다시 꺼내 씁니다</span></div>
+              </div>
+              <div class="actions">
+                <a class="btn" href="https://esquire0-cell.github.io/easy/" target="_blank" rel="noopener">내려받기 · 설명서 <svg class="i"><use href="#i-out"/></svg></a>
+              </div>
+              <p class="url">esquire0-cell.github.io/easy</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── 3차시 ───────── -->
+  <section class="session s3" id="s3" aria-labelledby="s3-t">
+    <div class="wrap session-grid">
+      <div class="s-head rise" style="--d:11">
+        <div class="scoop-no" aria-hidden="true">3</div>
+        <p class="s-kicker">SESSION 03 · 3차시</p>
+        <h2 id="s3-t">걷고, 확인하고, 서명받기</h2>
+        <p>과제 제출 관리와 연수 서명부를 종이 없이.</p>
+        <div class="s-count"><span class="badge base">기본 2</span></div>
+      </div>
+
+      <div class="cards">
+        <article class="card wide rise" style="--d:12">
+          <div class="card-top">
+            <span class="ico"><svg class="i"><use href="#i-check"/></svg></span>
+            <div class="tags"><span class="badge base">기본 제공</span><span class="badge sheet">시트 사본</span></div>
+          </div>
+          <div class="wide-in">
+            <div>
+              <div>
+                <h3>냈니? 냈어요! <small>과제관리 시스템</small></h3>
+                <p class="lead">종이로 걷던 과제를 웹으로 받는 제출·피드백 시스템</p>
+              </div>
+              <p class="desc">학생은 회원가입이나 구글 로그인 없이 <b>여섯 자리 코드</b>만으로 과제를 냅니다. 선생님은 현황판 한 화면에서 누가 냈는지 확인하고, 칸을 눌러 바로 피드백을 남깁니다.</p>
+            </div>
+            <div>
+              <ul class="feat">
+                <li><span><b>제출 현황판</b> — 학생 × 과제 제출 상태를 한눈에</span></li>
+                <li><span><b>피드백 · 반려 · 칭찬 스티커</b> — 칸을 눌러 바로 남기기</span></li>
+                <li><span><b>내 드라이브에 저장</b> — 제출 파일은 선생님 본인의 구글 드라이브로</span></li>
+                <li><span><b>생기부 기초 자료</b> — 쌓인 제출·피드백 기록을 학기말에 그대로</span></li>
+              </ul>
+              <div class="actions">
+                <a class="btn" href="https://docs.google.com/spreadsheets/d/1nMWhaMLJFvo-CMHGAElp_nPDt28Aq2xpplJsZWGcjLM/copy" target="_blank" rel="noopener"><svg class="i"><use href="#i-copy"/></svg> 내 드라이브에 사본 만들기</a>
+              </div>
+              <p class="url">처음 설정과 학생 코드 배부 방법은 사본 안의 사용설명서를 참고하세요.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="card wide rise" style="--d:13">
+          <div class="card-top">
+            <span class="ico"><svg class="i"><use href="#i-pen"/></svg></span>
+            <div class="tags"><span class="badge base">기본 제공</span><span class="badge sheet">시트 사본</span><span class="badge kind">+ 서명 웹페이지</span></div>
+          </div>
+          <div class="wide-in">
+            <div>
+              <div>
+                <h3>연수 전자서명 <small>QR 찍고 서명하면 끝</small></h3>
+                <p class="lead">휴대폰 화면에 서명하면 연수 서명등록부가 완성됩니다</p>
+              </div>
+              <p class="desc">종이 서명부를 돌리는 대신 QR로 접속해 서명합니다. 서명 이미지가 들어간 등록부를 A4로 인쇄하거나 PDF로 저장할 수 있고, 서명 가능 시간 제한·매일 바뀌는 QR·중복 서명 차단으로 대리 서명을 막습니다.</p>
+              <div class="tip"><svg class="i"><use href="#i-info"/></svg><span>이 자료는 <strong>시트 사본</strong>과 <strong>서명 웹페이지</strong>, 두 가지를 함께 씁니다. 처음 한 번만 연결하면 이후 명단·연수·설정은 모두 웹 화면에서 관리합니다.</span></div>
+              <div class="actions">
+                <a class="btn" href="https://docs.google.com/spreadsheets/d/1AcGSBoQZW4oDCQmdY9NK3AfcUmehPJcnkug9iepkKpw/copy" target="_blank" rel="noopener"><svg class="i"><use href="#i-copy"/></svg> ① 시트 사본 만들기</a>
+                <a class="btn ghost" href="https://hirame-ki.github.io/sign/" target="_blank" rel="noopener">② 서명 페이지 열기 <svg class="i"><use href="#i-out"/></svg></a>
+              </div>
+            </div>
+            <div>
+              <ol class="steps" aria-label="연수 전자서명 연결 순서">
+                <li><div><b>시트 사본 만들기</b><span>① 버튼을 눌러 서명 시스템 시트를 내 드라이브에 복사합니다.</span></div></li>
+                <li><div><b>웹 앱으로 배포하고 주소 복사</b><span>사본의 Apps Script를 웹 앱으로 배포한 뒤, <code>https://script.google.com/macros/s/…/exec</code> 형태의 배포 URL을 복사합니다.</span></div></li>
+                <li><div><b>서명 페이지에 붙여 넣기</b><span>② 서명 페이지의 ‘웹앱 배포 URL’ 칸에 붙여 넣고 <b style="display:inline;font-size:inherit">[연결하기]</b>를 누릅니다.</span></div></li>
+                <li><div><b>명단·연수 등록 후 QR 공유</b><span>관리자 화면에서 구성원과 연수를 등록하고, 공유 링크나 QR을 안내하면 끝입니다.</span></div></li>
+              </ol>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────── Copyright ───────── -->
+  <section class="legal" id="legal" aria-labelledby="legal-t">
+    <div class="wrap">
+      <div class="legal-box rise" style="--d:14">
+        <div class="legal-head">
+          <div class="lock"><svg class="i"><use href="#i-lock"/></svg></div>
+          <h2 id="legal-t">저작권 및 이용 안내</h2>
+          <p>이 페이지와 연결된 모든 자료는 <b>아이스크림 원격연수 수강자</b>에게 제공하는 연수 자료입니다.</p>
+        </div>
+        <div>
+          <ul class="rules">
+            <li><span class="mk ok"><svg class="i"><use href="#i-yes"/></svg></span><span>수강하신 선생님 본인의 수업과 학교 업무에는 자유롭게 사용하실 수 있습니다.</span></li>
+            <li><span class="mk no"><svg class="i"><use href="#i-no"/></svg></span><span>이 페이지 주소와 자료를 연수를 듣지 않은 분께 <b>전달·공유하지 말아 주세요.</b> 메신저 단체방, SNS, 커뮤니티, 블로그 게시도 포함됩니다.</span></li>
+            <li><span class="mk no"><svg class="i"><use href="#i-no"/></svg></span><span>자료를 무단으로 복제·수정해 재배포하거나, 판매 등 영리 목적으로 이용할 수 없습니다.</span></li>
+            <li><span class="mk no"><svg class="i"><use href="#i-no"/></svg></span><span>구글 시트 사본은 사본을 만든 선생님과 소속 학교의 업무용으로만 사용해 주세요. 사본 파일을 다시 배포하는 것도 재배포에 해당합니다.</span></li>
+          </ul>
+          <p class="legal-note">자료의 저작권은 제작자(황성재 · 히라메키 @hirame.ki)에게 있으며 저작권법에 따라 보호됩니다. 동료 선생님께 소개하고 싶으시다면 자료 대신 <b>아이스크림 원격연수 과정</b>을 안내해 주세요.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>© 2026 황성재 · 히라메키(@hirame.ki). All rights reserved. · 아이스크림 연수 수강자 제공 자료</span>
+    <a href="?intro" id="replay">오프닝 다시 보기</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var op=document.getElementById('opening');
+  var body=document.body;
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var forced=/[?&]intro\b/.test(location.search);
+  var seen=false;
+  try{seen=sessionStorage.getItem('icecream-opening')==='1'}catch(e){}
+
+  if(!op) return;
+  if(reduce||(seen&&!forced)){
+    op.remove();body.classList.add('ready','instant');return;
+  }
+
+  body.classList.add('locked');
+  var done=false,timer=setTimeout(close,4100);
+  function close(){
+    if(done) return; done=true; clearTimeout(timer);
+    try{sessionStorage.setItem('icecream-opening','1')}catch(e){}
+    op.classList.add('leave');
+    body.classList.remove('locked');body.classList.add('ready');
+    document.removeEventListener('keydown',onKey);
+    setTimeout(function(){op.remove()},1100);
+  }
+  function onKey(e){if(e.key==='Escape'||e.key==='Enter'||e.key===' '){e.preventDefault();close()}}
+  op.addEventListener('click',close);
+  document.addEventListener('keydown',onKey);
+})();
+</script>
+</body>
+</html>
