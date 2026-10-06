@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>대본 만들기 — 쉿대본</title>
+<meta name="description" content="쉿대본 대본 만들기 — 틀을 골라 쓰고, 버튼으로 강조하고, 길이를 확인한 뒤 txt로 받아 쉿대본에서 바로 여세요.">
+<meta name="theme-color" content="#FFE14D">
+<meta name="author" content="hirame.ki">
+<meta name="copyright" content="© 2026 hirame.ki. All rights reserved.">
+<link rel="canonical" href="https://hirame-ki.github.io/prompter/write.html">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="쉿대본">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="대본 만들기 | 쉿대본">
+<meta property="og:description" content="틀을 골라 쓰고, 강조하고, 길이를 확인하고, txt로 받기">
+<meta property="og:url" content="https://hirame-ki.github.io/prompter/write.html">
+<meta property="og:image" content="https://hirame-ki.github.io/prompter/img/og-image.png">
+<link rel="icon" type="image/png" sizes="32x32" href="img/icon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="img/icon-180.png">
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+<style>
+:root{
+  --yellow:#FFE14D; --yellow-2:#FFD21F; --yellow-soft:#FFF6C8; --cream:#FFFDF5;
+  --ink:#14130F; --ink-2:#3A372C; --muted:#77715E; --line:#EFE9D6;
+  --violet:#5B6CF0; --violet-2:#4A5AE0; --violet-soft:#EEF0FE;
+  --red:#E5484D; --green:#2FB463; --card:#FFFFFF;
+  --shadow:0 18px 50px -18px rgba(80,60,0,.28), 0 4px 14px -6px rgba(80,60,0,.12);
+  --radius:22px;
+  /* 쉿대본 기본 표시색 (프로그램 DEFAULTS와 같음) */
+  --p-fg:#FFFFFF; --p-bg:#14140F; --p-em:#FFD400; --p-hl:#FFE14D; --p-dir:#9AA0A6; --p-guide:#FFD400;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","맑은 고딕",system-ui,sans-serif;
+  background:var(--cream);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.wrap{width:min(1240px,100% - 32px);margin-inline:auto}
+kbd{font-family:inherit;font-weight:800;font-size:.85em;padding:2px 8px;border-radius:7px;background:#fff;
+  border:1px solid var(--line);box-shadow:0 2px 0 var(--line)}
+
+/* ---------- 상단 메뉴 (소개 페이지와 같음) ---------- */
+header{position:sticky;top:0;z-index:50;background:rgba(255,253,245,.86);backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(239,233,214,.8)}
+header .wrap{display:flex;align-items:center;gap:28px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px}
+.logo img{width:30px;height:30px;border-radius:8px}
+nav{display:flex;gap:22px;margin-left:auto;font-weight:600;font-size:15px;color:var(--ink-2)}
+nav a:hover{color:var(--violet)}
+nav a[aria-current]{color:var(--violet)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;border-radius:999px;
+  padding:12px 22px;font-size:15px;transition:transform .2s,box-shadow .2s,background .2s,border-color .2s;white-space:nowrap}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--ink);color:var(--yellow);box-shadow:0 12px 26px -12px rgba(20,19,15,.6)}
+.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--ink)}
+.btn-sm{padding:9px 18px;font-size:14px}
+.btn svg{width:18px;height:18px;flex:none}
+
+/* ---------- 머리말 ---------- */
+.intro{padding:44px 0 22px}
+.kicker{font-weight:800;color:var(--violet);font-size:15px;letter-spacing:.02em}
+h1{font-size:clamp(30px,4vw,44px);font-weight:900;letter-spacing:-.02em;line-height:1.22;margin:6px 0 10px}
+.sub{color:var(--muted);font-size:17px;max-width:720px}
+
+/* ---------- 틀 고르기 ---------- */
+.tpls{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 18px}
+.tpl{display:flex;align-items:center;gap:9px;padding:10px 18px 10px 12px;border-radius:999px;background:#fff;
+  border:1.5px solid var(--line);font-weight:700;font-size:15px;transition:border-color .2s,transform .2s}
+.tpl b{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:15px;background:var(--yellow-soft)}
+.tpl:hover{border-color:var(--ink);transform:translateY(-1px)}
+.tpl-label{font-weight:800;font-size:14px;color:var(--ink-2);margin-right:4px;align-self:center}
+
+/* ---------- 작업 영역 ---------- */
+.work{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
+.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);display:flex;flex-direction:column;min-width:0;
+  box-shadow:0 10px 30px -22px rgba(80,60,0,.35)}
+.panel-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.panel-head h2{font-size:16px;font-weight:900;margin-right:auto}
+.panel-head h2 small{font-weight:600;color:var(--muted);font-size:13px;margin-left:6px}
+
+.tools{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);background:#FFFEF9;position:relative}
+.tool{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;font-weight:700;font-size:14px;
+  border:1px solid var(--line);background:#fff;transition:border-color .15s,background .15s}
+.tool:hover{border-color:var(--ink)}
+.tool .sw{width:14px;height:14px;border-radius:4px}
+.tool.em span{color:#C79A00;font-weight:900}
+.tool.hl span{background:var(--yellow);padding:0 4px;border-radius:4px}
+.tool.dir span{color:#7d8389;font-style:italic;font-weight:500}
+.sep{width:1px;background:var(--line);margin:2px 4px}
+.palette{position:absolute;top:calc(100% + 6px);left:14px;z-index:5;background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:10px;display:none;grid-template-columns:repeat(5,auto);gap:6px;box-shadow:var(--shadow)}
+.palette.open{display:grid}
+.palette button{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:9px;font-size:14px;font-weight:700}
+.palette button:hover{background:var(--yellow-soft)}
+.palette i{width:14px;height:14px;border-radius:50%;display:block}
+
+textarea#src{flex:1;min-height:440px;width:100%;border:0;resize:vertical;outline:none;padding:18px 20px;
+  font-size:16.5px;line-height:1.85;background:transparent;tab-size:2}
+textarea#src::placeholder{color:#B5AE98}
+
+.stats{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:12px 18px;border-top:1px solid var(--line);
+  font-size:14px;color:var(--ink-2);font-weight:600}
+.stats b{font-weight:900;color:var(--ink)}
+.stats select{border:1px solid var(--line);border-radius:8px;padding:3px 6px;background:#fff;font-weight:700;font-size:13.5px}
+.ph-warn{color:#B4232A;font-weight:800}
+.goal{flex-basis:100%;display:flex;align-items:center;gap:10px}
+.bar{flex:1;height:8px;border-radius:99px;background:#F2EEDF;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--green);border-radius:99px;transition:width .3s,background .3s}
+.bar.over i{background:var(--red)}
+.goal span{min-width:0;font-size:13px;color:var(--muted)}
+
+/* 미리보기 (쉿대본 화면처럼) */
+.prev-wrap{position:relative;flex:1;min-height:440px;margin:12px;border-radius:14px;overflow:hidden;background:var(--p-bg)}
+.prev{position:absolute;inset:0;overflow-y:auto;padding:20px 26px 300px;color:var(--p-fg);font-weight:700;
+  font-size:var(--fs,22px);line-height:1.6;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;scrollbar-width:thin}
+.prev .b{color:var(--p-em);font-weight:800}
+.prev .hl{background:var(--p-hl);color:#14130F;border-radius:3px}
+.prev .dir{color:var(--p-dir);font-weight:400;font-style:italic;font-size:.7em}
+.prev .ph{outline:2px dashed #FF6B6B;outline-offset:1px;border-radius:3px}
+.prev .empty{color:#77756c;font-weight:500;font-size:16px}
+.guide{position:absolute;left:0;right:0;top:30%;height:3px;background:var(--p-guide);pointer-events:none;opacity:.9}
+.countdown{position:absolute;inset:0;display:none;place-items:center;font-size:90px;font-weight:900;color:#fff;
+  background:rgba(0,0,0,.35);pointer-events:none}
+.countdown.on{display:grid}
+.pctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0 14px 14px}
+.pctl .btn{padding:8px 16px;font-size:14px}
+.pctl .step{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-size:14px;font-weight:700}
+.pctl .step button{width:32px;height:34px;font-size:17px;font-weight:800}
+.pctl .step button:hover{background:var(--yellow-soft)}
+.pctl .step span{min-width:68px;text-align:center}
+.pnote{font-size:12.5px;color:var(--muted);padding:0 16px 14px;margin-top:-4px}
+
+/* ---------- 저장 줄 ---------- */
+.save{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:18px 0 0;padding:14px 16px;border-radius:18px;
+  background:var(--yellow);}
+.save .name{display:flex;align-items:center;background:#fff;border-radius:999px;padding:0 6px 0 16px;border:1.5px solid transparent;
+  flex:1;min-width:220px;max-width:420px}
+.save .name:focus-within{border-color:var(--ink)}
+.save .name input{border:0;outline:none;padding:11px 0;flex:1;min-width:0;font-weight:700;background:transparent}
+.save .name em{font-style:normal;color:var(--muted);font-weight:700;padding-right:10px}
+.save .right{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.save .btn-ghost{border-color:transparent}
+
+/* ---------- 도움말 ---------- */
+.help{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin:28px 0 0}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px}
+.card h3{font-size:18px;font-weight:900;margin-bottom:12px}
+.syntax{display:grid;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.syntax div{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid var(--line)}
+.syntax div:first-child{border-top:0}
+.syntax code{font-family:Consolas,"D2Coding",monospace;font-size:14.5px;color:var(--ink-2);background:var(--yellow-soft);
+  padding:3px 9px;border-radius:7px;justify-self:start}
+.syntax .out{background:#1a1a17;color:#fff;font-weight:800;padding:5px 11px;border-radius:7px;justify-self:start;font-size:14.5px}
+.tips{list-style:none;display:grid;gap:10px}
+.tips li{position:relative;padding-left:26px;color:var(--ink-2);font-size:15px}
+.tips li::before{content:"";position:absolute;left:0;top:.42em;width:16px;height:16px;border-radius:50%;
+  background:var(--violet-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 10.5l3 3 6-7' fill='none' stroke='%235B6CF0' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat}
+.tips a{color:var(--violet);font-weight:700;text-decoration:underline}
+
+footer{padding:48px 0 40px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+footer a{text-decoration:underline}
+
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);opacity:0;background:var(--ink);color:#fff;
+  padding:13px 22px;border-radius:999px;font-weight:700;z-index:90;transition:.3s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:960px){
+  .work,.help{grid-template-columns:1fr}
+  textarea#src,.prev-wrap{min-height:360px}
+  nav .hide-m{display:none}
+}
+@media (max-width:560px){
+  header .wrap{gap:12px}
+  nav{gap:14px;font-size:14px}
+  header .btn{display:none}
+  .intro{padding-top:30px}
+  .save .name{max-width:none;min-width:0;flex-basis:100%}
+  .save .right{margin-left:0;width:100%}
+  .save .right .btn{flex:1}
+  .syntax div{grid-template-columns:1fr}
+  .palette{grid-template-columns:repeat(3,auto)}
+  .card{padding:20px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="logo" href="./" aria-label="쉿대본 소개 페이지">
+      <img src="img/icon-180.png" alt="" width="30" height="30">
+      쉿대본
+    </a>
+    <nav>
+      <a href="./#features" class="hide-m">기능</a>
+      <a href="./#start" class="hide-m">사용법</a>
+      <a href="write.html" aria-current="page">대본 만들기</a>
+    </nav>
+    <a class="btn btn-primary btn-sm" href="./#start">프로그램 받기</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <span class="kicker">SCRIPT MAKER</span>
+    <h1>대본 만들기</h1>
+    <p class="sub">틀을 골라 빈칸(○○)만 채우고, 버튼으로 강조하고, 길이를 확인한 다음 txt로 받으세요. 받은 파일은 쉿대본의 [열기]로 바로 열려요.</p>
+  </section>
+
+  <div class="tpls" role="group" aria-label="대본 틀 고르기">
+    <span class="tpl-label">틀 고르기</span>
+    <button class="tpl" data-tpl="blank"><b>📄</b>빈 대본</button>
+    <button class="tpl" data-tpl="youtube"><b>🎬</b>유튜브 강의</button>
+    <button class="tpl" data-tpl="class"><b>🏫</b>원격 수업</button>
+    <button class="tpl" data-tpl="talk"><b>💻</b>연수 · 발표</button>
+    <button class="tpl" data-tpl="tutorial"><b>🖱️</b>화면 녹화 사용법</button>
+    <button class="tpl" data-tpl="shorts"><b>📱</b>쇼츠 · 릴스 60초</button>
+  </div>
+
+  <div class="work">
+    <!-- 쓰기 -->
+    <section class="panel" aria-label="대본 쓰기">
+      <div class="panel-head">
+        <h2>쓰기<small>자동 저장돼요</small></h2>
+        <button class="tool" id="splitBtn" title="마침표·물음표·느낌표 뒤에서 줄을 나눠요">↵ 문장마다 줄 나누기</button>
+        <button class="tool" id="tidyBtn" title="줄 끝 공백과 여러 줄 빈칸을 정리해요">🧹 빈칸 정리</button>
+      </div>
+      <div class="tools" role="toolbar" aria-label="강조 넣기">
+        <button class="tool em" data-wrap="**|**" title="강조 (Ctrl+B)"><span>강조</span></button>
+        <button class="tool hl" data-wrap="==|==" title="형광펜"><span>형광펜</span></button>
+        <button class="tool dir" data-wrap="((|))" title="지문: 작고 흐린 행동 메모"><span>(지문)</span></button>
+        <button class="tool" id="colorBtn" aria-expanded="false" aria-controls="palette" title="글자색">
+          <i class="sw" style="background:conic-gradient(#FF5A5A,#FF9F43,#FFE14D,#4CD964,#4A9EFF,#B388FF,#FF7EB6,#FF5A5A)"></i>글자색 ▾</button>
+        <span class="sep" aria-hidden="true"></span>
+        <button class="tool" id="sectionBtn" title="구간 제목(지문)을 새 줄에 넣어요">＋ 구간 나누기</button>
+        <button class="tool" id="phBtn" title="나중에 채울 빈칸 ○○ 넣기">○○ 빈칸</button>
+        <div class="palette" id="palette" role="menu" aria-label="글자색 고르기"></div>
+      </div>
+      <textarea id="src" spellcheck="false" aria-label="대본 내용" placeholder="여기에 대본을 쓰거나 붙여 넣으세요.
+
+위의 '틀 고르기'에서 시작하면 더 쉬워요.
+글자를 고르고 [강조]·[형광펜]·[(지문)]을 누르면 기호가 자동으로 들어가요."></textarea>
+      <div class="stats" aria-live="polite">
+        <span>글자 <b id="sChars">0</b>자</span>
+        <span>예상 <b id="sTime">0초</b></span>
+        <label>말 빠르기
+          <select id="pace" aria-label="말 빠르기">
+            <option value="250">천천히</option>
+            <option value="300" selected>보통</option>
+            <option value="350">빠르게</option>
+          </select>
+        </label>
+        <span id="phWarn" class="ph-warn" hidden></span>
+        <div class="goal">
+          <label>목표
+            <select id="goal" aria-label="목표 길이">
+              <option value="0">없음</option>
+              <option value="30">30초</option>
+              <option value="60">1분</option>
+              <option value="180">3분</option>
+              <option value="300">5분</option>
+              <option value="600">10분</option>
+              <option value="900">15분</option>
+            </select>
+          </label>
+          <div class="bar" id="goalBar"><i></i></div>
+          <span id="goalTxt"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 미리보기 -->
+    <section class="panel" aria-label="쉿대본 화면 미리보기">
+      <div class="panel-head">
+        <h2>미리보기<small>쉿대본에서 이렇게 보여요</small></h2>
+      </div>
+      <div class="prev-wrap">
+        <div class="prev" id="prev" tabindex="0" aria-label="미리보기 화면"></div>
+        <div class="guide" aria-hidden="true"></div>
+        <div class="countdown" id="cd" aria-hidden="true"></div>
+      </div>
+      <div class="pctl">
+        <button class="btn btn-primary" id="playBtn">▶ 읽어 보기</button>
+        <button class="btn btn-ghost" id="topBtn">⏮ 처음</button>
+        <span class="step" aria-label="스크롤 속도"><button id="spDn" aria-label="느리게">−</button><span id="spLbl">속도 4</span><button id="spUp" aria-label="빠르게">+</button></span>
+        <span class="step" aria-label="글자 크기"><button id="fsDn" aria-label="글자 작게">−</button><span id="fsLbl">글자 22</span><button id="fsUp" aria-label="글자 크게">+</button></span>
+      </div>
+      <p class="pnote">소리 내어 읽어 보면서 편한 속도를 찾아보세요. 빨간 점선은 아직 채우지 않은 빈칸이에요.</p>
+    </section>
+  </div>
+
+  <div class="save">
+    <label class="name" aria-label="파일 이름">
+      <input id="fname" value="대본" maxlength="60" autocomplete="off"><em>.txt</em>
+    </label>
+    <div class="right">
+      <button class="btn btn-ghost" id="openBtn">📂 txt 불러오기</button>
+      <button class="btn btn-ghost" id="copyBtn">📋 복사</button>
+      <button class="btn btn-primary" id="dlBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+        txt로 받기
+      </button>
+    </div>
+    <input type="file" id="fileIn" accept=".txt,text/plain" hidden>
+  </div>
+
+  <div class="help">
+    <div class="card">
+      <h3>강조 기호 (버튼을 누르면 자동으로 들어가요)</h3>
+      <div class="syntax">
+        <div><code>**강조**</code><span class="out" style="color:#FFD400">강조</span></div>
+        <div><code>==형광펜==</code><span class="out"><span style="background:#FFE14D;color:#14130F;padding:0 4px;border-radius:4px">형광펜</span></span></div>
+        <div><code>((카메라 보며 미소))</code><span class="out" style="color:#9AA0A6;font-weight:500;font-style:italic">(카메라 보며 미소)</span></div>
+        <div><code>[하늘]OBS[/]</code><span class="out" style="color:#9AD7FF">OBS</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>이렇게 쓰면 읽기 편해요</h3>
+      <ul class="tips">
+        <li>한 줄에 한 문장. 길면 숨 쉬는 곳에서 줄을 나눠요.</li>
+        <li>힘줄 말만 강조하세요. 다 강조하면 아무것도 안 보여요.</li>
+        <li>화면을 누르거나 슬라이드를 넘길 곳은 <b>((지문))</b>으로 적어 두세요.</li>
+        <li>받은 txt는 쉿대본 [열기]로 불러오고 <kbd>Space</kbd>로 재생. 아직 없다면 <a href="./#start">여기서 받기</a>.</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 hirame.ki. All rights reserved. · <a href="./">쉿대본 소개</a></span>
+    <span>쓴 대본은 이 브라우저에만 저장되고, 어디로도 보내지 않아요.</span>
+  </div>
+</footer>
+
+<div id="toast" role="status"></div>
+
+<script>
+(() => {
+  /* ---------- 쉿대본과 같은 강조 문법 (prompter.py의 COLORS · MARK_RE · ESC_RE · render와 동일) ---------- */
+  const COLORS = { "빨강": "#FF5A5A", "주황": "#FF9F43", "노랑": "#FFE14D", "초록": "#4CD964", "파랑": "#4A9EFF",
+                   "하늘": "#9AD7FF", "보라": "#B388FF", "분홍": "#FF7EB6", "회색": "#9AA0A6" };
+  const MARK_RE = new RegExp("\\*\\*|==|\\(\\(|\\)\\)|\\[/[^\\]\\n]{0,10}\\]|\\[(?:#[0-9A-Fa-f]{6}|"
+                             + Object.keys(COLORS).join("|") + ")\\]", "g");
+  const ESC_RE = /\\([*=\[\]()#])/g;  // 메모장이 기호 앞에 붙이는 \ 제거
+  const PH = "○○";
+
+  /* ---------- 틀 ---------- */
+  const TPL = {
+    blank: "",
+    youtube:
+`((— 오프닝 · 카메라 보며 미소 —))
+안녕하세요! ○○입니다.
+오늘은 **○○**에 대해 알아볼게요.
+이 영상 하나면 ==○○까지 할 수 있어요.==
+
+((— 본론 1 —))
+먼저 ○○부터 볼게요.
+○○
+
+((— 본론 2 —))
+다음은 ○○예요.
+○○
+
+((— 본론 3 —))
+마지막으로 ○○.
+○○
+
+((— 정리 —))
+오늘 내용을 정리하면,
+첫째, ○○.
+둘째, ○○.
+셋째, ○○.
+
+((— 마무리 · 미소 —))
+도움이 되셨다면 구독과 좋아요 부탁드려요.
+다음 영상에서는 ○○를 다뤄 볼게요. 감사합니다!
+`,
+    class:
+`((— 인사 · 밝게 —))
+여러분, 안녕하세요! ○○ 선생님이에요.
+오늘은 ○○ 시간이에요.
+
+((— 지난 시간 복습 —))
+지난 시간에는 ○○를 배웠죠?
+기억나는 사람? ((잠깐 쉬기))
+맞아요, ○○였어요.
+
+((— 오늘의 학습 목표 —))
+오늘 수업이 끝나면 여러분은
+==○○할 수 있어요.==
+
+((— 수업 활동 —))
+먼저 화면을 같이 볼게요. ((슬라이드 넘기기))
+○○
+
+○○
+
+((— 정리 —))
+오늘 배운 것, **딱 세 가지**만 기억하세요.
+첫째, ○○.
+둘째, ○○.
+셋째, ○○.
+
+((— 과제 · 마무리 —))
+과제는 [빨강]○○까지[/] ○○에 올려 주세요.
+오늘도 수고 많았어요. 다음 시간에 만나요!
+`,
+    talk:
+`((— 시작 · 화면 공유 확인 —))
+안녕하세요, ○○의 ○○입니다.
+오늘은 ○○에 대해 ○분 정도 말씀드리겠습니다.
+
+((— 순서 안내 —))
+순서는 세 가지입니다.
+**○○**, **○○**, 그리고 **○○**입니다.
+
+((— 첫 번째 —))
+먼저 ○○입니다.
+○○
+
+((— 두 번째 —))
+다음으로 ○○입니다.
+○○
+
+((— 세 번째 —))
+마지막으로 ○○입니다.
+○○
+
+((— 마무리 —))
+오늘 말씀드린 내용을 한 문장으로 정리하면,
+==○○==입니다.
+궁금한 점은 채팅으로 남겨 주세요. 감사합니다.
+`,
+    tutorial:
+`((— 오프닝 —))
+안녕하세요! 오늘은 ○○로 ○○ 만드는 법을 알려 드릴게요.
+다 만들면 이렇게 돼요. ((완성본 화면 보여 주기))
+
+((— 준비 —))
+준비물은 ○○ 하나면 돼요.
+
+((— 1단계 —))
+먼저 ○○를 열어 주세요. ((화면 클릭))
+○○ 버튼을 누르면 ○○가 나와요.
+
+((— 2단계 —))
+이제 ○○를 ○○해 볼게요. ((화면 클릭))
+여기서 **○○**만 조심하세요.
+
+((— 3단계 —))
+마지막으로 ○○를 누르면 끝이에요.
+
+((— 마무리 —))
+어때요, 생각보다 쉽죠?
+==○○만 기억하면== 누구나 할 수 있어요.
+`,
+    shorts:
+`((— 첫 3초 · 바로 본론 —))
+**○○**, 아직도 ○○하세요?
+
+((— 공감 —))
+○○ 때문에 ○○했던 적 있죠?
+
+((— 해결 —))
+이렇게 하면 돼요.
+하나, ○○.
+둘, ○○.
+셋, ○○.
+
+((— 마무리 —))
+저장해 두고 필요할 때 꺼내 보세요!
+`
+  };
+
+  const $ = id => document.getElementById(id);
+  const src = $("src"), prev = $("prev"), fname = $("fname");
+  const toast = $("toast");
+  function say(msg) {
+    toast.textContent = msg; toast.classList.add("show");
+    clearTimeout(say.t); say.t = setTimeout(() => toast.classList.remove("show"), 2400);
+  }
+
+  /* ---------- 저장 (이 브라우저에만) ---------- */
+  const KEY = "shh-write-v1";
+  function store() {
+    try { localStorage.setItem(KEY, JSON.stringify({ text: src.value, name: fname.value,
+      pace: $("pace").value, goal: $("goal").value, fs, speed })); } catch (e) {}
+  }
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
+
+  /* ---------- 고치기: 되돌리기(Ctrl+Z)가 살아 있도록 execCommand로 넣음 ---------- */
+  function replaceRange(s, e, text, selS, selE) {
+    src.focus();
+    src.setSelectionRange(s, e);
+    let ok = false;
+    try { ok = document.execCommand("insertText", false, text); } catch (err) {}
+    if (!ok) src.setRangeText(text, s, e, "end");
+    if (selS != null) src.setSelectionRange(selS, selE);
+    update();
+  }
+  function setAll(text) { replaceRange(0, src.value.length, text, 0, 0); src.scrollTop = 0; }
+
+  function wrapSel(a, b) {
+    const s = src.selectionStart, e = src.selectionEnd, v = src.value;
+    const inner = v.slice(s, e);
+    // 이미 감싸져 있으면 풀기
+    if (v.slice(s - a.length, s) === a && v.slice(e, e + b.length) === b) {
+      replaceRange(s - a.length, e + b.length, inner, s - a.length, e - a.length);
+    } else if (inner.startsWith(a) && inner.endsWith(b) && inner.length >= a.length + b.length) {
+      const un = inner.slice(a.length, inner.length - b.length);
+      replaceRange(s, e, un, s, s + un.length);
+    } else {
+      // 선택 앞뒤 공백은 기호 밖으로 (메모장에서 "** 강조**"처럼 되지 않게)
+      const lead = inner.match(/^\s*/)[0], trail = inner.slice(lead.length).match(/\s*$/)[0];
+      const core = inner.slice(lead.length, inner.length - trail.length);
+      const out = lead + a + core + b + trail;
+      const cs = s + lead.length + a.length;
+      replaceRange(s, e, out, cs, cs + core.length);
+    }
+  }
+
+  document.querySelectorAll("[data-wrap]").forEach(btn => btn.addEventListener("click", () => {
+    const [a, b] = btn.dataset.wrap.split("|"); wrapSel(a, b);
+  }));
+
+  /* 글자색 */
+  const palette = $("palette"), colorBtn = $("colorBtn");
+  Object.entries(COLORS).forEach(([name, hex]) => {
+    const b = document.createElement("button");
+    b.setAttribute("role", "menuitem");
+    b.innerHTML = `<i style="background:${hex}"></i>${name}`;
+    b.addEventListener("click", () => { closePalette(); wrapSel(`[${name}]`, "[/]"); });
+    palette.appendChild(b);
+  });
+  function closePalette() { palette.classList.remove("open"); colorBtn.setAttribute("aria-expanded", "false"); }
+  colorBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    const open = palette.classList.toggle("open");
+    colorBtn.setAttribute("aria-expanded", open);
+  });
+  document.addEventListener("click", e => { if (!palette.contains(e.target)) closePalette(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closePalette(); });
+
+  /* 구간 나누기 · 빈칸 */
+  $("sectionBtn").addEventListener("click", () => {
+    const s = src.selectionStart, v = src.value;
+    const lineStart = v.lastIndexOf("\n", s - 1) + 1;
+    const before = v.slice(0, lineStart);
+    const pre = before && !before.endsWith("\n\n") ? "\n" : "";
+    const label = "새 구간";
+    const ins = `${pre}((— ${label} —))\n`;
+    const ls = lineStart + pre.length + 5;
+    replaceRange(lineStart, lineStart, ins, ls, ls + label.length);
+  });
+  $("phBtn").addEventListener("click", () => {
+    const s = src.selectionStart, e = src.selectionEnd;
+    replaceRange(s, e, PH, s + PH.length, s + PH.length);
+  });
+
+  /* 문장마다 줄 나누기: (( )) 지문 안은 건드리지 않음 */
+  function splitSentences(text) {
+    return text.split("\n").map(line => {
+      let out = "", dir = 0;
+      for (let i = 0; i < line.length; i++) {
+        const two = line.slice(i, i + 2);
+        if (two === "((") { dir++; out += two; i++; continue; }
+        if (two === "))") { dir = Math.max(0, dir - 1); out += two; i++; continue; }
+        const ch = line[i];
+        out += ch;
+        if (!dir && /[.!?…]/.test(ch) && /\s/.test(line[i + 1] || "")) {
+          // 이어지는 마침표·따옴표·닫는 기호는 같은 줄에 붙임
+          while (/[.!?…"'”’)\]]/.test(line[i + 1] || "")) out += line[++i];
+          const cur = out.slice(out.lastIndexOf("\n") + 1).trim();
+          if (/^\d+\.$/.test(cur)) continue;          // "1. 첫째" 같은 번호는 나누지 않음
+          if (!/\S/.test(line.slice(i + 1))) continue;  // 줄 끝이면 그대로
+          while (/\s/.test(line[i + 1] || "")) i++;
+          out += "\n";
+        }
+      }
+      return out;
+    }).join("\n");
+  }
+  function tidy(text) {
+    return text.replace(/\r\n?/g, "\n").replace(/\t/g, " ").replace(/[  ]+$/gm, "")
+               .replace(/\n{3,}/g, "\n\n").replace(/^\n+/, "").replace(/\n*$/, "\n");
+  }
+  $("splitBtn").addEventListener("click", () => {
+    const v = src.value, out = splitSentences(v);
+    if (out === v) return say("이미 문장마다 나뉘어 있어요.");
+    setAll(out); say("문장마다 줄을 나눴어요. Ctrl+Z로 되돌릴 수 있어요.");
+  });
+  $("tidyBtn").addEventListener("click", () => {
+    const v = src.value, out = v.trim() ? tidy(v) : v;
+    if (out === v) return say("정리할 빈칸이 없어요.");
+    setAll(out); say("빈칸을 정리했어요.");
+  });
+
+  src.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === "b") {
+      e.preventDefault(); wrapSel("**", "**");
+    }
+  });
+
+  /* 틀 고르기 */
+  document.querySelectorAll("[data-tpl]").forEach(btn => btn.addEventListener("click", () => {
+    const t = TPL[btn.dataset.tpl];
+    if (src.value.trim() && src.value !== t &&
+        !confirm("지금 쓴 내용을 이 틀로 바꿀까요?\n(바꾼 뒤에도 Ctrl+Z로 되돌릴 수 있어요)")) return;
+    setAll(t);
+    const names = { blank: "대본", youtube: "유튜브_강의_대본", class: "수업_대본", talk: "발표_대본",
+                    tutorial: "사용법_영상_대본", shorts: "쇼츠_대본" };
+    fname.value = names[btn.dataset.tpl];
+    const i = t.indexOf(PH);
+    if (i >= 0) src.setSelectionRange(i, i + PH.length);  // 첫 빈칸을 바로 고칠 수 있게
+    src.focus();
+    store();
+  }));
+
+  /* ---------- 미리보기 ---------- */
+  function render(raw) {
+    const text = raw.replace(ESC_RE, "$1");
+    const frag = document.createDocumentFragment();
+    let bold = false, hl = false, dirn = false, colors = [], pos = 0;
+    function ins(s, b, h, d, cols) {
+      if (!s) return;
+      const parts = s.split(PH);
+      parts.forEach((p, i) => {
+        if (i) put(PH, b, h, d, cols, true);
+        put(p, b, h, d, cols, false);
+      });
+    }
+    function put(s, b, h, d, cols, ph) {
+      if (!s) return;
+      if (!b && !h && !d && !cols.length && !ph) { frag.appendChild(document.createTextNode(s)); return; }
+      const sp = document.createElement("span");
+      if (b) sp.classList.add("b");
+      if (h) sp.classList.add("hl");
+      if (d) sp.classList.add("dir");
+      if (ph) sp.classList.add("ph");
+      if (cols.length) sp.style.color = cols[cols.length - 1];
+      sp.textContent = s;
+      frag.appendChild(sp);
+    }
+    MARK_RE.lastIndex = 0;
+    let m;
+    while ((m = MARK_RE.exec(text))) {
+      ins(text.slice(pos, m.index), bold, hl, dirn, colors);
+      const tok = m[0]; pos = m.index + tok.length;
+      if (tok === "**") bold = !bold;
+      else if (tok === "==") hl = !hl;
+      else if (tok === "((") { dirn = true; ins("(", false, false, true, []); }
+      else if (tok === "))") {
+        if (dirn) { ins(")", false, false, true, []); dirn = false; }
+        else ins("))", bold, hl, dirn, colors);
+      }
+      else if (tok.startsWith("[/")) colors.pop();
+      else colors.push(COLORS[tok.slice(1, -1)] || tok.slice(1, -1));
+    }
+    ins(text.slice(pos), bold, hl, dirn, colors);
+    return frag;
+  }
+
+  /* 예상 시간: 지문과 기호를 빼고 소리 내는 글자만 셈 (영어 단어는 2음절, 숫자는 한 자씩) */
+  function spoken(raw) {
+    return raw.replace(ESC_RE, "$1").replace(/\(\([\s\S]*?\)\)/g, " ").replace(MARK_RE, "");
+  }
+  function countSyl(s) {
+    const ko = (s.match(/[가-힣]/g) || []).length;
+    const num = (s.match(/[0-9]/g) || []).length;
+    const en = (s.match(/[A-Za-z]+/g) || []).length * 2;
+    return ko + num + en;
+  }
+  const fmt = sec => {
+    sec = Math.round(sec);
+    const m = Math.floor(sec / 60), s = sec % 60;
+    return m ? (s ? `${m}분 ${s}초` : `${m}분`) : `${s}초`;
+  };
+
+  function update() {
+    const v = src.value;
+    prev.textContent = "";
+    if (v.trim()) prev.appendChild(render(v));
+    else prev.innerHTML = '<span class="empty">왼쪽에 대본을 쓰면 여기에 쉿대본 화면처럼 보여요.</span>';
+
+    const syl = countSyl(spoken(v));
+    const sec = syl / (+$("pace").value / 60);
+    $("sChars").textContent = syl.toLocaleString("ko-KR");
+    $("sTime").textContent = fmt(sec);
+
+    const phs = v.split(PH).length - 1;
+    $("phWarn").hidden = !phs;
+    $("phWarn").textContent = `채울 빈칸 ${phs}곳`;
+
+    const goal = +$("goal").value, bar = $("goalBar");
+    bar.parentElement.style.opacity = goal ? 1 : .45;
+    if (goal) {
+      const r = sec / goal;
+      bar.firstElementChild.style.width = Math.min(100, r * 100) + "%";
+      bar.classList.toggle("over", r > 1.05);
+      $("goalTxt").textContent = r > 1.05 ? `${fmt(sec - goal)} 넘어요` : r < .95 ? `${fmt(goal - sec)} 남아요` : "딱 맞아요 👍";
+    } else {
+      bar.firstElementChild.style.width = "0"; bar.classList.remove("over");
+      $("goalTxt").textContent = "목표 길이를 고르면 비교해 줘요";
+    }
+  }
+  let storeJob = 0;
+  src.addEventListener("input", () => { update(); clearTimeout(storeJob); storeJob = setTimeout(store, 400); });
+  $("pace").addEventListener("change", () => { update(); store(); });
+  $("goal").addEventListener("change", () => { update(); store(); });
+  fname.addEventListener("input", () => { clearTimeout(storeJob); storeJob = setTimeout(store, 400); });
+
+  /* ---------- 읽어 보기 (쉿대본과 같은 속도 공식, 글자 크기에 맞춰 환산) ---------- */
+  const SPEED_MIN = 0.5 / 3, SPEED_MAX = 10, RATIO = (SPEED_MAX / SPEED_MIN) ** (1 / 19);
+  const speedPx = lv => SPEED_MIN * RATIO ** (Math.max(1, Math.min(20, lv)) - 1);  // 30ms당 px (28pt 기준)
+  const APP_FONT_PX = 28 * 96 / 72;
+  let speed = 4, fs = 22, playing = false, counting = false, last = 0, acc = 0, cdTimer = 0;
+
+  function setSpeed(v) { speed = Math.max(1, Math.min(20, v)); $("spLbl").textContent = `속도 ${speed}`; store(); }
+  function setFs(v) { fs = Math.max(14, Math.min(48, v)); prev.style.setProperty("--fs", fs + "px"); $("fsLbl").textContent = `글자 ${fs}`; store(); }
+  $("spDn").onclick = () => setSpeed(speed - 1);
+  $("spUp").onclick = () => setSpeed(speed + 1);
+  $("fsDn").onclick = () => setFs(fs - 2);
+  $("fsUp").onclick = () => setFs(fs + 2);
+
+  function frame(ts) {
+    if (!playing) return;
+    const dt = Math.min(100, ts - last); last = ts;
+    acc += speedPx(speed) * (fs / APP_FONT_PX) * dt / 30;
+    if (acc >= 1) { const n = Math.floor(acc); prev.scrollTop += n; acc -= n; }
+    if (prev.scrollTop + prev.clientHeight >= prev.scrollHeight - 1) return stop();
+    requestAnimationFrame(frame);
+  }
+  function stop() {
+    playing = counting = false; clearTimeout(cdTimer);
+    $("cd").classList.remove("on");
+    $("playBtn").textContent = "▶ 읽어 보기";
+  }
+  function play() {
+    if (playing || counting) return stop();
+    counting = true;
+    $("playBtn").textContent = "⏸ 멈춤";
+    const cd = $("cd");
+    let n = 3;
+    (function tick() {
+      if (!counting) return;
+      if (n === 0) {
+        cd.classList.remove("on"); counting = false; playing = true;
+        last = performance.now(); acc = 0; requestAnimationFrame(frame); return;
+      }
+      cd.textContent = n--; cd.classList.add("on");
+      cdTimer = setTimeout(tick, 1000);
+    })();
+  }
+  $("playBtn").addEventListener("click", play);
+  $("topBtn").addEventListener("click", () => { stop(); prev.scrollTop = 0; });
+  prev.addEventListener("keydown", e => {
+    if (e.key === " ") { e.preventDefault(); play(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setSpeed(speed + 1); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); setSpeed(speed - 1); }
+  });
+  prev.addEventListener("wheel", () => { if (counting) stop(); }, { passive: true });
+
+  /* ---------- 받기 · 복사 · 불러오기 ---------- */
+  function cleanName() {
+    const n = fname.value.trim().replace(/\.txt$/i, "").replace(/[\\/:*?"<>|\u0000-\u001F]/g, "_").slice(0, 60);
+    return n || "대본";
+  }
+  $("dlBtn").addEventListener("click", () => {
+    const v = src.value;
+    if (!v.trim()) return say("먼저 대본을 써 주세요.");
+    const phs = v.split(PH).length - 1;
+    if (phs && !confirm(`아직 채우지 않은 빈칸(○○)이 ${phs}곳 있어요.\n그래도 받을까요?`)) return;
+    // 쉿대본·메모장 모두에서 한글이 깨지지 않도록 UTF-8(BOM) + 윈도우 줄바꿈
+    const body = "﻿" + v.replace(/\r\n?/g, "\n").replace(/\n/g, "\r\n");
+    const url = URL.createObjectURL(new Blob([body], { type: "text/plain;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = cleanName() + ".txt";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    say(`'${a.download}' 파일을 받았어요. 쉿대본 [열기]로 불러오세요!`);
+  });
+  $("copyBtn").addEventListener("click", async () => {
+    if (!src.value.trim()) return say("복사할 내용이 없어요.");
+    try { await navigator.clipboard.writeText(src.value); say("복사했어요. 메모장에 붙여 넣으면 돼요."); }
+    catch (e) { src.select(); say("Ctrl+C를 눌러 복사해 주세요."); }
+  });
+  $("openBtn").addEventListener("click", () => $("fileIn").click());
+  $("fileIn").addEventListener("change", async e => {
+    const f = e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    if (f.size > 2e6) return say("2MB보다 큰 파일은 열 수 없어요.");
+    const buf = await f.arrayBuffer();
+    let text;
+    try { text = new TextDecoder("utf-8", { fatal: true }).decode(buf); }
+    catch (err) { text = new TextDecoder("euc-kr").decode(buf); }  // 예전 메모장(ANSI) 파일
+    text = text.replace(/^﻿/, "").replace(/\r\n?/g, "\n");
+    if (src.value.trim() && !confirm("지금 쓴 내용을 불러온 파일로 바꿀까요?\n(Ctrl+Z로 되돌릴 수 있어요)")) return;
+    setAll(text);
+    fname.value = f.name.replace(/\.txt$/i, "");
+    store();
+    say(`'${f.name}'을 불러왔어요.`);
+  });
+
+  /* ---------- 시작 ---------- */
+  if (saved) {
+    src.value = saved.text || "";
+    if (saved.name) fname.value = saved.name;
+    if (saved.pace) $("pace").value = saved.pace;
+    if (saved.goal) $("goal").value = saved.goal;
+    if (saved.fs) fs = saved.fs;
+    if (saved.speed) speed = saved.speed;
+  }
+  setFs(fs); setSpeed(speed);
+  update();
+  // 마지막 줄이 가이드선(위에서 30%)까지 올라올 수 있게 아래 여백을 창 높이에 맞춤
+  const fitPad = () => { prev.style.paddingBottom = Math.round(prev.clientHeight * 0.7) + "px"; };
+  fitPad();
+  if (window.ResizeObserver) new ResizeObserver(fitPad).observe(prev);
+})();
+</script>
+</body>
+</html>
