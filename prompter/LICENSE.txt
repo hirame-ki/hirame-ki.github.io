@@ -2,7 +2,7 @@
  쉿대본 소프트웨어 이용 허락 계약 (라이선스)
  ShhScript (쉿대본) Software License Agreement
 ==============================================================
- 버전 1.0 · 시행일 2026년 10월 5일
+ 버전 1.1 · 시행일 2026년 10월 7일 (쉿대본 v1.1부터 적용)
 
  Copyright (c) 2026 hirame.ki. All rights reserved.
  제작 : @hirame.ki (https://www.instagram.com/hirame.ki/)
@@ -68,6 +68,10 @@
    파일(version.json)만 받아옵니다. 이 과정에서 일반적인 웹 접속 기록(IP 주소 등)이
    웹 호스팅 서비스(GitHub)에 남을 수 있습니다.
    자동 확인은 [설정 > 정보 · 업데이트]에서 끌 수 있습니다.
+4. "목소리 따라가기"를 켜고 재생하는 동안에만 마이크 소리를 사용합니다.
+   음성 인식은 사용자 컴퓨터 안에서만 이뤄지며(오프라인), 마이크 소리와
+   인식된 글자는 저장하거나 외부로 보내지 않습니다.
+   목소리 따라가기는 [설정 > 스크롤] 또는 🎤 버튼으로 끌 수 있습니다.
 
 
 제7조 (보증의 부인)
@@ -77,6 +81,8 @@
    모든 녹화·화면 공유 프로그램과 환경에서 동작한다고 보장하지 않습니다.
    (예: 카메라·휴대폰으로 모니터를 직접 촬영, HDMI 캡처보드, 일부 프로그램)
    중요한 촬영이나 발표 전에는 반드시 직접 확인해 주세요.
+3. "목소리 따라가기"와 예상 시간 표시는 음성 인식 결과에 따라 달라지며,
+   마이크, 발음, 주변 소음, 대본 내용에 따라 정확하지 않을 수 있습니다.
 
 
 제8조 (책임의 제한)
@@ -130,6 +136,9 @@ You MAY NOT, without prior permission from the copyright holder:
  - remove or alter the author credit, copyright notice, or this license;
  - reverse engineer it, except as expressly permitted by applicable law.
 
+Privacy: no personal data is collected. When "voice follow" is on, microphone
+audio is recognized offline on your computer only and is never stored or sent.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. TO THE
 MAXIMUM EXTENT PERMITTED BY LAW, THE COPYRIGHT HOLDER SHALL NOT BE LIABLE
 FOR ANY DAMAGES ARISING FROM ITS USE OR INABILITY TO USE IT.
@@ -150,3 +159,12 @@ Contact: Instagram @hirame.ki
  - OpenSSL, bzip2, zlib, libffi, Zstandard 등 Python에 포함된 구성요소 :
    각 라이선스 (licenses\Python_LICENSE.txt 참고)
  - PyInstaller 부트로더 : GPL 2.0 (부트로더 예외 조항에 따라 배포)
+ - Vosk 음성 인식 라이브러리 : Apache License 2.0
+   Copyright (c) Alpha Cephei Inc. (https://github.com/alphacep/vosk-api)
+ - 한국어 음성 모델 vosk-model-small-ko-0.22 : Apache License 2.0
+   (https://alphacephei.com/vosk/models)
+ - python-sounddevice : MIT License
+ - PortAudio (마이크 입력) : MIT 스타일 License
+ - CFFI : MIT License
+   (licenses\오픈소스_고지.txt, Apache-2.0.txt, sounddevice_LICENSE.txt,
+    cffi_LICENSE.txt 참고)
