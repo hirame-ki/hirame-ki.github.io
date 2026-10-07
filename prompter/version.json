@@ -1,10 +1,11 @@
 {
-  "version": "1.0",
-  "date": "2026-10-05",
+  "version": "1.1",
+  "date": "2026-10-07",
   "notes": [
-    "첫 공개 버전",
-    "녹화·화면 공유에서 숨기기, 마우스 클릭 통과",
-    "발표용 리모컨 지원, 업데이트 알림"
+    "목소리 따라가기: 말하는 속도대로 대본이 스크롤돼요",
+    "🎤 버튼 · F · Ctrl+Shift+F로 켜고 끌 수 있어요",
+    "창 오른쪽 아래에 예상 시간 표시 (말 속도로 계속 갱신)",
+    "음성은 이 컴퓨터 안에서만 처리되고 저장되지 않아요"
   ],
   "download": "https://drive.google.com/drive/folders/1UqZBjSyDmJK4oE29vLoalk6zgc4OxghB?usp=sharing"
 }
