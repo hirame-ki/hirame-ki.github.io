@@ -88,6 +88,19 @@ a{color:inherit}
 .empty{padding:26px 10px;text-align:center;color:var(--muted);font-size:14px}
 .foot{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px;line-height:1.7}
 .foot a{font-weight:700;color:var(--ink-2)}
+.how{margin:18px 0 22px;padding:16px 16px 14px;border-radius:18px;background:#fff;border:1px solid var(--line)}
+.how h2{font-size:16px;font-weight:900;margin-bottom:10px}
+.how ol{list-style:none;display:flex;flex-direction:column;gap:10px}
+.how li{display:flex;gap:11px;align-items:flex-start;font-size:15px;font-weight:800;line-height:1.4}
+.how li>b{flex:none;width:24px;height:24px;border-radius:50%;background:var(--yellow);display:grid;place-items:center;font-size:13px}
+.how li small{display:block;font-weight:500;font-size:12.5px;color:var(--muted);margin-top:2px}
+.how em{font-style:normal;background:linear-gradient(transparent 58%,var(--yellow) 58%)}
+.limit{margin-top:26px;padding:16px;border-radius:18px;background:var(--ink);color:#fff}
+.limit h3{font-size:15.5px;font-weight:900;margin-bottom:6px}
+.limit p{font-size:13.5px;line-height:1.6;color:#d9d6cc;margin-bottom:6px}
+.limit p b{color:var(--yellow)}
+.limit a{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:9px 15px;border-radius:999px;background:var(--yellow);
+  color:var(--ink);font-weight:800;font-size:14px;text-decoration:none}
 .pc-card{display:flex;gap:12px;align-items:center;padding:14px;border-radius:16px;background:var(--ink);color:#fff;
   text-decoration:none;margin-top:22px}
 .pc-card b{font-size:24px}
@@ -241,11 +254,17 @@ a{color:inherit}
 
   <section class="hero">
     <h1>폰으로 찍으면서 대본 보기,<br><mark>영상엔 대본이 안 남아요</mark></h1>
-    <p>카메라 화면 위에 대본을 띄우고 이 페이지에서 바로 녹화하세요. 저장되는 영상에는 내 모습만 담겨요.</p>
+    <p><b>이 페이지 안에서 카메라를 켜고</b> 녹화해요. 화면에는 대본이 보이고, 저장되는 영상에는 내 모습과 소리만 담겨요.</p>
   </section>
-  <div class="points">
-    <span>📷 카메라 위 대본</span><span>🎤 목소리 따라가기</span><span>⏱ 예상 시간</span><span>🖍 강조 표시</span><span>🎮 리모컨</span>
-  </div>
+
+  <section class="how" aria-label="쓰는 방법">
+    <h2>이렇게 찍어요</h2>
+    <ol>
+      <li><b>1</b><span>대본을 열어요<small>아래 목록에서 고르거나, 새 대본에 붙여 넣기</small></span></li>
+      <li><b>2</b><span>위쪽 📷을 눌러 <em>이 페이지에서</em> 카메라를 켜요<small>폰 카메라 앱으로 넘어가지 않아요. 위쪽엔 대본, 아래쪽엔 내 얼굴이 보여요</small></span></li>
+      <li><b>3</b><span>빨간 ●으로 녹화하고, 공유 → 사진에 저장<small>3초 뒤 녹화와 대본이 같이 시작 · 🎤를 켜면 말하는 속도대로 따라와요</small></span></li>
+    </ol>
+  </section>
 
   <div class="actions">
     <button class="act primary" id="newBtn"><b>＋</b>새 대본</button>
@@ -258,11 +277,12 @@ a{color:inherit}
   <button class="import" id="importWrite" hidden><b>✍️</b><span>대본 만들기에서 쓰던 대본 가져오기<small id="importName"></small></span><b>›</b></button>
   <div class="scripts" id="list"></div>
 
-  <a class="pc-card" href="index.html">
-    <b>💻</b>
-    <span><strong>PC 버전도 있어요.</strong> 줌·OBS로 화면을 녹화할 때, 내 화면에만 보이고 녹화엔 안 보이는 대본 창 (Windows 무료)</span>
-    <b>›</b>
-  </a>
+  <section class="limit" aria-label="다른 앱 위에 띄우기">
+    <h3>🚫 다른 앱 화면 위에는 띄울 수 없어요</h3>
+    <p>폰 카메라 앱·인스타그램·줌 같은 다른 앱 위에 대본을 띄우는 건 웹페이지로는 할 수 없어요. 여기서 찍은 영상을 저장해서 그 앱에 올려 주세요.</p>
+    <p>줌 수업·OBS 녹화·화면 공유처럼 <b>다른 프로그램 위에 대본을 띄워야 한다면 PC 버전</b>을 쓰세요. 대본이 내 화면에만 보이고 녹화엔 안 보여요.</p>
+    <a href="index.html#start">💻 PC 버전 받기 · Windows 무료 ›</a>
+  </section>
   <p class="foot">
     © 2026 hirame.ki · 쉿대본 모바일 · <a href="LICENSE.txt">라이선스</a><br>
     대본·설정·녹화 영상·목소리는 이 폰 브라우저 안에만 있고, 어디로도 올라가지 않아요.<br>
@@ -321,9 +341,12 @@ a{color:inherit}
   <div class="box">
     <div class="head"><h3>사용법</h3><button class="pill" data-close>닫기</button></div>
     <div class="body help">
-      <h4>📷 찍으면서 대본 보기</h4>
-      <p>대본을 열고 위의 <b>📷</b>을 누르면 카메라 위에 대본이 떠요. 빨간 <b>●</b>으로 녹화하면, 저장되는 영상에는 <b>카메라 화면과 소리만</b> 들어가고 대본은 들어가지 않아요. 다 찍으면 [저장] 또는 [공유]로 사진 앱·갤러리에 넣으세요.</p>
+      <h4>📷 찍으면서 대본 보기 — 이 페이지 안에서 카메라를 켜요</h4>
+      <p>폰 카메라 앱을 따로 켜는 게 아니에요. 대본을 열고 위의 <b>📷</b>을 누르면 이 페이지 안에서 카메라가 켜지고, 그 위에 대본이 떠요. 빨간 <b>●</b>으로 녹화하면, 저장되는 영상에는 <b>카메라 화면과 소리만</b> 들어가고 대본은 들어가지 않아요. 다 찍으면 [저장] 또는 [공유]로 사진 앱·갤러리에 넣으세요.</p>
       <p class="warn">⚠ 폰 자체의 <b>화면 녹화(화면 기록)</b>를 쓰면 대본도 같이 찍혀요. 꼭 이 페이지의 ● 버튼으로 녹화하세요.</p>
+      <h4>🚫 다른 앱 위에는 못 띄워요 → PC 버전</h4>
+      <p>폰 카메라 앱·인스타그램·줌 같은 다른 앱 화면 위에 대본을 띄우는 건 웹페이지로는 할 수 없어요. 여기서 찍은 영상을 저장해서 그 앱에 올려 주세요.<br>
+      줌 수업·OBS 녹화·화면 공유처럼 다른 프로그램 위에 대본을 띄워야 한다면 <a href="index.html#start" style="font-weight:800;text-decoration:underline">PC 버전(Windows 무료)</a>을 쓰세요. 대본이 내 화면에만 보이고 녹화엔 안 보여요.</p>
       <h4>👆 조작</h4>
       <ul>
         <li>대본을 <b>톡</b> 누르면 재생 / 멈춤</li>
@@ -430,7 +453,7 @@ const DEFAULTS = {
   line_spacing: 10, align: "left", padding: 20, speed: 4, countdown: true,
   guide: true, guide_pos: 30, guide_color: "#FFD400",
   em_color: "#FFD400", hl_color: "#FFE14D", dir_color: "#9AA0A6",
-  mirror: false, voice: false, show_time: true,
+  mirror: false, voice: false, show_time: true, seen_cam_hint: false,
   cam_h: 45, cam_facing: "user", cam_audio: true, rec_sync: true, seen_voice_note: false
 };
 const CFG_KEY = "shh-mobile-cfg-v1", LIB_KEY = "shh-mobile-scripts-v1", WRITE_KEY = "shh-write-v1";
@@ -1011,6 +1034,10 @@ function openScript(id) {
   wake(true);
   if (camMode) camStart();
   if (cfg.voice && listener) listener.load();  // 저장해 둔 음성 모델을 미리 열어 둠
+  if (!camMode && !cfg.seen_cam_hint) {  // 처음 한 번: 카메라는 이 페이지 안에서 켠다는 안내
+    cfg.seen_cam_hint = true; saveCfg();
+    setTimeout(() => toast("찍으려면 위쪽 📷을 누르세요. 이 페이지 안에서 카메라가 켜져요.", 4500), 400);
+  }
   history.pushState({ pv: 1 }, "");
 }
 function closePrompter() {
