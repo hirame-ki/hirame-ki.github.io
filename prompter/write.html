@@ -365,6 +365,7 @@ html.warp{--base:.85s}
     <div class="right">
       <button class="btn btn-ghost" id="openBtn">📂 txt 불러오기</button>
       <button class="btn btn-ghost" id="copyBtn">📋 복사</button>
+      <button class="btn btn-ghost" id="phoneBtn" title="폰 프롬프터(쉿대본 모바일)에서 열 수 있는 링크를 만들어요">📱 폰으로</button>
       <button class="btn btn-primary" id="dlBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
         txt로 받기
@@ -857,6 +858,30 @@ html.warp{--base:.85s}
     if (!src.value.trim()) return say("복사할 내용이 없어요.");
     try { await navigator.clipboard.writeText(src.value); say("복사했어요. 메모장에 붙여 넣으면 돼요."); }
     catch (e) { src.select(); say("Ctrl+C를 눌러 복사해 주세요."); }
+  });
+  /* 쉿대본 모바일(mobile.html)로 보내기: 대본을 링크 안에 압축해 넣음 (어디에도 올리지 않음) */
+  function b64u(bytes) {
+    let s = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  async function phoneLink() {
+    const raw = new TextEncoder().encode(JSON.stringify({ n: cleanName(), t: src.value }));
+    let tag = "j", bytes = raw;
+    if (window.CompressionStream) {
+      try {
+        const cs = new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"));
+        bytes = new Uint8Array(await new Response(cs).arrayBuffer()); tag = "z";
+      } catch (e) { bytes = raw; tag = "j"; }
+    }
+    return new URL("mobile.html", location.href).href + "#s=" + tag + b64u(bytes);
+  }
+  $("phoneBtn").addEventListener("click", async () => {
+    if (!src.value.trim()) return say("먼저 대본을 써 주세요.");
+    const link = await phoneLink();
+    if (matchMedia("(pointer: coarse)").matches) { location.href = link; return; }  // 폰에서 쓰는 중이면 바로 열기
+    try { await navigator.clipboard.writeText(link); say("폰 링크를 복사했어요. 카톡 '나와의 채팅'에 붙여 넣고 폰에서 열어 보세요."); }
+    catch (e) { prompt("이 링크를 복사해서 폰으로 보내세요.", link); }
   });
   $("openBtn").addEventListener("click", () => $("fileIn").click());
   $("fileIn").addEventListener("change", async e => {

@@ -1,0 +1,15 @@
+{
+  "name": "쉿대본 모바일",
+  "short_name": "쉿대본",
+  "description": "폰 카메라로 찍으면서 대본 보기 — 녹화된 영상엔 대본이 남지 않아요",
+  "lang": "ko",
+  "start_url": "mobile.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    { "src": "img/icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
