@@ -1,0 +1,127 @@
+성적 돋보기 이용 허락 (License)
+==============================
+
+Copyright (c) 2026 황성재 (Hwang Seongjae, @hirame.ki). All rights reserved.
+
+대상: 성적 돋보기 (https://hirame-ki.github.io/lens/) 의 소스 코드, 계산 방식과 판정 기준,
+화면 디자인, 아이콘, 모션, 문구, 상담 프롬프트, 이름과 로고, 홍보 이미지(thumbnail.png 등)
+— 이하 "이 소프트웨어".
+
+
+1. 성적은 브라우저 밖으로 나가지 않습니다
+------------------------------------------
+가. 올린 성적 파일(나이스 엑셀, 학력평가 성적표 PDF 등)은 사용자의 브라우저 안에서만
+    읽고 계산합니다. 어떤 서버로도 보내지 않습니다.
+나. 이 소프트웨어에는 성적을 받는 서버가 없습니다. 회원 가입·로그인도, 방문 통계·광고
+    추적 도구도 없습니다. 페이지를 연 뒤에는 인터넷을 끊어도 분석이 그대로 됩니다.
+    (글꼴은 인터넷에서 받아 오며, 연결이 없으면 기기에 있는 글꼴로 대신 보입니다.)
+다. 다음에 열 때 이어서 볼 수 있도록 성적을 그 기기의 브라우저 저장소(localStorage)에만
+    남깁니다. 다른 기기나 다른 사람에게 전달되지 않으며, [초기화]에서 "저장된 성적도
+    함께 지울까요?"에 [확인]을 누르거나 브라우저 사이트 데이터를 지우면 사라집니다.
+    여러 사람이 함께 쓰는 컴퓨터에서는 다 쓴 뒤 꼭 이렇게 지워 주세요.
+라. 인쇄물·PDF·엑셀로 내보낸 파일과, 복사한 상담 프롬프트를 AI 서비스(ChatGPT·Claude·
+    Gemini 등)에 붙여넣는 일은 사용자가 직접 합니다. 그 뒤의 자료 처리는 사용자와 해당
+    서비스의 책임이며, 학생 이름 등 개인정보는 지우고 쓰기를 권합니다.
+
+
+2. 허용하는 것
+--------------
+가. 선생님·학교 누구나 이 소프트웨어를 무료로 사용할 수 있습니다.
+    담임 상담, 진학 지도, 학년·교과 협의, 교사 연수 시연에 자유롭게 쓰세요.
+나. 이 소프트웨어의 주소(링크)를 공유할 수 있습니다.
+다. 사용하는 모습을 캡처·촬영해 후기, 블로그, SNS, 연수 자료에 올릴 수 있습니다.
+    이때 "성적 돋보기 · 제작 황성재(@hirame.ki)" 처럼 출처를 밝혀 주세요.
+    화면에 실제 학생 이름이나 성적이 보이지 않게 가려 주세요.
+라. 이 소프트웨어로 만든 결과물(인쇄물·PDF·엑셀·상담 자료)은 사용자가 자유롭게 쓸 수
+    있습니다.
+
+
+3. 금지하는 것 (제작자의 서면 허락 없이)
+----------------------------------------
+가. 이 소프트웨어의 전부 또는 일부를 복제해 다른 주소·저장소·앱·플랫폼에 다시 배포하는 것
+    (내려받은 html 파일을 다른 사이트·카페·자료실에 올리는 것을 포함합니다)
+나. 고치거나 이름을 바꿔 자기 것처럼 공개하는 것, 제작자 표시와 이 고지를 지우는 것
+다. 판매하거나, 유료 강의·유료 자료·유료 앱·유료 서비스에 포함하는 것
+라. 이 소프트웨어의 디자인·계산 방식·판정 기준·프롬프트를 그대로 본뜬 서비스를 만드는 것
+
+
+4. 함께 쓰인 외부 구성요소
+--------------------------
+아래 구성요소는 위 권리 표시의 대상이 아니며, 각자의 라이선스를 따릅니다.
+
+- SheetJS Community Edition 0.20.3 ........ Apache License 2.0
+- PDF.js 3.11.174 (Mozilla Foundation) .... Apache License 2.0
+- ExcelJS 4.3.0 ........................... MIT License
+  (함께 묶인 JSZip, pako, dayjs, safe-buffer 등 포함 — 각자 MIT 등 허용 라이선스)
+- Chart.js 4.4.0 .......................... MIT License
+- Pretendard (orioncactus) ................ SIL Open Font License 1.1
+- Gothic A1 · Nanum Gothic · Gaegu · DM Mono (Google Fonts) ... SIL Open Font License 1.1
+
+Apache License 2.0 전문: https://www.apache.org/licenses/LICENSE-2.0
+SIL Open Font License 1.1 전문: https://openfontlicense.org
+
+MIT License 전문 (ExcelJS, Chart.js 공통 문안 — 저작권자는 각 프로젝트):
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+아이콘은 이 소프트웨어를 위해 직접 그린 SVG입니다.
+
+
+5. 사용자가 넣는 자료
+---------------------
+가. 올린 성적 파일과 학생 정보의 권리와 관리 책임은 학교와 사용자에게 있습니다.
+나. 학생 성적은 개인정보입니다. 소속 학교의 개인정보 보호 지침에 맞게 쓰고,
+    결과물을 학생·학부모 외의 사람에게 보여 줄 때는 이름과 성적을 가려 주세요.
+
+
+6. 보증 없음 · 책임 제한
+------------------------
+이 소프트웨어는 "있는 그대로" 무료로 제공되며, 어떤 보증도 하지 않습니다.
+등급 환산, 수시·정시 성향 판정, 정시 라인 추정, 상담 우선순위는 참고용 추정치이며
+공식 성적이나 합격 가능성을 뜻하지 않습니다. 진학 판단은 공식 자료로 확인해 주세요.
+파일을 잘못 읽어 생긴 오류, 브라우저 저장소의 자료가 지워지거나 사라진 일,
+이 소프트웨어 사용으로 생긴 손해에 대해 제작자는 책임지지 않습니다.
+원본 성적 파일은 따로 보관해 주세요.
+
+
+7. 문의
+-------
+제작: 황성재
+재배포·협업·연수 사용 등 위에서 금지한 이용을 원하시거나 오류를 알려 주실 때는
+인스타그램 @hirame.ki 로 DM 주세요. (https://www.instagram.com/hirame.ki/)
+
+
+-----------------------------------------------------------------------------
+English summary
+
+Copyright (c) 2026 Hwang Seongjae (@hirame.ki). All rights reserved.
+
+Privacy: all grade files are read and calculated only inside your browser.
+Nothing is uploaded to any server; there is no account, analytics or tracking.
+Data is kept only in this browser's localStorage until you clear it via Reset.
+
+You may use this software free of charge for school and counseling work,
+share its link, and post screenshots or videos of it with attribution
+(hide real student names and grades). You may NOT copy, redistribute, modify
+and republish, rebrand, sell, or include it in any paid product or service
+without prior written permission.
+Third-party components (SheetJS CE, PDF.js: Apache-2.0; ExcelJS, Chart.js: MIT;
+Pretendard and Google Fonts: SIL OFL 1.1) remain under their own licenses.
+Provided "AS IS" without warranty; grade conversions and predictions are estimates.
+Contact: https://www.instagram.com/hirame.ki/
