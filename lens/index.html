@@ -1765,6 +1765,7 @@ body.rail .railbar>*:nth-child(8){animation-delay:.21s}
             <b style="color:var(--accent)">빠름</b> — 성적일람표 PDF (반 전체 1장)<br>
             <b style="color:var(--warn)">참고용</b> — 학교 집계 엑셀 (등급이 다를 수 있음)
           </div>
+          <div class="upload-hint" style="margin-top:7px;color:var(--ink-2)"><b>PDF는 내려받은 원본 그대로</b> 올려 주세요.<br>스캔·사진으로 만든 PDF는 글자가 없어 읽지 못합니다.</div>
           <div style="margin-top:9px"><button type="button" class="mk-sample-link" onclick="event.stopPropagation();openMkSample()"><i data-ic="lens" data-s="12"></i>성적통지표가 어떤 PDF인지 보기</button></div>
           <input type="file" id="mk-file" accept=".pdf,.xlsx,.xls,.xlsm,.xlsb,.ods,.csv" style="display:none" onchange="mkOnFileChange(event)">
         </div>
@@ -2047,6 +2048,7 @@ body.rail .railbar>*:nth-child(8){animation-delay:.21s}
     <div class="modal-bd">
       <div class="mk-sample-cap">
         제목이 <b>「전국연합학력평가 성적통지표(학생용)」</b>인 PDF입니다. 학생 한 명이 한 쪽이고, 반 전체가 한 파일로 묶여 있으면 그대로 올리면 됩니다.
+        <b>성적 시스템에서 내려받은 원본 PDF</b>여야 합니다. 종이 성적표를 스캔하거나 사진으로 찍어 만든 PDF는 글자가 그림으로만 남아 있어 읽지 못합니다.
         <span class="mk-sample-note">학교·학생 정보는 가리고 점수는 흐리게 처리했습니다. 그림을 누르면 크게 볼 수 있습니다.</span>
       </div>
       <div class="mk-sample-fig" onclick="this.classList.toggle('zoom')" title="눌러서 크게 · 작게">
@@ -2117,6 +2119,7 @@ body.rail .railbar>*:nth-child(8){animation-delay:.21s}
           <tr><td>학교 집계 엑셀<br><span style="color:var(--warn);font-weight:800">참고용</span></td><td>원점수는 정확하지만 <b>등급이 공식값과 다를 수 있습니다.</b> <button type="button" class="gd-jump" onclick="gdTab(4)">「주의할 점」</button> 탭을 꼭 읽어 주세요.</td></tr>
         </table>
         <div class="gd-p">PDF를 넣으면 <b>회차·학년·주관처를 파일에서 자동으로 읽습니다.</b> 전교 파일이면 불러오기 전에 반을 고르는 화면이 나옵니다.</div>
+        <div class="gd-p"><b>PDF는 텍스트가 살아 있는 원본이어야 합니다.</b> 성적 시스템에서 내려받은 파일을 그대로 올려 주세요. 종이 성적표를 스캔하거나 사진으로 찍어 만든 PDF는 글자가 그림이라 읽지 못합니다. PDF 뷰어에서 글자를 드래그해 선택할 수 있으면 원본입니다.</div>
       </div>
 
       <!-- 2. 화면 읽는 법 -->
@@ -6942,8 +6945,8 @@ async function mkParsePdfFile(file, buf) {
     mkSetPending(res.students, file.name, kindLabel + ' · ' + res.pageCount + '쪽 · ' + res.parsed + '명', notes, res.meta);
   } catch (err) {
     console.error(err);
-    info.innerHTML = '';
-    info.style.display = 'none';
+    // 토스트는 금방 사라지니 이유를 업로드 칸 아래에도 남겨 둔다
+    info.innerHTML = ic('alert', 13) + ' ' + mkEsc(err.message);
     showToast('PDF 파싱 실패: ' + err.message);
   }
 }
@@ -9612,9 +9615,13 @@ function mkRosterHead(rows) {
 async function mkParsePdf(arrayBuffer, onProgress) {
   const pages = await mkPdfExtract(arrayBuffer, onProgress);
   if (!pages.length) throw new Error('빈 PDF입니다');
+  // 스캔·사진 PDF는 글자 층이 없어 셀이 하나도 안 나온다
+  if (!pages.some(rows => rows.some(r => r.cells.length))) {
+    throw new Error('글자를 읽을 수 없는 PDF입니다. 스캔하거나 사진으로 만든 PDF는 읽지 못합니다. 성적 시스템에서 내려받은 원본 PDF를 올려 주세요.');
+  }
 
   const kind = mkPdfKind(pages);
-  if (!kind) throw new Error('전국연합학력평가 성적통지표 또는 성적일람표가 아닌 것 같습니다');
+  if (!kind) throw new Error('전국연합학력평가 성적통지표 또는 성적일람표가 아닌 것 같습니다. 스캔본이 아닌 원본 PDF인지도 확인해 주세요.');
 
   const meta = mkPdfExamMeta(pages);
   const students = {};
@@ -9624,7 +9631,7 @@ async function mkParsePdf(arrayBuffer, onProgress) {
   if (kind === 'report') {
     for (let i = 0; i < pages.length; i++) {
       const r = mkParseReportPage(pages[i]);
-      if (!r) { warnings.push((i + 1) + '쪽을 읽지 못했습니다'); continue; }
+      if (!r) { warnings.push((i + 1) + '쪽을 읽지 못했습니다' + (pages[i].some(row => row.cells.length) ? '' : ' (글자가 없는 쪽 — 스캔본?)')); continue; }
       parsed++;
       if (r.meta.gy && !meta.gy) meta.gy = r.meta.gy;
       // 동명이인 대비: 반·번호가 있으면 그것으로 고유 키를 잡는다 (불러올 때 이름으로 되돌린다)
