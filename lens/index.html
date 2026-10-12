@@ -1129,6 +1129,162 @@ body.batch-print #batch-print-area{display:block;width:100%;align-self:stretch;f
   .bp-nm-table th:nth-child(4),.bp-nm-table td:nth-child(4){width:11%}
 }
 
+/* ══ 인쇄 압축 (pdense) ═══════════════════════════════════════
+   학생 한 명을 A4 2쪽 안에. 인쇄 직전에 body.pdense를 붙이고(beforeprint),
+   그래도 넘치면 pfFit()이 zoom으로 줄인다. 화면 규칙과 @media print 규칙 위에 덮어쓴다.
+   쪽 수를 재려면 화면에서도 같은 모양이어야 해서 @media print 밖에 둔다. */
+
+/* 폭은 A4에서 여백을 뺀 190mm — 잴 때와 찍을 때가 같아야 한다 */
+body.pdense #result-area{width:190mm!important;max-width:none!important;padding:0!important;background:#fff}
+body.pdense #batch-print-area{width:190mm!important}
+body.pdense #result-area .no-print,body.pdense #result-area .prompt-card,body.pdense #result-area .act-row,
+body.pdense #empty-state{display:none!important}
+body.pdense #result-area>.print-head.print-only{display:flex}
+body.pdense #result-area>.print-foot.print-only{display:block}
+body.pdense .print-head{padding-bottom:4px;margin-bottom:6px}
+body.pdense .print-head .ph-name{font-size:14px}
+body.pdense .print-head .ph-meta{font-size:8px;line-height:1.35}
+body.pdense .print-foot{margin-top:6px;padding-top:4px;font-size:7.5px}
+
+/* ── 카드 ── */
+body.pdense .result-card{padding:5px 7px!important;margin:0 0 5px!important;border-radius:6px;box-shadow:none}
+body.pdense .result-title{font-size:10.5px!important;margin:0 0 2px!important;gap:5px}
+body.pdense .result-title svg{width:12px;height:12px}
+body.pdense .result-title span{font-size:8px!important}
+body.pdense .card-sub{font-size:7.5px!important;line-height:1.35!important;margin:0 0 3px!important}
+body.pdense .pickrow{gap:3px!important;margin:0 0 3px!important}
+body.pdense .pickchip{font-size:7.5px!important;padding:1px 6px!important;height:auto!important;min-height:0!important;line-height:1.4!important;border-width:1px!important}
+body.pdense #nm-grade-tabs button{font-size:7.5px!important;padding:1px 6px!important;border-width:1px!important}
+body.pdense #near-miss-card>div:nth-child(3){font-size:7.5px!important;gap:4px!important;margin:0 0 3px!important}
+body.pdense .note{font-size:7.5px!important;padding:3px 6px!important;margin:3px 0!important}
+body.pdense .ns-foot,body.pdense .ns-sum-note{font-size:7.5px!important;line-height:1.35!important;margin-top:3px!important}
+
+/* ── 그래프: 높이를 묶어 두고 카드 폭에 맞춘다 ── */
+body.pdense .chart-wrap,body.pdense .radar-wrap,body.pdense .catbar-wrap{height:auto!important;aspect-ratio:auto!important;width:100%!important;position:static!important}
+body.pdense .result-card canvas{width:100%!important;height:auto!important;max-height:150px!important;object-fit:contain;display:block}
+
+/* ── 내신 탭: 6칸 격자에 카드를 나란히 ── */
+body.pdense #tab-naesin:not([style*="none"]),body.pdense #tab-mock:not([style*="none"]){
+  display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));column-gap:5px;align-items:start}
+body.pdense #tab-naesin>*,body.pdense #tab-mock>*{grid-column:1/-1;min-width:0}
+/* 반영 조합: 그래프와 표를 나란히. 그래프가 좁아지면 글자가 상대적으로 커져 읽기 어렵다 */
+body.pdense #ns-combo-card{display:grid!important;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);column-gap:8px;align-items:center}
+body.pdense #ns-combo-card>*{grid-column:1/-1}
+body.pdense #ns-combo-card>#ns-combo-chartwrap{grid-column:1}
+body.pdense #ns-combo-card>#ns-combo-table{grid-column:2}
+body.pdense #ns-pos-card,body.pdense #ns-sim-card{grid-column:span 3!important}
+body.pdense .dual-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:5px!important;margin:0!important}
+body.pdense .dual-row>.result-card{margin:0 0 5px!important;min-width:0!important}
+
+/* 요약 */
+body.pdense #summary-content{margin-top:3px!important}
+body.pdense #summary-content>div:first-child{gap:4px!important}
+body.pdense #summary-content>div:first-child>div{padding:3px!important;border-radius:5px!important}
+body.pdense #summary-content>div:first-child>div>div:first-child{font-size:7.5px!important}
+body.pdense #summary-content>div:first-child>div>div:last-child{font-size:14px!important}
+body.pdense .ns-sum-h{font-size:8px!important;margin:4px 0 2px!important}
+body.pdense .mk-kpi{gap:3px!important}
+body.pdense .mk-tile{padding:3px 5px!important;border-radius:5px!important}
+body.pdense .mk-tile .t{font-size:7px!important;margin:0!important}
+body.pdense .mk-tile .v{font-size:12px!important;line-height:1.15!important}
+body.pdense .mk-tile .u{font-size:7.5px!important}
+body.pdense .mk-tile .s{font-size:6.5px!important;margin:0!important}
+
+/* 과목별 성적표 — 칸 안의 세 줄(등급·앞 인원·점수)을 한 줄로 */
+body.pdense .grade-table{font-size:8px!important;table-layout:fixed;width:100%!important}
+body.pdense .grade-table th,body.pdense .grade-table td{padding:1.5px 3px!important;line-height:1.25!important;font-size:8px!important}
+body.pdense .grade-table td br{display:none}
+body.pdense .grade-table td span{font-size:7px!important;margin-left:3px;white-space:nowrap}
+body.pdense .grade-table td .grade-badge{margin-left:0;font-size:7.5px!important;padding:0 4px!important}
+body.pdense .grade-table td:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 한 등급만 올리면 되는 과목 — 3칸 */
+body.pdense .nm-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:3px!important}
+body.pdense .nm-grid>div{padding:3px 5px!important;border-radius:5px!important;border-width:1px!important;break-inside:avoid}
+body.pdense .nm-grid>div *{font-size:7px!important;line-height:1.3!important}
+body.pdense .nm-grid>div>div:first-child span,body.pdense .nm-grid>div>div:first-child b{font-size:8px!important}
+body.pdense .nm-grid>div>div{margin:0 0 1px!important;gap:3px!important}
+body.pdense .nm-grid>div>div>div[style*="height:6px"]{height:3px!important}
+body.pdense .nm-grid .grade-badge{padding:0 3px!important}
+
+/* 원점수 위치 */
+body.pdense .ns-scale{font-size:6.5px!important;margin:0 64px 1px 74px!important}
+body.pdense .ns-pos-row{grid-template-columns:70px minmax(0,1fr) 60px!important;padding:0!important;gap:4px!important;min-height:0!important}
+body.pdense .ns-pos-row *{font-size:7px!important;line-height:1.2!important}
+body.pdense .ns-pos-nm b{font-size:7.5px!important}
+body.pdense .ns-pos-tx .num{font-size:8px!important}
+body.pdense .ns-legend{font-size:6.5px!important;margin-top:2px!important;gap:6px!important}
+body.pdense .ns-track{height:8px!important}
+
+/* 목표 시뮬레이션 */
+body.pdense #ns-sim-content select,body.pdense #ns-sim-content input{font-size:7.5px!important;padding:0 2px!important;height:auto!important;min-height:0!important}
+body.pdense .ns-sim-grid{gap:3px!important;margin:2px 0!important}
+body.pdense .ns-sim-in{padding:2px 4px!important;font-size:7px!important;border-radius:5px!important}
+body.pdense .ns-sim-in *{font-size:7px!important}
+body.pdense #ns-sim-content *{font-size:7.5px}
+
+/* 표 공통 */
+body.pdense .mk-table{font-size:7.5px!important}
+body.pdense .mk-table th,body.pdense .mk-table td{padding:1.5px 3px!important;line-height:1.25!important}
+body.pdense .mk-table .grade-badge{font-size:7.5px!important;padding:0 4px!important}
+body.pdense .tbl-wrap{margin:0!important}
+
+/* ── 모의고사 탭 ── */
+body.pdense #tab-mock>.dual-row{grid-column:1/-1}
+body.pdense .mk-chg-grid{gap:3px!important}
+body.pdense .mk-chg{padding:3px 5px!important}
+body.pdense .mk-chg *{font-size:7px!important}
+body.pdense .mk-chg .gr .t{font-size:12px!important}
+body.pdense .mk-chg-head{font-size:8px!important;margin-bottom:3px!important}
+body.pdense .mk-banner{font-size:7.5px!important;padding:3px 6px!important;margin:3px 0 0!important}
+body.pdense .mk-score-card .examhead{font-size:7px!important}
+body.pdense .mk-grp-h{font-size:8px!important;margin:2px 0!important}
+body.pdense .mk-reasons li,body.pdense .mk-reasons{font-size:7.5px!important;margin:0!important}
+body.pdense .mk-csat td,body.pdense .mk-csat th{font-size:7px!important}
+body.pdense .mk-csat-path,body.pdense .mk-csat-st{font-size:7px!important;padding:0 4px!important}
+body.pdense .mk-csat-opt{font-size:7px!important}
+
+/* ── 일괄 인쇄 블록 ── */
+body.pdense .bp-sec{font-size:9px!important;margin:5px 0 2px!important;padding-bottom:1px!important}
+body.pdense .bp-charts2{gap:4px!important;margin:2px 0!important}
+body.pdense .bp-charts2 .bp-chart2{max-height:135px!important}
+body.pdense .bp-chart{max-height:130px!important}
+body.pdense .bp-nm-table{font-size:7px!important}
+body.pdense .bp-nm-table th,body.pdense .bp-nm-table td{padding:1px 3px!important;line-height:1.25!important}
+body.pdense .bp-nm-table td br{display:none}
+body.pdense .bp-nm-table td:last-child{font-size:6.5px!important}
+body.pdense .ns-combo-tbl th,body.pdense .ns-combo-tbl td{padding:1px 4px!important;font-size:7.5px!important}
+body.pdense .bp-student .result-card .mk-table{font-size:7px!important}
+
+/* ── 높이를 많이 먹던 곳 ── */
+/* 회차 칸: 세로쓰기는 글자 수만큼 줄이 길어져 회차마다 네 줄이 늘어난다 → 가로로 */
+body.pdense .mk-score-card .examhead{writing-mode:horizontal-tb!important;width:34px!important;padding:1px 2px!important;
+  font-size:6.5px!important;line-height:1.2!important;word-break:keep-all;white-space:normal!important;text-align:center}
+body.pdense .mk-score-card td,body.pdense .mk-score-card th{padding:1px 3px!important}
+body.pdense .mk-score-card .mk-d{font-size:6.5px!important}
+/* 원점수 위치: 오른쪽 글자를 한 줄로 */
+body.pdense .ns-pos-row{grid-template-columns:70px minmax(0,1fr) 128px!important}
+body.pdense .ns-scale{margin:0 132px 1px 74px!important}
+body.pdense .ns-pos-tx{flex-direction:row!important;align-items:baseline;gap:4px!important;white-space:nowrap}
+/* 일괄 인쇄 요약 칸 (화면 요약을 복사해 오므로 id가 없다) */
+body.pdense .bp-student div[style*="grid-template-columns:1fr 1fr 1fr"]{gap:4px!important}
+body.pdense .bp-student div[style*="grid-template-columns:1fr 1fr 1fr"]>div{padding:3px!important;border-radius:5px!important}
+body.pdense .bp-student div[style*="grid-template-columns:1fr 1fr 1fr"]>div>div:first-child{font-size:7.5px!important}
+body.pdense .bp-student div[style*="grid-template-columns:1fr 1fr 1fr"]>div>div:last-child{font-size:14px!important}
+/* 일괄 인쇄 반영 조합: 그래프와 표를 나란히 */
+body.pdense .ns-bp-combo{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);column-gap:8px;align-items:center}
+body.pdense .ns-bp-combo>*{grid-column:1/-1}
+body.pdense .ns-bp-combo>.bp-chart{grid-column:1;max-height:120px!important}
+body.pdense .ns-bp-combo>.tbl-wrap{grid-column:2}
+/* 모의고사 탭 반영 과목 칩 */
+body.pdense #tab-mock label{font-size:7.5px!important;padding:1px 6px!important;border-width:1px!important}
+body.pdense .mk-score-card .mk-sel{font-size:6px!important;margin-left:2px}
+
+/* 소제목만 쪽 끝에 남지 않게 */
+body.pdense .bp-sec{break-after:avoid;page-break-after:avoid}
+body.pdense .ns-radar-sw,body.pdense .ns-radar-sw *{font-size:8px!important}
+body.pdense .ns-radar-sw{gap:8px!important;margin:2px 0!important}
+
 /* ══ 내신 확장 (내신/naesin-ui.js) ════════════════════════════
    색은 theme.css 토큰만 쓴다. 흰 종이 ↔ 크림 종이에서 같이 바뀐다. */
 
@@ -1845,7 +2001,7 @@ body.rail .railbar>*:nth-child(8){animation-delay:.21s}
     <div class="batch-title"><i data-ic="users" data-s="15"></i> 학급 일괄 처리 <span class="batch-count" id="batch-count">0명</span></div>
     <div class="batch-hint">올린 <b>모든 학생</b>을 한 번에 만듭니다. 과목은 학생별 이수 과목 전체가 자동 선택됩니다.<br><b>내신과 모의고사가 함께</b> 들어갑니다. 모의고사만 올린 학생도 빠지지 않습니다.</div>
     <div class="batch-btns">
-      <button class="batch-btn" onclick="batchPrint()"><i data-ic="print" data-s="15"></i> 전체 인쇄 · PDF<small>학생마다 새 쪽</small></button>
+      <button class="batch-btn" onclick="batchPrint()"><i data-ic="print" data-s="15"></i> 전체 인쇄 · PDF<small>학생당 2쪽 이내</small></button>
       <button class="batch-btn" onclick="batchExcel()"><i data-ic="sheet" data-s="15"></i> 전체 엑셀<small>학생별 시트</small></button>
       <button class="batch-btn" onclick="batchPrompts()"><i data-ic="clipboard" data-s="15"></i> 전체 프롬프트<small>.txt</small></button>
     </div>
@@ -2097,7 +2253,7 @@ body.rail .railbar>*:nth-child(8){animation-delay:.21s}
 
         <div class="gd-h"><span class="n">4</span> 꺼내 쓰기</div>
         <ul class="gd-list">
-          <li><b>인쇄</b> — 학생 1명 분량을 A4로 뽑습니다. 과목·회차가 많으면 여러 쪽이 되고, 전체 인쇄는 학생마다 새 쪽에서 시작합니다. PDF로 저장해 학부모께 드릴 수 있습니다.</li>
+          <li><b>인쇄</b> — 학생 1명 분량을 A4 2쪽 안에 담습니다. 과목·회차가 많으면 글자를 조금 줄여 맞추고, 전체 인쇄는 학생마다 새 쪽에서 시작합니다. PDF로 저장해 학부모께 드릴 수 있습니다.</li>
           <li><b>엑셀</b> — 표와 그래프가 들어간 파일로 저장합니다.</li>
           <li><b>프롬프트</b> — 복사해서 AI에 붙여넣으면 상담 문구를 써 줍니다.</li>
           <li>왼쪽 맨 아래 <b>학급 일괄 처리</b>로 반 전체를 한 번에 만들 수도 있습니다.</li>
@@ -12631,6 +12787,67 @@ function mkCopyPrompt() {
     () => showToast('클립보드에 복사됐습니다.'),
     () => { document.execCommand('copy'); showToast('클립보드에 복사됐습니다.'); }
   );
+}
+
+/* ══ 인쇄 2쪽 맞춤 (pfFit) ═══════════════════════════════════
+   학생 한 명 분량을 A4 2쪽 안에 넣는다. 자료는 빼지 않는다.
+   1) body.pdense — 인쇄용 촘촘한 배치(글자·여백·칸 나란히)
+   2) 그래도 2쪽을 넘으면 그 학생 블록만 zoom으로 줄인다(최소 PF_MIN_ZOOM).
+   인쇄 대화상자를 Ctrl+P로 열어도 돌도록 beforeprint에 건다. */
+const PF_PAGE_H = 275 / 25.4 * 96;   // A4 297mm − 위아래 여백 11mm×2, CSS px
+const PF_PAGES = 2;
+const PF_SLACK = 0.9;                // 쪽 나눔에서 카드가 통째로 넘어가며 생기는 빈칸 몫
+const PF_MIN_ZOOM = 0.55;
+
+function pfTargets() {
+  if (document.body.classList.contains('batch-print')) {
+    return [...document.querySelectorAll('#batch-print-area .bp-student')].map(el => ({ el: el, extra: 0 }));
+  }
+  const tab = ['tab-naesin', 'tab-mock'].map(id => document.getElementById(id))
+    .find(t => t && t.style.display !== 'none');
+  if (!tab) return [];
+  const ra = document.getElementById('result-area');
+  const hf = [...ra.children].filter(c => c.classList.contains('print-head') || c.classList.contains('print-foot'))
+    .reduce((s, c) => s + c.getBoundingClientRect().height, 0);
+  return [{ el: tab, extra: hf + 12 }];
+}
+
+function pfReset() {
+  document.body.classList.remove('pdense');
+  document.querySelectorAll('[data-pf-zoom]').forEach(el => { el.style.zoom = ''; el.removeAttribute('data-pf-zoom'); });
+}
+
+function pfFit() {
+  pfReset();
+  if (!document.getElementById('result-area')) return [];
+  document.body.classList.add('pdense');
+  if (typeof outFitCharts === 'function') outFitCharts();
+  const report = [];
+  pfTargets().forEach(t => {
+    const goal = PF_PAGES * PF_PAGE_H * PF_SLACK - t.extra;
+    const h0 = t.el.getBoundingClientRect().height;
+    let z = 1;
+    if (h0 > goal) {
+      // 줄이면 폭이 넓어져 줄바꿈이 줄고 높이가 더 준다 — 비례식 대신 몇 번 재서 찾는다
+      let lo = PF_MIN_ZOOM, hi = 1;
+      t.el.setAttribute('data-pf-zoom', '1');
+      for (let i = 0; i < 7; i++) {
+        const mid = (lo + hi) / 2;
+        t.el.style.zoom = mid;
+        if (t.el.getBoundingClientRect().height <= goal) lo = mid; else hi = mid;
+      }
+      z = lo;
+      t.el.style.zoom = z;
+    }
+    report.push({ h0: Math.round(h0), goal: Math.round(goal), zoom: Math.round(z * 100) / 100,
+      h: Math.round(t.el.getBoundingClientRect().height) });
+  });
+  return report;
+}
+
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('beforeprint', function () { try { pfFit(); } catch (e) { console.error('[인쇄 맞춤]', e); } });
+  window.addEventListener('afterprint', function () { try { pfReset(); if (typeof outFitCharts === 'function') outFitCharts(); } catch (e) {} });
 }
 
 /* ══════════════ ui/motion.js ══════════════ */
