@@ -2449,6 +2449,8 @@ function detectGradeSystem(rows) {
   // 과목명으로 추정: 공통국어·공통수학·공통영어·한국사·통합사회·통합과학 → 5등급
   const subjRow = rows.slice(0, 8).find(r => (r||[]).some(v => /공통국어|공통수학|공통영어|통합사회|통합과학/.test(String(v||''))));
   if (subjRow) return 5;
+  const NEW_SUBJ = /^(화법과언어|독서와작문|대수|미적분[Ⅰ1I]|세계시민과지리|사회와문화|현대사회와윤리|물리학|화학|생명과학|지구과학|역학과에너지|물질과에너지|세포와물질대사|지구시스템과학)$/;
+  if (rows.slice(0, 8).some(r => (r||[]).some(v => NEW_SUBJ.test(String(v||'').replace(/\s/g, ''))))) return 5;
   // 선택과목명(문학, 수학Ⅱ 등) → 9등급
   return 9;
 }
@@ -5796,6 +5798,38 @@ function sortExamKeys(keys) {
   return keys.slice().sort();
 }
 
+// 고1·2 공통 체제의 탐구 슬롯 이름
+const INTEGRATED_TAMGU = { '탐구1': '통합사회', '탐구2': '통합과학' };
+
+/**
+ * 공통 체제 회차인지 — 국어·수학 선택과목이 없고 탐구는 통합사회·통합과학 두 과목 모두 응시한다.
+ * 고1 학력평가는 원래 이 체제이고, 2025년 입학생(2022 개정 · 2028 수능)부터는 학년과 상관없이 그렇다.
+ * 입학연도 = 시행연도 − 학년 + 1. 학년을 모르면 탐구 과목명으로 가린다.
+ */
+function isIntegratedExam(exam) {
+  if (!exam) return false;
+  const y = parseInt(exam.year, 10), gy = parseInt(exam.gy, 10);
+  if (gy === 1) return true;
+  if (y && gy && y - gy + 1 >= 2025) return true;
+  const subj = exam.subjects || {};
+  return Object.keys(INTEGRATED_TAMGU).some(a => subj[a] && /^통합(사회|과학)$/.test(_norm(subj[a].sel)));
+}
+
+/** 공통 체제 회차면 탐구 슬롯에 통합사회·통합과학 이름을 붙인다 ('사회탐구'·'과학' 같은 옛 표기도 바꾼다). */
+function applyCurriculum(exam) {
+  if (!exam || !exam.subjects || !isIntegratedExam(exam)) return exam;
+  for (const [area, label] of Object.entries(INTEGRATED_TAMGU)) {
+    const s = exam.subjects[area];
+    if (s && (!s.sel || /^(사회|과학)(탐구)?$|^(통사|통과|사탐|과탐)$/.test(_norm(s.sel)))) s.sel = label;
+  }
+  return exam;
+}
+
+/** 탐구 슬롯 표시명. 공통 체제면 '통합사회'·'통합과학', 아니면 '탐구1'·'탐구2' 그대로. */
+function areaLabel(area, exam) {
+  return (INTEGRATED_TAMGU[area] && isIntegratedExam(exam)) ? INTEGRATED_TAMGU[area] : area;
+}
+
 // ═══════════════════════════════════════════════
 // 파서 — 공통 헤더 감지
 // ═══════════════════════════════════════════════
@@ -5831,8 +5865,8 @@ function normalizeArea(v) {
   if (m) return '탐구' + m[2];
   if (n === '탐구' || n === '탐') return '탐구1';
   // 고1·2 학력평가는 탐구가 사회·과학 한 과목씩이다 → 탐구1/탐구2 슬롯에 고정 배치
-  if (n === '사회탐구' || n === '사탐' || n === '사회' || n === '통합사회') return '탐구1';
-  if (n === '과학탐구' || n === '과탐' || n === '과학' || n === '통합과학') return '탐구2';
+  if (n === '사회탐구' || n === '사탐' || n === '사회' || n === '통합사회' || n === '통사') return '탐구1';
+  if (n === '과학탐구' || n === '과탐' || n === '과학' || n === '통합과학' || n === '통과') return '탐구2';
   if (n === '직업탐구' || n === '직탐') return '탐구1';
   return null;
 }
@@ -6136,7 +6170,7 @@ function diagnoseSubjects(stu, opts) {
     const valid = hist.filter(v => v !== null);
     items.push({
       area: area,
-      name: cur.sel || cur.name || area,
+      name: cur.sel || cur.name || areaLabel(area, recent),
       grade: cur.grade,
       pct: cur.pct,
       raw: cur.raw,
@@ -6173,7 +6207,10 @@ function diagnoseSubjects(stu, opts) {
     const gap = Math.abs(t1.grade - t2.grade);
     if (gap >= 2) {
       const lo = t1.grade > t2.grade ? t1 : t2;
-      notes.push('탐구 두 과목 격차가 ' + gap + '등급입니다. ' + (lo.sel || lo.name || '낮은 쪽') + ' 과목 교체 또는 집중 보완을 검토하세요.');
+      const loName = lo.sel || lo.name || areaLabel(t1.grade > t2.grade ? '탐구1' : '탐구2', recent);
+      // 공통 체제는 통합사회·통합과학을 모두 응시하므로 바꿀 과목이 없다
+      if (isIntegratedExam(recent)) notes.push('통합사회·통합과학 격차가 ' + gap + '등급입니다. 두 과목 모두 응시하므로 ' + loName + ' 보완을 우선하세요.');
+      else notes.push('탐구 두 과목 격차가 ' + gap + '등급입니다. ' + loName + ' 과목 교체 또는 집중 보완을 검토하세요.');
     }
   }
 
@@ -6186,8 +6223,8 @@ function diagnoseSubjects(stu, opts) {
     }
   }
 
-  // 선택과목 표기
-  for (const area of ['국어', '수학']) {
+  // 선택과목 표기 (공통 체제는 국어·수학 선택과목이 없다)
+  if (!isIntegratedExam(recent)) for (const area of ['국어', '수학']) {
     const s = recent.subjects[area];
     if (s && s.sel) notes.push(area + ' 선택과목: ' + s.sel);
   }
@@ -6275,13 +6312,8 @@ function judgeTrack(naesin9, stu, opts) {
 
   // 수능 최저 충족 가늠 (주요 3개 영역 등급 합)
   if (recent) {
-    const three = ['국어', '수학', '영어', '탐구1']
-      .map(a => recent.subjects[a] && recent.subjects[a].grade)
-      .filter(g => typeof g === 'number')
-      .sort((a, b) => a - b)
-      .slice(0, 3);
-    if (three.length === 3) {
-      const sum = three.reduce((a, b) => a + b, 0);
+    const sum = best3Sum(recent);
+    if (sum !== null) {
       result.best3Sum = sum;
       if (sum <= 6) result.reasons.push('상위 3개 영역 등급 합이 ' + sum + '입니다. 주요 대학 수능 최저(합 6~7) 충족이 유력합니다.');
       else if (sum <= 9) result.reasons.push('상위 3개 영역 등급 합이 ' + sum + '입니다. 중위권 대학 수능 최저(합 8~9) 선에 있어 한 등급 개선이 관건입니다.');
@@ -6493,6 +6525,12 @@ function examMetaOf(mockStudents, key) {
 // 수능 최저 충족 시뮬레이터
 // ═══════════════════════════════════════════════
 
+/** 국·수·영·탐 중 좋은 3개 영역 등급 합. 탐구는 두 과목 중 좋은 쪽 1과목. 영역이 3개 미만이면 null. */
+function best3Sum(exam) {
+  const r = csatMinCheck(exam, 3, 27);
+  return r ? r.sum : null;
+}
+
 /**
  * "국·수·영·탐 중 k개 영역 등급 합 target 이내"를 채우는지, 못 채우면 가장 적게 올리는 길을 찾는다.
  * 탐구는 대학 다수가 쓰는 방식대로 두 과목 중 좋은 쪽 1과목을 기본으로 하고,
@@ -6548,20 +6586,20 @@ function csatMinCheck(exam, k, target, opts) {
 return {
   // 상수
   AREAS, REL_AREAS, ABS_AREAS, PCT_CUTS, NATIONAL_RATIO, ABS_CUTS,
-  EXAM_CATALOG, ORG_LABEL, SELECT_SUBJECTS, TRACK, TRACK_THRESHOLD,
+  EXAM_CATALOG, ORG_LABEL, SELECT_SUBJECTS, TRACK, TRACK_THRESHOLD, INTEGRATED_TAMGU,
   DEFAULT_UNIV_LINES,
   // 유틸
   num, avg, slope, round, textToRows,
   // 등급
   pctToMockGrade, absScoreToGrade, gradeToPctMid, fillSubject,
   // 회차
-  examKey, makeExamMeta, sortExamKeys, parseExamCell,
+  examKey, makeExamMeta, sortExamKeys, parseExamCell, isIntegratedExam, applyCurriculum, areaLabel,
   // 파서
   detectMockHeader, parseMockWide, parseMockPaste, normalizeArea, forwardFill,
   // 개인 집계
   mockMainAvg, mainPctAvg, examSeries, examDelta, diagnoseSubjects,
   // 판정 · 라인
-  judgeTrack, estimateJeongsiLine, csatMinCheck,
+  judgeTrack, estimateJeongsiLine, csatMinCheck, best3Sum,
   // 학급 집계
   classMockStats, findMovers, buildHeatmap, allExamKeys, examMetaOf
 };
@@ -6753,10 +6791,18 @@ function mkOnExamChange() {
   mockGy = parseInt(document.getElementById('mk-gy').value, 10);
   mockMonth = parseInt(document.getElementById('mk-month').value, 10);
   mkRenderMonths();
+  mkRefreshManualForm();
 }
 function mkOnGyChange() {
   mockGy = parseInt(document.getElementById('mk-gy').value, 10);
   mkRenderMonths();
+  mkRefreshManualForm();
+}
+/** 직접 입력 표는 체제(공통/선택)가 바뀔 때만 다시 그린다 — 입력하던 값이 지워지지 않게 */
+let mkManualInteg = null;
+function mkRefreshManualForm() {
+  if (mockInputMode !== 'manual') return;
+  if (ME.isIntegratedExam({ year: mockYear, gy: mockGy }) !== mkManualInteg) mkRenderManual();
 }
 
 function selectMockInput(mode) {
@@ -7042,15 +7088,19 @@ function mkRenderManual() {
   if (keep && names.indexOf(keep) >= 0) sel.value = keep;
 
   const areas = ['국어', '수학', '영어', '한국사', '탐구1', '탐구2'];
-  let html = '<table class="mk-table"><thead><tr><th>영역</th><th>원점수</th><th>표준점수</th><th>백분위</th><th>등급</th><th>선택과목</th></tr></thead><tbody>';
+  // 공통 체제(고1·2)는 국어·수학 선택과목이 없고 탐구는 통합사회·통합과학으로 정해져 있어 과목명 칸을 받지 않는다
+  const exam = { year: mockYear, gy: mockGy };
+  const integ = ME.isIntegratedExam(exam);
+  mkManualInteg = integ;
+  let html = '<table class="mk-table"><thead><tr><th>영역</th><th>원점수</th><th>표준점수</th><th>백분위</th><th>등급</th><th>' + (integ ? '' : '선택과목') + '</th></tr></thead><tbody>';
   for (const a of areas) {
     const isAbs = ME.ABS_AREAS.indexOf(a) >= 0;
-    html += '<tr><td class="rowhead">' + a + '</td>' +
+    html += '<tr><td class="rowhead">' + ME.areaLabel(a, exam) + '</td>' +
       '<td><input class="mk-mi" data-a="' + a + '" data-f="raw" type="number" step="0.1"></td>' +
       '<td>' + (isAbs ? '<span style="color:var(--ink-3)">—</span>' : '<input class="mk-mi" data-a="' + a + '" data-f="std" type="number" step="0.1">') + '</td>' +
       '<td>' + (isAbs ? '<span style="color:var(--ink-3)">—</span>' : '<input class="mk-mi" data-a="' + a + '" data-f="pct" type="number" step="0.1">') + '</td>' +
       '<td><input class="mk-mi" data-a="' + a + '" data-f="grade" type="number" min="1" max="9"></td>' +
-      '<td><input class="mk-mi" data-a="' + a + '" data-f="sel" type="text" placeholder="' + (a.indexOf('탐구') === 0 ? '생활과윤리' : (a === '국어' ? '언어와매체' : (a === '수학' ? '미적분' : '—'))) + '"></td></tr>';
+      '<td>' + (integ ? '' : '<input class="mk-mi" data-a="' + a + '" data-f="sel" type="text" placeholder="' + (a.indexOf('탐구') === 0 ? '생활과윤리' : (a === '국어' ? '언어와매체' : (a === '수학' ? '미적분' : '—'))) + '">') + '</td></tr>';
   }
   html += '</tbody></table>';
   document.getElementById('mk-man-table').innerHTML = html;
@@ -7096,6 +7146,23 @@ function mkSameStudent(a, b) {
   return true;
 }
 
+// ── 공통 체제 (고1·2: 국어·수학 선택과목 없음, 탐구 = 통합사회·통합과학) ──
+/** 영역 표시명. 탐구 슬롯은 넘긴 회차가 모두 공통 체제일 때만 통합사회·통합과학으로 부른다. */
+function mkAreaName(a, exams) {
+  const list = (Array.isArray(exams) ? exams : [exams]).filter(Boolean);
+  if (!ME.INTEGRATED_TAMGU[a] || !list.length) return a;
+  return list.every(e => ME.isIntegratedExam(e)) ? ME.INTEGRATED_TAMGU[a] : a;
+}
+/** 불러온 회차 전체의 메타 */
+function mkAllExamMetas() {
+  return ME.allExamKeys(mockStudents).map(k => ME.examMetaOf(mockStudents, k));
+}
+/** 학생의 최근 회차가 공통 체제인지 */
+function mkStuIntegrated(name) {
+  const ser = ME.examSeries(mockStudents[name]);
+  return ser.length > 0 && ME.isIntegratedExam(ser[ser.length - 1]);
+}
+
 // ── 병합 / 후처리 ──
 function mkMerge(students) {
   for (const [name, stu] of Object.entries(students)) {
@@ -7104,6 +7171,7 @@ function mkMerge(students) {
     for (const [k, ex] of Object.entries(stu.exams)) {
       if (mockStudents[name].exams[k]) Object.assign(mockStudents[name].exams[k].subjects, ex.subjects);
       else mockStudents[name].exams[k] = ex;
+      ME.applyCurriculum(mockStudents[name].exams[k]);
     }
   }
 }
@@ -7172,8 +7240,39 @@ function mkRemoveExam(key) {
   showToast('회차를 삭제했습니다.');
 }
 
+/** 예시 양식 (고1·2 공통 체제) — 국어·수학 선택과목 없음, 탐구 = 통합사회·통합과학 */
+function mkDownloadTemplateIntegrated() {
+  const HEADER = [
+    '학번', '반', '번호', '이름',
+    '국어원점수', '국어표준점수', '국어백분위', '국어등급',
+    '수학원점수', '수학표준점수', '수학백분위', '수학등급',
+    '영어원점수', '영어등급',
+    '한국사원점수', '한국사등급',
+    '통합사회원점수', '통합사회표준점수', '통합사회백분위', '통합사회등급',
+    '통합과학원점수', '통합과학표준점수', '통합과학백분위', '통합과학등급'
+  ];
+  const rows = [
+    ['모의고사 성적 업로드 예시 양식 (고1·2) — 성적 돋보기'],
+    ['· 헤더 행(7행)은 그대로 두고 8행부터 학생 데이터를 채워 넣으세요.'],
+    ['· 학번이 있으면 학번으로, 없으면 반+번호로, 그것도 없으면 이름으로 매칭합니다.'],
+    ['· 모르는 값은 비워두세요. 등급이 비면 백분위(영어·한국사는 원점수)에서 자동 산출합니다.'],
+    ['· 고1·2는 국어·수학 선택과목이 없고 탐구는 통합사회·통합과학입니다. 3학년 양식은 회차 학년을 3학년으로 바꾸고 내려받으세요.'],
+    [],
+    HEADER,
+    ['2026-0101', '1', 1, '홍길동', 89, 129, 86.7, 2, 77, 124, 79.2, 3, 88, 2, 42, 1, 45, 66, 81.3, 3, 40, 62, 74.5, 3],
+    ['2026-0102', '1', 2, '김철수', '', '', 95.1, '', '', '', 91.0, '', 91, '', 38, '', '', '', 88.2, '', '', '', 85.0, '']
+  ];
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = HEADER.map((h, i) => ({ wch: i < 4 ? 10 : 14 }));
+  XLSX.utils.book_append_sheet(wb, ws, '모의고사성적');
+  xlWriteSheetJS(wb, '모의고사성적_예시양식_고1·2.xlsx').catch(e => showToast('엑셀 저장 실패: ' + e.message)); // 글꼴 통일
+  showToast('고1·2 예시 양식을 내려받았습니다.');
+}
+
 /** 예시 양식 xlsx 다운로드 */
 function mkDownloadTemplate() {
+  if (ME.isIntegratedExam({ year: mockYear, gy: mockGy })) return mkDownloadTemplateIntegrated();
   const HEADER = [
     '학번', '반', '번호', '이름',
     '국어원점수', '국어표준점수', '국어백분위', '국어등급', '국어선택과목',
@@ -7303,10 +7402,9 @@ function mkKpiCard(name, series, recent, prev) {
     items.push(tile('최저 영역', areaList[areaList.length - 1].g, '등급', mkEsc(areaList[areaList.length - 1].n), '#e11d48'));
   }
 
-  const three = ['국어', '수학', '영어', '탐구1'].map(a => recent.subjects[a] && recent.subjects[a].grade)
-    .filter(g => typeof g === 'number').sort((a, b) => a - b).slice(0, 3);
-  if (three.length === 3) {
-    const sum = three.reduce((a, b) => a + b, 0);
+  // 탐구는 두 과목 중 좋은 쪽 1과목 — 수능 최저 시뮬레이터와 같은 기준
+  const sum = ME.best3Sum(recent);
+  if (sum !== null) {
     items.push(tile('상위 3개 등급합', sum, '', sum <= 6 ? '주요대 최저 유력' : (sum <= 9 ? '중위권 최저 선' : '최저 없는 전형 권장'),
       sum <= 6 ? '#0d9488' : (sum <= 9 ? 'var(--warn)' : 'var(--bad)')));
   }
@@ -7324,10 +7422,11 @@ function mkKpiCard(name, series, recent, prev) {
 // ── 반영 과목 선택 ──
 function mkWeightCard() {
   const areas = ['국어', '수학', '영어', '한국사', '탐구1', '탐구2'];
+  const metas = mkAllExamMetas();
   const chips = areas.map(a =>
     '<label style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;cursor:pointer;padding:3px 8px;border-radius:8px;border:1.5px solid ' +
     (mockWeight.has(a) ? 'var(--good);background:var(--good-2);color:var(--good)' : 'var(--line-2);background:var(--paper);color:var(--ink-3)') + '">' +
-    '<input type="checkbox" ' + (mockWeight.has(a) ? 'checked' : '') + ' onchange="mkToggleWeight(\'' + a + '\')" style="accent-color:#0d9488"> ' + a + '</label>'
+    '<input type="checkbox" ' + (mockWeight.has(a) ? 'checked' : '') + ' onchange="mkToggleWeight(\'' + a + '\')" style="accent-color:#0d9488"> ' + mkAreaName(a, metas) + '</label>'
   ).join(' ');
 
   return '<div class="result-card"><div class="result-title">' + ic('sliders', 17) + ' 평균등급 반영 과목</div>' +
@@ -7360,7 +7459,7 @@ function mkScoreTableCard(series) {
   for (const g of groups) {
     html += '<div class="mk-grp-h" style="font-size:11px;font-weight:900;color:var(--ink-2);margin:10px 0 5px">' + g.title + '</div>' +
       '<div style="overflow-x:auto"><table class="mk-table"><thead><tr><th style="width:34px"></th><th style="width:62px"></th>' +
-      areas.map(a => '<th>' + a + '</th>').join('') + '</tr></thead>';
+      areas.map(a => '<th>' + mkAreaName(a, series) + '</th>').join('') + '</tr></thead>';
 
     for (const ex of g.rows) {
       html += '<tbody class="mk-exam">';
@@ -7447,7 +7546,7 @@ function mkTrendConfig(stu, opt) {
   const areas = ME.AREAS.filter(a => series.some(e => e.subjects[a] && e.subjects[a].grade !== null));
 
   const datasets = areas.map(a => ({
-    label: a,
+    label: mkAreaName(a, series),
     data: series.map(e => e.subjects[a] && e.subjects[a].grade !== null ? 10 - e.subjects[a].grade : null),
     borderColor: MK_AREA_COLOR[a] || '#64748b',
     backgroundColor: (MK_AREA_COLOR[a] || '#64748b') + '22',
@@ -7583,7 +7682,8 @@ function mkDiagnosisCard(stu) {
     const tr = it.trend === null ? '<span style="color:var(--ink-3)">—</span>'
       : (it.trend < -0.1 ? '<span class="mk-d up">' + ic('arrowUp', 10) + ' 상승</span>'
         : (it.trend > 0.1 ? '<span class="mk-d down">' + ic('arrowDown', 10) + ' 하락</span>' : '<span class="mk-d same">유지</span>'));
-    return '<tr><td class="rowhead">' + mkEsc(it.area) + (it.name !== it.area ? '<span class="mk-sel">' + mkEsc(it.name) + '</span>' : '') + '</td>' +
+    const head = ME.areaLabel(it.area, dg.recent);
+    return '<tr><td class="rowhead">' + mkEsc(head) + (it.name !== head ? '<span class="mk-sel">' + mkEsc(it.name) + '</span>' : '') + '</td>' +
       '<td><span class="grade-badge g' + Math.min(9, Math.round(it.grade || 9)) + '">' + (it.grade === null ? '-' : it.grade) + '</span>' + tag + '</td>' +
       '<td class="num">' + (it.pct === null ? '—' : mkFix(it.pct, 1)) + '</td>' +
       '<td class="num">' + (it.best === null ? '—' : it.best + ' / ' + it.worst) + '</td>' +
@@ -7633,9 +7733,10 @@ function mkMoversCard(prevKey) {
   }
   const mv = ME.findMovers(mockStudents, mockDashKey, prevKey, mockMoverTh, mockWeight);
   const prevMeta = ME.examMetaOf(mockStudents, prevKey);
+  const curMeta = ME.examMetaOf(mockStudents, mockDashKey);
 
   const row = (it, dir) => {
-    const dt = it.detail.slice(0, 3).map(d => d.area + ' ' + d.from + '→' + d.to).join(' · ');
+    const dt = it.detail.slice(0, 3).map(d => mkAreaName(d.area, [curMeta, prevMeta]) + ' ' + d.from + '→' + d.to).join(' · ');
     return '<div class="mk-mrow"><span class="nm">' + mkEsc(it.name) + '</span>' +
       // sumDelta는 등급 숫자 합의 변화라 좋아지면 음수다. 보는 사람 감각에 맞춰
       // 좋아진 폭은 +, 떨어진 폭은 −로 뒤집어 보여준다 (엔진 값은 그대로).
@@ -7684,7 +7785,7 @@ function mkDistCard() {
   // 과목 선택은 누를 수 있다는 게 한눈에 보여야 한다
   const chips = areas.map(a => {
     const st = cs.bySubject[a];
-    const nm = (a.indexOf('탐구') === 0 && st.sel) ? st.sel : a;
+    const nm = (a.indexOf('탐구') === 0 && st.sel) ? st.sel : mkAreaName(a, ME.examMetaOf(mockStudents, mockDashKey));
     return '<button class="pickchip' + (a === area ? ' on' : '') + '" onclick="mkSetDistArea(\'' + a + '\')">' +
       mkEsc(nm) + '<span class="n">' + mkFix(st.avg) + '</span></button>';
   }).join('');
@@ -8307,7 +8408,8 @@ function mkPromptData(name) {
   for (const ex of series) {
     const parts = ME.AREAS.filter(a => ex.subjects[a]).map(a => {
       const s = ex.subjects[a];
-      const nm = s.sel ? a + '(' + s.sel + ')' : a;
+      const base = mkAreaName(a, ex);
+      const nm = s.sel && s.sel !== base ? base + '(' + s.sel + ')' : base;
       let v = nm + ' ' + (s.grade === null ? '-' : s.grade) + '등급';
       if (s.pct !== null && !s.pctDerived) v += '/백분위 ' + s.pct;
       if (s.raw !== null) v += '/원점수 ' + s.raw;
@@ -8355,7 +8457,8 @@ function mkPromptAsk(name) {
     p += '   - 모의고사 성적만으로 본 정시 경쟁력과 보완 영역\n';
   }
   p += '   - 남은 기간 영역별 학습 시간 배분 제안 (투입 대비 등급 상승 효과가 큰 순서로)\n';
-  p += '   - 탐구 과목 조합·선택과목이 적절한지, 교체를 검토할 필요가 있는지\n\n';
+  if (mkStuIntegrated(name)) p += '   - 통합사회·통합과학 중 보완이 더 급한 쪽과 그 이유 (고1·2는 국어·수학 선택과목이 없고 탐구 두 과목을 모두 응시함)\n\n';
+  else p += '   - 탐구 과목 조합·선택과목이 적절한지, 교체를 검토할 필요가 있는지\n\n';
   return p;
 }
 
@@ -8367,7 +8470,7 @@ function mkExcelRows(name) {
   const areas = ME.AREAS.filter(a => series.some(e => e.subjects[a]));
 
   const rows = [];
-  rows.push(['회차', '주관', ...areas.flatMap(a => [a + ' 원점수', a + ' 표준', a + ' 백분위', a + ' 등급']), '반영 평균등급', '직전 대비']);
+  rows.push(['회차', '주관', ...areas.flatMap(a => { const nm = mkAreaName(a, series); return [nm + ' 원점수', nm + ' 표준', nm + ' 백분위', nm + ' 등급']; }), '반영 평균등급', '직전 대비']);
   for (const ex of series) {
     const cells = areas.flatMap(a => {
       const s = ex.subjects[a];
@@ -8581,7 +8684,10 @@ function mkBuildMockPrompt(name) {
   p += '이름: ' + name + '\n';
   if (stu.meta && stu.meta.cls) p += '학급: ' + stu.meta.cls + '반' + (stu.meta.num ? ' ' + stu.meta.num + '번' : '') + '\n';
   if (career) p += '진로 희망: ' + career + '\n';
-  p += '반영 과목: ' + [...mockWeight].join(' · ') + (mockMergeTamgu ? ' (탐구 2과목은 평균내어 1과목으로)' : '') + '\n';
+  const integ = mkStuIntegrated(name);
+  const lastEx = ME.examSeries(stu).slice(-1);
+  p += '반영 과목: ' + [...mockWeight].map(a => mkAreaName(a, lastEx)).join(' · ') + (mockMergeTamgu ? ' (탐구 2과목은 평균내어 1과목으로)' : '') + '\n';
+  if (integ) p += '체제: 고1·2 공통 체제 (국어·수학 선택과목 없음, 탐구는 통합사회·통합과학 모두 응시)\n';
   if (!hasNaesin) p += '\n※ 내신 자료는 올라와 있지 않습니다. 모의고사만으로 분석해 주세요.\n';
 
   p += mkPromptData(name);
@@ -8597,8 +8703,13 @@ function mkBuildMockPrompt(name) {
   p += '2. 투입 대비 효과가 큰 순서\n';
   p += '   - 등급 경계에 걸린 영역부터, 한 등급 올리려면 무엇이 필요한지\n';
   p += '   - 영어·한국사는 절대평가라 목표 점수를 숫자로 제시\n\n';
-  p += '3. 선택과목 · 탐구 조합 점검\n';
-  p += '   - 지금 조합이 이 학생에게 맞는지, 바꿀 만한 이유가 있는지\n\n';
+  if (integ) {
+    p += '3. 통합사회 · 통합과학 균형 점검\n';
+    p += '   - 두 과목 모두 응시하므로 바꿀 수 없다는 전제에서, 어느 쪽을 먼저 끌어올릴지\n\n';
+  } else {
+    p += '3. 선택과목 · 탐구 조합 점검\n';
+    p += '   - 지금 조합이 이 학생에게 맞는지, 바꿀 만한 이유가 있는지\n\n';
+  }
   p += '4. 남은 기간 학습 시간 배분\n';
   p += '   - 주당 시간을 영역별로 어떻게 나눌지 구체적인 비율로\n\n';
   if (hasNaesin) {
@@ -9256,7 +9367,7 @@ function mkNumOr(v) { const n = parseFloat(v); return isFinite(n) ? n : null; }
 
 /**
  * 영역 라벨 → 표준 영역 + 표시명.
- * 고1 학평의 '사회'/'과학'은 탐구 슬롯으로 넣되 이름을 살린다.
+ * 고1·2 학평의 '사회'/'과학'은 탐구 슬롯으로 넣는다. 통합사회·통합과학 이름은 ME.applyCurriculum이 붙인다.
  */
 function mkPdfArea(label, tamguUsed) {
   const n = String(label || '').replace(/\s/g, '');
@@ -9295,6 +9406,8 @@ function mkPdfExamMeta(pages) {
   if (!month) month = 3;
 
   const meta = ME.makeExamMeta(year, month, gy || 3);
+  // 제목에 학년이 없으면 비워 두고 성적표 본문에서 채운다 (공통 체제 판별에 학년이 필요하다)
+  meta.gy = gy;
   // 제목이 평가원/수능이면 주관처를 덮어쓴다
   if (/수능/.test(title) && !/모의/.test(title)) { meta.org = '수능'; meta.label = '수능'; }
   else if (/모의평가/.test(title)) { meta.org = '평가원'; meta.label = month + '월 모의평가'; }
@@ -9524,6 +9637,7 @@ async function mkParsePdf(arrayBuffer, onProgress) {
     const order = mkRosterOrder(pages[0]);
     if (!order) throw new Error('일람표 머리글(국어영역·수학영역 …)을 찾지 못했습니다');
     const head = mkRosterHead(pages[0]);
+    if (head.gy && !meta.gy) meta.gy = head.gy;
     for (const pg of pages) {
       for (const r of mkParseRosterPage(pg, order)) {
         parsed++;
@@ -9535,7 +9649,6 @@ async function mkParsePdf(arrayBuffer, onProgress) {
         else students[key] = { meta: r.meta, exams: { [meta.key]: ex } };
       }
     }
-    if (head.gy && !meta.gy) meta.gy = head.gy;
   }
 
   if (!parsed) throw new Error('학생 성적을 한 명도 읽지 못했습니다');
@@ -9675,6 +9788,8 @@ function mkStoreLoad(announce) {
     // ── 모의고사 ──
     if (p.mock && p.mock.students) {
       mockStudents = p.mock.students;
+      // 예전에 저장한 고1·2 회차도 탐구 이름을 통합사회·통합과학으로 맞춘다
+      Object.values(mockStudents).forEach(s => Object.values(s.exams || {}).forEach(ME.applyCurriculum));
       if (Array.isArray(p.mock.weight) && p.mock.weight.length) mockWeight = new Set(p.mock.weight);
       mockMergeTamgu = !!p.mock.mergeTamgu;
       const keys = ME.allExamKeys(mockStudents);
