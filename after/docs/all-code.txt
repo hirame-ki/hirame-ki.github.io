@@ -1,4 +1,4 @@
-﻿방과후 한눈에 v1.2.0 — Apps Script 전체 코드
+﻿방과후 한눈에 v1.1.0 — Apps Script 전체 코드
 각 구역의 "편집기 파일 이름"으로 파일을 만들고, 구분선 사이의 코드를 그대로 붙여넣으세요.
 스크립트는 [＋] → [스크립트], HTML은 [＋] → [HTML]로 만듭니다. 확장자는 입력하지 않습니다.
 appsscript는 [프로젝트 설정] → ["appsscript.json" 매니페스트 파일 표시]를 켠 뒤 내용을 바꿉니다.
@@ -13,7 +13,7 @@ appsscript는 [프로젝트 설정] → ["appsscript.json" 매니페스트 파�
  */
 
 var APP_NAME = '방과후 한눈에';
-var APP_VERSION = '1.2.0';          // tools/release.js가 자동으로 바꿉니다.
+var APP_VERSION = '1.1.0';          // tools/release.js가 자동으로 바꿉니다.
 var SCHEMA_VERSION = 2;             // 시트 구조 버전 (열·탭이 바뀌면 올리고 Cycle.gs의 migrate_에 반영)
 // 업데이트를 받아 올 곳: hirame-ki.github.io 저장소의 after/ 폴더 (raw 주소 = 올린 파일 그대로).
 // 안내 페이지는 https://hirame-ki.github.io/after/ . [설정] 탭의 '업데이트주소'로 바꿀 수 있습니다.

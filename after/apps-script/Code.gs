@@ -4,7 +4,7 @@
  */
 
 var APP_NAME = '방과후 한눈에';
-var APP_VERSION = '1.2.0';          // tools/release.js가 자동으로 바꿉니다.
+var APP_VERSION = '1.1.0';          // tools/release.js가 자동으로 바꿉니다.
 var SCHEMA_VERSION = 2;             // 시트 구조 버전 (열·탭이 바뀌면 올리고 Cycle.gs의 migrate_에 반영)
 // 업데이트를 받아 올 곳: hirame-ki.github.io 저장소의 after/ 폴더 (raw 주소 = 올린 파일 그대로).
 // 안내 페이지는 https://hirame-ki.github.io/after/ . [설정] 탭의 '업데이트주소'로 바꿀 수 있습니다.

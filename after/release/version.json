@@ -1,10 +1,28 @@
 {
   "app": "방과후 한눈에",
-  "version": "1.2.0",
+  "version": "1.1.0",
   "date": "2026-10-14",
-  "notes": [],
+  "notes": [
+    "운영 주기(학기·분기·방학) 관리: 새 주기를 시작해도 지난 강좌·신청·일정 기록이 그대로 남고 [주기 관리]에서 다시 볼 수 있습니다.",
+    "지난 주기에서 불러오기: 강좌 계획과 선정된 수강생 명단을 한 번에 가져와 새 주기를 빠르게 준비합니다.",
+    "자동 업데이트: 새 버전이 나오면 관리자 화면과 시트에 알림이 뜨고, 버튼 하나로 코드 교체와 웹앱 재배포까지 합니다.",
+    "시간대를 처음 설정 창과 [설정] 화면에서 바로 고칠 수 있습니다.",
+    "접속 주소·QR: 짧은 주소(is.gd) 만들기, QR 저장·크게 인쇄. 가정통신문에는 QR코드만 들어갑니다."
+  ],
   "changed": [
-    "Code"
+    "Code",
+    "Logic",
+    "Setup",
+    "Cycle",
+    "Update",
+    "Index",
+    "Apply",
+    "Board",
+    "SetupDialog",
+    "LinksDialog",
+    "Styles",
+    "Client",
+    "appsscript"
   ],
   "removed": [],
   "page": "https://hirame-ki.github.io/after/",
@@ -13,7 +31,7 @@
       "name": "Code",
       "type": "SERVER_JS",
       "path": "apps-script/Code.gs",
-      "sha256": "181b6b125ccbadc30153e8103a2d83af26d7ea0235b97adef85ad7c6a6fdd7f0"
+      "sha256": "fcf6ff43d189a663bc3325265dbdf33cb4998c6388b9a3776a5c1d44a6378911"
     },
     {
       "name": "Logic",
