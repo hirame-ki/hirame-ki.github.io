@@ -1,0 +1,91 @@
+{
+  "app": "방과후 한눈에",
+  "version": "1.2.0",
+  "date": "2026-10-14",
+  "notes": [],
+  "changed": [
+    "Code"
+  ],
+  "removed": [],
+  "page": "https://hirame-ki.github.io/after/",
+  "files": [
+    {
+      "name": "Code",
+      "type": "SERVER_JS",
+      "path": "apps-script/Code.gs",
+      "sha256": "181b6b125ccbadc30153e8103a2d83af26d7ea0235b97adef85ad7c6a6fdd7f0"
+    },
+    {
+      "name": "Logic",
+      "type": "SERVER_JS",
+      "path": "apps-script/Logic.gs",
+      "sha256": "1c24b0ed6443a459a68b4301d2c310774693b908f4d9b3dfaedbb4a9e819a09f"
+    },
+    {
+      "name": "Setup",
+      "type": "SERVER_JS",
+      "path": "apps-script/Setup.gs",
+      "sha256": "7811b3b13e0fadc1a59d76ee05b803b8fd5fc0ce613428a178627eca6b6d3f58"
+    },
+    {
+      "name": "Cycle",
+      "type": "SERVER_JS",
+      "path": "apps-script/Cycle.gs",
+      "sha256": "cc6b8a16d4316af885fb441f01b861fa165406d56a7b25c5f6d21e2965fe610c"
+    },
+    {
+      "name": "Update",
+      "type": "SERVER_JS",
+      "path": "apps-script/Update.gs",
+      "sha256": "ea9aff377e3e5402380bd41840a2c4420a3ae451037cc676b554995535da0a8e"
+    },
+    {
+      "name": "Index",
+      "type": "HTML",
+      "path": "apps-script/Index.html",
+      "sha256": "b4065d3833046046ab1f7edb4aa636b4eca903650119d4ed0c0a6f3a3a20b2c5"
+    },
+    {
+      "name": "Apply",
+      "type": "HTML",
+      "path": "apps-script/Apply.html",
+      "sha256": "38bdb47425bebc067afd39343f57829efb1cef69544f0f29bf995aea183746db"
+    },
+    {
+      "name": "Board",
+      "type": "HTML",
+      "path": "apps-script/Board.html",
+      "sha256": "98fe75682c0eb35d20099437ea6b43ea62cce069d5d27844d603b3b38bed91c5"
+    },
+    {
+      "name": "SetupDialog",
+      "type": "HTML",
+      "path": "apps-script/SetupDialog.html",
+      "sha256": "e2d970470cc2c68ba926e02d364d83082747e7728fc3bddd61612213bc4b5d0e"
+    },
+    {
+      "name": "LinksDialog",
+      "type": "HTML",
+      "path": "apps-script/LinksDialog.html",
+      "sha256": "cae57aa0d61884d377787b9c9d84a298ce160f97b1ea7b04f2af7c83c30ca9fb"
+    },
+    {
+      "name": "Styles",
+      "type": "HTML",
+      "path": "apps-script/Styles.html",
+      "sha256": "7685205aca72d12d2f7cc7b47b4626b00d287e8eb81eb21c82711e732b1c1d59"
+    },
+    {
+      "name": "Client",
+      "type": "HTML",
+      "path": "apps-script/Client.html",
+      "sha256": "3ca7ebaedd50b55d25865f24385a913f92557ff2a9cc7c036e785f23cbcd8e4a"
+    },
+    {
+      "name": "appsscript",
+      "type": "JSON",
+      "path": "apps-script/appsscript.json",
+      "sha256": "81b46ef5bbb8ca0b88d79b360f1bd4648efb4929b2256998782c4da600a404ee"
+    }
+  ]
+}

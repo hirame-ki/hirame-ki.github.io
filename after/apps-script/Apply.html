@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <?!= include('Styles') ?>
+  <style>
+    body { background: var(--bg); }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 16px 16px 90px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .top .school { font-size: 13px; color: var(--muted); }
+    .top h1 { font-size: 20px; }
+    .login { max-width: 420px; margin: 8vh auto 0; display: flex; flex-direction: column; gap: 14px; }
+    .three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .tabs { display: flex; gap: 4px; background: #e7ebf1; padding: 4px; border-radius: 10px; margin: 14px 0; }
+    .tabs button { flex: 1; border: 0; background: transparent; padding: 9px 6px; border-radius: 8px; font: inherit; font-weight: 600; color: var(--muted); cursor: pointer; }
+    .tabs button.on { background: #fff; color: var(--ink); box-shadow: var(--shadow); }
+    .course { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .course.mine { border-color: var(--green); box-shadow: 0 0 0 1px var(--green) inset; }
+    .course.off { opacity: .62; }
+    .course .t { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+    .course h3 { font-size: 17px; }
+    .course .meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 14px; color: var(--muted); }
+    .course .meta b { color: var(--ink); font-weight: 600; }
+    .course .desc { font-size: 14px; color: var(--muted); }
+    .course .why { font-size: 13px; color: var(--red); }
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .tt { display: grid; gap: 6px; }
+    .tt .col { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 6px; min-height: 90px; }
+    .tt .col h4 { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .tt .blk { border-left: 4px solid var(--primary); background: var(--primary-weak); border-radius: 6px; padding: 5px 7px; font-size: 12.5px; margin-bottom: 5px; }
+    .tt .blk.ok { border-left-color: var(--green); background: var(--green-weak); }
+    .tt .blk.wait { border-left-color: var(--amber); background: var(--amber-weak); }
+    .tt .blk b { display: block; }
+    .sticky { position: sticky; top: 0; z-index: 5; background: var(--bg); padding-top: 4px; }
+    @media (max-width: 520px) { .tt { grid-template-columns: 1fr !important; } .tt .col { min-height: 0; } }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app"><div class="empty">불러오는 중…</div></div>
+  <?!= include('Client') ?>
+  <script>
+    const BOOT = <?!= bootJson ?>;
+    const app = document.getElementById('app');
+    let AUTH = null, D = null, INFO = null;
+    const UI = { tab: 'list', day: '' };
+
+    async function start() {
+      try { INFO = await call('info'); } catch (e) { app.innerHTML = `<div class="notice bad">${esc(e.message)}</div>`; return; }
+      let saved = null;
+      try { saved = JSON.parse(sessionStorage.getItem('asm_stu') || 'null'); } catch (e) { }
+      if (saved) {
+        AUTH = saved;
+        try { D = await call('stuLogin', {}, AUTH); render(); return; } catch (e) { AUTH = null; }
+      }
+      renderLogin();
+    }
+
+    function renderLogin() {
+      const lb = INFO.labels;
+      app.innerHTML = `
+      <div class="card login">
+        <div><div class="small muted">${esc(INFO.schoolName)}</div><h1 style="font-size:22px">${esc(lb.programName)} 수강 신청</h1></div>
+        ${!lb.configured ? '<div class="notice warn">아직 준비 중입니다.</div>' : ''}
+        <div class="three">
+          <label class="field">학년<select id="g">${Array.from({ length: lb.grades }, (_, i) => `<option>${i + 1}</option>`).join('')}</select></label>
+          <label class="field">반<input id="c" type="number" inputmode="numeric" min="1" max="30"></label>
+          <label class="field">번호<input id="n" type="number" inputmode="numeric" min="1" max="60"></label>
+        </div>
+        <label class="field">이름<input id="nm" autocomplete="name"></label>
+        <label class="field">확인코드 <span class="hint">담임 선생님께 받은 4자리 숫자</span><input id="code" type="password" inputmode="numeric" autocomplete="off"></label>
+        <button class="btn primary lg block" id="go">들어가기</button>
+        <p class="small muted" style="margin:0">${INFO.stage === '신청접수' ? `신청 기간: ${esc(INFO.applyStart || '')} ~ ${esc(INFO.applyEnd || '')}` : '지금은 신청 기간이 아닙니다. 들어가서 강좌와 결과를 볼 수 있습니다.'}</p>
+      </div>`;
+      $('#go').onclick = login;
+      $$('input', app).forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') login(); }));
+    }
+
+    async function login() {
+      const g = $('#g').value, c = $('#c').value, n = $('#n').value;
+      if (!c || !n) return toast('반과 번호를 입력하세요.', 'err');
+      const a = { sid: g + pad2(+c) + pad2(+n), name: $('#nm').value.trim(), code: $('#code').value.trim() };
+      if (!a.name || !a.code) return toast('이름과 확인코드를 입력하세요.', 'err');
+      loading(true);
+      try {
+        D = await call('stuLogin', {}, a);
+        AUTH = a;
+        try { sessionStorage.setItem('asm_stu', JSON.stringify(a)); } catch (e) { }
+        UI.tab = D.stage === '운영중' ? 'mine' : 'list';
+        render();
+      } catch (e) { toast(e.message, 'err'); }
+      finally { loading(false); }
+    }
+
+    function logout() {
+      AUTH = null; D = null;
+      try { sessionStorage.removeItem('asm_stu'); } catch (e) { }
+      renderLogin();
+    }
+
+    const prep = c => c; // 서버에서 dayList, s, e, d1, d2를 이미 계산해 보냅니다.
+    const mineOf = id => D.mine.find(m => m.courseId === id);
+    const cById = id => D.courses.find(c => c.id === id);
+    const activeMine = () => D.mine.filter(m => cById(m.courseId));
+
+    function blockReason(c) {
+      if (mineOf(c.id)) return '';
+      if (!D.window.open) return D.window.reason;
+      if (D.maxCount && D.mine.length >= D.maxCount) return `최대 ${D.maxCount}개까지 신청할 수 있습니다.`;
+      for (const m of D.mine) {
+        const o = cById(m.courseId);
+        const ov = o && overlap(c, o);
+        if (ov) return `신청한 「${o.name}」와 ${ov.join('·')}요일 시간이 겹칩니다.`;
+      }
+      return '';
+    }
+
+    function seatText(c) {
+      const left = c.capNum - c.active;
+      if (D.method === '선착순') return left > 0 ? `남은 자리 ${left}` : `정원 마감 · 대기 ${c.waiting}명`;
+      return `신청 ${c.active} / 정원 ${c.capNum}`;
+    }
+
+    function stateBadge(m) {
+      if (!m) return '';
+      if (m.status === '선정') return `<span class="badge b-green">${D.stage === '운영중' || D.method === '선착순' ? '수강 확정' : '선정'}</span>`;
+      if (m.status === '대기') return `<span class="badge b-amber">대기 ${esc(m.wait || '')}번</span>`;
+      return '<span class="badge b-blue">신청함 · 선발 전</span>';
+    }
+
+    function courseCard(c) {
+      const m = mineOf(c.id), why = blockReason(c);
+      const btn = m
+        ? (D.window.open ? `<button class="btn danger" data-cancel="${c.id}">신청 취소</button>` : '')
+        : `<button class="btn primary" data-apply="${c.id}" ${why ? 'disabled' : ''}>신청하기</button>`;
+      return `<div class="course ${m ? 'mine' : ''} ${!m && why ? 'off' : ''}">
+        <div class="t"><div><h3>${esc(c.name)}</h3>${c.area ? `<span class="small faint">${esc(c.area)}</span>` : ''}</div>${stateBadge(m)}</div>
+        <div class="meta"><span><b>${c.dayList.join('·')}</b> ${c.s}~${c.e}</span><span>장소 <b>${esc(c.room)}</b></span><span>${esc(D.labels.teacherLabel)} <b>${esc(c.teacher)}</b></span>
+          <span>${md(c.d1)}~${md(c.d2)}</span>${D.feeUse ? `<span>수강료 <b>${won(c.feeNum)}</b>${c.feeNum ? ` (${esc(D.feeUnit)})` : ''}${c.materialNum ? ` · 재료비 ${won(c.materialNum)}` : ''}</span>` : ''}</div>
+        ${c.desc ? `<div class="desc">${esc(c.desc)}</div>` : ''}
+        <div class="row between"><span class="small muted">${seatText(c)}</span>${btn}</div>
+        ${!m && why && D.window.open ? `<div class="why">${esc(why)}</div>` : ''}
+      </div>`;
+    }
+
+    function timetable() {
+      const items = activeMine().map(m => ({ m, c: cById(m.courseId) }));
+      if (!items.length) return '<div class="empty card">아직 신청한 강좌가 없습니다.</div>';
+      const days = ['월', '화', '수', '목', '금'].concat(items.some(x => x.c.dayList.includes('토')) ? ['토'] : []);
+      return `<div class="tt" style="grid-template-columns:repeat(${days.length},minmax(0,1fr))">${days.map(d => `<div class="col"><h4>${d}</h4>${items.filter(x => x.c.dayList.includes(d)).sort((a, b) => a.c.s < b.c.s ? -1 : 1)
+        .map(x => `<div class="blk ${x.m.status === '선정' ? 'ok' : x.m.status === '대기' ? 'wait' : ''}">${x.c.s}~${x.c.e}<b>${esc(x.c.name)}</b>${esc(x.c.room)}</div>`).join('')}</div>`).join('')}</div>`;
+    }
+
+    function render() {
+      const st = D.student, list = D.courses.filter(c => c.status === '승인' || mineOf(c.id))
+        .filter(c => !UI.day || c.dayList.includes(UI.day))
+        .sort((a, b) => DAY_ORDER.indexOf(a.dayList[0]) - DAY_ORDER.indexOf(b.dayList[0]) || (a.s < b.s ? -1 : 1));
+      const days = DAY_ORDER.filter(d => D.courses.some(c => c.dayList.includes(d)));
+      const n = D.mine.length;
+      const methodTxt = { '선착순': '선착순 (신청 즉시 결과가 정해져요)', '추첨': '정원이 넘으면 마감 후 추첨', '담당자선정': '마감 후 선생님이 선정' }[D.method] || D.method;
+      const banner = D.window.open
+        ? `<div class="notice">신청 기간: <b>${esc(D.applyStart || '지금')} ~ ${esc(D.applyEnd || '마감 안내 시')}</b><br>선발: ${methodTxt}${D.maxCount ? ` · 최대 <b>${D.maxCount}개</b> (지금 ${n}개)` : ''} · 같은 시간 강좌는 함께 신청할 수 없어요.</div>`
+        : `<div class="notice ${D.stage === '운영중' ? 'ok' : 'warn'}">${esc(D.window.reason)}</div>`;
+      const mineList = activeMine().map(m => cById(m.courseId));
+      app.innerHTML = `
+        <div class="top"><div><div class="school">${esc(D.schoolName)} · ${esc(D.labels.programName)}</div><h1>${st.grade}학년 ${st.cls}반 ${st.no}번 ${esc(st.name)}</h1></div>
+          <button class="btn sm" id="out">나가기</button></div>
+        ${banner}
+        <div class="sticky"><div class="tabs" role="tablist">
+          <button class="${UI.tab === 'list' ? 'on' : ''}" data-tab="list">강좌 목록</button>
+          <button class="${UI.tab === 'mine' ? 'on' : ''}" data-tab="mine">내 신청 ${n}</button>
+          <button class="${UI.tab === 'tt' ? 'on' : ''}" data-tab="tt">내 시간표</button>
+        </div>
+        ${UI.tab === 'list' ? `<div class="pills" style="margin-bottom:10px"><span class="pill ${!UI.day ? 'on' : ''}" data-day="">전체</span>${days.map(d => `<span class="pill ${UI.day === d ? 'on' : ''}" data-day="${d}">${d}</span>`).join('')}</div>` : ''}
+        </div>
+        ${UI.tab === 'list' ? `<div class="list">${list.map(courseCard).join('') || '<div class="empty">신청할 수 있는 강좌가 없습니다.</div>'}</div>` : ''}
+        ${UI.tab === 'mine' ? `<div class="list">${mineList.map(courseCard).join('') || '<div class="empty card">아직 신청한 강좌가 없습니다.</div>'}</div>
+          ${D.stage === '운영중' ? '<p class="small muted" style="margin-top:12px">대기 중인 강좌는 빈자리가 생기면 순서대로 연락드립니다.</p>' : ''}` : ''}
+        ${UI.tab === 'tt' ? timetable() + '<p class="small muted" style="margin-top:10px">초록: 확정 · 노랑: 대기 · 파랑: 신청(선발 전)</p>' : ''}`;
+      $('#out').onclick = logout;
+    }
+
+    async function act(action, courseId) {
+      loading(true);
+      try {
+        D = await call(action, { courseId }, AUTH);
+        toast(D.msg || '처리했습니다.');
+        render();
+      } catch (e) {
+        toast(e.message, 'err');
+        try { D = await call('stuLogin', {}, AUTH); render(); } catch (e2) { }
+      } finally { loading(false); }
+    }
+
+    document.addEventListener('click', async e => {
+      const t = e.target.closest('[data-tab],[data-day],[data-apply],[data-cancel]');
+      if (!t || t.disabled) return;
+      if (t.dataset.tab) { UI.tab = t.dataset.tab; render(); }
+      else if (t.dataset.day !== undefined && !t.dataset.apply && !t.dataset.cancel) { UI.day = t.dataset.day; render(); }
+      else if (t.dataset.apply) {
+        const c = cById(t.dataset.apply);
+        if (await confirmBox('수강 신청', `「${c.name}」\n${c.dayList.join('·')} ${c.s}~${c.e} · ${c.room}\n\n신청할까요?`, '신청하기')) act('stuApply', c.id);
+      } else if (t.dataset.cancel) {
+        const c = cById(t.dataset.cancel);
+        if (await confirmBox('신청 취소', `「${c.name}」 신청을 취소할까요?${D.method === '선착순' ? '\n선착순이라 다시 신청하면 맨 뒤 순서가 됩니다.' : ''}`, '취소하기', true)) act('stuCancel', c.id);
+      }
+    });
+
+    start();
+  </script>
+</body>
+</html>

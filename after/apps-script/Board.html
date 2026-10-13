@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <?!= include('Styles') ?>
+  <style>
+    :root {
+      --b-bg: #0f1b2d; --b-panel: #17263d; --b-card: #1d2f4a; --b-line: #2a4064;
+      --b-ink: #f3f6fb; --b-muted: #a9b8cf; --b-accent: #7cc4ff; --b-room: #ffd36e;
+      --b-red: #ff7a70; --b-green: #6fe0a6; --b-amber: #ffc56a;
+    }
+    body.light {
+      --b-bg: #eef2f8; --b-panel: #ffffff; --b-card: #ffffff; --b-line: #d5ddea;
+      --b-ink: #111a28; --b-muted: #5a6880; --b-accent: #1d5bb5; --b-room: #a35b00;
+      --b-red: #c8322a; --b-green: #1f7f55; --b-amber: #a8650c;
+    }
+    html, body { height: 100%; }
+    body { background: var(--b-bg); color: var(--b-ink); overflow: hidden; }
+    .board { height: 100vh; display: flex; flex-direction: column; padding: 2.2vh 2.4vw; gap: 1.6vh; }
+    .bh { display: flex; justify-content: space-between; align-items: flex-end; gap: 2vw; }
+    .bh .school { font-size: clamp(14px, 1.6vw, 26px); color: var(--b-muted); font-weight: 600; }
+    .bh .date { font-size: clamp(26px, 3.4vw, 58px); font-weight: 800; letter-spacing: -.5px; line-height: 1.1; }
+    .bh .clock { font-size: clamp(30px, 4vw, 70px); font-weight: 800; font-variant-numeric: tabular-nums; color: var(--b-accent); line-height: 1; text-align: right; }
+    .bh .sum { font-size: clamp(13px, 1.25vw, 22px); color: var(--b-muted); margin-top: .6vh; }
+    .ctrl { display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; transition: opacity .4s; }
+    .ctrl button { background: var(--b-panel); color: var(--b-ink); border: 1px solid var(--b-line); border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 14px; cursor: pointer; }
+    body.idle .ctrl { opacity: 0; pointer-events: none; }
+    body.idle { cursor: none; }
+    .stage { flex: 1; position: relative; min-height: 0; }
+    .page { position: absolute; inset: 0; overflow: hidden; display: flex; flex-direction: column; gap: 1.4vh; opacity: 0; transition: opacity .6s; }
+    .page.on { opacity: 1; }
+    .grp-h { display: flex; align-items: baseline; gap: 1vw; font-size: clamp(16px, 1.7vw, 30px); font-weight: 800; color: var(--b-accent); border-bottom: 2px solid var(--b-line); padding-bottom: .5vh; }
+    .grp-h span { font-size: .75em; color: var(--b-muted); font-weight: 600; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(clamp(220px, 18vw, 380px), 1fr)); gap: 1.2vh 1vw; }
+    .bc { background: var(--b-card); border: 1px solid var(--b-line); border-radius: 12px; padding: 1.3vh 1vw; display: grid; grid-template-columns: 1fr auto; gap: .3vh .8vw; align-items: center; }
+    .bc .n { font-size: clamp(16px, 1.55vw, 28px); font-weight: 800; line-height: 1.25; grid-column: 1; }
+    .bc .cnt { grid-row: 1 / span 2; grid-column: 2; text-align: right; font-size: clamp(22px, 2.2vw, 40px); font-weight: 800; font-variant-numeric: tabular-nums; }
+    .bc .cnt small { font-size: .45em; color: var(--b-muted); font-weight: 600; display: block; }
+    .bc .m { font-size: clamp(13px, 1.15vw, 20px); color: var(--b-muted); }
+    .bc .m b { color: var(--b-room); font-weight: 800; }
+    .bc .tag { font-size: clamp(12px, 1vw, 17px); font-weight: 800; padding: 1px 8px; border-radius: 6px; margin-left: 6px; vertical-align: middle; }
+    .bc.cancel { opacity: .55; }
+    .bc.cancel .n { text-decoration: line-through; }
+    .bc.cancel .tag { background: var(--b-red); color: #fff; }
+    .bc.change { border-color: var(--b-amber); }
+    .bc.change .tag { background: var(--b-amber); color: #000; }
+    .bc.extra { border-color: var(--b-green); }
+    .bc.extra .tag { background: var(--b-green); color: #000; }
+    .foot { display: flex; justify-content: space-between; color: var(--b-muted); font-size: clamp(12px, 1vw, 17px); }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--b-line); display: inline-block; }
+    .dots i.on { background: var(--b-accent); }
+    .big-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1vh; color: var(--b-muted); font-size: clamp(20px, 2.4vw, 40px); font-weight: 700; text-align: center; }
+    .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; height: 100%; grid-auto-rows: 1fr; }
+    .cal .dh { text-align: center; color: var(--b-muted); font-weight: 700; font-size: clamp(13px, 1.2vw, 20px); align-self: end; }
+    .cal .d { background: var(--b-card); border: 1px solid var(--b-line); border-radius: 10px; padding: 8px 10px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 60px; font: inherit; color: inherit; text-align: left; }
+    .cal .d.today { border: 2px solid var(--b-accent); }
+    .cal .d.blank { visibility: hidden; }
+    .cal .d .no { font-size: clamp(14px, 1.4vw, 24px); font-weight: 800; }
+    .cal .d.sun .no, .cal .d.hol .no { color: var(--b-red); }
+    .cal .d .c { font-size: clamp(13px, 1.3vw, 22px); font-weight: 800; color: var(--b-accent); }
+    .cal .d .h { font-size: clamp(11px, .9vw, 15px); color: var(--b-red); }
+    @media (max-width: 700px) {
+      body { overflow: auto; }
+      .board { height: auto; min-height: 100vh; }
+      .stage { min-height: 70vh; }
+      .page { position: static; opacity: 1; display: none; }
+      .page.on { display: flex; }
+      .bh { flex-direction: column; align-items: flex-start; }
+      .clock { text-align: left !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="board">
+    <div class="bh">
+      <div>
+        <div class="school" id="school"></div>
+        <div class="date" id="date">오늘의 방과후</div>
+        <div class="sum" id="sum"></div>
+      </div>
+      <div>
+        <div class="clock" id="clock"></div>
+        <div class="ctrl">
+          <button data-nav="-1" aria-label="이전 날">◀</button>
+          <button data-nav="0">오늘</button>
+          <button data-nav="1" aria-label="다음 날">▶</button>
+          <button data-nav="month" id="monthBtn">월간</button>
+        </div>
+      </div>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div class="foot"><span id="upd"></span><span class="dots" id="dots"></span></div>
+  </div>
+  <?!= include('Client') ?>
+  <script>
+    const BOOT = <?!= bootJson ?>;
+    const P = BOOT.params || {};
+    if (P.theme === 'light') document.body.classList.add('light');
+    let VIEW = P.view === 'month' ? 'month' : 'day';
+    let DATE = /^\d{4}-\d{2}-\d{2}$/.test(P.date || '') ? P.date : '';
+    let MONTH = '';
+    let DATA = null, PAGES = 0, PAGE = 0, pageTimer = null, TODAY = '';
+
+    function tick() {
+      const d = new Date();
+      $('#clock').textContent = pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    }
+    setInterval(tick, 1000); tick();
+
+    async function load() {
+      try {
+        if (VIEW === 'month') {
+          DATA = await call('boardMonth', { month: MONTH });
+          TODAY = DATA.today; MONTH = DATA.month;
+          renderMonth();
+        } else {
+          DATA = await call('board', { date: DATE });
+          TODAY = DATA.today; DATE = DATA.date;
+          renderDay();
+        }
+        $('#upd').textContent = '업데이트 ' + new Date().toTimeString().slice(0, 5) + ' · 5분마다 자동 새로고침';
+      } catch (e) {
+        $('#stage').innerHTML = `<div class="big-empty">${esc(e.message)}</div>`;
+      }
+    }
+
+    function slotName(start) {
+      const s = (DATA.slots || []).find(x => x.start === start);
+      return s ? s.name : '';
+    }
+
+    function renderDay() {
+      const d = DATA, lb = d.labels;
+      $('#school').textContent = `${d.schoolName} · ${lb.programName}`;
+      $('#date').textContent = `${fullK(d.date)}${d.date === d.today ? '' : ''}`;
+      $('#monthBtn').textContent = '월간';
+      const live = d.sessions.filter(x => x.state !== '휴강');
+      const people = live.reduce((n, x) => n + x.count, 0);
+      const nCancel = d.sessions.length - live.length, nChange = d.sessions.filter(x => x.state === '변경').length, nExtra = d.sessions.filter(x => x.state === '보강').length;
+      $('#sum').textContent = d.holiday ? `휴일 · ${d.holiday}` :
+        `강좌 ${live.length}개 · 수강생 ${people}명` + (nCancel ? ` · 휴강 ${nCancel}` : '') + (nChange ? ` · 변경 ${nChange}` : '') + (nExtra ? ` · 보강 ${nExtra}` : '');
+      const stage = $('#stage');
+      if (!d.sessions.length) {
+        stage.innerHTML = `<div class="big-empty"><div>${d.holiday ? esc(d.holiday) : '오늘은 열리는 강좌가 없습니다'}</div><div style="font-size:.6em">${d.date === d.today ? '' : fullK(d.date)}</div></div>`;
+        setPages(0); return;
+      }
+      // 시간대별로 묶기
+      const groups = [];
+      d.sessions.forEach(x => {
+        let g = groups.find(y => y.start === x.start && y.end === x.end);
+        if (!g) groups.push(g = { start: x.start, end: x.end, items: [] });
+        g.items.push(x);
+      });
+      const card = x => {
+        const cls = x.state === '휴강' ? 'cancel' : x.state === '변경' ? 'change' : x.state === '보강' ? 'extra' : '';
+        const tag = x.state === '휴강' ? '휴강' : x.state === '보강' ? '보강' : x.state === '변경' ? (x.room !== x.origRoom ? '장소 변경' : '시간 변경') : '';
+        return `<div class="bc ${cls}"><div class="n">${esc(x.name)}${tag ? `<span class="tag">${tag}</span>` : ''}</div>
+          <div class="cnt">${x.state === '휴강' ? '-' : x.count}<small>${x.state === '휴강' ? esc(x.note || '') : '명'}</small></div>
+          <div class="m"><b>${esc(x.room)}</b> · ${esc(x.teacher)}${x.state === '변경' && x.room !== x.origRoom ? ` <s>${esc(x.origRoom)}</s>` : ''}</div></div>`;
+      };
+      // 화면 높이에 맞춰 페이지 나누기
+      stage.innerHTML = '';
+      let page = null, cards = null;
+      const newPage = () => { page = document.createElement('div'); page.className = 'page on'; stage.appendChild(page); };
+      const fits = () => page.scrollHeight <= stage.clientHeight + 1;
+      newPage();
+      groups.forEach(g => {
+        const header = cont => `<div class="grp-h">${esc(slotName(g.start) || '')} ${g.start}~${g.end}<span>${g.items.length}개 강좌${cont ? ' (계속)' : ''}</span></div>`;
+        const startGroup = cont => {
+          page.insertAdjacentHTML('beforeend', header(cont) + '<div class="cards"></div>');
+          cards = page.lastElementChild;
+        };
+        startGroup(false);
+        if (!fits() && page.children.length > 2) { page.lastElementChild.remove(); page.lastElementChild.remove(); newPage(); startGroup(false); }
+        g.items.forEach(x => {
+          cards.insertAdjacentHTML('beforeend', card(x));
+          if (!fits() && cards.children.length > 1) {
+            cards.lastElementChild.remove();
+            newPage(); startGroup(true);
+            cards.insertAdjacentHTML('beforeend', card(x));
+          }
+        });
+      });
+      const pages = $$('.page', stage);
+      pages.forEach((p, i) => p.classList.toggle('on', i === 0));
+      setPages(pages.length);
+    }
+
+    function setPages(n) {
+      PAGES = n; PAGE = 0;
+      clearInterval(pageTimer);
+      drawDots();
+      if (n > 1) pageTimer = setInterval(() => showPage((PAGE + 1) % PAGES), 12000);
+    }
+    function showPage(i) {
+      PAGE = i;
+      $$('.page').forEach((p, k) => p.classList.toggle('on', k === i));
+      drawDots();
+    }
+    function drawDots() {
+      $('#dots').innerHTML = PAGES > 1 ? Array.from({ length: PAGES }, (_, i) => `<i class="${i === PAGE ? 'on' : ''}"></i>`).join('') + `<span style="margin-left:6px">${PAGE + 1}/${PAGES}</span>` : '';
+    }
+
+    function renderMonth() {
+      const d = DATA, lb = d.labels;
+      clearInterval(pageTimer); $('#dots').innerHTML = '';
+      $('#school').textContent = `${d.schoolName} · ${lb.programName}`;
+      $('#date').textContent = `${d.month.slice(0, 4)}년 ${+d.month.slice(5)}월`;
+      $('#monthBtn').textContent = '일간';
+      const total = d.days.reduce((n, x) => n + x.count, 0);
+      $('#sum').textContent = `이번 달 수업 ${total}회 · 날짜를 누르면 그날 강좌를 봅니다`;
+      const first = dayOf(d.days[0].date), lead = DAY_NAMES.indexOf(first);
+      const heads = DAY_NAMES.map(x => `<div class="dh">${x}</div>`).join('');
+      const blanks = Array.from({ length: lead }, () => '<div class="d blank"></div>').join('');
+      const cells = d.days.map(x => {
+        const dow = dayOf(x.date);
+        return `<button class="d ${x.date === d.today ? 'today' : ''} ${dow === '일' ? 'sun' : ''} ${x.holiday ? 'hol' : ''}" data-day="${x.date}">
+          <span class="no">${+x.date.slice(8)}</span>${x.holiday ? `<span class="h">${esc(x.holiday)}</span>` : ''}<span class="c">${x.count ? x.count + '개' : ''}</span></button>`;
+      }).join('');
+      $('#stage').innerHTML = `<div class="cal" style="grid-template-rows:auto">${heads}${blanks}${cells}</div>`;
+    }
+
+    document.addEventListener('click', e => {
+      const n = e.target.closest('[data-nav]'), day = e.target.closest('[data-day]');
+      if (n) {
+        const v = n.dataset.nav;
+        if (v === 'month') { VIEW = VIEW === 'month' ? 'day' : 'month'; MONTH = (DATE || TODAY).slice(0, 7); }
+        else if (VIEW === 'month') { const p = (MONTH || TODAY).split('-'); const t = new Date(+p[0], +p[1] - 1 + (+v || 0), 1); MONTH = v === '0' ? TODAY.slice(0, 7) : t.getFullYear() + '-' + pad2(t.getMonth() + 1); }
+        else DATE = v === '0' ? TODAY : addDays(DATE || TODAY, +v);
+        load();
+      } else if (day) { VIEW = 'day'; DATE = day.dataset.day; load(); }
+    });
+
+    // 키보드: ← → 날짜 이동, 스페이스 다음 페이지
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') $('[data-nav="-1"]').click();
+      if (e.key === 'ArrowRight') $('[data-nav="1"]').click();
+      if (e.key === ' ' && PAGES > 1) { e.preventDefault(); showPage((PAGE + 1) % PAGES); }
+    });
+
+    // 마우스를 3초 동안 안 움직이면 버튼을 숨깁니다 (모니터 게시용)
+    let idleT = null;
+    const wake = () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => document.body.classList.add('idle'), 3000); };
+    ['mousemove', 'touchstart', 'keydown'].forEach(ev => document.addEventListener(ev, wake));
+    wake();
+
+    // 5분마다 새로고침, 자정이 지나면 오늘 날짜로
+    setInterval(() => {
+      const wasToday = DATE === TODAY;
+      if (VIEW === 'day' && wasToday) DATE = '';
+      load();
+    }, 5 * 60 * 1000);
+    let rz = null;
+    window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (DATA && VIEW === 'day') renderDay(); }, 300); });
+
+    load();
+  </script>
+</body>
+</html>

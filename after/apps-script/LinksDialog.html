@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <base target="_blank">
+  <meta charset="utf-8">
+  <style>
+    body { font-family: 'Malgun Gothic', sans-serif; font-size: 13.5px; color: #17202c; margin: 0; padding: 2px 4px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #e9f0fb; color: #173f7a; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+    .top.ok { background: #e4f4ec; color: #10502f; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+    .card { border: 1px solid #e1e6ee; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+    .card b { font-size: 14px; }
+    .qr { width: 150px; height: 150px; }
+    .qr img, .qr canvas { width: 150px !important; height: 150px !important; image-rendering: pixelated; }
+    .url { font-size: 12px; word-break: break-all; color: #1d5bb5; }
+    .long { font-size: 10.5px; color: #8a94a3; word-break: break-all; }
+    button { white-space: nowrap; font: inherit; font-weight: 700; border-radius: 7px; padding: 6px 12px; border: 1px solid #c9d1dd; background: #fff; cursor: pointer; }
+    button.primary { background: #1d5bb5; color: #fff; border-color: #1d5bb5; }
+    button:disabled { opacity: .5; }
+    #msg { margin-top: 10px; font-size: 12.5px; color: #7d1d17; white-space: pre-line; }
+    p.note { font-size: 12px; color: #5d6878; margin: 10px 0 0; }
+  </style>
+</head>
+<body>
+  <div class="top" id="top"></div>
+  <div class="grid" id="grid"></div>
+  <div id="msg"></div>
+  <p class="note">QR코드를 오른쪽 클릭 → [이미지를 다른 이름으로 저장]하면 그림 파일로 받을 수 있습니다. 관리자 화면 [홈] → [접속 주소·QR]에서도 복사·저장·인쇄할 수 있습니다.</p>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    let L = <?!= linksJson ?>;
+    const ITEMS = [['apply', '학생 수강 신청', '가정통신문·안내문에 들어가는 QR'], ['board', '오늘의 현황판', '모니터에 띄우는 주소'], ['admin', '관리자·교사 화면', '교직원에게 공유']];
+    const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    function render() {
+      const hasShort = !!L.apply.short;
+      document.getElementById('top').className = 'top' + (hasShort ? ' ok' : '');
+      document.getElementById('top').innerHTML = hasShort
+        ? `<span>짧은 주소를 쓰고 있습니다. QR코드가 단순해서 인식이 잘 됩니다.</span><button id="clr">짧은 주소 지우기</button>`
+        : `<span>주소가 길어 QR 무늬가 촘촘합니다. 짧은 주소(is.gd)로 바꾸면 인식이 훨씬 잘 됩니다.</span><button class="primary" id="mk">짧은 주소 만들기</button>`;
+      document.getElementById('grid').innerHTML = ITEMS.map(([k, label, sub]) => `
+        <div class="card"><b>${label}</b><span style="font-size:11.5px;color:#5d6878">${sub}</span>
+          <div class="qr" id="qr-${k}"></div>
+          <a class="url" href="${esc(L[k].url)}">${esc(L[k].url)}</a>
+          ${L[k].short ? `<div class="long">원래 주소: ${esc(L[k].long)}</div>` : ''}
+          <button data-copy="${k}">주소 복사</button></div>`).join('');
+      ITEMS.forEach(([k]) => new QRCode(document.getElementById('qr-' + k), { text: L[k].url, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M }));
+      const mk = document.getElementById('mk'), clr = document.getElementById('clr');
+      if (mk) mk.onclick = () => run(false, mk);
+      if (clr) clr.onclick = () => run(true, clr);
+    }
+
+    function run(clear, btn) {
+      btn.disabled = true; btn.textContent = clear ? '지우는 중…' : '만드는 중…';
+      google.script.run
+        .withSuccessHandler(res => { L = res; document.getElementById('msg').textContent = ''; render(); })
+        .withFailureHandler(e => { btn.disabled = false; btn.textContent = clear ? '짧은 주소 지우기' : '짧은 주소 만들기'; document.getElementById('msg').textContent = e.message || String(e); })
+        .menuShorten(clear);
+    }
+
+    document.addEventListener('click', e => {
+      const b = e.target.closest('[data-copy]');
+      if (!b) return;
+      const ta = document.createElement('textarea');
+      ta.value = L[b.dataset.copy].url; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove();
+      b.textContent = '복사했습니다 ✓';
+      setTimeout(() => b.textContent = '주소 복사', 1500);
+    });
+
+    render();
+  </script>
+</body>
+</html>

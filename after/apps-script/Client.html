@@ -1,0 +1,197 @@
+<div id="toasts" aria-live="polite"></div>
+<div id="printArea"></div>
+<script>
+  /* ── 화면 공용 도우미 ── */
+  const DAY_ORDER = ['월', '화', '수', '목', '금', '토', '일'];
+  const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+
+  /** 서버 api() 호출 → Promise */
+  function call(action, data, auth) {
+    return new Promise((resolve, reject) => {
+      google.script.run
+        .withSuccessHandler(res => res && res.ok ? resolve(res.data) : reject(new Error(res ? res.error : '서버 응답이 없습니다.')))
+        .withFailureHandler(err => reject(new Error(err && err.message ? err.message : String(err))))
+        .api({ action, data: data || {}, auth: auth || {} });
+    });
+  }
+
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  const $ = (sel, root) => (root || document).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+  function toast(msg, type) {
+    const el = document.createElement('div');
+    el.className = 'toast' + (type ? ' ' + type : '');
+    el.textContent = msg;
+    $('#toasts').appendChild(el);
+    setTimeout(() => el.remove(), type === 'err' ? 7000 : 4000);
+  }
+
+  let loadingCount = 0;
+  function loading(on) {
+    loadingCount += on ? 1 : -1;
+    let el = $('#loadingLayer');
+    if (loadingCount > 0 && !el) {
+      el = document.createElement('div');
+      el.id = 'loadingLayer'; el.className = 'loading';
+      el.innerHTML = '<div class="spinner" role="status" aria-label="불러오는 중"></div>';
+      document.body.appendChild(el);
+    } else if (loadingCount <= 0 && el) { loadingCount = 0; el.remove(); }
+  }
+
+  function won(n) { n = Number(n) || 0; return n ? n.toLocaleString('ko-KR') + '원' : '무료'; }
+  function pad2(n) { return ('0' + n).slice(-2); }
+  function ymdToday() { const d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function dayOf(ymd) { const p = ymd.split('-'); return DAY_NAMES[new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay()]; }
+  function addDays(ymd, n) { const p = ymd.split('-'); const t = new Date(Date.UTC(+p[0], +p[1] - 1, +p[2] + n)); return t.getUTCFullYear() + '-' + pad2(t.getUTCMonth() + 1) + '-' + pad2(t.getUTCDate()); }
+  function md(ymd) { if (!ymd) return ''; const p = ymd.split('-'); return (+p[1]) + '/' + (+p[2]); }
+  function mdK(ymd) { if (!ymd) return ''; const p = ymd.split('-'); return (+p[1]) + '월 ' + (+p[2]) + '일'; }
+  function fullK(ymd) { if (!ymd) return ''; const p = ymd.split('-'); return p[0] + '년 ' + (+p[1]) + '월 ' + (+p[2]) + '일(' + dayOf(ymd) + ')'; }
+  function sidLabel(st) { return st.grade + '-' + st.cls + '-' + st.no; }
+
+  /** 두 강좌가 같은 요일·시간·기간에 겹치면 겹치는 요일 배열 */
+  function overlap(a, b) {
+    if (!a || !b || !a.s || !a.e || !b.s || !b.e) return null;
+    if (!(a.s < b.e && b.s < a.e)) return null;
+    if (!(a.d1 <= b.d2 && b.d1 <= a.d2)) return null;
+    const days = (a.dayList || []).filter(d => (b.dayList || []).includes(d));
+    return days.length ? days : null;
+  }
+
+  function courseWhen(c) { return (c.dayList || []).join('·') + ' ' + c.s + '~' + c.e; }
+  function gradesText(c, maxGrade) {
+    const g = c.gradeList || [];
+    if (g.length === maxGrade) return '전 학년';
+    if (g.length > 2 && g[g.length - 1] - g[0] === g.length - 1) return g[0] + '~' + g[g.length - 1] + '학년';
+    return g.join('·') + '학년';
+  }
+
+  function downloadCsv(filename, rows) {
+    const csv = '﻿' + rows.map(r => r.map(v => {
+      const s = String(v == null ? '' : v);
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }).join(',')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
+  /** 서식을 살려 복사 (한글·워드·엑셀에 붙여넣기) */
+  function copyRich(el) {
+    const sel = window.getSelection(), range = document.createRange();
+    range.selectNodeContents(el);
+    sel.removeAllRanges(); sel.addRange(range);
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    sel.removeAllRanges();
+    toast(ok ? '복사했습니다. 한글(HWP)·워드·엑셀에 붙여넣으세요 (Ctrl+V).' : '복사가 막혀 있습니다. 내용을 드래그해서 Ctrl+C로 복사하세요.', ok ? '' : 'warn');
+  }
+
+  let printSeq = 0;
+  function printHtml(html) {
+    const area = $('#printArea'), my = ++printSeq;
+    area.innerHTML = html;
+    document.body.classList.add('printing');
+    const done = () => {
+      window.removeEventListener('afterprint', done);
+      if (my !== printSeq) return; // 그사이 새 인쇄가 시작되었으면 건드리지 않음
+      document.body.classList.remove('printing'); area.innerHTML = '';
+    };
+    window.addEventListener('afterprint', done);
+    setTimeout(() => { if (my === printSeq) { window.print(); setTimeout(done, 500); } }, 300);
+  }
+
+  function modal(title, bodyHtml, buttons, opts) {
+    opts = opts || {};
+    return new Promise(resolve => {
+      const bg = document.createElement('div');
+      bg.className = 'modal-bg';
+      bg.innerHTML = '<div class="modal" role="dialog" aria-modal="true"' + (opts.width ? ' style="width:min(' + opts.width + 'px,100%)"' : '') + '><header><h3>' + esc(title) + '</h3><button class="btn ghost sm" data-x aria-label="닫기">✕</button></header>' +
+        '<div class="body">' + bodyHtml + '</div><footer></footer></div>';
+      const foot = bg.querySelector('footer');
+      (buttons || [{ label: '확인', value: true, cls: 'primary' }]).forEach(b => {
+        const btn = document.createElement('button');
+        btn.className = 'btn ' + (b.cls || '');
+        btn.textContent = b.label;
+        btn.onclick = async () => {
+          if (b.onClick) {
+            // onClick이 false를 돌려주면 창을 닫지 않습니다 (저장 실패 등).
+            btn.disabled = true;
+            let r;
+            try { r = await b.onClick(bg); } finally { btn.disabled = false; }
+            if (r !== false) close(r);
+            return;
+          }
+          const v = typeof b.value === 'function' ? b.value(bg) : b.value;
+          close(v);
+        };
+        foot.appendChild(btn);
+      });
+      const close = v => { bg.remove(); document.removeEventListener('keydown', onKey); resolve(v); };
+      const onKey = e => { if (e.key === 'Escape') close(null); };
+      bg.querySelector('[data-x]').onclick = () => close(null);
+      bg.addEventListener('mousedown', e => { if (e.target === bg) close(null); });
+      document.addEventListener('keydown', onKey);
+      document.body.appendChild(bg);
+      if (opts.onOpen) opts.onOpen(bg);
+      const first = bg.querySelector('input, select, textarea');
+      if (first) first.focus();
+    });
+  }
+
+  function confirmBox(title, msg, okLabel, danger) {
+    return modal(title, '<p style="white-space:pre-line">' + esc(msg) + '</p>', [
+      { label: '취소', value: false },
+      { label: okLabel || '확인', value: true, cls: danger ? 'danger solid' : 'primary' }
+    ]);
+  }
+
+  /** QR코드를 흰 여백이 있는 고해상도 PNG(data URL)로 만듭니다. 인쇄·저장·한글 붙여넣기에 모두 씁니다. */
+  const qrCache = {};
+  function qrDataUrl(text, px) {
+    px = px || 600;
+    const key = px + '|' + text;
+    if (qrCache[key]) return qrCache[key];
+    if (!window.QRCode || !text) return '';
+    const tmp = document.createElement('div');
+    new QRCode(tmp, { text: text, width: px, height: px, correctLevel: QRCode.CorrectLevel.M });
+    const src = tmp.querySelector('canvas');
+    if (!src) { const im = tmp.querySelector('img'); return im ? im.src : ''; }
+    const pad = Math.round(px * 0.08), out = document.createElement('canvas');
+    out.width = out.height = px + pad * 2;
+    const g = out.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, out.width, out.height);
+    g.imageSmoothingEnabled = false;
+    g.drawImage(src, pad, pad, px, px);
+    return (qrCache[key] = out.toDataURL('image/png'));
+  }
+
+  function makeQr(el, text, size) {
+    el.innerHTML = '';
+    if (!text) return;
+    const src = qrDataUrl(text, 600);
+    el.innerHTML = src ? `<img src="${src}" width="${size || 96}" height="${size || 96}" alt="QR코드">` : '<div class="small muted">QR</div>';
+  }
+
+  function saveQr(filename, text) {
+    const src = qrDataUrl(text, 1000);
+    if (!src) return toast('QR코드를 만들 수 없습니다.', 'err');
+    const a = document.createElement('a');
+    a.href = src; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  function copyText(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    ta.remove();
+    toast(ok ? '주소를 복사했습니다.' : '복사가 막혀 있습니다. 주소를 드래그해서 복사하세요.', ok ? '' : 'warn');
+  }
+</script>
