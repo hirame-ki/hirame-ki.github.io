@@ -1,8 +1,8 @@
 {
-  "version": "0.14.1",
-  "sha256": "0973d47b7827a6b433e2a3c6700ed06b3a7d93d82210b9e505bc8008de90e59a",
-  "size": 131303,
-  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.14.1.zip",
-  "notes": "설치 안내 개선: 사진으로 따라 하는 설치 가이드(엣지·크롬), 폴더 선택 창 설명, 안랩 V3·Windows 경고창 대처법. 설치가 끝나면 설치 가이드가 자동으로 열려요.",
-  "sig": "qEFk/9nswIAGDAiQ7n6/rVqcMpEGfMyRnwRMxxYhSOhR7/lIoBy5soN2okBZB+sBGBZEqcdSklMEC6M5YLWC0AenOTo3PqbHhdJZVfAD2qDH09ohyDDmA7wTmshMmWE3iYij79oYnVpfYh5tlXR4JNyiFpuxOMS2OKywj+pc4h9Xu0YcUY4DYXNw5P998Y2mtqevJfu7AYBHp6LjufhjnVWp40IkwCU/w1F3dXgRJgjbj7g9r9I5UzfBDD9CupRZMuQa9BsfMWmGyFN8IWn/WBoCo/NEQ/xYIGfduT+SdM3sBIR3G4i9FSBhV9OgRgVyxFVtQ0Ot8SJOOz6hbJDYOLRpxxjFbqDCoBhrs0IGWKFC/wL5hZXvs1lUOKGUGZd2PI7gb3tgJh5DP4SjKb6dnPuiAq7YGU1CKY04NfZibx19gM0z/jHWxtcv6tY5gDSXrMBkHos4wNCxwp7mPBl6mQCCLcHVu4VkSH7QnmJazbrb0QLXaBhTfbUtqOHta/+P"
+  "version": "0.14.2",
+  "sha256": "a996f7fa7cf775f82b132d23b8f8b08ee49e94cfea9f5e671f958dd36538919d",
+  "size": 131670,
+  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.14.2.zip",
+  "notes": "팝업을 열 때마다 도우미 프로그램을 실행하지 않도록 바꿨어요. 백신(안랩 V3 등)이 실행할 때마다 확인 창을 띄우던 문제가 줄어듭니다.",
+  "sig": "ay9a+dJ1+YeabXknIZW7UfokxMbKVxsVVGKRvEWKBKG47UnBXaKTDw2I+WNFTAoCWySixltmaXvWbVfTMqZqNCiP76etZEn52hloMezApsvsbGYBbB0nuOJBiZU2ypQFlXdvOazOgx1F5Y31eqgGYwEq63NbuxRAQ9xikBb5dN8M4wlVFwtnOI+oELMF4Rj9zrtr0XwSZ4Z1VZEQ6a8NRo/Jimz6VRDB5CbQQ4CiGfOFab2WqG77c0DLSsd3UaQXozl1dCYEaQ5PQ3/mnW/ZJrSodQgq0OvOgfUjhbyK505hmxcDObp70A9Zn9VM9518i08+xkkc5pSGMQ1gJ3C6tN8zcRs7h4xQwpG8L2YDSgyFgNRbxpRBx4Ti/Ob1r/yfI/AqtMIZ/K5lil87CAYlxGCSf0kissvELo6G01Qq2CPQfXdsiKe3yqa8e+UvLVN8mKBTI80VsOu5gZJtiAR8TtqHTfaldIzgjVgS5BIK5e/WWxXI924xu6phVsZWoFx1"
 }
