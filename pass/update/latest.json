@@ -1,8 +1,8 @@
 {
-  "version": "0.14.2",
-  "sha256": "a996f7fa7cf775f82b132d23b8f8b08ee49e94cfea9f5e671f958dd36538919d",
-  "size": 131670,
-  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.14.2.zip",
-  "notes": "팝업을 열 때마다 도우미 프로그램을 실행하지 않도록 바꿨어요. 백신(안랩 V3 등)이 실행할 때마다 확인 창을 띄우던 문제가 줄어듭니다.",
-  "sig": "ay9a+dJ1+YeabXknIZW7UfokxMbKVxsVVGKRvEWKBKG47UnBXaKTDw2I+WNFTAoCWySixltmaXvWbVfTMqZqNCiP76etZEn52hloMezApsvsbGYBbB0nuOJBiZU2ypQFlXdvOazOgx1F5Y31eqgGYwEq63NbuxRAQ9xikBb5dN8M4wlVFwtnOI+oELMF4Rj9zrtr0XwSZ4Z1VZEQ6a8NRo/Jimz6VRDB5CbQQ4CiGfOFab2WqG77c0DLSsd3UaQXozl1dCYEaQ5PQ3/mnW/ZJrSodQgq0OvOgfUjhbyK505hmxcDObp70A9Zn9VM9518i08+xkkc5pSGMQ1gJ3C6tN8zcRs7h4xQwpG8L2YDSgyFgNRbxpRBx4Ti/Ob1r/yfI/AqtMIZ/K5lil87CAYlxGCSf0kissvELo6G01Qq2CPQfXdsiKe3yqa8e+UvLVN8mKBTI80VsOu5gZJtiAR8TtqHTfaldIzgjVgS5BIK5e/WWxXI924xu6phVsZWoFx1"
+  "version": "0.14.3",
+  "sha256": "60cc6962e593b5fec561704c191a4e114f5f685d45d779480faf235446eaf683",
+  "size": 132679,
+  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.14.3.zip",
+  "notes": "",
+  "sig": "dJ8xZ5/AaAgT3aAJkJtyyYCwm2StLnNu/+POLspRQZSs91J14EhQDIw4lkdOzu55pdFq1WhtKBWYtU01zhmT4iRieJ1QvsuZ/j3g1E3YQqy+EfuIqhsXSYz6quEY5Nnf+mb/7tT9e94/668cFfGv39qEEGLppOuCkEJ6OspR4QgXCdt1X2KWBhg4+9My1LZHayytY2FURmXfU343b0O7hEyv0z2WNeygmt4TnT+xK6fFy1PRLv4GSZA1K8HVskcvk3kvsJamoyi3Y+5RVLDgsai7qWFiesVDCAfdNPDwYADFL1NZ9qWE1XtVB2ML8YkoN2REXsIoR467+UEcHyvs2Lp5ZACbA2RoPoBLan29pnE8E9ELB38cbkz9mt3jRnAZ222gmUJoGXVEUZR97E+25ekygwc8ETsi2cR0SYlL38gd/kSiMBfaJS+C4kfIxOOBw2Yo0c4jjhIEt5uFOijLohO+CL9vu+9ePTMjaSVY2ds28I6wmhKHBsHKPRW85tpL"
 }
