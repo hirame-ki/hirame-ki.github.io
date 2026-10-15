@@ -1,8 +1,8 @@
 {
-  "version": "0.15.1",
-  "sha256": "074f141b466d8b359ecc157b2f8bb6a8498f7d26daeda96a3ba81cf58be65cd7",
-  "size": 96199,
-  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.15.1.zip",
-  "notes": "과세특 입력을 누르면 업무포털 로그인 → 나이스 → 과세특 화면(OTP 창)까지 자동으로 열어 줘요. 이미 된 단계는 건너뛰고, OTP는 직접 입력해요.",
-  "sig": "koUFzCZycL1rU6KURWUjePFRvfG2LPedR1aCgsSRWeT6NFwQkxlZp9XyvhmjWv7NAspFjs8y965FUbM2MvT7pgEO5yEOUArQsizC7B9Z4Cd5esvzgde15aVyx/GEFmBVCcqr6sFUW7hNnVu+pV7ZTX8NYFM36faDm2+pM315Nn/8wh/dNJAs0BbhrFfAfrnWb9YUnjoxKjqjbPtbRkMa2PsrBsK8kFmLeNXvJ9PK9gJNNi4GzuupN4bZkwXOuZzjFCZ795uAdUHvJ6x7JXDFvOjTvcrv/lIlj/ZYcZkaY5xjtamytD9zZle1xiVVfnClfNEQarWfYKzXCKpifSnw6d+EAX8n+b7x6tT7OBLyTlWGR7w9/C8UvyVNXrzrddsTG0wrtqWAdilayxWfDVK/6ckAl8rM2cWH1i1BzcGUd/xji49GFmKNnS5oPwJq6+dUIa79tZaFl2hHZzCc2ZSzurlMzlPjSAcbU0quoQorsKOwJIKlNASlWeaTDZYgpSNZ"
+  "version": "0.15.2",
+  "sha256": "f61e978f506d5c3ed678753f03f76d4880ac470f4cc5e8c258232150102c755b",
+  "size": 97035,
+  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.15.2.zip",
+  "notes": "과세특 입력: 나이스 상단 메뉴(교과담임 › 성적처리 › 과목별세부능력및특기사항)도 찾아 들어가요. [진단 정보 복사]에 과세특 메뉴 위치를 담아요.",
+  "sig": "IfXU1iuGBSE30sGC2tDHGW4a4Jah13aNkincGPE5+C/A35Nleztg6k3XxBcmCxEAMFgLQ5AxyE9BsRT4hfNo558BSbj588gmj4PyC7foCl4N9Ryh09IMytpv1eNmN7LMztAfCLhg/fVysmrTAo+rNkpr/agr9aP3ZF+hROPEkj3uif5no4VtruX6DT6f3LO9ALwg3pvNvPnRu8EzE4RWBBCMNuoNEtCLlvIPwpxXeOhL8F4pWHENNb+PWnpbzHJvoY0ciXCtTkJMx2xajhXqqLviqw0uxkHKmDoKn2kVv0GX84lGSUs94xok38q9EcP7O0w+s/rNA3UTGntJqbGjsoF/0cv4wssvirKeyPtYKUPp9NIxGjMkVIGyyGKuOWA3gFyzDPIicG/seqh9fUbkEy5YZif514iCDVvo3Aryesl4khQxeGfNNNjeoo8BzInblnBrBy9GFXJ3ptHflNhOmN19SSekHl/6ybH9hgniGYz9HSzZzXRhXbzcRUATuAQK"
 }

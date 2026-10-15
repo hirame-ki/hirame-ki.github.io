@@ -1,5 +1,11 @@
 [
   {
+    "version": "0.15.2",
+    "date": "2026-10-16",
+    "notes": "과세특 입력: 나이스 상단 메뉴(교과담임 › 성적처리 › 과목별세부능력및특기사항)도 찾아 들어가요. [진단 정보 복사]에 과세특 메뉴 위치를 담아요.",
+    "setupUrl": "https://drive.google.com/drive/folders/1-6pi8ThclXIwnomMuHT365mpVbIpqEPS?usp=sharing"
+  },
+  {
     "version": "0.15.1",
     "date": "2026-10-16",
     "notes": "과세특 입력을 누르면 업무포털 로그인 → 나이스 → 과세특 화면(OTP 창)까지 자동으로 열어 줘요. 이미 된 단계는 건너뛰고, OTP는 직접 입력해요.",
