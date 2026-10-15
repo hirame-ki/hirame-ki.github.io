@@ -1,8 +1,8 @@
 {
   "version": "0.14.1",
-  "sha256": "958298b8159c5049b5ddf37707467f88ece2de7f3de4f3568c2eecffdb88027b",
-  "size": 131304,
+  "sha256": "0973d47b7827a6b433e2a3c6700ed06b3a7d93d82210b9e505bc8008de90e59a",
+  "size": 131303,
   "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.14.1.zip",
   "notes": "설치 안내 개선: 사진으로 따라 하는 설치 가이드(엣지·크롬), 폴더 선택 창 설명, 안랩 V3·Windows 경고창 대처법. 설치가 끝나면 설치 가이드가 자동으로 열려요.",
-  "sig": "jBg3rNQ45GfX7cohIjXxP7rnTJnKD2iIvLSK6hXPda7gTmUijOruCsZR+X/nelDx/5YRKl50ENb6nQdf4gfcU8zR8t7DRmvYGHeridR36gxRtIBrwBwntiBx4TeMUfpB4Be925QPaWZICPjZFO6nyyBvq2zVDHQp0R9xDTTtzpYuu97aRdWVbNTVl2x4n/bZdQCxiWuINGA3jGnKf6RGNM36EXj7Idoa8m+mBc0phOQj+bA/evE2lvmbOBsagQ0urG28cPRwJDNKA3Tt557cM2qNWhNC90cM40hVXysLoiol57wA40ojrtrbg6hGTfMJs+VYhJ3NL7qN1Yx1c4JRmLB/gLBJhDrNC4J8oEvQx5M66S2NiDR0R9fccmQRl99bvgk/APVVj+xh9rYKNyp5t8WIbhMsfbpiPXI4ewU9VLi13lN249hE5Z5YwxU7eKdFPLCcTAHeoJECktqUF0upHwOUtAQMjM3H+x6lyTxw25UGDsC7JczkNPjaqw2Gb5Zb"
+  "sig": "qEFk/9nswIAGDAiQ7n6/rVqcMpEGfMyRnwRMxxYhSOhR7/lIoBy5soN2okBZB+sBGBZEqcdSklMEC6M5YLWC0AenOTo3PqbHhdJZVfAD2qDH09ohyDDmA7wTmshMmWE3iYij79oYnVpfYh5tlXR4JNyiFpuxOMS2OKywj+pc4h9Xu0YcUY4DYXNw5P998Y2mtqevJfu7AYBHp6LjufhjnVWp40IkwCU/w1F3dXgRJgjbj7g9r9I5UzfBDD9CupRZMuQa9BsfMWmGyFN8IWn/WBoCo/NEQ/xYIGfduT+SdM3sBIR3G4i9FSBhV9OgRgVyxFVtQ0Ot8SJOOz6hbJDYOLRpxxjFbqDCoBhrs0IGWKFC/wL5hZXvs1lUOKGUGZd2PI7gb3tgJh5DP4SjKb6dnPuiAq7YGU1CKY04NfZibx19gM0z/jHWxtcv6tY5gDSXrMBkHos4wNCxwp7mPBl6mQCCLcHVu4VkSH7QnmJazbrb0QLXaBhTfbUtqOHta/+P"
 }
