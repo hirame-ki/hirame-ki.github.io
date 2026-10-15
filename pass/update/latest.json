@@ -1,8 +1,8 @@
 {
-  "version": "0.14.3",
-  "sha256": "60cc6962e593b5fec561704c191a4e114f5f685d45d779480faf235446eaf683",
-  "size": 132679,
-  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.14.3.zip",
-  "notes": "도우미 프로그램을 한 번 켜면 브라우저를 닫을 때까지 켜 둡니다. 백신(안랩 V3)이 '다음부터 묻지 않음'을 기억하지 못하는 PC에서도 브라우저를 켠 뒤 처음 한 번만 확인 창이 뜹니다.",
-  "sig": "PzY/XG6v4bPRg5+COu+19QLP5ftCby48lQ/tJPbWV+LS74mwmGp9X33e7AjBTsuGKEVG0qYqjAm2mOM91tQoxqW100ejgjVxlbbjNcCh96iWN1KJgsyoR8BolTUiUGt1OtRuMPcaForABNb/HkYWoaTgO1rtXeWVVESW9GxJOvWasmUuQvWfqZNNcLgG9wbXDUBhh4Bcp4T9IAjBzCATSKCTs/JLsqi2kImTup6VJfszqyWJEMQsgELjgRwQAAKZ0+oVrMVDxhZr3XnZjBNDfEfnMojh+wDTWur+JAlj+2Z1xpoKCGuC5lJMxMMZyaPtzqj7rfV2pEU9a1cyvqXCIAuE9ET+FWiA0j69b1fFvARmxiLYN3yzRVL9gYwt/rD19JXefRm3a/9pPpz93mgWUHQ0IeRHa+5P5B1Vu7KGe9cf+hONLkYuy5dfvqt+OqVwF/aGqkY2Xy6Wa1s712brpLmywXE35igQcH3q0UALj3uZ/c/DUzUSowy0Fw9Or/1N"
+  "version": "0.15.0",
+  "sha256": "aacff79ca2b09da2173e2b6457654f033107bc86d1373601892e3bbc57b8fbd5",
+  "size": 93101,
+  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.15.0.zip",
+  "notes": "도우미 프로그램 없이 브라우저 안에서만 돌아가요. 설치한 뒤에는 백신(V3) 확인 창이 뜨지 않아요. 새 버전은 아이콘의 NEW로 알려 주고, 새 설치 파일을 실행하면 바로 바뀌어요. 처음 한 번은 인증서 비밀번호와 PIN을 다시 저장해 주세요.",
+  "sig": "SD79gTsk3kP1yKzlHZBvze1rQOgaqx+Uhfhe9j0LtCBnL3WAtTc31uPe8TRy5GREszsOX7W70gKiGZLFq4M3qY5UimkVFIMYBNar2VkGduwjl2J6Sv8gLHrg5tuqHlhmKyHPqWlBFMy1/+BBvoZVdH3rg3saFrBO4pIIn+OvUAivIvPoK1Ss/wqjwzPUmk02eqRYmKBbu8DCm+X7zW8b+9cbRHnvy2II7pg+QqEX6PFTm+juXtwz9M0P6XCVow++Jad1VJn0eVsaMhXlEjafztcXC2mbnAHZPz1HoS3Q5gwbNPvmysCst2lo2Swl0Hl2Du6NyM+cuynvrbvyxNxKo4Ic26yEAzVJzP/gAFunl2aZDvxbfLjIqFssKBDVn/9OalieW4KGoITYTVtfDokxK9za8GM6+MB8pUUqrNQmyFKLslrqP7/hy9co3KPMvfXR6PRs+81nqn6VYqrbhZ3kQq28AApgJsfWzN70VvKJoY6WwUI3IjoCcW990bSX/MhK"
 }

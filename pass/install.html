@@ -60,6 +60,8 @@
   .hero p { color: var(--text-2); margin: 0; }
   .done { display: none; margin: 18px 0 0; padding: 16px 20px; border-radius: 16px; background: var(--ok-soft); color: var(--ok); font-weight: 700; }
   .done.on { display: block; }
+  .done.upd { background: var(--accent-soft, #e8f3ff); color: var(--text); font-weight: 600; line-height: 1.7; }
+  .done.upd .btn { margin-top: 10px; }
   .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
   .toc a { text-decoration: none; background: var(--surface); box-shadow: var(--shadow); color: var(--text); padding: 8px 14px; border-radius: 12px; font-weight: 700; font-size: 14.5px; }
   .toc a b { color: var(--accent); margin-right: 4px; }
@@ -123,9 +125,10 @@
   <div class="hero">
     <span style="color:var(--accent);font-weight:700">설치 가이드 · 사진으로 따라 하기</span>
     <h1>5분이면 끝, 처음 한 번만</h1>
-    <p>설치 파일 실행 → 브라우저에 확장 등록 → 비밀번호·PIN 저장. 이후 업데이트는 자동이에요.</p>
-    <div class="done" id="doneBox">✓ 쌤패스 <span id="doneVer"></span> 프로그램 설치가 끝났어요. 이제 <a href="#s3">3단계(확장 등록)</a>만 하면 돼요. 폴더 경로는 이미 복사돼 있어요.</div>
-    <div class="done" id="upgradeBox">✓ 쌤패스를 <span id="upVer"></span>으로 바꿨어요. 확장 관리 화면에서 쌤패스 카드의 새로고침(↻)만 누르면 끝이에요.</div>
+    <p>설치 파일 실행 → 브라우저에 확장 등록 → 비밀번호·PIN 저장. 새 버전이 나오면 아이콘에 NEW로 알려 줘요.</p>
+    <div class="done" id="doneBox">✓ 쌤패스 <span id="doneVer"></span> 파일 설치가 끝났어요. 이제 <a href="#s3">3단계(확장 등록)</a>만 하면 돼요. 폴더 경로는 이미 복사돼 있어요.</div>
+    <div class="done" id="upgradeBox">✓ 쌤패스를 <span id="upVer"></span>으로 바꿨어요. 1분 안에 쌤패스가 스스로 새 버전으로 바뀌어요. 바로 바꾸려면 확장 관리 화면에서 쌤패스 카드의 새로고침(↻)을 누르세요.<br>0.14 이하에서 올라왔다면 처음 설정 화면이 나와요. 인증서 비밀번호와 PIN을 한 번만 다시 저장해 주세요.</div>
+    <div class="done upd" id="update"><b>새 버전으로 바꾸기</b> · 확장을 다시 등록할 필요 없어요.<br>① 새 설치 파일 받기 → ② 받은 파일 실행 → ③ 끝. 1분 안에 쌤패스가 스스로 새 버전으로 바뀌어요.<br><a class="btn" id="dl2" href="./#download" target="_blank" rel="noopener">구글 드라이브에서 받기</a></div>
     <nav class="toc">
       <a href="#s1"><b>1</b>설치 파일 받기</a>
       <a href="#s2"><b>2</b>실행 · 경고창</a>
@@ -163,16 +166,14 @@
       <div class="logo" style="background:#1a3d8f">V3</div>
       <div>
         <h3>안랩 V3 "프로그램 실행 알림" (주황색 창)</h3>
-        <p style="margin:0;color:var(--text-2)">쌤패스의 도우미 프로그램(<code>NeisHelper.exe</code>)이 실행될 때 뜰 수 있어요. 기본 선택이 <b>[한 번만 차단]</b>이라 그대로 [확인]을 누르면 쌤패스가 연결되지 않아요.</p>
+        <p style="margin:0;color:var(--text-2)">설치 파일을 실행할 때 뜰 수 있어요. 기본 선택이 <b>[한 번만 차단]</b>이라 그대로 [확인]을 누르면 설치되지 않아요.</p>
         <ol>
-          <li>"파일 처리 방법을 선택하십시오" 목록을 열고 <b>[실행 후 다음부터 묻지 않음]</b>을 고른 뒤 <b>[확인]</b>.</li>
-          <li>빨간 글씨로 <i>"환경 설정의 Active Defense 설정에서 ASD 네트워크 참여와 Active Defense를 사용으로 설정해야 합니다"</i>가 나오면: V3를 열고 <b>환경 설정 → Active Defense</b>에서 <b>Active Defense 사용</b>과 <b>ASD 네트워크 참여</b>를 켠 뒤, 다시 1번을 해요.</li>
-          <li>당장 급하면 <b>[한 번만 실행]</b>을 골라도 돼요. 다만 다음에 또 물어봐요.</li>
-          <li>목록이 회색이거나, 켜 둔 설정이 다음 날 되돌아가 있으면 학교에서 V3를 한꺼번에 관리하는 경우예요. 이때는 "다음부터 묻지 않음"이 저장되지 않아요. 쌤패스 0.14.3부터는 <b>브라우저를 켠 뒤 처음 한 번만</b> 물으니 그때 <b>[한 번만 실행]</b>을 고르면 돼요. 아예 안 뜨게 하려면 정보(전산) 담당 선생님께 <code>%LOCALAPPDATA%\NeisHelper</code> 폴더 예외 등록을 부탁하세요.</li>
+          <li>"파일 처리 방법을 선택하십시오" 목록을 열고 <b>[한 번만 실행]</b>을 고른 뒤 <b>[확인]</b>.</li>
+          <li>설치가 끝나면 다시 뜨지 않아요. 쌤패스는 브라우저 안에서만 돌아가고, 따로 실행되는 프로그램이 없어요(0.15.0부터).</li>
+          <li>목록이 회색이라 고를 수 없으면 학교에서 V3를 한꺼번에 관리하는 경우예요. 정보(전산) 담당 선생님께 설치 파일 실행을 부탁하세요.</li>
         </ol>
-        <figure><img src="img/guide-v3-1.webp" alt="V3 프로그램 실행 알림: 실행 후 다음부터 묻지 않음 선택" loading="lazy" style="max-width:420px"><figcaption>실제 화면 · ① 목록에서 <b>실행 후 다음부터 묻지 않음</b></figcaption></figure>
-        <figure><img src="img/guide-v3-2.webp" alt="V3: Active Defense와 ASD 네트워크 참여 안내, 확인 버튼" loading="lazy" style="max-width:420px"><figcaption>빨간 안내가 나오면 V3 환경 설정에서 Active Defense·ASD 네트워크 참여를 켠 뒤 ② [확인]</figcaption></figure>
-        <div class="callout">왜 뜨나요? 회사 인증서로 서명하지 않은 개인 제작 프로그램이라, V3가 처음 보는 파일로 판단해 조심스럽게 묻는 거예요. 한 번 "다음부터 묻지 않음"으로 정하면 평소에는 다시 묻지 않아요. 반드시 이 페이지(공식 배포처)에서 받은 파일일 때만 허용하세요.</div>
+        <figure><img src="img/guide-v3-1.webp" alt="V3 프로그램 실행 알림: 한 번만 실행 선택" loading="lazy" style="max-width:420px"><figcaption>실제 화면 · ① 목록에서 <b>한 번만 실행</b> → [확인] (파일 이름은 설치 파일 이름으로 보여요)</figcaption></figure>
+        <div class="callout">왜 뜨나요? 회사 인증서로 서명하지 않은 개인 제작 설치 파일이라, V3가 처음 보는 파일로 판단해 조심스럽게 묻는 거예요. 반드시 이 페이지(공식 배포처)에서 받은 파일일 때만 실행하세요.</div>
       </div>
     </div>
   </section>
@@ -253,10 +254,11 @@
   <!-- 안 될 때 -->
   <section class="step" id="help">
     <h2><span class="n">?</span>안 될 때</h2>
-    <div class="sub"><h3>"도우미 프로그램이 연결되지 않았습니다"</h3><p>설치 파일을 실행했는지 확인하고, 브라우저를 완전히 닫았다가 다시 열어 보세요. 다른 폴더에서 불러온 쌤패스가 하나 더 있으면 먼저 [제거]하세요. 같은 확장이 두 개면 연결되지 않아요.</p></div>
+    <div class="sub"><h3>새 버전을 설치했는데 그대로예요</h3><p>1분쯤 기다리거나, 확장 관리 화면에서 쌤패스 카드의 새로고침(↻)을 누르세요. 다른 폴더에서 불러온 쌤패스가 하나 더 있으면 먼저 [제거]하세요.</p></div>
+    <div class="sub"><h3>PIN 화면 대신 "처음 설정이 필요합니다"가 나와요</h3><p>0.15.0부터 비밀번호를 쌤패스 안에 보관해요. 0.14 이하에서 올라왔다면 인증서 비밀번호와 PIN을 한 번만 다시 저장해 주세요.</p></div>
     <div class="sub"><h3>"개발자 모드 확장 사용 안 함" 안내가 떠요</h3><p>웹스토어 밖 프로그램이라 나오는 안내예요. <b>[닫기]</b>나 <b>×</b>를 누르면 돼요. (끄면 쌤패스가 꺼져요)</p></div>
     <div class="sub"><h3>개발자 모드 스위치가 회색이라 켜지지 않아요</h3><p>학교에서 브라우저를 관리하는 PC일 수 있어요. 정보(전산) 담당 선생님께 문의해 주세요.</p></div>
-    <div class="sub"><h3>지우고 싶어요</h3><p><kbd>Win</kbd>+<kbd>R</kbd> → <code>%LOCALAPPDATA%\NeisHelper\NeisHelperSetup.exe /uninstall</code> → <kbd>Enter</kbd>, 그다음 확장 관리 화면에서 쌤패스 [제거].</p></div>
+    <div class="sub"><h3>지우고 싶어요</h3><p><kbd>Win</kbd>+<kbd>R</kbd> → <code>%LOCALAPPDATA%\NeisHelper\NeisHelperSetup.exe /uninstall</code> → <kbd>Enter</kbd>, 그다음 확장 관리 화면에서 쌤패스 [제거]. 저장한 비밀번호도 함께 지워져요.</p></div>
   </section>
 </main>
 
@@ -268,6 +270,7 @@
   var h = new URLSearchParams(location.hash.slice(1));
   if (h.get('path')) document.getElementById('extPath').textContent = h.get('path');
   if (h.get('mode') === 'new') { document.getElementById('doneBox').classList.add('on'); document.getElementById('doneVer').textContent = h.get('v') || ''; }
+  if (location.hash === '#update') document.getElementById('update').classList.add('on');
   if (h.get('mode') === 'upgrade') { document.getElementById('upgradeBox').classList.add('on'); document.getElementById('upVer').textContent = h.get('v') || ''; }
 
   // 쓰는 브라우저 탭을 먼저
@@ -288,7 +291,7 @@
 
   // 다운로드 링크 (releases.json)
   fetch('releases.json', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (list) {
-    if (list[0] && list[0].setupUrl) document.getElementById('dl').href = list[0].setupUrl;
+    if (list[0] && list[0].setupUrl) { document.getElementById('dl').href = list[0].setupUrl; document.getElementById('dl2').href = list[0].setupUrl; }
   }).catch(function () {});
 
   // 구역 링크로 들어오면 그 위치로 (설치 직후엔 3단계)
