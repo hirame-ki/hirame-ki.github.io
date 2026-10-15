@@ -1,5 +1,11 @@
 [
   {
+    "version": "0.15.3",
+    "date": "2026-10-16",
+    "notes": "과세특 입력 안내 문구를 순서대로 고쳤어요: OTP 입력 → 쌤패스 과세특 탭에서 엑셀 불러오기 → 나이스에서 [조회].",
+    "setupUrl": "https://drive.google.com/drive/folders/1-6pi8ThclXIwnomMuHT365mpVbIpqEPS?usp=sharing"
+  },
+  {
     "version": "0.15.2",
     "date": "2026-10-16",
     "notes": "과세특 입력: 나이스 상단 메뉴(교과담임 › 성적처리 › 과목별세부능력및특기사항)도 찾아 들어가요. [진단 정보 복사]에 과세특 메뉴 위치를 담아요.",
