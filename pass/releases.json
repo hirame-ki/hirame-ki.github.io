@@ -2,7 +2,7 @@
   {
     "version": "0.14.3",
     "date": "2026-10-15",
-    "notes": "",
+    "notes": "도우미 프로그램을 한 번 켜면 브라우저를 닫을 때까지 켜 둡니다. 백신(안랩 V3)이 '다음부터 묻지 않음'을 기억하지 못하는 PC에서도 브라우저를 켠 뒤 처음 한 번만 확인 창이 뜹니다.",
     "setupUrl": "https://drive.google.com/drive/folders/1-6pi8ThclXIwnomMuHT365mpVbIpqEPS?usp=sharing"
   },
   {

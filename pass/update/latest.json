@@ -3,6 +3,6 @@
   "sha256": "60cc6962e593b5fec561704c191a4e114f5f685d45d779480faf235446eaf683",
   "size": 132679,
   "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.14.3.zip",
-  "notes": "",
-  "sig": "dJ8xZ5/AaAgT3aAJkJtyyYCwm2StLnNu/+POLspRQZSs91J14EhQDIw4lkdOzu55pdFq1WhtKBWYtU01zhmT4iRieJ1QvsuZ/j3g1E3YQqy+EfuIqhsXSYz6quEY5Nnf+mb/7tT9e94/668cFfGv39qEEGLppOuCkEJ6OspR4QgXCdt1X2KWBhg4+9My1LZHayytY2FURmXfU343b0O7hEyv0z2WNeygmt4TnT+xK6fFy1PRLv4GSZA1K8HVskcvk3kvsJamoyi3Y+5RVLDgsai7qWFiesVDCAfdNPDwYADFL1NZ9qWE1XtVB2ML8YkoN2REXsIoR467+UEcHyvs2Lp5ZACbA2RoPoBLan29pnE8E9ELB38cbkz9mt3jRnAZ222gmUJoGXVEUZR97E+25ekygwc8ETsi2cR0SYlL38gd/kSiMBfaJS+C4kfIxOOBw2Yo0c4jjhIEt5uFOijLohO+CL9vu+9ePTMjaSVY2ds28I6wmhKHBsHKPRW85tpL"
+  "notes": "도우미 프로그램을 한 번 켜면 브라우저를 닫을 때까지 켜 둡니다. 백신(안랩 V3)이 '다음부터 묻지 않음'을 기억하지 못하는 PC에서도 브라우저를 켠 뒤 처음 한 번만 확인 창이 뜹니다.",
+  "sig": "PzY/XG6v4bPRg5+COu+19QLP5ftCby48lQ/tJPbWV+LS74mwmGp9X33e7AjBTsuGKEVG0qYqjAm2mOM91tQoxqW100ejgjVxlbbjNcCh96iWN1KJgsyoR8BolTUiUGt1OtRuMPcaForABNb/HkYWoaTgO1rtXeWVVESW9GxJOvWasmUuQvWfqZNNcLgG9wbXDUBhh4Bcp4T9IAjBzCATSKCTs/JLsqi2kImTup6VJfszqyWJEMQsgELjgRwQAAKZ0+oVrMVDxhZr3XnZjBNDfEfnMojh+wDTWur+JAlj+2Z1xpoKCGuC5lJMxMMZyaPtzqj7rfV2pEU9a1cyvqXCIAuE9ET+FWiA0j69b1fFvARmxiLYN3yzRVL9gYwt/rD19JXefRm3a/9pPpz93mgWUHQ0IeRHa+5P5B1Vu7KGe9cf+hONLkYuy5dfvqt+OqVwF/aGqkY2Xy6Wa1s712brpLmywXE35igQcH3q0UALj3uZ/c/DUzUSowy0Fw9Or/1N"
 }
