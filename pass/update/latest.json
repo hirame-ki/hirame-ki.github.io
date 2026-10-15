@@ -1,8 +1,8 @@
 {
-  "version": "0.14.0",
-  "sha256": "c53a0935767754712dfc2ecfdfab852b642bb8db127e0af4f2166def3e77d603",
+  "version": "0.14.1",
+  "sha256": "958298b8159c5049b5ddf37707467f88ece2de7f3de4f3568c2eecffdb88027b",
   "size": 131304,
-  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.14.0.zip",
-  "notes": "첫 배포. 업무포털 자동 로그인, 루틴과 바탕화면 바로가기, 복무 신청(시간외근무·조퇴 등), K-에듀파인 열기, 과세특 엑셀 입력, 설치 파일과 자동 업데이트.",
-  "sig": "MHkEB9BjiCgSqkN8vcjcrhIxYPSAryF5yh796zivgMGzemR5OULUQ/VqpdNU51McEQer075JxSwIsg7yXxvqmdwAvL0ph/UwPKi2FI7RiF9XcIHSYuukCuPjZD4dWGEAX20Kz9Qj5dNmKY4wdYbcqlC1X5aRB2quNIb1DQqmis+CVYehxWNeJZSYRYrwSObx2xY/LocjTLnIWz7swCoGa9x4Ol5mk53TzaYulOfbacwt4u/O9PRcPGzWMyh7bk1eBtb7QjXu/Mdo69XimGrIINq+YgJx1+iBbr918pgMyzB2ApF42u1tcMGlu6tPRG0rgH3Hr5Q8GMoY8Xr9hRpG02qVkKVWqcDcLIVPrLfKtAPzIyGLd8nyp/4mJRkh3zZrsT5yEQyiNxtNEjZ8QUGcAhDvTY7k2kELx7EXbeAykJiA3z1Alk2vpxCP9m6RqVhRSPCp62sZdpGX9+kjVkHZcugXxlw+y1UzwE/OfI/wbcTIZ8HAv3G/ABKRBA/C8USK"
+  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.14.1.zip",
+  "notes": "설치 안내 개선: 사진으로 따라 하는 설치 가이드(엣지·크롬), 폴더 선택 창 설명, 안랩 V3·Windows 경고창 대처법. 설치가 끝나면 설치 가이드가 자동으로 열려요.",
+  "sig": "jBg3rNQ45GfX7cohIjXxP7rnTJnKD2iIvLSK6hXPda7gTmUijOruCsZR+X/nelDx/5YRKl50ENb6nQdf4gfcU8zR8t7DRmvYGHeridR36gxRtIBrwBwntiBx4TeMUfpB4Be925QPaWZICPjZFO6nyyBvq2zVDHQp0R9xDTTtzpYuu97aRdWVbNTVl2x4n/bZdQCxiWuINGA3jGnKf6RGNM36EXj7Idoa8m+mBc0phOQj+bA/evE2lvmbOBsagQ0urG28cPRwJDNKA3Tt557cM2qNWhNC90cM40hVXysLoiol57wA40ojrtrbg6hGTfMJs+VYhJ3NL7qN1Yx1c4JRmLB/gLBJhDrNC4J8oEvQx5M66S2NiDR0R9fccmQRl99bvgk/APVVj+xh9rYKNyp5t8WIbhMsfbpiPXI4ewU9VLi13lN249hE5Z5YwxU7eKdFPLCcTAHeoJECktqUF0upHwOUtAQMjM3H+x6lyTxw25UGDsC7JczkNPjaqw2Gb5Zb"
 }
