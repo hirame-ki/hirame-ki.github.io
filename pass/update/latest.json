@@ -1,8 +1,8 @@
 {
-  "version": "0.15.0",
-  "sha256": "aacff79ca2b09da2173e2b6457654f033107bc86d1373601892e3bbc57b8fbd5",
-  "size": 93101,
-  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.15.0.zip",
-  "notes": "도우미 프로그램 없이 브라우저 안에서만 돌아가요. 설치한 뒤에는 백신(V3) 확인 창이 뜨지 않아요. 새 버전은 아이콘의 NEW로 알려 주고, 새 설치 파일을 실행하면 바로 바뀌어요. 처음 한 번은 인증서 비밀번호와 PIN을 다시 저장해 주세요.",
-  "sig": "SD79gTsk3kP1yKzlHZBvze1rQOgaqx+Uhfhe9j0LtCBnL3WAtTc31uPe8TRy5GREszsOX7W70gKiGZLFq4M3qY5UimkVFIMYBNar2VkGduwjl2J6Sv8gLHrg5tuqHlhmKyHPqWlBFMy1/+BBvoZVdH3rg3saFrBO4pIIn+OvUAivIvPoK1Ss/wqjwzPUmk02eqRYmKBbu8DCm+X7zW8b+9cbRHnvy2II7pg+QqEX6PFTm+juXtwz9M0P6XCVow++Jad1VJn0eVsaMhXlEjafztcXC2mbnAHZPz1HoS3Q5gwbNPvmysCst2lo2Swl0Hl2Du6NyM+cuynvrbvyxNxKo4Ic26yEAzVJzP/gAFunl2aZDvxbfLjIqFssKBDVn/9OalieW4KGoITYTVtfDokxK9za8GM6+MB8pUUqrNQmyFKLslrqP7/hy9co3KPMvfXR6PRs+81nqn6VYqrbhZ3kQq28AApgJsfWzN70VvKJoY6WwUI3IjoCcW990bSX/MhK"
+  "version": "0.15.1",
+  "sha256": "074f141b466d8b359ecc157b2f8bb6a8498f7d26daeda96a3ba81cf58be65cd7",
+  "size": 96199,
+  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.15.1.zip",
+  "notes": "과세특 입력을 누르면 업무포털 로그인 → 나이스 → 과세특 화면(OTP 창)까지 자동으로 열어 줘요. 이미 된 단계는 건너뛰고, OTP는 직접 입력해요.",
+  "sig": "koUFzCZycL1rU6KURWUjePFRvfG2LPedR1aCgsSRWeT6NFwQkxlZp9XyvhmjWv7NAspFjs8y965FUbM2MvT7pgEO5yEOUArQsizC7B9Z4Cd5esvzgde15aVyx/GEFmBVCcqr6sFUW7hNnVu+pV7ZTX8NYFM36faDm2+pM315Nn/8wh/dNJAs0BbhrFfAfrnWb9YUnjoxKjqjbPtbRkMa2PsrBsK8kFmLeNXvJ9PK9gJNNi4GzuupN4bZkwXOuZzjFCZ795uAdUHvJ6x7JXDFvOjTvcrv/lIlj/ZYcZkaY5xjtamytD9zZle1xiVVfnClfNEQarWfYKzXCKpifSnw6d+EAX8n+b7x6tT7OBLyTlWGR7w9/C8UvyVNXrzrddsTG0wrtqWAdilayxWfDVK/6ckAl8rM2cWH1i1BzcGUd/xji49GFmKNnS5oPwJq6+dUIa79tZaFl2hHZzCc2ZSzurlMzlPjSAcbU0quoQorsKOwJIKlNASlWeaTDZYgpSNZ"
 }

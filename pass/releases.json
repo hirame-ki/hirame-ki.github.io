@@ -1,5 +1,11 @@
 [
   {
+    "version": "0.15.1",
+    "date": "2026-10-16",
+    "notes": "과세특 입력을 누르면 업무포털 로그인 → 나이스 → 과세특 화면(OTP 창)까지 자동으로 열어 줘요. 이미 된 단계는 건너뛰고, OTP는 직접 입력해요.",
+    "setupUrl": "https://drive.google.com/drive/folders/1-6pi8ThclXIwnomMuHT365mpVbIpqEPS?usp=sharing"
+  },
+  {
     "version": "0.15.0",
     "date": "2026-10-15",
     "notes": "도우미 프로그램 없이 브라우저 안에서만 돌아가요. 설치한 뒤에는 백신(V3) 확인 창이 뜨지 않아요. 새 버전은 아이콘의 NEW로 알려 주고, 새 설치 파일을 실행하면 바로 바뀌어요. 처음 한 번은 인증서 비밀번호와 PIN을 다시 저장해 주세요.",
