@@ -819,7 +819,8 @@
   fetch('releases.json', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (list) {
     var latest = list[0];
     document.querySelectorAll('.dl-link').forEach(function (a) {
-      if (latest && latest.setupUrl) a.href = latest.setupUrl;
+      // 쉿대본처럼 구글 드라이브 화면을 새 탭으로 (원래 파일 이름 그대로 받아짐)
+      if (latest && latest.setupUrl) { a.href = latest.setupUrl; a.target = '_blank'; a.rel = 'noopener'; }
       else if (a.id === 'dlButton') { a.classList.add('disabled'); a.querySelector('.dl-text').textContent = '다운로드 준비 중'; }
     });
     if (latest) {
