@@ -79,6 +79,9 @@
   figure { margin: 12px 0 0; }
   figure img { border-radius: 14px; box-shadow: 0 0 0 1px var(--line), var(--shadow); }
   figcaption { font-size: 13.5px; color: var(--muted); margin-top: 8px; }
+  .figrow { display: grid; gap: 18px; justify-items: start; }
+  .figrow figure { margin: 0; max-width: 100%; }
+  .figrow img { width: auto; max-width: 100%; height: auto; display: block; }
   .callout { margin-top: 14px; padding: 14px 18px; border-radius: 14px; background: var(--surface-2); color: var(--text-2); font-size: 15.5px; }
   .callout b { color: var(--text); }
   .callout.warn { background: var(--warn-soft); color: var(--warn); }
@@ -103,6 +106,7 @@
   .warncard h3 { margin: 0 0 4px; font-size: 18px; }
   .warncard ol { margin: 6px 0 0; padding-left: 20px; color: var(--text-2); font-size: 15.5px; }
   .warncard ol li { margin-bottom: 4px; }
+  @media (max-width: 600px) { .warncard { grid-template-columns: minmax(0, 1fr); gap: 10px; } .warncard .logo { width: 44px; height: 44px; border-radius: 12px; } }
 
   .puzzle { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-top: 12px; }
   .puzzle div { padding: 16px; border-radius: 16px; background: var(--surface-2); text-align: center; }
@@ -151,12 +155,16 @@
         <h3>브라우저가 "일반적으로 다운로드되지 않습니다"라고 할 때</h3>
         <p style="margin:0;color:var(--text-2)">받기를 눌렀는데 파일이 바로 저장되지 않고 경고가 뜰 수 있어요. 이때 그냥 두면 다운로드 폴더에 <code>확인되지 않음 123456.crdownload</code>처럼 <b>이상한 이름</b>으로 남고, 실행되지 않아요.</p>
         <ol>
-          <li><b>엣지</b>: 오른쪽 위 다운로드 창에서 파일 이름 옆 <b>…</b>(추가 작업) → <b>[유지]</b>.</li>
-          <li>"이 파일이 안전한지 확인할 수 없습니다" 창이 뜨면 <b>[자세히 표시]</b> → <b>[그래도 계속]</b>.</li>
+          <li><b>엣지</b>: 오른쪽 위 다운로드 창에서 파일 옆 <b>① …</b>(추가 작업) → <b>② [유지]</b></li>
+          <li>"신뢰할 수 있는지 확인합니다" 창이 뜨면 <b>검은 [삭제] 버튼은 누르지 말고</b>, 그 오른쪽의 <b>③ 작은 화살표(∨)</b>를 눌러요 → <b>④ [그래도 계속]</b></li>
           <li><b>크롬</b>: 다운로드 창의 경고에서 <b>[계속]</b>(또는 [유지])을 누르면 돼요.</li>
-          <li>그러면 <code>쌤패스-설치-버전.exe</code> 이름으로 바뀌어 저장돼요. 이름을 직접 고치지 말고, 이미 이상한 이름으로 남았다면 그 파일은 지우고 다시 받아 주세요.</li>
+          <li>그러면 <code>쌤패스-설치-버전.exe</code> 이름으로 저장돼요. 이미 이상한 이름으로 남은 파일은 이름을 고치지 말고 지운 뒤 다시 받아 주세요.</li>
         </ol>
-        <div class="callout">왜 뜨나요? 회사 인증서로 서명하지 않은 개인 제작 설치 파일이고 받는 사람이 아직 많지 않아서, 브라우저가 한 번 더 확인하는 거예요. 반드시 이 페이지(공식 배포처)에서 연 드라이브 폴더의 파일일 때만 [유지]를 누르세요.</div>
+        <div class="figrow">
+          <figure><img src="img/guide-edge-dl-keep.webp" width="633" height="322" alt="엣지 다운로드 창: 파일 옆 추가 작업 버튼과 메뉴의 유지" loading="lazy"><figcaption>실제 화면 · ① … → ② <b>유지</b></figcaption></figure>
+          <figure><img src="img/guide-edge-dl-dialog.webp" width="448" height="662" alt="엣지 확인 창: 삭제 버튼 오른쪽의 작은 화살표와 그 아래 그래도 계속" loading="lazy"><figcaption>실제 화면 · ③ [삭제] 오른쪽 <b>작은 화살표</b> → ④ <b>그래도 계속</b></figcaption></figure>
+        </div>
+        <div class="callout"><b>안전한가요?</b> 이 경고는 바이러스를 찾았다는 뜻이 아니에요. "게시자: 알 수 없음"은 유료 코드 서명 인증서를 쓰지 않은 개인 제작 파일이라 나오는 표시이고, "일반적으로 다운로드되지 않음"은 아직 받은 사람이 많지 않다는 뜻이에요. 쌤패스 설치 파일은 관리자 권한 없이 확장 파일을 내 사용자 폴더(<code>%LOCALAPPDATA%\NeisHelper</code>)에만 넣어요. [이 앱을 안전한 것으로 보고]는 누르지 않아도 돼요.<br><b>다만</b> 이 페이지의 [구글 드라이브에서 받기]로 연 공식 폴더에서 받은 파일일 때만 [그래도 계속]을 누르세요. 다른 곳에서 받았거나 출처가 헷갈리면 [삭제]하세요.</div>
       </div>
     </div>
   </section>
@@ -273,7 +281,7 @@
   <!-- 안 될 때 -->
   <section class="step" id="help">
     <h2><span class="n">?</span>안 될 때</h2>
-    <div class="sub"><h3>받은 파일 이름이 "확인되지 않음 123456.crdownload"처럼 이상해요</h3><p>브라우저가 경고를 띄우고 저장을 멈춘 상태예요. 그 파일은 지우고 다시 받은 뒤, 다운로드 창에서 <b>[유지]</b> → <b>[자세히 표시]</b> → <b>[그래도 계속]</b>을 누르세요. (<a href="#dlwarn">1단계 안내</a>)</p></div>
+    <div class="sub"><h3>받은 파일 이름이 "확인되지 않음 123456.crdownload"처럼 이상해요</h3><p>브라우저가 경고를 띄우고 저장을 멈춘 상태예요. 그 파일은 지우고 다시 받은 뒤, 다운로드 창에서 <b>…</b> → <b>[유지]</b> → 확인 창의 [삭제] 오른쪽 <b>작은 화살표(∨)</b> → <b>[그래도 계속]</b>을 누르세요. (<a href="#dlwarn">1단계 안내</a>)</p></div>
     <div class="sub"><h3>새 버전을 설치했는데 그대로예요</h3><p>1분쯤 기다리거나, 확장 관리 화면에서 쌤패스 카드의 새로고침(↻)을 누르세요. 다른 폴더에서 불러온 쌤패스가 하나 더 있으면 먼저 [제거]하세요.</p></div>
     <div class="sub"><h3>PIN 화면 대신 "처음 설정이 필요합니다"가 나와요</h3><p>0.15.0부터 비밀번호를 쌤패스 안에 보관해요. 0.14 이하에서 올라왔다면 인증서 비밀번호와 PIN을 한 번만 다시 저장해 주세요.</p></div>
     <div class="sub"><h3>"개발자 모드 확장 사용 안 함" 안내가 떠요</h3><p>웹스토어 밖 프로그램이라 나오는 안내예요. <b>[닫기]</b>나 <b>×</b>를 누르면 돼요. (끄면 쌤패스가 꺼져요)</p></div>
