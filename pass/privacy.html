@@ -5,65 +5,89 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>쌤패스 개인정보 처리방침</title>
 <meta name="description" content="쌤패스가 어떤 정보를 어디에 보관하고, 무엇을 보내지 않는지 설명합니다.">
-<meta name="theme-color" content="#1b64da">
+<meta name="theme-color" content="#f2f7fd">
 <link rel="canonical" href="https://hirame-ki.github.io/pass/privacy.html">
 <link rel="icon" href="favicon.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="preload" href="fonts/NotoSansKR-Black.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem("ssampass-site-theme");if(/^(sky|beige|lime|mint|lavender|peach)$/.test(t))document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <style>
+  /* 쌤패스 공통: 소개 페이지(index.html)와 같은 테마 6종·글꼴. 항상 밝게. 테마는 소개 페이지에서 고른 값(localStorage ssampass-site-theme) */
+  @font-face { font-family: "SsamDisplay"; src: url("fonts/NotoSansKR-Black.woff2") format("woff2"); font-weight: 900; font-display: swap; }
+  @font-face { font-family: "SsamLogo"; src: url("fonts/BlackHanSans-logo.woff2") format("woff2"); font-weight: 400; font-display: block; }
+  @font-face { font-family: "SsamMono"; src: url("fonts/IBMPlexMono-Medium-Latin1.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+  @font-face { font-family: "SsamMono"; src: url("fonts/IBMPlexMono-SemiBold-Latin1.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+  :root, [data-theme="sky"] { --t-bg: #f2f7fd; --t-sf: #ffffff; --t-ink: #0b2440; --t-mut: #55657a; --t-ln: #dce5f0; --t-pr: #8fcbff; --t-prs: #e0f0ff; --t-a1: #ffe58a; --t-a2: #ffcfb5; --t-a3: #cdefa0; --t-a4: #ded4ff; }
+  [data-theme="beige"] { --t-bg: #f4eee3; --t-sf: #fffcf6; --t-ink: #2b2417; --t-mut: #6e6452; --t-ln: #e5dbc9; --t-pr: #f3c45a; --t-prs: #faebc6; --t-a1: #cfe2bc; --t-a2: #f3c3a8; --t-a3: #c6dfe8; --t-a4: #eed4d9; }
+  [data-theme="lime"] { --t-bg: #f3f7ec; --t-sf: #ffffff; --t-ink: #15301a; --t-mut: #56664f; --t-ln: #dde6d2; --t-pr: #b4eb7e; --t-prs: #e5f6d4; --t-a1: #ffe98f; --t-a2: #b8e7df; --t-a3: #ffcfae; --t-a4: #ffd6ea; }
+  [data-theme="mint"] { --t-bg: #eef7f5; --t-sf: #ffffff; --t-ink: #0d3330; --t-mut: #4f6764; --t-ln: #d3e6e2; --t-pr: #84dfcb; --t-prs: #d7f3ec; --t-a1: #f3ef9c; --t-a2: #ffc8b8; --t-a3: #cfd8ff; --t-a4: #f0e1c6; }
+  [data-theme="lavender"] { --t-bg: #f5f2ff; --t-sf: #ffffff; --t-ink: #221848; --t-mut: #5f5880; --t-ln: #e2dcf5; --t-pr: #bfaeff; --t-prs: #eae4ff; --t-a1: #c4f0dc; --t-a2: #ffd4c1; --t-a3: #fff09e; --t-a4: #cce5ff; }
+  [data-theme="peach"] { --t-bg: #fff4ee; --t-sf: #ffffff; --t-ink: #3a1b10; --t-mut: #7a5d52; --t-ln: #f2ded3; --t-pr: #ffb591; --t-prs: #ffe6da; --t-a1: #d6ebc2; --t-a2: #cfe4f5; --t-a3: #ffe79a; --t-a4: #e5daff; }
   :root {
-    --bg: #f5f7fb; --surface: #fff; --surface-2: #f7f9fc; --line: #e3e8ef;
-    --text: #141a24; --text-2: #4b5768; --muted: #8a94a3; --accent: #3182f6; --accent-soft: #e7f1ff;
-    --ok: #12b886; --ok-soft: #e3f7ef;
-    --shadow: 0 2px 4px rgba(16,32,64,.04), 0 12px 32px rgba(16,32,64,.07); --r: 22px; color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #0e1116; --surface: #1a1f28; --surface-2: #202631; --line: #2c3442;
-      --text: #eef2f7; --text-2: #b9c2cf; --muted: #7f8a99; --accent: #4d94ff; --accent-soft: #172a47;
-      --ok: #34d399; --ok-soft: #12332a; --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #0e1116; --surface: #1a1f28; --surface-2: #202631; --line: #2c3442;
-    --text: #eef2f7; --text-2: #b9c2cf; --muted: #7f8a99; --accent: #4d94ff; --accent-soft: #172a47;
-    --ok: #34d399; --ok-soft: #12332a; --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark;
+    --bg: var(--t-bg); --surface: var(--t-sf); --surface-2: color-mix(in srgb, var(--t-bg) 60%, var(--t-sf)); --fill: var(--t-bg); --line: var(--t-ln);
+    --text: var(--t-ink); --text-2: color-mix(in srgb, var(--t-ink) 78%, var(--t-sf)); --muted: var(--t-mut);
+    --accent: var(--t-pr); --accent-soft: var(--t-prs);
+    --ok: #1e6b32; --ok-soft: #d8f1c6; --warn: #7a4f00; --warn-soft: #fff0c2; --danger: #b4231b; --danger-soft: #fde6e3;
+    --ring: 0 0 0 1.5px var(--t-ink); --r: 24px;
+    --ease: cubic-bezier(.2, .8, .2, 1); --pop: cubic-bezier(.3, 1.5, .5, 1);
+    --font: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --display: "SsamDisplay", var(--font); --mono: "SsamMono", ui-monospace, Consolas, monospace;
+    color-scheme: light;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.75 "Pretendard Variable", Pretendard, -apple-system, "Malgun Gothic", sans-serif; word-break: keep-all; -webkit-font-smoothing: antialiased; }
-  a { color: var(--accent); }
-  .wrap { max-width: 820px; margin: 0 auto; padding: 0 16px; }
-  header.top { border-bottom: 1px solid var(--line); background: var(--bg); }
-  header.top .wrap { display: flex; align-items: center; gap: 10px; height: 60px; }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--text); text-decoration: none; }
-  .brand img { width: 28px; height: 28px; }
-  header.top a.home { margin-left: auto; color: var(--text-2); text-decoration: none; font-weight: 600; font-size: 15px; }
-  h1 { font-size: clamp(28px, 5vw, 38px); letter-spacing: -.035em; line-height: 1.25; margin: 36px 0 8px; }
-  .meta { color: var(--muted); font-size: 15px; margin: 0 0 18px; }
-  .sum { background: var(--ok-soft); color: var(--text); border-radius: 16px; padding: 16px 20px; font-weight: 600; }
-  section { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 24px 26px; margin: 18px 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 76px; background: var(--bg); }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.75 var(--font); word-break: keep-all; -webkit-font-smoothing: antialiased; }
+  a { color: var(--text); text-underline-offset: 3px; }
+  img { max-width: 100%; display: block; }
+  code, .path { font-family: var(--mono); font-size: .85em; background: var(--surface); color: var(--text); padding: 2px 7px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--line); word-break: break-all; }
+  kbd { font: 600 13px/1 var(--mono); padding: 5px 8px; border-radius: 7px; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--line), inset 0 -2px 0 var(--line); color: var(--text); white-space: nowrap; }
+  .mk { background: linear-gradient(transparent 60%, var(--accent) 60%); padding: 0 .06em; }
+  /* 머리글 */
+  header.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  header.top .wrap { display: flex; align-items: center; gap: 10px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 400 23px/1 "SsamLogo", var(--display); color: var(--text); text-decoration: none; }
+  .brand img { width: 30px; height: 30px; transition: transform .45s var(--pop); }
+  .brand:hover img { transform: rotate(-10deg) scale(1.08); }
+  header.top a.home { margin-left: auto; display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 999px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 14.5px; box-shadow: inset 0 0 0 1.5px var(--text); transition: background-color .2s, transform .15s; }
+  header.top a.home:hover { background: var(--accent-soft); }
+  header.top a.home:active { transform: scale(.96); }
+  footer { color: var(--muted); font-size: 14px; text-align: center; }
+  footer a { color: var(--text-2); }
+  .wrap { max-width: 840px; margin: 0 auto; padding: 0 16px; }
+  .kicker { display: inline-block; margin-top: 40px; font: 600 12.5px/1 var(--mono); letter-spacing: .06em; color: var(--text); background: var(--accent); padding: 7px 12px; border-radius: 999px; }
+  h1 { font: 900 clamp(34px, 6vw, 52px)/1.12 var(--display); letter-spacing: -.055em; margin: 16px 0 10px; }
+  .meta { color: var(--muted); font-size: 15px; margin: 0 0 20px; }
+  .sum { background: var(--ok-soft); color: var(--ok); border-radius: 20px; padding: 18px 22px; font-weight: 700; }
+  section { --c: var(--t-a1); background: var(--surface); border-radius: var(--r); box-shadow: inset 0 0 0 1px var(--line); padding: 26px 28px; margin: 18px 0; transition: box-shadow .25s; }
+  section:hover { box-shadow: var(--ring); }
+  section:nth-of-type(2) { --c: var(--t-a2); } section:nth-of-type(3) { --c: var(--t-a3); } section:nth-of-type(4) { --c: var(--t-a4); } section:nth-of-type(5) { --c: var(--accent); } section:nth-of-type(6) { --c: var(--accent-soft); }
   @media (max-width: 560px) { section { padding: 18px; } }
-  h2 { font-size: 21px; letter-spacing: -.02em; margin: 0 0 10px; }
+  h2 { display: flex; align-items: center; gap: 12px; font: 900 23px/1.3 var(--display); letter-spacing: -.045em; margin: 0 0 12px; }
+  h2::before { content: ""; flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); transition: transform .35s var(--pop); }
+  section:hover h2::before { transform: scale(1.4); }
   p, li { color: var(--text-2); }
   ul { padding-left: 22px; margin: 6px 0; }
   table { width: 100%; border-collapse: collapse; font-size: 15.5px; }
-  th, td { text-align: left; vertical-align: top; padding: 10px 8px; border-top: 1px solid var(--line); }
-  th { color: var(--text); width: 34%; font-weight: 700; }
+  th, td { text-align: left; vertical-align: top; padding: 12px 8px; border-top: 1px solid var(--line); }
+  tr:first-child th, tr:first-child td { border-top: 0; }
+  th { color: var(--text); width: 34%; font-weight: 800; }
   td { color: var(--text-2); }
   .table-wrap { overflow-x: auto; }
-  code { font-family: Consolas, monospace; font-size: .9em; background: var(--accent-soft); color: var(--accent); padding: 2px 6px; border-radius: 6px; word-break: break-all; }
-  footer { padding: 26px 0 56px; color: var(--muted); font-size: 14px; text-align: center; }
+  footer { padding: 26px 0 56px; }
+  footer a { margin: 0 2px; }
 </style>
 </head>
 <body>
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="./"><img src="icon.png" alt="">쌤패스</a>
-    <a class="home" href="./">← 소개 페이지</a>
+    <a class="brand" href="index.html"><img src="icon.png" alt="">쌤패스</a>
+    <a class="home" href="index.html">← 소개 페이지</a>
   </div>
 </header>
 
 <main class="wrap">
-  <h1>개인정보 처리방침</h1>
+  <span class="kicker">PRIVACY</span>
+  <h1>개인정보 <span class="mk">처리방침</span></h1>
   <p class="meta">시행일 2026년 10월 16일 · 대상: 쌤패스 브라우저 확장(엣지 확장 스토어판과 직접 배포판)</p>
   <p class="sum">쌤패스는 선생님의 정보를 어디로도 보내지 않아요. 모든 정보는 선생님 PC의 브라우저 안에만 있고, 만든 사람도 볼 수 없어요.</p>
 
@@ -119,6 +143,6 @@
   </section>
 </main>
 
-<footer>© 2026 hirame.ki · <a href="./">쌤패스 소개</a> · <a href="install.html">설치 가이드</a></footer>
+<footer>© 2026 hirame.ki · <a href="index.html">쌤패스 소개</a> · <a href="install.html">설치 가이드</a></footer>
 </body>
 </html>

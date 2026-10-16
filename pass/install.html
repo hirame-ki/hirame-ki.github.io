@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>쌤패스 설치 가이드 — 사진으로 따라 하기</title>
 <meta name="description" content="쌤패스 설치 파일 실행부터 엣지·크롬 확장 등록, 안랩 V3·Windows 경고창 대처까지 사진으로 따라 하는 설치 가이드.">
-<meta name="theme-color" content="#1b64da">
+<meta name="theme-color" content="#f2f7fd">
 <link rel="canonical" href="https://hirame-ki.github.io/pass/install.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="쌤패스">
@@ -20,121 +20,155 @@
 <link rel="icon" href="favicon.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="preload" href="fonts/NotoSansKR-Black.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem("ssampass-site-theme");if(/^(sky|beige|lime|mint|lavender|peach)$/.test(t))document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <style>
+  /* 쌤패스 공통: 소개 페이지(index.html)와 같은 테마 6종·글꼴. 항상 밝게. 테마는 소개 페이지에서 고른 값(localStorage ssampass-site-theme) */
+  @font-face { font-family: "SsamDisplay"; src: url("fonts/NotoSansKR-Black.woff2") format("woff2"); font-weight: 900; font-display: swap; }
+  @font-face { font-family: "SsamLogo"; src: url("fonts/BlackHanSans-logo.woff2") format("woff2"); font-weight: 400; font-display: block; }
+  @font-face { font-family: "SsamMono"; src: url("fonts/IBMPlexMono-Medium-Latin1.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+  @font-face { font-family: "SsamMono"; src: url("fonts/IBMPlexMono-SemiBold-Latin1.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+  :root, [data-theme="sky"] { --t-bg: #f2f7fd; --t-sf: #ffffff; --t-ink: #0b2440; --t-mut: #55657a; --t-ln: #dce5f0; --t-pr: #8fcbff; --t-prs: #e0f0ff; --t-a1: #ffe58a; --t-a2: #ffcfb5; --t-a3: #cdefa0; --t-a4: #ded4ff; }
+  [data-theme="beige"] { --t-bg: #f4eee3; --t-sf: #fffcf6; --t-ink: #2b2417; --t-mut: #6e6452; --t-ln: #e5dbc9; --t-pr: #f3c45a; --t-prs: #faebc6; --t-a1: #cfe2bc; --t-a2: #f3c3a8; --t-a3: #c6dfe8; --t-a4: #eed4d9; }
+  [data-theme="lime"] { --t-bg: #f3f7ec; --t-sf: #ffffff; --t-ink: #15301a; --t-mut: #56664f; --t-ln: #dde6d2; --t-pr: #b4eb7e; --t-prs: #e5f6d4; --t-a1: #ffe98f; --t-a2: #b8e7df; --t-a3: #ffcfae; --t-a4: #ffd6ea; }
+  [data-theme="mint"] { --t-bg: #eef7f5; --t-sf: #ffffff; --t-ink: #0d3330; --t-mut: #4f6764; --t-ln: #d3e6e2; --t-pr: #84dfcb; --t-prs: #d7f3ec; --t-a1: #f3ef9c; --t-a2: #ffc8b8; --t-a3: #cfd8ff; --t-a4: #f0e1c6; }
+  [data-theme="lavender"] { --t-bg: #f5f2ff; --t-sf: #ffffff; --t-ink: #221848; --t-mut: #5f5880; --t-ln: #e2dcf5; --t-pr: #bfaeff; --t-prs: #eae4ff; --t-a1: #c4f0dc; --t-a2: #ffd4c1; --t-a3: #fff09e; --t-a4: #cce5ff; }
+  [data-theme="peach"] { --t-bg: #fff4ee; --t-sf: #ffffff; --t-ink: #3a1b10; --t-mut: #7a5d52; --t-ln: #f2ded3; --t-pr: #ffb591; --t-prs: #ffe6da; --t-a1: #d6ebc2; --t-a2: #cfe4f5; --t-a3: #ffe79a; --t-a4: #e5daff; }
   :root {
-    --bg: #f5f7fb; --bg-2: #eef2f8; --surface: #fff; --surface-2: #f7f9fc; --fill: #eef1f5; --line: #e3e8ef;
-    --text: #141a24; --text-2: #4b5768; --muted: #8a94a3;
-    --accent: #3182f6; --accent-2: #1b64da; --accent-soft: #e7f1ff;
-    --ok: #12b886; --ok-soft: #e3f7ef; --warn: #9a5b00; --warn-soft: #fff5dc; --danger: #e5484d; --danger-soft: #ffeded;
-    --shadow: 0 2px 4px rgba(16,32,64,.04), 0 12px 32px rgba(16,32,64,.07);
-    --r: 22px; color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #0e1116; --bg-2: #131820; --surface: #1a1f28; --surface-2: #202631; --fill: #262d39; --line: #2c3442;
-      --text: #eef2f7; --text-2: #b9c2cf; --muted: #7f8a99;
-      --accent: #4d94ff; --accent-2: #6aa5ff; --accent-soft: #172a47;
-      --ok: #34d399; --ok-soft: #12332a; --warn: #fbbf24; --warn-soft: #3a2f12; --danger: #ff6b76; --danger-soft: #3a1c20;
-      --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark;
-    }
+    --bg: var(--t-bg); --surface: var(--t-sf); --surface-2: color-mix(in srgb, var(--t-bg) 60%, var(--t-sf)); --fill: var(--t-bg); --line: var(--t-ln);
+    --text: var(--t-ink); --text-2: color-mix(in srgb, var(--t-ink) 78%, var(--t-sf)); --muted: var(--t-mut);
+    --accent: var(--t-pr); --accent-soft: var(--t-prs);
+    --ok: #1e6b32; --ok-soft: #d8f1c6; --warn: #7a4f00; --warn-soft: #fff0c2; --danger: #b4231b; --danger-soft: #fde6e3;
+    --ring: 0 0 0 1.5px var(--t-ink); --r: 24px;
+    --ease: cubic-bezier(.2, .8, .2, 1); --pop: cubic-bezier(.3, 1.5, .5, 1);
+    --font: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --display: "SsamDisplay", var(--font); --mono: "SsamMono", ui-monospace, Consolas, monospace;
+    color-scheme: light;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.75 "Pretendard Variable", Pretendard, -apple-system, "Malgun Gothic", sans-serif; word-break: keep-all; -webkit-font-smoothing: antialiased; }
-  a { color: var(--accent); }
+  html { scroll-behavior: smooth; scroll-padding-top: 76px; background: var(--bg); }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.75 var(--font); word-break: keep-all; -webkit-font-smoothing: antialiased; }
+  a { color: var(--text); text-underline-offset: 3px; }
   img { max-width: 100%; display: block; }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; }
-  code, .path { font-family: Consolas, "D2Coding", monospace; font-size: .9em; background: var(--accent-soft); color: var(--accent); padding: 2px 7px; border-radius: 6px; word-break: break-all; }
-  kbd { font: 600 13px/1 Consolas, monospace; padding: 5px 8px; border-radius: 7px; background: var(--surface); box-shadow: inset 0 -2px 0 var(--line), 0 0 0 1px var(--line); color: var(--text-2); white-space: nowrap; }
+  code, .path { font-family: var(--mono); font-size: .85em; background: var(--surface); color: var(--text); padding: 2px 7px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--line); word-break: break-all; }
+  kbd { font: 600 13px/1 var(--mono); padding: 5px 8px; border-radius: 7px; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--line), inset 0 -2px 0 var(--line); color: var(--text); white-space: nowrap; }
+  .mk { background: linear-gradient(transparent 60%, var(--accent) 60%); padding: 0 .06em; }
+  /* 머리글 */
+  header.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  header.top .wrap { display: flex; align-items: center; gap: 10px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 400 23px/1 "SsamLogo", var(--display); color: var(--text); text-decoration: none; }
+  .brand img { width: 30px; height: 30px; transition: transform .45s var(--pop); }
+  .brand:hover img { transform: rotate(-10deg) scale(1.08); }
+  header.top a.home { margin-left: auto; display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 999px; color: var(--text); text-decoration: none; font-weight: 700; font-size: 14.5px; box-shadow: inset 0 0 0 1.5px var(--text); transition: background-color .2s, transform .15s; }
+  header.top a.home:hover { background: var(--accent-soft); }
+  header.top a.home:active { transform: scale(.96); }
+  footer { color: var(--muted); font-size: 14px; text-align: center; }
+  footer a { color: var(--text-2); }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
 
-  header.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 95%, transparent); border-bottom: 1px solid var(--line); }
-  header.top .wrap { display: flex; align-items: center; gap: 10px; height: 60px; }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--text); text-decoration: none; }
-  .brand img { width: 28px; height: 28px; }
-  header.top a.home { margin-left: auto; color: var(--text-2); text-decoration: none; font-weight: 600; font-size: 15px; padding: 8px 12px; border-radius: 10px; }
-  header.top a.home:hover { background: var(--fill); }
-
-  .hero { padding: 40px 0 10px; }
-  .hero h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.25; letter-spacing: -.035em; margin: 8px 0 10px; }
+  .hero { padding: 44px 0 10px; }
+  .hero .eyebrow { display: inline-block; font: 600 12.5px/1 var(--mono); letter-spacing: .06em; color: var(--text); background: var(--accent); padding: 7px 12px; border-radius: 999px; }
+  .hero h1 { font: 900 clamp(34px, 6vw, 54px)/1.12 var(--display); letter-spacing: -.055em; margin: 18px 0 14px; }
   .hero p { color: var(--text-2); margin: 0; }
-  .done { display: none; margin: 18px 0 0; padding: 16px 20px; border-radius: 16px; background: var(--ok-soft); color: var(--ok); font-weight: 700; }
+  .done { display: none; margin: 18px 0 0; padding: 16px 20px; border-radius: 18px; background: var(--ok-soft); color: var(--ok); font-weight: 700; animation: rise .4s var(--ease); }
   .done.on { display: block; }
-  .done.upd { background: var(--accent-soft, #e8f3ff); color: var(--text); font-weight: 600; line-height: 1.7; }
+  .done.upd { background: var(--accent-soft); color: var(--text); font-weight: 600; line-height: 1.7; }
   .done.upd .btn { margin-top: 10px; }
-  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-  .toc a { text-decoration: none; background: var(--surface); box-shadow: var(--shadow); color: var(--text); padding: 8px 14px; border-radius: 12px; font-weight: 700; font-size: 14.5px; }
-  .toc a b { color: var(--accent); margin-right: 4px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .toc a { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--text); padding: 7px 16px 7px 7px; border-radius: 999px; font-weight: 800; font-size: 14.5px; transition: transform .22s var(--ease), box-shadow .2s; }
+  .toc a b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--t-a1); font: 600 12px/1 var(--mono); }
+  .toc a:nth-child(2) b { background: var(--t-a2); } .toc a:nth-child(3) b { background: var(--t-a3); } .toc a:nth-child(4) b { background: var(--t-a4); } .toc a:nth-child(5) b { background: var(--accent); }
+  .toc a:hover { transform: translateY(-2px); box-shadow: var(--ring); }
+  .toc a:active { transform: scale(.96); }
 
-  section.step { margin: 26px 0; background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 28px; }
+  section.step { --c: var(--t-a1); margin: 26px 0; background: var(--surface); border-radius: var(--r); box-shadow: inset 0 0 0 1px var(--line); padding: 30px; transition: box-shadow .25s; }
+  #s2 { --c: var(--t-a2); } #s3 { --c: var(--t-a3); } #s4 { --c: var(--t-a4); } #help { --c: var(--accent); }
   @media (max-width: 560px) { section.step { padding: 20px; } }
-  .step > h2 { display: flex; align-items: center; gap: 12px; margin: 0 0 6px; font-size: 24px; letter-spacing: -.03em; }
-  .step > h2 .n { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 18px; }
-  .step > p.lead { color: var(--text-2); margin: 0 0 16px; }
-  .sub { margin-top: 22px; }
-  .sub h3 { margin: 0 0 6px; font-size: 18px; letter-spacing: -.02em; display: flex; align-items: center; gap: 8px; }
-  .sub h3 .k { font-size: 13px; font-weight: 800; color: var(--accent); background: var(--accent-soft); padding: 3px 9px; border-radius: 8px; }
+  .step > h2 { display: flex; align-items: center; gap: 14px; margin: 0 0 8px; font: 900 clamp(24px, 3.6vw, 32px)/1.2 var(--display); letter-spacing: -.05em; }
+  .step > h2 .n { flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--c); color: var(--text); display: grid; place-items: center; font: 600 18px/1 var(--mono); transition: transform .35s var(--pop); }
+  .step:hover > h2 .n { transform: rotate(-12deg) scale(1.08); }
+  .step > h2 small { font: 700 13px/1 var(--font) !important; letter-spacing: 0; color: var(--text) !important; background: var(--c); padding: 6px 10px; border-radius: 999px; white-space: nowrap; }
+  .step > p.lead { color: var(--text-2); margin: 0 0 18px; }
+  .sub { margin-top: 24px; }
+  .sub h3 { margin: 0 0 6px; font: 900 19px/1.35 var(--display); letter-spacing: -.04em; display: flex; align-items: center; gap: 10px; }
+  .sub h3 .k { flex: none; font: 600 12px/1 var(--mono); color: var(--text); background: var(--c); padding: 6px 9px; border-radius: 999px; }
   .sub p, .sub li { color: var(--text-2); }
   .sub ol, .sub ul { padding-left: 22px; margin: 6px 0; }
-  figure { margin: 12px 0 0; }
-  figure img { border-radius: 14px; box-shadow: 0 0 0 1px var(--line), var(--shadow); }
+  figure { margin: 14px 0 0; }
+  figure img { border-radius: 16px; box-shadow: 0 0 0 1px var(--line); transition: transform .45s var(--ease), box-shadow .25s; }
+  figure:hover img { box-shadow: var(--ring); }
   figcaption { font-size: 13.5px; color: var(--muted); margin-top: 8px; }
+  figcaption b { color: var(--text); }
   .figrow { display: grid; gap: 18px; justify-items: start; }
   .figrow figure { margin: 0; max-width: 100%; }
   .figrow img { width: auto; max-width: 100%; height: auto; display: block; }
-  .callout { margin-top: 14px; padding: 14px 18px; border-radius: 14px; background: var(--surface-2); color: var(--text-2); font-size: 15.5px; }
+  .callout { margin-top: 14px; padding: 14px 18px; border-radius: 16px; background: var(--accent-soft); color: var(--text-2); font-size: 15.5px; }
   .callout b { color: var(--text); }
   .callout.warn { background: var(--warn-soft); color: var(--warn); }
   .callout.warn b { color: var(--warn); }
   .callout.ok { background: var(--ok-soft); color: var(--ok); }
+  .callout.ok b { color: var(--ok); }
   .callout.safe { border: 2px solid var(--danger); background: var(--danger-soft); color: var(--text); }
-  .callout.safe .safe-q { display: block; margin-bottom: 4px; color: var(--danger); font-size: 20px; font-weight: 900; letter-spacing: -.02em; }
+  .callout.safe .safe-q { display: block; margin-bottom: 4px; color: var(--danger); font: 900 21px/1.3 var(--display); letter-spacing: -.04em; }
 
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 50px; padding: 0 22px; border-radius: 14px; border: 0; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; background: var(--accent); color: #fff; }
-  .btn:hover { background: var(--accent-2); }
-  .btn.soft { background: var(--accent-soft); color: var(--accent); height: 40px; padding: 0 14px; font-size: 14.5px; }
+  /* 버튼: 주색 채움 + 짙은 글자, 올리면 떠오르며 테두리, 누르면 눌림 */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 54px; padding: 0 26px; border-radius: 999px; border: 0; font: inherit; font-weight: 800; text-decoration: none; cursor: pointer; background: var(--accent); color: var(--text); transition: transform .22s var(--ease), box-shadow .22s, background-color .2s; }
+  .btn:hover { transform: translateY(-3px); box-shadow: var(--ring); }
+  .btn:active { transform: translateY(0) scale(.96); transition-duration: .08s; }
+  .btn:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
+  .btn.soft { background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--text); height: 44px; padding: 0 16px; font-size: 14.5px; }
+  .btn.soft:hover { background: var(--accent-soft); }
+  .btn.copied { background: var(--ok-soft); color: var(--ok); box-shadow: none; }
 
   .pathbox { display: flex; gap: 8px; align-items: center; margin: 10px 0; flex-wrap: wrap; }
-  .pathbox .path { flex: 1; min-width: 0; display: block; padding: 12px 14px; font-size: 15px; user-select: all; }
+  .pathbox .path { flex: 1; min-width: 0; display: block; padding: 12px 14px; font-size: 15px; user-select: all; border-radius: 14px; }
 
-  .tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 14px; background: var(--fill); margin: 4px 0 6px; }
-  .tabs button { height: 40px; padding: 0 18px; border: 0; border-radius: 10px; background: transparent; color: var(--text-2); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
-  .tabs button[aria-selected="true"] { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+  .tabs { display: inline-flex; gap: 4px; padding: 5px; border-radius: 999px; background: var(--fill); box-shadow: inset 0 0 0 1px var(--line); margin: 4px 0 6px; }
+  .tabs button { height: 40px; padding: 0 22px; border: 0; border-radius: 999px; background: transparent; color: var(--text-2); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: background-color .2s, color .2s, transform .15s; }
+  .tabs button:hover { color: var(--text); }
+  .tabs button:active { transform: scale(.96); }
+  .tabs button[aria-selected="true"] { background: var(--accent); color: var(--text); font-weight: 900; }
+  .tabs button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
   .bpanel { display: none; }
-  .bpanel.on { display: block; }
+  .bpanel.on { display: block; animation: rise .35s var(--ease); }
 
-  .warncard { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 16px; margin-top: 16px; padding: 18px; border-radius: 16px; border: 1.5px solid var(--line); }
-  .warncard .logo { width: 64px; height: 64px; border-radius: 16px; display: grid; place-items: center; font-weight: 900; font-size: 15px; color: #fff; }
-  .warncard h3 { margin: 0 0 4px; font-size: 18px; }
+  .warncard { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 16px; margin-top: 18px; padding: 20px; border-radius: 20px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+  .warncard .logo { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; font-weight: 900; font-size: 15px; color: #fff; transition: transform .4s var(--pop); }
+  .warncard:hover .logo { transform: rotate(-8deg) scale(1.05); }
+  .warncard h3 { margin: 0 0 6px; font: 900 20px/1.35 var(--display); letter-spacing: -.045em; }
   .warncard ol { margin: 6px 0 0; padding-left: 20px; color: var(--text-2); font-size: 15.5px; }
   .warncard ol li { margin-bottom: 4px; }
   @media (max-width: 600px) { .warncard { grid-template-columns: minmax(0, 1fr); gap: 10px; } .warncard .logo { width: 44px; height: 44px; border-radius: 12px; } }
 
   .puzzle { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-top: 12px; }
-  .puzzle div { padding: 16px; border-radius: 16px; background: var(--surface-2); text-align: center; }
-  .puzzle svg { width: 44px; height: 44px; }
-  .puzzle b { display: block; margin-top: 6px; }
-  .puzzle span { font-size: 14px; color: var(--muted); }
+  .puzzle div { padding: 18px; border-radius: 20px; background: var(--t-a1); text-align: center; transition: transform .25s var(--ease), box-shadow .2s; }
+  .puzzle div:nth-child(2) { background: var(--t-a2); } .puzzle div:nth-child(3) { background: var(--accent-soft); }
+  .puzzle div:hover { transform: translateY(-3px); box-shadow: var(--ring); }
+  .puzzle svg { width: 44px; height: 44px; margin: 0 auto; }
+  .puzzle b { display: block; margin-top: 8px; font: 900 17px/1.3 var(--display); letter-spacing: -.04em; }
+  .puzzle span { font-size: 14px; color: var(--text-2); }
 
-  footer { padding: 30px 0 60px; color: var(--muted); font-size: 14px; text-align: center; }
+  footer { padding: 30px 0 60px; }
 </style>
 </head>
 <body>
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="./"><img src="icon.png" alt="">쌤패스</a>
-    <a class="home" href="./">← 소개 페이지</a>
+    <a class="brand" href="index.html"><img src="icon.png" alt="">쌤패스</a>
+    <a class="home" href="index.html">← 소개 페이지</a>
   </div>
 </header>
 
 <main class="wrap">
   <div class="hero">
-    <span style="color:var(--accent);font-weight:700">설치 가이드 · 사진으로 따라 하기</span>
-    <h1>5분이면 끝, 처음 한 번만</h1>
+    <span class="eyebrow">설치 가이드 · 사진으로 따라 하기</span>
+    <h1><span class="mk">5분</span>이면 끝,<br>처음 한 번만</h1>
     <p>설치 파일 실행 → 브라우저에 확장 등록 → 비밀번호·PIN 저장. 새 버전이 나오면 아이콘에 NEW로 알려 줘요.</p>
     <div class="done" id="doneBox">✓ 쌤패스 <span id="doneVer"></span> 파일 설치가 끝났어요. 이제 <a href="#s3">3단계(확장 등록)</a>만 하면 돼요. 폴더 경로는 이미 복사돼 있어요.</div>
     <div class="done" id="upgradeBox">✓ 쌤패스를 <span id="upVer"></span>으로 바꿨어요. 1분 안에 쌤패스가 스스로 새 버전으로 바뀌어요. 바로 바꾸려면 확장 관리 화면에서 쌤패스 카드의 새로고침(↻)을 누르세요.<br>0.14 이하에서 올라왔다면 처음 설정 화면이 나와요. 인증서 비밀번호와 PIN을 한 번만 다시 저장해 주세요.</div>
-    <div class="done upd" id="update"><b>새 버전으로 바꾸기</b> · 확장을 다시 등록할 필요 없어요.<br>① 새 설치 파일 받기 → ② 받은 파일 실행 → ③ 끝. 1분 안에 쌤패스가 스스로 새 버전으로 바뀌어요.<br><a class="btn" id="dl2" href="./#download" target="_blank" rel="noopener">구글 드라이브에서 받기</a></div>
+    <div class="done upd" id="update"><b>새 버전으로 바꾸기</b> · 확장을 다시 등록할 필요 없어요.<br>① 새 설치 파일 받기 → ② 받은 파일 실행 → ③ 끝. 1분 안에 쌤패스가 스스로 새 버전으로 바뀌어요.<br><a class="btn" id="dl2" href="index.html#download" target="_blank" rel="noopener">구글 드라이브에서 받기</a></div>
     <nav class="toc">
       <a href="#s1"><b>1</b>설치 파일 받기</a>
       <a href="#s2"><b>2</b>실행 · 경고창</a>
@@ -148,7 +182,7 @@
   <section class="step" id="s1">
     <h2><span class="n">1</span>설치 파일 받기</h2>
     <p class="lead">아래 버튼을 누르면 구글 드라이브가 새 탭으로 열려요. <code>쌤패스-설치-버전.exe</code> 파일을 받아 주세요.</p>
-    <a class="btn" id="dl" href="./#download" target="_blank" rel="noopener">구글 드라이브에서 받기</a>
+    <a class="btn" id="dl" href="index.html#download" target="_blank" rel="noopener">구글 드라이브에서 받기</a>
     <div class="callout">드라이브 화면에서 파일을 누른 뒤 오른쪽 위 <b>다운로드(↓)</b> 버튼을 누르면 이름 그대로 받아져요. "바이러스 검사를 할 수 없다"는 안내가 나오면 <b>[무시하고 다운로드]</b>를 누르세요. 크기가 작은 설치 파일이라 나오는 일반 안내예요.</div>
 
     <div class="warncard" id="dlwarn">
@@ -201,7 +235,7 @@
           <li>설치가 끝나면 다시 뜨지 않아요. 쌤패스는 브라우저 안에서만 돌아가고, 따로 실행되는 프로그램이 없어요(0.15.0부터).</li>
           <li>목록이 회색이라 고를 수 없으면 학교에서 V3를 한꺼번에 관리하는 경우예요. 정보(전산) 담당 선생님께 설치 파일 실행을 부탁하세요.</li>
         </ol>
-        <figure><img src="img/guide-v3-1.webp" alt="V3 프로그램 실행 알림: 한 번만 실행 선택" loading="lazy" style="max-width:420px"><figcaption>실제 화면 · ① 목록에서 <b>한 번만 실행</b> → [확인] (파일 이름은 설치 파일 이름으로 보여요)</figcaption></figure>
+        <figure><img src="img/guide-v3-1.webp" alt="V3 프로그램 실행 알림: 한 번만 실행 선택" loading="lazy" style="max-width:min(420px, 100%)"><figcaption>실제 화면 · ① 목록에서 <b>한 번만 실행</b> → [확인] (파일 이름은 설치 파일 이름으로 보여요)</figcaption></figure>
         <div class="callout">왜 뜨나요? 회사 인증서로 서명하지 않은 개인 제작 설치 파일이라, V3가 처음 보는 파일로 판단해 조심스럽게 묻는 거예요. 반드시 이 페이지(공식 배포처)에서 받은 파일일 때만 실행하세요.</div>
       </div>
     </div>
@@ -257,7 +291,7 @@
   <!-- 4 -->
   <section class="step" id="s4">
     <h2><span class="n">4</span>툴바에 고정하고 처음 설정</h2>
-    <p class="lead">주소창 오른쪽의 <b>확장 아이콘</b>을 누르면 설치된 확장 목록이 나와요. 쌤패스 옆의 <b>핀(📌)</b>을 누르면 툴바에 늘 보여요. 확장 아이콘은 브라우저마다 모양이 달라요.</p>
+    <p class="lead">주소창 오른쪽의 <b>확장 아이콘</b>을 누르면 설치된 확장 목록이 나와요. 쌤패스 옆의 <b>핀 아이콘</b>을 누르면 툴바에 늘 보여요. 확장 아이콘은 브라우저마다 모양이 달라요.</p>
     <div class="puzzle">
       <div>
         <img src="img/guide-edge-toolbar.webp" alt="엣지 툴바: 즐겨찾기 별 왼쪽의 확장 아이콘" style="width:100%;border-radius:10px">
@@ -276,7 +310,7 @@
     <div class="sub">
       <h3><span class="k">4-2</span>비밀번호 · PIN 저장</h3>
       <ol>
-        <li>쌤패스 아이콘 → 오른쪽 위 설정(⚙) → <b>비밀번호·잠금</b></li>
+        <li>쌤패스 아이콘 → 오른쪽 위 <b>[설정]</b> → <b>비밀번호·잠금</b></li>
         <li>인증서 비밀번호를 두 번, PIN(숫자 6~12자리)을 두 번 넣고 [저장]</li>
         <li>툴바 아이콘에서 PIN으로 잠금을 풀면 준비 끝!</li>
       </ol>
@@ -317,7 +351,7 @@
 
   document.getElementById('copyPath').addEventListener('click', function () {
     var btn = this, text = document.getElementById('extPath').textContent;
-    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { btn.textContent = '복사했어요 ✓'; }, function () {
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { btn.textContent = '복사했어요 ✓'; btn.classList.add('copied'); setTimeout(function () { btn.textContent = '경로 복사'; btn.classList.remove('copied'); }, 2400); }, function () {
       var r = document.createRange(); r.selectNodeContents(document.getElementById('extPath'));
       var s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Ctrl+C로 복사';
     });
