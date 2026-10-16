@@ -47,12 +47,12 @@
     const UI = { tab: 'list', day: '' };
 
     async function start() {
-      try { INFO = await call('info'); } catch (e) { app.innerHTML = `<div class="notice bad">${esc(e.message)}</div>`; return; }
+      try { INFO = await withTimeout(call('info'), 30000, '구글 서버'); } catch (e) { bootFail(e.message); return; }
       let saved = null;
       try { saved = JSON.parse(sessionStorage.getItem('asm_stu') || 'null'); } catch (e) { }
       if (saved) {
         AUTH = saved;
-        try { D = await call('stuLogin', {}, AUTH); render(); return; } catch (e) { AUTH = null; }
+        try { D = await withTimeout(call('stuLogin', {}, AUTH), 45000, '구글 서버'); render(); return; } catch (e) { AUTH = null; }
       }
       renderLogin();
     }

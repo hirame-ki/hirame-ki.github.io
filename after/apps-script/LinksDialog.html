@@ -26,7 +26,7 @@
   <div class="grid" id="grid"></div>
   <div id="msg"></div>
   <p class="note">QR코드를 오른쪽 클릭 → [이미지를 다른 이름으로 저장]하면 그림 파일로 받을 수 있습니다. 관리자 화면 [홈] → [접속 주소·QR]에서도 복사·저장·인쇄할 수 있습니다.</p>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script async src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" onload="window.__qrReady && window.__qrReady()"></script>
   <script>
     let L = <?!= linksJson ?>;
     const ITEMS = [['apply', '학생 수강 신청', '가정통신문·안내문에 들어가는 QR'], ['board', '오늘의 현황판', '모니터에 띄우는 주소'], ['admin', '관리자·교사 화면', '교직원에게 공유']];
@@ -44,7 +44,11 @@
           <a class="url" href="${esc(L[k].url)}">${esc(L[k].url)}</a>
           ${L[k].short ? `<div class="long">원래 주소: ${esc(L[k].long)}</div>` : ''}
           <button data-copy="${k}">주소 복사</button></div>`).join('');
-      ITEMS.forEach(([k]) => new QRCode(document.getElementById('qr-' + k), { text: L[k].url, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M }));
+      ITEMS.forEach(([k]) => {
+        const box = document.getElementById('qr-' + k);
+        if (window.QRCode) new QRCode(box, { text: L[k].url, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M });
+        else { box.innerHTML = '<div style="font-size:12px;color:#5d6878;padding-top:50px">QR 불러오는 중…<br>(안 나오면 관리자 화면 [홈]에서 확인)</div>'; window.__qrReady = render; }
+      });
       const mk = document.getElementById('mk'), clr = document.getElementById('clr');
       if (mk) mk.onclick = () => run(false, mk);
       if (clr) clr.onclick = () => run(true, clr);

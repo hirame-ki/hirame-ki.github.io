@@ -113,17 +113,17 @@
     async function load() {
       try {
         if (VIEW === 'month') {
-          DATA = await call('boardMonth', { month: MONTH });
+          DATA = await withTimeout(call('boardMonth', { month: MONTH }), 45000, '구글 서버');
           TODAY = DATA.today; MONTH = DATA.month;
           renderMonth();
         } else {
-          DATA = await call('board', { date: DATE });
+          DATA = await withTimeout(call('board', { date: DATE }), 45000, '구글 서버');
           TODAY = DATA.today; DATE = DATA.date;
           renderDay();
         }
         $('#upd').textContent = '업데이트 ' + new Date().toTimeString().slice(0, 5) + ' · 5분마다 자동 새로고침';
       } catch (e) {
-        $('#stage').innerHTML = `<div class="big-empty">${esc(e.message)}</div>`;
+        $('#stage').innerHTML = `<div class="big-empty">${esc(e.message)}<div style="font-size:.55em;margin-top:1vh">새로고침(F5)하거나, 구글 계정이 여러 개 로그인된 브라우저라면 시크릿 창에서 열어 보세요.</div></div>`;
       }
     }
 

@@ -1,28 +1,19 @@
 {
   "app": "방과후 한눈에",
-  "version": "1.1.0",
-  "date": "2026-10-14",
+  "version": "1.1.1",
+  "date": "2026-10-16",
   "notes": [
-    "운영 주기(학기·분기·방학) 관리: 새 주기를 시작해도 지난 강좌·신청·일정 기록이 그대로 남고 [주기 관리]에서 다시 볼 수 있습니다.",
-    "지난 주기에서 불러오기: 강좌 계획과 선정된 수강생 명단을 한 번에 가져와 새 주기를 빠르게 준비합니다.",
-    "자동 업데이트: 새 버전이 나오면 관리자 화면과 시트에 알림이 뜨고, 버튼 하나로 코드 교체와 웹앱 재배포까지 합니다.",
-    "시간대를 처음 설정 창과 [설정] 화면에서 바로 고칠 수 있습니다.",
-    "접속 주소·QR: 짧은 주소(is.gd) 만들기, QR 저장·크게 인쇄. 가정통신문에는 QR코드만 들어갑니다."
+    "학교 망에서 외부 주소(cdnjs·jsdelivr)가 막히거나 느릴 때 관리자·학생 화면이 \"불러오는 중…\"에서 멈추던 문제를 고쳤습니다. QR 라이브러리를 코드 안에 넣었습니다.",
+    "화면이 30초 동안 응답이 없거나 오류가 나면, 멈춰 있지 않고 원인과 해결 방법(새로고침, 시크릿 창)을 보여 줍니다."
   ],
   "changed": [
     "Code",
-    "Logic",
-    "Setup",
-    "Cycle",
-    "Update",
     "Index",
     "Apply",
     "Board",
-    "SetupDialog",
     "LinksDialog",
     "Styles",
-    "Client",
-    "appsscript"
+    "Client"
   ],
   "removed": [],
   "page": "https://hirame-ki.github.io/after/",
@@ -31,7 +22,7 @@
       "name": "Code",
       "type": "SERVER_JS",
       "path": "apps-script/Code.gs",
-      "sha256": "fcf6ff43d189a663bc3325265dbdf33cb4998c6388b9a3776a5c1d44a6378911"
+      "sha256": "432fdcfd3caf861da99a36f20c58d0e3e37767a6fcc70ab970e9a1965ddfbb05"
     },
     {
       "name": "Logic",
@@ -61,19 +52,19 @@
       "name": "Index",
       "type": "HTML",
       "path": "apps-script/Index.html",
-      "sha256": "b4065d3833046046ab1f7edb4aa636b4eca903650119d4ed0c0a6f3a3a20b2c5"
+      "sha256": "266687670670de1ccfaa6c49c1fc9dda1ee172e27741e832b889bc4a83f4b0a7"
     },
     {
       "name": "Apply",
       "type": "HTML",
       "path": "apps-script/Apply.html",
-      "sha256": "38bdb47425bebc067afd39343f57829efb1cef69544f0f29bf995aea183746db"
+      "sha256": "2d6f94c9cb18eaa91f8aca5bd5c8bddb6b966fe5631d4102ef8d9aa4b5e01a99"
     },
     {
       "name": "Board",
       "type": "HTML",
       "path": "apps-script/Board.html",
-      "sha256": "98fe75682c0eb35d20099437ea6b43ea62cce069d5d27844d603b3b38bed91c5"
+      "sha256": "eadc70407c72d79156e4081930ab2092b4e57706e17cbeb0fa3b2d9c866a2809"
     },
     {
       "name": "SetupDialog",
@@ -85,19 +76,19 @@
       "name": "LinksDialog",
       "type": "HTML",
       "path": "apps-script/LinksDialog.html",
-      "sha256": "cae57aa0d61884d377787b9c9d84a298ce160f97b1ea7b04f2af7c83c30ca9fb"
+      "sha256": "4cfef6bbecf2fd35b1da1ddd972deccdb060301ad01c9dc8c4c4ec7a9872dcf3"
     },
     {
       "name": "Styles",
       "type": "HTML",
       "path": "apps-script/Styles.html",
-      "sha256": "7685205aca72d12d2f7cc7b47b4626b00d287e8eb81eb21c82711e732b1c1d59"
+      "sha256": "4e6dc1ca622d331cea58309dfe7d67f7c572773fd44e7daed38a2bdd662c526c"
     },
     {
       "name": "Client",
       "type": "HTML",
       "path": "apps-script/Client.html",
-      "sha256": "3ca7ebaedd50b55d25865f24385a913f92557ff2a9cc7c036e785f23cbcd8e4a"
+      "sha256": "71c97c394c2020fba4bd6921950c2007f67cc4605d1828fff0cca2c256be3c60"
     },
     {
       "name": "appsscript",
