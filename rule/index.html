@@ -667,6 +667,9 @@ const CHAT_CHAIN = [
      ⚠️ 사슬은 여전히 둘이다(20B → Gemma 4). 하나로 줄이면 그 하나가
      죽는 날 화면이 통째로 멎는다. */
   { id:"openai/gpt-oss-20b",    label:"GPT-OSS 20B",  extra:{ reasoning_effort:"low" } },
+  /* 2026-10-16 실측: gemma-4-31b-it가 60초가 넘도록 무응답 → 20B가 막히면 한참 기다린 뒤에야 답이 없었다.
+     사이에 nemotron-3-super(첫 글자 3~4초, 생각 조각은 delta.reasoning으로 와서 화면엔 답만 나온다)를 둔다. */
+  { id:"nvidia/nemotron-3-super-120b-a12b", label:"Nemotron 3 Super", extra:{} },
   { id:"google/gemma-4-31b-it", label:"Gemma 4 31B",  extra:{} },
 ];
 /* 첫 글자가 나오기까지 기다리는 한도. 없으면 화면이 "생각 중…"에서 영영 멎는다 —
