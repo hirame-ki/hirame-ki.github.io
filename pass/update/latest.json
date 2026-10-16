@@ -1,8 +1,8 @@
 {
-  "version": "0.15.3",
-  "sha256": "3c90f7f98512033bb52959553f88edcc107202c2aa9e0e6bfdec997fbdbfcae2",
-  "size": 97051,
-  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.15.3.zip",
-  "notes": "과세특 입력 안내 문구를 순서대로 고쳤어요: OTP 입력 → 쌤패스 과세특 탭에서 엑셀 불러오기 → 나이스에서 [조회].",
-  "sig": "AZapEPgW0hygQid8PHAHdpcm/GmJLeZrcwNxafB0hUsER+UbQrjQfTkAylU28AqONXqesw9YPyyk48jB7a9Pc2BIsfl9rB3DmXoBc72OkA7RdgvM4A18n8I1wrnPzG+WRPGw0lFZRImZr8bL6Jbmii0A5WT5CHLUvJT4tuaL7eMn4twWu+f1EGogWaA9BKZJXZEI6P8HslYcavZThtf/72ZyFtV53EL197V1lNBAl1cqcvtq2VUdT3cpR3LtewPDD/5KTCxrEMsM6lZe1huQK89aZDhYYZZ4zpaoGSOIFHUOjoy3JxXpj3inFzmpmzOkKTQPQaJwx5Bu7W2Vd514bPtjf0TF1/uYDlcjWC8ECziswOgS3d+KReLbz2aY19SbsHRBtRSkza2CFbDOBKGIS6okKOmaSHROd6g24NGYNo/I/4nqT6wZD5PNfy7cAF+ixROth80wbCMEm+euWsACYGUvQvcbl8Oe1K7o3JDFVs4UxbSBOPeMppDQATzcI2T9"
+  "version": "0.16.0",
+  "sha256": "066282d41693a59e25ea407ce9e3db03e7b0783402d01d18b3eca36ff1754393",
+  "size": 634094,
+  "url": "https://hirame-ki.github.io/pass/update/neis-helper-0.16.0.zip",
+  "notes": "화면을 새로 꾸몄어요: 여러 색과 굵은 글씨로 중요한 버튼이 한눈에 보이고, 설정 › 화면에서 테마 6종(스카이·베이지·라임·민트·라벤더·피치)을 고를 수 있어요. 팝업의 [K-에듀파인 열기]·[나이스]는 한 번 누르면 업무포털 접속·로그인부터 차례로 열어 줘요.",
+  "sig": "l1jo//2F+7Q0J2Z2uhIjbUBu41X8yICz++fzYoB1/bel4ixH26fdsjQiSca2cgVKzwdwGbV7HyXdQRAJqUtB+piHyNotwP9E/c9RoJ5Mw7M2zPhwflA7INeJMYorzX3A0UST+XXbc6uINt8ac4QFlWFzSYY5KdfL/n5CjjKD4+lEEWuz1D2d8JS42d73LFeZ402bqdC9MQ0vh1Aev+c/T6E+x06xCACa2T4H3VcNzzNcd19rp/JfeGd5eqFxG2h5CIDQAHMuvS5nYMpZhEbeBVMs29O5+NpiC436NeNg5Mctg5CnzSMm6vfU/dk+caM6NEzH2+iARTa2NZybVHFD08KdMRHy+euTmSy0ACO2lZHJE/g2eXXhisbqTxHDrWHaR3ecBgV2XxOqHpRTsvQbBIJBZcocpX43dp/0qMzyMn3mACcFwIMuBdDLnAZQLpt4LSIfokeaV9VIWBJAIxgp7CRPi/fTZCCfIvpWBPyms5fMvJfpui3Z1NkhQZQZDaty"
 }
