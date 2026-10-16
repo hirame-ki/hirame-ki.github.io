@@ -11,7 +11,7 @@
 <meta name="author" content="황성재">
 <meta name="creator" content="황성재 (@hirame.ki)">
 <meta name="copyright" content="© 2026 황성재 (@hirame.ki)">
-<meta name="theme-color" content="#3a4b8f">
+<meta name="theme-color" content="#0b1a33">
 <meta name="format-detection" content="telephone=no">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://hirame-ki.github.io/meeting/">
@@ -719,7 +719,7 @@ const LLM_CHAIN=[
   {id:'openai/gpt-oss-120b', label:'GPT-OSS 120B', extra:{reasoning_effort:'low'}},
   /* 프리뷰 모델(중단 가능)이지만 한자 혼입에 강해 2차로 둔다.
      사라지면 요청이 실패하고 체인이 자동으로 건너뛰므로 배포에 지장 없음 */
-  {id:'qwen/qwen3.6-27b',    label:'Qwen3.6 27B',  extra:{reasoning_effort:'none',reasoning_format:'hidden'}},
+  {id:'qwen/qwen3.8-27b',    label:'Qwen3.8 27B',  extra:{reasoning_effort:'none',reasoning_format:'hidden'}},
   {id:'openai/gpt-oss-20b',  label:'GPT-OSS 20B',  extra:{reasoning_effort:'low'}}
 ];
 /* 한자·가나 혼입 감지 (규정나침반에서 프롬프트만으로는 재발했던 문제 → 코드로 검사) */
