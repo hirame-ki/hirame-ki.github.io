@@ -1,100 +1,72 @@
 {
   "app": "방과후 한눈에",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "date": "2026-10-16",
   "notes": [
-    "학교 망에서 외부 주소(cdnjs·jsdelivr)가 막히거나 느릴 때 관리자·학생 화면이 \"불러오는 중…\"에서 멈추던 문제를 고쳤습니다. QR 라이브러리를 코드 안에 넣었습니다.",
-    "화면이 30초 동안 응답이 없거나 오류가 나면, 멈춰 있지 않고 원인과 해결 방법(새로고침, 시크릿 창)을 보여 줍니다."
+    "불러오기 구조로 바뀌었습니다. Apps Script에는 파일 2개(Loader, appsscript.json)만 넣고, 이후 업데이트는 [업데이트 확인·설치] 버튼 한 번이면 됩니다. 붙여넣기나 다시 배포할 필요가 없습니다.",
+    "예전 버전(v1.1.x)은 안내 페이지의 「예전 버전에서 넘어오기」를 한 번만 따라 하면 됩니다. 데이터는 그대로입니다.",
+    "시트 메뉴 [이전 버전으로 되돌리기]가 생겼습니다.",
+    "구글이 화면 코드 속 \"//\" 뒤를 지워 관리자 화면이 열리지 않던 문제(\"줄 1388\" 오류)를 고쳤습니다.",
+    "더 이상 \"스크립트 프로젝트 관리·배포\" 권한을 요청하지 않습니다."
   ],
   "changed": [
     "Code",
+    "Logic",
+    "Setup",
+    "Cycle",
+    "Update",
     "Index",
     "Apply",
     "Board",
+    "SetupDialog",
     "LinksDialog",
     "Styles",
     "Client"
   ],
-  "removed": [],
   "page": "https://hirame-ki.github.io/after/",
+  "bundle": "bundle-1.2.0.json",
+  "sha256": "c4bc80c7635d3f3411f9ae1df56bd24891b8ab3ac9070af2fef036f9ed8bb778",
+  "loader": 1,
+  "parts": {
+    "Code": "95b9cd4dfe65bf6148fff1fae2a7d52bfa65127f869612650e521b6d7b6f23f4",
+    "Logic": "1c24b0ed6443a459a68b4301d2c310774693b908f4d9b3dfaedbb4a9e819a09f",
+    "Setup": "c48bfecfbbdd2cabb18181465762039d3c183008fbb2a89cb048e07d2e0fc798",
+    "Cycle": "cc6b8a16d4316af885fb441f01b861fa165406d56a7b25c5f6d21e2965fe610c",
+    "Update": "0eb7bcfbaf0fa0d073e0f1e53c4eeaa409643e50b3fc92682230c48f26ae4791",
+    "Index": "094bf47ce4ca4f162c31c395b086b58f3adc444155d7217f431b91ceb3c9ee79",
+    "Apply": "2d6f94c9cb18eaa91f8aca5bd5c8bddb6b966fe5631d4102ef8d9aa4b5e01a99",
+    "Board": "eadc70407c72d79156e4081930ab2092b4e57706e17cbeb0fa3b2d9c866a2809",
+    "SetupDialog": "20d47e6409227bcf9334dac307dbb496e7a72039bb8899d570be0ac31cb346f0",
+    "LinksDialog": "ae3a08985ab2f1c5a29b7c3b7c43980a32df083516bbfb69e3a4ef72733d1c5f",
+    "Styles": "4e6dc1ca622d331cea58309dfe7d67f7c572773fd44e7daed38a2bdd662c526c",
+    "Client": "138e92bc7db2ed938ec27f26735aa3cedb4a5a11e47e9e83abe06cd13781c4db"
+  },
   "files": [
     {
-      "name": "Code",
+      "name": "Loader",
       "type": "SERVER_JS",
-      "path": "apps-script/Code.gs",
-      "sha256": "432fdcfd3caf861da99a36f20c58d0e3e37767a6fcc70ab970e9a1965ddfbb05"
-    },
-    {
-      "name": "Logic",
-      "type": "SERVER_JS",
-      "path": "apps-script/Logic.gs",
-      "sha256": "1c24b0ed6443a459a68b4301d2c310774693b908f4d9b3dfaedbb4a9e819a09f"
-    },
-    {
-      "name": "Setup",
-      "type": "SERVER_JS",
-      "path": "apps-script/Setup.gs",
-      "sha256": "7811b3b13e0fadc1a59d76ee05b803b8fd5fc0ce613428a178627eca6b6d3f58"
-    },
-    {
-      "name": "Cycle",
-      "type": "SERVER_JS",
-      "path": "apps-script/Cycle.gs",
-      "sha256": "cc6b8a16d4316af885fb441f01b861fa165406d56a7b25c5f6d21e2965fe610c"
-    },
-    {
-      "name": "Update",
-      "type": "SERVER_JS",
-      "path": "apps-script/Update.gs",
-      "sha256": "ea9aff377e3e5402380bd41840a2c4420a3ae451037cc676b554995535da0a8e"
-    },
-    {
-      "name": "Index",
-      "type": "HTML",
-      "path": "apps-script/Index.html",
-      "sha256": "266687670670de1ccfaa6c49c1fc9dda1ee172e27741e832b889bc4a83f4b0a7"
-    },
-    {
-      "name": "Apply",
-      "type": "HTML",
-      "path": "apps-script/Apply.html",
-      "sha256": "2d6f94c9cb18eaa91f8aca5bd5c8bddb6b966fe5631d4102ef8d9aa4b5e01a99"
-    },
-    {
-      "name": "Board",
-      "type": "HTML",
-      "path": "apps-script/Board.html",
-      "sha256": "eadc70407c72d79156e4081930ab2092b4e57706e17cbeb0fa3b2d9c866a2809"
-    },
-    {
-      "name": "SetupDialog",
-      "type": "HTML",
-      "path": "apps-script/SetupDialog.html",
-      "sha256": "e2d970470cc2c68ba926e02d364d83082747e7728fc3bddd61612213bc4b5d0e"
-    },
-    {
-      "name": "LinksDialog",
-      "type": "HTML",
-      "path": "apps-script/LinksDialog.html",
-      "sha256": "4cfef6bbecf2fd35b1da1ddd972deccdb060301ad01c9dc8c4c4ec7a9872dcf3"
-    },
-    {
-      "name": "Styles",
-      "type": "HTML",
-      "path": "apps-script/Styles.html",
-      "sha256": "4e6dc1ca622d331cea58309dfe7d67f7c572773fd44e7daed38a2bdd662c526c"
-    },
-    {
-      "name": "Client",
-      "type": "HTML",
-      "path": "apps-script/Client.html",
-      "sha256": "71c97c394c2020fba4bd6921950c2007f67cc4605d1828fff0cca2c256be3c60"
+      "path": "install/Loader.gs",
+      "sha256": "da40d42df1ac774d5c5148a15f68fb96b57db7b0c3c037d1079708613ff4ee97"
     },
     {
       "name": "appsscript",
       "type": "JSON",
-      "path": "apps-script/appsscript.json",
-      "sha256": "81b46ef5bbb8ca0b88d79b360f1bd4648efb4929b2256998782c4da600a404ee"
+      "path": "install/appsscript.json",
+      "sha256": "2708d976865ae37be113d05d3fb8024070e0e04a9ed6aea8ec65fb4361cc1f06"
     }
+  ],
+  "removed": [
+    "Code",
+    "Logic",
+    "Setup",
+    "Cycle",
+    "Update",
+    "Index",
+    "Apply",
+    "Board",
+    "SetupDialog",
+    "LinksDialog",
+    "Styles",
+    "Client"
   ]
 }

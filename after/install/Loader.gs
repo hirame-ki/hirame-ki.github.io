@@ -1,0 +1,304 @@
+/**
+ * 방과후 한눈에 — 불러오기 코드 (Loader)
+ *
+ * Apps Script 프로젝트에는 이 파일(Loader)과 appsscript.json 두 개만 넣습니다.
+ * 실제 프로그램(화면·기능)은 GitHub(hirame-ki.github.io/after)에서 받아 이 시트의 숨김 탭 「_앱코드」에 보관하고,
+ * 실행할 때마다 거기서 꺼내 씁니다.
+ *  · 업데이트: 시트 메뉴 [업데이트 확인·설치] 또는 관리자 화면 [지금 업데이트] 한 번 (붙여넣기·재배포 필요 없음)
+ *  · 되돌리기: 시트 메뉴 [이전 버전으로 되돌리기]
+ *  · 받은 파일은 확인값(SHA-256)이 맞을 때만 설치하고, GitHub가 멈춰도 시트에 보관된 코드로 계속 동작합니다.
+ * 이 파일은 거의 바뀌지 않습니다. 고치지 마세요.
+ */
+
+var LOADER_VERSION = 1;
+var LOADER_SOURCE = 'https://raw.githubusercontent.com/hirame-ki/hirame-ki.github.io/main/after/release/';
+var LOADER_PAGE = 'https://hirame-ki.github.io/after/';
+var LOADER_SHEET = '_앱코드';
+var LOADER_CELL = 40000;        // 시트 한 칸에 넣는 글자 수 (한 칸 최대 50,000자)
+var LOADER_CACHE_PART = 25000;  // 캐시 한 칸에 넣는 글자 수 (한 칸 최대 100KB)
+var LOADER_APP_ = null;
+
+/* ───────────── 구글이 부르는 입구 ───────────── */
+
+function doGet(e) {
+  var app;
+  try { app = loaderApp_(); } catch (err) { return loaderErrorPage_(err); }
+  return app.doGet(e);
+}
+
+function api(req) {
+  try { return loaderApp_().api(req); }
+  catch (err) { return { ok: false, error: loaderMsg_(err) }; }
+}
+
+function onOpen(e) {
+  try { loaderApp_().onOpen(e); }
+  catch (err) { loaderRescueMenu_(); }
+}
+
+/** 시트 안 창(처음 설정·접속 주소)에서 부릅니다. */
+function dlg(name, arg) { return loaderApp_().dlg(name, arg); }
+
+/* 시트 메뉴 칸 (프로그램이 메뉴 줄을 m0, m1 … 에 연결합니다) */
+function m0() { return loaderApp_().runMenu(0); }
+function m1() { return loaderApp_().runMenu(1); }
+function m2() { return loaderApp_().runMenu(2); }
+function m3() { return loaderApp_().runMenu(3); }
+function m4() { return loaderApp_().runMenu(4); }
+function m5() { return loaderApp_().runMenu(5); }
+function m6() { return loaderApp_().runMenu(6); }
+function m7() { return loaderApp_().runMenu(7); }
+function m8() { return loaderApp_().runMenu(8); }
+function m9() { return loaderApp_().runMenu(9); }
+function m10() { return loaderApp_().runMenu(10); }
+function m11() { return loaderApp_().runMenu(11); }
+function m12() { return loaderApp_().runMenu(12); }
+function m13() { return loaderApp_().runMenu(13); }
+function m14() { return loaderApp_().runMenu(14); }
+function m15() { return loaderApp_().runMenu(15); }
+function m16() { return loaderApp_().runMenu(16); }
+function m17() { return loaderApp_().runMenu(17); }
+function m18() { return loaderApp_().runMenu(18); }
+function m19() { return loaderApp_().runMenu(19); }
+function m20() { return loaderApp_().runMenu(20); }
+function m21() { return loaderApp_().runMenu(21); }
+function m22() { return loaderApp_().runMenu(22); }
+function m23() { return loaderApp_().runMenu(23); }
+function m24() { return loaderApp_().runMenu(24); }
+function m25() { return loaderApp_().runMenu(25); }
+function m26() { return loaderApp_().runMenu(26); }
+function m27() { return loaderApp_().runMenu(27); }
+function m28() { return loaderApp_().runMenu(28); }
+function m29() { return loaderApp_().runMenu(29); }
+
+/* 복구 메뉴 (프로그램이 아직 없거나 열리지 않을 때 나타남) */
+function ldrInstall() {
+  var ui = SpreadsheetApp.getUi(); // 시트 안에서만 실행 (웹 화면에서 부르면 여기서 멈춤)
+  try {
+    var r = loaderInstall_();
+    ui.alert('설치했습니다', 'v' + r.to + ' 프로그램을 설치했습니다.\n시트를 새로고침(F5)하면 전체 메뉴가 나옵니다.', ui.ButtonSet.OK);
+  } catch (e) {
+    ui.alert('설치하지 못했습니다', loaderMsg_(e), ui.ButtonSet.OK);
+  }
+}
+
+function ldrRollback() {
+  var ui = SpreadsheetApp.getUi();
+  try {
+    var r = loaderRollback_();
+    ui.alert('되돌렸습니다', 'v' + r.to + ' 로 돌아갔습니다. 시트를 새로고침(F5)하세요.', ui.ButtonSet.OK);
+  } catch (e) {
+    ui.alert('되돌리지 못했습니다', loaderMsg_(e), ui.ButtonSet.OK);
+  }
+}
+
+function loaderRescueMenu_() {
+  try {
+    SpreadsheetApp.getUi().createMenu('🏫 방과후 관리')
+      .addItem('프로그램 설치·복구 (최신 버전 받기)', 'ldrInstall')
+      .addItem('이전 버전으로 되돌리기', 'ldrRollback')
+      .addToUi();
+  } catch (e) { /* 메뉴를 만들 수 없는 상황이면 넘어감 */ }
+}
+
+/* ───────────── 프로그램 불러오기 ───────────── */
+
+function loaderApp_() {
+  if (LOADER_APP_) return LOADER_APP_;
+  if (typeof readTable_ === 'function' || typeof actions_ === 'function') {
+    throw new Error('예전 방식의 코드 파일(Code, Index 등)이 프로젝트에 남아 있습니다. Apps Script에서 Loader와 appsscript.json만 남기고 나머지 파일을 지운 뒤 저장하세요.');
+  }
+  var text = loaderLoad_();
+  if (!text) throw new Error('NOT_INSTALLED');
+  LOADER_APP_ = loaderCompile_(JSON.parse(text));
+  return LOADER_APP_;
+}
+
+/** 코드 묶음을 실행해 입구 함수들을 꺼냅니다. 프로그램 코드는 이 함수 안에서만 보입니다. */
+function loaderCompile_(b) {
+  if (!b || !b.version || !b.gs || !b.html) throw new Error('프로그램 파일 형식이 올바르지 않습니다.');
+  var names = ['doGet', 'api', 'onOpen', 'runMenu', 'dlg'];
+  var body = b.gs.map(function (f) { return '\n/* ===== ' + f.name + ' ===== */\n' + f.source; }).join('\n') +
+    '\nreturn {' + names.map(function (n) { return n + ': (typeof ' + n + ' === "function") ? ' + n + ' : null'; }).join(', ') + '};';
+  var bridge = {
+    version: b.version,
+    loaderVersion: LOADER_VERSION,
+    page: LOADER_PAGE,
+    html: function (name) {
+      if (!Object.prototype.hasOwnProperty.call(b.html, name)) throw new Error('화면 파일이 없습니다: ' + name);
+      return b.html[name];
+    },
+    latest: loaderLatest_,
+    install: function () { return loaderInstall_(); },
+    rollback: loaderRollback_,
+    installed: loaderInstalled_
+  };
+  var app = (new Function('LOADER', body))(bridge);
+  names.forEach(function (n) { if (!app[n]) throw new Error('프로그램 파일이 올바르지 않습니다 (' + n + ' 없음).'); });
+  return app;
+}
+
+/** 지금 설치된 코드 묶음(JSON 글자). 캐시 → 시트 순서로 찾습니다. */
+function loaderLoad_() {
+  var cache = CacheService.getScriptCache(), sha = cache.get('ldr_cur');
+  if (sha) {
+    var t = loaderCacheGet_(cache, sha);
+    if (t) return t;
+  }
+  var slot = loaderReadSlot_(1);
+  if (!slot) return null;
+  loaderCacheSet_(slot.meta.sha256, slot.text);
+  return slot.text;
+}
+
+/* ───────────── 설치·업데이트·되돌리기 ───────────── */
+
+function loaderLatest_() {
+  var r = UrlFetchApp.fetch(LOADER_SOURCE + 'version.json?t=' + new Date().getTime(), { muteHttpExceptions: true });
+  if (r.getResponseCode() !== 200) throw new Error('업데이트 정보를 받지 못했습니다 (' + r.getResponseCode() + '). 잠시 뒤 다시 시도하세요.');
+  var info = JSON.parse(r.getContentText('UTF-8'));
+  if (!info.version || !info.bundle || !info.sha256) throw new Error('업데이트 정보 형식이 올바르지 않습니다.');
+  return info;
+}
+
+function loaderInstall_() {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    var info = loaderLatest_();
+    if (info.loader && Number(info.loader) > LOADER_VERSION) {
+      throw new Error('이번 버전은 새 불러오기 코드가 필요합니다. ' + LOADER_PAGE + ' 에서 Loader 파일만 다시 붙여넣고 [배포] → [배포 관리] → 새 버전으로 배포하세요.');
+    }
+    var r = UrlFetchApp.fetch(LOADER_SOURCE + info.bundle, { muteHttpExceptions: true });
+    if (r.getResponseCode() !== 200) throw new Error('새 버전 파일을 받지 못했습니다 (' + r.getResponseCode() + '). 잠시 뒤 다시 시도하세요.');
+    var text = r.getContentText('UTF-8');
+    if (loaderSha_(text) !== info.sha256) throw new Error('받은 파일의 확인값이 맞지 않아 설치하지 않았습니다. 새 버전을 올린 직후라면 5분쯤 뒤 다시 시도하세요.');
+    var b = JSON.parse(text);
+    if (b.version !== info.version) throw new Error('버전 정보가 맞지 않아 설치하지 않았습니다.');
+    loaderCompile_(b); // 설치 전에 한 번 실행해 보아 오류가 없는지 확인
+    var cur = null;
+    try { cur = loaderReadSlot_(1); } catch (e) { cur = null; } // 지금 것이 손상됐으면 복구 설치로 처리
+    // 다른 버전일 때만 지금 것을 '이전 버전' 칸으로 옮김 (같은 버전 다시 받기 = 복구)
+    if (cur && cur.meta.version !== b.version) loaderWriteSlot_(2, cur.meta, cur.text);
+    var meta = { version: b.version, sha256: info.sha256, installedAt: Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss') };
+    loaderWriteSlot_(1, meta, text);
+    loaderCacheSet_(meta.sha256, text);
+    LOADER_APP_ = null;
+    return { from: cur ? cur.meta.version : '', to: b.version, notes: info.notes || [] };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function loaderRollback_() {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    var cur = loaderReadSlot_(1), prev = loaderReadSlot_(2);
+    if (!prev) throw new Error('되돌릴 이전 버전이 없습니다.');
+    loaderWriteSlot_(1, prev.meta, prev.text);
+    if (cur) loaderWriteSlot_(2, cur.meta, cur.text);
+    loaderCacheSet_(prev.meta.sha256, prev.text);
+    LOADER_APP_ = null;
+    return { from: cur ? cur.meta.version : '', to: prev.meta.version };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** 지금·이전 버전 (코드 본문은 읽지 않음) */
+function loaderInstalled_() {
+  var sh = loaderSheet_(false);
+  if (!sh) return { version: '', prev: '' };
+  var row = sh.getRange(1, 1, 1, 2).getValues()[0];
+  var parse = function (v) { try { return JSON.parse(String(v || '')); } catch (e) { return null; } };
+  var a = parse(row[0]), b = parse(row[1]);
+  return { version: a ? a.version : '', installedAt: a ? a.installedAt : '', prev: b ? b.version : '' };
+}
+
+/* ───────────── 시트 보관 (_앱코드 탭) ───────────── */
+// 1행: 칸 A = 지금 버전 정보, 칸 B = 이전 버전 정보 / 2행부터: 코드 묶음을 나눈 조각 (앞에 '|'를 붙여 수식으로 바뀌지 않게)
+
+function loaderSheet_(create) {
+  var ss = SpreadsheetApp.getActive(), sh = ss.getSheetByName(LOADER_SHEET);
+  if (!sh && create) {
+    sh = ss.insertSheet(LOADER_SHEET);
+    sh.getRange(1, 3).setValue('이 탭은 방과후 한눈에 프로그램 코드를 보관합니다. 지우거나 고치지 마세요. (업데이트·되돌리기는 시트 메뉴에서)');
+    try { sh.protect().setDescription('방과후 한눈에 프로그램 코드').setWarningOnly(true); } catch (e) { }
+    try { sh.hideSheet(); } catch (e) { }
+  }
+  return sh;
+}
+
+function loaderReadSlot_(col) {
+  var sh = loaderSheet_(false);
+  if (!sh) return null;
+  var last = sh.getLastRow();
+  if (last < 2) return null;
+  var vals = sh.getRange(1, col, last, 1).getValues(), metaText = String(vals[0][0] || '');
+  if (!metaText) return null;
+  var meta = JSON.parse(metaText), text = '';
+  for (var i = 1; i < vals.length; i++) {
+    var v = String(vals[i][0] || '');
+    if (!v) break;
+    text += v.slice(1);
+  }
+  if (loaderSha_(text) !== meta.sha256) {
+    throw new Error('「' + LOADER_SHEET + '」 탭에 보관된 프로그램(v' + meta.version + ')이 손상되었습니다. 시트 메뉴 [프로그램 설치·복구]로 다시 받으세요.');
+  }
+  return { meta: meta, text: text };
+}
+
+function loaderWriteSlot_(col, meta, text) {
+  var sh = loaderSheet_(true), parts = [];
+  for (var i = 0; i < text.length; i += LOADER_CELL) parts.push(['|' + text.slice(i, i + LOADER_CELL)]);
+  var last = Math.max(sh.getLastRow(), parts.length + 1);
+  sh.getRange(1, col, last, 1).clearContent();
+  sh.getRange(2, col, parts.length, 1).setNumberFormat('@').setValues(parts);
+  sh.getRange(1, col).setNumberFormat('@').setValue(JSON.stringify(meta));
+}
+
+/* ───────────── 캐시 (빠르게 읽기용, 6시간) ───────────── */
+
+function loaderCacheSet_(sha, text) {
+  try {
+    var cache = CacheService.getScriptCache(), key = 'ldr_' + sha.slice(0, 24), obj = {}, n = 0;
+    for (var i = 0; i < text.length; i += LOADER_CACHE_PART) obj[key + '_' + (n++)] = text.slice(i, i + LOADER_CACHE_PART);
+    obj[key + '_n'] = String(n);
+    cache.putAll(obj, 21600);
+    cache.put('ldr_cur', sha, 21600);
+  } catch (e) { /* 캐시는 없어도 동작 (시트에서 읽음) */ }
+}
+
+function loaderCacheGet_(cache, sha) {
+  try {
+    var key = 'ldr_' + sha.slice(0, 24), n = Number(cache.get(key + '_n') || 0);
+    if (!n) return null;
+    var keys = [];
+    for (var i = 0; i < n; i++) keys.push(key + '_' + i);
+    var got = cache.getAll(keys), text = '';
+    for (var j = 0; j < n; j++) { if (got[keys[j]] == null) return null; text += got[keys[j]]; }
+    return loaderSha_(text) === sha ? text : null;
+  } catch (e) { return null; }
+}
+
+/* ───────────── 도우미 ───────────── */
+
+function loaderSha_(text) {
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text, Utilities.Charset.UTF_8)
+    .map(function (b) { return ('0' + (b & 0xff).toString(16)).slice(-2); }).join('');
+}
+
+function loaderMsg_(e) {
+  var m = String(e && e.message ? e.message : e);
+  if (m === 'NOT_INSTALLED') return '프로그램이 아직 설치되지 않았습니다. 구글 시트 메뉴 [🏫 방과후 관리] → [프로그램 설치·복구]를 눌러 주세요.';
+  return m;
+}
+
+function loaderErrorPage_(err) {
+  var msg = loaderMsg_(err).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+  return HtmlService.createHtmlOutput(
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<div style="font-family:\'Malgun Gothic\',sans-serif;max-width:560px;margin:40px auto;padding:16px 18px;line-height:1.7;background:#fdeceb;color:#7d1d17;border-radius:10px">' +
+    '<b>방과후 한눈에</b><br>' + msg + '</div>').setTitle('방과후 한눈에');
+}
