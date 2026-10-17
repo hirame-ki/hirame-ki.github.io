@@ -1,45 +1,41 @@
 {
   "app": "방과후 한눈에",
-  "version": "1.2.0",
-  "date": "2026-10-16",
+  "version": "1.3.0",
+  "date": "2026-10-18",
   "notes": [
-    "불러오기 구조로 바뀌었습니다. Apps Script에는 파일 2개(Loader, appsscript.json)만 넣고, 이후 업데이트는 [업데이트 확인·설치] 버튼 한 번이면 됩니다. 붙여넣기나 다시 배포할 필요가 없습니다.",
-    "예전 버전(v1.1.x)은 안내 페이지의 「예전 버전에서 넘어오기」를 한 번만 따라 하면 됩니다. 데이터는 그대로입니다.",
-    "시트 메뉴 [이전 버전으로 되돌리기]가 생겼습니다.",
-    "구글이 화면 코드 속 \"//\" 뒤를 지워 관리자 화면이 열리지 않던 문제(\"줄 1388\" 오류)를 고쳤습니다.",
-    "더 이상 \"스크립트 프로젝트 관리·배포\" 권한을 요청하지 않습니다."
+    "강좌 담당을 여러 명 고를 수 있습니다. 담당으로 고른 선생님은 모두 그 강좌를 「내 강좌」로 다룹니다.",
+    "시간대를 여러 개 고를 수 있습니다(예: 7·8·9교시). 고른 교시는 일정표의 시수로 셉니다.",
+    "운영 방식 「날짜 지정」: 요일 대신 달력에서 날짜를 고르고, 날짜마다 시간·담당·실습실을 따로 정합니다. 담당별 장소와 요일별 시간대를 정해 두면 날짜를 누를 때 자동으로 들어갑니다.",
+    "시간 충돌·장소 겹침·담당 겹침을 실제 날짜끼리 비교합니다. 다른 날짜에 같은 실습실을 쓰는 강좌는 겹침으로 잡지 않습니다.",
+    "[출력] → 「강좌별 일정표」(순번·날짜·시수·운영 시간·담당·장소)를 새로 넣었습니다.",
+    "새 시트 탭 「수업일정」이 업데이트할 때 자동으로 만들어집니다. 기존 강좌와 신청 자료는 그대로입니다."
   ],
   "changed": [
     "Code",
     "Logic",
     "Setup",
     "Cycle",
-    "Update",
     "Index",
     "Apply",
-    "Board",
-    "SetupDialog",
-    "LinksDialog",
-    "Styles",
     "Client"
   ],
   "page": "https://hirame-ki.github.io/after/",
-  "bundle": "bundle-1.2.0.json",
-  "sha256": "c4bc80c7635d3f3411f9ae1df56bd24891b8ab3ac9070af2fef036f9ed8bb778",
+  "bundle": "bundle-1.3.0.json",
+  "sha256": "3cb1eccd517056a9f6add000d46c0b89672eaeedc180792b57d6af3b4355d5e3",
   "loader": 1,
   "parts": {
-    "Code": "95b9cd4dfe65bf6148fff1fae2a7d52bfa65127f869612650e521b6d7b6f23f4",
-    "Logic": "1c24b0ed6443a459a68b4301d2c310774693b908f4d9b3dfaedbb4a9e819a09f",
-    "Setup": "c48bfecfbbdd2cabb18181465762039d3c183008fbb2a89cb048e07d2e0fc798",
-    "Cycle": "cc6b8a16d4316af885fb441f01b861fa165406d56a7b25c5f6d21e2965fe610c",
+    "Code": "a89edddb7806894e7029e218f873638d86f0fa682745469cd76861ed74688480",
+    "Logic": "5981e26d0dc9e93be86a1e7510763b5fbce0068ca6cdd4343b37abc3153fd12e",
+    "Setup": "96f821875f1ef2ff51e8b8aabe0234250f1a0ae24941060d4b9e42f1b0f9fc6c",
+    "Cycle": "e8fb798e94ae57a7a4b229beee8c062deb9807b7f826ec7448c194503fff3ec8",
     "Update": "0eb7bcfbaf0fa0d073e0f1e53c4eeaa409643e50b3fc92682230c48f26ae4791",
-    "Index": "094bf47ce4ca4f162c31c395b086b58f3adc444155d7217f431b91ceb3c9ee79",
-    "Apply": "2d6f94c9cb18eaa91f8aca5bd5c8bddb6b966fe5631d4102ef8d9aa4b5e01a99",
+    "Index": "68420b5d8a477d2802d816df135fd9315e325b5f4277ffa5c3d1ab8f7036a85b",
+    "Apply": "b3a86e22a83e308e735d6ce321b255718ce1578183340131fdaaea6e80ee85e9",
     "Board": "eadc70407c72d79156e4081930ab2092b4e57706e17cbeb0fa3b2d9c866a2809",
     "SetupDialog": "20d47e6409227bcf9334dac307dbb496e7a72039bb8899d570be0ac31cb346f0",
     "LinksDialog": "ae3a08985ab2f1c5a29b7c3b7c43980a32df083516bbfb69e3a4ef72733d1c5f",
     "Styles": "4e6dc1ca622d331cea58309dfe7d67f7c572773fd44e7daed38a2bdd662c526c",
-    "Client": "138e92bc7db2ed938ec27f26735aa3cedb4a5a11e47e9e83abe06cd13781c4db"
+    "Client": "cafe16267e435d8b510e738188b1a495f45448310dffec23b6ece436e087a2d3"
   },
   "files": [
     {
