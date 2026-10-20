@@ -388,6 +388,13 @@ dialog.modal::backdrop{background:rgba(29,42,74,.45);backdrop-filter:blur(3px)}
 .tin small{color:var(--muted);font-weight:700;white-space:nowrap}
 .presets{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 12px}
 .presets button{border:2px solid var(--ink);background:var(--soft);border-radius:99px;padding:3px 11px;font-size:12.5px;font-weight:700;cursor:pointer}
+.tpre button{box-shadow:0 2px 0 var(--ink);transition:transform .1s,box-shadow .1s}
+.tpre button:active{transform:translateY(2px);box-shadow:none}
+.tpre .tp1{background:var(--mint-s);color:#0E7A4F}
+.tpre .tp2{background:var(--main-s);color:#1F5FA8}
+.tpre .tp3{background:var(--sun-s);color:#8A5A00}
+.tpre .tp4{background:var(--sub-s);color:#B0306A}
+.tpre .tp1:hover{background:#C3EEDC}.tpre .tp2:hover{background:#CFE2FF}.tpre .tp3:hover{background:#FFEDB0}.tpre .tp4:hover{background:#FFCFE5}
 .inrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .inrow input{flex:1;min-width:140px}
 .mtabs{display:inline-flex;gap:4px;padding:4px;border:2px solid var(--ink);border-radius:99px;margin-bottom:14px;background:var(--soft)}
@@ -545,7 +552,8 @@ details.paste summary{cursor:pointer;font-weight:700;font-size:14px}
 #toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:#fff;border-radius:99px;padding:10px 20px;font-weight:700;font-size:14px;transition:.25s;z-index:50;max-width:calc(100vw - 32px);text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 dialog #toast{z-index:2}
-.qr-tip{margin:8px 0 0;font-size:13px;line-height:1.6;background:var(--sun-s);border:2px dashed #F0D684;border-radius:10px;padding:7px 10px}
+.qr-tip{margin:10px 0 0;font-size:13.5px;line-height:1.6;font-weight:600;color:var(--ink);background:var(--sub-s);border:2.5px solid var(--sub);border-radius:12px;padding:9px 12px;box-shadow:0 3px 0 var(--sub)}
+.qr-tip b{color:#C2185B}
 @media (max-width:640px){.brand h1{font-size:23px}.step{font-size:15px}.step-arrow{display:none}.stage{grid-template-columns:1fr}}
 /* ===== 오프닝 모션 (새로고침마다 · 약 4.1초) ===== */
 html.intro-on{overflow:hidden}
@@ -1461,7 +1469,7 @@ window.addEventListener('resize', layoutCanvas);
 const timeFields = (mi, ma) => `<div class="fld2">
   <label class="fld"><span>최소 시간</span><span class="tin"><input type="number" id="mMin" min="0" max="3600" step="5" value="${mi}"><small>초</small><small id="mMinH"></small></span></label>
   <label class="fld"><span>최대 시간</span><span class="tin"><input type="number" id="mMax" min="1" max="3600" step="5" value="${ma}"><small>초</small><small id="mMaxH"></small></span></label></div>
-  <div class="presets"><button type="button" data-p="30,60">0:30 ~ 1:00</button><button type="button" data-p="60,90">1:00 ~ 1:30</button><button type="button" data-p="120,180">2:00 ~ 3:00</button><button type="button" data-p="180,300">3:00 ~ 5:00</button></div>`;
+  <div class="presets tpre"><button type="button" class="tp1" data-p="30,60">0:30 ~ 1:00</button><button type="button" class="tp2" data-p="60,90">1:00 ~ 1:30</button><button type="button" class="tp3" data-p="120,180">2:00 ~ 3:00</button><button type="button" class="tp4" data-p="180,300">3:00 ~ 5:00</button></div>`;
 function bindTime(m){
   const mi = m.q('#mMin'), ma = m.q('#mMax');
   const u = () => { m.q('#mMinH').textContent = '= ' + fmtLong(+mi.value || 0); m.q('#mMaxH').textContent = '= ' + fmtLong(+ma.value || 0); };
@@ -1476,7 +1484,7 @@ function readTime(m){
 async function startSessionFlow(sids){
   const c = cls();
   if (!sids.length) { uiAlert('발표할 학생이 없어요. 먼저 학생을 추가해 주세요.'); return; }
-  const d = new Date(), def = `${d.getMonth() + 1}월 ${d.getDate()}일 발표`;
+  const def = `${c.name} 발표`;
   const r = await modal({ title:'이 순서로 발표를 시작할까요?', icon:'🎤',
     body:`<div class="m-order">${sids.map((id, i) => `<span><b>${i + 1}</b>${esc(nameOf(c, id))}</span>`).join('')}</div>
       <label class="fld"><span>발표 제목</span><input type="text" id="mTitle" maxlength="40" value="${esc(def)}" placeholder="예: 진로 발표, 독서 발표"></label>
@@ -1863,7 +1871,7 @@ async function openSubmitQR(c){
         ${FILE_RULE}
         ${c.submitNote ? `<p class="qr-note">📌 ${esc(c.submitNote)}</p>` : ''}
         <p class="qr-link">${esc(short)}</p>
-        ${LONG_FORM(c.submitUrl) ? '<p class="qr-tip">💡 주소가 길어서 QR이 촘촘해요. 설문지에서 🔗 링크 복사를 누를 때 <b>URL 단축</b>을 체크해 <b>forms.gle</b> 짧은 주소로 바꾸면 QR이 훨씬 단순해져요. (⚙ 초기 설정 → 제출 링크)</p>' : ''}</div></div>`,
+        ${LONG_FORM(c.submitUrl) ? '<p class="qr-tip">✂️ 주소가 길어서 QR이 촘촘해요! 설문지에서 🔗 링크 복사를 누를 때 <b>URL 단축</b>을 체크해 <b>forms.gle</b> 짧은 주소로 바꾸면 QR이 훨씬 단순해져요. (⚙ 초기 설정 → 제출 링크)</p>' : ''}</div></div>`,
     actions:[{ label:'🔗 링크 복사', run: () => { copyText(c.submitUrl); return false; } },
       { label:'📺 TV에 띄우기', run: () => {
         if (!tv || tv.closed) { toast('먼저 ② 발표하기에서 [📺 TV 화면]을 열어 주세요.'); return false; }
@@ -2708,7 +2716,7 @@ function renderAdmin(){
           <div class="card-h"><h3>📮 발표 자료 제출 받기</h3><button type="button" class="btn sm grow" id="aSubHelp">만드는 방법</button></div>
           <p class="hint">구글 설문지(파일 업로드 질문)나 드라이브 폴더 링크를 넣으면, 학생들이 휴대폰으로 찍을 <b>QR 코드</b>가 만들어져요.</p>
           <label class="fld"><span>제출 링크 (구글 설문지 권장)</span><input type="url" id="aSubUrl" value="${esc(c.submitUrl)}" placeholder="https://forms.gle/…"></label>
-          ${/docs\.google\.com\/forms/i.test(c.submitUrl) ? '<p class="hint" style="margin-top:-4px">💡 설문지에서 🔗 링크 복사를 누를 때 <b>URL 단축</b>을 체크하면 <b>forms.gle</b> 짧은 주소가 돼서 QR이 훨씬 단순해져요.</p>' : ''}
+          ${/docs\.google\.com\/forms/i.test(c.submitUrl) ? '<p class="qr-tip" style="margin:-4px 0 14px">✂️ 주소가 길어서 QR이 촘촘해요! 설문지에서 🔗 링크 복사를 누를 때 <b>URL 단축</b>을 체크하면 <b>forms.gle</b> 짧은 주소가 돼서 QR이 훨씬 단순해져요.</p>' : ''}
           <label class="fld"><span>학생 안내 한 줄 (선택)</span><input type="text" id="aSubNote" maxlength="60" value="${esc(c.submitNote)}" placeholder="예: 10월 24일(금)까지 PDF로 제출"></label>
           <div class="btns" style="margin:0"><button type="button" class="btn primary" id="aSubSave">저장</button><button type="button" class="btn" id="aSubQR" ${c.submitUrl ? '' : 'disabled'}>📮 QR 안내 화면 열기</button></div>
         </div>
