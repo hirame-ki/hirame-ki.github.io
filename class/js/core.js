@@ -122,8 +122,8 @@
       else if (kind === 'alert') { [1319, 988, 1319, 988].forEach((f, i) => T(f, i * .18, .35, .24)); }
       else if (kind === 'end') { T(1175, 0, .9); T(988, .32, .9); T(784, .64, 1.5); }
       else if (kind === 'done') { [784, 988, 1175, 1568].forEach((f, i) => T(f, i * .16, i === 3 ? 1.6 : .6, .26)); }
-      else if (kind === 'tick') { this.tone(1400, 0, .06, .08, 'triangle'); }
-      else if (kind === 'pop') { this.tone(660, 0, .25, .18, 'triangle'); this.tone(990, .07, .3, .14, 'triangle'); }
+      else if (kind === 'tick') { this.tone(1400, 0, .07, .2, 'triangle'); }
+      else if (kind === 'pop') { this.tone(660, 0, .3, .5, 'triangle'); this.tone(990, .07, .38, .42, 'triangle'); this.tone(1320, .14, .5, .3, 'triangle'); }
     },
   };
 

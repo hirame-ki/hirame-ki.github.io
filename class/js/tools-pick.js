@@ -10,7 +10,7 @@
   /* 움직임을 불편해하는 설정이면 굴리는 시간을 확 줄여요 */
   const slow = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
   /* 이름이 바뀔 때마다 조금씩 높아지는 소리 — 긴장감 */
-  const tick = (i) => audio.tone(760 + i * 26, 0, .05, .07, 'triangle');
+  const tick = (i) => audio.tone(760 + i * 26, 0, .06, .22, 'triangle');
 
   /* ---------------- 1명 뽑기 ---------------- */
   register({
@@ -109,7 +109,7 @@
             const c = cells[i]; $('.nm', c).textContent = name;
             c.classList.remove('rolling'); c.classList.add('win');
             if (last) { stop(); go.disabled = false; audio.chime('pop'); confetti(chips); }
-            else audio.tone(600 + i * 60, 0, .22, .15, 'triangle');
+            else audio.tone(600 + i * 60, 0, .24, .4, 'triangle');
           });
         });
       };
