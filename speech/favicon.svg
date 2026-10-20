@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 발표 레이스 아이콘: 귀여운 마이크 캐릭터 (하늘 솜사탕 색) -->
+  <rect x="2" y="2" width="60" height="60" rx="18" fill="#FFE07A" stroke="#1D2A4A" stroke-width="3"/>
+  <path d="M47 15c3 3 3 9 0 12M51.5 11c5.5 5 5.5 15 0 20" fill="none" stroke="#FF6FAE" stroke-width="3" stroke-linecap="round"/>
+  <path d="M14.5 29a15.5 15.5 0 0 0 31 0" fill="none" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M30 44.5v7M22.5 53h15" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/>
+  <rect x="18" y="7" width="24" height="31" rx="12" fill="#3B8BFF" stroke="#1D2A4A" stroke-width="3"/>
+  <path d="M18.5 15.5h23" stroke="#1D2A4A" stroke-width="2" opacity=".25"/>
+  <ellipse cx="24" cy="13.5" rx="2.3" ry="3.6" fill="#fff" opacity=".75"/>
+  <circle cx="25.5" cy="24" r="2.3" fill="#1D2A4A"/><circle cx="34.5" cy="24" r="2.3" fill="#1D2A4A"/>
+  <circle cx="26.1" cy="23.3" r=".8" fill="#fff"/><circle cx="35.1" cy="23.3" r=".8" fill="#fff"/>
+  <circle cx="22" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/><circle cx="38" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/>
+  <path d="M27.5 29.2q2.5 2.6 5 0" fill="none" stroke="#1D2A4A" stroke-width="2" stroke-linecap="round"/>
+</svg>

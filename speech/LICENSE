@@ -1,0 +1,91 @@
+발표 레이스 이용 허락 (License)
+=============================
+
+Copyright (c) 2026 hirameki (@hirame.ki). All rights reserved.
+
+대상: 발표 레이스(발표 순서 구슬 레이스 + 발표 타이머·기록)의 소스 코드(index.html),
+화면 디자인, 레이스 연출, 문구, 이름과 로고 — 이하 "이 소프트웨어".
+
+
+1. 허용하는 것
+--------------
+가. 선생님·학교·학생 누구나 이 소프트웨어를 무료로 사용할 수 있습니다.
+    수업, 학급 활동, 학교 행사, 교사 연수 시연에 자유롭게 쓰세요.
+나. 이 소프트웨어의 주소(링크)를 공유할 수 있습니다.
+다. 사용하는 모습을 캡처·촬영해 후기, 블로그, SNS, 수업 자료에 올릴 수 있습니다.
+    이때 "발표 레이스 · 제작 @hirame.ki" 처럼 출처를 밝혀 주세요.
+라. 이 소프트웨어로 만든 발표 기록(엑셀·한셀 파일, 백업 파일)은 사용자가 자유롭게 쓸 수 있습니다.
+
+
+2. 금지하는 것 (제작자의 서면 허락 없이)
+----------------------------------------
+가. 이 소프트웨어의 전부 또는 일부를 복제해 다른 주소·저장소·앱·플랫폼에 다시 배포하는 것
+나. 고치거나 이름을 바꿔 자기 것처럼 공개하는 것, 제작자 표시와 이 고지를 지우는 것
+다. 판매하거나, 유료 강의·유료 자료·유료 앱·유료 서비스에 포함하는 것
+라. 이 소프트웨어의 디자인·연출을 그대로 본뜬 서비스를 만드는 것
+
+
+3. 함께 쓰인 외부 구성요소
+--------------------------
+아래 구성요소는 위 권리 표시의 대상이 아니며, 각자의 라이선스를 따릅니다.
+
+- Jua (Woowahan Brothers) ................. SIL Open Font License 1.1
+- Noto Sans KR (Google) ................... SIL Open Font License 1.1
+- PDF.js (Mozilla Foundation) ............. Apache License 2.0
+  (PDF 발표 자료를 열 때만 cdnjs에서 불러옵니다.)
+- qrcode-generator (Kazuhiko Arase) ....... MIT License
+  (자료 제출 QR 코드를 만들 때만 cdnjs에서 불러옵니다. QR은 브라우저 안에서 그립니다.)
+
+효과음은 외부 음원 없이 브라우저에서 직접 합성합니다.
+엑셀·한셀 파일(.xlsx)은 외부 라이브러리 없이 브라우저 안에서 직접 만듭니다.
+
+
+4. 사용자가 넣는 자료와 개인정보
+--------------------------------
+가. 사용자가 넣은 학생 명단, 발표 내용, 메모, 발표 자료의 권리는 원래 주인에게 있습니다.
+나. 이 소프트웨어는 명단·발표 기록·메모·발표 자료를 서버로 보내지 않습니다.
+    모두 사용자의 브라우저(localStorage, IndexedDB) 안에만 저장되며, 제작자도 볼 수 없습니다.
+    이 소프트웨어에는 서버, 회원가입, 로그인, 광고, 방문 분석 도구가 없습니다.
+다. 음성 인식(말→글자)은 브라우저(Chrome·Edge)가 제공하는 기능입니다. 기본 방식에서는
+    발표하는 동안 음성이 브라우저 회사(구글·마이크로소프트)의 음성 인식 서버를 거쳐 글자로
+    바뀝니다. 이를 원하지 않으면 앱의 '선생님 관리 → 음성 인식'에서 '기기 안에서만 인식'
+    (지원하는 최신 Chrome) 또는 '음성 인식 끄기'를 선택하세요.
+라. '과세특 프롬프트'는 브라우저 안에서 글만 만듭니다. 이 글을 생성형 AI 서비스에 붙여 넣으면
+    내용이 해당 AI 회사로 전송되므로, '학생 이름 빼기'를 켜고 학교·교육청 지침에 따라 사용하세요.
+    AI가 만든 초안의 사실 확인과 최종 기재 책임은 사용자에게 있습니다.
+마. 구글 설문지·드라이브로 받은 학생 파일은 사용자의 구글 계정에 저장되며 구글의 정책을 따릅니다.
+    이 소프트웨어는 구글 계정에 접속하지 않습니다.
+바. 내려받은 엑셀 파일과 백업 파일에는 학생 개인정보가 담길 수 있습니다.
+    학교의 개인정보 보호 규정에 따라 보관·공유해 주세요. 자료 사용에 대한 책임은 사용자에게 있습니다.
+
+
+5. 보증 없음 · 책임 제한
+------------------------
+이 소프트웨어는 "있는 그대로" 무료로 제공되며, 어떤 보증도 하지 않습니다.
+브라우저 저장소의 기록이 지워지거나, 기기·브라우저를 바꿔 사라지거나,
+이 소프트웨어 사용으로 생긴 손해에 대해 제작자는 책임지지 않습니다.
+중요한 기록은 앱의 백업 기능으로 따로 보관해 주세요.
+
+
+6. 문의 · 오류 제보 · 피드백
+----------------------------
+오류 제보와 피드백, 재배포·협업·연수 사용 등 위에서 금지한 이용을 원하시면
+인스타그램 @hirame.ki 로 DM 주세요. (https://www.instagram.com/hirame.ki/)
+
+
+-----------------------------------------------------------------------------
+English summary
+
+Copyright (c) 2026 hirameki (@hirame.ki). All rights reserved.
+
+You may use this software free of charge for teaching and classroom activities,
+share its link, and post screenshots or videos of it with attribution.
+You may NOT copy, redistribute, modify and republish, rebrand, sell, or include
+it in any paid product or service without prior written permission.
+Student data stays in the user's browser; nothing is sent to any server operated
+by the author. Speech recognition is provided by the browser and, in its default
+mode, may process audio on the browser vendor's servers.
+Third-party components (Jua, Noto Sans KR: SIL OFL 1.1; PDF.js: Apache-2.0;
+qrcode-generator: MIT)
+remain under their own licenses. Provided "AS IS" without warranty.
+Contact: https://www.instagram.com/hirame.ki/
