@@ -95,7 +95,8 @@ h1,h2,h3{font-family:var(--display);font-weight:400}
 .step.on b{background:#fff;color:var(--ink)}
 .step-arrow{color:var(--gray);font-family:var(--display);font-size:16px}
 .step-admin{padding-left:13px;margin-left:6px}
-.step.on[data-v=admin]{background:var(--ink);color:#fff}
+.step-setup{margin-left:0}
+.step.on[data-v=setup],.step.on[data-v=conf]{background:var(--ink);color:#fff}
 
 /* ===== 공통 요소 ===== */
 main{flex:1;width:100%;max-width:1280px;margin:0 auto;padding:4px 16px 18px;min-height:0}
@@ -300,7 +301,7 @@ tbody tr:last-child td{border-bottom:0}
 .empty-card{text-align:center;padding:48px 18px;display:flex;flex-direction:column;align-items:center;gap:10px}
 .empty-card h2{margin:0;font-size:28px}
 
-/* ===== 선생님 관리 ===== */
+/* ===== 초기 설정 · 수업 설정 ===== */
 .admin-grid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start}
 @media (max-width:900px){.admin-grid{grid-template-columns:1fr}}
 .admin-main{display:flex;flex-direction:column;gap:18px;min-width:0}
@@ -622,10 +623,11 @@ html.intro-on{overflow:hidden}
   </div>
   <label class="clsPick"><span>우리 반</span><select id="clsSel" aria-label="반 고르기"></select></label>
   <nav class="steps" aria-label="단계">
+    <button type="button" class="step step-admin step-setup" data-v="setup">⚙ 초기 설정</button><span class="step-arrow" aria-hidden="true">›</span>
     <button type="button" class="step" data-v="order"><b>1</b>순서 정하기</button><span class="step-arrow" aria-hidden="true">›</span>
     <button type="button" class="step" data-v="talk"><b>2</b>발표하기</button><span class="step-arrow" aria-hidden="true">›</span>
     <button type="button" class="step" data-v="rec"><b>3</b>기록 보기</button>
-    <button type="button" class="step step-admin" data-v="admin">⚙ 선생님 관리</button>
+    <button type="button" class="step step-admin" data-v="conf">🛠 수업 설정</button>
   </nav>
 </header>
 
@@ -659,7 +661,7 @@ html.intro-on{overflow:hidden}
       <aside class="rpanel">
         <div class="card">
           <div class="card-h"><h3>참여 학생</h3><span class="tag" id="pCount">0명</span><span class="tag note" id="pSample" hidden>예시 명단</span></div>
-          <p class="hint">이름을 누르면 오늘 빠지는 학생(결석·조퇴 등)으로 표시돼요. 명단은 ⚙ 선생님 관리에서 고쳐요.</p>
+          <p class="hint">이름을 누르면 오늘 빠지는 학생(결석·조퇴 등)으로 표시돼요. 명단은 ⚙ 초기 설정에서 고쳐요.</p>
           <div class="pchips" id="pChips"></div>
           <div class="pbtns">
             <button type="button" class="btn sm" id="pAll">모두 참여</button>
@@ -689,8 +691,11 @@ html.intro-on{overflow:hidden}
   <!-- ③ 기록 보기 -->
   <section class="view" id="v-rec"></section>
 
-  <!-- 선생님 관리 -->
-  <section class="view" id="v-admin"></section>
+  <!-- ⚙ 초기 설정 (반 · 명단 · 자료 제출 · 자료 미리 등록) -->
+  <section class="view" id="v-setup"></section>
+
+  <!-- 🛠 수업 설정 (발표 시간 · 평가 · 화면 안내 · 과세특 · 음성 인식 · 백업) -->
+  <section class="view" id="v-conf"></section>
 </main>
 
 <footer class="foot">
@@ -872,7 +877,7 @@ function show(v){
   if (v === 'order') { renderRoster(); updateUI(); requestAnimationFrame(layoutCanvas); }
   if (v === 'talk') renderStage();
   if (v === 'rec') renderRec();
-  if (v === 'admin') renderAdmin();
+  if (v === 'setup' || v === 'conf') renderAdmin();
   if (v !== 'talk') window.scrollTo(0, 0);
 }
 function renderCls(){
@@ -1456,8 +1461,8 @@ async function startSessionFlow(sids){
   const r = await modal({ title:'이 순서로 발표를 시작할까요?', icon:'🎤',
     body:`<div class="m-order">${sids.map((id, i) => `<span><b>${i + 1}</b>${esc(nameOf(c, id))}</span>`).join('')}</div>
       <label class="fld"><span>발표 제목</span><input type="text" id="mTitle" maxlength="40" value="${esc(def)}" placeholder="예: 진로 발표, 독서 발표"></label>
-      <p class="note-box">⏱ 발표 시간 <b>${fmt(c.min)} ~ ${fmt(c.max)}</b> · 시간은 ⚙ 선생님 관리 → 발표 설정에서 바꿔요.</p>
-      ${c.sessions.length ? '<p class="hint">지난 발표 기록은 ⚙ 선생님 관리 → 발표 기록 보관함에 그대로 남아 있어요.</p>' : ''}`,
+      <p class="note-box">⏱ 발표 시간 <b>${fmt(c.min)} ~ ${fmt(c.max)}</b> · 시간은 🛠 수업 설정 → 발표 시간에서 바꿔요.</p>
+      ${c.sessions.length ? '<p class="hint">지난 발표 기록은 ③ 기록 보기에 그대로 남아 있어요.</p>' : ''}`,
     actions:[{ label:'취소', value:null }, { label:'발표 시작 →', kind:'blue', run: m => ({ title: m.q('#mTitle').value.trim() || def }) }] });
   if (!r) return;
   const prev = ses(c), s = newSession(c, r.title, sids);
@@ -1517,7 +1522,7 @@ function renderStage(){
   if (!s) {
     cur.key = null; cur.mat = null; cur.view = { type:'none' };
     b.innerHTML = `<div class="big-emoji">📋</div><div class="done">아직 발표 순서가 없어요</div>
-      <p class="vs">① 순서 정하기에서 레이스로 순서를 뽑거나, 명단 순서대로 바로 시작하세요.${c.sessions.length ? '<br>지난 발표를 이어서 하려면 ⚙ 선생님 관리 → 발표 기록 보관함에서 [이어서 발표]를 누르세요.' : ''}</p>
+      <p class="vs">① 순서 정하기에서 레이스로 순서를 뽑거나, 명단 순서대로 바로 시작하세요.${c.sessions.length ? '<br>지난 발표를 이어서 하려면 ③ 기록 보기에서 회차를 고르고 [▶ 이어서 발표]를 누르세요.' : ''}</p>
       <button type="button" class="btn primary" id="goOrder">① 순서 정하러 가기</button>`;
     $('#goOrder').onclick = () => show('order'); syncPip(); paintTV(); return;
   }
@@ -1672,7 +1677,7 @@ function syncPip(){
 async function micTest(){
   let tr = null;
   const mode = db.settings.sr;
-  const modeTxt = mode === 'off' ? '지금은 <b>음성 인식 끄기</b>로 설정되어 있어요. ⚙ 선생님 관리에서 바꿀 수 있어요.'
+  const modeTxt = mode === 'off' ? '지금은 <b>음성 인식 끄기</b>로 설정되어 있어요. 🛠 수업 설정에서 바꿀 수 있어요.'
     : mode === 'local' ? '지금은 <b>기기 안에서만 인식</b>으로 설정되어 있어요. 소리가 컴퓨터 밖으로 나가지 않아요.'
     : '지금은 <b>브라우저 음성 인식(기본)</b>으로 설정되어 있어요.';
   const p = modal({ title:'마이크 테스트', icon:'🎙',
@@ -1683,7 +1688,7 @@ async function micTest(){
       if (tr) { try { tr.stop(); } catch (e) {} return false; }
       if (!SR) { out.textContent = '⚠ 이 브라우저는 음성 인식을 지원하지 않아요. Chrome 또는 Edge로 열어 주세요.'; return false; }
       if (mode === 'off') { out.textContent = '음성 인식이 꺼져 있어요.'; return false; }
-      if (mode === 'local' && await localState() !== 'available') { out.textContent = '⚠ 이 브라우저에서는 기기 안 음성 인식을 쓸 수 없어요. ⚙ 선생님 관리 → 음성 인식에서 상태를 확인해 주세요.'; return false; }
+      if (mode === 'local' && await localState() !== 'available') { out.textContent = '⚠ 이 브라우저에서는 기기 안 음성 인식을 쓸 수 없어요. 🛠 수업 설정 → 음성 인식에서 상태를 확인해 주세요.'; return false; }
       dropRec();
       tr = new SR(); tr.lang = 'ko-KR'; tr.interimResults = true; tr.continuous = true; if (mode === 'local') tr.processLocally = true;
       tr.onstart = () => { btn.textContent = '⏹ 멈추기'; out.textContent = '🔴 듣는 중… 말해 보세요.'; };
@@ -1732,7 +1737,7 @@ const scoreSum = r => db.settings.rubric.reduce((a, c) => a + ((r.scores || {})[
 const hasScore = r => !!r.scores && db.settings.rubric.some(c => r.scores[c.id]);
 function scoreHTML(r){
   const rb = db.settings.rubric;
-  if (!rb.length) return '<p class="hint">평가 기준표가 비어 있어요. ⚙ 선생님 관리 → 평가 기준표에서 항목을 만들어 주세요.</p>';
+  if (!rb.length) return '<p class="hint">평가 기준표가 비어 있어요. 🛠 수업 설정 → 평가 기준표에서 항목을 만들어 주세요.</p>';
   return `<div class="rubric">${rb.map(c => `<div class="rb-row"><span class="rb-n">${esc(c.name)}</span><span class="rb-btns" data-id="${c.id}">${Array.from({ length: +c.max }, (_, k) => `<button type="button" data-v="${k + 1}" aria-pressed="${(r.scores || {})[c.id] === k + 1}">${k + 1}</button>`).join('')}</span></div>`).join('')}
     <div class="rb-total">합계 <b class="rb-sum">${scoreSum(r)}</b> / ${rubricMax()}점</div></div>`;
 }
@@ -1792,23 +1797,39 @@ const FILE_RULE = `<div class="frule"><b>📛 파일 이름 규칙</b><code>번�
   <span>예) <code>03_김민준_기후변화와 탄소중립.pdf</code></span>
   <small>· 이름은 명단과 똑같이 써 주세요. 이름만 정확하면 번호·기호가 달라도 자동으로 그 학생에게 들어가요.<br>· 주제를 붙이면 발표 화면에 주제가 자동으로 나와요. · PPT는 PDF로 저장해 내면 발표 화면에 바로 크게 보여요.</small></div>`;
 function loadQR(){ return window.qrcode ? Promise.resolve() : new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); }); }
+// 링크를 이 컴퓨터 안에서 짧게 다듬어요 (외부 단축 서비스로 보내지 않음): 추적용 꼬리(usp 등)와 계정 번호(/u/0)를 떼어 QR을 단순하게
+function shortUrl(u){
+  try {
+    const x = new URL(u);
+    ['usp', 'pli', 'authuser', 'ouid', 'sharingaction', 'fbclid', 'utm_source', 'utm_medium', 'utm_campaign'].forEach(k => x.searchParams.delete(k));
+    if (/(^|\.)google\.com$/i.test(x.hostname)) x.pathname = x.pathname.replace(/\/u\/\d+(?=\/)/, '');
+    let out = x.origin + x.pathname + (x.search.length > 1 ? x.search : '') + x.hash;
+    return out;
+  } catch (e) { return u; }
+}
 async function qrSVG(text){
   // QR은 이 브라우저 안에서 그려요 (링크를 다른 곳으로 보내지 않음)
+  text = shortUrl(text);
   await loadQR();
   if (qrcode.stringToBytesFuncs && qrcode.stringToBytesFuncs['UTF-8']) qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
-  const q = qrcode(0, 'M'); q.addData(text); q.make();
+  // 가운데에 마이크 로고를 얹으므로 오류 복구 수준을 가장 높게(H) 둬요
+  const q = qrcode(0, 'H'); q.addData(text); q.make();
   const n = q.getModuleCount(), g = 3; let d = '';
   for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += `M${c + g} ${r + g}h1v1h-1z`;
-  return `<svg viewBox="0 0 ${n + 2 * g} ${n + 2 * g}" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="자료 제출 QR 코드"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#1D2A4A"/></svg>`;
+  const L = Math.round(n * .22), pad = 1, x = g + (n - L) / 2;
+  const logo = `<rect x="${x - pad}" y="${x - pad}" width="${L + 2 * pad}" height="${L + 2 * pad}" rx="${(L + 2 * pad) * .28}" fill="#fff"/><g transform="translate(${x} ${x}) scale(${L / 64})">${QR_LOGO}</g>`;
+  return `<svg viewBox="0 0 ${n + 2 * g} ${n + 2 * g}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="자료 제출 QR 코드"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#1D2A4A" shape-rendering="crispEdges"/>${logo}</svg>`;
 }
+// QR 가운데 마이크 로고 (머리 로고와 같은 그림)
+const QR_LOGO = '<rect x="2" y="2" width="60" height="60" rx="18" fill="#FFE07A" stroke="#1D2A4A" stroke-width="3"/><path d="M47 15c3 3 3 9 0 12M51.5 11c5.5 5 5.5 15 0 20" fill="none" stroke="#FF6FAE" stroke-width="3" stroke-linecap="round"/><path d="M14.5 29a15.5 15.5 0 0 0 31 0" fill="none" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/><path d="M30 44.5v7M22.5 53h15" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/><rect x="18" y="7" width="24" height="31" rx="12" fill="#3B8BFF" stroke="#1D2A4A" stroke-width="3"/><ellipse cx="24" cy="13.5" rx="2.3" ry="3.6" fill="#fff" opacity=".75"/><circle cx="25.5" cy="24" r="2.3" fill="#1D2A4A"/><circle cx="34.5" cy="24" r="2.3" fill="#1D2A4A"/><circle cx="22" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/><circle cx="38" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/><path d="M27.5 29.2q2.5 2.6 5 0" fill="none" stroke="#1D2A4A" stroke-width="2" stroke-linecap="round"/>';
 const linkKind = u => /forms\.gle|docs\.google\.com\/forms/i.test(u) ? '구글 설문지' : /drive\.google\.com/i.test(u) ? '구글 드라이브 폴더' : /classroom\.google\.com/i.test(u) ? '구글 클래스룸' : '제출 링크';
 let tvOverride = null;
 async function openSubmitQR(c){
   if (!c.submitUrl) {
     const go = await modal({ title:'자료 제출 링크가 아직 없어요', icon:'📮',
-      body:`<p class="m-msg">⚙ 선생님 관리 → <b>발표 자료 제출 받기</b>에 구글 설문지(권장)나 드라이브 폴더 링크를 넣으면, 학생들이 찍을 QR 코드가 만들어져요.</p>`,
+      body:`<p class="m-msg">⚙ 초기 설정 → <b>발표 자료 제출 받기</b>에 구글 설문지(권장)나 드라이브 폴더 링크를 넣으면, 학생들이 찍을 QR 코드가 만들어져요.</p>`,
       actions:[{ label:'닫기', value:false }, { label:'설정하러 가기', kind:'primary', value:true }] });
-    if (go && !running) { show('admin'); setTimeout(() => $('#aSubUrl') && $('#aSubUrl').focus(), 50); }
+    if (go && !running) { show('setup'); setTimeout(() => $('#aSubUrl') && $('#aSubUrl').focus(), 50); }
     return;
   }
   let svg = '';
@@ -1848,7 +1869,7 @@ function openSubmitHelp(){
       <section class="how-card"><h4>모은 자료를 이 앱에 넣기</h4>
         <ol><li>드라이브에서 제출 폴더 오른쪽 클릭 → <b>다운로드</b> (zip으로 받아져요)</li>
           <li>zip 파일 압축 풀기</li>
-          <li>⚙ 선생님 관리 → <b>📦 발표 자료 미리 등록</b>에 폴더째 끌어다 놓기 → 이름대로 자동 배정 (다음 [발표 시작] 때 그 회차로 옮겨 가요)</li></ol>
+          <li>⚙ 초기 설정 → <b>📦 발표 자료 미리 등록</b>에 폴더째 끌어다 놓기 → 이름대로 자동 배정 (다음 [발표 시작] 때 그 회차로 옮겨 가요)</li></ol>
         <p class="hint">이 앱은 서버 없이 이 컴퓨터 안에서만 돌아가서, 구글 드라이브에서 파일을 직접 가져오지는 않아요. 구글 로그인을 연결하면 학생 기록이 컴퓨터 밖 계정과 이어지기 때문에, 내려받아 넣는 방식을 택했어요.</p></section>
       ${FILE_RULE}</div>`,
     actions:[{ label:'확인', kind:'primary' }] });
@@ -2095,7 +2116,7 @@ async function collectDropped(dt){
   async function walk(e){ if (e.isFile) out.push(await new Promise((ok, no) => e.file(ok, no))); else if (e.isDirectory) { const rd = e.createReader(); let b; do { b = await new Promise((ok, no) => rd.readEntries(ok, no)); for (const c of b) await walk(c); } while (b.length); } }
   for (const e of es) await walk(e); return out;
 }
-// 자료를 넣을 곳: 진행 중인 발표 회차(session) 또는 반 자료함(pool · 선생님 관리에서 미리 등록)
+// 자료를 넣을 곳: 진행 중인 발표 회차(session) 또는 반 자료함(pool · 초기 설정에서 미리 등록)
 const poolKey = (c, sid) => `pool:${c.id}::${sid}`;
 function sessionTarget(s){
   return { kind:'ses', title:s.title, rows:s.order, key: sid => fkey(sid, s), prefix: s.id + '::', cur:s.cur, commit: () => save() };
@@ -2150,7 +2171,7 @@ function openBulk(T){
         await dropPrefix(T.prefix); pending = []; m.q('#bulkRes').innerHTML = '🗑 모두 지웠어요.'; cur.key = null; renderBulkStat(m);
       };
       showBulk(m, []); renderBulkStat(m);
-    } }).then(() => { cur.key = null; if (view === 'talk') renderStage(); if (view === 'admin') renderAdmin(); });
+    } }).then(() => { cur.key = null; if (view === 'talk') renderStage(); if (view === 'setup' || view === 'conf') renderAdmin(); });
 }
 async function bulkAdd(m, files){
   const T = bulkT;
@@ -2249,9 +2270,10 @@ function renderRec(){
   const rb = db.settings.rubric.length > 0;
   v.innerHTML = `<div class="card">
     <div class="rec-head"><div><h2 class="vt">발표 기록 <em>정리</em></h2><p class="vs">${esc(c.name)} · ${esc(s.title)} · ${fmtDate(s.date)} · 기준 ${fmt(s.min)} ~ ${fmt(s.max)}</p></div>
-      <div class="rec-tools"><select class="inp" id="recSes" aria-label="발표 회차 고르기">${[...c.sessions].reverse().map(x => `<option value="${x.id}" ${x.id === s.id ? 'selected' : ''}>${esc(x.title)} (${fmtDate(x.date)})</option>`).join('')}</select>
-        <button type="button" class="btn" id="recCont">▶ 이어서 발표</button><button type="button" class="btn primary" id="recScore">📝 평가하기</button><button type="button" class="btn" id="recTopic">🏷 주제</button><button type="button" class="btn" id="recPrint">🖨 순서표</button>
-        <button type="button" class="btn blue" id="recAI">🤖 전체 과세특 프롬프트</button><button type="button" class="btn mint" id="recXl">📊 엑셀·한셀 파일로 저장</button></div></div>
+      <div class="rec-tools"><select class="inp" id="recSes" aria-label="발표 회차 고르기">${[...c.sessions].reverse().map(x => `<option value="${x.id}" ${x.id === s.id ? 'selected' : ''}>${esc(x.title)} (${fmtDate(x.date)} · ${x.order.filter(r => r.j).length}/${x.order.length}명)${x.id === c.active ? ' · 진행 중' : ''}</option>`).join('')}</select>
+        <button type="button" class="ib" id="recRen" title="발표 제목 바꾸기">✏️</button><button type="button" class="ib" id="recDel" title="이 회차 기록 지우기">🗑</button>
+        <button type="button" class="btn" id="recCont">▶ 이어서 발표</button><button type="button" class="btn primary" id="recScore">📝 평가하기</button><button type="button" class="btn" id="recTopic">🏷 주제</button><button type="button" class="btn" id="recMat">📎 자료</button><button type="button" class="btn" id="recPrint">🖨 순서표</button>
+        <button type="button" class="btn blue" id="recAI">🤖 전체 과세특 프롬프트</button><button type="button" class="btn mint" id="recXl">📊 엑셀·한셀 파일로 저장</button>${c.sessions.length > 1 ? `<button type="button" class="btn sm" id="recXlAll" title="이 반의 모든 회차를 시트별로 한 파일에">📊 이 반 전체 (${c.sessions.length}회)</button>` : ''}</div></div>
     <div class="stats">${[['ok','s-ok'],['short','s-short'],['over','s-over'],['none','s-none']].map(([k, cl]) => `<div class="stat ${cl}">${JUDGE[k]}<span>${cnt[k]}명</span></div>`).join('')}<div class="stat s-sub">자료 제출<span id="subN">…</span></div></div>
     <div class="tw"><table class="rtable"><thead><tr><th>순서</th><th>이름</th><th>발표 주제</th><th>발표 시간</th><th>판정</th>${rb ? '<th>평가</th>' : ''}<th>자료</th><th>발표 내용 (미리보기)</th></tr></thead><tbody id="rtb"></tbody></table></div>
     <p class="hint" style="margin-top:10px">줄을 누르면 발표 내용 전체를 보고, 잘못 인식된 글자 고치기 · 평가 기준표 채점 · 선생님 관찰 기록 · 과세특 프롬프트 만들기를 할 수 있어요. 고친 내용은 바로 저장돼요.</p>
@@ -2263,6 +2285,19 @@ function renderRec(){
   $('#recPrint').onclick = () => printSession(c, s);
   $('#recScore').onclick = () => openScore(s).then(() => renderRec());
   $('#recAI').onclick = () => openAllPrompt(c, s);
+  $('#recMat').onclick = () => openBulk(sessionTarget(s)).then(() => renderRec());
+  if ($('#recXlAll')) $('#recXlAll').onclick = () => exportClass(c);
+  $('#recRen').onclick = async () => {
+    const n = await uiPrompt({ title:'발표 제목 바꾸기', icon:'✏️', label:'발표 제목', value:s.title, max:40 });
+    if (!n) return; s.title = n; save(); renderRec();
+  };
+  $('#recDel').onclick = async () => {
+    if (running && c.active === s.id) { toast('발표 중인 회차는 지울 수 없어요.'); return; }
+    if (!await uiConfirm(`<b>${esc(s.title)}</b> (${fmtDate(s.date)}) 기록과 이 회차에 넣은 발표 자료를 지울까요?<br>지운 기록은 되돌릴 수 없어요.`, { title:'발표 기록 지우기', icon:'🗑', ok:'지우기', danger:true })) return;
+    await dropPrefix(s.id + '::').catch(() => {});
+    c.sessions = c.sessions.filter(x => x.id !== s.id); if (c.active === s.id) c.active = null; recSel = null;
+    save(); renderCls(); renderRec(); toast('발표 기록을 지웠어요.');
+  };
   const tb = $('#rtb');
   s.order.forEach((r, i) => {
     const tr = document.createElement('tr'); if (s.sel === i) tr.className = 'sel';
@@ -2393,7 +2428,7 @@ const obsNote = (s, idxs) => {
 function openPrompt(c, s, idxs){
   modal({ title:'과세특 초안 프롬프트', icon:'🤖', wide:true,
     body:`${PROMPT_WARN}${obsNote(s, idxs)}${aiOptsHTML()}<div id="pOut"></div>
-      <p class="hint">복사한 글을 AI 대화창에 그대로 붙여 넣으세요. 과목·학년·추가 요청은 ⚙ 선생님 관리 → 과세특 프롬프트 설정에서 미리 정해 둘 수 있어요.</p>`,
+      <p class="hint">복사한 글을 AI 대화창에 그대로 붙여 넣으세요. 과목·학년·추가 요청은 🛠 수업 설정 → 과세특 프롬프트 설정에서 미리 정해 둘 수 있어요.</p>`,
     actions:[{ label:'닫기', kind:'primary' }],
     onOpen: m => {
       const draw = () => { readAiOpts(m); m.q('#pOut').innerHTML = promptBox(buildPrompt(c, s, idxs)); bindCopy(m); };
@@ -2611,17 +2646,12 @@ async function exportClass(c){
 }
 
 /* =====================================================================
-   선생님 관리
+   초기 설정 · 수업 설정
    ===================================================================== */
 function renderAdmin(){
-  const v = $('#v-admin'), c = cls();
-  const sesRows = [...c.sessions].reverse().map(s => {
-    const done = s.order.filter(r => r.j).length, act = s.id === c.active;
-    return `<tr class="${act ? 'act' : ''}"><td><b>${esc(s.title)}</b> ${act ? '<span class="tag blue">지금 발표 중인 회차</span>' : ''}</td><td>${fmtDate(s.date)}</td><td>${done} / ${s.order.length}명</td><td>${fmt(s.min)}~${fmt(s.max)}</td>
-      <td><div class="acts"><button type="button" class="btn sm" data-sv="${s.id}">기록 보기</button><button type="button" class="btn sm" data-sc="${s.id}">이어서 발표</button><button type="button" class="btn sm primary" data-sg="${s.id}">📝 평가</button><button type="button" class="btn sm" data-st="${s.id}">🏷 주제</button><button type="button" class="btn sm" data-sm="${s.id}">📎 자료</button><button type="button" class="btn sm" data-sx="${s.id}">📊 엑셀</button><button type="button" class="btn sm" data-sp="${s.id}">🖨 순서표</button><button type="button" class="ib" data-sr="${s.id}" title="제목 바꾸기">✏️</button><button type="button" class="ib" data-sd="${s.id}" title="이 기록 지우기">🗑</button></div></td></tr>`;
-  }).join('');
-  v.innerHTML = `
-  <div class="vhead"><div><h2 class="vt">선생님 <em>관리실</em></h2><p class="vs">여러 반의 명단과 발표 기록을 한곳에서 관리해요. 모든 내용은 이 컴퓨터의 브라우저에만 저장돼요.</p></div></div>
+  const v1 = $('#v-setup'), v2 = $('#v-conf'), c = cls();
+  v1.innerHTML = `
+  <div class="vhead"><div><h2 class="vt">초기 <em>설정</em></h2><p class="vs">처음 한 번만 해 두면 돼요. <b>반 만들기 → 학생 명단 → 자료 제출 링크 → 자료 미리 등록</b> 순서로 준비하세요. 모든 내용은 이 컴퓨터의 브라우저에만 저장돼요.</p></div></div>
   <div class="admin-grid">
     <div class="admin-side">
     <aside class="card cls-list">
@@ -2656,32 +2686,34 @@ function renderAdmin(){
           <div class="card-h"><h3>📮 발표 자료 제출 받기</h3><button type="button" class="btn sm grow" id="aSubHelp">만드는 방법</button></div>
           <p class="hint">구글 설문지(파일 업로드 질문)나 드라이브 폴더 링크를 넣으면, 학생들이 휴대폰으로 찍을 <b>QR 코드</b>가 만들어져요.</p>
           <label class="fld"><span>제출 링크 (구글 설문지 권장)</span><input type="url" id="aSubUrl" value="${esc(c.submitUrl)}" placeholder="https://forms.gle/…"></label>
+          ${/docs\.google\.com\/forms/i.test(c.submitUrl) ? '<p class="hint" style="margin-top:-4px">💡 설문지에서 🔗 링크 복사를 누를 때 <b>URL 단축</b>을 체크하면 <b>forms.gle</b> 짧은 주소가 돼서 QR이 훨씬 단순해져요.</p>' : ''}
           <label class="fld"><span>학생 안내 한 줄 (선택)</span><input type="text" id="aSubNote" maxlength="60" value="${esc(c.submitNote)}" placeholder="예: 10월 24일(금)까지 PDF로 제출"></label>
           <div class="btns" style="margin:0"><button type="button" class="btn primary" id="aSubSave">저장</button><button type="button" class="btn" id="aSubQR" ${c.submitUrl ? '' : 'disabled'}>📮 QR 안내 화면 열기</button></div>
         </div>
         <div class="card">
+        <div class="card-h"><h3>📦 ${esc(c.name)} 발표 자료 미리 등록</h3><span class="tag" id="aPoolN">확인 중…</span><span class="grow"></span><button type="button" class="btn sm primary" id="aPool">📎 자료 한꺼번에 등록</button></div>
+        <p class="hint" style="margin:0 0 10px">구글 설문지로 받은 자료를 발표 전에 미리 넣어 두세요. <b>다음에 [발표 시작]을 누르면 그 회차로 자동으로 옮겨 가서</b>, 레이스로 순서를 새로 정해도 자료와 주제가 그대로 따라가요. 파일 이름에 주제가 있으면 주제도 자동으로 채워져요.</p>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  v2.innerHTML = `
+  <div class="vhead"><div><h2 class="vt">수업 <em>설정</em></h2><p class="vs">발표 시간 · 평가 기준표 · 발표 화면 안내 · 과세특 프롬프트 · 음성 인식 · 백업을 정해요. 발표 시간은 지금 고른 반(${esc(c.name)})에, 나머지는 모든 반에 함께 쓰여요.</p></div></div>
+  <div class="admin-main">
+    <div class="two">
+        <div class="card">
           <div class="card-h"><h3>⏱ ${esc(c.name)} 발표 시간</h3></div>
-          <p class="hint">발표 시간은 여기서만 정해요. 새로 시작하는 발표에 이 시간이 쓰여요.</p>
+          <p class="hint">반마다 따로 정해요. 새로 시작하는 발표에 이 시간이 쓰여요.</p>
           ${timeFields(c.min, c.max)}
           ${ses(c) ? `<label class="chk"><input type="checkbox" id="aTimeCur" checked> 지금 진행 중인 '${esc(ses(c).title)}'에도 바로 적용 (판정 다시 계산)</label>` : ''}
           <button type="button" class="btn primary" id="aTimeSave">시간 저장</button>
         </div>
-      </div>
-      <div class="card pool-card">
-        <div class="card-h"><h3>📦 ${esc(c.name)} 발표 자료 미리 등록</h3><span class="tag" id="aPoolN">확인 중…</span><span class="grow"></span><button type="button" class="btn sm primary" id="aPool">📎 자료 한꺼번에 등록</button></div>
-        <p class="hint" style="margin:0">구글 설문지로 받은 자료를 발표 전에 미리 넣어 두세요. <b>다음에 [발표 시작]을 누르면 그 회차로 자동으로 옮겨 가서</b>, 레이스로 순서를 새로 정해도 자료와 주제가 그대로 따라가요. 파일 이름에 주제가 있으면 주제도 자동으로 채워져요.</p>
-      </div>
-      <div class="card">
-        <div class="card-h"><h3>🗂 발표 기록 보관함</h3><span class="tag">${c.sessions.length}회</span><span class="grow"></span>
-          <button type="button" class="btn sm mint" id="aXlAll" ${c.sessions.length ? '' : 'disabled'}>📊 이 반 전체 기록 엑셀 (회차별 시트)</button></div>
-        ${c.sessions.length ? `<div class="tw"><table class="stable"><thead><tr><th>발표 제목</th><th>날짜</th><th>진행</th><th>기준 시간</th><th></th></tr></thead><tbody>${sesRows}</tbody></table></div>` : '<p class="empty">아직 발표 기록이 없어요. ① 순서 정하기에서 첫 발표를 시작해 보세요.</p>'}
-      </div>
-      <h3 class="sec-t">⚙ 모든 반에 함께 쓰는 설정</h3>
-      <div class="card">
+        <div class="card">
         <div class="card-h"><h3>📝 평가 기준표</h3><span class="tag">합계 ${rubricMax()}점</span><span class="grow"></span><button type="button" class="btn sm" id="aRbReset">기본 항목으로</button><button type="button" class="btn sm primary" id="aRbAdd">＋ 항목 추가</button></div>
-        <p class="hint">③ 기록 보기의 [📝 평가하기]나 아래 발표 기록 보관함의 [📝 평가]에서 매겨요. 학생이 쓰는 발표 화면에는 평가 버튼이 없어요. 점수는 엑셀 파일과 과세특 프롬프트에 함께 들어가요.</p>
+        <p class="hint">③ 기록 보기의 [📝 평가하기]에서 매겨요. 학생이 쓰는 발표 화면에는 평가 버튼이 없어요. 점수는 엑셀 파일과 과세특 프롬프트에 함께 들어가요.</p>
         <div class="rb-edit" id="aRb">${db.settings.rubric.map((k, i) => `<div class="rbe-row" data-i="${i}"><span class="n">${i + 1}</span><input type="text" class="rbe-n" maxlength="24" value="${esc(k.name)}" aria-label="항목 이름"><select class="inp rbe-m" aria-label="만점">${[3, 4, 5, 10].map(x => `<option value="${x}" ${+k.max === x ? 'selected' : ''}>${x}점 만점</option>`).join('')}</select><button type="button" class="ib rbe-x" title="항목 지우기">✕</button></div>`).join('') || '<p class="empty">항목이 없어요. [＋ 항목 추가]를 눌러 주세요.</p>'}</div>
       </div>
+    </div>
       <div class="two">
         <div class="card">
           <div class="card-h"><h3>📺 발표 화면 안내</h3></div>
@@ -2725,29 +2757,28 @@ function renderAdmin(){
           <button type="button" class="btn sm danger-ghost" id="aWipe">이 브라우저의 모든 데이터 지우기</button>
         </div>
       </div>
-    </div>
   </div>`;
   // 반 목록
-  $$('[data-cid]', v).forEach(b => b.onclick = () => { if (running) return; switchClass(b.dataset.cid); });
-  $$('[data-cren]', v).forEach(b => b.onclick = () => renameClass(db.classes.find(x => x.id === b.dataset.cren)));
-  $$('[data-cdel]', v).forEach(b => b.onclick = () => deleteClass(db.classes.find(x => x.id === b.dataset.cdel)));
+  $$('[data-cid]', v1).forEach(b => b.onclick = () => { if (running) return; switchClass(b.dataset.cid); });
+  $$('[data-cren]', v1).forEach(b => b.onclick = () => renameClass(db.classes.find(x => x.id === b.dataset.cren)));
+  $$('[data-cdel]', v1).forEach(b => b.onclick = () => deleteClass(db.classes.find(x => x.id === b.dataset.cdel)));
   $('#aAddCls').onclick = addClassFlow;
   // 학생 명단
   $('#aAddSt').onclick = addStudentsFlow;
   $('#aSort').onclick = () => { c.students.sort((a, b) => a.name.localeCompare(b.name, 'ko')); c.sample = false; save(); onRosterEdited(); toast('가나다순으로 정렬했어요.'); };
-  $$('[data-sed]', v).forEach(b => b.onclick = async () => {
+  $$('[data-sed]', v1).forEach(b => b.onclick = async () => {
     const st = c.students.find(x => x.id === b.dataset.sed);
     const n = await uiPrompt({ title:'학생 이름 고치기', icon:'✏️', label:'이름', value:st.name, max:30,
       validate: x => x !== st.name && c.students.some(y => y.name === x) ? '같은 이름의 학생이 이미 있어요.' : '' });
     if (!n || n === st.name) return; st.name = n; c.sample = false; save(); onRosterEdited();
   });
-  $$('[data-sdel]', v).forEach(b => b.onclick = async () => {
+  $$('[data-sdel]', v1).forEach(b => b.onclick = async () => {
     const st = c.students.find(x => x.id === b.dataset.sdel);
     if (!await uiConfirm(`<b>${esc(st.name)}</b> 학생을 명단에서 뺄까요?<br><span class="hint">지난 발표 기록에는 이름이 그대로 남아요.</span>`, { title:'학생 빼기', icon:'🧑‍🎓', ok:'빼기', danger:true })) return;
     c.students = c.students.filter(x => x.id !== st.id); c.absent = c.absent.filter(x => x !== st.id); c.sample = false; save(); onRosterEdited();
   });
   // 발표 시간 (선생님만 바꿈)
-  const tm = { q: x => v.querySelector(x), err: t => { if (t) toast(t); } };
+  const tm = { q: x => v2.querySelector(x), err: t => { if (t) toast(t); } };
   bindTime(tm);
   $('#aTimeSave').onclick = () => {
     if (running) { toast('발표 중에는 시간을 바꿀 수 없어요.'); return; }
@@ -2759,11 +2790,11 @@ function renderAdmin(){
   };
   // 자료 제출 링크
   $('#aSubHelp').onclick = openSubmitHelp;
-  $$('[data-guide]', v).forEach(b => b.onclick = () => openGuide(+b.dataset.guide));
+  $$('[data-guide]', v1).forEach(b => b.onclick = () => openGuide(+b.dataset.guide));
   $('#aSubSave').onclick = () => {
     let u = $('#aSubUrl').value.trim();
     if (u && !/^https?:\/\//i.test(u)) u = 'https://' + u;
-    if (u) { try { new URL(u); } catch (e) { toast('링크 형식이 올바르지 않아요.'); return; } }
+    if (u) { try { new URL(u); } catch (e) { toast('링크 형식이 올바르지 않아요.'); return; } u = shortUrl(u); $('#aSubUrl').value = u; }
     if (/drive\.google\.com\/drive\/(u\/\d+\/)?folders/i.test(u)) toast('드라이브 폴더는 학생이 서로의 파일을 볼 수 있어요. 가능하면 구글 설문지를 권해요.');
     else toast(u ? '제출 링크를 저장했어요.' : '제출 링크를 지웠어요.');
     c.submitUrl = u; c.submitNote = $('#aSubNote').value.trim(); save(); renderAdmin();
@@ -2777,13 +2808,9 @@ function renderAdmin(){
     el.textContent = have || tp ? `자료 ${have} / ${c.students.length}명 · 주제 ${tp}명` : '아직 없음';
     el.className = have ? 'tag blue' : 'tag';
   });
-  $$('[data-sp]', v).forEach(b => b.onclick = () => printSession(c, c.sessions.find(x => x.id === b.dataset.sp)));
-  $$('[data-sg]', v).forEach(b => b.onclick = () => openScore(c.sessions.find(x => x.id === b.dataset.sg)));
-  $$('[data-st]', v).forEach(b => b.onclick = () => openTopics(c.sessions.find(x => x.id === b.dataset.st), renderAdmin));
-  $$('[data-sm]', v).forEach(b => b.onclick = () => openBulk(sessionTarget(c.sessions.find(x => x.id === b.dataset.sm))));
   // 평가 기준표
   const rb = db.settings.rubric;
-  $$('.rbe-row', v).forEach(row => {
+  $$('.rbe-row', v2).forEach(row => {
     const k = rb[+row.dataset.i];
     row.querySelector('.rbe-n').onchange = e => { k.name = e.target.value.trim() || k.name; save(); };
     row.querySelector('.rbe-m').onchange = e => { k.max = +e.target.value; save(); renderAdmin(); };
@@ -2792,7 +2819,7 @@ function renderAdmin(){
       db.settings.rubric = rb.filter(x => x !== k); save(); renderAdmin();
     };
   });
-  $('#aRbAdd').onclick = () => { if (rb.length >= 8) { toast('평가 항목은 8개까지 만들 수 있어요.'); return; } rb.push({ id: 'r' + uid(), name: '새 항목', max: 5 }); save(); renderAdmin(); setTimeout(() => { const ins = $$('.rbe-n', $('#v-admin')); const last = ins[ins.length - 1]; if (last) { last.focus(); last.select(); } }, 30); };
+  $('#aRbAdd').onclick = () => { if (rb.length >= 8) { toast('평가 항목은 8개까지 만들 수 있어요.'); return; } rb.push({ id: 'r' + uid(), name: '새 항목', max: 5 }); save(); renderAdmin(); setTimeout(() => { const ins = $$('.rbe-n', v2); const last = ins[ins.length - 1]; if (last) { last.focus(); last.select(); } }, 30); };
   $('#aRbReset').onclick = async () => { if (!await uiConfirm('평가 기준표를 기본 4개 항목(내용 구성 · 근거·자료 활용 · 전달력 · 시간 준수, 각 5점)으로 되돌릴까요?', { title:'기본 항목으로', icon:'📝', ok:'되돌리기' })) return; db.settings.rubric = DEF_RUBRIC(); save(); renderAdmin(); };
   // 발표 화면 안내
   $('#aWarn').onchange = e => { db.settings.warnSec = +e.target.value; save(); toast('남은 시간 경고를 바꿨어요.'); };
@@ -2808,7 +2835,7 @@ function renderAdmin(){
     $('#aLp2').innerHTML = '🎤 ' + hi({ name:'이서연', topic:'' });
   };
   lta.oninput = () => { db.settings.listen = lta.value; save(); paintListen(); };
-  $$('#aListenEx button', v).forEach(b => b.onclick = () => { lta.value = LISTEN_EXAMPLES[+b.dataset.i][1]; lta.oninput(); toast('예시 문구를 넣었어요. 자유롭게 고쳐 쓰세요.'); });
+  $$('#aListenEx button', v2).forEach(b => b.onclick = () => { lta.value = LISTEN_EXAMPLES[+b.dataset.i][1]; lta.oninput(); toast('예시 문구를 넣었어요. 자유롭게 고쳐 쓰세요.'); });
   paintListen();
   // 과세특 프롬프트 설정
   const ai = db.settings.ai;
@@ -2817,25 +2844,8 @@ function renderAdmin(){
   $('#aiL').onchange = e => { ai.len = Math.max(100, Math.min(1500, +e.target.value || 500)); save(); };
   $('#aiA').onchange = e => { ai.anon = e.target.checked; save(); };
   $('#aiE').oninput = e => { ai.extra = e.target.value.trim(); save(); };
-  // 발표 기록 보관함
-  const sesOf = id => c.sessions.find(x => x.id === id);
-  $('#aXlAll').onclick = () => exportClass(c);
-  $$('[data-sv]', v).forEach(b => b.onclick = () => { recSel = b.dataset.sv; show('rec'); });
-  $$('[data-sc]', v).forEach(b => b.onclick = () => { c.active = b.dataset.sc; save(); cur.key = null; jumpBack = null; show('talk'); });
-  $$('[data-sx]', v).forEach(b => b.onclick = () => exportSession(c, sesOf(b.dataset.sx)));
-  $$('[data-sr]', v).forEach(b => b.onclick = async () => {
-    const s = sesOf(b.dataset.sr); const n = await uiPrompt({ title:'발표 제목 바꾸기', icon:'✏️', label:'발표 제목', value:s.title, max:40 });
-    if (!n) return; s.title = n; save(); renderAdmin();
-  });
-  $$('[data-sd]', v).forEach(b => b.onclick = async () => {
-    const s = sesOf(b.dataset.sd);
-    if (!await uiConfirm(`<b>${esc(s.title)}</b> (${fmtDate(s.date)}) 기록과 이 회차에 넣은 발표 자료를 지울까요?<br>지운 기록은 되돌릴 수 없어요.`, { title:'발표 기록 지우기', icon:'🗑', ok:'지우기', danger:true })) return;
-    await dropPrefix(s.id + '::').catch(() => {});
-    c.sessions = c.sessions.filter(x => x.id !== s.id); if (c.active === s.id) c.active = null; if (recSel === s.id) recSel = null;
-    save(); renderAdmin(); toast('발표 기록을 지웠어요.');
-  });
   // 음성 인식 방식
-  $$('input[name=sr]', v).forEach(r => { r.checked = r.value === db.settings.sr; r.onchange = () => { db.settings.sr = r.value; lastErr = ''; dropRec(); save(); toast('음성 인식 방식을 바꿨어요.'); }; });
+  $$('input[name=sr]', v2).forEach(r => { r.checked = r.value === db.settings.sr; r.onchange = () => { db.settings.sr = r.value; lastErr = ''; dropRec(); save(); toast('음성 인식 방식을 바꿨어요.'); }; });
   paintLocalState();
   $('#aPriv').onclick = openPrivacy;
   // 백업
@@ -2855,7 +2865,7 @@ async function paintLocalState(){
 }
 function onRosterEdited(){
   renderCls(); if (!raceBusy()) rosterChanged(); else renderRoster();
-  if (view === 'admin') renderAdmin();
+  if (view === 'setup' || view === 'conf') renderAdmin();
 }
 async function addClassFlow(){
   const r = await modal({ title:'새 반 만들기', icon:'🏫',
@@ -2975,11 +2985,11 @@ function openPrivacy(){
       <li><span>💻</span><span>명단, 발표 시간, 발표 내용(인식한 글), 선생님 관찰 기록, 발표 자료 파일은 <b>지금 쓰는 이 컴퓨터의 브라우저 저장소(localStorage · IndexedDB)에만</b> 저장돼요.</span></li>
       <li><span>🚫</span><span>이 앱에는 서버·회원가입·로그인·광고·방문 분석 도구가 <b>없어요.</b> 저장된 기록과 자료는 어디로도 전송되지 않으며, 제작자도 볼 수 없어요.</span></li>
       <li><span>📁</span><span>엑셀 파일과 백업 파일은 선생님이 직접 [저장]을 눌렀을 때만 이 컴퓨터에 만들어져요. 학생 개인정보가 담겨 있으니 학교 규정에 따라 보관해 주세요.</span></li>
-      <li class="warn"><span>🎙</span><span><b>꼭 알아 두세요 — 음성 인식</b><br>말소리를 글자로 바꾸는 기능은 Chrome·Edge 브라우저가 제공해요. 기본 방식에서는 발표하는 동안 <b>말소리가 브라우저 회사(구글·마이크로소프트)의 음성 인식 서버를 거쳐</b> 글자로 바뀌어요. 바뀐 글자는 이 브라우저에만 저장돼요.<br>소리가 밖으로 나가지 않게 하려면 ⚙ 선생님 관리 → 음성 인식에서 <b>기기 안에서만 인식</b>(최신 Chrome) 또는 <b>음성 인식 끄기</b>를 골라 주세요.</span></li>
+      <li class="warn"><span>🎙</span><span><b>꼭 알아 두세요 — 음성 인식</b><br>말소리를 글자로 바꾸는 기능은 Chrome·Edge 브라우저가 제공해요. 기본 방식에서는 발표하는 동안 <b>말소리가 브라우저 회사(구글·마이크로소프트)의 음성 인식 서버를 거쳐</b> 글자로 바뀌어요. 바뀐 글자는 이 브라우저에만 저장돼요.<br>소리가 밖으로 나가지 않게 하려면 🛠 수업 설정 → 음성 인식에서 <b>기기 안에서만 인식</b>(최신 Chrome) 또는 <b>음성 인식 끄기</b>를 골라 주세요.</span></li>
       <li><span>🔗</span><span>링크 자료(구글 슬라이드·유튜브 등)를 열면 그 사이트에 접속해요. 글꼴(구글 폰트), PDF 보기 도구와 QR 만들기 도구(cdnjs)는 공개 서버에서 내려받지만, 이때 기록이나 자료는 함께 보내지 않아요. QR 코드는 이 브라우저 안에서 그려요.</span></li>
       <li><span>📮</span><span>구글 설문지·드라이브로 자료를 받으면 학생 파일은 <b>선생님 구글 계정</b>에 저장돼요(구글의 정책을 따라요). 이 앱이 구글 계정에 접속하지는 않아요.</span></li>
       <li class="warn"><span>🤖</span><span><b>과세특 프롬프트</b>는 이 브라우저 안에서 글만 만들어요. 그 글을 AI(챗GPT·제미나이·클로드 등)에 붙여 넣는 순간 내용이 AI 회사로 전송되니, <b>이름 빼기</b>를 켜고 학교·교육청의 생성형 AI 사용 지침을 지켜 주세요.</span></li>
-      <li><span>🧹</span><span>브라우저의 '인터넷 사용 기록 삭제(쿠키 및 사이트 데이터)'를 하면 기록이 지워질 수 있어요. 중요한 기록은 ⚙ 선생님 관리 → 백업 파일로 저장해 두세요.</span></li>
+      <li><span>🧹</span><span>브라우저의 '인터넷 사용 기록 삭제(쿠키 및 사이트 데이터)'를 하면 기록이 지워질 수 있어요. 중요한 기록은 🛠 수업 설정 → 백업 파일로 저장해 두세요.</span></li>
       <li><span>👥</span><span>여러 선생님이 함께 쓰는 컴퓨터라면, 수업이 끝난 뒤 백업을 저장하고 [모든 데이터 지우기]를 해 주세요.</span></li>
     </ul>`,
     actions:[{ label:'확인', kind:'primary' }] });
@@ -3021,7 +3031,7 @@ window.addEventListener('beforeunload', e => { if (running) { e.preventDefault()
 loadDB();
 S.mode = db.settings.mode === 'marble' ? 'marble' : 'race'; S.sound = db.settings.sound !== false;
 renderCls(); buildPeople(); setup(); renderResults(); renderRoster();
-show(['order','talk','rec','admin'].includes(db.settings.view) ? db.settings.view : 'order');
+show(db.settings.view === 'admin' ? 'setup' : ['setup','order','talk','rec','conf'].includes(db.settings.view) ? db.settings.view : 'order');
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { marbles.forEach(m => { m.fs = fitFont(m.p.short, m.r); }); });
 requestAnimationFrame(frame);
 })();
