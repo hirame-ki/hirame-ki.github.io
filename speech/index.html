@@ -544,10 +544,77 @@ details.paste summary{cursor:pointer;font-weight:700;font-size:14px}
 #toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--ink);color:#fff;border-radius:99px;padding:10px 20px;font-weight:700;font-size:14px;transition:.25s;z-index:50;max-width:calc(100vw - 32px);text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 @media (max-width:640px){.brand h1{font-size:23px}.step{font-size:15px}.step-arrow{display:none}.stage{grid-template-columns:1fr}}
+/* ===== 오프닝 모션 (새로고침마다 · 약 4.1초) ===== */
+html.intro-on{overflow:hidden}
+#intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;cursor:pointer;
+  background-color:var(--paper);background-image:radial-gradient(var(--dot) 1.5px,transparent 1.6px);background-size:24px 24px;
+  transition:transform .5s cubic-bezier(.7,0,.3,1),opacity .5s ease}
+#intro.out{transform:translateY(-100%);opacity:.6;pointer-events:none}
+#intro .in-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;width:min(760px,90vw);text-align:center}
+#intro .in-logo{width:clamp(100px,18vh,150px);height:auto;animation:inPop .55s .05s cubic-bezier(.3,1.6,.5,1) both}
+#intro .in-logo .wv{transform-origin:46px 21px;animation:inWave .45s .5s ease-in-out 3}
+#intro .in-track{position:relative;width:100%;height:120px;border:var(--bw,2.5px) solid var(--ink);border-radius:18px;background:#fff;box-shadow:0 5px 0 var(--ink);overflow:hidden;animation:inRise .4s .35s ease-out both}
+#intro .in-lane{position:absolute;left:0;right:0;height:40px}
+#intro .in-lane:nth-child(1){top:0;background:var(--main-s)}
+#intro .in-lane:nth-child(2){top:40px;background:#F4F8FF}
+#intro .in-lane:nth-child(3){top:80px;background:var(--main-s)}
+#intro .in-start{position:absolute;left:54px;top:0;bottom:0;border-left:3px dashed var(--muted);opacity:.5}
+#intro .in-finish{position:absolute;right:20px;top:0;bottom:0;width:16px;background:repeating-conic-gradient(var(--ink) 0 25%,#fff 0 50%) 0 0/16px 16px}
+#intro .in-ball{position:absolute;left:18px;width:30px;height:30px;margin-top:5px;border-radius:50%;border:2.5px solid var(--ink);box-shadow:inset -4px -4px 0 rgba(0,0,0,.12)}
+#intro .in-ball::after{content:"";position:absolute;left:5px;top:4px;width:8px;height:8px;border-radius:50%;background:#fff;opacity:.85}
+#intro .b1{top:0;background:var(--sub);animation:inRun1 1.2s .6s cubic-bezier(.45,.05,.3,1) both}
+#intro .b2{top:40px;background:var(--main);animation:inRun2 1.4s .6s cubic-bezier(.5,.05,.35,1) both}
+#intro .b3{top:80px;background:var(--mint);animation:inRun3 1.55s .6s cubic-bezier(.55,.05,.35,1) both}
+#intro .in-win{position:absolute;right:86px;top:6px;font:17px/1 var(--display);background:var(--sun);border:2px solid var(--ink);border-radius:99px;padding:4px 10px;animation:inPop .35s 1.75s cubic-bezier(.3,1.6,.5,1) both}
+#intro .in-flow{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px}
+#intro .in-chip{font:clamp(15px,2.6vw,21px)/1 var(--display);background:#fff;border:2px solid var(--ink);border-radius:99px;padding:8px 14px;box-shadow:0 3px 0 var(--ink);animation:inPop .35s cubic-bezier(.3,1.6,.5,1) both}
+#intro .in-arr{color:var(--muted);font-weight:700;animation:inFade .3s both}
+#intro .in-title{margin:4px 0 0;font:clamp(44px,9vw,84px)/1.1 var(--display);font-weight:400;animation:inRise .45s 2.25s cubic-bezier(.3,1.4,.5,1) both}
+#intro .in-title em{font-style:normal;color:var(--main)}
+#intro .in-sub{margin:0;font-weight:700;font-size:clamp(15px,2.3vw,19px);color:var(--muted);animation:inFade .35s 2.55s both}
+#intro .in-sub b{color:var(--ink);background:linear-gradient(var(--sun),var(--sun)) 0 85%/100% 45% no-repeat;animation:inMark .4s 2.75s ease-out both}
+#intro .in-skip{position:absolute;right:18px;bottom:16px;border:2px solid var(--ink);border-radius:99px;background:#fff;padding:6px 14px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+@keyframes inPop{from{opacity:0;transform:scale(.3)}70%{opacity:1;transform:scale(1.12)}}
+@keyframes inRise{from{opacity:0;transform:translateY(22px)}}
+@keyframes inFade{from{opacity:0}}
+@keyframes inWave{50%{transform:scale(1.25)}}
+@keyframes inMark{from{background-size:0 45%}}
+@keyframes inRun1{from{left:20px}55%{left:58%}to{left:calc(100% - 74px)}}
+@keyframes inRun2{from{left:20px}40%{left:52%}to{left:calc(100% - 74px)}}
+@keyframes inRun3{from{left:20px}60%{left:40%}to{left:calc(100% - 74px)}}
+#intro .in-ball{left:calc(100% - 74px)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
+<div id="intro" aria-hidden="true">
+  <div class="in-wrap">
+    <svg class="in-logo" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="18" fill="#FFE07A" stroke="#1D2A4A" stroke-width="3"/><g class="wv"><path d="M47 15c3 3 3 9 0 12M51.5 11c5.5 5 5.5 15 0 20" fill="none" stroke="#FF6FAE" stroke-width="3" stroke-linecap="round"/></g><path d="M14.5 29a15.5 15.5 0 0 0 31 0" fill="none" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/><path d="M30 44.5v7M22.5 53h15" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/><rect x="18" y="7" width="24" height="31" rx="12" fill="#3B8BFF" stroke="#1D2A4A" stroke-width="3"/><path d="M18.5 15.5h23" stroke="#1D2A4A" stroke-width="2" opacity=".25"/><ellipse cx="24" cy="13.5" rx="2.3" ry="3.6" fill="#fff" opacity=".75"/><circle cx="25.5" cy="24" r="2.3" fill="#1D2A4A"/><circle cx="34.5" cy="24" r="2.3" fill="#1D2A4A"/><circle cx="26.1" cy="23.3" r=".8" fill="#fff"/><circle cx="35.1" cy="23.3" r=".8" fill="#fff"/><circle cx="22" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/><circle cx="38" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/><path d="M27.5 29.2q2.5 2.6 5 0" fill="none" stroke="#1D2A4A" stroke-width="2" stroke-linecap="round"/></svg>
+    <div class="in-track"><div class="in-lane"></div><div class="in-lane"></div><div class="in-lane"></div><div class="in-start"></div><div class="in-finish"></div>
+      <span class="in-ball b1"></span><span class="in-ball b2"></span><span class="in-ball b3"></span><span class="in-win">1등!</span></div>
+    <div class="in-flow"><span class="in-chip" style="animation-delay:1.45s">🏁 순서</span><span class="in-arr" style="animation-delay:1.54s">›</span><span class="in-chip" style="animation-delay:1.62s">🎤 발표</span><span class="in-arr" style="animation-delay:1.71s">›</span><span class="in-chip" style="animation-delay:1.79s">📝 기록</span><span class="in-arr" style="animation-delay:1.88s">›</span><span class="in-chip" style="animation-delay:1.96s">✅ 평가</span><span class="in-arr" style="animation-delay:2.05s">›</span><span class="in-chip" style="animation-delay:2.13s">🤖 세특</span></div>
+    <h1 class="in-title">발표 <em>레이스</em></h1>
+    <p class="in-sub"><b>발표 수업 도구</b> · 순서 정하기부터 세특 초안까지</p>
+  </div>
+  <button type="button" class="in-skip">건너뛰기 ›</button>
+</div>
+<script>
+/* 오프닝: 새로고침마다 재생 · 3.6초에 걷히기 시작해 4.1초에 사라짐 (클릭·키보드로 건너뛰기) */
+(function(){
+  var el = document.getElementById('intro'), root = document.documentElement, done = false;
+  root.classList.add('intro-on');
+  function finish(){
+    if (done) return; done = true;
+    el.classList.add('out'); root.classList.remove('intro-on');
+    document.removeEventListener('keydown', onKey, true);
+    setTimeout(function(){ el.remove(); }, 520);
+  }
+  function onKey(e){ e.preventDefault(); e.stopImmediatePropagation(); finish(); }
+  document.addEventListener('keydown', onKey, true);
+  el.addEventListener('click', finish);
+  setTimeout(finish, 3600);
+})();
+</script>
 <header class="top">
   <div class="brand">
     <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="18" fill="#FFE07A" stroke="#1D2A4A" stroke-width="3"/><path d="M47 15c3 3 3 9 0 12M51.5 11c5.5 5 5.5 15 0 20" fill="none" stroke="#FF6FAE" stroke-width="3" stroke-linecap="round"/><path d="M14.5 29a15.5 15.5 0 0 0 31 0" fill="none" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/><path d="M30 44.5v7M22.5 53h15" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/><rect x="18" y="7" width="24" height="31" rx="12" fill="#3B8BFF" stroke="#1D2A4A" stroke-width="3"/><path d="M18.5 15.5h23" stroke="#1D2A4A" stroke-width="2" opacity=".25"/><ellipse cx="24" cy="13.5" rx="2.3" ry="3.6" fill="#fff" opacity=".75"/><circle cx="25.5" cy="24" r="2.3" fill="#1D2A4A"/><circle cx="34.5" cy="24" r="2.3" fill="#1D2A4A"/><circle cx="26.1" cy="23.3" r=".8" fill="#fff"/><circle cx="35.1" cy="23.3" r=".8" fill="#fff"/><circle cx="22" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/><circle cx="38" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/><path d="M27.5 29.2q2.5 2.6 5 0" fill="none" stroke="#1D2A4A" stroke-width="2" stroke-linecap="round"/></svg>
