@@ -307,6 +307,11 @@ tbody tr:last-child td{border-bottom:0}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media (max-width:1000px){.two{grid-template-columns:1fr}}
 .cls-list{display:flex;flex-direction:column;gap:10px}
+.admin-side{display:flex;flex-direction:column;gap:18px;min-width:0}
+.form-tip{display:flex;flex-direction:column;gap:10px;background:var(--main-s)}
+.form-tip a.btn{text-decoration:none;text-align:center}
+.ft-steps{margin:0;padding-left:20px;font-size:13.5px;line-height:1.6}
+.ft-steps li+li{margin-top:2px}
 .cls-item{display:flex;align-items:center;border:2px solid var(--line);border-radius:14px;background:var(--soft);padding:4px 4px 4px 0}
 .cls-item.on{border-color:var(--ink);background:var(--sun-s);box-shadow:0 3px 0 var(--ink)}
 .ci-main{flex:1;min-width:0;border:0;background:none;text-align:left;cursor:pointer;padding:8px 12px;display:flex;flex-direction:column}
@@ -1700,6 +1705,8 @@ function openScore(s, i = firstToScore(s)){
 }
 
 /* ---------- 구글 설문지·드라이브로 자료 제출 받기 (QR) ---------- */
+// 발표 자료 제출용 구글 설문지 샘플 (누르면 내 드라이브에 사본이 만들어짐)
+const FORM_COPY_URL = 'https://docs.google.com/forms/d/1_mA4iWeTlYLBRRe5XQQeDJ1Nb1XENbd4rtzjpXARYDM/copy';
 const FILE_RULE = `<div class="frule"><b>📛 파일 이름 규칙</b><code>번호_이름_발표주제.확장자</code>
   <span>예) <code>03_김민준_기후변화와 탄소중립.pdf</code></span>
   <small>· 이름은 명단과 똑같이 써 주세요. 이름만 정확하면 번호·기호가 달라도 자동으로 그 학생에게 들어가요.<br>· 주제를 붙이면 발표 화면에 주제가 자동으로 나와요. · PPT는 PDF로 저장해 내면 발표 화면에 바로 크게 보여요.</small></div>`;
@@ -1745,6 +1752,7 @@ function openSubmitHelp(){
   modal({ title:'구글로 발표 자료 받는 방법', icon:'📮', wide:true,
     body:`<div class="how">
       <section class="how-card best"><h4>① 구글 설문지 '파일 업로드' <span class="tag blue">가장 추천</span></h4>
+        <p class="hint" style="margin:0 0 6px">🎁 처음부터 만들기 번거로우면 <a href="${FORM_COPY_URL}" target="_blank" rel="noopener"><b>설문지 샘플 사본 만들기</b></a>로 시작하세요. 사본에서 '📎 발표 자료 파일' 질문만 <b>파일 업로드</b>로 바꾸면 돼요.</p>
         <ol><li>forms.google.com → 새 설문지 → 질문 유형 <b>파일 업로드</b> 추가</li>
           <li>최대 파일 크기를 <b>100MB</b>로 올리고(기본 10MB), 파일 종류는 PDF·프레젠테이션·이미지로</li>
           <li>단답형 질문 <b>이름</b>, <b>발표 주제</b>도 함께 넣기</li>
@@ -2532,11 +2540,24 @@ function renderAdmin(){
   v.innerHTML = `
   <div class="vhead"><div><h2 class="vt">선생님 <em>관리실</em></h2><p class="vs">여러 반의 명단과 발표 기록을 한곳에서 관리해요. 모든 내용은 이 컴퓨터의 브라우저에만 저장돼요.</p></div></div>
   <div class="admin-grid">
+    <div class="admin-side">
     <aside class="card cls-list">
       <div class="card-h" style="margin:0"><h3>🏫 반 목록</h3><span class="tag">${db.classes.length}개</span></div>
       ${db.classes.map(x => `<div class="cls-item ${x.id === c.id ? 'on' : ''}"><button type="button" class="ci-main" data-cid="${x.id}"><b>${esc(x.name)}</b><small>학생 ${x.students.length}명 · 발표 ${x.sessions.length}회${x.sessions.length ? ' · 최근 ' + fmtDate(x.sessions[x.sessions.length - 1].date) : ''}</small></button><button type="button" class="ib" data-cren="${x.id}" title="반 이름 바꾸기">✏️</button><button type="button" class="ib" data-cdel="${x.id}" title="반 지우기">🗑</button></div>`).join('')}
       <button type="button" class="btn primary wide" id="aAddCls">＋ 새 반 만들기</button>
     </aside>
+    <aside class="card form-tip">
+      <div class="card-h" style="margin:0"><h3>📋 학생 자료, 설문지로 편하게</h3></div>
+      <p class="hint" style="margin:0">발표 자료를 받을 <b>구글 설문지 샘플</b>을 내 드라이브로 복사해 쓰세요. 파일 이름 규칙·주제·자료 형식 질문이 미리 들어 있어요.</p>
+      <a class="btn primary wide" href="${FORM_COPY_URL}" target="_blank" rel="noopener">📄 설문지 사본 만들기</a>
+      <ol class="ft-steps">
+        <li>[사본 만들기]를 누르면 내 드라이브에 저장돼요.</li>
+        <li><b>📎 발표 자료 파일</b> 질문을 눌러 유형을 <b>파일 업로드</b>로 바꾸고, 안내 문구를 지워요.</li>
+        <li>제목·마감일을 고친 뒤 [보내기]의 링크를 오른쪽 <b>📮 제출 링크</b>에 붙여 넣어요.</li>
+      </ol>
+      <p class="hint" style="margin:0">💡 학교 계정이라면 설정 → 응답에서 <b>'조직 사용자로 제한'</b>을 끄면 개인 계정 학생도 낼 수 있어요.</p>
+    </aside>
+    </div>
     <div class="admin-main">
       <div class="card">
         <div class="card-h"><h3>👥 ${esc(c.name)} 학생 명단</h3><span class="tag">${c.students.length}명</span><span class="grow"></span>
