@@ -1,0 +1,25 @@
+# 사이트에 올리지 않는 로컬 작업물 — 저장소에는 공개되는 도구만 둡니다.
+
+.claude/
+.DS_Store
+Thumbs.db
+
+# 작업 중이거나 사이트 밖에서 쓰는 폴더
+admissions-tools/
+goback/
+lab/
+lost/
+recordlab/
+workflows/
+lens-작업/
+구글 웹앱/
+문제생성기/
+새 폴더/
+쉿대본_음성테스트/
+파일 보관/
+
+# 인수인계·기획 메모 (사이트에 올릴 내용이 아님)
+review-*.md
+면접온-*.md
+면접온-*.png
+성적돋보기-*.md

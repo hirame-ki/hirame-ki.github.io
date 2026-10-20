@@ -52,7 +52,7 @@
           timer = setTimeout(() => {           /* 마지막 한 박자 쉬고 공개 */
             used.add(w);
             nameEl.textContent = w; nameEl.classList.remove('rolling', 'beat'); void nameEl.offsetWidth; nameEl.classList.add('win');
-            audio.chime('pop'); confetti(stage); go.disabled = false;
+            audio.fanfare(); confetti(stage); go.disabled = false;
             sub.textContent = nodup.checked ? `축하해요! · 남은 친구 ${pool().length}명` : '축하해요!';
           }, slow() ? 620 : 80);
         };
@@ -108,7 +108,7 @@
           later((slow() ? 800 : 120) + gap * i + (last ? gap * .8 : 0), () => {
             const c = cells[i]; $('.nm', c).textContent = name;
             c.classList.remove('rolling'); c.classList.add('win');
-            if (last) { stop(); go.disabled = false; audio.chime('pop'); confetti(chips); }
+            if (last) { stop(); go.disabled = false; audio.fanfare(); confetti(chips); }
             else audio.tone(600 + i * 60, 0, .24, .4, 'triangle');
           });
         });
@@ -169,7 +169,7 @@
           const idx = Math.floor((((Math.PI * 1.5 - angle) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / sl);
           if (idx !== lastIdx) { lastIdx = idx; if (p < .97) audio.chime('tick'); }
           if (p < 1) { raf = requestAnimationFrame(step); return; }
-          spinning = false; go.disabled = false; res.textContent = it[idx % it.length]; audio.chime('pop');
+          spinning = false; go.disabled = false; res.textContent = it[idx % it.length]; audio.fanfare();
         };
         raf = requestAnimationFrame(step);
       };
@@ -459,7 +459,7 @@
           paint(sample()); tick(i); i++;
           if (i < steps) { timer = setTimeout(spin, 30 + 320 * Math.pow(i / steps, 3.4)); return; }
           timer = setTimeout(() => {
-            paint(sample(), true); audio.chime('pop'); confetti(stage);
+            paint(sample(), true); audio.fanfare(); confetti(stage);
             busy = false; go.disabled = false;
           }, slow() ? 280 : 50);
         };

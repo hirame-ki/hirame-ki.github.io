@@ -90,12 +90,23 @@
   if (!roster.classes.find(c => c.id === roster.currentId)) roster.currentId = roster.classes[0].id;
 
   /* ---------- 소리 (Web Audio, 파일 없이 합성) ---------- */
-  let actx = null;
+  let actx = null, abus = null;
   const audio = {
     ctx() {
       if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
       if (actx.state === 'suspended') actx.resume();
       return actx;
+    },
+    /* 폭죽·환호처럼 여러 겹이 한꺼번에 울려도 찌그러지지 않게 — 출력 앞에 리미터 한 겹 */
+    bus() {
+      const c = this.ctx();
+      if (!abus) {
+        abus = c.createDynamicsCompressor();
+        abus.threshold.value = -3; abus.knee.value = 6; abus.ratio.value = 8;
+        abus.attack.value = .003; abus.release.value = .25;
+        abus.connect(c.destination);
+      }
+      return abus;
     },
     tone(freq, at = 0, dur = .6, vol = .28, type = 'sine') {
       try {
@@ -105,14 +116,14 @@
         g.gain.setValueAtTime(0.0001, t);
         g.gain.exponentialRampToValueAtTime(vol, t + .015);
         g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-        o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + .05);
+        o.connect(g); g.connect(this.bus()); o.start(t); o.stop(t + dur + .05);
         /* 배음 한 겹 — 종소리 느낌 */
         const o2 = c.createOscillator(), g2 = c.createGain();
         o2.type = 'sine'; o2.frequency.value = freq * 2.76;
         g2.gain.setValueAtTime(0.0001, t);
         g2.gain.exponentialRampToValueAtTime(vol * .18, t + .01);
         g2.gain.exponentialRampToValueAtTime(0.0001, t + dur * .5);
-        o2.connect(g2); g2.connect(c.destination); o2.start(t); o2.stop(t + dur);
+        o2.connect(g2); g2.connect(this.bus()); o2.start(t); o2.stop(t + dur);
       } catch (e) { /* 오디오 미지원 */ }
     },
     chime(kind) {
@@ -125,6 +136,54 @@
       else if (kind === 'tick') { this.tone(1400, 0, .07, .2, 'triangle'); }
       else if (kind === 'pop') { this.tone(660, 0, .3, .5, 'triangle'); this.tone(990, .07, .38, .42, 'triangle'); this.tone(1320, .14, .5, .3, 'triangle'); }
     },
+    /* 흰 소음 한 조각 — 폭죽과 환호의 재료 */
+    noise(dur) {
+      const c = this.ctx(), n = Math.max(1, Math.floor(c.sampleRate * dur));
+      const b = c.createBuffer(1, n, c.sampleRate), d = b.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+      return b;
+    },
+    /* 폭죽 한 발 — 펑 하는 저음 뒤에 반짝이는 불똥 */
+    firework(at = 0, vol = .5) {
+      try {
+        const c = this.ctx(), t = c.currentTime + at;
+        const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+        s.buffer = this.noise(.5); f.type = 'lowpass';
+        f.frequency.setValueAtTime(1800, t); f.frequency.exponentialRampToValueAtTime(140, t + .35);
+        g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + .45);
+        s.connect(f); f.connect(g); g.connect(this.bus()); s.start(t); s.stop(t + .5);
+        const s2 = c.createBufferSource(), f2 = c.createBiquadFilter(), g2 = c.createGain();
+        s2.buffer = this.noise(.7); f2.type = 'highpass'; f2.frequency.value = 4000;
+        g2.gain.setValueAtTime(0.0001, t + .04);
+        g2.gain.linearRampToValueAtTime(vol * .35, t + .1);
+        g2.gain.exponentialRampToValueAtTime(0.0001, t + .7);
+        s2.connect(f2); f2.connect(g2); g2.connect(this.bus()); s2.start(t + .04); s2.stop(t + .75);
+      } catch (e) { /* 오디오 미지원 */ }
+    },
+    /* 환호 — 부풀었다 잦아드는 함성 위에 박수를 흩뿌려요 */
+    cheer(vol = .45) {
+      try {
+        const c = this.ctx(), t = c.currentTime;
+        const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+        s.buffer = this.noise(1.9); f.type = 'bandpass'; f.frequency.value = 1100; f.Q.value = .8;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(vol, t + .25);
+        g.gain.setValueAtTime(vol, t + .9);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+        s.connect(f); f.connect(g); g.connect(this.bus()); s.start(t); s.stop(t + 1.85);
+        for (let i = 0; i < 16; i++) {          /* 박수 — 짧은 잡음을 불규칙한 간격으로 */
+          const a = t + .08 + Math.random() * 1.2;
+          const p = c.createBufferSource(), pf = c.createBiquadFilter(), pg = c.createGain();
+          p.buffer = this.noise(.05);
+          pf.type = 'bandpass'; pf.frequency.value = 1600 + Math.random() * 1800; pf.Q.value = 1.2;
+          pg.gain.setValueAtTime(vol * (.18 + Math.random() * .22), a);
+          pg.gain.exponentialRampToValueAtTime(0.0001, a + .05);
+          p.connect(pf); pf.connect(pg); pg.connect(this.bus()); p.start(a); p.stop(a + .06);
+        }
+      } catch (e) { /* 오디오 미지원 */ }
+    },
+    /* 당첨! — 폭죽 두 발과 환호를 한꺼번에 */
+    fanfare() { this.chime('pop'); this.firework(0, .4); this.firework(.28, .3); this.cheer(.34); },
   };
 
   /* ---------- 유틸 ---------- */
