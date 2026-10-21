@@ -1547,14 +1547,14 @@ function renderStage(){
   b.className = 'card stage single'; b.style.gridTemplateColumns = ''; b.style.removeProperty('--tw');
   document.body.classList.remove('matmode');
   if (!s) {
-    cur.key = null; cur.mat = null; cur.view = { type:'none' };
+    cur.key = null; cur.mat = null; cur.view = { type:'none' }; linkFor = null; closeLink();
     b.innerHTML = `<div class="big-emoji">📋</div><div class="done">아직 발표 순서가 없어요</div>
       <p class="vs">① 순서 정하기에서 레이스로 순서를 뽑거나, 명단 순서대로 바로 시작하세요.${c.sessions.length ? '<br>지난 발표를 이어서 하려면 ③ 기록 보기에서 회차를 고르고 [▶ 이어서 발표]를 누르세요.' : ''}</p>
       <button type="button" class="btn primary" id="goOrder">① 순서 정하러 가기</button>`;
     $('#goOrder').onclick = () => show('order'); syncPip(); paintTV(); return;
   }
   if (s.cur >= s.order.length) {
-    cur.key = null; selectMat(null);
+    cur.key = null; selectMat(null); linkFor = null; closeLink();
     const doneN = s.order.filter(r => r.j).length;
     b.innerHTML = `<div class="big-emoji">🎉</div><div class="done">모든 발표가 끝났어요!</div>
       <p class="vs">${esc(s.title)} · ${doneN} / ${s.order.length}명 발표 완료</p>
@@ -1663,8 +1663,15 @@ function endTalk(){
     let note = '';
     if (!text) note = mode === 'off' ? '(음성 기록 끔)' : !SR ? '(음성 인식 미지원 브라우저)' : lastErr ? '(인식 실패: ' + errMsg(lastErr) + ')' : '';
     Object.assign(s.order[s.cur], { sec: Math.round(sec * 10) / 10, j: judge(sec, s), text, note, at: new Date().toISOString() });
-    finalTxt = ''; interim = ''; s.cur++; save(); renderCls(); renderStage(); arrive();
+    finalTxt = ''; interim = ''; s.cur = nextTurn(s); save(); renderCls(); renderStage(); arrive();
   }, 900);
+}
+// 마침 뒤 다음 차례: 순서표에서 다른 학생으로 건너왔으면 원래 차례로, 아니면 아직 발표 안 한 다음 학생
+function nextTurn(s){
+  const b = jumpBack; jumpBack = null;
+  if (b != null && b !== s.cur && b < s.order.length && !s.order[b].j) return b;
+  let i = s.cur + 1; while (i < s.order.length && s.order[i].j) i++;
+  return i;
 }
 function errMsg(e){
   return ({ 'not-allowed':'마이크 권한이 차단됨', 'service-not-allowed':'이 화면에서는 음성 인식이 막혀 있음 — 파일을 Chrome으로 직접 열어 주세요',
@@ -1976,7 +1983,7 @@ async function clearFiles(){ const d = await openDB(); return new Promise(ok => 
 const sessionFiles = s => Promise.all(s.order.map(r => listFiles(fkey(r.sid, s)).catch(() => [])));
 const ico = n => /\.pptx?$/i.test(n) ? '📊' : /\.(hwpx?)$/i.test(n) ? '📝' : /\.pdf$/i.test(n) ? '📕' : /\.(png|jpe?g|gif|webp)$/i.test(n) ? '🖼' : '📄';
 function openFile(f){
-  if (f.url) { const w = window.open(f.url, 'speechLink', tv && !tv.closed && tvFeat ? tvFeat : ''); if (w) w.focus(); return; }
+  if (f.url) { openLink(f.url); return; }
   const url = URL.createObjectURL(f.blob);
   if (/\.(pdf|png|jpe?g|gif|webp)$/i.test(f.name)) window.open(url, '_blank');
   else { const a = document.createElement('a'); a.href = url; a.download = f.name; document.body.appendChild(a); a.click(); a.remove(); }
@@ -1986,7 +1993,7 @@ function askLink(){
   return modal({ title:'링크 자료 추가', icon:'🔗',
     body:`<label class="fld"><span>자료 주소</span><input type="url" id="lkU" placeholder="https://docs.google.com/presentation/…"></label>
       <label class="fld"><span>이름 (비워 두면 주소로 표시)</span><input type="text" id="lkN" maxlength="40" placeholder="예: 모둠 발표 슬라이드"></label>
-      <p class="hint">구글 슬라이드·유튜브는 발표 화면과 TV에 바로 띄우고, 다른 링크(캔바·패들렛 등)는 새 창으로 열어요.</p>`,
+      <p class="hint">구글 슬라이드·유튜브는 발표 화면과 TV에 바로 띄우고, 다른 링크(캔바·패들렛 등)는 TV 화면이 켜져 있으면 그 학생 차례에 TV 쪽 새 창으로 자동으로 열려요.</p>`,
     actions:[{ label:'취소', value:null }, { label:'추가', kind:'primary', run: m => {
       let u = m.q('#lkU').value.trim();
       if (!u) { m.err('주소를 넣어 주세요.'); return false; }
@@ -2033,8 +2040,13 @@ async function renderMats(box, key, onStage){
   if (onStage) {
     if (cur.key !== key || !cur.mat || !fs.some(x => x.id === cur.mat.id)) { cur.key = key; selectMat(fs.find(viewable) || null); }
     else { paintPreview(); markChips(); }
+    // 학생이 바뀌면 앞 학생의 링크 창을 닫고, 화면에 바로 못 띄우는 링크(캔바·패들렛 등)만 있으면 TV 쪽 새 창으로 자동으로 열기
+    if (linkFor !== key) { linkFor = key; closeLink(); const lk = !fs.some(viewable) && fs.find(x => x.url); if (lk && tv && !tv.closed) openLink(lk.url); }
   }
 }
+let linkWin = null, linkFor = null;
+function openLink(u){ const w = window.open(u, 'speechLink', tv && !tv.closed && tvFeat ? tvFeat : ''); if (w) { linkWin = w; w.focus(); } return w; }
+function closeLink(){ if (linkWin && !linkWin.closed) linkWin.close(); linkWin = null; }
 
 /* ---------- 발표 자료 보기 + TV 화면 ---------- */
 let tvFeat = '', tv = null, cur = { key:null, mat:null, pdf:null, page:1, pages:1, view:{ type:'none' }, msg:'' }, selSeq = 0, drawSeq = 0;
@@ -2083,7 +2095,7 @@ function paintPreview(){
   else pv.innerHTML = `<div class="lk">🔗 ${esc(cur.mat.name)}<br><span class="hint">${tv && !tv.closed ? 'TV 화면에 링크를 띄웠어요. TV에 안 보이면' : '링크를 열려면'} </span><button type="button" class="btn sm" id="pvOpen">📺 ${tv && !tv.closed ? 'TV에 새 창으로 띄우기' : '새 창으로 열기'}</button></div>`;
   { const im = pv.querySelector('img'); if (im) { if (im.complete) requestAnimationFrame(layoutMat); else im.onload = layoutMat; } else layoutMat(); }
   if ($('#pgP')) { $('#pgP').onclick = () => page(-1); $('#pgN').onclick = () => page(1); $('#pgP').disabled = cur.page <= 1; $('#pgN').disabled = cur.page >= cur.pages; }
-  if ($('#pvOpen')) $('#pvOpen').onclick = () => { const w = window.open(cur.mat.url, 'speechLink', tv && !tv.closed && tvFeat ? tvFeat : ''); if (w) w.focus(); };
+  if ($('#pvOpen')) $('#pvOpen').onclick = () => openLink(cur.mat.url);
 }
 function layoutMat(){
   const sb = $('#stageBox'), pv = $('#pv'); if (!sb) return;
@@ -2169,8 +2181,8 @@ function openBulk(T){
       <b>파일 이름에 주제가 있으면 발표 주제가 자동으로 채워지니, 주제를 따로 입력하지 않아도 돼요.</b> (이미 적어 둔 주제는 바꾸지 않아요)</p>
       ${pool ? '<p class="note-box">📦 여기 등록한 자료와 주제는 이 반에서 <b>다음에 [발표 시작]을 누를 때 그 회차로 자동으로 옮겨 가요.</b> 레이스로 순서를 정해도 그대로 따라가요.</p>' : ''}
       <div class="fnote"><ul>
-        <li><span class="tg t1">PDF · 이미지</span> 발표 화면에서 <b>타이머 옆에 크게</b> 보이고, TV 화면에도 함께 나와요. 페이지는 ◀ ▶ 버튼이나 방향키로 넘겨요.</li>
-        <li><span class="tg t2">PPT · 한글 · 링크</span> 누르면 프로그램이나 새 창으로 열려요. TV에서 조작할 때는 마우스 커서를 TV 화면으로 옮겨 주세요.</li>
+        <li><span class="tg t1">PDF · 이미지</span> 발표 화면에서 <b>타이머 옆에 크게</b> 보이고, TV 화면에도 함께 나와요. 페이지는 ◀ ▶ 버튼이나 방향키로 넘겨요. 구글 슬라이드·유튜브 링크도 마찬가지예요. <b>[마침]을 누르면 다음 학생 자료가 저절로 열려요.</b></li>
+        <li><span class="tg t2">PPT · 한글 · 링크</span> 캔바·패들렛 같은 링크는 TV 화면이 켜져 있으면 그 학생 차례에 저절로 열리고, 차례가 끝나면 닫혀요. PPT·한글 파일은 웹에서 바로 띄울 수 없어 눌러서 프로그램으로 열어야 해요.</li>
         <li>PPT도 타이머 옆에서 보고 싶다면 <b>PDF로 저장해서</b> 올려 주세요. (파워포인트 → 다른 이름으로 저장 → PDF)</li>
       </ul></div>
       <div class="bdrop" id="bulkDrop">📂 학생 자료 파일이나 폴더를 여기에 통째로 끌어다 놓으세요<br>
