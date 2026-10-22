@@ -88,7 +88,7 @@
 <main class="wrap">
   <span class="kicker">PRIVACY</span>
   <h1>개인정보 <span class="mk">처리방침</span></h1>
-  <p class="meta">시행일 2026년 10월 16일 · 대상: 쌤패스 브라우저 확장(엣지 확장 스토어판과 직접 배포판)</p>
+  <p class="meta">시행일 2026년 10월 16일 · 대상: 쌤패스 브라우저 확장(엣지 확장 스토어판·크롬 웹 스토어판과 직접 배포판)</p>
   <p class="sum">쌤패스는 선생님의 정보를 어디로도 보내지 않아요. 모든 정보는 선생님 PC의 브라우저 안에만 있고, 만든 사람도 볼 수 없어요.</p>
 
   <section>
@@ -97,7 +97,7 @@
     <table>
       <tr><th>인증서 비밀번호</th><td>선생님이 정한 PIN으로 암호화(PBKDF2-SHA256 60만 회 → AES-256-GCM)해서 브라우저 확장 저장소(<code>chrome.storage.local</code>)에만 둬요. PIN 자체는 저장하지 않아요.</td></tr>
       <tr><th>잠금을 푼 동안의 비밀번호</th><td>브라우저 메모리(<code>chrome.storage.session</code>)에만 있고, 잠기거나 브라우저를 닫으면 지워져요. 확장 화면만 읽을 수 있어요.</td></tr>
-      <tr><th>설정</th><td>잠금 시간, 업무포털 주소, 루틴, 복무 신청 버튼(종류·시각·사유·결재선 이름), 단축키, 화면 테마, 인증서가 여러 개일 때 고른 인증서 이름. 모두 같은 확장 저장소에만 둬요.</td></tr>
+      <tr><th>설정</th><td>잠금 시간, 업무포털 주소, 복무 신청 루틴 버튼(종류·시각·사유·출장지·결재선 이름), 단축키, 화면 테마, 인증서가 여러 개일 때 고른 인증서 이름. 모두 같은 확장 저장소에만 둬요.</td></tr>
       <tr><th>엑셀 열 배치 기억</th><td>과세특 엑셀의 머리글 줄을 줄여 만든 값(해시)과 열 역할만 기억해요. 학생 이름이나 내용은 저장하지 않아요.</td></tr>
       <tr><th>과세특 엑셀 내용(학생 정보)</th><td>선생님이 고른 파일을 브라우저 안에서만 읽고, 그 화면이 열려 있는 동안 메모리에만 있어요. 저장하지 않고 어디로도 보내지 않아요. 나이스 화면의 칸에 옮겨 적기만 해요.</td></tr>
     </table>
@@ -109,7 +109,7 @@
     <ul>
       <li>쌤패스는 서버가 없어요. 분석 도구, 광고, 사용 통계를 쓰지 않아요.</li>
       <li>비밀번호, 설정, 학생 정보를 만든 사람이나 다른 누구에게도 보내지 않고, 팔거나 넘기지 않아요.</li>
-      <li><b>엣지 확장 스토어판</b>은 바깥으로 나가는 요청이 하나도 없어요(확장 화면의 보안 정책 <code>connect-src 'self'</code>). 업데이트는 엣지 스토어가 맡아요.</li>
+      <li><b>스토어판</b>(엣지 확장 스토어·크롬 웹 스토어)은 바깥으로 나가는 요청이 하나도 없어요(확장 화면의 보안 정책 <code>connect-src 'self'</code>). 업데이트는 각 스토어가 맡아요.</li>
       <li><b>직접 배포판</b>은 새 버전이 있는지 보려고 소개 페이지의 버전 파일(<code>hirame-ki.github.io/pass/update/latest.json</code>) 하나만 읽어요. 이때 쌤패스는 아무 정보도 보내지 않아요.</li>
     </ul>
   </section>
@@ -139,7 +139,7 @@
 
   <section lang="en">
     <h2>Summary in English</h2>
-    <p>SsamPass is a browser extension that helps Korean teachers with repetitive tasks on the school work portal (<code>*.eduptl.kr</code>) and NEIS (<code>*.neis.go.kr</code>). It has no server and sends no data anywhere: no analytics, no ads, no tracking. The certificate password is encrypted with the user's PIN (PBKDF2-SHA256, 600,000 iterations, AES-256-GCM) and kept only in <code>chrome.storage.local</code>; the PIN is never stored. Settings stay in the same local storage. Student data from Excel files is read in the browser only, kept in memory while the page is open, and never stored or transmitted. The Edge Add-ons version makes no network requests (<code>connect-src 'self'</code>). Removing the extension deletes all of its data. Contact: <a href="https://www.instagram.com/hirame.ki/">@hirame.ki</a> on Instagram.</p>
+    <p>SsamPass is a browser extension that helps Korean teachers with repetitive tasks on the school work portal (<code>*.eduptl.kr</code>) and NEIS (<code>*.neis.go.kr</code>). It has no server and sends no data anywhere: no analytics, no ads, no tracking. The certificate password is encrypted with the user's PIN (PBKDF2-SHA256, 600,000 iterations, AES-256-GCM) and kept only in <code>chrome.storage.local</code>; the PIN is never stored. Settings stay in the same local storage. Student data from Excel files is read in the browser only, kept in memory while the page is open, and never stored or transmitted. The Edge Add-ons and Chrome Web Store versions make no network requests (<code>connect-src 'self'</code>). Removing the extension deletes all of its data. Contact: <a href="https://www.instagram.com/hirame.ki/">@hirame.ki</a> on Instagram.</p>
   </section>
 </main>
 

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>쌤패스 설치 가이드 — 사진으로 따라 하기</title>
-<meta name="description" content="쌤패스 설치 파일 실행부터 엣지·크롬 확장 등록, 안랩 V3·Windows 경고창 대처까지 사진으로 따라 하는 설치 가이드.">
+<title>쌤패스 설치 가이드 — 엣지·크롬 스토어에서 1분</title>
+<meta name="description" content="엣지 확장 스토어·크롬 웹 스토어에서 쌤패스를 받고, 툴바에 고정하고, 비밀번호·PIN을 저장하는 설치 가이드. 업데이트는 자동이에요.">
 <meta name="theme-color" content="#f2f7fd">
 <link rel="canonical" href="https://hirame-ki.github.io/pass/install.html">
 <meta property="og:type" content="article">
@@ -12,7 +12,7 @@
 <meta property="og:locale" content="ko_KR">
 <meta property="og:url" content="https://hirame-ki.github.io/pass/install.html">
 <meta property="og:title" content="[자동] 쌤패스 설치 가이드 — 사진으로 5분이면 끝">
-<meta property="og:description" content="설치 파일 실행 → 확장 등록 → 처음 설정. 엣지·크롬 화면과 경고창 대처법까지 사진으로 안내해요.">
+<meta property="og:description" content="엣지·크롬 스토어에서 받기 → 툴바에 고정 → 처음 설정. 업데이트는 스토어가 자동으로 해요.">
 <meta property="og:image" content="https://hirame-ki.github.io/pass/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -104,6 +104,10 @@
   .figrow { display: grid; gap: 18px; justify-items: start; }
   .figrow figure { margin: 0; max-width: 100%; }
   .figrow img { width: auto; max-width: 100%; height: auto; display: block; }
+  [hidden] { display: none !important; }
+  /* 받기 버튼 아래 다른 스토어 링크: 스크립트가 지금 브라우저용 스토어 링크는 숨긴다 */
+  .dl-other { margin: 10px 0 0; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+  .dl-other a { color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; margin-left: 8px; }
   .callout { margin-top: 14px; padding: 14px 18px; border-radius: 16px; background: var(--accent-soft); color: var(--text-2); font-size: 15.5px; }
   .callout b { color: var(--text); }
   .callout.warn { background: var(--warn-soft); color: var(--warn); }
@@ -163,170 +167,83 @@
 
 <main class="wrap">
   <div class="hero">
-    <span class="eyebrow">설치 가이드 · 사진으로 따라 하기</span>
-    <h1><span class="mk">5분</span>이면 끝,<br>처음 한 번만</h1>
-    <p>설치 파일 실행 → 브라우저에 확장 등록 → 비밀번호·PIN 저장. 새 버전이 나오면 아이콘에 NEW로 알려 줘요.</p>
-    <div class="done" id="doneBox">✓ 쌤패스 <span id="doneVer"></span> 파일 설치가 끝났어요. 이제 <a href="#s3">3단계(확장 등록)</a>만 하면 돼요. 폴더 경로는 이미 복사돼 있어요.</div>
-    <div class="done" id="upgradeBox">✓ 쌤패스를 <span id="upVer"></span>으로 바꿨어요. 1분 안에 쌤패스가 스스로 새 버전으로 바뀌어요. 바로 바꾸려면 확장 관리 화면에서 쌤패스 카드의 새로고침(↻)을 누르세요.<br>0.14 이하에서 올라왔다면 처음 설정 화면이 나와요. 인증서 비밀번호와 PIN을 한 번만 다시 저장해 주세요.</div>
-    <div class="done upd" id="update"><b>새 버전으로 바꾸기</b> · 확장을 다시 등록할 필요 없어요.<br>① 새 설치 파일 받기 → ② 받은 파일 실행 → ③ 끝. 1분 안에 쌤패스가 스스로 새 버전으로 바뀌어요.<br><a class="btn" id="dl2" href="index.html#download" target="_blank" rel="noopener">구글 드라이브에서 받기</a></div>
+    <span class="eyebrow">설치 가이드 · 엣지 · 크롬</span>
+    <h1><span class="mk">1분</span>이면 끝,<br>업데이트는 자동</h1>
+    <p>스토어에서 받기 → 툴바에 고정 → 비밀번호·PIN 저장. 엣지는 엣지 확장 스토어, 크롬은 크롬 웹 스토어에서 받아요. 설치 파일도, 관리자 권한도 필요 없어요. 새 버전은 스토어가 알아서 설치해요.</p>
+    <div class="done upd" id="update"><b>이제 스토어에서 받아요</b><br>예전 설치 파일판은 더 이상 새 버전을 받지 않아요. 아래 <a href="#help-old">'예전에 설치 파일로 설치했어요'</a>를 보고 스토어판으로 옮겨 주세요. 그 뒤로는 업데이트가 자동이에요.</div>
     <nav class="toc">
-      <a href="#s1"><b>1</b>설치 파일 받기</a>
-      <a href="#s2"><b>2</b>실행 · 경고창</a>
-      <a href="#s3"><b>3</b>확장 등록</a>
-      <a href="#s4"><b>4</b>고정 · 처음 설정</a>
+      <a href="#s1"><b>1</b>스토어에서 받기</a>
+      <a href="#s2"><b>2</b>확장 추가</a>
+      <a href="#s3"><b>3</b>툴바에 고정</a>
+      <a href="#s4"><b>4</b>처음 설정</a>
       <a href="#help"><b>?</b>안 될 때</a>
     </nav>
   </div>
 
   <!-- 1 -->
   <section class="step" id="s1">
-    <h2><span class="n">1</span>설치 파일 받기</h2>
-    <p class="lead">아래 버튼을 누르면 구글 드라이브가 새 탭으로 열려요. <code>쌤패스-설치-버전.exe</code> 파일을 받아 주세요.</p>
-    <a class="btn" id="dl" href="index.html#download" target="_blank" rel="noopener">구글 드라이브에서 받기</a>
-    <div class="callout">드라이브 화면에서 파일을 누른 뒤 오른쪽 위 <b>다운로드(↓)</b> 버튼을 누르면 이름 그대로 받아져요. "바이러스 검사를 할 수 없다"는 안내가 나오면 <b>[무시하고 다운로드]</b>를 누르세요. 크기가 작은 설치 파일이라 나오는 일반 안내예요.</div>
-
-    <div class="warncard" id="dlwarn">
-      <div class="logo" style="background:#0c59a4;font-size:30px">↓</div>
-      <div>
-        <h3>브라우저가 "일반적으로 다운로드되지 않습니다"라고 할 때</h3>
-        <p style="margin:0;color:var(--text-2)">받기를 눌렀는데 파일이 바로 저장되지 않고 경고가 뜰 수 있어요. 이때 그냥 두면 다운로드 폴더에 <code>확인되지 않음 123456.crdownload</code>처럼 <b>이상한 이름</b>으로 남고, 실행되지 않아요.</p>
-        <ol>
-          <li><b>엣지</b>: 오른쪽 위 다운로드 창에서 파일 옆 <b>① …</b>(추가 작업) → <b>② [유지]</b></li>
-          <li>"신뢰할 수 있는지 확인합니다" 창이 뜨면 <b>검은 [삭제] 버튼은 누르지 말고</b>, 그 오른쪽의 <b>③ 작은 화살표(∨)</b>를 눌러요 → <b>④ [그래도 계속]</b></li>
-          <li><b>크롬</b>: 다운로드 창의 경고에서 <b>[계속]</b>(또는 [유지])을 누르면 돼요.</li>
-          <li>그러면 <code>쌤패스-설치-버전.exe</code> 이름으로 저장돼요. 이미 이상한 이름으로 남은 파일은 이름을 고치지 말고 지운 뒤 다시 받아 주세요.</li>
-        </ol>
-        <div class="figrow">
-          <figure><img src="img/guide-edge-dl-keep.webp" width="633" height="322" alt="엣지 다운로드 창: 파일 옆 추가 작업 버튼과 메뉴의 유지" loading="lazy"><figcaption>실제 화면 · ① … → ② <b>유지</b></figcaption></figure>
-          <figure><img src="img/guide-edge-dl-dialog.webp" width="448" height="662" alt="엣지 확인 창: 삭제 버튼 오른쪽의 작은 화살표와 그 아래 그래도 계속" loading="lazy"><figcaption>실제 화면 · ③ [삭제] 오른쪽 <b>작은 화살표</b> → ④ <b>그래도 계속</b></figcaption></figure>
-        </div>
-        <div class="callout safe"><b class="safe-q">안전한가요?</b>이 경고는 바이러스를 찾았다는 뜻이 아니에요. "게시자: 알 수 없음"은 유료 코드 서명 인증서를 쓰지 않은 개인 제작 파일이라 나오는 표시이고, "일반적으로 다운로드되지 않음"은 아직 받은 사람이 많지 않다는 뜻이에요. 쌤패스 설치 파일은 관리자 권한 없이 확장 파일을 내 사용자 폴더(<code>%LOCALAPPDATA%\NeisHelper</code>)에만 넣어요. [이 앱을 안전한 것으로 보고]는 누르지 않아도 돼요.<br><b>다만</b> 이 페이지의 [구글 드라이브에서 받기]로 연 공식 폴더에서 받은 파일일 때만 [그래도 계속]을 누르세요. 다른 곳에서 받았거나 출처가 헷갈리면 [삭제]하세요.</div>
-      </div>
-    </div>
+    <h2><span class="n">1</span>스토어에서 받기</h2>
+    <p class="lead">아래 버튼이 지금 쓰는 브라우저에 맞는 스토어를 열어요. 쌤패스 스토어 페이지에서 엣지는 <b>[받기]</b>, 크롬은 <b>[Chrome에 추가]</b>를 눌러요.</p>
+    <a class="btn" id="dl" href="https://microsoftedge.microsoft.com/addons/detail/eclbpfiiecmggoahlpmfcfnagipmakkp" target="_blank" rel="noopener">엣지 스토어에서 쌤패스 열기</a>
+    <p class="dl-other">다른 브라우저용 <a data-store="edge" href="https://microsoftedge.microsoft.com/addons/detail/eclbpfiiecmggoahlpmfcfnagipmakkp" target="_blank" rel="noopener">엣지 확장 스토어</a><a data-store="chrome" href="https://chromewebstore.google.com/detail/mcpjdlgepdbljmaipceeckkcmipnnenf" target="_blank" rel="noopener">크롬 웹 스토어</a></p>
+    <div class="callout">엣지는 <b>엣지 확장 스토어</b>, 크롬은 <b>크롬 웹 스토어</b>에서 받아요. 다른 브라우저의 스토어에서는 설치되지 않아요. 학교 PC와 집 PC 브라우저가 다르면 각각 받고, 비밀번호·PIN도 각각 저장해요.</div>
   </section>
 
   <!-- 2 -->
   <section class="step" id="s2">
-    <h2><span class="n">2</span>설치 파일 실행 · 경고창이 뜨면</h2>
-    <p class="lead">받은 파일을 두 번 클릭해요. 관리자 권한은 필요 없어요. 끝나면 이 페이지가 다시 열리고 폴더 경로가 복사돼요.</p>
-
-    <div class="warncard">
-      <div class="logo" style="background:#0063b1">Win</div>
-      <div>
-        <h3>"Windows의 PC 보호" 파란 창</h3>
-        <ol>
-          <li>처음에는 <b>[실행 안 함]</b> 버튼만 보여요. 누르지 말고, 창 안의 <b>① 추가 정보</b> 글자를 눌러요.</li>
-          <li>오른쪽 아래에 <b>② [실행]</b> 버튼이 생겨요. 옆의 [실행 안 함]이 아니라 왼쪽 <b>[실행]</b>을 눌러 주세요.</li>
-        </ol>
-        <div class="figrow">
-          <figure><img src="img/guide-smartscreen-1.webp" width="660" height="215" alt="Windows의 PC 보호 창: 안내 문구 아래 추가 정보 글자" loading="lazy"><figcaption>실제 화면 · ① <b>추가 정보</b> 누르기</figcaption></figure>
-          <figure><img src="img/guide-smartscreen-2.webp" width="657" height="612" alt="Windows의 PC 보호 창: 오른쪽 아래 실행 버튼과 실행 안 함 버튼" loading="lazy"><figcaption>실제 화면 · ② 왼쪽 <b>[실행]</b> (게시자가 "알 수 없는 게시자"로 나오는 건 서명하지 않은 개인 제작 파일이라서예요)</figcaption></figure>
-        </div>
-      </div>
-    </div>
-
-    <div class="warncard">
-      <div class="logo" style="background:#1a3d8f">V3</div>
-      <div>
-        <h3>안랩 V3 "프로그램 실행 알림" (주황색 창)</h3>
-        <p style="margin:0;color:var(--text-2)">설치 파일을 실행할 때 뜰 수 있어요. 기본 선택이 <b>[한 번만 차단]</b>이라 그대로 [확인]을 누르면 설치되지 않아요.</p>
-        <ol>
-          <li>"파일 처리 방법을 선택하십시오" 목록을 열고 <b>[한 번만 실행]</b>을 고른 뒤 <b>[확인]</b>.</li>
-          <li>설치가 끝나면 다시 뜨지 않아요. 쌤패스는 브라우저 안에서만 돌아가고, 따로 실행되는 프로그램이 없어요(0.15.0부터).</li>
-          <li>목록이 회색이라 고를 수 없으면 학교에서 V3를 한꺼번에 관리하는 경우예요. 정보(전산) 담당 선생님께 설치 파일 실행을 부탁하세요.</li>
-        </ol>
-        <figure><img src="img/guide-v3-1.webp" alt="V3 프로그램 실행 알림: 한 번만 실행 선택" loading="lazy" style="max-width:min(420px, 100%)"><figcaption>실제 화면 · ① 목록에서 <b>한 번만 실행</b> → [확인] (파일 이름은 설치 파일 이름으로 보여요)</figcaption></figure>
-        <div class="callout">왜 뜨나요? 회사 인증서로 서명하지 않은 개인 제작 설치 파일이라, V3가 처음 보는 파일로 판단해 조심스럽게 묻는 거예요. 반드시 이 페이지(공식 배포처)에서 받은 파일일 때만 실행하세요.</div>
-      </div>
-    </div>
+    <h2><span class="n">2</span>"확장 추가" 누르기</h2>
+    <p class="lead">[받기]·[Chrome에 추가]를 누르면 브라우저가 쌤패스를 추가할지 묻는 작은 창을 띄워요. <b>[확장 추가]</b>를 누르면 설치가 끝나요.</p>
+    <div class="callout ok">창에 <b>업무포털(eduptl.kr)·나이스(neis.go.kr) 사이트의 데이터를 읽고 변경</b>한다는 비슷한 문구가 보여요. 쌤패스가 이 두 사이트에서 버튼을 누르고 칸을 채우기 때문이에요. 다른 사이트에는 권한이 없고, PC의 파일(인증서 파일 포함)을 읽는 권한도 없어요. 설치한 뒤 쌤패스 설정 › <b>안전 확인</b>에서 직접 확인할 수 있어요.</div>
   </section>
 
   <!-- 3 -->
   <section class="step" id="s3">
-    <h2><span class="n">3</span>브라우저에 확장 등록 <small style="font-size:14px;color:var(--muted);font-weight:600">처음 한 번만</small></h2>
-    <p class="lead">쓰는 브라우저를 골라 주세요. 두 브라우저 모두 쓰면 각각 한 번씩 해요.</p>
-    <div class="tabs" role="tablist">
-      <button role="tab" aria-selected="true" data-b="edge">엣지</button>
-      <button role="tab" aria-selected="false" data-b="chrome">크롬</button>
-    </div>
-
-    <div class="bpanel on" id="b-edge">
-      <div class="sub">
-        <h3><span class="k">3-1</span>확장 관리 화면 열기</h3>
-        <p>주소창에 <code>edge://extensions</code> 를 붙여 넣고 <kbd>Enter</kbd></p>
+    <h2><span class="n">3</span>툴바에 고정</h2>
+    <p class="lead" id="pinEdgeText">주소창 오른쪽, 즐겨찾기(☆) 바로 왼쪽의 <b>확장 아이콘</b>을 눌러요. 목록에서 쌤패스 줄 오른쪽의 <b>핀(압정) 아이콘</b>을 누르면 툴바에 쌤패스 아이콘이 늘 보여요.</p>
+    <p class="lead" id="pinChromeText" hidden>주소창 오른쪽의 <b>퍼즐 모양</b>(확장 프로그램) 아이콘을 눌러요. 목록에서 쌤패스 줄 오른쪽의 <b>핀(압정) 아이콘</b>을 누르면 툴바에 쌤패스 아이콘이 늘 보여요.</p>
+    <figure id="pinChrome" hidden style="margin:14px 0 0"><img src="img/guide-chrome-pin-steps.webp" alt="① 퍼즐 모양 아이콘 → ② 쌤패스 줄의 핀 아이콘 → ③ 툴바에 생긴 쌤패스 아이콘" style="width:100%;max-width:520px;border-radius:10px"></figure>
+    <div class="puzzle" id="pinEdge">
+      <div>
+        <img src="img/guide-edge-toolbar.webp" alt="엣지 툴바: 즐겨찾기 별 왼쪽의 확장 아이콘" style="width:100%;border-radius:10px">
+        <b>확장 아이콘</b><span>즐겨찾기(☆) 아이콘 바로 왼쪽, 꽃잎처럼 둥근 조각 모양 ①</span>
       </div>
-      <div class="sub">
-        <h3><span class="k">3-2</span>왼쪽 아래 '개발자 모드' 켜기</h3>
-        <p>화면 <b>왼쪽 메뉴의 맨 아래</b>에 있는 <b>개발자 모드</b> 스위치를 켜요.</p>
-        <figure id="fig-edge-ext"><img src="img/guide-edge-ext.webp" alt="엣지 확장 관리 화면: 왼쪽 아래 개발자 모드 스위치와 위쪽의 압축 풀린 항목 로드 버튼" loading="lazy" onerror="this.closest('figure').remove()"><figcaption>① 개발자 모드 → ② 위쪽에 생기는 첫 번째 버튼</figcaption></figure>
+      <div>
+        <img src="img/guide-edge-pin.webp" alt="확장 목록: 쌤패스 줄 오른쪽의 핀 아이콘" style="width:100%;border-radius:10px">
+        <b>쌤패스 옆 핀 아이콘</b><span>눌러서 툴바에 고정 ② — 고정되면 핀에 빗금이 생겨요(다시 누르면 고정 풀기)</span>
       </div>
-      <div class="sub">
-        <h3><span class="k">3-3</span>위쪽에 생긴 '압축 풀린 … 로드' 버튼 누르기</h3>
-        <p>개발자 모드를 켜면 <b>오른쪽 위</b>에 버튼 세 개가 생겨요. 그중 <b>첫 번째 버튼(압축 풀린 … 로드)</b>을 눌러요.</p>
+      <div>
+        <img src="img/guide-edge-pinned.webp" alt="툴바에 고정된 쌤패스 아이콘" style="width:100%;border-radius:10px">
+        <b>툴바에 쌤패스 아이콘</b><span>③ 누르면 쌤패스 팝업이 열려요</span>
       </div>
-    </div>
-
-    <div class="bpanel" id="b-chrome">
-      <div class="sub">
-        <h3><span class="k">3-1</span>확장 관리 화면 열기</h3>
-        <p>주소창에 <code>chrome://extensions</code> 를 붙여 넣고 <kbd>Enter</kbd></p>
-      </div>
-      <div class="sub">
-        <h3><span class="k">3-2</span>오른쪽 위 '개발자 모드' 켜기 → 3-3 '압축해제된 확장 프로그램 로드'</h3>
-        <p>① 화면 <b>오른쪽 위</b>의 <b>개발자 모드</b> 스위치를 켜면 ② <b>왼쪽 위</b>에 <b>[압축해제된 확장 프로그램 로드]</b> 버튼이 생겨요. 이 버튼을 눌러요.</p>
-        <figure><img src="img/guide-chrome-ext.webp" alt="크롬 확장 프로그램 화면: 오른쪽 위 개발자 모드와 왼쪽 위 압축해제된 확장 프로그램 로드 버튼" loading="lazy"><figcaption>크롬 실제 화면 · ① 개발자 모드 ② 압축해제된 확장 프로그램 로드</figcaption></figure>
-      </div>
-    </div>
-
-    <div class="sub">
-      <h3><span class="k">3-4</span>폴더 고르는 창: 이 폴더로 들어가서 [폴더 선택]</h3>
-      <p>"폴더를 선택하세요" 창이 열리면 <b>위쪽 주소칸</b>을 한 번 누르고 아래 경로를 붙여 넣은 뒤 <kbd>Enter</kbd> 를 눌러요. (설치 직후라면 경로가 이미 복사돼 있어 <kbd>Ctrl</kbd>+<kbd>V</kbd>만 하면 돼요.)</p>
-      <div class="pathbox"><span class="path" id="extPath">%LOCALAPPDATA%\NeisHelper\app\extension</span><button class="btn soft" id="copyPath" type="button">경로 복사</button></div>
-      <figure><img src="img/guide-folder.webp" alt="폴더 선택 창: 위쪽 주소칸에 경로, 안에 icons와 img 폴더, 오른쪽 아래 폴더 선택 버튼" loading="lazy"><figcaption>실제 화면 · ① 주소칸이 이 경로인지 ② 안에 <b>icons</b>·<b>img</b> 폴더가 보이는지 확인 ③ <b>[폴더 선택]</b></figcaption></figure>
-      <div class="callout ok"><b>안에 icons·img 폴더가 보이면 제대로 들어온 거예요.</b> 그 폴더들을 누르지 말고, 아래 '폴더:' 칸도 비워 둔 채 바로 <b>[폴더 선택]</b>을 누르세요. 확장 목록에 <b>쌤패스</b> 카드가 생기면 성공!</div>
-      <div class="callout warn"><b>"매니페스트 파일이 없습니다" 오류가 나면</b> 한 단계 위(app)나 아래(icons) 폴더를 고른 거예요. 주소칸 끝이 <code>…\NeisHelper\app\extension</code>인지 다시 확인하세요.</div>
     </div>
   </section>
 
   <!-- 4 -->
   <section class="step" id="s4">
-    <h2><span class="n">4</span>툴바에 고정하고 처음 설정</h2>
-    <p class="lead">주소창 오른쪽의 <b>확장 아이콘</b>을 누르면 설치된 확장 목록이 나와요. 쌤패스 옆의 <b>핀 아이콘</b>을 누르면 툴바에 늘 보여요. 확장 아이콘은 브라우저마다 모양이 달라요.</p>
-    <div class="puzzle">
-      <div>
-        <img src="img/guide-edge-toolbar.webp" alt="엣지 툴바: 즐겨찾기 별 왼쪽의 확장 아이콘" style="width:100%;border-radius:10px">
-        <b>엣지</b><span>즐겨찾기(☆) 아이콘 바로 왼쪽, 꽃잎처럼 둥근 조각 모양 ①</span>
-      </div>
-      <div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M9 4.5a2 2 0 0 1 4 0V6h3a1 1 0 0 1 1 1v3h1.5a2 2 0 0 1 0 4H17v3a1 1 0 0 1-1 1h-3v-1.5a2 2 0 0 0-4 0V18H6a1 1 0 0 1-1-1v-3h1.5a2 2 0 0 0 0-4H5V7a1 1 0 0 1 1-1h3z"/></svg>
-        <b>크롬</b><span>주소창 오른쪽 끝 근처의 퍼즐 조각</span>
-      </div>
-      <div>
-        <img src="icon.png" alt="" style="width:44px;height:44px;margin:0 auto">
-        <b>고정하면 이 아이콘</b><span>누르면 쌤패스 실행 화면</span>
-      </div>
-    </div>
-    <figure id="fig-puzzle"><img src="img/guide-puzzle.webp" alt="브라우저 툴바의 확장 아이콘과 쌤패스 고정 핀" loading="lazy" onerror="this.closest('figure').remove()"><figcaption>실제 화면 · 확장 아이콘 → 쌤패스 옆 핀</figcaption></figure>
+    <h2><span class="n">4</span>비밀번호 · PIN 저장</h2>
     <div class="sub">
-      <h3><span class="k">4-2</span>비밀번호 · PIN 저장</h3>
       <ol>
         <li>쌤패스 아이콘 → 오른쪽 위 <b>[설정]</b> → <b>비밀번호·잠금</b></li>
-        <li>인증서 비밀번호를 두 번, PIN(숫자 6~12자리)을 두 번 넣고 [저장]</li>
+        <li>인증서 비밀번호를 두 번, PIN(숫자 6~12자리)을 두 번 넣고 [저장]. <b>PIN은 길게</b> 정할수록 안전해요.</li>
         <li>툴바 아이콘에서 PIN으로 잠금을 풀면 준비 끝!</li>
       </ol>
       <div class="callout">경기도가 아니면 설정 › <b>로그인</b>에서 업무포털 주소(<code>○○.eduptl.kr</code>)를 바꿔 주세요.</div>
+      <div class="callout">기능별 사용법은 <a href="https://www.notion.so/3fe7fde37cfc81599481c98c9b0c8977" target="_blank" rel="noopener">쌤패스 사용 설명서(노션)</a>에 사진과 함께 있어요. 쌤패스 설정 왼쪽 메뉴의 [사용 설명서]로도 열 수 있어요.</div>
     </div>
   </section>
 
   <!-- 안 될 때 -->
   <section class="step" id="help">
     <h2><span class="n">?</span>안 될 때</h2>
-    <div class="sub"><h3>받은 파일 이름이 "확인되지 않음 123456.crdownload"처럼 이상해요</h3><p>브라우저가 경고를 띄우고 저장을 멈춘 상태예요. 그 파일은 지우고 다시 받은 뒤, 다운로드 창에서 <b>…</b> → <b>[유지]</b> → 확인 창의 [삭제] 오른쪽 <b>작은 화살표(∨)</b> → <b>[그래도 계속]</b>을 누르세요. (<a href="#dlwarn">1단계 안내</a>)</p></div>
-    <div class="sub"><h3>새 버전을 설치했는데 그대로예요</h3><p>1분쯤 기다리거나, 확장 관리 화면에서 쌤패스 카드의 새로고침(↻)을 누르세요. 다른 폴더에서 불러온 쌤패스가 하나 더 있으면 먼저 [제거]하세요.</p></div>
-    <div class="sub"><h3>PIN 화면 대신 "처음 설정이 필요합니다"가 나와요</h3><p>0.15.0부터 비밀번호를 쌤패스 안에 보관해요. 0.14 이하에서 올라왔다면 인증서 비밀번호와 PIN을 한 번만 다시 저장해 주세요.</p></div>
-    <div class="sub"><h3>"개발자 모드 확장 사용 안 함" 안내가 떠요</h3><p>웹스토어 밖 프로그램이라 나오는 안내예요. <b>[닫기]</b>나 <b>×</b>를 누르면 돼요. (끄면 쌤패스가 꺼져요)</p></div>
-    <div class="sub"><h3>개발자 모드 스위치가 회색이라 켜지지 않아요</h3><p>학교에서 브라우저를 관리하는 PC일 수 있어요. 정보(전산) 담당 선생님께 문의해 주세요.</p></div>
-    <div class="sub"><h3>지우고 싶어요</h3><p><kbd>Win</kbd>+<kbd>R</kbd> → <code>%LOCALAPPDATA%\NeisHelper\NeisHelperSetup.exe /uninstall</code> → <kbd>Enter</kbd>, 그다음 확장 관리 화면에서 쌤패스 [제거]. 저장한 비밀번호도 함께 지워져요.</p></div>
+    <div class="sub"><h3>스토어 페이지에 [받기]가 없거나 다른 브라우저라고 나와요</h3><p>지금 브라우저와 다른 스토어를 연 거예요(크롬에서 엣지 스토어, 또는 그 반대). 1단계 버튼 아래 작은 링크에서 지금 브라우저에 맞는 스토어를 골라 주세요.</p></div>
+    <div class="sub"><h3>[받기]가 회색이거나 "관리자가 차단함"이 떠요</h3><p>학교에서 브라우저 확장 설치를 관리하는 PC일 수 있어요. 정보(전산) 담당 선생님께 문의해 주세요.</p></div>
+    <div class="sub"><h3>새 버전이 나왔다는데 그대로예요</h3><p>엣지가 몇 시간마다 스스로 확인해서 바꿔요. 바로 받고 싶으면 주소창에 <code>edge://extensions</code>(크롬은 <code>chrome://extensions</code>) → 개발자 모드를 켜고 위쪽의 <b>[업데이트]</b>를 누르세요. 새 버전은 스토어 심사를 거친 뒤에 나와서, 업데이트 기록에 올라온 뒤 며칠 걸릴 수 있어요.</p></div>
+    <div class="sub" id="help-old"><h3>예전에 설치 파일로 설치했어요</h3><ol>
+      <li><kbd>Win</kbd>+<kbd>R</kbd> → <code>%LOCALAPPDATA%\NeisHelper\NeisHelperSetup.exe /uninstall</code> → <kbd>Enter</kbd></li>
+      <li><code>edge://extensions</code>에서 예전 쌤패스 [제거]</li>
+      <li>위 1단계부터 스토어판을 설치하고, 인증서 비밀번호와 PIN을 다시 저장해요. (스토어판은 다른 확장이라 예전 설정을 가져오지 못해요)</li>
+    </ol></div>
+    <div class="sub"><h3>지우고 싶어요</h3><p>툴바의 쌤패스 아이콘을 마우스 오른쪽 버튼으로 눌러 <b>[Microsoft Edge에서 제거]</b>(크롬은 <b>[Chrome에서 삭제]</b>). 저장한 비밀번호와 설정도 함께 지워져요.</p></div>
   </section>
 </main>
 
@@ -334,38 +251,25 @@
 
 <script>
 (function () {
-  // 설치 프로그램이 #v=…&mode=…&path=… 로 연다 (# 뒤라서 서버로 가지 않음)
-  var h = new URLSearchParams(location.hash.slice(1));
-  if (h.get('path')) document.getElementById('extPath').textContent = h.get('path');
-  if (h.get('mode') === 'new') { document.getElementById('doneBox').classList.add('on'); document.getElementById('doneVer').textContent = h.get('v') || ''; }
+  // 예전 설치 파일판의 [받기]는 install.html#update를 연다 → 스토어로 옮기는 안내
   if (location.hash === '#update') document.getElementById('update').classList.add('on');
-  if (h.get('mode') === 'upgrade') { document.getElementById('upgradeBox').classList.add('on'); document.getElementById('upVer').textContent = h.get('v') || ''; }
 
-  // 쓰는 브라우저 탭을 먼저
-  function pick(b) {
-    document.querySelectorAll('.tabs button').forEach(function (x) { x.setAttribute('aria-selected', String(x.dataset.b === b)); });
-    document.querySelectorAll('.bpanel').forEach(function (p) { p.classList.toggle('on', p.id === 'b-' + b); });
+  // 받기 버튼·툴바 고정: 엣지면 엣지 확장 스토어, 그 밖의 크로미움 브라우저(크롬·웨일 등)는 크롬 웹 스토어.
+  // HTML 기본은 엣지(스크립트가 안 돌거나 크로미움이 아니면 그대로). 작은 줄에는 다른 스토어만 남긴다
+  var ua = navigator.userAgent;
+  var store = /Edg\//.test(ua) ? 'edge' : (/Chrome\//.test(ua) ? 'chrome' : null);
+  if (store) {
+    document.querySelectorAll('.dl-other a').forEach(function (a) { a.hidden = a.dataset.store === store; });
   }
-  pick(/Edg\//.test(navigator.userAgent) ? 'edge' : /Chrome\//.test(navigator.userAgent) ? 'chrome' : 'edge');
-  document.querySelectorAll('.tabs button').forEach(function (b) { b.addEventListener('click', function () { pick(b.dataset.b); }); });
-
-  document.getElementById('copyPath').addEventListener('click', function () {
-    var btn = this, text = document.getElementById('extPath').textContent;
-    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(function () { btn.textContent = '복사했어요 ✓'; btn.classList.add('copied'); setTimeout(function () { btn.textContent = '경로 복사'; btn.classList.remove('copied'); }, 2400); }, function () {
-      var r = document.createRange(); r.selectNodeContents(document.getElementById('extPath'));
-      var s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Ctrl+C로 복사';
-    });
-  });
-
-  // 다운로드 링크 (releases.json)
-  fetch('releases.json', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (list) {
-    if (list[0] && list[0].setupUrl) { document.getElementById('dl').href = list[0].setupUrl; document.getElementById('dl2').href = list[0].setupUrl; }
-  }).catch(function () {});
-
-  // 구역 링크로 들어오면 그 위치로 (설치 직후엔 3단계)
+  if (store === 'chrome') {
+    var dl = document.getElementById('dl');
+    dl.href = 'https://chromewebstore.google.com/detail/mcpjdlgepdbljmaipceeckkcmipnnenf';
+    dl.textContent = '크롬 웹 스토어에서 쌤패스 열기';
+    ['pinEdgeText', 'pinEdge'].forEach(function (id) { document.getElementById(id).hidden = true; });
+    ['pinChromeText', 'pinChrome'].forEach(function (id) { document.getElementById(id).hidden = false; });
+  }
   window.addEventListener('load', function () {
-    var id = (h.get('mode') === 'new') ? 's3' : (location.hash.length > 1 && !h.get('mode') ? location.hash.slice(1) : '');
-    var el = id && document.getElementById(id);
+    var el = location.hash.length > 1 && document.getElementById(location.hash.slice(1));
     if (el) el.scrollIntoView({ behavior: 'auto' });
   });
 })();
