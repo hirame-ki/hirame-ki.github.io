@@ -1,0 +1,1252 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>쌤패스 사용법 영상</title>
+<meta name="description" content="쌤패스를 설치하고 처음 설정하는 것부터 복무 신청 루틴, 과세특 입력까지 실제 화면으로 따라 보는 사용법. 놓친 부분은 슬라이더와 목차로 다시 볼 수 있어요.">
+<meta name="theme-color" content="#f2f7fd">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="쌤패스">
+<meta property="og:title" content="쌤패스 사용법 영상 — 설치부터 복무 신청 루틴까지">
+<meta property="og:description" content="보안 설계, 설치, PIN 설정, 개인결재선, 복무 신청 루틴, 과세특 입력을 실제 화면으로 천천히.">
+<meta property="og:image" content="https://hirame-ki.github.io/pass/og.png">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="preload" href="fonts/NotoSansKR-Black.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem("ssampass-site-theme");if(/^(sky|beige|lime|mint|lavender|peach)$/.test(t))document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<style>
+  /* 쌤패스 사용법 영상 — 실제 확장 화면 캡처(img/tour/, tools/site-capture/tour-capture.mjs) 위에 마우스·강조·글자를 시간에 맞춰 움직인다.
+     영상 파일이 아니라 장면 스크립트라 어느 시점으로든 바로 옮겨 갈 수 있다(슬라이더·목차). 무대는 1280×720 좌표로 그리고 폭에 맞춰 줄인다. */
+  @font-face { font-family: "SsamDisplay"; src: url("fonts/NotoSansKR-Black.woff2") format("woff2"); font-weight: 900; font-display: swap; }
+  @font-face { font-family: "SsamLogo"; src: url("fonts/BlackHanSans-logo.woff2") format("woff2"); font-weight: 400; font-display: block; }
+  @font-face { font-family: "SsamMono"; src: url("fonts/IBMPlexMono-Medium-Latin1.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+  @font-face { font-family: "SsamMono"; src: url("fonts/IBMPlexMono-SemiBold-Latin1.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+
+  :root, [data-theme="sky"] { --t-bg: #f2f7fd; --t-sf: #ffffff; --t-ink: #0b2440; --t-mut: #55657a; --t-ln: #dce5f0; --t-pr: #8fcbff; --t-prs: #e0f0ff; --t-a1: #ffe58a; --t-a2: #ffcfb5; --t-a3: #cdefa0; --t-a4: #ded4ff; }
+  [data-theme="beige"] { --t-bg: #f4eee3; --t-sf: #fffcf6; --t-ink: #2b2417; --t-mut: #6e6452; --t-ln: #e5dbc9; --t-pr: #f3c45a; --t-prs: #faebc6; --t-a1: #cfe2bc; --t-a2: #f3c3a8; --t-a3: #c6dfe8; --t-a4: #eed4d9; }
+  [data-theme="lime"] { --t-bg: #f3f7ec; --t-sf: #ffffff; --t-ink: #15301a; --t-mut: #56664f; --t-ln: #dde6d2; --t-pr: #b4eb7e; --t-prs: #e5f6d4; --t-a1: #ffe98f; --t-a2: #b8e7df; --t-a3: #ffcfae; --t-a4: #ffd6ea; }
+  [data-theme="mint"] { --t-bg: #eef7f5; --t-sf: #ffffff; --t-ink: #0d3330; --t-mut: #4f6764; --t-ln: #d3e6e2; --t-pr: #84dfcb; --t-prs: #d7f3ec; --t-a1: #f3ef9c; --t-a2: #ffc8b8; --t-a3: #cfd8ff; --t-a4: #f0e1c6; }
+  [data-theme="lavender"] { --t-bg: #f5f2ff; --t-sf: #ffffff; --t-ink: #221848; --t-mut: #5f5880; --t-ln: #e2dcf5; --t-pr: #bfaeff; --t-prs: #eae4ff; --t-a1: #c4f0dc; --t-a2: #ffd4c1; --t-a3: #fff09e; --t-a4: #cce5ff; }
+  [data-theme="peach"] { --t-bg: #fff4ee; --t-sf: #ffffff; --t-ink: #3a1b10; --t-mut: #7a5d52; --t-ln: #f2ded3; --t-pr: #ffb591; --t-prs: #ffe6da; --t-a1: #d6ebc2; --t-a2: #cfe4f5; --t-a3: #ffe79a; --t-a4: #e5daff; }
+  :root, [data-theme] {
+    --bg: var(--t-bg); --surface: var(--t-sf); --line: var(--t-ln);
+    --text: var(--t-ink); --text-2: color-mix(in srgb, var(--t-ink) 78%, var(--t-sf)); --muted: var(--t-mut);
+    --accent: var(--t-pr); --accent-soft: var(--t-prs);
+    --ok: #1e6b32; --ok-soft: #d8f1c6; --warn: #7a4f00; --warn-soft: #fff0c2; --danger: #b4231b; --danger-soft: #fde6e3;
+    --ring: 0 0 0 1.5px var(--t-ink);
+    --ease: cubic-bezier(.2, .8, .2, 1); --pop: cubic-bezier(.3, 1.5, .5, 1);
+    --font: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --display: "SsamDisplay", var(--font);
+    --mono: "SsamMono", ui-monospace, Consolas, monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.7 var(--font); word-break: keep-all; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: var(--text); text-underline-offset: 3px; }
+  img { display: block; max-width: none; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+  .ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* ═══ 머리글 ═══ */
+  header.top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 92%, transparent); border-bottom: 1px solid var(--line); }
+  header.top .wrap { display: flex; align-items: center; gap: 8px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 400 23px/1 "SsamLogo", var(--display); color: var(--text); text-decoration: none; }
+  .brand img { width: 30px; height: 30px; }
+  header nav { margin-left: auto; display: flex; gap: 4px; align-items: center; }
+  header nav a { color: var(--text-2); text-decoration: none; font-size: 15px; font-weight: 700; padding: 8px 14px; border-radius: 999px; }
+  header nav a:hover { color: var(--text); background: var(--surface); }
+  header nav a.cta { background: var(--accent); color: var(--text); font-weight: 800; }
+  header nav a.cta:hover { box-shadow: var(--ring); }
+  @media (max-width: 560px) { header nav a.back { display: none; } }
+
+  .intro-head { padding: 28px 0 18px; }
+  .intro-head .kicker { font: 600 13px/1 var(--mono); letter-spacing: .08em; color: var(--muted); }
+  .intro-head h1 { font: 900 clamp(30px, 4.6vw, 46px)/1.15 var(--display); letter-spacing: -.045em; margin: 10px 0 8px; }
+  .intro-head h1 .mk { background: linear-gradient(transparent 60%, var(--accent) 60%); padding: 0 .06em; }
+  .intro-head p { margin: 0; color: var(--text-2); font-size: 16px; }
+
+  /* ═══ 플레이어 ═══ */
+  .player { background: var(--surface); border-radius: 24px; box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+  .player:fullscreen { border-radius: 0; display: flex; flex-direction: column; justify-content: center; background: var(--bg); }
+  .player:fullscreen .screen { max-height: calc(100vh - 210px); aspect-ratio: 16 / 9; margin: 0 auto; width: min(100%, calc((100vh - 210px) * 16 / 9)); }
+  .screen { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: var(--accent-soft); cursor: pointer; }
+  .stage { position: absolute; left: 0; top: 0; width: 1280px; height: 720px; transform-origin: 0 0; overflow: hidden; font-size: 18px; line-height: 1.5; }
+  .sc { position: absolute; inset: 0; display: none; }
+  .sc.on { display: block; }
+  .bigplay { position: absolute; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--t-ink) 18%, transparent); border: 0; padding: 0; cursor: pointer; transition: opacity .25s; z-index: 5; }
+  .bigplay span { width: 92px; height: 92px; border-radius: 50%; background: var(--surface); box-shadow: var(--ring), 0 12px 40px rgba(0,0,0,.18); display: grid; place-items: center; transition: transform .25s var(--pop); }
+  .bigplay:hover span { transform: scale(1.08); }
+  .bigplay svg { width: 38px; height: 38px; margin-left: 6px; fill: var(--text); }
+  .bigplay.hide { opacity: 0; pointer-events: none; }
+
+  /* 자막 */
+  .cap { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px 18px; align-items: start; padding: 18px 22px 6px; min-height: 112px; }
+  .cap .chno { font: 600 13px/1 var(--mono); color: var(--text); background: var(--accent); border-radius: 999px; padding: 8px 12px; letter-spacing: .04em; white-space: nowrap; margin-top: 2px; }
+  .cap h2 { font: 800 15px/1.4 var(--font); color: var(--muted); margin: 0 0 4px; }
+  .cap p { font-size: clamp(17px, 2.1vw, 21px); line-height: 1.55; font-weight: 700; margin: 0; color: var(--text); }
+  .cap p.swap { animation: capIn .45s var(--ease); }
+  @keyframes capIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 560px) { .cap { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px 16px 4px; } .cap .chno { justify-self: start; } }
+
+  /* 조작 막대 */
+  .ctrl { padding: 8px 16px 16px; }
+  .scrub { position: relative; height: 34px; }
+  .scrub .segs { position: absolute; left: 0; right: 0; top: 13px; height: 8px; display: flex; gap: 3px; }
+  .scrub .seg { position: relative; height: 100%; border-radius: 4px; background: var(--line); overflow: hidden; }
+  .scrub .seg i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--text); border-radius: 4px; }
+  .scrub input { position: absolute; inset: 0; width: 100%; margin: 0; background: transparent; -webkit-appearance: none; appearance: none; cursor: pointer; }
+  .scrub input::-webkit-slider-runnable-track { height: 34px; background: transparent; }
+  .scrub input::-moz-range-track { height: 34px; background: transparent; }
+  .scrub input::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; margin-top: 7px; border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 3px var(--text); }
+  .scrub input::-moz-range-thumb { width: 16px; height: 16px; border: 0; border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 3px var(--text); }
+  .scrub input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+  .scrub .tip { position: absolute; bottom: 30px; transform: translateX(-50%); background: var(--text); color: var(--surface); font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 8px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s; }
+  .scrub:hover .tip { opacity: 1; }
+  .btns { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .btns button, .btns select { height: 42px; min-width: 42px; padding: 0 12px; border-radius: 999px; border: 0; background: var(--bg); color: var(--text); font: 700 14px/1 var(--font); display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+  .btns button:hover, .btns select:hover { box-shadow: var(--ring); }
+  .btns button:focus-visible, .btns select:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+  .btns .play { background: var(--accent); width: 54px; }
+  .btns .play svg { width: 20px; height: 20px; fill: var(--text); }
+  .btns .time { font: 600 14px/1 var(--mono); color: var(--text-2); padding: 0 6px; white-space: nowrap; }
+  .btns .grow { flex: 1; }
+  .btns select { appearance: none; -webkit-appearance: none; padding: 0 14px; }
+  @media (max-width: 560px) { .btns .lbl { display: none; } }
+
+  /* 목차 */
+  .toc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 34px 0 12px; }
+  .toc-head h2 { font: 900 24px/1.2 var(--display); letter-spacing: -.03em; margin: 0; }
+  .toc-head span { color: var(--muted); font-size: 14px; font-weight: 600; }
+  .toc { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+  .toc button { width: 100%; text-align: left; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 18px; border: 0; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: inherit; color: var(--text); cursor: pointer; transition: transform .2s var(--ease), box-shadow .2s; }
+  .toc button:hover { transform: translateY(-2px); box-shadow: var(--ring); }
+  .toc button:focus-visible { outline: 3px solid var(--text); outline-offset: 2px; }
+  .toc .n { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 600 13px/1 var(--mono); background: var(--bg); }
+  .toc b { font-weight: 800; font-size: 16px; line-height: 1.35; display: block; }
+  .toc small { display: block; color: var(--muted); font-size: 13px; line-height: 1.4; margin-top: 2px; }
+  .toc .d { font: 500 12.5px/1 var(--mono); color: var(--muted); }
+  .toc .on button { box-shadow: inset 0 0 0 2px var(--text); background: var(--accent-soft); }
+  .toc .on .n { background: var(--accent); }
+  .toc .key button .n { background: var(--ok-soft); color: var(--ok); }
+  .toc .key.on button .n { background: var(--accent); color: var(--text); }
+
+  .notes { margin: 30px 0 60px; color: var(--muted); font-size: 14px; }
+  .notes kbd { font: 600 12px/1 var(--mono); padding: 4px 7px; border-radius: 6px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--text); }
+
+  /* ══════════ 무대 안 요소 (좌표는 1280×720) ══════════ */
+  .abs { position: absolute; }
+  .bgdots { position: absolute; inset: 0; background-image: radial-gradient(color-mix(in srgb, var(--t-ink) 10%, transparent) 1.2px, transparent 1.4px); background-size: 28px 28px; opacity: .5; }
+
+  /* 브라우저 창 */
+  .win { position: absolute; left: 40px; top: 22px; width: 1200px; height: 676px; border-radius: 16px; background: var(--surface); box-shadow: 0 0 0 1.5px var(--t-ink), 0 18px 50px rgba(11,36,64,.14); overflow: hidden; }
+  .win .tabs { height: 36px; background: color-mix(in srgb, var(--t-ln) 70%, var(--t-sf)); display: flex; align-items: flex-end; padding-left: 78px; position: relative; }
+  .win .tabs::before { content: ""; position: absolute; left: 18px; top: 13px; width: 11px; height: 11px; border-radius: 50%; background: #ff8a80; box-shadow: 18px 0 #ffd36b, 36px 0 #8bd77d; }
+  .win .tab { height: 30px; min-width: 230px; max-width: 280px; padding: 0 14px; border-radius: 10px 10px 0 0; background: var(--surface); display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; }
+  .win .tab img { width: 16px; height: 16px; }
+  .win .tab .fav { width: 16px; height: 16px; border-radius: 4px; background: #2f6fe4; }
+  .win .bar { position: relative; height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-bottom: 1px solid var(--line); }
+  .win .bar .nv { display: flex; gap: 12px; color: var(--muted); }
+  .win .bar .nv svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .win .url { position: absolute; left: 112px; width: 900px; top: 7px; height: 30px; border-radius: 999px; background: var(--bg); display: flex; align-items: center; padding: 0 16px; font-size: 13.5px; color: var(--text-2); font-family: var(--mono); gap: 8px; white-space: nowrap; overflow: hidden; }
+  .win .url svg { width: 14px; height: 14px; fill: none; stroke: var(--muted); stroke-width: 2.2; }
+  .win .tb { position: absolute; top: 6px; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; color: var(--text-2); }
+  .win .tb svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .win .tb img { width: 20px; height: 20px; }
+  .win .tb.star { left: 1050px; } .win .tb.puz { left: 1090px; } .win .tb.ssam { left: 1128px; } .win .tb.more { left: 1164px; }
+  .win .wb { position: absolute; left: 0; top: 80px; width: 1200px; height: 596px; overflow: hidden; background: var(--t-bg); }
+  .win .wb.white { background: #fff; }
+  .cam { position: absolute; left: 0; top: 0; width: 1200px; transform-origin: 0 0; }
+  .cam > img.scr { width: 1200px; height: auto; }
+  .tag-ex { position: absolute; right: 14px; bottom: 12px; z-index: 3; font-size: 12px; font-weight: 700; color: #6b7280; background: rgba(255,255,255,.92); border: 1px solid #e5e7eb; padding: 3px 10px; border-radius: 999px; }
+
+  /* 팝업 (툴바 쌤패스 아래) */
+  .pop { position: absolute; left: 928px; top: 104px; width: 300px; height: 584px; border-radius: 14px; overflow: hidden; background: var(--t-bg); box-shadow: 0 0 0 1.5px var(--t-ink), 0 22px 60px rgba(11,36,64,.25); transform-origin: 85% 0; }
+  .pop .pcam { position: absolute; left: 0; top: 0; width: 300px; }
+  .pop .pcam > img { width: 300px; height: auto; }
+
+  /* 마우스·누름·강조 */
+  #cursor { position: absolute; left: 0; top: 0; width: 30px; height: 30px; z-index: 50; pointer-events: none; filter: drop-shadow(0 3px 4px rgba(0,0,0,.28)); opacity: 0; }
+  #cursor svg { width: 30px; height: 30px; }
+  .rip { position: absolute; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; border: 3px solid var(--t-ink); background: color-mix(in srgb, var(--t-pr) 45%, transparent); opacity: 0; z-index: 49; pointer-events: none; }
+  .hl { position: absolute; border-radius: 12px; box-shadow: 0 0 0 3px var(--t-ink), 0 0 0 9px color-mix(in srgb, var(--t-pr) 70%, transparent); opacity: 0; pointer-events: none; z-index: 4; }
+  .hl.warm { box-shadow: 0 0 0 3px #b4231b, 0 0 0 9px rgba(255,180,160,.6); }
+  .bub { position: absolute; z-index: 6; background: var(--t-ink); color: #fff; font-weight: 800; font-size: 17px; padding: 9px 16px; border-radius: 12px; white-space: nowrap; opacity: 0; box-shadow: 0 8px 22px rgba(0,0,0,.18); }
+  .bub.ok { background: #1f7a4d; }
+  .bub.red { background: #b4231b; }
+  .tw { position: absolute; z-index: 3; display: flex; align-items: center; padding: 0 12px; background: #fff; border-radius: 8px; font-size: 15px; font-weight: 600; color: #0b2440; white-space: nowrap; overflow: hidden; }
+  .tw.dots { letter-spacing: .28em; font-size: 18px; }
+  .tw::after { content: ""; width: 2px; height: 1.2em; background: #0b2440; margin-left: 2px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* 큰 글자 장면 */
+  .title-big { position: absolute; left: 0; right: 0; text-align: center; font: 900 76px/1.1 var(--display); letter-spacing: -.05em; }
+  .title-mid { position: absolute; left: 0; right: 0; text-align: center; font: 900 54px/1.15 var(--display); letter-spacing: -.045em; }
+  .title-mid .mk, .title-big .mk { background: linear-gradient(transparent 60%, var(--accent) 60%); padding: 0 .06em; }
+  .sub { position: absolute; left: 0; right: 0; text-align: center; font-size: 24px; font-weight: 700; color: var(--text-2); }
+  .pill { position: absolute; display: inline-flex; align-items: center; gap: 10px; height: 54px; padding: 0 22px 0 14px; border-radius: 27px; background: var(--surface); box-shadow: var(--ring); font-weight: 800; font-size: 20px; white-space: nowrap; opacity: 0; }
+  .pill .ck { width: 30px; height: 30px; border-radius: 50%; background: var(--ok-soft); display: grid; place-items: center; }
+  .pill .ck svg { width: 16px; height: 16px; stroke: var(--ok); stroke-width: 3.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .kick { position: absolute; left: 0; right: 0; text-align: center; font: 600 16px/1 var(--mono); letter-spacing: .14em; color: var(--text-2); }
+
+  .card { position: absolute; background: var(--surface); border-radius: 22px; box-shadow: var(--ring); padding: 22px 24px; }
+  .card h4 { margin: 0 0 6px; font: 900 24px/1.25 var(--display); letter-spacing: -.03em; }
+  .card p { margin: 0; color: var(--text-2); font-size: 17px; font-weight: 600; line-height: 1.5; }
+  .node { position: absolute; width: 236px; height: 214px; background: var(--surface); border-radius: 24px; box-shadow: var(--ring); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding: 16px; }
+  .node .lb { font-weight: 800; font-size: 19px; line-height: 1.3; }
+  .node .sm { font-size: 14.5px; color: var(--muted); font-weight: 700; }
+  .node .val { font: 600 22px/1 var(--mono); letter-spacing: .12em; }
+  .node .ic { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; }
+  .node .ic svg { width: 36px; height: 36px; fill: none; stroke: var(--t-ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .counter { font: 600 30px/1 var(--mono); }
+  .line { position: absolute; height: 4px; border-radius: 2px; background: var(--t-ink); transform-origin: 0 50%; }
+  .line.dash { background: repeating-linear-gradient(90deg, var(--t-ink) 0 12px, transparent 12px 22px); }
+  .token { position: absolute; height: 38px; padding: 0 14px; border-radius: 19px; background: var(--t-ink); color: #fff; font: 600 15px/38px var(--mono); white-space: nowrap; }
+  .xmark { position: absolute; width: 92px; height: 92px; border-radius: 50%; background: #b4231b; display: grid; place-items: center; box-shadow: 0 0 0 6px #fde6e3; }
+  .xmark svg { width: 48px; height: 48px; stroke: #fff; stroke-width: 6; stroke-linecap: round; fill: none; }
+  .okmark { position: absolute; width: 64px; height: 64px; border-radius: 50%; background: #1f7a4d; display: grid; place-items: center; box-shadow: 0 0 0 6px #d8f1c6; }
+  .okmark svg { width: 34px; height: 34px; stroke: #fff; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+  .kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; height: 60px; padding: 0 16px; border-radius: 14px; background: var(--surface); box-shadow: inset 0 0 0 2px var(--t-ink), inset 0 -5px 0 var(--t-ln); font: 600 22px/1 var(--mono); }
+  .plus { font: 900 26px/1 var(--display); margin: 0 10px; color: var(--muted); }
+  .dot5 { display: flex; gap: 12px; justify-content: center; }
+  .dot5 i { width: 26px; height: 26px; border-radius: 50%; background: var(--t-ln); }
+  .dot5 i.bad { background: #e0574b; }
+  .ringt { width: 130px; height: 130px; }
+
+  /* 스토어 예시 그림 (실제와 다를 수 있음) */
+  .store { position: absolute; inset: 0; background: #f7f8fa; }
+  .store .shead { height: 56px; background: #fff; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; padding: 0 28px; font-weight: 800; font-size: 17px; gap: 10px; color: #333; }
+  .store .shead i { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg, #4aa0ff, #47c9a2); }
+  .store .scard { position: absolute; left: 140px; top: 100px; width: 920px; height: 250px; background: #fff; border-radius: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); display: flex; gap: 30px; padding: 36px; }
+  .store .scard img { width: 128px; height: 128px; border-radius: 28px; }
+  .store .scard h3 { margin: 4px 0 6px; font: 900 34px/1.2 var(--display); }
+  .store .scard p { margin: 0; color: #555; font-size: 16px; font-weight: 600; }
+  .store .get { position: absolute; right: 40px; top: 44px; width: 150px; height: 46px; border-radius: 8px; background: #0f6cbd; color: #fff; font-weight: 800; font-size: 17px; display: grid; place-items: center; }
+  .store .get.done { background: #e9eef5; color: #333; }
+  .store .sinfo { position: absolute; left: 140px; top: 380px; width: 920px; color: #555; font-size: 15px; font-weight: 600; display: flex; gap: 18px; }
+  .store .sinfo span { background: #fff; border-radius: 999px; padding: 8px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .dlg { position: absolute; background: #fff; border-radius: 12px; box-shadow: 0 16px 50px rgba(0,0,0,.28), 0 0 0 1px rgba(0,0,0,.08); padding: 22px 24px; font-size: 15px; color: #222; }
+  .dlg h5 { margin: 0 0 10px; font-size: 18px; font-weight: 800; }
+  .dlg ul { margin: 0 0 18px; padding-left: 20px; color: #444; font-weight: 600; }
+  .dlg .row { display: flex; gap: 10px; justify-content: flex-end; }
+  .dlg .b { height: 38px; padding: 0 18px; border-radius: 8px; background: #eef1f5; display: grid; place-items: center; font-weight: 800; }
+  .dlg .b.p { background: #0f6cbd; color: #fff; }
+
+  .exts { position: absolute; width: 330px; background: #fff; border-radius: 12px; box-shadow: 0 16px 44px rgba(0,0,0,.24), 0 0 0 1px rgba(0,0,0,.08); padding: 14px 0 10px; font-size: 15px; color: #222; z-index: 7; }
+  .exts h5 { margin: 0 18px 8px; font-size: 16px; font-weight: 800; }
+  .exts .er { display: flex; align-items: center; gap: 12px; padding: 10px 18px; font-weight: 700; }
+  .exts .er img { width: 22px; height: 22px; }
+  .exts .er .pinb { margin-left: auto; width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; }
+  .exts .er .pinb svg { width: 19px; height: 19px; fill: none; stroke: #333; stroke-width: 2; stroke-linejoin: round; }
+  .exts .er .pinb.on svg { fill: #333; }
+  .exts .er.dim { color: #888; }
+  .exts .er.dim i { width: 22px; height: 22px; border-radius: 6px; background: #e6e9ef; }
+  .newtab { position: absolute; inset: 0; background: linear-gradient(180deg, #f7f9fc, #eef3f9); }
+  .newtab .search { position: absolute; left: 330px; top: 230px; width: 540px; height: 52px; border-radius: 26px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+
+
+  .steps4 { position: absolute; left: 60px; right: 60px; top: 648px; display: flex; gap: 12px; justify-content: center; z-index: 20; }
+  .steps4 .st { display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 18px 0 10px; border-radius: 23px; background: var(--surface); box-shadow: var(--ring); font-weight: 800; font-size: 16px; white-space: nowrap; opacity: .35; }
+  .steps4 .st .ck { width: 28px; height: 28px; border-radius: 50%; background: var(--t-ln); display: grid; place-items: center; }
+  .steps4 .st .ck svg { width: 15px; height: 15px; stroke: #fff; stroke-width: 3.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .steps4 .st.done { opacity: 1; }
+  .steps4 .st.done .ck { background: #1f7a4d; }
+  .steps4 .st.now { opacity: 1; }
+  .xfile { position: absolute; width: 118px; height: 132px; border-radius: 14px; background: #fff; box-shadow: 0 0 0 2px #1d6f42, 0 14px 30px rgba(0,0,0,.2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 800; z-index: 9; }
+  .xfile i { width: 52px; height: 52px; border-radius: 10px; background: #1d6f42; color: #fff; font: 900 26px/52px var(--display); text-align: center; font-style: normal; }
+
+  @media (prefers-reduced-motion: reduce) { .cap p.swap { animation: none; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="icon.png" alt="">쌤패스</a>
+    <nav>
+      <a class="back" href="index.html">← 소개 페이지</a>
+      <a class="cta" href="index.html#download">받기</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="intro-head">
+    <div class="kicker">HOW TO · 사용법</div>
+    <h1>쌤패스, <span class="mk">이렇게 써요</span></h1>
+    <p>실제 쌤패스 화면으로 설치부터 매일 쓰는 법까지 천천히 보여 드려요. 놓친 부분은 아래 막대를 끌거나 목차를 눌러 다시 보세요.</p>
+  </div>
+
+  <section class="player" id="player" aria-label="쌤패스 사용법 영상">
+    <div class="screen" id="screen">
+      <div class="stage" id="stage"></div>
+      <button class="bigplay" id="bigplay" type="button" aria-label="재생"><span><svg viewBox="0 0 24 24"><path d="M6 4l15 8-15 8z"/></svg></span></button>
+    </div>
+    <div class="cap">
+      <span class="chno" id="capNo">01 / 11</span>
+      <div><h2 id="capTitle">시작</h2><p id="capText" aria-live="polite"></p></div>
+    </div>
+    <div class="ctrl">
+      <div class="scrub" id="scrub">
+        <div class="segs" id="segs"></div>
+        <input type="range" id="seek" min="0" max="100" step="0.05" value="0" aria-label="재생 위치">
+        <span class="tip" id="seekTip"></span>
+      </div>
+      <div class="btns">
+        <button class="play" id="playBtn" type="button" aria-label="재생"><svg viewBox="0 0 24 24" id="playIco"><path d="M6 4l15 8-15 8z"/></svg></button>
+        <button id="prevBtn" type="button" aria-label="이전 장면"><svg class="ico" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg><span class="lbl">이전 장면</span></button>
+        <button id="nextBtn" type="button" aria-label="다음 장면"><span class="lbl">다음 장면</span><svg class="ico" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <span class="time" id="time">0:00 / 0:00</span>
+        <span class="grow"></span>
+        <select id="rate" aria-label="재생 속도">
+          <option value="0.75">0.75배</option>
+          <option value="1" selected>보통 속도</option>
+          <option value="1.25">1.25배</option>
+          <option value="1.5">1.5배</option>
+        </select>
+        <button id="fsBtn" type="button" aria-label="전체 화면"><svg class="ico" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <div class="toc-head"><h2>목차</h2><span id="tocTotal"></span></div>
+  <ol class="toc" id="toc"></ol>
+
+  <p class="notes">키보드: <kbd>Space</kbd> 재생·멈춤 · <kbd>←</kbd> <kbd>→</kbd> 5초 · <kbd>↑</kbd> <kbd>↓</kbd> 이전·다음 장면. 화면은 실제 쌤패스 화면이고 이름·내용은 예시예요. 업무포털·나이스 화면은 실제 화면이고 개인정보는 흐리게 가렸어요. 스토어 화면은 이해를 돕는 예시 그림이에요.</p>
+</main>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3L20 3"/><path d="M16 7l3 3"/><path d="M14 9l2 2"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="12" cy="12" r="3.2"/><path d="M12 8.8V7M12 17v-1.8M15.2 12H17M7 12h1.8"/></symbol>
+    <symbol id="i-pc" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4.5 4.5 0 0 0 .5-9A6 6 0 0 0 6 10.5 3.8 3.8 0 0 0 7 18z"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0V12"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0V12"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7L4.3 14.6a1.5 1.5 0 0 1 2.5-1.7L8 14.5"/></symbol>
+    <symbol id="i-ck" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-puz" viewBox="0 0 24 24"><path d="M9 3h3v2.2a1.8 1.8 0 1 0 3.6 0V3H19v5h-2.2a1.8 1.8 0 1 0 0 3.6H19V17h-5v-2.2a1.8 1.8 0 1 0-3.6 0V17H5v-4h2.2a1.8 1.8 0 1 0 0-3.6H5V3h4"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M9 3h6l-1 5 4 4H6l4-4z"/><path d="M12 12v9"/></symbol>
+  </defs>
+</svg>
+
+<script src="img/tour/rects.js"></script>
+<script>
+(function () {
+  'use strict';
+  // ─────────────── 좌표·도우미 ───────────────
+  var RR = window.TOUR_RECTS || {};
+  function R(name, key) { var s = RR[name]; return s && s.rects[key] ? s.rects[key] : [0, 0, 0, 0]; }
+  var IMG = 'img/tour/';
+  var WIN = { x: 40, y: 102, w: 1200, h: 596 };            // 브라우저 창 안쪽(화면 부분)의 무대 좌표
+  var POP = { x: 928, y: 104, w: 300, k: 300 / 380 };      // 툴바 쌤패스 아래 팝업
+  var TB = { puz: [1146, 80], ssam: [1184, 80], star: [1106, 80] };
+  function kOf(cssW) { return 1200 / (cssW || 1120); }
+  // 창 안 화면(css 좌표)의 점 → 무대 좌표. cam = 화면 카메라 {x, y, s}
+  function wpt(rect, cam, cssW, fx, fy) {
+    cam = cam || { x: 0, y: 0, s: 1 }; var k = kOf(cssW);
+    return [WIN.x + cam.x + (rect[0] + rect[2] * (fx == null ? .5 : fx)) * k * cam.s, WIN.y + cam.y + (rect[1] + rect[3] * (fy == null ? .5 : fy)) * k * cam.s];
+  }
+  // 팝업(css 380폭)의 점 → 무대 좌표. sy = 팝업 안에서 내린 만큼(무대 px)
+  function ppt(rect, sy, fx, fy) { return [POP.x + (rect[0] + rect[2] * (fx == null ? .5 : fx)) * POP.k, POP.y + (rect[1] + rect[3] * (fy == null ? .5 : fy)) * POP.k - (sy || 0)]; }
+  // css 영역이 창에 꽉 차게 보이는 카메라
+  function fit(rg, cssW, pad, maxS) {
+    var k = kOf(cssW); pad = pad == null ? 28 : pad;
+    var s = Math.min(maxS || 2, (1200 - 2 * pad) / (rg[2] * k), (596 - 2 * pad) / (rg[3] * k));
+    var x = 600 - (rg[0] + rg[2] / 2) * k * s, y = 298 - (rg[1] + rg[3] / 2) * k * s;
+    x = Math.min(0, Math.max(1200 - 1200 * s, x)); y = Math.min(0, y);
+    return { x: x, y: y, s: s };
+  }
+  function top0(sy) { return { x: 0, y: -(sy || 0), s: 1 }; }
+  // 카메라 안에 붙는 상자 스타일 (css 좌표 → 카메라 좌표)
+  function box(rect, cssW, pad) { var k = kOf(cssW); pad = pad || 0; return 'left:' + (rect[0] * k - pad) + 'px;top:' + (rect[1] * k - pad) + 'px;width:' + (rect[2] * k + pad * 2) + 'px;height:' + (rect[3] * k + pad * 2) + 'px'; }
+  function pbox(rect, pad) { var k = POP.k; pad = pad || 0; return 'left:' + (rect[0] * k - pad) + 'px;top:' + (rect[1] * k - pad) + 'px;width:' + (rect[2] * k + pad * 2) + 'px;height:' + (rect[3] * k + pad * 2) + 'px'; }
+  function U(id) { return '<svg><use href="#' + id + '"/></svg>'; }
+  var today = new Date(), MD = (today.getMonth() + 1) + '/' + today.getDate();
+  var YMD = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+  function win(o) {
+    return '<div class="win">' +
+      '<div class="tabs"><div class="tab">' + (o.fav === 'neis' ? '<span class="fav"></span>' : o.fav === 'none' ? '<span class="fav" style="background:#c9d3df"></span>' : '<img src="icon.png" alt="">') + '<span class="tabt">' + o.tab + '</span></div></div>' +
+      '<div class="bar"><span class="nv"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span>' +
+      '<div class="url"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span class="urlt">' + o.url + '</span></div>' +
+      '<span class="tb star"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg></span>' +
+      '<span class="tb puz">' + U('i-puz').replace('<svg>', '<svg viewBox="0 0 24 24">') + '</span>' +
+      '<span class="tb ssam"><img src="icon.png" alt=""></span>' +
+      '<span class="tb more"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg></span></div>' +
+      '<div class="wb' + (o.white ? ' white' : '') + '"><div class="cam">' + (o.body || '') + '</div>' + (o.over || '') + '</div></div>';
+  }
+  function scr(name) { return '<img class="scr" src="' + IMG + name + '.webp" alt="">'; }
+  function popup(name, extra) { return '<div class="pop"><div class="pcam"><img class="pimg" src="' + IMG + name + '.webp" alt="">' + (extra || '') + '</div></div>'; }
+
+  // ─────────────── 장면 엔진 ───────────────
+  // 장면마다 길이(dur)와 트랙(시간 → 모양)이 있다. 그리는 함수는 시간만 보고 그리므로 어느 시점으로든 바로 옮겨 갈 수 있다
+  var EASE = {
+    io: function (t) { return t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; },
+    o: function (t) { return 1 - Math.pow(1 - t, 3); },
+    l: function (t) { return t; },
+    b: function (t) { var c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); },
+    st: function (t) { return t < 1 ? 0 : 1; }
+  };
+  function fillFrames(fr) {
+    var keys = {}; fr.forEach(function (f) { Object.keys(f[1]).forEach(function (k) { keys[k] = 1; }); });
+    keys = Object.keys(keys);
+    var out = fr.map(function (f) { return [f[0], Object.assign({}, f[1]), f[2]]; });
+    keys.forEach(function (k) {
+      var first = null; for (var i = 0; i < out.length; i++) if (k in out[i][1]) { first = out[i][1][k]; break; }
+      var last = first;
+      out.forEach(function (f) { if (k in f[1]) last = f[1][k]; else f[1][k] = last; });
+    });
+    return out;
+  }
+  function sample(fr, t) {
+    if (t <= fr[0][0]) return fr[0][1];
+    for (var i = 0; i < fr.length - 1; i++) {
+      var a = fr[i], b = fr[i + 1];
+      if (t < b[0]) {
+        var p = (t - a[0]) / Math.max(.0001, b[0] - a[0]), e = (EASE[b[2] || 'io'] || EASE.io)(p), v = {};
+        for (var k in b[1]) v[k] = a[1][k] + (b[1][k] - a[1][k]) * e;
+        return v;
+      }
+    }
+    return fr[fr.length - 1][1];
+  }
+  function apply(el, v) {
+    if ('x' in v || 'y' in v || 's' in v || 'r' in v) el.style.transform = (el.getAttribute('data-tf') || '') + ' translate(' + (v.x || 0) + 'px,' + (v.y || 0) + 'px) scale(' + (v.s == null ? 1 : v.s) + ') rotate(' + (v.r || 0) + 'deg)';
+    if ('o' in v) el.style.opacity = v.o;
+    if ('w' in v) el.style.width = v.w + 'px';
+    if ('sx' in v) el.style.transform = 'scaleX(' + v.sx + ')';
+    if ('n' in v) { var full = el.getAttribute('data-full') || ''; var n = Math.round(v.n); if (el._n !== n) { el.textContent = full.slice(0, n); el._n = n; } }
+    if ('c' in v) { var c = Math.round(v.c); if (el._c !== c) { el.textContent = c.toLocaleString('ko-KR'); el._c = c; } }
+  }
+
+  var stage = document.getElementById('stage');
+  var cursor = document.createElement('div');
+  cursor.id = 'cursor';
+  cursor.innerHTML = '<svg viewBox="0 0 30 30"><path d="M4 2.5l19.5 15.2-8.8 1.4 5.3 8.4-3.9 2.2-5-8.7-6.9 6z" fill="#fff" stroke="#0b2440" stroke-width="2" stroke-linejoin="round"/></svg>';
+  var scenes = [], chapters = [];
+
+  function chapter(title, sub, key) { chapters.push({ title: title, sub: sub, key: !!key, first: scenes.length }); }
+  function scene(o) {
+    var root = document.createElement('div');
+    root.className = 'sc';
+    root.innerHTML = o.html;
+    stage.appendChild(root);
+    var sc = { title: o.title, dur: o.dur, root: root, tracks: [], steps: [], caps: [], cur: null, clicks: [], ch: chapters.length - 1 };
+    var api = {
+      q: function (s) { return typeof s === 'string' ? root.querySelector(s) : s; },
+      qa: function (s) { return root.querySelectorAll(s); },
+      k: function (el, frames) { el = api.q(el); if (!el) { console.warn('없는 요소', o.title, frames); return; } sc.tracks.push({ el: el, fr: fillFrames(frames) }); },
+      step: function (el, frames, fn) { el = api.q(el); if (!el) return; sc.steps.push({ el: el, fr: frames, fn: fn }); },
+      src: function (el, frames) { api.step(el, frames, function (e, v) { var s = IMG + v + '.webp'; if (e.getAttribute('src') !== s) e.setAttribute('src', s); }); },
+      cls: function (el, frames) { api.step(el, frames, function (e, v) { if (e._cls !== v) { e.className = v; e._cls = v; } }); },
+      txt: function (el, frames) { api.step(el, frames, function (e, v) { if (e.textContent !== v) e.textContent = v; }); },
+      cap: function (t, text) { sc.caps.push([t, text]); },
+      show: function (el, t0, t1, d) { d = d || .35; var fr = [[0, { o: 0 }], [t0, { o: 0 }], [t0 + d, { o: 1 }, 'o']]; if (t1 != null) fr.push([t1, { o: 1 }], [t1 + d, { o: 0 }]); api.k(el, fr); },
+      // 강조 테두리: 나타났다가(t0) 사라짐(t1)
+      hl: function (el, t0, t1) { api.k(el, [[0, { o: 0, s: 1.06 }], [t0, { o: 0, s: 1.06 }], [t0 + .4, { o: 1, s: 1 }, 'o'], [t1, { o: 1, s: 1 }], [t1 + .4, { o: 0, s: 1 }]]); },
+      // 글자 치기
+      type: function (el, t0, t1) { el = api.q(el); var n = (el.getAttribute('data-full') || '').length; api.k(el, [[0, { n: 0 }], [t0, { n: 0 }], [t1, { n: n }, 'l']]); },
+      // 마우스: 시작 위치 → to(도착 시각, x, y, 걸리는 시간) → click(시각)
+      mouse: function (x, y, t0) {
+        var fr = [[0, { x: x, y: y, o: 0, s: 1 }], [t0 || .3, { x: x, y: y, o: 1, s: 1 }]], cx = x, cy = y;
+        sc.cur = fr;
+        var m = {
+          to: function (t, nx, ny, d) { d = d || 1.1; fr.push([t - d, { x: cx, y: cy }], [t, { x: nx, y: ny }]); cx = nx; cy = ny; return m; },
+          click: function (t) { fr.push([t - .12, { x: cx, y: cy, s: 1 }], [t, { s: .82 }], [t + .16, { s: 1 }]); sc.clicks.push([t, cx, cy]); return m; },
+          hide: function (t) { fr.push([t, { o: 1 }], [t + .3, { o: 0 }]); return m; },
+          show: function (t) { fr.push([t, { o: 0 }], [t + .3, { o: 1 }]); return m; },
+          at: function (t, nx, ny) { fr.push([t, { x: nx, y: ny }, 'st']); cx = nx; cy = ny; return m; }
+        };
+        return m;
+      }
+    };
+    o.setup(api);
+    if (sc.cur) {
+      // 빠진 값을 채우고 시각 순으로 (같은 시각이면 넣은 순서)
+      sc.cur = fillFrames(sc.cur.map(function (f, i) { return [f[0], f[1], f[2], i]; }).sort(function (a, b) { return a[0] - b[0] || a[3] - b[3]; }).map(function (f) { return [f[0], f[1], f[2]]; }));
+    }
+    sc.rips = sc.clicks.map(function (c) { var r = document.createElement('div'); r.className = 'rip'; r.style.left = c[1] + 'px'; r.style.top = c[2] + 'px'; root.appendChild(r); return r; });
+    sc.steps.forEach(function (s) { s.fr.sort(function (a, b) { return a[0] - b[0]; }); });
+    sc.caps.sort(function (a, b) { return a[0] - b[0]; });
+    scenes.push(sc);
+  }
+
+  // ═══════════════ 장면 ═══════════════
+
+  // ── 1. 시작 ──
+  chapter('시작', '이 영상에서 볼 것');
+  scene({ title: '쌤패스 사용법', dur: 10, html:
+    '<div class="bgdots"></div>' +
+    '<img class="abs mark" src="icon.png" alt="" style="left:576px;top:150px;width:128px;height:128px;border-radius:30px;box-shadow:0 0 0 2px var(--t-ink)">' +
+    '<div class="title-big t1" style="top:308px">쌤패스 <span class="mk">사용법</span></div>' +
+    '<div class="sub t2" style="top:408px">설치부터 매일 쓰는 법까지, 실제 화면으로 천천히</div>' +
+    '<div class="abs chips" style="left:0;right:0;top:500px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:0 120px">' +
+      ['안전 먼저', '설치', '처음 설정', '개인결재선', '루틴 만들기', '바로 열기', '루틴 실행', '과세특 입력', '더 알아 두기'].map(function (t, i) { return '<span class="pill c' + i + '" style="position:relative;height:46px;font-size:17px;padding:0 18px">' + t + '</span>'; }).join('') + '</div>',
+    setup: function (a) {
+      a.k('.mark', [[0, { s: 0, o: 0 }], [.3, { s: 0, o: 1 }], [1, { s: 1, o: 1 }, 'b']]);
+      a.k('.t1', [[0, { o: 0, y: 20 }], [.8, { o: 0, y: 20 }], [1.4, { o: 1, y: 0 }, 'o']]);
+      a.k('.t2', [[0, { o: 0, y: 14 }], [1.4, { o: 0, y: 14 }], [2, { o: 1, y: 0 }, 'o']]);
+      for (var i = 0; i < 9; i++) a.k('.c' + i, [[0, { o: 0, y: 16 }], [2.4 + i * .28, { o: 0, y: 16 }], [2.8 + i * .28, { o: 1, y: 0 }, 'o']]);
+      a.cap(0, '쌤패스를 처음 쓰는 선생님을 위한 사용법이에요. 실제 화면을 보면서 천천히 따라오세요.');
+      a.cap(5, '놓친 부분은 아래 막대를 끌거나, 목차를 눌러 언제든 다시 볼 수 있어요.');
+    } });
+
+  // ── 2. 안전 먼저 ──
+  chapter('안전 먼저', '비밀번호를 지키는 방법', true);
+  scene({ title: '가장 먼저, 안전', dur: 11, html:
+    '<div class="bgdots"></div>' +
+    '<svg class="abs shield" viewBox="0 0 24 24" style="left:560px;top:100px;width:160px;height:160px;fill:var(--t-sf);stroke:var(--t-ink);stroke-width:1.4;stroke-linejoin:round"><path class="sp" d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" stroke-dasharray="60" stroke-dashoffset="60"/><path class="sk" d="M8.5 12l2.5 2.5 4.5-5" stroke-width="2" stroke-linecap="round" fill="none" stroke-dasharray="12" stroke-dashoffset="12"/></svg>' +
+    '<div class="kick k1" style="top:292px">SECURITY FIRST</div>' +
+    '<div class="title-mid t1" style="top:326px">가장 많이 신경 쓴 것, <span class="mk">안전</span></div>' +
+    '<div class="sub t2" style="top:408px">인증서 비밀번호를 다루는 도구라서, 보안부터 설계했어요</div>' +
+    '<span class="pill p1" style="left:214px;top:500px"><span class="ck">' + U('i-ck') + '</span>이 PC에만 보관</span>' +
+    '<span class="pill p2" style="left:476px;top:500px"><span class="ck">' + U('i-ck') + '</span>외부 전송 없음 · 서버 없음</span>' +
+    '<span class="pill p3" style="left:838px;top:500px"><span class="ck">' + U('i-ck') + '</span>PIN 잠금</span>',
+    setup: function (a) {
+      a.k('.shield', [[0, { s: .6, o: 0 }], [.2, { s: .6, o: 1 }], [.9, { s: 1, o: 1 }, 'b']]);
+      a.step('.sp', [[0, 60], [.3, 40], [.5, 25], [.7, 10], [.9, 0]], function (e, v) { e.setAttribute('stroke-dashoffset', v); });
+      a.step('.sk', [[0, 12], [1.1, 6], [1.3, 0]], function (e, v) { e.setAttribute('stroke-dashoffset', v); });
+      a.show('.k1', 1); a.k('.t1', [[0, { o: 0, y: 18 }], [1.2, { o: 0, y: 18 }], [1.8, { o: 1, y: 0 }, 'o']]);
+      a.show('.t2', 2.4, null, .6);
+      a.k('.p1', [[0, { o: 0, y: 14 }], [4.4, { o: 0, y: 14 }], [4.9, { o: 1, y: 0 }, 'o']]);
+      a.k('.p2', [[0, { o: 0, y: 14 }], [5.2, { o: 0, y: 14 }], [5.7, { o: 1, y: 0 }, 'o']]);
+      a.k('.p3', [[0, { o: 0, y: 14 }], [6, { o: 0, y: 14 }], [6.5, { o: 1, y: 0 }, 'o']]);
+      a.cap(0, '쌤패스는 업무포털 인증서 비밀번호를 다루는 도구예요.');
+      a.cap(4.2, '그래서 만들 때 무엇보다 보안을 가장 많이 신경 썼어요. 사용법보다 먼저, 어떻게 지키는지 보여 드릴게요.');
+    } });
+
+  scene({ title: '비밀번호는 PIN으로 잠가서, 이 PC에만', dur: 17, html:
+    '<div class="bgdots"></div>' +
+    '<div class="title-mid" style="top:54px;font-size:44px">비밀번호는 <span class="mk">PIN으로 잠가서</span>, 이 PC에만</div>' +
+    '<div class="line l1" style="left:190px;top:368px;width:900px"></div>' +
+    '<div class="node n1" style="left:72px;top:262px"><div class="ic" style="background:var(--t-a1)">' + U('i-key') + '</div><div class="lb">인증서 비밀번호</div><div class="val">●●●●●●●●</div></div>' +
+    '<div class="node n2" style="left:372px;top:262px"><div class="ic" style="background:var(--t-a4)">' + U('i-lock') + '</div><div class="lb">PIN으로 열쇠 만들기</div><div><span class="counter cnt" data-full="">0</span><span class="sm"> 번 계산</span></div></div>' +
+    '<div class="node n3" style="left:672px;top:262px"><div class="ic" style="background:var(--t-a2)"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path class="shk" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><div class="lb">AES-256 암호화</div><div class="sm">은행·정부가 쓰는 방식</div></div>' +
+    '<div class="node n4" style="left:972px;top:262px"><div class="ic" style="background:var(--t-a3)">' + U('i-box') + '</div><div class="lb">이 브라우저 안 금고</div><div class="val enc" style="font-size:15px;letter-spacing:.04em">8f3a·c91e·…</div></div>' +
+    '<div class="token tk" style="left:120px;top:206px">●●●●●●●●</div>' +
+    '<span class="pill q1" style="left:236px;top:540px"><span class="ck">' + U('i-ck') + '</span>PIN은 어디에도 저장하지 않아요</span>' +
+    '<span class="pill q2" style="left:676px;top:540px"><span class="ck">' + U('i-ck') + '</span>밖으로 보내지 않아요</span>',
+    setup: function (a) {
+      a.k('.l1', [[0, { sx: 0 }], [.6, { sx: 0 }], [2, { sx: 1 }, 'o']]);
+      ['.n1', '.n2', '.n3', '.n4'].forEach(function (n, i) { a.k(n, [[0, { o: 0, y: 20 }], [.3 + i * .4, { o: 0, y: 20 }], [.8 + i * .4, { o: 1, y: 0 }, 'o']]); });
+      a.k('.tk', [[0, { o: 0, x: 0 }], [2.6, { o: 0, x: 0 }], [3, { o: 1, x: 0 }], [4.6, { x: 0 }], [6.2, { x: 300 }, 'io'], [9.4, { x: 300 }], [10.4, { x: 600, o: 1 }, 'io'], [11.6, { x: 900, o: 1 }, 'io'], [12, { x: 900, o: 0 }]]);
+      a.txt('.tk', [[0, '●●●●●●●●'], [6.2, '🔑 열쇠 만드는 중'], [9.4, '8f3a·c91e·…'], [11.6, '8f3a·c91e·…']]);
+      a.k('.cnt', [[0, { c: 0 }], [6.2, { c: 0 }], [9.2, { c: 600000 }, 'o']]);
+      a.step('.shk', [[0, 'M8 11V5a4 4 0 0 1 8 0v0'], [10.2, 'M8 11V7a4 4 0 0 1 8 0v4']], function (e, v) { e.setAttribute('d', v); });
+      a.k('.n3', [[10.1, { s: 1 }], [10.3, { s: 1.06 }], [10.6, { s: 1 }]]);
+      a.k('.n4', [[11.5, { s: 1 }], [11.8, { s: 1.07 }], [12.2, { s: 1 }]]);
+      a.k('.q1', [[0, { o: 0, y: 14 }], [12.6, { o: 0, y: 14 }], [13.1, { o: 1, y: 0 }, 'o']]);
+      a.k('.q2', [[0, { o: 0, y: 14 }], [13.3, { o: 0, y: 14 }], [13.8, { o: 1, y: 0 }, 'o']]);
+      a.cap(0, '인증서 비밀번호는 선생님이 정한 PIN으로 암호화해서 보관해요.');
+      a.cap(5.6, 'PIN에서 열쇠를 만들 때 60만 번 계산을 거쳐요. 아무 숫자나 넣어 보며 맞히기 어렵게 하려는 거예요.');
+      a.cap(10.6, '암호화된 결과만 이 PC의 브라우저 안에 남아요. PIN 자체는 어디에도 저장하지 않아요.');
+    } });
+
+  scene({ title: '서버 없음, 외부 전송 없음', dur: 15, html:
+    '<div class="bgdots"></div>' +
+    '<div class="title-mid" style="top:40px;font-size:44px">쌤패스에는 <span class="mk">서버가 없어요</span></div>' +
+    '<div class="node cl" style="left:522px;top:122px;width:236px;height:150px;opacity:.9"><div class="ic" style="background:#eef1f5">' + U('i-cloud') + '</div><div class="lb" style="color:var(--muted)">쌤패스 서버?</div></div>' +
+    '<div class="line dash up" style="left:638px;top:290px;width:4px;height:120px;background:repeating-linear-gradient(180deg,var(--t-ink) 0 12px,transparent 12px 22px)"></div>' +
+    '<div class="xmark xm" style="left:594px;top:304px">' + U('i-x').replace('<svg>', '<svg viewBox="0 0 24 24">') + '</div>' +
+    '<div class="node pc" style="left:490px;top:420px;width:300px;height:200px"><div class="ic" style="background:var(--t-a3)">' + U('i-pc') + '</div><div class="lb">선생님 PC · 브라우저</div><div class="sm">비밀번호 금고 · 쌤패스</div></div>' +
+    '<div class="line ar" style="left:792px;top:518px;width:180px"></div>' +
+    '<div class="node po" style="left:976px;top:420px;width:250px;height:200px"><div class="ic" style="background:var(--t-prs)">' + U('i-lock') + '</div><div class="lb">업무포털<br>인증서 창</div><div class="sm">비밀번호가 쓰이는 단 한 곳</div></div>' +
+    '<div class="okmark okm" style="left:850px;top:474px">' + U('i-ck').replace('<svg>', '<svg viewBox="0 0 24 24">') + '</div>' +
+    '<div class="node xl" style="left:56px;top:420px;width:250px;height:200px"><div class="ic" style="background:var(--t-a1)">' + U('i-doc') + '</div><div class="lb">과세특 엑셀<br>학생 정보</div><div class="sm">화면 안에서만 읽어요</div></div>' +
+    '<div class="line ar2" style="left:308px;top:518px;width:180px"></div>' +
+    '<div class="bub red xb" style="left:700px;top:330px">보내는 곳 없음</div>',
+    setup: function (a) {
+      a.show('.pc', .3, null, .5);
+      a.show('.cl', 1, null, .5);
+      a.k('.up', [[0, { o: 0 }], [1.3, { o: 0 }], [1.8, { o: 1 }]]);
+      a.k('.xm', [[0, { o: 0, s: 2 }], [2.2, { o: 0, s: 2 }], [2.7, { o: 1, s: 1 }, 'b']]);
+      a.k('.xb', [[0, { o: 0, x: -10 }], [2.9, { o: 0, x: -10 }], [3.3, { o: 1, x: 0 }, 'o']]);
+      a.show('.po', 5.6, null, .5);
+      a.k('.ar', [[0, { sx: 0 }], [6, { sx: 0 }], [7, { sx: 1 }, 'o']]);
+      a.k('.okm', [[0, { o: 0, s: .4 }], [7, { o: 0, s: .4 }], [7.4, { o: 1, s: 1 }, 'b']]);
+      a.show('.xl', 10, null, .5);
+      a.k('.ar2', [[0, { sx: 0 }], [10.4, { sx: 0 }], [11.3, { sx: 1 }, 'o']]);
+      a.cap(0, '쌤패스에는 따로 서버가 없어요. 비밀번호도, 학생 정보도 어디로도 보내지 않아요.');
+      a.cap(5.4, '저장한 비밀번호가 쓰이는 곳은 단 하나, 로그인할 때 업무포털의 인증서 창이에요.');
+      a.cap(9.8, '과세특 엑셀도 이 화면 안에서만 읽고, 따로 저장하거나 보내지 않아요.');
+    } });
+
+  scene({ title: '저절로 잠겨요', dur: 17, html:
+    '<div class="bgdots"></div>' +
+    '<div class="title-mid" style="top:48px;font-size:44px">자리를 비워도 <span class="mk">저절로 잠겨요</span></div>' +
+    '<div class="card c1" style="left:70px;top:170px;width:360px;height:420px;text-align:center"><h4>PIN 5번 틀리면<br>입력 차단</h4><p>차단 시간은 5분부터<br>최대 60분까지 늘어나요</p><div class="dot5" style="margin-top:40px"><i class="d1"></i><i class="d2"></i><i class="d3"></i><i class="d4"></i><i class="d5"></i></div><div class="abs lk" style="left:140px;top:300px;width:80px;height:80px;border-radius:22px;background:#b4231b;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:44px;height:44px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div></div>' +
+    '<div class="card c2" style="left:460px;top:170px;width:360px;height:420px;text-align:center"><h4>자리를 비우면<br>자동 잠금</h4><p>기본: 15분 동안 안 쓰면,<br>길어도 2시간 뒤엔 잠겨요</p><svg class="ringt" viewBox="0 0 120 120" style="margin:26px auto 0;display:block"><circle cx="60" cy="60" r="50" fill="none" stroke="var(--t-ln)" stroke-width="12"/><circle class="rg" cx="60" cy="60" r="50" fill="none" stroke="var(--t-ink)" stroke-width="12" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 60 60)"/><text class="rgt" x="60" y="68" text-anchor="middle" font-family="SsamMono, monospace" font-size="24" font-weight="600" fill="var(--t-ink)">0분</text></svg></div>' +
+    '<div class="card c3" style="left:850px;top:170px;width:360px;height:420px;text-align:center"><h4>화면 잠금 · 브라우저 종료<br>→ 바로 잠김</h4><p>어느 잠금 방식이든<br>똑같아요</p><div style="margin-top:44px;display:flex;justify-content:center;align-items:center"><span class="kbd kw">Win</span><span class="plus">+</span><span class="kbd kl">L</span></div></div>',
+    setup: function (a) {
+      a.k('.c1', [[0, { o: 0, y: 20 }], [.3, { o: 0, y: 20 }], [.8, { o: 1, y: 0 }, 'o']]);
+      a.k('.c2', [[0, { o: 0, y: 20 }], [5, { o: 0, y: 20 }], [5.5, { o: 1, y: 0 }, 'o']]);
+      a.k('.c3', [[0, { o: 0, y: 20 }], [10.6, { o: 0, y: 20 }], [11.1, { o: 1, y: 0 }, 'o']]);
+      ['.d1', '.d2', '.d3', '.d4', '.d5'].forEach(function (d, i) { a.cls(d, [[0, ''], [1.6 + i * .55, 'bad']]); a.k(d, [[1.5 + i * .55, { s: 1 }], [1.6 + i * .55, { s: 1.35 }], [1.8 + i * .55, { s: 1 }]]); });
+      a.k('.lk', [[0, { o: 0, s: .3 }], [4.6, { o: 0, s: .3 }], [5, { o: 1, s: 1 }, 'b']]);
+      a.step('.rg', [[0, 314]].concat(Array.from({ length: 31 }, function (_, i) { return [6.2 + i * .1, 314 - 314 * (i / 30)]; })), function (e, v) { e.setAttribute('stroke-dashoffset', v); });
+      a.step('.rgt', [[0, '0분']].concat(Array.from({ length: 16 }, function (_, i) { return [6.2 + i * .2, i + '분']; })).concat([[9.6, '잠금']]), function (e, v) { if (e.textContent !== v) e.textContent = v; });
+      a.k('.kw', [[11.8, { s: 1, y: 0 }], [12, { s: .92, y: 3 }], [12.5, { s: 1, y: 0 }]]);
+      a.k('.kl', [[11.9, { s: 1, y: 0 }], [12.1, { s: .92, y: 3 }], [12.6, { s: 1, y: 0 }]]);
+      a.cap(0, 'PIN을 5번 틀리면 입력이 잠시 막혀요. 계속 틀리면 막히는 시간이 점점 늘어나요.');
+      a.cap(5.2, '자리를 비운 채 시간이 지나면 저절로 잠겨요. 기본은 15분 동안 안 쓰면, 길어도 2시간 뒤에는 잠겨요.');
+      a.cap(10.8, 'PC 화면을 잠그거나(Win+L) 브라우저를 닫으면 그 즉시 잠겨요.');
+    } });
+
+  scene({ title: '마지막은 선생님이 직접', dur: 13, html:
+    '<div class="bgdots"></div>' +
+    '<div class="title-mid" style="top:48px;font-size:44px">마지막 <span class="mk">[상신]은 선생님이</span> 직접</div>' +
+    '<div class="card" style="left:90px;top:160px;width:520px;height:440px;padding:0;overflow:hidden">' +
+      '<div style="height:46px;background:#31415a;color:#fff;font-weight:800;display:flex;align-items:center;padding:0 18px;font-family:Malgun Gothic,var(--font)">기안문서상신 (예시)</div>' +
+      '<div style="padding:22px;font-family:Malgun Gothic,var(--font)"><div style="display:grid;grid-template-columns:90px 1fr;gap:8px 14px;font-size:16px;font-weight:700"><span style="color:#666">근무상황</span><span>조퇴 · ' + MD + ' 15:00~16:40</span><span style="color:#666">사유</span><span>병원 진료</span><span style="color:#666">결재선</span><span>개인결재선 "교무부"</span></div>' +
+      '<div style="margin-top:22px;display:flex;gap:8px;font-size:15px"><span style="flex:1;border:1px solid #d7dde6;border-radius:6px;padding:10px;text-align:center;background:#f3f5f8">기안</span><span style="flex:1;border:1px solid #d7dde6;border-radius:6px;padding:10px;text-align:center;background:#f3f5f8">검토</span><span style="flex:1;border:1px solid #d7dde6;border-radius:6px;padding:10px;text-align:center;background:#f3f5f8">결재</span></div></div>' +
+      '<div class="sbtn" style="position:absolute;left:180px;top:330px;width:160px;height:56px;border-radius:8px;background:#2f6fe4;color:#fff;font-weight:900;font-size:20px;display:grid;place-items:center;font-family:Malgun Gothic,var(--font)">상신</div>' +
+      '<div class="hl" style="left:176px;top:326px;width:168px;height:64px;border-radius:10px"></div></div>' +
+    '<div class="bub ok sb" data-tf="translateX(-50%)" style="left:350px;top:574px">내용을 보고 직접 눌러요</div>' +
+    '<div class="card r1" style="left:660px;top:170px;width:530px;height:120px"><h4>기본: 결재선까지 넣고 멈춤</h4><p>쌤패스는 신청서와 결재선만 채워요</p></div>' +
+    '<div class="card r2" style="left:660px;top:310px;width:530px;height:140px"><h4>자동 상신은 동의해야만</h4><p>수당·책임 안내를 읽고 동의해야 켜져요 (선택)</p></div>' +
+    '<div class="card r3" style="left:660px;top:470px;width:530px;height:120px"><h4>과세특 [저장] · OTP는 늘 직접</h4><p>엑셀 내용을 칸에 넣는 것까지만 해요</p></div>',
+    setup: function (a) {
+      var m = a.mouse(560, 640, .4).to(2.6, 350, 518, 1.6).click(3.4);
+      a.hl('.hl', 2.2, 12);
+      a.k('.sb', [[0, { o: 0, x: 0, y: 10 }], [3.6, { o: 0, y: 10 }], [4, { o: 1, y: 0 }, 'o']]);
+      a.cls('.sbtn', [[0, ''], [3.4, ''], [3.42, '']]);
+      a.k('.r1', [[0, { o: 0, x: 24 }], [5.4, { o: 0, x: 24 }], [5.9, { o: 1, x: 0 }, 'o']]);
+      a.k('.r2', [[0, { o: 0, x: 24 }], [7.2, { o: 0, x: 24 }], [7.7, { o: 1, x: 0 }, 'o']]);
+      a.k('.r3', [[0, { o: 0, x: 24 }], [9, { o: 0, x: 24 }], [9.5, { o: 1, x: 0 }, 'o']]);
+      a.cap(0, '쌤패스는 신청서와 결재선까지만 채우고 멈춰요. 내용을 확인하고 [상신]은 선생님이 직접 눌러요.');
+      a.cap(6.8, '자동 상신은 수당·책임 안내를 읽고 동의해야만 켤 수 있어요. 과세특 [저장]과 OTP는 언제나 직접이에요.');
+      void m;
+    } });
+
+  var safetyCam1 = fit([292, 150, 640, 360], 1120, 20, 1.45);
+  var safetyCam2 = fit([292, 880, 640, 420], 1120, 20, 1.3);
+  scene({ title: '직접 확인할 수 있어요', dur: 18, html:
+    win({ tab: '쌤패스 설정 · 안전 확인', url: '쌤패스 › 설정 › 안전 확인', body: scr('opt-safety') +
+      '<div class="hl h1" style="' + box(R('opt-safety', '#safeSummary'), 1120, 8) + '"></div>' +
+      '<div class="hl h2" style="' + box([313, 900, 598, 330], 1120, 8) + '"></div>' }) +
+    popup('popup-unlocked', '<div class="hl h3" style="' + pbox(R('popup-unlocked', '#safetyBtn'), 4) + '"></div>'),
+    setup: function (a) {
+      var cam = a.q('.cam');
+      a.k(cam, [[0, top0(0)], [1.6, top0(0)], [3, safetyCam1], [9, safetyCam1], [10.4, safetyCam2]]);
+      a.hl('.h1', 3.4, 8.6);
+      a.hl('.h2', 10.8, 13.4);
+      var sy = R('popup-unlocked', '#safetyBtn')[1] * POP.k - 470;
+      a.k('.pop', [[0, { o: 0, s: .92 }], [13.4, { o: 0, s: .92 }], [13.8, { o: 1, s: 1 }, 'o']]);
+      a.k('.pcam', [[0, { y: 0 }], [14, { y: 0 }], [15, { y: -sy }]]);
+      a.hl('.h3', 15.2, 17.6);
+      a.cap(0, '말로만이 아니에요. 설정 › 안전 확인에서 쌤패스가 가진 권한과 연결 주소를 구성 파일 그대로 보여 줘요.');
+      a.cap(3.4, '인증서 파일 읽기·PC 프로그램 실행은 \'못 함\'. 동작하는 사이트는 업무포털과 나이스뿐이에요.');
+      a.cap(10.4, '비밀번호가 언제 어디로 가는지, 직접 확인하는 방법도 적혀 있어요.');
+      a.cap(13.6, '팝업 맨 아래 초록 표시를 누르면 언제든 이 화면이 열려요.');
+    } });
+
+  scene({ title: '꼭 지켜 주세요', dur: 11, html:
+    '<div class="bgdots"></div>' +
+    '<div class="title-mid" style="top:70px;font-size:44px">이것만은 <span class="mk">꼭 지켜 주세요</span></div>' +
+    '<div class="card t1" style="left:150px;top:190px;width:980px;height:100px;display:flex;align-items:center;gap:20px"><span class="kbd" style="min-width:60px">1</span><div><h4>PIN은 짐작하기 어려운 숫자로</h4><p>생일·전화번호·123456 같은 숫자는 피하세요</p></div></div>' +
+    '<div class="card t2" style="left:150px;top:310px;width:980px;height:100px;display:flex;align-items:center;gap:20px"><span class="kbd" style="min-width:60px">2</span><div><h4>내 PC에서만</h4><p>여러 사람이 함께 쓰는 PC에서는 쓰지 마세요</p></div></div>' +
+    '<div class="card t3" style="left:150px;top:430px;width:980px;height:100px;display:flex;align-items:center;gap:20px"><span class="kbd" style="min-width:60px">3</span><div><h4>자리를 비울 땐 Win+L</h4><p>화면을 잠그면 쌤패스도 함께 잠겨요</p></div></div>',
+    setup: function (a) {
+      a.k('.t1', [[0, { o: 0, x: -24 }], [.4, { o: 0, x: -24 }], [.9, { o: 1, x: 0 }, 'o']]);
+      a.k('.t2', [[0, { o: 0, x: -24 }], [3.4, { o: 0, x: -24 }], [3.9, { o: 1, x: 0 }, 'o']]);
+      a.k('.t3', [[0, { o: 0, x: -24 }], [6.4, { o: 0, x: -24 }], [6.9, { o: 1, x: 0 }, 'o']]);
+      a.cap(0, 'PIN은 생일이나 전화번호처럼 짐작하기 쉬운 숫자는 피해 주세요.');
+      a.cap(3.4, '여러 사람이 함께 쓰는 PC에서는 쓰지 마세요.');
+      a.cap(6.4, '자리를 비울 땐 Win+L로 화면을 잠가 주세요. 쌤패스도 함께 잠겨요.');
+    } });
+
+  // ── 3. 설치 ──
+  chapter('설치', '스토어에서 받기 · 툴바에 고정');
+  scene({ title: '스토어에서 받기', dur: 14, html:
+    win({ tab: '쌤패스 - 확장 스토어', fav: 'none', url: '확장 스토어 › 쌤패스', white: true, body:
+      '<div class="store"><div class="shead"><i></i>확장 스토어 (예시 그림)</div>' +
+      '<div class="scard"><img src="icon.png" alt=""><div><h3>쌤패스</h3><p>로그인부터 결재선까지, 버튼 한 번에 통과</p><p style="margin-top:14px;color:#888">hirame.ki · 무료</p></div><div class="get gb">받기</div></div>' +
+      '<div class="sinfo"><span>엣지 확장 스토어</span><span>크롬 웹 스토어</span><span>업데이트는 자동</span></div></div>' +
+      '<div class="dlg dg" style="left:380px;top:150px;width:440px"><h5>\'쌤패스\'를 추가할까요?</h5><ul><li>업무포털·나이스 사이트에서 데이터 읽기 및 변경</li></ul><div class="row"><span class="b p">확장 추가</span><span class="b">취소</span></div></div>' +
+      '<div class="dlg dn" style="left:860px;top:20px;width:320px;padding:16px 20px"><b>쌤패스가 추가되었어요</b><div style="color:#666;font-weight:600;margin-top:4px">확장 아이콘에서 찾을 수 있어요</div></div>' }),
+    setup: function (a) {
+      a.k('.tb.ssam', [[0, { o: 0 }]]);
+      var get = [40 + 140 + 920 - 40 - 75, 102 + 100 + 44 + 23];
+      var add = [40 + 380 + 440 - 24 - 120 - 10 - 52, 102 + 150 + 124];
+      a.mouse(640, 600, .3).to(4.2, get[0], get[1], 1.6).click(4.8).to(8.4, add[0], add[1], 1.4).click(9);
+      a.txt('.gb', [[0, '받기'], [4.8, '받는 중…'], [9.2, '설치됨']]);
+      a.cls('.gb', [[0, 'get gb'], [9.2, 'get gb done']]);
+      a.k('.dg', [[0, { o: 0, s: .94 }], [5.4, { o: 0, s: .94 }], [5.8, { o: 1, s: 1 }, 'o'], [9.1, { o: 1 }], [9.3, { o: 0 }]]);
+      a.k('.dn', [[0, { o: 0, y: -10 }], [9.6, { o: 0, y: -10 }], [10, { o: 1, y: 0 }, 'o']]);
+      a.cap(0, '소개 페이지의 [받기]를 누르면 지금 쓰는 브라우저에 맞는 스토어가 열려요.');
+      a.cap(4.2, '엣지는 [받기], 크롬은 [Chrome에 추가]를 눌러요.');
+      a.cap(8.2, '확인 창에서 [확장 추가]를 누르면 설치 끝. 관리자 권한도, 따로 설치하는 프로그램도 필요 없어요.');
+    } });
+
+  scene({ title: '툴바에 고정', dur: 15, html:
+    win({ tab: '새 탭', fav: 'none', url: '', white: true, body: '<div class="newtab"><div class="search"></div></div>' }) +
+    '<div class="exts ex" style="left:840px;top:104px"><h5>확장</h5><div class="er dim"><i></i>다른 확장</div><div class="er"><img src="icon.png" alt="">쌤패스<span class="pinb pb"><svg viewBox="0 0 24 24"><path d="M9 3h6l-1 5 4 4H6l4-4z"/><path d="M12 12v9"/></svg></span></div></div>' +
+    '<div class="bub bb" style="left:1012px;top:120px">여기에 생겨요</div>',
+    setup: function (a) {
+      var pin = [840 + 330 - 18 - 17, 104 + 14 + 26 + 8 + 38 + 8 + 19];
+      a.mouse(640, 420, .3).to(3.6, TB.puz[0], TB.puz[1], 1.6).click(4.2).to(7.6, pin[0], pin[1], 1.4).click(8.2).to(10, 900, 400, 1.2);
+      a.k('.ex', [[0, { o: 0, y: -8 }], [4.3, { o: 0, y: -8 }], [4.6, { o: 1, y: 0 }, 'o'], [9.2, { o: 1 }], [9.5, { o: 0 }]]);
+      a.cls('.pb', [[0, 'pinb pb'], [8.2, 'pinb pb on']]);
+      a.k('.tb.ssam', [[0, { o: 0, s: .3 }], [8.6, { o: 0, s: .3 }], [9.1, { o: 1, s: 1 }, 'b']]);
+      a.k('.bb', [[0, { o: 0 }], [9.6, { o: 0 }], [10, { o: 1 }]]);
+      a.step('.bb', [[0, 0]], function (e) { e.style.left = (TB.ssam[0] - 40) + 'px'; e.style.top = '112px'; });
+      a.cap(0, '설치하면 주소창 오른쪽의 확장(퍼즐 모양) 아이콘 안에 들어가요.');
+      a.cap(4.4, '목록에서 쌤패스 줄 오른쪽의 핀(압정) 아이콘을 누르면');
+      a.cap(9, '툴바에 쌤패스 아이콘이 생겨요. 이제부터는 여기서 바로 열어요.');
+    } });
+
+  // ── 4. 처음 설정 ──
+  chapter('처음 설정', '시작 안내 · 비밀번호와 PIN · 잠금');
+  var startCamB = { x: 170, y: -560 * kOf() * .75 + 4, s: .75 }; // ②~④가 한 화면에 들어오게 조금 멀리서
+  scene({ title: '시작 안내 네 단계', dur: 14, html:
+    win({ tab: '쌤패스 설정 · 시작 안내', url: '쌤패스 › 설정 › 시작 안내', body: scr('opt-start-0') +
+      '<div class="hl a1" style="' + box(R('opt-start-0', '#onbPin'), 1120, 6) + '"></div>' +
+      '<div class="hl a2" style="' + box(R('opt-start-0', '#onbVault'), 1120, 6) + '"></div>' +
+      '<div class="hl a3" style="' + box(R('opt-start-0', '#onbLine'), 1120, 6) + '"></div>' +
+      '<div class="hl a4" style="' + box(R('opt-start-0', '#onbRoute'), 1120, 6) + '"></div>' }),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [4.6, top0(0)], [6, startCamB]]);
+      a.hl('.a1', 1.4, 4.4); a.hl('.a2', 6.2, 8.2); a.hl('.a3', 8.4, 10.4); a.hl('.a4', 10.6, 13.2);
+      a.cap(0, '처음 설치하면 설정의 \'시작 안내\'가 저절로 열려요. 네 단계만 하면 준비 끝이에요.');
+      a.cap(4.4, '① 툴바에 고정  ② 비밀번호·PIN 저장');
+      a.cap(8.4, '③ 나이스 개인결재선 만들기  ④ 첫 복무 신청 루틴 버튼 만들기 — 끝낸 단계는 초록색으로 바뀌어요.');
+    } });
+
+  var secCam = fit([292, 150, 640, 340], 1120, 30, 1.5);
+  var fld = function (k) { return R('opt-security-new', k); };
+  scene({ title: '비밀번호와 PIN 저장', dur: 19, html:
+    win({ tab: '쌤패스 설정 · 비밀번호·잠금', url: '쌤패스 › 설정 › 비밀번호·잠금', body: scr('opt-security-new') +
+      '<div class="tw dots w1" data-full="●●●●●●●●●●" style="' + box(fld('#pw1'), 1120, -3) + '"></div>' +
+      '<div class="tw dots w2" data-full="●●●●●●●●●●" style="' + box(fld('#pw2'), 1120, -3) + '"></div>' +
+      '<div class="tw dots w3" data-full="●●●●●●" style="' + box(fld('#pin1'), 1120, -3) + '"></div>' +
+      '<div class="tw dots w4" data-full="●●●●●●" style="' + box(fld('#pin2'), 1120, -3) + '"></div>' +
+      '<div class="hl hs" style="' + box([313, 417, 598, 50], 1120, 4) + '"></div>' }) +
+    '<div class="bub ok sv" data-tf="translateX(-50%)" style="left:640px;top:600px">저장했어요 · 비밀번호는 암호화되어 이 브라우저에만</div>',
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [1.2, top0(0)], [2.6, secCam], [17, secCam], [18, top0(0)]]);
+      a.src('.scr', [[0, 'opt-security-new'], [15.6, 'opt-security']]);
+      var p = function (k) { return wpt(fld(k), secCam, 1120, .3); };
+      var save = wpt([313, 417, 598, 50], secCam);
+      a.mouse(640, 650, .3).to(3.6, p('#pw1')[0], p('#pw1')[1], 1).click(3.8).to(6.4, p('#pw2')[0], p('#pw2')[1], .9).click(6.6)
+        .to(9.4, p('#pin1')[0], p('#pin1')[1], .9).click(9.6).to(11.8, p('#pin2')[0], p('#pin2')[1], .9).click(12)
+        .to(14.6, save[0], save[1], 1.2).click(15.2);
+      [['.w1', 4, 5.4], ['.w2', 6.8, 8.2], ['.w3', 9.8, 10.8], ['.w4', 12.2, 13.2]].forEach(function (w) {
+        a.type(w[0], w[1], w[2]);
+        a.k(w[0], [[0, { o: 0 }], [w[1] - .2, { o: 0 }], [w[1], { o: 1 }], [15.5, { o: 1 }], [15.6, { o: 0 }]]);
+      });
+      a.hl('.hs', 13.8, 15.4);
+      a.k('.sv', [[0, { o: 0, y: 10 }], [15.8, { o: 0, y: 10 }], [16.2, { o: 1, y: 0 }, 'o']]);
+      a.cap(0, '설정 › 비밀번호·잠금에서 인증서 비밀번호를 두 번 넣어요.');
+      a.cap(8.6, '그다음 잠금을 풀 때 쓸 PIN(숫자 6~12자리)을 두 번 정해요.');
+      a.cap(13.6, '[저장]을 누르면 비밀번호가 PIN으로 암호화돼 이 브라우저 안에만 보관돼요.');
+    } });
+
+  var lockCam = fit([292, 130, 640, 650], 1120, 20, 1.2);
+  scene({ title: '언제 잠글까요?', dur: 15, html:
+    win({ tab: '쌤패스 설정 · 비밀번호·잠금', url: '쌤패스 › 설정 › 비밀번호·잠금', body: scr('opt-security') +
+      '<div class="hl h1" style="' + box(R('opt-security', 'lock-timer'), 1120, 5) + '"></div>' +
+      '<div class="hl h2" style="' + box(R('opt-consent', '#lockConsentBox'), 1120, 5) + '"></div>' }),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [.8, top0(0)], [2, lockCam]]);
+      a.src('.scr', [[0, 'opt-security'], [7.6, 'opt-consent']]);
+      a.hl('.h1', 2.4, 6.2);
+      var ses = wpt(R('opt-security', 'lock-session'), lockCam, 1120, .2);
+      a.mouse(700, 640, .3).to(7, ses[0], ses[1], 1.4).click(7.5).to(9, 1000, 560, 1);
+      a.hl('.h2', 8.4, 14.4);
+      a.cap(0, '\'언제 잠글까요?\'에서 잠금 방식을 골라요. 기본인 \'시간이 지나면 잠금\'이 가장 안전해요.');
+      a.cap(6, '\'PC 화면을 잠글 때만 잠금\'을 고르면 아침에 PIN을 한 번만 넣어도 돼요.');
+      a.cap(9.6, '대신 자리를 비울 때 꼭 Win+L 하겠다는 안내를 읽고 동의해야만 바뀌어요.');
+    } });
+
+  scene({ title: 'PIN으로 잠금 풀기', dur: 15, html:
+    win({ tab: '쌤패스 설정 · 시작 안내', url: '쌤패스 › 설정 › 시작 안내', body: scr('opt-start-3') }) +
+    popup('popup-locked', '<div class="tw dots pw" data-full="●●●●●●" style="' + pbox(R('popup-locked', '#pin'), -4) + ';justify-content:center"></div>'),
+    setup: function (a) {
+      var unl = ppt(R('popup-locked', '#unlockBtn')), pin = ppt(R('popup-locked', '#pin'));
+      a.mouse(640, 500, .3).to(2.4, TB.ssam[0], TB.ssam[1], 1.4).click(3).to(5.4, pin[0], pin[1], 1).click(5.6).to(8.8, unl[0], unl[1], 1).click(9.2);
+      a.k('.pop', [[0, { o: 0, s: .92 }], [3.1, { o: 0, s: .92 }], [3.5, { o: 1, s: 1 }, 'o']]);
+      a.src('.pimg', [[0, 'popup-locked'], [7.2, 'popup-pin'], [9.4, 'popup-routes-new']]);
+      a.type('.pw', 5.8, 7);
+      a.k('.pw', [[0, { o: 0 }], [5.7, { o: 0 }], [5.8, { o: 1 }], [7.15, { o: 1 }], [7.2, { o: 0 }]]);
+      a.cap(0, '이제 툴바의 쌤패스를 눌러 보세요. 아침에 한 번, PIN으로 잠금을 풀어요.');
+      a.cap(5.4, 'PIN을 넣고 [잠금 해제].');
+      a.cap(9.6, '잠금이 풀리면 바로 열기 버튼들이 보여요. 단축키 Alt+Shift+N으로도 열려요.');
+    } });
+
+  // ── 5. 개인결재선 ──
+  chapter('개인결재선', '나이스에 결재선 한 번 만들기');
+  var lineCam = { x: 0, y: -730 * kOf() + 300, s: 1 };
+  scene({ title: '개인결재선이 필요해요', dur: 12, html:
+    win({ tab: '쌤패스 설정 · 시작 안내', url: '쌤패스 › 설정 › 시작 안내', body: scr('opt-start-3') +
+      '<div class="hl h1" style="' + box(R('opt-start-3', '#onbLine'), 1120, 6) + '"></div>' }),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [1, top0(0)], [2.4, lineCam]]);
+      a.src('.scr', [[0, 'opt-start-3'], [6.4, 'opt-line-guide']]);
+      a.k('.cam', [[0, top0(0)], [1, top0(0)], [2.4, lineCam], [6.3, lineCam], [6.4, top0(0)]]);
+      a.hl('.h1', 2.6, 6.2);
+      var g = wpt(R('opt-start-3', '#onbLineGuide'), lineCam);
+      a.mouse(640, 640, .3).to(5.4, g[0], g[1], 1.4).click(6).to(7.6, 900, 640, 1);
+      a.cap(0, '복무 신청 루틴은 나이스에 저장해 둔 \'개인결재선\'을 불러와 결재자를 채워요.');
+      a.cap(4.6, '시작 안내 ③의 [만드는 방법 보기]를 누르면 순서 사진이 나와요. 나이스에서 한 번만 만들어 두면 돼요.');
+    } });
+
+  // 사용자 캡처(이름 없음) 1600×308 → 창 폭 1200에 맞추면 0.75배. 번호 자리(원본 px)
+  var LG = { k: .75, pts: { 1: [27, 255], 2: [160, 86], 3: [117, 121], 4: [489, 92], 5: [1080, 136], 6: [1505, 172], 7: [1538, 92] } };
+  function lgCam(cx, s) { var x = 600 - cx * LG.k * s; x = Math.min(0, Math.max(1200 - 1200 * s, x)); return { x: x, y: 298 - 154 * LG.k * s, s: s }; }
+  function lgPt(n, cam) { var p = LG.pts[n]; return [WIN.x + cam.x + p[0] * LG.k * cam.s, WIN.y + cam.y + p[1] * LG.k * cam.s]; }
+  var lgA = lgCam(200, 2.2), lgB = lgCam(800, 1.7), lgC = lgCam(1400, 2.0), lgAll = { x: 0, y: 298 - 154 * LG.k, s: 1 };
+  scene({ title: '나이스에서 개인결재선 만들기', dur: 24, html:
+    win({ tab: '나이스', fav: 'neis', url: '나이스 › 개인설정 › 개인결재선관리', white: true, body: '<img src="' + IMG + 'neis-line-guide.webp" alt="" style="width:1200px">', over: '<span class="tag-ex">사용자 캡처 · 이름 없음</span>' }),
+    setup: function (a) {
+      a.k('.cam', [[0, lgAll], [2, lgAll], [3.4, lgA], [9.4, lgA], [10.8, lgB], [16, lgB], [17.4, lgC], [21.6, lgC], [23, lgAll]]);
+      var p1 = lgPt(1, lgA), p2 = lgPt(2, lgA), p3 = lgPt(3, lgA), p4 = lgPt(4, lgB), p5 = lgPt(5, lgB), p6 = lgPt(6, lgC), p7 = lgPt(7, lgC);
+      a.mouse(640, 500, .3).to(4.4, p1[0] + 4, p1[1] - 6, 1).click(4.8).to(6.2, p2[0] - 40, p2[1], 1).click(6.6).to(8.2, p3[0], p3[1], 1).click(8.6)
+        .to(12, p4[0] - 6, p4[1], 1.2).click(12.4).to(14.4, p5[0] - 160, p5[1], 1.2).click(14.8)
+        .to(18.6, p6[0] - 40, p6[1], 1.2).click(19).to(20.6, p7[0] - 6, p7[1], 1).click(21);
+      a.cap(0, '나이스 왼쪽 아래 ⚙(개인설정) → 업무승인자관리 → 개인결재선관리로 들어가요.');
+      a.cap(10.6, '[등록]을 누르고 결재선명을 적어요. 예: 개인초과근무');
+      a.cap(17.2, '[결재자지정]으로 결재받을 분을 순서대로 넣고 [저장].');
+      a.cap(21.4, '여기 적은 결재선명을 쌤패스의 \'나이스 개인결재선 이름\' 칸에 똑같이 적으면 돼요.');
+    } });
+
+  // ── 6. 루틴 만들기 ──
+  chapter('루틴 만들기', '복무 신청 루틴 버튼 만들기', true);
+  var tplCam = { x: 0, y: -(1113 * kOf()) + 300, s: 1 };
+  var rCam = fit([313, 330, 598, 600], 1120, 16, 1.25);
+  function rf(k) { return R('opt-routes-tpl', k); }
+  var RF = { kind: [330, 348, 277, 44], sclf: [330, 430, 277, 44], start: [330, 512, 277, 44], end: [617, 512, 277, 44], reason: [330, 641, 564, 44], line: [330, 869, 564, 44] };
+  scene({ title: '버튼 하나 만들기', dur: 22, html:
+    win({ tab: '쌤패스 설정 · 복무 신청 루틴', url: '쌤패스 › 설정 › 복무 신청 루틴', body: scr('opt-start-3') +
+      '<div class="hl h1" style="' + box(RF.kind, 1120, 6).replace(/width:[\d.]+px/, 'width:' + ((564) * kOf() + 12) + 'px').replace(/height:[\d.]+px/, 'height:' + (126 * kOf() + 12) + 'px') + '"></div>' +
+      '<div class="hl h2" style="' + box([330, 512, 564, 44], 1120, 6) + '"></div>' +
+      '<div class="tw w1" data-full="병원 진료" style="' + box(RF.reason, 1120, -3) + '"></div>' +
+      '<div class="tw w2" data-full="교무부" style="' + box(RF.line, 1120, -3) + '"></div>' +
+      '<div class="hl h3" style="' + box(RF.line, 1120, 6) + '"></div>' }),
+    setup: function (a) {
+      a.src('.scr', [[0, 'opt-start-3'], [4.4, 'opt-routes-tpl']]);
+      a.k('.cam', [[0, top0(0)], [.6, top0(0)], [1.8, tplCam], [4.3, tplCam], [4.4, top0(0)], [6, top0(0)], [7.2, rCam], [17.2, rCam], [18.6, { x: 0, y: -(860 * kOf()), s: 1 }]]);
+      var tpl = wpt(R('opt-start-3', 'tpl-early'), tplCam);
+      var rs = wpt(RF.reason, rCam, 1120, .2), ln = wpt(RF.line, rCam, 1120, .2);
+      var save = wpt(R('opt-routes-tpl', '#saveRoutesBtn'), { x: 0, y: -(860 * kOf()), s: 1 });
+      a.mouse(640, 600, .3).to(3.2, tpl[0], tpl[1], 1.4).click(3.8).to(11.6, rs[0], rs[1], 1.4).click(12)
+        .to(15.4, ln[0], ln[1], 1.2).click(15.8).to(20.2, save[0], save[1], 1.4).click(20.8);
+      a.hl('.h1', 7.4, 9.6); a.hl('.h2', 9.8, 11.4); a.hl('.h3', 15.6, 17.4);
+      a.type('.w1', 12.3, 13.4); a.k('.w1', [[0, { o: 0 }], [12.2, { o: 0 }], [12.3, { o: 1 }]]);
+      a.type('.w2', 16.1, 16.9); a.k('.w2', [[0, { o: 0 }], [16, { o: 0 }], [16.1, { o: 1 }]]);
+      a.cap(0, '시작 안내 ④에서 자주 하는 신청을 골라요. 여기서는 [조퇴]를 눌러 볼게요.');
+      a.cap(4.6, '복무 신청 루틴 화면에 조퇴 버튼 카드가 생겼어요. 종류와 근무상황은 미리 골라져 있어요.');
+      a.cap(9.8, '시각은 학교 근무시간에 맞게 고치고, 사유를 적어요.');
+      a.cap(15.2, '\'나이스 개인결재선 이름\'에 아까 만든 결재선명을 똑같이 적고 [저장].');
+    } });
+
+  scene({ title: '여러 버튼 만들어 두기', dur: 13, html:
+    win({ tab: '쌤패스 설정 · 복무 신청 루틴', url: '쌤패스 › 설정 › 복무 신청 루틴', body: scr('opt-routes') }) +
+    popup('popup-unlocked', '<div class="hl h1" style="' + pbox([27, 510, 326, 210], 4) + '"></div>'),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [1, top0(0)], [5, { x: 0, y: -(560 * kOf()), s: 1 }, 'l']]);
+      var sy = 300;
+      a.k('.pop', [[0, { o: 0, s: .92 }], [5.6, { o: 0, s: .92 }], [6, { o: 1, s: 1 }, 'o']]);
+      a.k('.pcam', [[0, { y: 0 }], [6.4, { y: 0 }], [7.4, { y: -sy }]]);
+      a.hl('.h1', 7.6, 12.4);
+      a.cap(0, '시간외근무·연가·조퇴·출장 버튼을 여러 개 만들어 둘 수 있어요.');
+      a.cap(4.4, '연가는 연가 사유를, 출장은 출장지·목적·연락처까지 저장해요. 저장한 버튼은 팝업에 바로 나타나요.');
+    } });
+
+  // ── 7. 바로 열기 ──
+  chapter('바로 열기', '업무포털 · K-에듀파인 · 나이스 · 과세특');
+  // 업무포털·나이스는 사용자 캡처(교육청 표시·행사 사진·이름·아이디·학교·연락처는 흐리게). 폭이 달라서 사진마다 원본 폭을 따로 쓴다
+  var PW = 1907, AW = 1916, DW = 1902;
+  var pCam = fit([440, 60, 1030, 770], PW, 8, 1.3);
+  var portalBg = scr('real-portal-login');
+  scene({ title: '업무포털 로그인', dur: 19, html:
+    win({ tab: '업무포털', fav: 'neis', url: '○○.eduptl.kr', white: true, body: portalBg +
+      '<div class="tw dots pw" data-full="●●●●●●●●●●" style="' + box([942, 501, 160, 20], PW) + ';font-size:13px"></div>' +
+      '<div class="hl h2" style="' + box([1018, 569, 67, 30], PW, 4) + '"></div>',
+      over: '<span class="tag-ex">실제 화면 · 개인정보는 흐리게 가림</span><div class="abs dim" style="inset:0;background:rgba(255,255,255,.6)"></div>' +
+        '<div class="bub b1">쌤패스가 대신 넣어요</div>' +
+        '<div class="bub ok dn" data-tf="translateX(-50%)" style="left:600px;top:250px">로그인했어요 → 업무포털 메인으로</div>' }) +
+    popup('popup-unlocked', '<div class="hl h1" style="' + pbox(R('popup-unlocked', '#loginBtn'), 4) + '"></div>'),
+    setup: function (a) {
+      var lb = ppt(R('popup-unlocked', '#loginBtn'));
+      a.k('.cam', [[0, pCam]]);
+      a.mouse(640, 560, .3).to(2.6, TB.ssam[0], TB.ssam[1], 1.4).click(3).to(4.6, lb[0], lb[1], 1.2).click(5.2).hide(5.6);
+      a.k('.pop', [[0, { o: 0, s: .92 }], [3.1, { o: 0, s: .92 }], [3.5, { o: 1, s: 1 }, 'o'], [5.5, { o: 1, s: 1 }], [5.8, { o: 0, s: .96 }]]);
+      a.hl('.h1', 3.6, 5.4);
+      a.src('.scr', [[0, 'real-portal-login'], [6.4, 'real-portal-cert'], [10.4, 'real-portal-login']]);
+      a.type('.pw', 7.4, 8.8);
+      a.k('.pw', [[0, { o: 0 }], [7.3, { o: 0 }], [7.4, { o: 1 }], [10.35, { o: 1 }], [10.4, { o: 0 }]]);
+      a.k('.b1', [[0, { o: 0, y: 6 }], [7.2, { o: 0, y: 6 }], [7.5, { o: 1, y: 0 }, 'o'], [9.2, { o: 1 }], [9.5, { o: 0 }]]);
+      a.step('.b1', [[0, 0]], function (e) { var p = wpt([942, 501, 160, 20], pCam, PW, 1, 0); e.style.left = (p[0] - WIN.x + 14) + 'px'; e.style.top = (p[1] - WIN.y - 26) + 'px'; });
+      a.hl('.h2', 9, 10.2);
+      a.k('.dim', [[0, { o: 0 }], [10.6, { o: 0 }], [11, { o: 1 }]]);
+      a.k('.dn', [[0, { o: 0, y: -8 }], [11.2, { o: 0, y: -8 }], [11.6, { o: 1, y: 0 }, 'o']]);
+      a.cap(0, '매일 아침, 팝업 맨 위 \'바로 열기\'의 [업무포털]을 누르면');
+      a.cap(5.8, '업무포털을 열고 인증서 창에 비밀번호를 넣어 로그인까지 해요. 선생님은 지켜보기만 하면 돼요.');
+      a.cap(11.2, '비밀번호가 틀리면 다시 시도하지 않고 멈춰요. 인증서가 잠기지 않게요.');
+      a.cap(15.2, '설정 › 로그인에서 켜 두면 업무포털을 열기만 해도 자동으로 로그인해요.');
+    } });
+
+  scene({ title: 'K-에듀파인 · 나이스 · 과세특', dur: 14, html:
+    '<div class="bgdots"></div>' +
+    '<div class="abs" style="left:110px;top:150px;width:520px">' +
+      '<div class="title-mid" style="position:relative;text-align:left;font-size:44px">버튼 하나로<br><span class="mk">그 화면까지</span></div>' +
+      '<p class="abs p1" style="position:relative;margin:28px 0 0;font-size:22px;font-weight:700;color:var(--text-2);line-height:1.6">업무포털 로그인 → 메뉴 열기를<br>한 번에 이어서 해요.<br>이미 된 단계는 건너뛰어요.</p></div>' +
+    '<div class="pop" style="left:760px;top:40px;width:380px;height:640px"><div class="pcam" style="width:380px"><img src="' + IMG + 'popup-unlocked.webp" alt="" style="width:380px">' +
+      '<div class="hl e1" style="left:8px;top:161px;width:364px;height:76px"></div><div class="hl e2" style="left:8px;top:237px;width:364px;height:76px"></div><div class="hl e3" style="left:8px;top:314px;width:364px;height:96px"></div></div></div>',
+    setup: function (a) {
+      a.k('.pop', [[0, { o: 0, x: 30 }], [.3, { o: 0, x: 30 }], [.9, { o: 1, x: 0 }, 'o']]);
+      a.hl('.e1', 1.6, 4.4); a.hl('.e2', 4.6, 7.4); a.hl('.e3', 7.6, 11);
+      a.cap(0, '[K-에듀파인]은 업무포털 로그인부터 K-에듀파인 화면까지 한 번에 열어 줘요.');
+      a.cap(4.6, '[나이스]도 마찬가지예요. 업무포털이 닫혀 있어도 처음부터 이어서 해요.');
+      a.cap(7.6, '[과세특 입력]은 나이스 과세특 메뉴의 OTP 창까지 열어요. 이미 열려 있는 단계는 건너뛰어요.');
+    } });
+
+  var loginCam = fit([292, 120, 640, 460], 1120, 20, 1.4);
+  scene({ title: '자동 로그인 · 다른 교육청', dur: 11, html:
+    win({ tab: '쌤패스 설정 · 로그인', url: '쌤패스 › 설정 › 로그인', body: scr('opt-login') +
+      '<div class="hl h1" style="' + box(R('opt-login', '#autoLoginChk'), 1120, 8) + '"></div>' +
+      '<div class="hl h2" style="' + box(R('opt-login', '#portalForm'), 1120, 8) + '"></div>' }),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [.8, top0(0)], [2, loginCam]]);
+      a.hl('.h1', 2.2, 5.4); a.hl('.h2', 5.8, 10.4);
+      a.cap(0, '설정 › 로그인: \'업무포털을 열면 자동 로그인\' 스위치를 켜면 업무포털을 열기만 해도 로그인돼요.');
+      a.cap(5.6, '다른 시도교육청 선생님은 업무포털 주소만 바꿔 주세요. (기본: 경기)');
+    } });
+
+  // ── 8. 루틴 실행 ──
+  chapter('루틴 실행', '버튼 하나로 복무 신청', true);
+  scene({ title: '날짜·시각 바꾸기', dur: 13, html:
+    win({ tab: '업무포털', fav: 'neis', url: '○○.eduptl.kr', white: true, body: portalBg, over: '<span class="tag-ex">실제 화면 · 개인정보는 흐리게 가림</span>' }) +
+    popup('popup-unlocked', '<div class="hl h1" style="' + pbox(R('popup-when', '#runDate'), 4) + ';width:' + (326 * POP.k + 8) + 'px"></div><div class="hl h2" style="' + pbox(R('popup-when', '#runStart'), 4) + ';width:' + (326 * POP.k + 8) + 'px"></div>'),
+    setup: function (a) {
+      var sy = 250;
+      var wt = ppt(R('popup-unlocked', '#whenText'), sy, .9);
+      a.k('.pop', [[0, { o: 0, s: .92 }], [.4, { o: 0, s: .92 }], [.8, { o: 1, s: 1 }, 'o']]);
+      a.k('.pcam', [[0, { y: 0 }], [1.2, { y: 0 }], [2.2, { y: -sy }]]);
+      a.mouse(640, 560, .3).to(3.6, wt[0], wt[1], 1.2).click(4.2).to(6.6, 760, 420, 1.2);
+      a.src('.pimg', [[0, 'popup-unlocked'], [4.4, 'popup-when']]);
+      a.hl('.h1', 5, 8); a.hl('.h2', 8.2, 12.2);
+      a.cap(0, '버튼을 누르기 전에, 날짜나 시각이 평소와 다르면 \'바꾸기\'를 열어요.');
+      a.cap(5, '그날만 쓸 날짜·시각을 넣어요. 연가·출장은 끝나는 날도 고를 수 있어요.');
+      a.cap(9, '비워 두면 오늘 날짜, 버튼에 저장한 기본 시각으로 신청해요.');
+    } });
+
+  // 신청 창은 쌤패스가 채운 뒤의 캡처 → 칸마다 흰 조각으로 덮어 두었다가 차례로 걷어 "채우는" 모습을 보인다
+  var aCam = fit([447, 47, 1025, 823], AW, 6, 1.3), dCam = { x: 0, y: 6, s: 1 };
+  var AP = [[[603, 347, 120, 28], 9.6], [[731, 347, 138, 28], 9.6], [[1181, 347, 246, 28], 10], [[603, 393, 128, 32], 10.4], [[768, 393, 82, 32], 10.8], [[888, 393, 82, 32], 10.8],
+    [[603, 444, 128, 32], 11.2], [[768, 444, 82, 32], 11.4], [[888, 444, 82, 32], 11.4], [[1147, 444, 38, 32], 11.6], [[603, 583, 290, 28], 12.9]];
+  var DR = [[[434, 474, 1147, 40], 17.2], [[434, 514, 1147, 40], 17.8], [[434, 554, 1147, 40], 18.4]];
+  scene({ title: '버튼 하나로 조퇴 신청', dur: 28, html:
+    win({ tab: '나이스', fav: 'neis', url: '○○.neis.go.kr', white: true, body: portalBg +
+      AP.map(function (p, i) { return '<div class="abs ap' + i + '" style="' + box(p[0], AW) + ';background:#fff;border-radius:3px"></div>'; }).join('') +
+      '<div class="tw ty" data-full="병원진료" style="' + box([603, 583, 290, 28], AW) + ';font-size:12px;font-weight:500;padding:0 6px"></div>' +
+      '<div class="hl f1" style="' + box([598, 342, 834, 38], AW, 4) + '"></div>' +
+      '<div class="hl f2" style="' + box([598, 388, 700, 94], AW, 4) + '"></div>' +
+      '<div class="hl f3" style="' + box([598, 578, 300, 38], AW, 4) + '"></div>' +
+      '<div class="hl f4" style="' + box([887, 820, 74, 36], AW, 4) + '"></div>' +
+      DR.map(function (p, i) { return '<div class="abs dr' + i + '" style="' + box(p[0], DW) + ';background:#fff"></div>'; }).join('') +
+      '<div class="hl g1" style="' + box([1351, 267, 115, 36], DW, 4) + '"></div>' +
+      '<img class="abs to" src="' + IMG + 'real-neis-toast.webp" alt="" style="' + box([1378, 16, 510, 101], DW) + ';border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.25)">' +
+      '<div class="hl g2" style="' + box([1495, 170, 46, 36], DW, 5) + '"></div>',
+      over: '<span class="tag-ex">실제 화면 · 개인정보는 흐리게 가림</span>' }) +
+    popup('popup-unlocked') +
+    '<div class="steps4"><span class="st s1"><span class="ck">' + U('i-ck') + '</span>업무포털 로그인</span><span class="st s2"><span class="ck">' + U('i-ck') + '</span>나이스 열기</span><span class="st s3"><span class="ck">' + U('i-ck') + '</span>신청서 채우기</span><span class="st s4"><span class="ck">' + U('i-ck') + '</span>결재선 지정</span></div>' +
+    '<div class="bub sg2">여기부터는 선생님이 직접</div>',
+    setup: function (a) {
+      var sy = 280, r2 = ppt(R('popup-unlocked', 'route2'), sy);
+      a.k('.pop', [[0, { o: 0, s: .92 }], [.3, { o: 0, s: .92 }], [.7, { o: 1, s: 1 }, 'o'], [5.4, { o: 1, s: 1 }], [5.8, { o: 0, s: .96 }]]);
+      a.k('.pcam', [[0, { y: 0 }], [1, { y: 0 }], [2, { y: -sy }]]);
+      a.src('.pimg', [[0, 'popup-unlocked'], [3.6, 'popup-run']]);
+      var mm = a.mouse(640, 560, .3).to(3, r2[0], r2[1], 1.2).click(3.4).hide(4.6);
+      // 바탕: 업무포털 → (나이스) 신청 창 → 기안문서상신 창
+      a.src('.scr', [[0, 'real-portal-login'], [7.8, 'real-neis-apply'], [14.8, 'real-neis-draft-base']]);
+      a.k('.cam', [[0, pCam], [7.79, pCam], [7.8, { x: 0, y: 0, s: 1 }], [8.4, { x: 0, y: 0, s: 1 }], [9.2, aCam], [14.79, aCam], [14.8, dCam]]);
+      // 진행 단계
+      a.cls('.s1', [[0, 'st s1'], [5.6, 'st s1 now'], [6.6, 'st s1 done']]);
+      a.cls('.s2', [[0, 'st s2'], [6.6, 'st s2 now'], [7.8, 'st s2 done']]);
+      a.cls('.s3', [[0, 'st s3'], [8.4, 'st s3 now'], [14.6, 'st s3 done']]);
+      a.cls('.s4', [[0, 'st s4'], [15, 'st s4 now'], [19.6, 'st s4 done']]);
+      a.k('.steps4', [[0, { o: 0, y: 12 }], [5.2, { o: 0, y: 12 }], [5.6, { o: 1, y: 0 }, 'o']]);
+      // 신청 창: 칸 채우기
+      AP.forEach(function (p, i) { a.k('.ap' + i, [[0, { o: 0 }], [7.79, { o: 0 }], [7.8, { o: 1 }], [p[1], { o: 1 }], [p[1] + .25, { o: 0 }]]); });
+      a.type('.ty', 12, 12.8);
+      a.k('.ty', [[0, { o: 0 }], [11.9, { o: 0 }], [12, { o: 1 }], [12.85, { o: 1 }], [12.9, { o: 0 }]]);
+      a.hl('.f1', 9.4, 10.2); a.hl('.f2', 10.3, 11.8); a.hl('.f3', 11.9, 13.1); a.hl('.f4', 13.3, 14.4);
+      // 상신 창: 개인결재선 → 결재선 줄
+      DR.forEach(function (p, i) { a.k('.dr' + i, [[0, { o: 0 }], [14.79, { o: 0 }], [14.8, { o: 1 }], [p[1], { o: 1 }], [p[1] + .25, { o: 0 }]]); });
+      a.hl('.g1', 15.6, 16.8);
+      a.k('.to', [[0, { o: 0, y: -10 }], [19.8, { o: 0, y: -10 }], [20.2, { o: 1, y: 0 }, 'o']]);
+      var sg = wpt([1495, 170, 46, 36], dCam, DW);
+      mm.show(22.2).at(22.2, 640, 640).to(24, sg[0] - 4, sg[1] + 4, 1.6);
+      a.hl('.g2', 23.8, 27.6);
+      a.k('.sg2', [[0, { o: 0, y: 8 }], [24, { o: 0, y: 8 }], [24.4, { o: 1, y: 0 }, 'o']]);
+      a.step('.sg2', [[0, 0]], function (e) { e.style.left = (sg[0] - 330) + 'px'; e.style.top = (sg[1] + 30) + 'px'; });
+      a.cap(0, '복무 신청 루틴의 [조퇴]를 눌러요. 선생님이 할 일은 이게 전부예요.');
+      a.cap(4.4, '나이스가 닫혀 있으면 업무포털 로그인 → 나이스 열기부터 알아서 해요.');
+      a.cap(8.6, '근무상황 신청 창을 열고 종류·날짜·시각·사유를 채운 뒤 [승인요청].');
+      a.cap(15, '기안문서 상신 창에서 저장해 둔 개인결재선을 불러와 지정해요.');
+      a.cap(20, '다 되면 나이스 화면 오른쪽 위에 초록 안내가 떠요. 내용을 확인하고 [상신]은 직접 누르세요.');
+    } });
+
+  scene({ title: '결재 진행 확인', dur: 13, html:
+    win({ tab: '업무포털', fav: 'neis', url: '○○.eduptl.kr', white: true, body: portalBg, over: '<span class="tag-ex">실제 화면 · 개인정보는 흐리게 가림</span>' }) +
+    popup('popup-unlocked', '<div class="hl h1" style="' + pbox(R('popup-ap', '#approvals'), 5) + '"></div>'),
+    setup: function (a) {
+      var sy = 290, ab = ppt(R('popup-unlocked', '#approvalsBtn'), sy);
+      a.k('.pop', [[0, { o: 0, s: .92 }], [.3, { o: 0, s: .92 }], [.7, { o: 1, s: 1 }, 'o']]);
+      a.k('.pcam', [[0, { y: 0 }], [1, { y: 0 }], [2, { y: -sy }]]);
+      a.mouse(640, 560, .3).to(3.6, ab[0], ab[1], 1.4).click(4.2).to(6, 760, 520, 1);
+      a.src('.pimg', [[0, 'popup-unlocked'], [5, 'popup-ap']]);
+      a.hl('.h1', 5.6, 12.4);
+      a.cap(0, '[결재 진행]을 누르면 나이스 목록을 읽어 최근 신청의 결재 상태를 보여 줘요.');
+      a.cap(6, '완결은 초록, 반려는 빨강, 진행 중은 노랑. 읽기만 하고 아무것도 바꾸지 않아요.');
+    } });
+
+  var subCam = fit([292, 120, 640, 640], 1120, 16, 1.15);
+  scene({ title: '자동 상신 (선택)', dur: 16, html:
+    win({ tab: '쌤패스 설정 · 자동 상신', url: '쌤패스 › 설정 › 자동 상신', body: scr('opt-submit') +
+      '<div class="hl h1" style="' + box([313, 250, 598, 470], 1120, 6) + '"></div>' }) +
+    popup('popup-auto', '<div class="hl h2" style="' + pbox(R('popup-auto', '#autoNote'), 4) + '"></div>'),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [.8, top0(0)], [2, subCam]]);
+      a.hl('.h1', 3.6, 9.4);
+      var sy = R('popup-auto', '#autoNote')[1] * POP.k - 380;
+      a.k('.pop', [[0, { o: 0, s: .92 }], [9.6, { o: 0, s: .92 }], [10, { o: 1, s: 1 }, 'o']]);
+      a.k('.pcam', [[0, { y: 0 }], [10.4, { y: 0 }], [11.4, { y: -sy }]]);
+      a.hl('.h2', 11.6, 15.6);
+      a.cap(0, '자동 상신은 기본으로 꺼져 있어요.');
+      a.cap(3.4, '켜려면 수당과 책임에 대한 안내를 읽고 동의해야 해요. 시간외근무는 수당과 바로 이어지니 신중하게요.');
+      a.cap(10, '켜면 [상신]과 그 뒤 나이스 확인 창까지 눌러요. 처음엔 끈 채로 결재선까지 잘 들어가는지 먼저 확인해 보세요.');
+    } });
+
+  // ── 9. 과세특 ──
+  chapter('과세특 입력', '쓰던 엑셀 그대로', true);
+  scene({ title: '엑셀로 과세특 입력', dur: 28, html:
+    win({ tab: '쌤패스 · 과세특 입력', url: '쌤패스 › 과세특 입력', body: scr('remarks-file') +
+      '<div class="hl h1" style="' + box([65, 196, 990, 80], 1120, 4) + '"></div>' +
+      '<div class="hl h2" style="' + box([65, 290, 990, 520], 1120, 4) + '"></div>' }) +
+    '<div class="xfile xf"><i>X</i>3학년_세특.xlsx</div>',
+    setup: function (a) {
+      a.src('.scr', [[0, 'remarks-file'], [7.4, 'remarks-check'], [16.4, 'remarks-match'], [23.4, 'remarks-done']]);
+      var drop = wpt(R('remarks-file', '#drop'));
+      a.k('.xf', [[0, { o: 0, x: 60, y: 520 }], [4.4, { o: 0, x: 60, y: 520 }], [4.8, { o: 1, x: 60, y: 520 }], [6.6, { o: 1, x: drop[0] - 59, y: drop[1] - 66 }, 'io'], [7.2, { o: 1, x: drop[0] - 59, y: drop[1] - 66, s: 1 }], [7.4, { o: 0, s: .7 }]]);
+      var nb = wpt(R('remarks-check', '#nextBtn'), { x: 0, y: -(560 * kOf()), s: 1 });
+      var wb = wpt(R('remarks-match', '#writeBtn'), { x: 0, y: -(300 * kOf()), s: 1 });
+      a.k('.cam', [[0, top0(0)], [11.6, top0(0)], [13, { x: 0, y: -(560 * kOf()), s: 1 }], [16.3, { x: 0, y: -(560 * kOf()), s: 1 }], [16.4, top0(0)], [20, top0(0)], [21, { x: 0, y: -(300 * kOf()), s: 1 }], [23.3, { x: 0, y: -(300 * kOf()), s: 1 }], [23.4, top0(0)]]);
+      a.mouse(120, 640, 4.4).to(6.6, drop[0], drop[1], 1.8).to(15.2, nb[0], nb[1], 1.4).click(15.8).to(22.4, wb[0], wb[1], 1.4).click(23);
+      a.hl('.h1', 8.4, 11.2);
+      a.hl('.h2', 17, 19.8);
+      a.cap(0, '[과세특 입력]을 누르면 나이스 과세특 화면의 OTP 창까지 열려요. OTP는 직접 넣고, 이 화면으로 돌아와요.');
+      a.cap(4.6, '쓰던 엑셀을 그대로 끌어다 놓으면 학년·반·번호·이름·내용 열을 알아서 찾아요.');
+      a.cap(8.4, '바이트 초과나 나이스가 받지 못하는 글자는 미리 빨간색으로 알려 줘요.');
+      a.cap(15.4, '나이스에서 학기·과목·강의실을 [조회]하면 명단과 하나씩 맞춰 봐요. 이미 내용이 있는 학생은 체크해야 바꿔요.');
+      a.cap(22.6, '[입력 시작]을 누르면 나이스 표에 바로 들어가요. 확인하고 [저장]은 직접, 다음 강의실도 이어서 해요.');
+    } });
+
+  // ── 10. 더 알아 두기 ──
+  chapter('더 알아 두기', '단축키 · 화면 테마 · 문제 보고');
+  var keyCam = fit([292, 120, 640, 400], 1120, 20, 1.4);
+  scene({ title: '단축키', dur: 12, html:
+    win({ tab: '쌤패스 설정 · 단축키', url: '쌤패스 › 설정 › 단축키', body: scr('opt-keys') }) +
+    '<div class="abs kb" style="left:0;right:0;top:560px;display:flex;justify-content:center;align-items:center;z-index:9"><span class="kbd">Alt</span><span class="plus">+</span><span class="kbd">Shift</span><span class="plus">+</span><span class="kbd kk" style="min-width:76px">N</span></div>',
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [.8, top0(0)], [2, keyCam]]);
+      a.k('.kb', [[0, { o: 0, y: 16 }], [2.4, { o: 0, y: 16 }], [2.8, { o: 1, y: 0 }, 'o']]);
+      a.txt('.kk', [[0, 'N'], [4.6, 'L'], [7, '1'], [8.4, '2']]);
+      a.k('.kk', [[4.5, { s: 1 }], [4.7, { s: 1.2 }], [5, { s: 1 }], [6.9, { s: 1 }], [7.1, { s: 1.2 }], [7.4, { s: 1 }], [8.3, { s: 1 }], [8.5, { s: 1.2 }], [8.8, { s: 1 }]]);
+      a.cap(0, '단축키: Alt+Shift+N은 팝업 열기, Alt+Shift+L은 업무포털 로그인.');
+      a.cap(6.6, 'Alt+Shift+1·2는 복무 신청 루틴 1·2번을 오늘 날짜로 바로 실행해요. [단축키 바꾸기]에서 더 지정할 수 있어요.');
+    } });
+
+  var themeCam = fit([292, 120, 640, 260], 1120, 20, 1.5);
+  scene({ title: '화면 테마', dur: 8, html:
+    win({ tab: '쌤패스 설정 · 화면', url: '쌤패스 › 설정 › 화면', body: scr('opt-theme') +
+      '<div class="hl h1" style="' + box([313, 163, 598, 166], 1120, 8) + '"></div>' }),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [.6, top0(0)], [1.8, themeCam]]);
+      a.hl('.h1', 2.2, 7.4);
+      a.cap(0, '설정 › 화면에서 스카이·베이지·라임·민트·라벤더·피치 중 마음에 드는 색을 골라요.');
+    } });
+
+  var repCam = fit([292, 130, 640, 540], 1120, 16, 1.25);
+  scene({ title: '잘 안 될 때: 문제 보고', dur: 15, html:
+    win({ tab: '쌤패스 설정 · 문제 보고', url: '쌤패스 › 설정 › 문제 보고 · 제작자', body: scr('opt-report-0') +
+      '<div class="hl h1" style="' + box(R('opt-report', '#reportText'), 1120, 6) + '"></div>' +
+      '<div class="hl h2" style="' + box(R('opt-report', '#authorIg'), 1120, 6) + '"></div>' }),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [.6, top0(0)], [1.8, repCam], [10, repCam], [11.2, fit([292, 640, 640, 220], 1120, 20, 1.4)]]);
+      a.src('.scr', [[0, 'opt-report-0'], [4.4, 'opt-report']]);
+      var rb = wpt(R('opt-report-0', '#reportBtn'), repCam);
+      a.mouse(640, 640, .3).to(3.4, rb[0], rb[1], 1.4).click(4).to(5.6, 1100, 600, 1);
+      a.hl('.h1', 5, 9.6); a.hl('.h2', 11.6, 14.6);
+      a.cap(0, '잘 안 될 때는 나이스 화면을 그대로 두고, 설정 › 문제 보고에서 [점검하고 보고 내용 복사].');
+      a.cap(5, '쌤패스가 열린 화면을 스스로 점검해 보고 내용을 만들어요. 비밀번호·이름·입력값은 들어가지 않아요.');
+      a.cap(10.6, '인스타그램 @hirame.ki로 DM에 붙여 넣어 보내 주세요. 쌤패스가 자동으로 보내는 건 없어요.');
+    } });
+
+  // ── 11. 마무리 ──
+  chapter('마무리', '한 번 준비, 매일 버튼 하나');
+  scene({ title: '이제 시작해 볼까요?', dur: 11, html:
+    '<div class="bgdots"></div>' +
+    '<div class="title-mid" style="top:90px">준비는 한 번,<br><span class="mk">매일은 버튼 하나</span></div>' +
+    '<div class="abs" style="left:0;right:0;top:300px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:0 90px">' +
+      ['받기', '툴바에 고정', '비밀번호·PIN', '개인결재선', '루틴 버튼', '매일 버튼 하나'].map(function (t, i) { return '<span class="pill z' + i + '" style="position:relative"><span class="ck">' + U('i-ck') + '</span>' + t + '</span>'; }).join('') + '</div>' +
+    '<div class="abs end" style="left:0;right:0;top:470px;display:flex;justify-content:center;gap:12px">' +
+      '<a href="index.html#download" style="height:62px;padding:0 34px;border-radius:999px;background:var(--accent);box-shadow:var(--ring);display:inline-flex;align-items:center;font-weight:900;font-size:21px;text-decoration:none;color:var(--text)">쌤패스 받으러 가기</a>' +
+      '<a href="#" data-replay style="height:62px;padding:0 30px;border-radius:999px;background:var(--surface);box-shadow:var(--ring);display:inline-flex;align-items:center;font-weight:800;font-size:20px;text-decoration:none;color:var(--text)">처음부터 다시</a></div>',
+    setup: function (a) {
+      for (var i = 0; i < 6; i++) a.k('.z' + i, [[0, { o: 0, y: 14 }], [.8 + i * .45, { o: 0, y: 14 }], [1.2 + i * .45, { o: 1, y: 0 }, 'o']]);
+      a.k('.end', [[0, { o: 0, y: 14 }], [4.4, { o: 0, y: 14 }], [4.9, { o: 1, y: 0 }, 'o']]);
+      a.cap(0, '받기 → 툴바에 고정 → 비밀번호·PIN → 개인결재선 → 루틴 버튼. 준비는 한 번이면 끝이에요.');
+      a.cap(5, '그다음부터는 매일 버튼 하나. 쌤패스로 아침을 가볍게 시작하세요.');
+    } });
+
+  stage.appendChild(cursor);
+  // 장면 중간에 사진이 바뀔 때 깜빡이지 않게 쓰는 사진을 미리 받아 둔다
+  var pre = {};
+  scenes.forEach(function (sc) { sc.steps.forEach(function (st) { st.fr.forEach(function (f) { if (typeof f[1] === 'string' && /^[a-z]+-[a-z0-9-]+$/.test(f[1])) pre[f[1]] = 1; }); }); });
+  Object.keys(pre).forEach(function (n) { var im = new Image(); im.src = IMG + n + '.webp'; });
+
+  // ─────────────── 재생기 ───────────────
+  var starts = [], total = 0;
+  scenes.forEach(function (s) { starts.push(total); total += s.dur; });
+  chapters.forEach(function (c, i) { c.start = starts[c.first]; c.end = i + 1 < chapters.length ? starts[chapters[i + 1].first] : total; });
+
+  var T = 0, playing = false, started = false, rate = 1, cur = -1, curCh = -1, lastCap = null, last = 0;
+  var $ = function (id) { return document.getElementById(id); };
+  var seek = $('seek'), screen = $('screen');
+  seek.max = total;
+
+  function fmt(s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+  function sceneAt(t) { for (var i = scenes.length - 1; i >= 0; i--) if (t >= starts[i]) return i; return 0; }
+
+  // 장 구분 막대
+  var segs = $('segs');
+  chapters.forEach(function (c) {
+    var d = document.createElement('div'); d.className = 'seg'; d.style.flex = (c.end - c.start) + ' 1 0';
+    d.innerHTML = '<i></i>'; segs.appendChild(d); c.bar = d.firstChild;
+  });
+  // 목차
+  var toc = $('toc');
+  chapters.forEach(function (c, i) {
+    var li = document.createElement('li'); if (c.key) li.className = 'key';
+    li.innerHTML = '<button type="button"><span class="n">' + String(i + 1).padStart(2, '0') + '</span><span><b></b><small></small></span><span class="d">' + fmt(c.end - c.start) + '</span></button>';
+    li.querySelector('b').textContent = c.title; li.querySelector('small').textContent = c.sub;
+    li.querySelector('button').addEventListener('click', function () { go(c.start + .01); play(); $('player').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+    toc.appendChild(li); c.li = li;
+  });
+  $('tocTotal').textContent = '전체 ' + fmt(total) + ' · ' + chapters.length + '개 장';
+
+  function render() {
+    var i = sceneAt(T), sc = scenes[i], t = Math.min(T - starts[i], sc.dur);
+    if (i !== cur) {
+      if (cur >= 0) scenes[cur].root.classList.remove('on');
+      sc.root.classList.add('on'); cur = i;
+    }
+    // 장면 사이: 바탕으로 살짝 어두웠다 밝아짐
+    var fade = Math.min(1, t / .35, (sc.dur - t) / .3);
+    sc.root.style.opacity = (i === 0 && t < .35) ? 1 : (i === scenes.length - 1 && sc.dur - t < .3 ? 1 : Math.max(0, fade));
+    sc.tracks.forEach(function (tr) { apply(tr.el, sample(tr.fr, t)); });
+    sc.steps.forEach(function (st) { var v = st.fr[0][1]; for (var j = 0; j < st.fr.length; j++) if (t >= st.fr[j][0]) v = st.fr[j][1]; st.fn(st.el, v); });
+    // 마우스
+    if (sc.cur) { var v = sample(sc.cur, t); cursor.style.transform = 'translate(' + (v.x - 3) + 'px,' + (v.y - 2) + 'px) scale(' + v.s + ')'; cursor.style.opacity = v.o * sc.root.style.opacity; }
+    else cursor.style.opacity = 0;
+    sc.clicks.forEach(function (c, j) { var d = t - c[0], r = sc.rips[j]; if (d >= 0 && d < .7) { var p = d / .7; r.style.opacity = .7 * (1 - p); r.style.transform = 'scale(' + (.3 + p * 1.3) + ')'; } else r.style.opacity = 0; });
+    // 자막
+    var cap = sc.caps.length ? sc.caps[0][1] : '';
+    sc.caps.forEach(function (c) { if (t >= c[0]) cap = c[1]; });
+    var key = i + '|' + cap;
+    if (key !== lastCap) {
+      var p = $('capText'); p.textContent = cap; p.classList.remove('swap'); void p.offsetWidth; p.classList.add('swap'); lastCap = key;
+      $('capTitle').textContent = sc.title;
+    }
+    if (sc.ch !== curCh) {
+      if (curCh >= 0) chapters[curCh].li.classList.remove('on');
+      curCh = sc.ch; chapters[curCh].li.classList.add('on');
+      $('capNo').textContent = String(curCh + 1).padStart(2, '0') + ' · ' + chapters[curCh].title;
+      try { history.replaceState(null, '', '#c' + (curCh + 1)); } catch (e) { /* file:// 등 */ }
+    }
+    chapters.forEach(function (c) { c.bar.style.width = (T >= c.end ? 100 : T <= c.start ? 0 : (T - c.start) / (c.end - c.start) * 100) + '%'; });
+    if (document.activeElement !== seek) seek.value = T;
+    $('time').textContent = fmt(T) + ' / ' + fmt(total);
+  }
+
+  function setPlayIcon() {
+    $('playIco').innerHTML = playing ? '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>' : '<path d="M6 4l15 8-15 8z"/>';
+    $('playBtn').setAttribute('aria-label', playing ? '멈춤' : '재생');
+    $('bigplay').classList.toggle('hide', playing || started); // 큰 재생 단추는 처음 한 번만
+  }
+  function play() { if (T >= total - .05) T = 0; playing = true; started = true; last = performance.now(); setPlayIcon(); }
+  function pause() { playing = false; setPlayIcon(); }
+  function toggle() { playing ? pause() : play(); }
+  function go(t) { T = Math.max(0, Math.min(total, t)); if (T > 0) { started = true; setPlayIcon(); } render(); }
+  function loop(now) {
+    if (playing) {
+      T += Math.min(.1, (now - last) / 1000) * rate;
+      if (T >= total) { T = total; pause(); }
+      render();
+    }
+    last = now;
+    requestAnimationFrame(loop);
+  }
+
+  // 무대 크기: 폭에 맞춰 1280×720을 줄인다
+  function fitStage() { stage.style.transform = 'scale(' + (screen.clientWidth / 1280) + ')'; }
+  window.addEventListener('resize', fitStage);
+  if (window.ResizeObserver) new ResizeObserver(fitStage).observe(screen);
+  fitStage();
+
+  $('playBtn').addEventListener('click', toggle);
+  $('bigplay').addEventListener('click', function (e) { e.stopPropagation(); play(); });
+  screen.addEventListener('click', function (e) {
+    if (e.target.closest('a')) {
+      if (e.target.closest('[data-replay]')) { e.preventDefault(); go(0); play(); }
+      return;
+    }
+    toggle();
+  });
+  $('prevBtn').addEventListener('click', function () { var i = sceneAt(T); go(T - starts[i] > 1.5 ? starts[i] : starts[Math.max(0, i - 1)]); });
+  $('nextBtn').addEventListener('click', function () { var i = sceneAt(T); go(i + 1 < scenes.length ? starts[i + 1] : total); });
+  seek.addEventListener('input', function () { go(+seek.value); });
+  seek.addEventListener('mousemove', function (e) {
+    var r = seek.getBoundingClientRect(), x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), t = x * total, i = sceneAt(t);
+    var tip = $('seekTip'); tip.textContent = fmt(t) + ' · ' + scenes[i].title; tip.style.left = (x * 100) + '%';
+  });
+  $('rate').addEventListener('change', function () { rate = +this.value; });
+  $('fsBtn').addEventListener('click', function () {
+    var p = $('player');
+    if (document.fullscreenElement) document.exitFullscreen(); else if (p.requestFullscreen) p.requestFullscreen();
+  });
+  document.addEventListener('fullscreenchange', function () { setTimeout(fitStage, 50); });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.closest && e.target.closest('input,select,textarea') && e.target !== seek) return;
+    if (e.key === ' ' || e.key === 'k') { e.preventDefault(); toggle(); }
+    else if (e.key === 'ArrowLeft' && e.target !== seek) { e.preventDefault(); go(T - 5); }
+    else if (e.key === 'ArrowRight' && e.target !== seek) { e.preventDefault(); go(T + 5); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); $('prevBtn').click(); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); $('nextBtn').click(); }
+  });
+
+  // #c3 처럼 장 번호로 열면 그 장부터
+  var m = /^#c(\d+)$/.exec(location.hash);
+  if (m && chapters[+m[1] - 1]) T = chapters[+m[1] - 1].start + .01;
+  // ?t=초 로 그 시점을 바로 (화면 확인용)
+  var qt = /[?&]t=([\d.]+)/.exec(location.search);
+  if (qt) T = Math.min(total, +qt[1]);
+  render();
+  setPlayIcon();
+  requestAnimationFrame(loop);
+  // 움직임 줄이기를 켠 사용자는 직접 재생을 누를 때까지 기다린다
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce && !qt && /[?&]autoplay=1/.test(location.search)) play();
+  window.__tour = { go: go, total: total, scenes: scenes, starts: starts };
+})();
+</script>
+</body>
+</html>

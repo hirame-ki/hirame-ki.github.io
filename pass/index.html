@@ -133,6 +133,10 @@
   .btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .3s var(--ease); }
   .btn:hover svg { transform: translateY(2px); }
   .btn.go:hover svg { transform: translateX(4px); }
+  /* 사용법 영상(tour.html) 버튼: 재생 삼각형 + 길이 */
+  .btn.tour svg { fill: currentColor; stroke-width: 1.6; }
+  .btn.tour:hover svg { transform: scale(1.15); }
+  .btn .len { font: 600 12.5px/1 var(--mono); padding: 5px 8px; border-radius: 999px; background: var(--accent-soft); margin-left: -2px; }
   .btn.pop::before { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 0 var(--text); animation: ring .6s ease-out; pointer-events: none; }
   @keyframes ring { from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--text) 45%, transparent); } to { box-shadow: 0 0 0 16px transparent; } }
 
@@ -424,7 +428,7 @@
         <p class="lead">아침마다 누르던 인증서 로그인, 매번 같은 시간외근무·조퇴 신청, 엑셀에서 옮겨 적던 과세특까지. 쌤패스가 대신 눌러 두고, 마지막 확인만 선생님이 해요.</p>
         <div class="actions">
           <a class="btn primary dl-link" href="https://microsoftedge.microsoft.com/addons/detail/eclbpfiiecmggoahlpmfcfnagipmakkp" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg><span class="dl-text">엣지 스토어에서 무료로 받기</span></a>
-          <a class="btn ghost go" href="#features">어떻게 되는 거죠?<svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg></a>
+          <a class="btn ghost tour" href="tour.html?autoplay=1"><svg viewBox="0 0 24 24"><path d="M7 4.5l12 7.5-12 7.5z"/></svg>사용법 영상 보기<span class="len">8분</span></a>
         </div>
         <p class="dl-other">다른 브라우저용 <a data-store="edge" href="https://microsoftedge.microsoft.com/addons/detail/eclbpfiiecmggoahlpmfcfnagipmakkp" target="_blank" rel="noopener">엣지 확장 스토어</a><a data-store="chrome" href="https://chromewebstore.google.com/detail/mcpjdlgepdbljmaipceeckkcmipnnenf" target="_blank" rel="noopener">크롬 웹 스토어</a></p>
         <div class="facts"><span>Windows 10 · 11</span><span>엣지 · 크롬</span><span>완전 무료</span><span>설치 1분</span></div>
@@ -555,7 +559,7 @@
       <div class="sec-head reveal">
         <div class="kicker">02 · 사용 설명서</div>
         <h2>사용 설명서</h2>
-        <p>툴바의 쌤패스 아이콘(또는 <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd>) → 오른쪽 위 <b>[설정]</b>을 누르면 설정 화면이 열려요. 화면 사진이 더 많은 <a href="https://www.notion.so/3fe7fde37cfc81599481c98c9b0c8977" target="_blank" rel="noopener">전체 사용 설명서(노션) ↗</a>도 있어요.</p>
+        <p>툴바의 쌤패스 아이콘(또는 <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd>) → 오른쪽 위 <b>[설정]</b>을 누르면 설정 화면이 열려요. 화면 사진이 더 많은 <a href="https://www.notion.so/3fe7fde37cfc81599481c98c9b0c8977" target="_blank" rel="noopener">전체 사용 설명서(노션) ↗</a>도 있어요. 처음이라면 실제 화면으로 따라 보는 <a href="tour.html">사용법 영상</a>부터 보세요.</p>
       </div>
       <div class="manual reveal">
         <div class="mtabs" role="tablist">
