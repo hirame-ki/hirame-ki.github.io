@@ -114,6 +114,12 @@
   .btns .time { font: 600 14px/1 var(--mono); color: var(--text-2); padding: 0 6px; white-space: nowrap; }
   .btns .grow { flex: 1; }
   .btns select { appearance: none; -webkit-appearance: none; padding: 0 14px; }
+  .btns .snd.off { color: var(--muted); }
+  .vol { width: 84px; accent-color: var(--t-ink); cursor: pointer; }
+  @media (max-width: 560px) { .vol { display: none; } }
+  /* 브라우저가 소리 자동 재생을 막았을 때: 화면을 한 번 누르면 소리가 켜진다 */
+  .sndhint { position: absolute; left: 14px; top: 14px; z-index: 6; display: none; align-items: center; gap: 8px; height: 40px; padding: 0 16px 0 12px; border-radius: 20px; border: 0; background: var(--surface); color: var(--text); box-shadow: var(--ring); font: 800 14px/1 var(--font); cursor: pointer; }
+  .sndhint.on { display: inline-flex; animation: capIn .4s var(--ease); }
   @media (max-width: 560px) { .btns .lbl { display: none; } }
 
   /* 목차 */
@@ -282,6 +288,8 @@
   <section class="player" id="player" aria-label="쌤패스 사용법 영상">
     <div class="screen" id="screen">
       <div class="stage" id="stage"></div>
+      <button class="sndhint" id="sndHint" type="button"><svg class="ico" viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>눌러서 소리 켜기</button>
+      <audio id="bgm" src="audio/tour-bgm.mp3" loop preload="auto"></audio>
       <button class="bigplay" id="bigplay" type="button" aria-label="재생"><span><svg viewBox="0 0 24 24"><path d="M6 4l15 8-15 8z"/></svg></span></button>
     </div>
     <div class="cap">
@@ -300,6 +308,8 @@
         <button id="nextBtn" type="button" aria-label="다음 장면"><span class="lbl">다음 장면</span><svg class="ico" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
         <span class="time" id="time">0:00 / 0:00</span>
         <span class="grow"></span>
+        <button id="sndBtn" class="snd" type="button" aria-pressed="true" aria-label="소리 끄기"><svg class="ico" viewBox="0 0 24 24" id="sndIco"></svg><span class="lbl" id="sndTxt">소리</span></button>
+        <input type="range" id="vol" class="vol" min="0" max="1" step="0.05" value="0.5" aria-label="배경 음악 크기">
         <select id="rate" aria-label="재생 속도">
           <option value="0.75">0.75배</option>
           <option value="1" selected>보통 속도</option>
@@ -314,7 +324,7 @@
   <div class="toc-head"><h2>목차</h2><span id="tocTotal"></span></div>
   <ol class="toc" id="toc"></ol>
 
-  <p class="notes">키보드: <kbd>Space</kbd> 재생·멈춤 · <kbd>←</kbd> <kbd>→</kbd> 5초 · <kbd>↑</kbd> <kbd>↓</kbd> 이전·다음 장면. 화면은 실제 쌤패스 화면이고 이름·내용은 예시예요. 업무포털·나이스 화면은 실제 화면이고 개인정보는 흐리게 가렸어요. 스토어 화면은 이해를 돕는 예시 그림이에요.</p>
+  <p class="notes">키보드: <kbd>Space</kbd> 재생·멈춤 · <kbd>←</kbd> <kbd>→</kbd> 5초 · <kbd>↑</kbd> <kbd>↓</kbd> 이전·다음 장면. 화면은 실제 쌤패스 화면이고 이름·내용은 예시예요. 업무포털·나이스 화면은 실제 화면이고 개인정보는 흐리게 가렸어요. 스토어 화면은 이해를 돕는 예시 그림이에요. 배경 음악은 이 영상을 위해 직접 만든 곡이에요(소리 단추로 끄고 켤 수 있어요).</p>
 </main>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1182,14 +1192,70 @@
     $('playBtn').setAttribute('aria-label', playing ? '멈춤' : '재생');
     $('bigplay').classList.toggle('hide', playing || started); // 큰 재생 단추는 처음 한 번만
   }
-  function play() { if (T >= total - .05) T = 0; playing = true; started = true; last = performance.now(); setPlayIcon(); }
-  function pause() { playing = false; setPlayIcon(); }
+  // ─────────────── 소리: 배경 음악(audio/tour-bgm.mp3, tools/site-capture/tour-bgm.py로 직접 만든 곡) + 마우스 누름 소리 ───────────────
+  // 음악은 장면 시각에 맞춰 둔다(시각 % 곡 길이) → 슬라이더로 옮겨도 같은 자리의 음악. 누름 소리는 Web Audio로 그때그때 만든다
+  var bgm = $('bgm'), snd = true, vol = .5, needGesture = false, playAt = 0, ac = null, unlockedAt = 0;
+  try { snd = localStorage.getItem('ssampass-tour-sound') !== 'off'; var sv = parseFloat(localStorage.getItem('ssampass-tour-vol')); if (sv >= 0 && sv <= 1) vol = sv; } catch (e) { /* 저장 안 됨 */ }
+  $('vol').value = vol;
+  function setSndUi() {
+    $('sndBtn').classList.toggle('off', !snd);
+    $('sndBtn').setAttribute('aria-pressed', snd);
+    $('sndBtn').setAttribute('aria-label', snd ? '소리 끄기' : '소리 켜기');
+    $('sndTxt').textContent = snd ? '소리 켜짐' : '소리 꺼짐';
+    $('sndIco').innerHTML = '<path d="M11 5L6 9H3v6h3l5 4z"/>' + (snd ? '<path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>' : '<path d="M16 9l5 6M21 9l-5 6"/>');
+  }
+  function bgmSync() { if (bgm.duration) { var want = T % bgm.duration; if (Math.abs(bgm.currentTime - want) > .35) bgm.currentTime = want; } }
+  function bgmStart() {
+    if (!snd || !playing) return;
+    bgmSync(); bgm.playbackRate = rate; playAt = performance.now();
+    var p = bgm.play();
+    if (p && p.catch) p.then(function () { needGesture = false; $('sndHint').classList.remove('on'); }, function () { needGesture = true; $('sndHint').classList.add('on'); });
+  }
+  function unlock() {
+    // 사용자 동작 안에서 불러야 브라우저가 소리를 허락한다
+    try { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch (e) { ac = null; }
+    if (needGesture) { unlockedAt = performance.now(); bgmStart(); }
+  }
+  function tick() {
+    // 짧고 부드러운 "톡": 높은 사인이 빠르게 사라짐
+    if (!snd || !ac || ac.state !== 'running') return;
+    var t0 = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(1500, t0); o.frequency.exponentialRampToValueAtTime(900, t0 + .05);
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(.22 * Math.max(.3, vol), t0 + .004); g.gain.exponentialRampToValueAtTime(.0001, t0 + .09);
+    o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + .1);
+  }
+  function bgmVolume() {
+    // 시작할 때 1.2초 동안 커지고, 영상 끝 4초 동안 작아진다
+    var fin = Math.min(1, (performance.now() - playAt) / 1200), fout = Math.max(0, Math.min(1, (total - T) / 4));
+    bgm.volume = Math.max(0, Math.min(1, vol * fin * fout));
+  }
+  setSndUi();
+  ['pointerdown', 'keydown'].forEach(function (ev) { document.addEventListener(ev, unlock, true); });
+  $('sndBtn').addEventListener('click', function () {
+    snd = !snd; setSndUi();
+    try { localStorage.setItem('ssampass-tour-sound', snd ? 'on' : 'off'); } catch (e) { /* 저장 안 됨 */ }
+    if (snd) bgmStart(); else { bgm.pause(); $('sndHint').classList.remove('on'); }
+  });
+  $('vol').addEventListener('input', function () {
+    vol = +this.value; bgmVolume();
+    try { localStorage.setItem('ssampass-tour-vol', vol); } catch (e) { /* 저장 안 됨 */ }
+    if (vol > 0 && !snd) $('sndBtn').click();
+  });
+  $('sndHint').addEventListener('click', function (e) { e.stopPropagation(); unlock(); bgmStart(); });
+
+  function play() { if (T >= total - .05) T = 0; playing = true; started = true; last = performance.now(); setPlayIcon(); bgmStart(); }
+  function pause() { playing = false; setPlayIcon(); bgm.pause(); }
   function toggle() { playing ? pause() : play(); }
-  function go(t) { T = Math.max(0, Math.min(total, t)); if (T > 0) { started = true; setPlayIcon(); } render(); }
+  function go(t) { T = Math.max(0, Math.min(total, t)); if (T > 0) { started = true; setPlayIcon(); } if (playing) bgmSync(); render(); }
   function loop(now) {
     if (playing) {
+      var prev = T;
       T += Math.min(.1, (now - last) / 1000) * rate;
       if (T >= total) { T = total; pause(); }
+      // 이번 틀 사이에 지나간 마우스 누름에 소리
+      var i = sceneAt(T);
+      if (T - prev < .2) scenes[i].clicks.forEach(function (c) { var at = starts[i] + c[0]; if (at > prev && at <= T) tick(); });
+      if (snd && !bgm.paused) bgmVolume();
       render();
     }
     last = now;
@@ -1209,6 +1275,8 @@
       if (e.target.closest('[data-replay]')) { e.preventDefault(); go(0); play(); }
       return;
     }
+    // 소리가 막혀 있던 첫 누름은 소리만 켠다(멈추지 않음)
+    if (performance.now() - unlockedAt < 800) return;
     toggle();
   });
   $('prevBtn').addEventListener('click', function () { var i = sceneAt(T); go(T - starts[i] > 1.5 ? starts[i] : starts[Math.max(0, i - 1)]); });
@@ -1218,7 +1286,7 @@
     var r = seek.getBoundingClientRect(), x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), t = x * total, i = sceneAt(t);
     var tip = $('seekTip'); tip.textContent = fmt(t) + ' · ' + scenes[i].title; tip.style.left = (x * 100) + '%';
   });
-  $('rate').addEventListener('change', function () { rate = +this.value; });
+  $('rate').addEventListener('change', function () { rate = +this.value; bgm.playbackRate = rate; });
   $('fsBtn').addEventListener('click', function () {
     var p = $('player');
     if (document.fullscreenElement) document.exitFullscreen(); else if (p.requestFullscreen) p.requestFullscreen();
