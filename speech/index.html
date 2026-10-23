@@ -96,6 +96,9 @@ h1,h2,h3{font-family:var(--display);font-weight:400}
 .step-arrow{color:var(--gray);font-family:var(--display);font-size:16px}
 .step-admin{padding-left:13px;margin-left:6px}
 .step-setup{margin-left:0}
+.step .opt{margin-left:2px;padding:1px 7px;border-radius:999px;border:1.5px solid currentColor;font:700 11px/1.4 var(--body);opacity:.85}
+.opt-big{display:inline-block;vertical-align:middle;margin-left:8px;padding:3px 12px;border-radius:999px;border:2px solid var(--ink);background:var(--sun-s);font:700 14px/1.4 var(--body)}
+.card-h .tag.opt-t{background:var(--sun-s);color:#7A5200;border-color:#F0D684}
 .step.on[data-v=setup],.step.on[data-v=conf]{background:var(--ink);color:#fff}
 
 /* ===== 공통 요소 ===== */
@@ -493,6 +496,10 @@ details.paste summary{cursor:pointer;font-weight:700;font-size:14px}
 .rbe-row{display:flex;align-items:center;gap:8px}
 .rbe-row .n{font-size:11px;font-weight:700;min-width:22px;height:22px;display:grid;place-items:center;border-radius:99px;background:#fff;border:1.5px solid var(--ink);flex:none}
 .rbe-row input{flex:1;padding:7px 10px}.rbe-row select{width:auto;padding:7px 8px}
+.rbe-mx{display:flex;align-items:center;gap:6px;flex:none;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}
+.rbe-row .rbe-mx input{flex:none;width:76px;text-align:right}
+.rb-num{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.rb-num input{width:84px;text-align:right;font-family:var(--display);font-size:18px;padding:4px 8px}
 .sec-t{margin:8px 0 -4px;font-size:22px}
 .ai-opts{display:grid;grid-template-columns:1fr 130px auto;gap:10px;align-items:end}
 @media (max-width:620px){.ai-opts{grid-template-columns:1fr}}
@@ -644,7 +651,7 @@ html.intro-on{overflow:hidden}
     <button type="button" class="step" data-v="order"><b>1</b>순서 정하기</button><span class="step-arrow" aria-hidden="true">›</span>
     <button type="button" class="step" data-v="talk"><b>2</b>발표하기</button><span class="step-arrow" aria-hidden="true">›</span>
     <button type="button" class="step" data-v="rec"><b>3</b>기록 보기</button>
-    <button type="button" class="step step-admin" data-v="conf">🛠 수업 설정</button>
+    <button type="button" class="step step-admin" data-v="conf">🛠 수업 설정<small class="opt">선택</small></button>
   </nav>
 </header>
 
@@ -1775,11 +1782,12 @@ function openTopics(s, after){
 /* ---------- 평가 기준표 채점 ---------- */
 const rubricMax = () => db.settings.rubric.reduce((a, c) => a + (+c.max || 0), 0);
 const scoreSum = r => db.settings.rubric.reduce((a, c) => a + ((r.scores || {})[c.id] || 0), 0);
-const hasScore = r => !!r.scores && db.settings.rubric.some(c => r.scores[c.id]);
+const hasScore = r => !!r.scores && db.settings.rubric.some(c => r.scores[c.id] != null);
 function scoreHTML(r){
   const rb = db.settings.rubric;
   if (!rb.length) return '<p class="hint">평가 기준표가 비어 있어요. 🛠 수업 설정 → 평가 기준표에서 항목을 만들어 주세요.</p>';
-  return `<div class="rubric">${rb.map(c => `<div class="rb-row"><span class="rb-n">${esc(c.name)}</span><span class="rb-btns" data-id="${c.id}">${Array.from({ length: +c.max }, (_, k) => `<button type="button" data-v="${k + 1}" aria-pressed="${(r.scores || {})[c.id] === k + 1}">${k + 1}</button>`).join('')}</span></div>`).join('')}
+  return `<div class="rubric">${rb.map(c => `<div class="rb-row"><span class="rb-n">${esc(c.name)}</span>${+c.max <= 10 ? `<span class="rb-btns" data-id="${c.id}">${Array.from({ length: +c.max }, (_, k) => `<button type="button" data-v="${k + 1}" aria-pressed="${(r.scores || {})[c.id] === k + 1}">${k + 1}</button>`).join('')}</span>`
+      : `<label class="rb-num"><input type="number" class="inp" data-id="${c.id}" min="0" max="${c.max}" step="1" inputmode="numeric" value="${(r.scores || {})[c.id] ?? ''}" aria-label="${esc(c.name)} 점수">/ ${c.max}점</label>`}</div>`).join('')}
     <div class="rb-total">합계 <b class="rb-sum">${scoreSum(r)}</b> / ${rubricMax()}점</div></div>`;
 }
 function bindScore(box, r, onChange){
@@ -1788,6 +1796,13 @@ function bindScore(box, r, onChange){
     const v = +b.dataset.v, id = g.dataset.id; r.scores = r.scores || {};
     if (r.scores[id] === v) delete r.scores[id]; else r.scores[id] = v;
     $$('button', g).forEach(x => x.setAttribute('aria-pressed', String(r.scores[id] === +x.dataset.v)));
+    box.querySelector('.rb-sum').textContent = scoreSum(r); save(); if (onChange) onChange();
+  });
+  // 만점이 10점보다 큰 항목: 숫자를 직접 써요 (비우면 지워짐)
+  $$('.rb-num input', box).forEach(inp => inp.onchange = () => {
+    const id = inp.dataset.id, mx = +inp.max; r.scores = r.scores || {};
+    if (inp.value === '') delete r.scores[id];
+    else { const v = Math.min(mx, Math.max(0, Math.round(+inp.value) || 0)); inp.value = v; r.scores[id] = v; }
     box.querySelector('.rb-sum').textContent = scoreSum(r); save(); if (onChange) onChange();
   });
 }
@@ -2407,7 +2422,7 @@ function anonText(t, r){
 function studentBlock(s, r, i, anon){
   const ai = db.settings.ai, rb = db.settings.rubric;
   const label = anon ? `학생 ${pad2(i + 1)}` : `${pad2(i + 1)}번 ${r.name}`;
-  const sc = hasScore(r) ? rb.map(c => `${c.name} ${(r.scores || {})[c.id] || '-'}/${c.max}`).join(', ') + ` (합계 ${scoreSum(r)}/${rubricMax()})` : '';
+  const sc = hasScore(r) ? rb.map(c => `${c.name} ${(r.scores || {})[c.id] ?? '-'}/${c.max}`).join(', ') + ` (합계 ${scoreSum(r)}/${rubricMax()})` : '';
   const text = anon ? anonText(r.text, r) : (r.text || '');
   const memo = anon ? anonText(r.memo, r) : (r.memo || '');
   return [`### ${label}`,
@@ -2668,7 +2683,7 @@ function sessionSheet(c, s, info){
     const fs = info[i] || [], mats = fs.map(f => f.url ? `${f.name} (${f.url})` : f.name).join('\n');
     const text = r.j ? (r.text || r.note || '(인식된 음성 없음)') : '', memo = r.memo || '';
     const ht = Math.min(409, Math.max(28, XL.lines(text, W[N - 2]) * 17 + 10, XL.lines(mats, W[N - 3]) * 17 + 10, XL.lines(memo, W[N - 1]) * 17 + 10, XL.lines(r.topic || '', W[2]) * 17 + 10));
-    const scores = rb.map(k => { const v = (r.scores || {})[k.id]; return { v: v || '', s:X.ctr }; });
+    const scores = rb.map(k => { const v = (r.scores || {})[k.id]; return { v: v ?? '', s:X.ctr }; });
     if (rb.length) scores.push({ v: hasScore(r) ? scoreSum(r) : '', s:X.name });
     rows.push({ ht, cells:[
       { v:i + 1, s:X.ctr }, { v:r.name, s:X.name }, { v:r.topic || '', s:X.left }, { v:r.j ? fmt(r.sec) : '-', s:X.ctr }, { v:r.j ? r.sec : '', s:X.num },
@@ -2754,16 +2769,17 @@ function renderAdmin(){
     </div>
   </div>`;
   v2.innerHTML = `
-  <div class="vhead"><div><h2 class="vt">수업 <em>설정</em></h2><p class="vs">평가 기준표 · 발표 화면 안내 · 과세특 프롬프트 · 음성 인식 · 백업을 정해요. 모든 반에 함께 쓰여요.</p></div></div>
+  <div class="vhead"><div><div class="vt-row"><h2 class="vt">수업 <em>설정</em><span class="opt-big">선택</span></h2><button type="button" class="btn sm primary" id="cGuide">🎬 수업 설정 따라 하기</button></div><p class="vs"><b>꼭 하지 않아도 발표 수업은 그대로 진행돼요.</b> 평가 기준표 · 발표 화면 안내 · 과세특 프롬프트 · 음성 인식 · 백업 중 필요한 것만 골라서 정하세요. 모든 반에 함께 쓰여요.</p></div></div>
   <div class="admin-main">
       <div class="card">
-        <div class="card-h"><h3>📝 평가 기준표</h3><span class="tag">합계 ${rubricMax()}점</span><span class="grow"></span><button type="button" class="btn sm" id="aRbReset">기본 항목으로</button><button type="button" class="btn sm primary" id="aRbAdd">＋ 항목 추가</button></div>
-        <p class="hint">③ 기록 보기의 [📝 평가하기]에서 매겨요. 학생이 쓰는 발표 화면에는 평가 버튼이 없어요. 점수는 엑셀 파일과 과세특 프롬프트에 함께 들어가요.</p>
-        <div class="rb-edit" id="aRb">${db.settings.rubric.map((k, i) => `<div class="rbe-row" data-i="${i}"><span class="n">${i + 1}</span><input type="text" class="rbe-n" maxlength="24" value="${esc(k.name)}" aria-label="항목 이름"><select class="inp rbe-m" aria-label="만점">${[3, 4, 5, 10].map(x => `<option value="${x}" ${+k.max === x ? 'selected' : ''}>${x}점 만점</option>`).join('')}</select><button type="button" class="ib rbe-x" title="항목 지우기">✕</button></div>`).join('') || '<p class="empty">항목이 없어요. [＋ 항목 추가]를 눌러 주세요.</p>'}</div>
+        <div class="card-h"><h3>📝 평가 기준표</h3><span class="tag opt-t">선택</span><span class="tag">합계 ${rubricMax()}점</span><span class="grow"></span><button type="button" class="btn sm" id="aRbReset">기본 항목으로</button><button type="button" class="btn sm primary" id="aRbAdd">＋ 항목 추가</button></div>
+        <p class="hint">평가를 이 도구에서 하지 않으면 그대로 두셔도 돼요. 만점은 항목마다 자유롭게 적어요(기본 5점). ③ 기록 보기의 [📝 평가하기]에서 매겨요. 학생이 쓰는 발표 화면에는 평가 버튼이 없어요. 점수는 엑셀 파일과 과세특 프롬프트에 함께 들어가요.</p>
+        <div class="rb-edit" id="aRb">${db.settings.rubric.map((k, i) => `<div class="rbe-row" data-i="${i}"><span class="n">${i + 1}</span><input type="text" class="rbe-n" maxlength="24" value="${esc(k.name)}" aria-label="항목 이름"><label class="rbe-mx"><input type="number" class="inp rbe-m" min="1" max="100" step="1" inputmode="numeric" value="${+k.max || 5}" aria-label="${esc(k.name)} 만점"><span>점 만점</span></label><button type="button" class="ib rbe-x" title="항목 지우기">✕</button></div>`).join('') || '<p class="empty">항목이 없어요. [＋ 항목 추가]를 눌러 주세요.</p>'}</div>
       </div>
       <div class="two">
         <div class="card">
-          <div class="card-h"><h3>📺 발표 화면 안내</h3></div>
+          <div class="card-h"><h3>📺 발표 화면 안내</h3><span class="tag opt-t">선택</span></div>
+          <p class="hint">바꾸지 않으면 기본 문구와 '최대 시간 15초 전' 경고로 진행돼요.</p>
           <label class="fld"><span>남은 시간 경고 (시계 색이 주황으로 바뀌는 때)</span><select class="inp" id="aWarn">${[0, 10, 15, 20, 30, 60].map(x => `<option value="${x}" ${+db.settings.warnSec === x ? 'selected' : ''}>${x ? `최대 시간 ${x}초 전부터` : '쓰지 않음'}</option>`).join('')}</select></label>
           <div class="ph-demo"><span class="clk">0:42</span><span class="clk ok">1:05</span><span class="clk warn">1:20</span><span class="clk over">1:34</span></div>
           <p class="hint">회색(최소 시간 전) → 초록(적정) → <b style="color:#E8750A">주황(곧 끝나요)</b> → 빨강(초과). 소리 없이 색으로만 알려 줘요.</p>
@@ -2776,7 +2792,8 @@ function renderAdmin(){
           <p class="hint" style="margin-top:8px">[▶ 시작]을 누르면 발표 화면과 TV 화면에 이 문구가 크게 나와요.</p>
         </div>
         <div class="card">
-          <div class="card-h"><h3>🤖 과세특 프롬프트 설정</h3></div>
+          <div class="card-h"><h3>🤖 과세특 프롬프트 설정</h3><span class="tag opt-t">선택</span></div>
+          <p class="hint">과세특 초안을 이 도구에서 만들지 않으면 건너뛰어도 돼요. 미리 정해 두면 프롬프트를 만들 때마다 들어가요.</p>
           <p class="obs-note">🗒 과세특 프롬프트는 <b>학생 발표 내용(음성 인식 글)</b>과 함께 <b>선생님의 관찰 기록</b>, 평가 기준표 점수, 발표 주제·시간을 담아 만들어져요. AI는 관찰 기록을 <b>가장 중요한 근거</b>로 쓰도록 안내돼요.<br>관찰 기록이 구체적일수록 초안이 정확해지니, <b>학생마다 관찰 기록을 남기는 것을 권장해요.</b> (③ 기록 보기 · 📝 평가에서 작성)</p>
           <div class="fld2"><label class="fld"><span>과목</span><input type="text" id="aiS" maxlength="20" value="${esc(db.settings.ai.subject)}" placeholder="예: 국어, 통합사회"></label>
             <label class="fld"><span>학교급·학년</span><select class="inp" id="aiG">${['', '중학교 1학년', '중학교 2학년', '중학교 3학년', '고등학교 1학년', '고등학교 2학년', '고등학교 3학년'].map(x => `<option value="${x}" ${db.settings.ai.grade === x ? 'selected' : ''}>${x || '선택 안 함'}</option>`).join('')}</select></label></div>
@@ -2788,7 +2805,8 @@ function renderAdmin(){
       </div>
       <div class="two">
         <div class="card">
-          <div class="card-h"><h3>🔒 음성 인식 · 개인정보</h3></div>
+          <div class="card-h"><h3>🔒 음성 인식 · 개인정보</h3><span class="tag opt-t">선택</span></div>
+          <p class="hint">고르지 않으면 브라우저 음성 인식(기본)으로 진행돼요.</p>
           <div class="radios">
             <label class="radio"><input type="radio" name="sr" value="cloud"><span><b>브라우저 음성 인식 (기본)</b><small>Chrome·Edge에 들어 있는 음성 인식이에요. 가장 정확하지만, 말소리가 글자로 바뀌는 동안 브라우저 회사(구글·마이크로소프트)의 음성 인식 서버를 거쳐요.</small></span></label>
             <label class="radio"><input type="radio" name="sr" value="local"><span><b>기기 안에서만 인식</b><small>소리가 이 컴퓨터 밖으로 나가지 않아요. 최신 Chrome에서만 되고, 처음 한 번 한국어 인식 모델을 내려받아야 해요.</small><span class="lstate" id="aLocal">확인 중…</span></span></label>
@@ -2797,7 +2815,7 @@ function renderAdmin(){
           <button type="button" class="btn sm" id="aPriv">개인정보·보안 안내 전체 보기</button>
         </div>
         <div class="card">
-          <div class="card-h"><h3>💾 백업 · 복원</h3></div>
+          <div class="card-h"><h3>💾 백업 · 복원</h3><span class="tag opt-t">선택</span></div>
           <p class="hint">기록은 이 브라우저에만 있어요. 컴퓨터를 바꾸거나 브라우저 기록(쿠키·사이트 데이터)을 지우기 전에 백업 파일을 저장해 두세요.</p>
           <label class="chk"><input type="checkbox" id="aInc" checked> 발표 자료 파일도 함께 담기 (파일이 커질 수 있어요)</label>
           <div class="btns"><button type="button" class="btn primary" id="aBak">⬇ 백업 파일 저장</button><label class="btn">⬆ 백업 불러오기<input type="file" id="aRes" accept=".json,application/json" hidden></label></div>
@@ -2809,7 +2827,7 @@ function renderAdmin(){
   $$('[data-cid]', v1).forEach(b => b.onclick = () => { if (running) return; switchClass(b.dataset.cid); });
   $$('[data-cren]', v1).forEach(b => b.onclick = () => renameClass(db.classes.find(x => x.id === b.dataset.cren)));
   $$('[data-cdel]', v1).forEach(b => b.onclick = () => deleteClass(db.classes.find(x => x.id === b.dataset.cdel)));
-  $('#aGuide').onclick = openSetupGuide;
+  $('#aGuide').onclick = () => openSetupGuide('setup');
   $('#aAddCls').onclick = addClassFlow;
   // 학생 명단
   $('#aAddSt').onclick = addStudentsFlow;
@@ -2861,13 +2879,21 @@ function renderAdmin(){
   $$('.rbe-row', v2).forEach(row => {
     const k = rb[+row.dataset.i];
     row.querySelector('.rbe-n').onchange = e => { k.name = e.target.value.trim() || k.name; save(); };
-    row.querySelector('.rbe-m').onchange = e => { k.max = +e.target.value; save(); renderAdmin(); };
+    row.querySelector('.rbe-m').onchange = e => {
+      const v = Math.round(+e.target.value);
+      if (!(v >= 1 && v <= 100)) { toast('만점은 1점부터 100점까지 쓸 수 있어요.'); e.target.value = k.max; return; }
+      k.max = v;
+      // 새 만점보다 큰 점수는 만점으로 맞춤
+      let cut = 0; db.classes.forEach(c => c.sessions.forEach(x => x.order.forEach(r => { if (r.scores && r.scores[k.id] > v) { r.scores[k.id] = v; cut++; } })));
+      save(); renderAdmin(); if (cut) toast(`이미 매긴 점수 중 ${cut}개를 새 만점(${v}점)에 맞췄어요.`);
+    };
     row.querySelector('.rbe-x').onclick = async () => {
       if (!await uiConfirm(`<b>${esc(k.name)}</b> 항목을 지울까요?<br><span class="hint">이미 매긴 이 항목의 점수는 표시되지 않아요.</span>`, { title:'평가 항목 지우기', icon:'📝', ok:'지우기', danger:true })) return;
       db.settings.rubric = rb.filter(x => x !== k); save(); renderAdmin();
     };
   });
   $('#aRbAdd').onclick = () => { if (rb.length >= 8) { toast('평가 항목은 8개까지 만들 수 있어요.'); return; } rb.push({ id: 'r' + uid(), name: '새 항목', max: 5 }); save(); renderAdmin(); setTimeout(() => { const ins = $$('.rbe-n', v2); const last = ins[ins.length - 1]; if (last) { last.focus(); last.select(); } }, 30); };
+  $('#cGuide').onclick = () => openSetupGuide('conf');
   $('#aRbReset').onclick = async () => { if (!await uiConfirm('평가 기준표를 기본 4개 항목(내용 구성 · 근거·자료 활용 · 전달력 · 시간 준수, 각 5점)으로 되돌릴까요?', { title:'기본 항목으로', icon:'📝', ok:'되돌리기' })) return; db.settings.rubric = DEF_RUBRIC(); save(); renderAdmin(); };
   // 발표 화면 안내
   $('#aWarn').onchange = e => { db.settings.warnSec = +e.target.value; save(); toast('남은 시간 경고를 바꿨어요.'); };
@@ -2915,10 +2941,10 @@ function onRosterEdited(){
   renderCls(); if (!raceBusy()) rosterChanged(); else renderRoster();
   if (view === 'setup' || view === 'conf') renderAdmin();
 }
-// 초기 설정 따라 하기: setup-guide/ 페이지를 팝업 안에 띄움 (✕ 버튼·Esc·안쪽 [닫기]로 닫힘)
-function openSetupGuide(){
+// 따라 하기 안내(초기 설정 · 수업 설정): guide/ 페이지를 팝업 안에 띄움 (✕ 버튼·Esc·안쪽 [닫기]로 닫힘)
+function openSetupGuide(g = 'setup'){
   const d = document.createElement('dialog'); d.className = 'sg-modal';
-  d.innerHTML = '<iframe src="setup-guide/" title="초기 설정 따라 하기" allow="fullscreen"></iframe>';
+  d.innerHTML = `<iframe src="guide/?g=${g}" title="${g === 'conf' ? '수업 설정' : '초기 설정'} 따라 하기" allow="fullscreen"></iframe>`;
   const onMsg = e => { if (e.source === d.querySelector('iframe').contentWindow && e.data === 'sg-close') d.close(); };
   window.addEventListener('message', onMsg);
   d.addEventListener('close', () => { window.removeEventListener('message', onMsg); d.remove(); });
