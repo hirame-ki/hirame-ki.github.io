@@ -939,7 +939,13 @@ function show(v){
   if (v === 'talk') renderStage();
   if (v === 'rec') renderRec();
   if (v === 'setup' || v === 'conf') renderAdmin();
-  if (v !== 'talk') window.scrollTo(0, 0);
+  if (v !== 'talk') toTop();
+}
+// 카카오톡·인스타그램 같은 안드로이드 앱 안 브라우저는 window.scrollTo를 부르면 페이지가 죽어요(카카오톡은 앱까지 꺼짐).
+// 그래서 이미 맨 위면 건드리지 않고, 내려가 있을 때만 스크롤 값을 직접 0으로 바꿔요.
+function toTop(){
+  const el = document.scrollingElement || document.documentElement;
+  if (el.scrollTop > 0) el.scrollTop = 0;
 }
 function renderCls(){
   const sel = $('#clsSel'); sel.innerHTML = '';
