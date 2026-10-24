@@ -939,13 +939,7 @@ function show(v){
   if (v === 'talk') renderStage();
   if (v === 'rec') renderRec();
   if (v === 'setup' || v === 'conf') renderAdmin();
-  if (v !== 'talk') toTop();
-}
-// 카카오톡·인스타그램 같은 안드로이드 앱 안 브라우저는 window.scrollTo를 부르면 페이지가 죽어요(카카오톡은 앱까지 꺼짐).
-// 그래서 이미 맨 위면 건드리지 않고, 내려가 있을 때만 스크롤 값을 직접 0으로 바꿔요.
-function toTop(){
-  const el = document.scrollingElement || document.documentElement;
-  if (el.scrollTop > 0) el.scrollTop = 0;
+  if (v !== 'talk') window.scrollTo(0, 0);
 }
 function renderCls(){
   const sel = $('#clsSel'); sel.innerHTML = '';
@@ -1565,7 +1559,10 @@ async function startSessionFlow(sids){
 /* =====================================================================
    ② 발표하기 — 타이머 · 음성 기록 · 발표 자료
    ===================================================================== */
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+// 카카오톡·인스타그램 같은 안드로이드 앱 안 브라우저(웹뷰)는 음성 인식을 지원하지 않는데 기능 이름은 남아 있어서,
+// SR.available()을 부르면 페이지가 죽어요(카카오톡은 앱까지 꺼짐). 그래서 웹뷰에서는 음성 인식이 없는 브라우저로 다뤄요.
+const IN_APP = /; wv\)/.test(navigator.userAgent);
+const SR = IN_APP ? null : (window.SpeechRecognition || window.webkitSpeechRecognition);
 const LOCAL_PROP = !!SR && ('processLocally' in SR.prototype);
 let rec = null, recLocal = false, finalTxt = '', interim = '', lastErr = '', capturing = false;
 let running = false, t0 = 0, tick = null, jumpBack = null;
