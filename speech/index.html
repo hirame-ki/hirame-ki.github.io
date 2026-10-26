@@ -904,7 +904,7 @@ const LISTEN_EXAMPLES = [
   ['짧게', '{이름} 학생 발표 중\n「{주제}」\n조용히 귀 기울여 주세요 🤫'],
 ];
 function normalize(){
-  db.settings = Object.assign({ sound: true, mode: 'race', sr: 'cloud', view: 'order', warnSec: 15, listen: DEF_LISTEN }, db.settings || {});
+  db.settings = Object.assign({ sound: true, mode: 'race', sr: 'cloud', srLang: 'ko-KR', view: 'order', warnSec: 15, listen: DEF_LISTEN }, db.settings || {});
   if (!Array.isArray(db.settings.rubric)) db.settings.rubric = DEF_RUBRIC();
   if (db.settings.listen === OLD_LISTEN || db.settings.listen === '{이름} 학생이 발표하고 있어요.\n오늘의 주제는 「{주제}」예요.\n친구의 발표에 귀 기울여 주세요 👂') db.settings.listen = DEF_LISTEN;
   db.settings.ai = Object.assign({ subject:'', grade:'', len:500, anon:true, extra:'' }, db.settings.ai || {});
@@ -1565,7 +1565,7 @@ async function startSessionFlow(sids){
 const IN_APP = /; wv\)/.test(navigator.userAgent);
 const SR = IN_APP ? null : (window.SpeechRecognition || window.webkitSpeechRecognition);
 const LOCAL_PROP = !!SR && ('processLocally' in SR.prototype);
-let rec = null, recLocal = false, finalTxt = '', interim = '', lastErr = '', capturing = false;
+let rec = null, recLocal = false, recLang = '', finalTxt = '', interim = '', lastErr = '', capturing = false;
 let running = false, t0 = 0, tick = null, jumpBack = null;
 const judge = (sec, s) => sec < s.min ? 'short' : sec > s.max ? 'over' : 'ok';
 // 화면 표시용: 적정 구간 안에서 최대 시간이 가까워지면 'warn'(주황)
@@ -1575,13 +1575,16 @@ const fillTpl = (tpl, r) => String(tpl || '').split('\n').filter(line => !(line.
 const hasTopicTpl = () => (db.settings.listen || DEF_LISTEN).includes('{주제}');
 const listenHTML = r => esc(fillTpl(db.settings.listen || DEF_LISTEN, r)).replace(/\n/g, '<br>');
 
+// 음성 인식 언어: 수업 설정에서 고름 (한국어 / 영어)
+const srLang = () => db.settings.srLang === 'en-US' ? 'en-US' : 'ko-KR';
+const srLangName = () => srLang() === 'en-US' ? '영어' : '한국어';
 async function localState(){
   // 기기 안 음성 인식: 최신 Chrome 의 Web Speech API(processLocally) 지원 여부
   if (!LOCAL_PROP || typeof SR.available !== 'function') return 'unsupported';
-  try { return await SR.available({ langs: ['ko-KR'], processLocally: true }); } catch (e) { return 'unsupported'; }
+  try { return await SR.available({ langs: [srLang()], processLocally: true }); } catch (e) { return 'unsupported'; }
 }
 async function localInstall(){
-  try { if (typeof SR.install === 'function') return await SR.install({ langs: ['ko-KR'], processLocally: true }); } catch (e) {}
+  try { if (typeof SR.install === 'function') return await SR.install({ langs: [srLang()], processLocally: true }); } catch (e) {}
   return false;
 }
 function dropRec(){ if (!rec) return; const o = rec; rec = null; o.onend = null; try { o.abort(); } catch (e) {} }
@@ -1654,15 +1657,15 @@ async function ensureRec(){
   const mode = db.settings.sr;
   if (!SR || mode === 'off') return;
   const wantLocal = mode === 'local';
-  if (rec && recLocal === wantLocal) return;
+  if (rec && recLocal === wantLocal && recLang === srLang()) return;
   dropRec();
   if (wantLocal) {
     const st = await localState();
     if (st !== 'available') { lastErr = 'local-unavailable'; micUI(capturing); return; }
   }
-  const r = new SR(); r.lang = 'ko-KR'; r.continuous = true; r.interimResults = true;
+  const r = new SR(); r.lang = srLang(); r.continuous = true; r.interimResults = true;
   if (wantLocal) r.processLocally = true;
-  recLocal = wantLocal;
+  recLocal = wantLocal; recLang = r.lang;
   r.onresult = e => { if (!capturing || rec !== r) return; interim = ''; for (let i = e.resultIndex; i < e.results.length; i++) { const x = e.results[i]; if (x.isFinal) finalTxt += x[0].transcript + ' '; else interim += x[0].transcript; } };
   r.onstart = () => micUI(capturing);
   r.onerror = e => { if (e.error !== 'no-speech' && e.error !== 'aborted') lastErr = e.error; };
@@ -1720,7 +1723,7 @@ function nextTurn(s){
 function errMsg(e){
   return ({ 'not-allowed':'마이크 권한이 차단됨', 'service-not-allowed':'이 화면에서는 음성 인식이 막혀 있음 — 파일을 Chrome으로 직접 열어 주세요',
     'no-speech':'소리가 들리지 않음', 'audio-capture':'마이크를 찾을 수 없음', 'network':'인터넷 연결 필요', 'start-failed':'음성 인식을 시작하지 못함',
-    'local-unavailable':'기기 안 음성 인식을 쓸 수 없음', 'language-not-supported':'한국어 인식을 지원하지 않음' })[e] || e;
+    'local-unavailable':'기기 안 음성 인식을 쓸 수 없음', 'language-not-supported':srLangName() + ' 인식을 지원하지 않음' })[e] || e;
 }
 
 /* ---------- 작은 타이머 창 (항상 위에 떠 있음) ---------- */
@@ -1758,9 +1761,10 @@ async function micTest(){
   const modeTxt = mode === 'off' ? '지금은 <b>음성 인식 끄기</b>로 설정되어 있어요. 🛠 수업 설정에서 바꿀 수 있어요.'
     : mode === 'local' ? '지금은 <b>기기 안에서만 인식</b>으로 설정되어 있어요. 소리가 컴퓨터 밖으로 나가지 않아요.'
     : '지금은 <b>브라우저 음성 인식(기본)</b>으로 설정되어 있어요.';
+  const langTxt = mode === 'off' ? '' : ` 인식 언어는 <b>${srLangName()}</b>예요.`;
   const p = modal({ title:'마이크 테스트', icon:'🎙',
     body:`<p class="hint">[듣기 시작]을 누르고 말해 보세요. 아래 칸에 글자가 나오면 음성 인식이 잘 되는 거예요.</p>
-      <div class="mtest" id="mtOut">아직 듣고 있지 않아요.</div><p class="hint">${modeTxt}</p>`,
+      <div class="mtest" id="mtOut">아직 듣고 있지 않아요.</div><p class="hint">${modeTxt}${langTxt}</p>`,
     actions:[{ label:'닫기', value:null }, { label:'듣기 시작', kind:'primary', run: async m => {
       const out = m.q('#mtOut'), btn = m.dialog.querySelector('.m-foot .primary');
       if (tr) { try { tr.stop(); } catch (e) {} return false; }
@@ -1768,7 +1772,7 @@ async function micTest(){
       if (mode === 'off') { out.textContent = '음성 인식이 꺼져 있어요.'; return false; }
       if (mode === 'local' && await localState() !== 'available') { out.textContent = '⚠ 이 브라우저에서는 기기 안 음성 인식을 쓸 수 없어요. 🛠 수업 설정 → 음성 인식에서 상태를 확인해 주세요.'; return false; }
       dropRec();
-      tr = new SR(); tr.lang = 'ko-KR'; tr.interimResults = true; tr.continuous = true; if (mode === 'local') tr.processLocally = true;
+      tr = new SR(); tr.lang = srLang(); tr.interimResults = true; tr.continuous = true; if (mode === 'local') tr.processLocally = true;
       tr.onstart = () => { btn.textContent = '⏹ 멈추기'; out.textContent = '🔴 듣는 중… 말해 보세요.'; };
       tr.onresult = e => { let t = ''; for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript; out.textContent = '✅ ' + t; };
       tr.onerror = e => { out.textContent = '⚠ ' + errMsg(e.error); };
@@ -2897,9 +2901,11 @@ function renderAdmin(){
           <p class="hint">고르지 않으면 브라우저 음성 인식(기본)으로 진행돼요.</p>
           <div class="radios">
             <label class="radio"><input type="radio" name="sr" value="cloud"><span><b>브라우저 음성 인식 (기본)</b><small>Chrome·Edge에 들어 있는 음성 인식이에요. 가장 정확하지만, 말소리가 글자로 바뀌는 동안 브라우저 회사(구글·마이크로소프트)의 음성 인식 서버를 거쳐요.</small></span></label>
-            <label class="radio"><input type="radio" name="sr" value="local"><span><b>기기 안에서만 인식</b><small>소리가 이 컴퓨터 밖으로 나가지 않아요. 최신 Chrome에서만 되고, 처음 한 번 한국어 인식 모델을 내려받아야 해요.</small><span class="lstate" id="aLocal">확인 중…</span></span></label>
+            <label class="radio"><input type="radio" name="sr" value="local"><span><b>기기 안에서만 인식</b><small>소리가 이 컴퓨터 밖으로 나가지 않아요. 최신 Chrome에서만 되고, 처음 한 번 고른 언어의 인식 모델을 내려받아야 해요.</small><span class="lstate" id="aLocal">확인 중…</span></span></label>
             <label class="radio"><input type="radio" name="sr" value="off"><span><b>음성 인식 끄기</b><small>발표 시간만 기록해요. 마이크를 쓰지 않아요.</small></span></label>
           </div>
+          <label class="fld"><span>인식 언어 (발표하는 말에 맞춰 골라 주세요)</span><select class="inp" id="aLang"><option value="ko-KR">한국어</option><option value="en-US">영어 (English)</option></select></label>
+          <p class="hint">한 번에 한 언어만 알아들어요. 영어 발표 수업이면 영어로 바꿔 주세요.</p>
           <button type="button" class="btn sm" id="aPriv">개인정보·보안 안내 전체 보기</button>
         </div>
         <div class="card">
@@ -3008,6 +3014,8 @@ function renderAdmin(){
   $('#aiE').oninput = e => { ai.extra = e.target.value.trim(); save(); };
   // 음성 인식 방식
   $$('input[name=sr]', v2).forEach(r => { r.checked = r.value === db.settings.sr; r.onchange = () => { db.settings.sr = r.value; lastErr = ''; dropRec(); save(); toast('음성 인식 방식을 바꿨어요.'); }; });
+  const la = $('#aLang'); la.value = srLang();
+  la.onchange = () => { db.settings.srLang = la.value; lastErr = ''; dropRec(); save(); toast(`음성 인식 언어를 ${srLangName()}로 바꿨어요.`); paintLocalState(); };
   paintLocalState();
   $('#aPriv').onclick = openPrivacy;
   // 백업
@@ -3020,10 +3028,10 @@ async function paintLocalState(){
   const st = await localState();
   if (!$('#aLocal')) return;
   el.innerHTML = st === 'available' ? '✅ 이 컴퓨터에서 바로 쓸 수 있어요'
-    : st === 'downloadable' ? '⬇ 한국어 인식 모델을 한 번 내려받아야 해요 <button type="button" class="btn sm" id="aInst">내려받기</button>'
-    : st === 'downloading' ? '⏳ 한국어 인식 모델을 내려받는 중이에요'
+    : st === 'downloadable' ? `⬇ ${srLangName()} 인식 모델을 한 번 내려받아야 해요 <button type="button" class="btn sm" id="aInst">내려받기</button>`
+    : st === 'downloading' ? `⏳ ${srLangName()} 인식 모델을 내려받는 중이에요`
     : '⚠ 이 브라우저는 지원하지 않아요 (최신 Chrome 필요)';
-  const b = $('#aInst'); if (b) b.onclick = async () => { b.disabled = true; b.textContent = '내려받는 중…'; const ok = await localInstall(); toast(ok ? '한국어 인식 모델을 내려받았어요.' : '내려받지 못했어요. 잠시 뒤 다시 해 주세요.'); paintLocalState(); };
+  const b = $('#aInst'); if (b) b.onclick = async () => { b.disabled = true; b.textContent = '내려받는 중…'; const ok = await localInstall(); toast(ok ? `${srLangName()} 인식 모델을 내려받았어요.` : '내려받지 못했어요. 잠시 뒤 다시 해 주세요.'); paintLocalState(); };
 }
 function onRosterEdited(){
   renderCls(); if (!raceBusy()) rosterChanged(); else renderRoster();
