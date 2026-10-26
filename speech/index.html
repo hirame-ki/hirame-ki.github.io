@@ -448,7 +448,8 @@ dialog.modal::backdrop{background:rgba(29,42,74,.45);backdrop-filter:blur(3px)}
 .fnote ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
 .fnote li{line-height:1.55;font-size:13.5px}
 .fnote .tg{display:inline-block;font-weight:900;border-radius:7px;padding:0 7px;margin-right:4px;color:#fff;font-size:12.5px}
-.fnote .t1{background:var(--mint)}.fnote .t2{background:var(--sub)}
+.fnote .t1{background:var(--mint)}.fnote .t2{background:var(--sub)}.fnote .t3{background:var(--red)}
+.fnote .hl{font-weight:900;background:linear-gradient(transparent 55%,var(--cheek) 55%);padding:0 2px}
 .bdrop{border:var(--bw) dashed var(--ink);border-radius:18px;padding:20px;text-align:center;background:var(--soft);font-weight:700;font-size:16px;transition:.15s}
 .bdrop.drag{background:var(--sub-s);border-color:var(--sub);transform:scale(1.01)}
 .bpick{display:inline-block;border:2px solid var(--ink);border-radius:11px;padding:6px 13px;margin:10px 3px 0;cursor:pointer;background:var(--card);font-size:14px;font-weight:700;box-shadow:0 2px 0 var(--ink)}
@@ -2232,9 +2233,10 @@ function openBulk(T){
       <b>파일 이름에 주제가 있으면 발표 주제가 자동으로 채워지니, 주제를 따로 입력하지 않아도 돼요.</b> (이미 적어 둔 주제는 바꾸지 않아요)</p>
       ${pool ? '<p class="note-box">📦 여기 등록한 자료와 주제는 이 반에서 <b>다음에 [발표 시작]을 누를 때 그 회차로 자동으로 옮겨 가요.</b> 레이스로 순서를 정해도 그대로 따라가요.</p>' : ''}
       <div class="fnote"><ul>
-        <li><span class="tg t1">PDF · 이미지</span> 발표 화면에서 <b>타이머 옆에 크게</b> 보이고, TV 화면에도 함께 나와요. 페이지는 ◀ ▶ 버튼이나 방향키로 넘겨요. 구글 슬라이드·유튜브 링크도 마찬가지예요. <b>[마침]을 누르면 다음 학생 자료가 저절로 열려요.</b></li>
-        <li><span class="tg t2">PPT · 한글 · 링크</span> 캔바·패들렛 같은 링크는 TV 화면이 켜져 있으면 그 학생 차례에 저절로 열리고, 차례가 끝나면 닫혀요. PPT·한글 파일은 웹에서 바로 띄울 수 없어 눌러서 프로그램으로 열어야 해요.</li>
-        <li>PPT도 타이머 옆에서 보고 싶다면 <b>PDF로 저장해서</b> 올려 주세요. (파워포인트 → 다른 이름으로 저장 → PDF)</li>
+        <li><span class="tg t1">PDF · 이미지 · 구글 슬라이드 · 유튜브</span> <span class="hl">타이머 옆과 TV 화면에 바로 나와요.</span> 페이지는 ◀ ▶ 버튼이나 방향키로 넘기고, <b>[마침]을 누르면 다음 학생 자료가 저절로 열려요.</b></li>
+        <li><span class="tg t2">캔바 · 패들렛 링크</span> TV 화면을 켜 두면 그 학생 차례에 TV 쪽 새 창으로 저절로 열리고, 차례가 끝나면 닫혀요.</li>
+        <li><span class="tg t3">PPT · 한글 파일</span> 등록은 되지만 <span class="hl">타이머 옆과 TV 화면에는 나오지 않아요.</span> 이 도구가 돌아가는 인터넷 창(브라우저)은 PPT·한글 파일을 열지 못하기 때문이에요. 발표할 때 파일 이름을 눌러 파워포인트·한글 프로그램으로 직접 열어야 해요.</li>
+        <li>💡 PPT·한글도 TV 화면에 띄우고 싶다면 <span class="hl">PDF로 저장해서 올려 주세요.</span> (파워포인트: 다른 이름으로 저장 → PDF · 한글: 파일 → PDF로 저장하기)</li>
       </ul></div>
       <div class="bdrop" id="bulkDrop">📂 학생 자료 파일이나 폴더를 여기에 통째로 끌어다 놓으세요<br>
         <label class="bpick">📄 파일 선택<input type="file" id="bulkFile" multiple hidden></label>
