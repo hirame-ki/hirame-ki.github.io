@@ -186,6 +186,10 @@ ol.results{list-style:none;margin:0;padding:0;display:flex;flex-direction:column
 .results .dot{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--ink)}
 .results .nm{font-family:var(--display);font-size:18px;overflow-wrap:anywhere}
 .results li.fresh{animation:slidein .5s ease-out}
+.results li.ed{grid-template-columns:38px 12px minmax(0,1fr) auto}
+.mv{display:flex;gap:3px;flex:none}
+.mv button,.olist li .mv button{width:30px;height:30px;padding:0;display:grid;place-items:center;border:2px solid var(--ink);background:var(--card);border-radius:8px;cursor:pointer;font-size:12px;line-height:1;color:var(--ink);box-shadow:none}
+.mv button:disabled,.olist li .mv button:disabled{opacity:.2;cursor:default}
 @keyframes slidein{from{background:var(--main-s);transform:translateX(8px)}to{background:var(--soft);transform:none}}
 
 /* ===== ② 발표하기 (타이머) ===== */
@@ -437,6 +441,7 @@ dialog.modal::backdrop{background:rgba(29,42,74,.45);backdrop-filter:blur(3px)}
 .m-order span{display:inline-flex;align-items:center;gap:5px;font-family:var(--display);font-size:15px;background:#fff;border:2px solid var(--ink);border-radius:99px;padding:1px 10px 1px 3px}
 .m-order b{font-weight:400;font-size:12px;background:var(--ink);color:#fff;border-radius:99px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 4px}
 .olist{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px}
+.olist li{display:flex;align-items:center;gap:4px}
 .olist button{width:100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;border:2px solid var(--line);background:var(--soft);border-radius:12px;padding:6px 8px;cursor:pointer;text-align:left}
 .olist button:hover{border-color:var(--ink)}
 .olist li.now button{border-color:var(--ink);background:var(--sun-s);box-shadow:0 2px 0 var(--ink)}
@@ -724,6 +729,7 @@ html.intro-on{overflow:hidden}
           <div class="card-h"><h3>발표 순서</h3><button type="button" class="btn sm grow" id="rPrint" disabled>🖨 인쇄</button><button type="button" class="btn sm" id="rCopy" disabled>결과 복사</button></div>
           <p class="empty" id="rEmpty">출발하면 도착한 순서대로 여기에 적혀요.</p>
           <ol class="results" id="rList"></ol>
+          <p class="hint" id="rEditHint" style="margin:8px 0 0" hidden>▲▼ 버튼으로 순서를 바꿀 수 있어요.</p>
           <button type="button" class="go blue" id="rToTalk" hidden>이 순서로 발표 시작 →</button>
         </div>
       </aside>
@@ -1144,6 +1150,7 @@ function finishOne(p){
 }
 function allDone(){
   S.phase = 'done'; updateUI(); renderRoster();
+  timers.push(setTimeout(renderResults, 600));
   timers.push(setTimeout(() => {
     clearTimeout(calloutT);
     callout.textContent = '발표 순서 완성!';
@@ -1162,16 +1169,35 @@ function showCallout(rank, p){
 }
 
 /* ---------- 결과 목록 ---------- */
-function resultItem(label, color, rank, fresh){
+function resultItem(label, color, rank, fresh, edit){
   const li = document.createElement('li'); if (fresh) li.className = 'fresh';
   const rk = document.createElement('span'); rk.className = 'rk'; rk.textContent = rank;
   const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = color;
   const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = label;
-  li.append(rk, dot, nm); return li;
+  li.append(rk, dot, nm);
+  if (edit) { li.classList.add('ed'); li.append(moveBtns(rank - 1, S.results.length, label)); }
+  return li;
+}
+// ▲▼ 버튼: 레이스로 뽑은 순서를 손으로 고쳐요
+function moveBtns(i, n, label){
+  const w = document.createElement('span'); w.className = 'mv';
+  [['▲', -1, '위로'], ['▼', 1, '아래로']].forEach(([t, d, a]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.dataset.d = d;
+    b.setAttribute('aria-label', `${label} ${a}`); b.disabled = i + d < 0 || i + d >= n;
+    b.onclick = () => moveResult(i, i + d, d); w.append(b);
+  });
+  return w;
+}
+function moveResult(a, b, d){
+  const r = S.results; [r[a], r[b]] = [r[b], r[a]]; renderResults();
+  const bs = list.children[b] && list.children[b].querySelectorAll('.mv button');
+  if (bs) { const f = [...bs].find(x => x.dataset.d == d && !x.disabled) || [...bs].find(x => !x.disabled); if (f) f.focus(); }
 }
 function renderResults(){
   list.textContent = '';
-  S.results.forEach((p, i) => list.append(resultItem(p.label, p.color, i + 1, false)));
+  const edit = S.phase === 'done' && S.results.length > 1 && S.results.length === S.lineup.length;
+  S.results.forEach((p, i) => list.append(resultItem(p.label, p.color, i + 1, false, edit)));
+  $('#rEditHint').hidden = !edit;
   emptyEl.hidden = S.results.length > 0;
   btnCopy.disabled = S.results.length === 0; $('#rPrint').disabled = S.results.length === 0;
 }
@@ -2001,20 +2027,37 @@ async function printSession(c, s){
 function openOrder(){
   const s = ses(), c = cls(); if (!s) return;
   const inOrder = new Set(s.order.map(r => r.sid)), rest = c.students.filter(x => !inOrder.has(x.id));
+  // 아직 발표하지 않은 학생끼리만 ▲▼로 자리를 바꿔요 (발표 중에는 잠금)
+  const canSwap = (a, b) => !running && s.order[a] && s.order[b] && !s.order[a].j && !s.order[b].j;
+  const rows = () => s.order.map((r, i) => `<li class="${i === s.cur ? 'now' : ''}"><button type="button" data-i="${i}"><b>${i + 1}</b><span class="nm">${esc(r.name)}${r.topic ? `<small>${esc(r.topic)}</small>` : ''}</span>${r.j ? `<span class="pill p-${r.j}">${fmt(r.sec)} ${JUDGE[r.j]}</span>` : i === s.cur ? '<span class="pill p-now">지금 차례</span>' : '<span class="pill p-wait">대기</span>'}</button>${r.j ? '' : `<span class="mv"><button type="button" data-mv="${i}" data-d="-1" aria-label="${esc(r.name)} 위로"${canSwap(i, i - 1) ? '' : ' disabled'}>▲</button><button type="button" data-mv="${i}" data-d="1" aria-label="${esc(r.name)} 아래로"${canSwap(i, i + 1) ? '' : ' disabled'}>▼</button></span>`}</li>`).join('');
+  let moved = false;
   modal({ title:`${s.title} · 순서표`, icon:'📋', wide:true,
-    body:`<ol class="olist">${s.order.map((r, i) => `<li class="${i === s.cur ? 'now' : ''}"><button type="button" data-i="${i}"><b>${i + 1}</b><span class="nm">${esc(r.name)}${r.topic ? `<small>${esc(r.topic)}</small>` : ''}</span>${r.j ? `<span class="pill p-${r.j}">${fmt(r.sec)} ${JUDGE[r.j]}</span>` : i === s.cur ? '<span class="pill p-now">지금 차례</span>' : '<span class="pill p-wait">대기</span>'}</button></li>`).join('')}</ol>
-      <p class="hint">이름을 누르면 그 학생 차례로 바로 이동해요. 이동한 뒤에는 [↩ 원래 차례로] 버튼으로 돌아올 수 있어요.</p>
+    body:`<ol class="olist">${rows()}</ol>
+      <p class="hint">이름을 누르면 그 학생 차례로 바로 이동해요. 이동한 뒤에는 [↩ 원래 차례로] 버튼으로 돌아올 수 있어요.<br>▲▼ 버튼으로 아직 발표하지 않은 학생의 순서를 바꿀 수 있어요.</p>
       ${rest.length ? `<div class="inrow" style="border-top:2px dashed var(--line);padding-top:12px"><span class="hint" style="margin:0">늦게 온 학생을 순서 맨 끝에 넣기</span><select class="inp" id="oLate" style="width:auto">${rest.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select><button type="button" class="btn sm" id="oAdd">＋ 끝에 넣기</button></div>` : ''}`,
     actions:[
       { label:'🖨 순서표 인쇄 (A4)', run: () => { printSession(c, s); return false; } },
       { label:'닫기', kind:'primary' }],
     onOpen: m => {
-      $$('button[data-i]', m.body).forEach(b => b.onclick = () => { m.close(null); jumpTo(+b.dataset.i); });
+      const bind = () => {
+        $$('button[data-i]', m.body).forEach(b => b.onclick = () => { m.close(null); jumpTo(+b.dataset.i); });
+        $$('button[data-mv]', m.body).forEach(b => b.onclick = () => {
+          const a = +b.dataset.mv, d = +b.dataset.d, z = a + d; if (!canSwap(a, z)) return;
+          // '지금 차례'는 자리 기준이라 그대로 두고(그 자리에 온 학생이 지금 차례), 기록에서 고른 학생만 사람 기준으로 따라가요
+          const o = s.order, selR = s.sel != null ? o[s.sel] : null;
+          [o[a], o[z]] = [o[z], o[a]];
+          if (selR) s.sel = o.indexOf(selR);
+          save(); moved = true;
+          m.q('.olist').innerHTML = rows(); bind();
+          const f = m.q(`button[data-mv="${z}"][data-d="${d}"]:not(:disabled)`) || m.q(`button[data-mv="${z}"]:not(:disabled)`); if (f) f.focus();
+        });
+      };
+      bind();
       const add = m.q('#oAdd'); if (add) add.onclick = () => {
         const id = m.q('#oLate').value; s.order.push({ sid: id, name: nameOf(c, id) }); save();
         m.close(null); toast(`${nameOf(c, id)} 학생을 순서 맨 끝에 넣었어요.`); renderStage();
       };
-    } });
+    } }).then(() => { if (moved && view === 'talk') renderStage(); });
 }
 function jumpTo(i){
   const s = ses(); if (!s || running) return;
