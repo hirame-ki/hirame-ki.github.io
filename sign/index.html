@@ -5044,6 +5044,17 @@ function clearCanvas() {
   document.getElementById('btn3').disabled = true;
   document.getElementById('canvasHint').style.opacity = '1';
 }
+// 투명 배경 PNG는 드라이브 썸네일·일부 프린터에서 배경이 까맣게 나오므로 흰 바탕 위에 합쳐서 저장
+function signatureOnWhite() {
+  var out = document.createElement('canvas');
+  out.width  = canvas.width;
+  out.height = canvas.height;
+  var octx = out.getContext('2d');
+  octx.fillStyle = '#FFFFFF';
+  octx.fillRect(0, 0, out.width, out.height);
+  octx.drawImage(canvas, 0, 0);
+  return out.toDataURL('image/png');
+}
 
 /* ═══════════════════════════════════════════
    제출
@@ -5059,7 +5070,7 @@ function doSubmit() {
     trainingTitle : selectedTraining.title,
     department    : document.getElementById('dept').value,
     name          : document.getElementById('uname').value.trim(),
-    signatureData : canvas.toDataURL('image/png'),
+    signatureData : signatureOnWhite(),
   };
 
   // 데모 모드
