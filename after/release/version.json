@@ -1,32 +1,48 @@
 {
   "app": "방과후 한눈에",
-  "version": "1.4.1",
-  "date": "2026-10-18",
+  "version": "1.5.0",
+  "date": "2026-10-30",
   "notes": [
-    "[강좌] 목록에서 강좌명 칸이 좁아 글자가 한 자씩 끊기던 문제를 고쳤습니다. 담당·요일별 시간·장소는 한 줄에 하나씩 보여 줍니다."
+    "[이력 관리] 탭을 새로 넣었습니다. 이름이나 학번(지난해 학번도 가능)으로 찾으면 여러 학기·여러 해의 방과후 수강 이력과 취득 자격증(취득일)을 한 표로 봅니다. 학번이 바뀌어도 이름과 입학년도로 같은 학생을 찾습니다.",
+    "자격증은 [이력 관리]에서 넣거나 시트 [자격증] 탭에서 직접 고칠 수 있습니다. 「강좌별 자격증 취득 현황」에서 강좌마다 수강생 중 몇 명이 자격증을 땄는지 봅니다.",
+    "[강좌] 목록에 주관 부서·활용 예산·소요 예산(총 시수 × 시간당 수당)과 총 시수 칸을 넣었습니다. 부서·예산 목록은 시트 [부서]·[예산] 탭에서 관리합니다.",
+    "계획서·출석부로 한꺼번에 등록할 때 주관 부서·활용 예산·소요 예산도 읽습니다.",
+    "강좌마다 [출석부] 버튼이 생겼습니다. 「월별 출석부」와 「강좌 전체 출석부(모든 날짜를 한 표에, A4 가로)」 중에서 고릅니다.",
+    "홈에 「오늘의 수업」을 넣었습니다. 선생님이나 학생을 고르고 [조회]를 누르면 그날 수업(강좌·장소·시간)이 창으로 뜨고, 전날·다음날로 넘겨 볼 수 있습니다.",
+    "학부모용 「자녀 수강 현황」 주소·QR을 [접속 주소·QR]에 넣었습니다. 학년·반·번호와 이름으로 자녀가 듣는 강좌, 기간, 주간 시간표, 전체 일정을 봅니다.",
+    "[중복 검토]에서 학번·이름이 두 줄로 나뉘던 문제를 고쳤습니다.",
+    "새 시트 탭 [부서]·[예산]·[자격증]과 강좌 열(주관부서·활용예산·시간당수당)은 업데이트할 때 자동으로 만들어집니다. 기존 자료는 그대로입니다."
   ],
   "changed": [
     "Code",
-    "Index"
+    "Logic",
+    "Setup",
+    "Cycle",
+    "Index",
+    "Parent",
+    "LinksDialog",
+    "Styles",
+    "Import"
   ],
   "page": "https://hirame-ki.github.io/after/",
-  "bundle": "bundle-1.4.1.json",
-  "sha256": "c8959554e5011d7532be0b2250664942c77ecd1e10ba6acb7f87d5ae5b76eecf",
+  "bundle": "bundle-1.5.0.json",
+  "sha256": "d984212deeee31792814871c05d50d865e6c222043dac74ec0db28ed2bf592c0",
   "loader": 1,
   "parts": {
-    "Code": "5dd1de50504263f156c28f880e1390e3537f15cb22eb6aaf8173665a4f0d7e8f",
-    "Logic": "9578cc0e03b386e0e266c671c8678c37b2769aff93ed1f84cc4ec15c1c7b14df",
-    "Setup": "f5efcd4a6c156cec20db3e67603826140e8cc96b86a9cae95185db594a512569",
-    "Cycle": "e8fb798e94ae57a7a4b229beee8c062deb9807b7f826ec7448c194503fff3ec8",
+    "Code": "cb58ce0255b1eaddd10f7285f56990568aa6d15e6b6ba9e9a6010c5a4279fc7d",
+    "Logic": "b1b497b8f969ba85e8823143109477ff2a5fa48045bb100e85d8e1e0276d92f2",
+    "Setup": "8749f9da65acc87b87ac6a9bd978802b011971185fe1b10a593ce5ea88647aa1",
+    "Cycle": "74a74ecb661a838daf4fc82be7ed023cfb859a7990c89a04417b80f62862690e",
     "Update": "0eb7bcfbaf0fa0d073e0f1e53c4eeaa409643e50b3fc92682230c48f26ae4791",
-    "Index": "d3ae0290de607e1086e71d10089c918743e7b819086574809a71e27a747c97ea",
+    "Index": "4d076bd3694444de16e659418e69da45b9470e1ce9fc7f935ede8ce0c66243cd",
     "Apply": "b3a86e22a83e308e735d6ce321b255718ce1578183340131fdaaea6e80ee85e9",
     "Board": "eadc70407c72d79156e4081930ab2092b4e57706e17cbeb0fa3b2d9c866a2809",
+    "Parent": "7bf2afa0d226d6ad5149484c31fa6e439367a454bf3c61c27969ca03291022a9",
     "SetupDialog": "20d47e6409227bcf9334dac307dbb496e7a72039bb8899d570be0ac31cb346f0",
-    "LinksDialog": "ae3a08985ab2f1c5a29b7c3b7c43980a32df083516bbfb69e3a4ef72733d1c5f",
-    "Styles": "4e6dc1ca622d331cea58309dfe7d67f7c572773fd44e7daed38a2bdd662c526c",
+    "LinksDialog": "79e7401c3f903bdc29aba95719bd3beeca92fe4e92ae62c18b4ff82928c0a701",
+    "Styles": "d318387710520613de4efa26be5a1d5e422447685feffde3ccfd554e131547ea",
     "Client": "cafe16267e435d8b510e738188b1a495f45448310dffec23b6ece436e087a2d3",
-    "Import": "29a389cb55499ec63ff2d59df7c6bce6e3295da6f36a7b47c5bfbe477c822972"
+    "Import": "dae1d65d04bf30c380eb177db683795a45d532daee120cc3aa71aacd420e2e79"
   },
   "files": [
     {
@@ -51,6 +67,7 @@
     "Index",
     "Apply",
     "Board",
+    "Parent",
     "SetupDialog",
     "LinksDialog",
     "Styles",
