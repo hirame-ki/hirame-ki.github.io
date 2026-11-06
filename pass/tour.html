@@ -65,7 +65,7 @@
   .intro-head { padding: 28px 0 18px; }
   .intro-head .kicker { font: 600 13px/1 var(--mono); letter-spacing: .08em; color: var(--muted); }
   .intro-head h1 { font: 900 clamp(30px, 4.6vw, 46px)/1.15 var(--display); letter-spacing: -.045em; margin: 10px 0 8px; }
-  .intro-head h1 .mk { background: linear-gradient(transparent 60%, var(--accent) 60%); padding: 0 .06em; }
+  .intro-head h1 .mk { background: linear-gradient(transparent 61%, var(--accent) 61%); padding: .12em .2em .06em; }
   .intro-head p { margin: 0; color: var(--text-2); font-size: 16px; }
 
   /* ═══ 플레이어 ═══ */
@@ -87,7 +87,7 @@
   .subs { position: absolute; left: 0; right: 0; top: 66.67%; bottom: 0; z-index: 4; display: flex; align-items: center; justify-content: center; padding: 0 5%; pointer-events: none; }
   .subs p { margin: 0; max-width: 100%; text-align: center; font-size: clamp(14px, 3.86cqw, 64px); line-height: 1.5; font-weight: 800; letter-spacing: -.015em; word-break: keep-all; color: #fff; }
   .subs p[hidden] { display: none; }
-  .subs span { background: rgba(16, 19, 26, .48); padding: .06em .42em; border-radius: .28em; -webkit-box-decoration-break: clone; box-decoration-break: clone; text-shadow: 0 1px 3px rgba(0, 0, 0, .55); }
+  .subs span { background: rgba(16, 19, 26, .48); padding: max(.12em, 2.5px) max(.5em, 8px); border-radius: .28em; -webkit-box-decoration-break: clone; box-decoration-break: clone; text-shadow: 0 1px 3px rgba(0, 0, 0, .55); }
   .subs p.swap { animation: capIn .45s var(--ease); }
   /* 자막 위치(조작 막대의 [자막] 고르기, 이 브라우저에 기억): 기본은 아래쪽 1/3 칸 가운데 */
   .subs.pos-bottom { align-items: flex-end; padding-bottom: 3.5%; }
@@ -150,7 +150,7 @@
   .toc .key.on button .n { background: var(--accent); color: var(--text); }
 
   .notes { margin: 30px 0 60px; color: var(--muted); font-size: 14px; }
-  .notes kbd { font: 600 12px/1 var(--mono); padding: 4px 7px; border-radius: 6px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--text); }
+  .notes kbd { font: 600 12px/1 var(--mono); padding: 4px 9px; border-radius: 6px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--text); }
 
   /* ══════════ 무대 안 요소 (좌표는 1280×720) ══════════ */
   .abs { position: absolute; }
@@ -200,7 +200,7 @@
   /* 큰 글자 장면 */
   .title-big { position: absolute; left: 0; right: 0; text-align: center; font: 900 76px/1.1 var(--display); letter-spacing: -.05em; }
   .title-mid { position: absolute; left: 0; right: 0; text-align: center; font: 900 54px/1.15 var(--display); letter-spacing: -.045em; }
-  .title-mid .mk, .title-big .mk { background: linear-gradient(transparent 60%, var(--accent) 60%); padding: 0 .06em; }
+  .title-mid .mk, .title-big .mk { background: linear-gradient(transparent 61%, var(--accent) 61%); padding: .12em .2em .06em; }
   .sub { position: absolute; left: 0; right: 0; text-align: center; font-size: 24px; font-weight: 700; color: var(--text-2); }
   .pill { position: absolute; display: inline-flex; align-items: center; gap: 10px; height: 54px; padding: 0 22px 0 14px; border-radius: 27px; background: var(--surface); box-shadow: var(--ring); font-weight: 800; font-size: 20px; white-space: nowrap; opacity: 0; }
   .pill .ck { width: 30px; height: 30px; border-radius: 50%; background: var(--ok-soft); display: grid; place-items: center; }
@@ -610,7 +610,7 @@
     '<div class="bgdots"></div>' +
     '<div class="title-mid" style="top:48px;font-size:44px">자리를 비워도 <span class="mk">저절로 잠겨요</span></div>' +
     '<div class="card c1" style="left:70px;top:170px;width:360px;height:420px;text-align:center"><h4>PIN 5번 틀리면<br>입력 차단</h4><p>차단 시간은 5분부터<br>최대 60분까지 늘어나요</p><div class="dot5" style="margin-top:40px"><i class="d1"></i><i class="d2"></i><i class="d3"></i><i class="d4"></i><i class="d5"></i></div><div class="abs lk" style="left:140px;top:300px;width:80px;height:80px;border-radius:22px;background:#b4231b;display:grid;place-items:center"><svg viewBox="0 0 24 24" style="width:44px;height:44px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div></div>' +
-    '<div class="card c2" style="left:460px;top:170px;width:360px;height:420px;text-align:center"><h4>자리를 비우면<br>자동 잠금</h4><p>기본: 15분 동안 안 쓰면,<br>길어도 2시간 뒤엔 잠겨요</p><svg class="ringt" viewBox="0 0 120 120" style="margin:26px auto 0;display:block"><circle cx="60" cy="60" r="50" fill="none" stroke="var(--t-ln)" stroke-width="12"/><circle class="rg" cx="60" cy="60" r="50" fill="none" stroke="var(--t-ink)" stroke-width="12" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 60 60)"/><text class="rgt" x="60" y="68" text-anchor="middle" font-family="SsamMono, monospace" font-size="24" font-weight="600" fill="var(--t-ink)">0분</text></svg></div>' +
+    '<div class="card c2" style="left:460px;top:170px;width:360px;height:420px;text-align:center"><h4>자리를 비우면<br>자동 잠금</h4><p>기본: 10분 동안 안 쓰면,<br>길어도 2시간 뒤엔 잠겨요</p><svg class="ringt" viewBox="0 0 120 120" style="margin:26px auto 0;display:block"><circle cx="60" cy="60" r="50" fill="none" stroke="var(--t-ln)" stroke-width="12"/><circle class="rg" cx="60" cy="60" r="50" fill="none" stroke="var(--t-ink)" stroke-width="12" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314" transform="rotate(-90 60 60)"/><text class="rgt" x="60" y="68" text-anchor="middle" font-family="SsamMono, monospace" font-size="24" font-weight="600" fill="var(--t-ink)">0분</text></svg></div>' +
     '<div class="card c3" style="left:850px;top:170px;width:360px;height:420px;text-align:center"><h4>화면 잠금 · 브라우저 종료<br>→ 바로 잠김</h4><p>어느 잠금 방식이든<br>똑같아요</p><div style="margin-top:44px;display:flex;justify-content:center;align-items:center"><span class="kbd kw">Win</span><span class="plus">+</span><span class="kbd kl">L</span></div></div>',
     setup: function (a) {
       a.k('.c1', [[0, { o: 0, y: 20 }], [.3, { o: 0, y: 20 }], [.8, { o: 1, y: 0 }, 'o']]);
@@ -623,7 +623,7 @@
       a.k('.kw', [[11.8, { s: 1, y: 0 }], [12, { s: .92, y: 3 }], [12.5, { s: 1, y: 0 }]]);
       a.k('.kl', [[11.9, { s: 1, y: 0 }], [12.1, { s: .92, y: 3 }], [12.6, { s: 1, y: 0 }]]);
       a.cap(0, 'PIN을 5번 틀리면 입력이 잠시 막혀요. 계속 틀리면 막히는 시간이 점점 늘어나요.');
-      a.cap(5.2, '자리를 비운 채 시간이 지나면 저절로 잠겨요. 기본은 15분 동안 안 쓰면, 길어도 2시간 뒤에는 잠겨요.');
+      a.cap(5.2, '자리를 비운 채 시간이 지나면 저절로 잠겨요. 기본은 10분 동안 안 쓰면, 길어도 2시간 뒤에는 잠겨요.');
       a.cap(10.8, 'PC 화면을 잠그거나(Win+L) 브라우저를 닫으면 그 즉시 잠겨요.');
     } });
 
@@ -654,11 +654,11 @@
     } });
 
   var safetyCam1 = fit([292, 150, 640, 360], 1120, 20, 1.45);
-  var safetyCam2 = fit([292, 880, 640, 420], 1120, 20, 1.3);
+  var safetyCam2 = fit([292, 975, 640, 420], 1120, 20, 1.3);
   scene({ title: '직접 확인할 수 있어요', dur: 18, html:
     win({ tab: '쌤패스 설정 · 안전 확인', url: '쌤패스 › 설정 › 안전 확인', body: scr('opt-safety') +
       '<div class="hl h1" style="' + box(R('opt-safety', '#safeSummary'), 1120, 8) + '"></div>' +
-      '<div class="hl h2" style="' + box([313, 900, 598, 330], 1120, 8) + '"></div>' }) +
+      '<div class="hl h2" style="' + box([313, 1000, 598, 238], 1120, 8) + '"></div>' }) +
     popup('popup-unlocked', '<div class="hl h3" style="' + pbox(R('popup-unlocked', '#safetyBtn'), 4) + '"></div>'),
     setup: function (a) {
       var cam = a.q('.cam');
@@ -670,7 +670,7 @@
       a.k('.pcam', [[0, { y: 0 }], [14, { y: 0 }], [15, { y: -sy }]]);
       a.hl('.h3', 15.2, 17.6);
       a.cap(0, '말로만이 아니에요. 설정 › 안전 확인에서 쌤패스가 가진 권한과 연결 주소를 구성 파일 그대로 보여 줘요.');
-      a.cap(3.4, '인증서 파일 읽기·PC 프로그램 실행은 \'못 함\'. 동작하는 사이트는 업무포털과 나이스뿐이에요.');
+      a.cap(3.4, '인증서 파일 읽기·PC 프로그램 실행은 \'못 함\'. 사이트는 업무포털·나이스, 켜고 허용했을 때의 K-에듀파인뿐이에요.');
       a.cap(10.4, '비밀번호가 언제 어디로 가는지, 직접 확인하는 방법도 적혀 있어요.');
       a.cap(13.6, '팝업 맨 아래 초록 표시를 누르면 언제든 이 화면이 열려요.');
     } });
@@ -876,10 +876,10 @@
 
   scene({ title: '여러 버튼 만들어 두기', dur: 13, html:
     win({ tab: '쌤패스 설정 · 복무 신청 루틴', url: '쌤패스 › 설정 › 복무 신청 루틴', body: scr('opt-routes') }) +
-    popup('popup-unlocked', '<div class="hl h1" style="' + pbox([27, 510, 326, 210], 4) + '"></div>'),
+    popup('popup-unlocked', '<div class="hl h1" style="' + pbox(R('popup-unlocked', '#routeBtns'), 8) + '"></div>'),
     setup: function (a) {
       a.k('.cam', [[0, top0(0)], [1, top0(0)], [5, { x: 0, y: -(560 * kOf()), s: 1 }, 'l']]);
-      var sy = 300;
+      var sy = R('popup-unlocked', '#routeBtns')[1] * POP.k - 110; // 루틴 버튼이 팝업 위쪽에 오게 (바로 열기 버튼 수와 상관없이)
       a.k('.pop', [[0, { o: 0, s: .92 }], [5.6, { o: 0, s: .92 }], [6, { o: 1, s: 1 }, 'o']]);
       a.k('.pcam', [[0, { y: 0 }], [6.4, { y: 0 }], [7.4, { y: -sy }]]);
       a.hl('.h1', 7.6, 12.4);
@@ -888,7 +888,7 @@
     } });
 
   // ── 7. 바로 열기 ──
-  chapter('바로 열기', '업무포털 · K-에듀파인 · 나이스 · 과세특');
+  chapter('바로 열기', '업무포털 · K-에듀파인 · 나이스 · 로그인 유지');
   // 업무포털·나이스는 사용자 캡처(교육청 표시·행사 사진·이름·아이디·학교·연락처는 흐리게). 폭이 달라서 사진마다 원본 폭을 따로 쓴다
   var PW = 1907, AW = 1916, DW = 1902;
   var pCam = fit([440, 60, 1030, 770], PW, 8, 1.3);
@@ -921,31 +921,94 @@
       a.cap(15.2, '설정 › 로그인에서 켜 두면 업무포털을 열기만 해도 자동으로 로그인해요.');
     } });
 
-  scene({ title: 'K-에듀파인 · 나이스 · 과세특', dur: 14, html:
+  // 큰 팝업(380폭 그대로, 무대 760,40)에 붙는 상자·점
+  var BIG = { x: 760, y: 40 };
+  function bbox(r, pad) { return 'left:' + (r[0] - pad) + 'px;top:' + (r[1] - pad) + 'px;width:' + (r[2] + pad * 2) + 'px;height:' + (r[3] + pad * 2) + 'px'; }
+  var hrB = R('popup-unlocked', '#homeroomBtn'), opB = R('popup-unlocked', '#opinionBtn');
+  scene({ title: '바로 열기 버튼들 · 간단히 보기', dur: 25, html:
     '<div class="bgdots"></div>' +
     '<div class="abs" style="left:110px;top:150px;width:520px">' +
       '<div class="title-mid" style="position:relative;text-align:left;font-size:44px">버튼 하나로<br><span class="mk">그 화면까지</span></div>' +
       '<p class="abs p1" style="position:relative;margin:28px 0 0;font-size:22px;font-weight:700;color:var(--text-2);line-height:1.6">업무포털 로그인 → 메뉴 열기를<br>한 번에 이어서 해요.<br>이미 된 단계는 건너뛰어요.</p></div>' +
-    '<div class="pop" style="left:760px;top:40px;width:380px;height:640px"><div class="pcam" style="width:380px"><img src="' + IMG + 'popup-unlocked.webp" alt="" style="width:380px">' +
-      '<div class="hl e1" style="left:8px;top:161px;width:364px;height:76px"></div><div class="hl e2" style="left:8px;top:237px;width:364px;height:76px"></div><div class="hl e3" style="left:8px;top:314px;width:364px;height:96px"></div></div></div>',
+    '<div class="pop" style="left:' + BIG.x + 'px;top:' + BIG.y + 'px;width:380px;height:640px"><div class="pcam" style="width:380px"><img class="pimg" src="' + IMG + 'popup-unlocked.webp" alt="" style="width:380px">' +
+      '<div class="hl e1" style="' + bbox(R('popup-unlocked', '#edufineBtn'), 4) + '"></div><div class="hl e2" style="' + bbox(R('popup-unlocked', '#neisBtn'), 4) + '"></div>' +
+      '<div class="hl e3" style="' + bbox(R('popup-unlocked', '#remarksBtn'), 4) + '"></div><div class="hl e4" style="' + bbox([hrB[0], hrB[1], hrB[2], opB[1] + opB[3] - hrB[1]], 4) + '"></div>' +
+      '<div class="hl e5" style="' + bbox(R('popup-simple', 'view-simple'), 4) + '"></div></div></div>',
     setup: function (a) {
+      var vs = R('popup-unlocked', 'view-simple');
       a.k('.pop', [[0, { o: 0, x: 30 }], [.3, { o: 0, x: 30 }], [.9, { o: 1, x: 0 }, 'o']]);
-      a.hl('.e1', 1.6, 4.4); a.hl('.e2', 4.6, 7.4); a.hl('.e3', 7.6, 11);
+      a.hl('.e1', 1.6, 4.4); a.hl('.e2', 4.6, 7.4); a.hl('.e3', 7.6, 11); a.hl('.e4', 11.6, 15.2);
+      // 아래쪽 두 버튼은 자막에 가리지 않게 잠시 올려 보여 준다
+      a.k('.pcam', [[0, { y: 0 }], [11, { y: 0 }], [11.8, { y: -170 }, 'io'], [15, { y: -170 }], [15.8, { y: 0 }, 'io']]);
+      a.mouse(640, 600, 15.4).to(17, BIG.x + vs[0] + vs[2] / 2, BIG.y + vs[1] + vs[3] / 2, 1.4).click(17.4).to(19.4, 700, 560, 1.2);
+      a.src('.pimg', [[0, 'popup-unlocked'], [17.5, 'popup-simple']]);
+      a.hl('.e5', 17.6, 20);
       a.cap(0, '[K-에듀파인]은 업무포털 로그인부터 K-에듀파인 화면까지 한 번에 열어 줘요.');
       a.cap(4.6, '[나이스]도 마찬가지예요. 업무포털이 닫혀 있어도 처음부터 이어서 해요.');
       a.cap(7.6, '[과세특 입력]은 나이스 과세특 메뉴의 OTP 창까지 열어요. 이미 열려 있는 단계는 건너뛰어요.');
+      a.cap(11.2, '[행특·창체 입력](중·고 담임)과 [학기말종합의견 입력](초등)도 쓰던 엑셀을 나이스 칸에 옮겨 적어요.');
+      a.cap(15.4, '버튼이 많아 길다면 제목 옆 [간단히]를 눌러요. 설명을 접고 이름만 두 줄로 보여 줘요.');
+      a.cap(20.4, '고른 보기는 기억해 둬요. 설명은 버튼에 마우스를 올리면 보이고, [자세히]로 언제든 되돌려요.');
     } });
 
-  var loginCam = fit([292, 120, 640, 460], 1120, 20, 1.4);
-  scene({ title: '자동 로그인 · 다른 교육청', dur: 11, html:
+  // 목록을 펼친 모습은 칸을 늘려 찍은 것 (실제 드롭다운은 캡처에 나오지 않는다). 자막 위로 목록 전체가 보이는 높이
+  var regionCam = fit([292, 243, 640, 340], 1120, 20, 1.17);
+  var regionNoteCam = fit([292, 812, 640, 100], 1120, 20, 1.35);
+  scene({ title: '소속 교육청', dur: 20, html:
+    win({ tab: '쌤패스 설정 · 로그인', url: '쌤패스 › 설정 › 로그인', body: scr('opt-keep') +
+      '<div class="hl h1" style="' + box(R('opt-keep', '#portalRegion'), 1120, 6) + '"></div>' +
+      '<div class="hl h2" style="' + box(R('opt-region-sen', '#portalMsg'), 1120, 6) + '"></div>' +
+      '<div class="hl h3" style="' + box(R('opt-region-sen', '#keepEdufineRow'), 1120, 6) + '"></div>' }),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [.6, top0(0)], [1.8, regionCam], [13.4, regionCam], [14.4, regionNoteCam]]);
+      a.src('.scr', [[0, 'opt-keep'], [4.1, 'opt-region-list'], [8.7, 'opt-region-sen']]);
+      var sel = wpt(R('opt-keep', '#portalRegion'), regionCam), sen = wpt([313, 298, 598, 21], regionCam);
+      a.mouse(1000, 640, .4).to(3.4, sel[0], sel[1], 1.2).click(4).to(8, sen[0], sen[1], 1.4).click(8.6).to(10, 1100, 600, 1);
+      a.hl('.h1', 2, 3.9); a.hl('.h2', 9, 13.2); a.hl('.h3', 14.6, 19.4);
+      a.cap(0, '경기가 아닌 선생님은 설정 › 로그인 맨 위의 소속 교육청에서 우리 교육청을 먼저 골라 주세요. (기본: 경기)');
+      a.cap(4.4, '전국 17개 시도교육청이 목록에 있어요. 목록에 없는 주소는 맨 아래 [직접 입력]으로 적어요.');
+      a.cap(9, '고르면 바로 저장돼요. 바로 열기와 복무 신청 루틴이 이 교육청의 업무포털을 열어요.');
+      a.cap(14.2, 'K-에듀파인 권한도 여기서 고른 지역 주소로 물어요. 교육청을 먼저 고르고 켜면 돼요.');
+    } });
+
+  var loginCam = fit([292, 339, 640, 460], 1120, 20, 1.4);
+  scene({ title: '자동 로그인', dur: 6.5, html:
     win({ tab: '쌤패스 설정 · 로그인', url: '쌤패스 › 설정 › 로그인', body: scr('opt-login') +
-      '<div class="hl h1" style="' + box(R('opt-login', '#autoLoginChk'), 1120, 8) + '"></div>' +
-      '<div class="hl h2" style="' + box(R('opt-login', '#portalForm'), 1120, 8) + '"></div>' }),
+      '<div class="hl h1" style="' + box(R('opt-login', '#autoLoginChk'), 1120, 8) + '"></div>' }),
     setup: function (a) {
       a.k('.cam', [[0, top0(0)], [.8, top0(0)], [2, loginCam]]);
-      a.hl('.h1', 2.2, 5.4); a.hl('.h2', 5.8, 10.4);
+      a.hl('.h1', 2.2, 6);
       a.cap(0, '설정 › 로그인: \'업무포털을 열면 자동 로그인\' 스위치를 켜면 업무포털을 열기만 해도 로그인돼요.');
-      a.cap(5.6, '다른 시도교육청 선생님은 업무포털 주소만 바꿔 주세요. (기본: 경기)');
+    } });
+
+  var certCam = fit([292, 564, 640, 190], 1120, 20, 1.4);
+  scene({ title: '인증서가 여러 개일 때', dur: 12, html:
+    win({ tab: '쌤패스 설정 · 로그인', url: '쌤패스 › 설정 › 로그인', body: scr('opt-cert') +
+      '<div class="hl h1" style="' + box([313, 608, 516, 64], 1120, 6) + '"></div>' +
+      '<div class="hl h2" style="' + box(R('opt-cert', '#certForgetBtn'), 1120, 6) + '"></div>' }),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [.8, top0(0)], [2, certCam]]);
+      a.hl('.h1', 2.2, 6.2); a.hl('.h2', 7.4, 11.4);
+      a.cap(0, '인증서가 여러 개면 처음 한 번은 쌤패스가 멈춰요. 인증서 창에서 쓸 인증서를 클릭하고 버튼을 다시 누르면 돼요.');
+      a.cap(6.4, '고른 인증서를 기억해 다음부터 그것으로 로그인해요. 바꾸려면 [삭제]한 뒤 다음 로그인 때 다시 고르세요.');
+    } });
+
+  var keepCam = fit([292, 669, 640, 380], 1120, 20, 1.35);
+  var keepMsgCam = fit([292, 919, 640, 212], 1120, 20, 1.35);
+  scene({ title: '로그인 유지', dur: 24, html:
+    win({ tab: '쌤패스 설정 · 로그인', url: '쌤패스 › 설정 › 로그인', body: scr('opt-login') +
+      '<div class="hl h1" style="' + box(R('opt-keep', '#keepAliveMsg'), 1120, 6) + '"></div>' +
+      '<div class="hl h2" style="' + box(R('opt-keep-edu', '#keepEdufineRow'), 1120, 6) + '"></div>' }),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [.8, top0(0)], [2, keepCam], [4.6, keepCam], [5.6, keepMsgCam], [12.4, keepMsgCam], [13.4, keepCam]]);
+      a.src('.scr', [[0, 'opt-login'], [4.1, 'opt-keep'], [14.5, 'opt-keep-edu']]);
+      var sw = wpt(R('opt-login', '#keepAliveChk'), keepCam), sw2 = wpt(R('opt-keep', '#keepEdufineChk'), keepCam);
+      a.mouse(1000, 640, .6).to(3.4, sw[0], sw[1], 1.4).click(4).to(13.8, sw2[0], sw2[1], 1.2).click(14.4).to(16, 1100, 600, 1);
+      a.hl('.h1', 5.8, 9.4); a.hl('.h2', 15, 23.4);
+      a.cap(0, '업무포털·나이스는 시간이 지나면 저절로 로그아웃돼요. 설정 › 로그인에서 로그인 유지를 켜 보세요.');
+      a.cap(4.6, 'PC를 쓰는 동안 10분마다 사이트의 연장을 대신 실행해요. 사이트마다 남은 시간과 연장한 시각이 여기 보여요.');
+      a.cap(9.6, '쌤패스가 잠겨 있거나 PC를 오래 안 쓰면 연장하지 않아요. 그때는 사이트가 원래대로 로그아웃해요.');
+      a.cap(14.6, 'K-에듀파인도 켜면 브라우저가 우리 지역 주소 권한을 한 번 물어요. 허용하지 않아도 다른 기능은 그대로예요.');
     } });
 
   // ── 8. 루틴 실행 ──
@@ -954,7 +1017,7 @@
     win({ tab: '업무포털', fav: 'neis', url: '○○.eduptl.kr', white: true, body: portalBg, over: '<span class="tag-ex">실제 화면 · 개인정보는 흐리게 가림</span>' }) +
     popup('popup-unlocked', '<div class="hl h1" style="' + pbox(R('popup-when', '#runDate'), 4) + ';width:' + (326 * POP.k + 8) + 'px"></div><div class="hl h2" style="' + pbox(R('popup-when', '#runStart'), 4) + ';width:' + (326 * POP.k + 8) + 'px"></div>'),
     setup: function (a) {
-      var sy = 250;
+      var sy = R('popup-unlocked', '#whenText')[1] * POP.k - 129;
       var wt = ppt(R('popup-unlocked', '#whenText'), sy, .9);
       a.k('.pop', [[0, { o: 0, s: .92 }], [.4, { o: 0, s: .92 }], [.8, { o: 1, s: 1 }, 'o']]);
       a.k('.pcam', [[0, { y: 0 }], [1.2, { y: 0 }], [2.2, { y: -sy }]]);
@@ -988,7 +1051,7 @@
     '<div class="steps4"><span class="st s1"><span class="ck">' + U('i-ck') + '</span>업무포털 로그인</span><span class="st s2"><span class="ck">' + U('i-ck') + '</span>나이스 열기</span><span class="st s3"><span class="ck">' + U('i-ck') + '</span>신청서 채우기</span><span class="st s4"><span class="ck">' + U('i-ck') + '</span>결재선 지정</span></div>' +
     '<div class="bub sg2">여기부터는 선생님이 직접</div>',
     setup: function (a) {
-      var sy = 280, r2 = ppt(R('popup-unlocked', 'route2'), sy);
+      var sy = R('popup-unlocked', 'route2')[1] * POP.k - 130, r2 = ppt(R('popup-unlocked', 'route2'), sy);
       a.k('.pop', [[0, { o: 0, s: .92 }], [.3, { o: 0, s: .92 }], [.7, { o: 1, s: 1 }, 'o'], [5.4, { o: 1, s: 1 }], [5.8, { o: 0, s: .96 }]]);
       a.k('.pcam', [[0, { y: 0 }], [1, { y: 0 }], [2, { y: -sy }]]);
       a.src('.pimg', [[0, 'popup-unlocked'], [3.6, 'popup-run']]);
@@ -1027,7 +1090,7 @@
     win({ tab: '업무포털', fav: 'neis', url: '○○.eduptl.kr', white: true, body: portalBg, over: '<span class="tag-ex">실제 화면 · 개인정보는 흐리게 가림</span>' }) +
     popup('popup-unlocked', '<div class="hl h1" style="' + pbox(R('popup-ap', '#approvals'), 5) + '"></div>'),
     setup: function (a) {
-      var sy = 290, ab = ppt(R('popup-unlocked', '#approvalsBtn'), sy);
+      var sy = R('popup-unlocked', '#approvalsBtn')[1] * POP.k - 42, ab = ppt(R('popup-unlocked', '#approvalsBtn'), sy);
       a.k('.pop', [[0, { o: 0, s: .92 }], [.3, { o: 0, s: .92 }], [.7, { o: 1, s: 1 }, 'o']]);
       a.k('.pcam', [[0, { y: 0 }], [1, { y: 0 }], [2, { y: -sy }]]);
       a.mouse(640, 560, .3).to(3.6, ab[0], ab[1], 1.4).click(4.2).to(6, 760, 520, 1);
@@ -1055,7 +1118,7 @@
     } });
 
   // ── 9. 과세특 ──
-  chapter('과세특 입력', '쓰던 엑셀 그대로', true);
+  chapter('엑셀 입력', '과세특 · 행특·창체 · 학기말종합의견', true);
   scene({ title: '엑셀로 과세특 입력', dur: 28, html:
     win({ tab: '쌤패스 · 과세특 입력', url: '쌤패스 › 과세특 입력', body: scr('remarks-file') +
       '<div class="hl h1" style="' + box([65, 196, 990, 80], 1120, 4) + '"></div>' +
@@ -1071,11 +1134,25 @@
       a.mouse(120, 640, 4.4).to(6.6, drop[0], drop[1], 1.8).to(15.2, nb[0], nb[1], 1.4).click(15.8).to(22.4, wb[0], wb[1], 1.4).click(23);
       a.hl('.h1', 8.4, 11.2);
       a.hl('.h2', 17, 19.8);
-      a.cap(0, '[과세특 입력]을 누르면 나이스 과세특 화면의 OTP 창까지 열려요. OTP는 직접 넣고, 이 화면으로 돌아와요.');
+      a.cap(0, '[과세특 입력]을 누르면 나이스 과세특 OTP 창까지 열려요. OTP는 직접 넣고, 이 화면으로 돌아와요.');
       a.cap(4.6, '쓰던 엑셀을 그대로 끌어다 놓으면 학년·반·번호·이름·내용 열을 알아서 찾아요.');
       a.cap(8.4, '바이트 초과나 나이스가 받지 못하는 글자는 미리 빨간색으로 알려 줘요.');
       a.cap(15.4, '나이스에서 학기·과목·강의실을 [조회]하면 명단과 하나씩 맞춰 봐요. 이미 내용이 있는 학생은 체크해야 바꿔요.');
       a.cap(22.6, '[입력 시작]을 누르면 나이스 표에 바로 들어가요. 확인하고 [저장]은 직접, 다음 강의실도 이어서 해요.');
+    } });
+
+  var pickCam = top0((R('homeroom-pick', '#pickCard')[1] - 12) * kOf()); // 칸 고르기 카드를 위로 (자막에 안 가리게)
+  scene({ title: '행특·창체 · 학기말종합의견', dur: 15, html:
+    win({ tab: '쌤패스 · 행특·창체 입력', url: '쌤패스 › 행특·창체 입력', body: scr('homeroom-pick') +
+      '<div class="hl h1" style="' + box(R('homeroom-pick', 'pick-behavior'), 1120, 4) + '"></div>' +
+      '<div class="hl h2" style="' + box(R('homeroom-pick', 'pick-autonomy'), 1120, 4) + '"></div>' +
+      '<div class="hl h3" style="' + box(R('homeroom-pick', 'pick-career'), 1120, 4) + '"></div>' }),
+    setup: function (a) {
+      a.k('.cam', [[0, top0(0)], [.8, top0(0)], [2, pickCam]]);
+      a.hl('.h1', 2.2, 3.8); a.hl('.h2', 3.9, 5.4); a.hl('.h3', 5.5, 7.4);
+      a.cap(0, '중·고 담임은 [행특·창체 입력]에서 행동특성·자율·진로 중 넣을 칸을 골라요.');
+      a.cap(5.6, '고르면 나이스에서 그 메뉴를 열고 [조회]까지 눌러 줘요. 칸마다 따로 만든 엑셀도 그대로 쓰면 돼요.');
+      a.cap(10.6, '초등은 [학기말종합의견 입력]. 넣는 방법은 과세특과 같고, [저장]은 언제나 직접이에요.');
     } });
 
   // ── 10. 더 알아 두기 ──
