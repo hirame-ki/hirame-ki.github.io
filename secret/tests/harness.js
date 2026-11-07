@@ -13,11 +13,17 @@ const vm = require("vm");
 const SRC = path.join(__dirname, "..", "index.html");
 
 const CORE_NAMES = [
+  /* 파일 읽기 */
+  "readSheets", "readZip", "inflateRawJs", "parseXmlLite", "xmlText",
+  "parseCfb", "parseBiff", "parseHtmlTables", "parseCsv", "decodeTextBytes",
+  "isDateFmtCode", "serialToDate", "numText",
+  /* 학생 맞추기 */
   "guessArea", "isOtherArea", "targetScope",
   "onlyDigits", "sameNumStr",
-  "nameNfc", "acNameKey", "headKey",
+  "nameNfc", "acNameKey", "headKey", "headRole", "headerLabels",
   "parseNamePiece", "findByName", "splitPeople", "splitNums",
-  "parseStudentNo", "parseClassNumbers",
+  "parseStudentNo", "parseClassNumbers", "parseClassCell", "parseBanNo",
+  "sheetHintOf", "roleBlocks", "inferMyClass", "isBlankText",
   "HEAD_WORDS", "findHeaderRow", "guessAcRoles",
   "planAcSheet",
 ];
@@ -43,7 +49,8 @@ function extractCore(){
 
 function loadCore(){
   const { code, blocks } = extractCore();
-  const sandbox = { module: { exports: {} }, console };
+  /* TextDecoder 는 브라우저에도 있는 표준 기능이라 구간 안에서 그대로 쓴다 */
+  const sandbox = { module: { exports: {} }, console, TextDecoder };
   vm.runInNewContext(
     code + "\n;module.exports = { " + CORE_NAMES.join(", ") + " };",
     sandbox,
