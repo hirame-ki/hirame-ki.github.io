@@ -1,0 +1,1788 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>바꿈 — 끌다가 Shift, 놓으면 바꿈 | 선생님용 무료 파일 변환·AI 도구</title>
+<!-- ── 공유용 메타 ──
+     og:image는 절대 경로여야 해요. 카카오톡·네이버 등은 상대 경로 그림을 읽지 못해요.
+     주소가 바뀌면 canonical·og:url·og:image·twitter:image·JSON-LD를 함께 고쳐 주세요.
+     공유 그림(og.png)을 새로 만들면 ?v= 뒤 날짜도 바꿔야 카카오톡이 새 그림을 가져와요. -->
+<meta name="description" content="한글·PDF·사진·영상을 탐색기에서 바로 바꾸는 선생님용 무료 윈도우 프로그램. 쓰던 Claude·ChatGPT에 로그인해 두면 파일을 끌어다 놓아 요약·번역·회신문·학습지·문제·지도안까지 만들어요.">
+<meta name="keywords" content="한글 PDF 변환,HWP PDF 변환,HWP 변환 프로그램,파일 변환 프로그램,무료 파일 변환,PDF 합치기,PDF 나누기,PDF 용량 줄이기,사진 용량 줄이기,사진 얼굴 가리기,글자 추출,화면 녹화,AI 요약,AI 번역,AI 학습지 만들기,AI 문제 만들기,AI 지도안,공문 회신문,챗GPT,클로드,교사 업무,선생님 프로그램,바꿈">
+<meta name="author" content="hirame.ki">
+<meta name="creator" content="hirame.ki (@hirame.ki)">
+<meta name="copyright" content="© 2026 hirame.ki">
+<meta name="application-name" content="바꿈">
+<meta name="theme-color" content="#F6F3EE">
+<meta name="format-detection" content="telephone=no">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://hirame-ki.github.io/bakkum/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="바꿈">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:url" content="https://hirame-ki.github.io/bakkum/">
+<meta property="og:title" content="파일을 놓으면 학습지가 나와요. 쓰던 AI로요">
+<meta property="og:description" content="끌다가 Shift, 'AI로' 칸에 놓으면 요약·번역·회신문·문제·지도안까지. 쓰던 Claude·ChatGPT에 로그인해 바로 써요. 한글·PDF·사진 변환은 내 PC에서. 선생님용 무료 프로그램.">
+<meta property="og:image" content="https://hirame-ki.github.io/bakkum/og.png?v=20261109">
+<meta property="og:image:secure_url" content="https://hirame-ki.github.io/bakkum/og.png?v=20261109">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="파일을 끌다가 Shift를 누르면 PDF로·그림으로·형식 바꾸기·글자 뽑기·압축·AI로 칸이 부채처럼 펼쳐지는 바꿈 메뉴. 쓰던 AI에 로그인하면 요약·번역·학습지·문제·지도안까지 된다는 안내.">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="파일을 놓으면 학습지가 나와요. 쓰던 AI로요">
+<meta name="twitter:description" content="끌다가 Shift, 'AI로' 칸에 놓으면 요약·번역·회신문·문제·지도안까지. 쓰던 Claude·ChatGPT에 로그인해 바로 써요. 한글·PDF·사진 변환은 내 PC에서. 선생님용 무료 프로그램.">
+<meta name="twitter:image" content="https://hirame-ki.github.io/bakkum/og.png?v=20261109">
+<meta name="twitter:image:alt" content="파일을 끌다가 Shift를 누르면 PDF로·그림으로·형식 바꾸기·글자 뽑기·압축·AI로 칸이 부채처럼 펼쳐지는 바꿈 메뉴. 쓰던 AI에 로그인하면 요약·번역·학습지·문제·지도안까지 된다는 안내.">
+<meta name="twitter:creator" content="@hirame.ki">
+<meta name="apple-mobile-web-app-title" content="바꿈">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "바꿈",
+  "url": "https://hirame-ki.github.io/bakkum/",
+  "image": "https://hirame-ki.github.io/bakkum/og.png?v=20261109",
+  "description": "파일을 끌다가 Shift를 누르면 메뉴가 펼쳐지는 선생님용 무료 윈도우 프로그램. 쓰던 AI에 로그인해 두면 요약·번역·회신문·학습지·문제·지도안까지 만들어요.",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Windows 10, Windows 11",
+  "softwareVersion": "0.3.2",
+  "fileSize": "532KB",
+  "downloadUrl": "https://hirame-ki.github.io/bakkum/download/%EB%B0%94%EA%BF%88-0.3.2.zip",
+  "inLanguage": "ko",
+  "isAccessibleForFree": true,
+  "license": "https://www.apache.org/licenses/LICENSE-2.0",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+  "author": { "@type": "Person", "name": "hirame.ki", "sameAs": "https://www.instagram.com/hirame.ki" }
+}
+</script>
+<!-- ── 메타 끝 ── -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+<style>
+/* 색종이: 미색 책상 위에 둥근 색종이를 한 장씩 올려 둔 화면. 할 일마다 색이 정해져 있고(바꿈 앱과 같음), 각진 모서리는 없다. */
+:root{
+  --desk:#F6F3EE; --sheet:#FFFFFF; --sheet-2:#FAF7F2;
+  --ink:#22252F; --ink-2:#4B5160; --ink-3:#696F7D;
+  --line:#ECE7DF; --line-2:#DDD7CD; --focus:#3D7BFF;
+  --coral:#FF8473; --coral-t:#FFE8E3; --coral-d:#B53A28;
+  --orange:#FFAA4D; --orange-t:#FFEEDB; --orange-d:#A85A0B;
+  --yellow:#FFD447; --yellow-t:#FFF6D6; --yellow-d:#8A6A00;
+  --green:#52D3A0; --green-t:#DDF7EC; --green-d:#13795A;
+  --blue:#6CA8FF; --blue-t:#E3EEFF; --blue-d:#2259B8;
+  --purple:#B596FF; --purple-t:#EFE8FF; --purple-d:#6237C2;
+  --pink:#FF8FC2; --pink-t:#FFE6F1; --pink-d:#B02A6B;
+  --slate:#AEB6C5; --slate-t:#EEF0F4; --slate-d:#465063;
+  --sky:#4FC3E8; --sky-t:#DFF5FC; --sky-d:#0E6F8C;
+  --lime:#A5D64C; --lime-t:#F0F9DF; --lime-d:#4E7A0C;
+  --teal:#38C7B8; --teal-t:#DFF7F4; --teal-d:#0D6F66;
+  --indigo:#8E9BFF; --indigo-t:#E9EBFF; --indigo-d:#3B4BC0;
+  --warn-bg:#FFF1EE; --warn-line:#FFD2C9;
+  --font:"Pretendard Variable",Pretendard,"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  --sh-rest:0 3px 12px rgb(34 37 47 / .13);
+  --sh-card:0 3px 22px rgb(34 37 47 / .08);
+  --back:cubic-bezier(.34,1.56,.64,1);
+  color-scheme:light;
+}
+.h-coral{--h:var(--coral);--t:var(--coral-t);--d:var(--coral-d)}
+.h-orange{--h:var(--orange);--t:var(--orange-t);--d:var(--orange-d)}
+.h-yellow{--h:var(--yellow);--t:var(--yellow-t);--d:var(--yellow-d)}
+.h-green{--h:var(--green);--t:var(--green-t);--d:var(--green-d)}
+.h-blue{--h:var(--blue);--t:var(--blue-t);--d:var(--blue-d)}
+.h-purple{--h:var(--purple);--t:var(--purple-t);--d:var(--purple-d)}
+.h-pink{--h:var(--pink);--t:var(--pink-t);--d:var(--pink-d)}
+.h-slate{--h:var(--slate);--t:var(--slate-t);--d:var(--slate-d)}
+.h-sky{--h:var(--sky);--t:var(--sky-t);--d:var(--sky-d)}
+.h-lime{--h:var(--lime);--t:var(--lime-t);--d:var(--lime-d)}
+.h-teal{--h:var(--teal);--t:var(--teal-t);--d:var(--teal-d)}
+.h-indigo{--h:var(--indigo);--t:var(--indigo-t);--d:var(--indigo-d)}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;scroll-padding-top:84px}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.65;word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img,svg,video{max-width:100%}
+a{color:inherit}
+h1,h2,h3{margin:0;line-height:1.25;letter-spacing:-.025em;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:10px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ic24{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ---------- 머리 ---------- */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:31;background:var(--desk)}
+.site-head{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--desk);transition:box-shadow .2s}
+.site-head.scrolled{box-shadow:0 1px 0 var(--line),0 8px 20px -12px rgb(34 37 47 / .18)}
+.head-in{display:flex;align-items:center;gap:18px;height:66px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:21px;letter-spacing:-.03em;text-decoration:none;border:0;background:none;cursor:pointer;padding:4px;border-radius:12px}
+.brand svg{width:34px;height:34px;display:block}
+.nav{display:flex;gap:2px;margin-left:auto;position:relative}
+.nav a{padding:8px 12px;border-radius:12px;color:var(--ink-2);text-decoration:none;font-weight:650;font-size:15px}
+.nav a:hover,.nav a.on{background:var(--sheet);color:var(--ink)}
+.head-cta{margin-left:6px}
+/* 좁은 화면: 차례를 둘째 줄에 옆으로 넘기는 칩으로 */
+@media (max-width:900px){
+  html{scroll-padding-top:116px}
+  .head-in{flex-wrap:wrap;height:auto;padding-top:9px;row-gap:2px}
+  .head-cta{margin-left:auto}
+  .nav{order:3;flex:0 0 calc(100% + 40px);margin:0 -20px;padding:2px 20px 10px;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .nav::-webkit-scrollbar{display:none}
+  .nav a{white-space:nowrap;font-size:14px;padding:6px 12px;background:var(--sheet);box-shadow:inset 0 0 0 1.5px var(--line)}
+  .nav a.on{background:var(--ink);color:#fff;box-shadow:none}
+}
+html.opening .site-head .brand svg{opacity:0}
+
+/* ---------- 단추 ---------- */
+.btn{display:inline-flex;align-items:center;gap:12px;border:0;border-radius:14px;padding:14px 22px;font-weight:750;font-size:16.5px;line-height:1.25;text-decoration:none;cursor:pointer;transition:transform .14s,box-shadow .2s,background-color .14s}
+.btn:active{transform:scale(.97)}
+.btn small{display:block;font-weight:550;font-size:12.5px;opacity:.78;margin-top:2px}
+.btn-ink{background:var(--ink);color:#fff;box-shadow:0 10px 22px -10px rgb(34 37 47 / .6)}
+.btn-ink:hover{box-shadow:0 14px 28px -12px rgb(34 37 47 / .7);transform:translateY(-1px)}
+.btn-line{background:var(--sheet);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line-2)}
+.btn-line:hover{box-shadow:inset 0 0 0 1.5px var(--ink-3)}
+.btn-sm{padding:9px 15px;font-size:14.5px;border-radius:12px;gap:8px}
+.btn-yellow{background:var(--yellow);color:var(--ink);box-shadow:0 10px 24px -10px rgb(138 106 0 / .65)}
+.btn-yellow:hover{transform:translateY(-1px)}
+
+/* ---------- 첫 화면 ---------- */
+.hero{padding-block:52px 84px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,600px);gap:56px;align-items:center}
+@media (max-width:1020px){.hero-grid{grid-template-columns:minmax(0,1fr);gap:40px}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:750;color:var(--ink-3);letter-spacing:.02em}
+.eyebrow i{width:12px;height:12px;border-radius:4px;background:var(--h,var(--slate));display:inline-block}
+.hero h1{font-size:clamp(44px,6.6vw,82px);line-height:1.1;letter-spacing:-.045em;font-weight:850;margin:16px 0 22px}
+.hero h1 .ln{display:block}
+.kc{display:inline-flex;align-items:center;gap:.14em;font:inherit;font-size:.74em;font-weight:800;letter-spacing:-.02em;padding:.04em .3em .1em;border-radius:.22em;background:var(--sheet);color:var(--ink);box-shadow:inset 0 -.1em 0 var(--line-2),0 .05em .2em rgb(34 37 47 / .16);vertical-align:.07em}
+.kc .up{font-size:.72em;color:var(--ink-3);font-weight:700}
+.strip{display:inline-block;background:var(--yellow);border-radius:.3em;padding:0 .18em;margin-left:.04em;box-shadow:0 .12em .4em -.12em rgb(138 106 0 / .55);transform-origin:left center}
+.lead{font-size:clamp(17px,1.6vw,19.5px);color:var(--ink-2);max-width:31em}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.fact-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.fact{font-size:13.5px;font-weight:750;padding:6px 12px;border-radius:10px;background:var(--t);color:var(--d)}
+
+/* ---------- 바꿔 보기 무대 ---------- */
+.stage{position:relative;container-type:inline-size;background:var(--sheet);border-radius:28px;box-shadow:var(--sh-card),0 40px 70px -48px rgb(34 37 47 / .35);padding:16px 16px 14px;user-select:none;-webkit-user-select:none;cursor:pointer;overflow:hidden;touch-action:manipulation}
+.stage-top{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:750;color:var(--ink-3);padding:2px 4px 12px}
+.stage-top .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.stage-body{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.file-zone{position:relative;background:var(--sheet-2);border-radius:20px;min-height:410px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px 12px}
+.file-slot{position:relative;width:156px;height:196px}
+.file-slot .pg{position:absolute;left:10px;top:4px;width:136px;height:171px;transition:none}
+.file-slot .pg svg{width:100%;height:100%;display:block;overflow:visible}
+.file-slot.many .pg.b{transform:translate(-14px,8px) rotate(-7deg)}
+.file-slot.many .pg.f{transform:translate(8px,2px) rotate(3deg)}
+.file-slot.small .pg{transform:scale(.8)}
+.file-slot.small.many .pg.b{transform:translate(-8px,14px) rotate(-7deg) scale(.8)}
+.file-slot.small.many .pg.f{transform:translate(8px,10px) rotate(3deg) scale(.8)}
+.file-name{font-size:14.5px;font-weight:750;text-align:center;max-width:100%;padding-inline:4px}
+.file-name .more{white-space:nowrap;color:var(--ink-3);font-weight:650}
+.nb{white-space:nowrap}
+.file-note{font-size:12.5px;font-weight:750;padding:4px 10px;border-radius:9px;background:var(--t);color:var(--d)}
+.file-note:empty{display:none}
+.menu-demo{display:flex;align-items:center;gap:12px;padding-right:26px}
+.badge-c{width:72px;height:72px;border-radius:22px;background:var(--sheet);box-shadow:var(--sh-rest);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13.5px;font-weight:750;line-height:1.25;flex:none}
+.badge-c small{font-size:11.5px;font-weight:500;color:var(--ink-3)}
+.tabs{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.tab{appearance:none;-webkit-appearance:none;border:0;display:flex;align-items:center;gap:10px;width:236px;height:46px;border-radius:15px;padding:0 10px 0 8px;background:var(--t);color:var(--d);text-align:left;box-shadow:var(--sh-rest);cursor:pointer;transition:transform .24s var(--back),background-color .14s,box-shadow .24s,opacity .2s}
+.tab .ic{width:30px;height:30px;border-radius:50%;background:var(--h);display:grid;place-items:center;flex:none;color:var(--ink);transition:background-color .14s,color .14s}
+.tab .ic svg{width:18px;height:18px}
+.tab .tl{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.tab b{font-size:14.5px;font-weight:800}
+.tab small{font-size:11px;font-weight:500;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.9}
+.tab .cap{width:22px;height:22px;border-radius:7px;background:var(--sheet);display:grid;place-items:center;font-size:11.5px;font-weight:800;color:var(--d);flex:none}
+.tab.hot{transform:translateX(20px) scale(1.02);background:var(--h);color:var(--ink);box-shadow:0 9px 26px -6px rgb(34 37 47 / .25),0 9px 26px -6px color-mix(in srgb,var(--d) 45%,transparent)}
+.tab.hot .ic{background:var(--sheet);color:var(--d)}
+.tab.hot .cap{color:var(--ink)}
+@media (hover:hover){.tab:hover{transform:translateX(20px) scale(1.02);background:var(--h);color:var(--ink);box-shadow:0 9px 26px -6px color-mix(in srgb,var(--d) 45%,transparent)}.tab:hover .ic{background:var(--sheet);color:var(--d)}}
+.stage-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 4px 2px}
+.stage-cap{flex:1 1 220px;min-width:0;font-size:14.5px;color:var(--ink-2);line-height:1.5}
+.stage-cap b{color:var(--ink);margin-right:4px}
+.stage-cap a{color:var(--sky-d);font-weight:750}
+.stage-btns{display:flex;gap:6px;margin-left:auto}
+.cursor{position:absolute;left:0;top:0;width:26px;height:30px;pointer-events:none;opacity:0;z-index:6;will-change:transform}
+.cursor svg{width:100%;height:100%;display:block;transition:transform .12s}
+.cursor.down svg{transform:scale(.86)}
+.ghost{position:absolute;left:0;top:0;width:46px;height:58px;pointer-events:none;opacity:0;z-index:5;will-change:transform}
+.ghost svg{width:100%;height:100%;display:block}
+.tabs-box{position:relative;min-height:410px;display:flex;align-items:center}
+.opt-tabs{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);pointer-events:none}
+.tabs.away{pointer-events:none}
+.tabs.away .tab{opacity:0;transform:translateX(-10px) scale(.96);box-shadow:none}
+.tab .ic.num{font-size:15px;font-weight:850}
+.toast{position:absolute;right:14px;top:5px;z-index:7;display:flex;align-items:center;gap:10px;background:var(--sheet);border-radius:15px;padding:5px 14px 5px 6px;box-shadow:0 10px 30px -8px rgb(34 37 47 / .3);opacity:0;transform:translateY(-8px);pointer-events:none;min-width:200px}
+.toast .chip{width:34px;height:34px;border-radius:11px;background:var(--t);color:var(--d);display:grid;place-items:center;flex:none}
+.toast .chip svg{width:19px;height:19px}
+.toast .tw{display:flex;flex-direction:column;min-width:0}
+.toast b{display:block;font-size:13.5px;line-height:1.3}
+.toast .st{font-size:12px;color:var(--ink-2);line-height:1.35;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.toast .bar{height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden;width:150px}
+.toast .bar i{display:block;height:100%;width:0;border-radius:3px;background:var(--h)}
+.toast.done .bar{display:none}
+/* 휴대폰: 파일 자리와 칸을 낮게 해서 무대 전체가 한 화면에 들어오게 */
+@container (max-width:560px){
+  .stage-body{grid-template-columns:minmax(0,1fr);gap:10px}
+  .file-zone{min-height:0;padding:12px 10px;gap:6px}
+  .file-slot{width:112px;height:140px}
+  .file-slot .pg{left:8px;top:3px;width:96px;height:121px}
+  .file-name{font-size:13.5px}
+  .badge-c{display:none}
+  .menu-demo{padding-right:0}
+  .tabs-box{flex:1;min-width:0;min-height:202px;align-items:flex-start}
+  .tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:100%}
+  .opt-tabs{top:0;transform:none}
+  .tab{width:100%;height:46px;border-radius:14px;gap:8px;padding:0 8px}
+  .tab .ic{width:28px;height:28px}
+  .tab .ic svg{width:17px;height:17px}
+  .tab b{font-size:14px;white-space:nowrap}
+  .tab small,.tab .cap{display:none}
+  .tab.hot,.tab:hover{transform:scale(1.03)}
+  .stage-foot{padding-top:12px}
+  .toast{min-width:0;right:10px;left:10px;top:42px}
+  .toast .bar{width:auto}
+  .toast .st{max-width:none}
+}
+
+/* ---------- 구역 공통 ---------- */
+.sec{padding-block:96px}
+.sec-head{max-width:660px;margin-bottom:40px}
+.sec-head h2{font-size:clamp(29px,3.7vw,44px);letter-spacing:-.035em;font-weight:850;margin:12px 0 14px}
+.sec-head p{font-size:17.5px;color:var(--ink-2)}
+.band-sheet{background:var(--sheet)}
+
+/* 세 동작 */
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:0;padding:0;list-style:none;counter-reset:st}
+.step{background:var(--sheet);border-radius:22px;padding:22px 22px 24px;box-shadow:var(--sh-card);display:flex;flex-direction:column;gap:14px}
+.step-art{height:132px;border-radius:16px;background:var(--t);display:grid;place-items:center;position:relative;overflow:hidden}
+.step-art svg{width:100%;height:100%}
+.step h3{font-size:21px;font-weight:850;display:flex;align-items:center;gap:10px}
+.step h3 .n{width:30px;height:30px;border-radius:10px;background:var(--ink);color:#fff;font-size:15px;display:grid;place-items:center;flex:none}
+.step p{color:var(--ink-2)}
+.sendto{margin-top:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--sheet);border-radius:16px;padding:14px 18px;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--ink-2);font-size:15.5px}
+.sendto b{color:var(--ink)}
+.path{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;font-weight:750;color:var(--ink)}
+.path span{background:var(--sheet-2);border-radius:9px;padding:3px 9px;box-shadow:inset 0 0 0 1.5px var(--line)}
+@media (max-width:860px){.steps{grid-template-columns:minmax(0,1fr)}}
+
+/* 할 수 있는 일 */
+.feats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+.feat{grid-column:span 2;background:var(--t);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:12px;color:var(--ink-2);transition:transform .24s var(--back),box-shadow .24s}
+.feat.wide{grid-column:span 3}
+@media (hover:hover){.feat:hover{transform:translateY(-4px);box-shadow:0 14px 30px -14px color-mix(in srgb,var(--d) 55%,transparent)}}
+.feat .ic{width:48px;height:48px;border-radius:50%;background:var(--h);color:var(--ink);display:grid;place-items:center}
+.feat .ic svg{width:26px;height:26px}
+.feat h3{font-size:23px;font-weight:850;color:var(--d)}
+.io{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:750;color:var(--ink);font-size:15px}
+.io .arr{color:var(--d)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}
+.chips span{font-size:13px;font-weight:750;padding:4px 10px;border-radius:9px;background:var(--sheet);color:var(--d)}
+@media (max-width:980px){.feats{grid-template-columns:repeat(2,minmax(0,1fr))}.feat,.feat.wide{grid-column:span 1}}
+@media (max-width:620px){.feats{grid-template-columns:minmax(0,1fr)}}
+
+/* 메뉴 모양 */
+.shapes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,640px);gap:48px;align-items:center}
+@media (max-width:1020px){.shapes{grid-template-columns:minmax(0,1fr)}}
+.seg{display:inline-flex;flex-wrap:wrap;gap:6px;background:var(--sheet);padding:6px;border-radius:16px;box-shadow:inset 0 0 0 1.5px var(--line);margin-top:26px}
+.seg button{border:0;background:transparent;padding:9px 15px;border-radius:11px;font-weight:750;font-size:15px;color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background-color .14s,color .14s}
+.seg button:hover{background:var(--sheet-2)}
+.seg button[aria-pressed="true"]{background:var(--purple);color:var(--ink)}
+.seg .tag{font-size:11.5px;font-weight:800;padding:1px 6px;border-radius:7px;background:var(--purple-t);color:var(--purple-d)}
+.seg button[aria-pressed="true"] .tag{background:var(--sheet)}
+.shape-say{margin-top:18px;font-size:16px;color:var(--ink-2);min-height:3.3em}
+.shape-say b{color:var(--ink)}
+.shape-note{margin-top:10px;font-size:14.5px;color:var(--ink-3)}
+.shape-stage{position:relative;background:var(--sheet);border-radius:28px;box-shadow:var(--sh-card),0 40px 70px -50px rgb(34 37 47 / .35);padding:10px;cursor:pointer;touch-action:manipulation}
+.shape-stage svg{display:block;width:100%;height:auto}
+.shape-hint{position:absolute;left:18px;bottom:14px;font-size:13px;font-weight:750;color:var(--ink-3);pointer-events:none}
+.cell{transform-box:fill-box;transform-origin:center;transition:transform .24s var(--back)}
+.cell .bg{fill:var(--t);transition:fill .14s}
+.cell .sh{fill:rgb(34 37 47 / .11);transform:translateY(3px);transition:transform .24s var(--back),fill .14s}
+.cell .lab{transition:opacity .16s}
+.cell .lt{fill:var(--d);font-weight:800}
+.cell .ls{fill:var(--d);opacity:.85}
+.cell .chip{fill:var(--h)}
+.cell .gl{stroke:var(--ink);fill:none;stroke-linecap:round;stroke-linejoin:round}
+.cell .kc2{fill:var(--sheet)}
+.cell .kt{fill:var(--d);font-weight:800}
+.cell.on{transform:translate(calc(var(--bx) * 1px),calc(var(--by) * 1px)) scale(var(--s))}
+.cell.on .bg{fill:var(--h)}
+.cell.on .sh{fill:color-mix(in srgb,var(--d) 32%,transparent);transform:translateY(9px)}
+.cell.on .lt,.cell.on .ls{fill:var(--ink)}
+.cell.on .chip{fill:var(--sheet)}
+.cell.on .gl{stroke:var(--d)}
+.cell.ctr .bg{fill:var(--sheet)}
+.cell.ctr .lt{fill:var(--ink)}
+.cell.ctr .ls{fill:var(--ink-3)}
+.cell.ctr.on .bg{fill:var(--ink)}
+.cell.ctr.on .lt,.cell.ctr.on .ls{fill:#fff}
+.morphing .lab{opacity:0}
+.wave-line{transition:opacity .3s}
+
+/* 영상 */
+.player{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.screen{background:var(--ink);border-radius:22px;overflow:hidden;box-shadow:0 30px 60px -36px rgb(34 37 47 / .55);aspect-ratio:16/9;width:min(100%,calc((100vh - 130px) * 16 / 9));margin-inline:auto}
+.screen video{display:block;width:100%;height:100%;background:var(--ink)}
+.chapters{background:var(--sheet);border-radius:22px;padding:20px 24px;box-shadow:var(--sh-card);display:grid;grid-template-columns:max-content minmax(0,1fr);gap:8px 22px;align-items:start}
+.ch-group{font-size:14px;font-weight:800;color:var(--ink-3);padding-top:9px}
+.ch-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.ch{border:0;background:var(--sheet-2);display:flex;align-items:center;gap:8px;padding:9px 13px 9px 11px;border-radius:13px;cursor:pointer;text-align:left;font:inherit;color:inherit;transition:background-color .14s}
+.ch:hover{background:var(--t)}
+.ch .dot{width:11px;height:11px;border-radius:4px;background:var(--h);flex:none}
+.ch .tt{font-weight:700;font-size:15px;white-space:nowrap}
+.ch .tm{font-size:13px;font-weight:650;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.ch.now{background:var(--t)}
+.ch.now .tt{color:var(--d)}
+.ch-note{grid-column:1/-1;font-size:13px;color:var(--ink-3);padding-top:4px}
+@media (max-width:640px){.chapters{grid-template-columns:minmax(0,1fr);gap:6px;padding:18px}.ch-group{padding-top:8px}.ch-group:first-child{padding-top:0}}
+
+/* AI */
+.band-sky{background:var(--sky-t)}
+.ai-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:56px}
+@media (max-width:980px){.ai-groups{grid-template-columns:minmax(0,1fr)}}
+.ai-g{background:var(--sheet);border-radius:22px;padding:22px 22px 10px;box-shadow:var(--sh-card)}
+.ai-g h3{font-size:21px;font-weight:850;margin-bottom:6px}
+.ai-g dl{margin:0}
+.ai-g div{padding:12px 0;border-top:1.5px solid var(--line)}
+.ai-g div:first-child{border-top:0}
+.ai-g dt{font-size:17.5px;font-weight:850;color:var(--sky-d)}
+.ai-g dd{margin:3px 0 0;font-size:15px;color:var(--ink-2)}
+.ai-sub{font-size:clamp(24px,2.8vw,32px);font-weight:850;letter-spacing:-.03em;margin-bottom:8px}
+.ai-subp{color:var(--ink-2);font-size:16.5px;margin-bottom:18px;max-width:38em}
+.ai-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,470px);gap:28px;align-items:start}
+@media (max-width:980px){.ai-grid{grid-template-columns:minmax(0,1fr)}}
+.conns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:560px){.conns{grid-template-columns:minmax(0,1fr)}}
+.conn{background:var(--sheet);border-radius:20px;padding:18px 18px 20px;box-shadow:var(--sh-card);display:flex;flex-direction:column;gap:8px}
+.conn-top{display:flex;align-items:center;gap:10px}
+.conn .o{width:18px;height:18px;border-radius:50%;background:var(--h);box-shadow:0 0 0 4px var(--t);flex:none}
+.conn h3{font-size:18.5px;font-weight:850}
+.tagp{margin-left:auto;font-size:12px;font-weight:800;padding:3px 8px;border-radius:8px;background:var(--t);color:var(--d)}
+.conn p{font-size:15px;color:var(--ink-2)}
+.ai-note{margin-top:16px;font-size:14.5px;color:var(--ink-2)}
+.dlg{background:var(--sheet);border-radius:22px;padding:22px;box-shadow:0 30px 60px -36px rgb(34 37 47 / .45),var(--sh-card)}
+.dlg-head{display:flex;gap:14px;align-items:flex-start}
+.dlg-chip{width:44px;height:44px;border-radius:14px;background:var(--t);color:var(--d);display:grid;place-items:center;flex:none}
+.dlg-head h3{font-size:20px;font-weight:850}
+.dlg-head p{font-size:14px;color:var(--ink-3);margin-top:2px}
+.facts{margin:18px 0 14px;background:var(--sheet-2);border-radius:14px;padding:6px 14px}
+.facts div{display:grid;grid-template-columns:62px minmax(0,1fr);gap:12px;padding:10px 0;font-size:14px;color:var(--ink-2)}
+.facts div+div{border-top:1.5px solid var(--line)}
+.facts dt{font-weight:800;color:var(--ink)}
+.facts dd{margin:0}
+.dlg-sw{display:flex;gap:12px;align-items:flex-start;margin:0 2px}
+.sw{width:42px;height:24px;border-radius:12px;background:var(--green);position:relative;flex:none;margin-top:1px}
+.sw::after{content:"";position:absolute;right:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgb(34 37 47 / .3)}
+.dlg-sw b{display:block;font-size:14.5px;font-weight:700}
+.dlg-sw small{display:block;font-size:13px;color:var(--ink-3);margin-top:1px}
+.dlg-count{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 2px 12px;font-size:13.5px;color:var(--ink-3)}
+.warn{display:flex;gap:10px;align-items:flex-start;background:var(--warn-bg);border-radius:14px;padding:12px 14px;box-shadow:inset 0 0 0 1.5px var(--warn-line);font-size:14px;color:var(--ink-2)}
+.warn i{width:22px;height:22px;border-radius:50%;background:var(--coral);color:var(--ink);font-style:normal;font-weight:900;display:grid;place-items:center;flex:none;font-size:13px}
+.dlg-btns{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;flex-wrap:wrap}
+.fake{border-radius:12px;padding:9px 14px;font-weight:750;font-size:14.5px}
+.fake.q{color:var(--ink-2)}
+.fake.l{background:var(--sheet);box-shadow:inset 0 0 0 1.5px var(--ink-3);color:var(--ink)}
+.fake.p{background:var(--ink);color:#fff}
+.dlg-cap{font-size:13px;color:var(--ink-3);margin-top:10px;text-align:center}
+
+/* 안심 */
+.trust{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:900px){.trust{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.trust{grid-template-columns:minmax(0,1fr)}}
+.tr{background:var(--sheet);border-radius:20px;padding:20px;box-shadow:var(--sh-card);display:flex;flex-direction:column;gap:8px}
+.tr .chip{width:42px;height:42px;border-radius:13px;background:var(--t);color:var(--d);display:grid;place-items:center;margin-bottom:4px}
+.tr h3{font-size:18px;font-weight:850}
+.tr p{font-size:15px;color:var(--ink-2)}
+.band-sheet .tr,.band-sheet .faq details{background:var(--sheet-2);box-shadow:none}
+
+/* 설치: 받은 뒤 하는 일(실제 화면) */
+.calm{background:var(--t);border-radius:24px;padding:22px 24px 24px;margin-bottom:22px}
+.calm-top{display:flex;gap:16px;align-items:flex-start;max-width:860px}
+.calm .chip{width:46px;height:46px;border-radius:15px;background:var(--sheet);color:var(--d);display:grid;place-items:center;flex:none;box-shadow:var(--sh-rest)}
+.calm .chip svg{width:24px;height:24px}
+.calm h3{font-size:clamp(19px,2.1vw,23px);font-weight:850;margin-bottom:5px}
+.calm-top p{color:var(--ink-2);font-size:16px}
+.calm-top p b{color:var(--ink)}
+.calm-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+.calm-facts div{background:var(--sheet);border-radius:16px;padding:14px 16px 15px}
+.calm-facts b{display:block;font-size:15.5px;font-weight:850;margin-bottom:3px}
+.calm-facts p{font-size:14.5px;color:var(--ink-2)}
+@media (max-width:860px){.calm-facts{grid-template-columns:minmax(0,1fr)}.calm{padding:18px 18px 20px}}
+.guide{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
+.g-step{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:26px;align-items:center;background:var(--sheet);border-radius:24px;padding:18px;box-shadow:var(--sh-card)}
+.g-text{padding:8px 4px 8px 10px}
+.g-text .n{width:36px;height:36px;border-radius:12px;background:var(--t);color:var(--d);display:grid;place-items:center;font-weight:850;font-size:16px;margin-bottom:12px}
+.g-text h3{font-size:clamp(19px,2vw,22px);font-weight:850;margin-bottom:6px}
+.g-text p{color:var(--ink-2);font-size:15.5px}
+.g-text p b{color:var(--ink)}
+.g-text .g-note{margin-top:10px;font-size:14px;color:var(--ink-3)}
+.g-tag{display:inline-flex;font-size:12.5px;font-weight:800;padding:3px 9px;border-radius:8px;background:var(--t);color:var(--d);margin-bottom:8px}
+.g-shots{background:var(--desk);border-radius:18px;padding:clamp(14px,2.6vw,26px)}
+.shot{position:relative;margin:0;border-radius:10px;box-shadow:0 16px 30px -20px rgb(34 37 47 / .5),0 0 0 1px rgb(34 37 47 / .07)}
+.shot img{display:block;width:100%;height:auto;border-radius:inherit}
+.shot.flat{box-shadow:none}
+.shot.fade img{-webkit-mask-image:linear-gradient(to bottom,#000 91%,transparent);mask-image:linear-gradient(to bottom,#000 91%,transparent)}
+.shot.app{border-radius:3% / 3.3%}
+.hit{--ring:var(--coral);--glow:rgb(255 132 115 / .32);position:absolute;left:var(--x);top:var(--y);width:var(--w);height:var(--h);border-radius:9px;box-shadow:0 0 0 3px var(--ring),0 0 0 8px var(--glow);pointer-events:none;animation:hitPulse 2.4s ease-in-out infinite}
+.hit.y{--ring:var(--yellow);--glow:rgb(255 212 71 / .4)}
+.hit b{position:absolute;left:-13px;top:-13px;width:24px;height:24px;border-radius:50%;background:var(--ring);color:var(--ink);font-size:13px;font-weight:850;display:grid;place-items:center;box-shadow:0 2px 6px rgb(34 37 47 / .25)}
+@keyframes hitPulse{50%{box-shadow:0 0 0 3px var(--ring),0 0 0 13px transparent}}
+@media (prefers-reduced-motion:reduce){.hit{animation:none}}
+.pile{display:grid;grid-template-columns:repeat(12,minmax(0,1fr))}
+.pile .shot{grid-row:1;align-self:start}
+.pile .shot:first-child{grid-column:1 / 12}
+.pile .shot:last-child{grid-column:5 / 13;margin-top:62%;z-index:1}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);gap:8px;align-items:center}
+.pair .arr{width:30px;height:30px;color:var(--ink-3)}
+.solo{max-width:520px;margin:0 auto}
+.solo.narrow{max-width:430px}
+@media (max-width:860px){
+  .g-step{grid-template-columns:minmax(0,1fr);gap:14px;padding:14px}
+  .g-text{padding:6px 6px 0}
+  .pair{grid-template-columns:minmax(0,1fr);justify-items:center}
+  .pair .shot{width:100%;max-width:360px}
+  .pair .arr{transform:rotate(90deg)}
+}
+.after{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:22px;align-items:start}
+@media (max-width:900px){.after{grid-template-columns:minmax(0,1fr)}}
+.tips{display:flex;flex-direction:column;gap:12px}
+.tip-box{display:grid;grid-template-columns:40px minmax(0,1fr);gap:14px;background:var(--sheet);border-radius:18px;padding:16px 18px;box-shadow:var(--sh-card)}
+.tip-box .chip{width:36px;height:36px;border-radius:12px;background:var(--t);color:var(--d);display:grid;place-items:center}
+.tip-box .chip svg{width:20px;height:20px}
+.tip-box h3{font-size:17px;font-weight:850;margin-bottom:3px}
+.tip-box p{font-size:15px;color:var(--ink-2)}
+.need{background:var(--sheet);border-radius:20px;padding:20px 22px;box-shadow:var(--sh-card)}
+.need h3{font-size:17px;font-weight:850;margin-bottom:10px}
+.need dl{margin:0;display:flex;flex-direction:column}
+.need div{display:grid;grid-template-columns:112px minmax(0,1fr);gap:10px;padding:10px 0;font-size:15px}
+.need div+div{border-top:1.5px solid var(--line)}
+.need dt{font-weight:800}
+.need dd{margin:0;color:var(--ink-2)}
+.need-foot{margin-top:14px;font-size:14px;color:var(--ink-3)}
+
+/* 묻고 답하기 */
+.faq{display:flex;flex-direction:column;gap:10px;max-width:860px}
+.faq details{background:var(--sheet);border-radius:16px;box-shadow:var(--sh-card)}
+.faq summary{list-style:none;cursor:pointer;padding:16px 20px;font-weight:800;font-size:16.5px;display:flex;align-items:center;gap:12px;border-radius:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"";width:10px;height:10px;border-right:2.5px solid var(--ink-3);border-bottom:2.5px solid var(--ink-3);transform:rotate(45deg) translate(-2px,-2px);margin-left:auto;transition:transform .2s;flex:none}
+.faq details[open] summary::after{transform:rotate(225deg) translate(-2px,-2px)}
+.faq details p{padding:0 20px 18px;color:var(--ink-2);font-size:15.5px}
+
+/* 끝 띠 */
+.endband{background:var(--ink);color:#fff;border-radius:32px;padding:56px 40px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:center;position:relative;overflow:hidden}
+.endband h2{font-size:clamp(28px,3.4vw,40px);font-weight:850;letter-spacing:-.035em}
+.endband p{color:#C9CCD6;margin-top:10px;font-size:16.5px}
+.endband .bars{position:absolute;right:-30px;top:-10px;display:flex;flex-direction:column;gap:10px;opacity:.16;pointer-events:none}
+.endband .bars i{display:block;height:34px;border-radius:17px}
+@media (max-width:760px){.endband{grid-template-columns:minmax(0,1fr);padding:40px 24px}}
+
+footer{padding-block:48px 64px;color:var(--ink-3);font-size:14px}
+.foot{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between;align-items:flex-start}
+.foot a{color:var(--ink-2);font-weight:650}
+.foot small{display:block;margin-top:6px;max-width:44em;line-height:1.6}
+
+/* ---------- 오프닝 ---------- */
+.op{position:fixed;inset:0;z-index:100;cursor:pointer}
+.op-bg{position:absolute;inset:0;background:var(--desk)}
+.op-fly{position:absolute;inset:0}
+.op-ink{position:absolute;background:var(--ink)}
+.op-st{position:absolute}
+.op-word{position:absolute;font-weight:850;letter-spacing:-.05em;line-height:1;color:var(--ink);white-space:nowrap}
+.op-word span{display:inline-block}
+.op-tag{position:absolute;left:0;right:0;text-align:center;font-weight:750;color:var(--ink-2);font-size:clamp(16px,2.2vw,22px)}
+.op-tag .k{display:inline-block;padding:0 .35em;border-radius:.3em;background:var(--sheet);box-shadow:inset 0 -2px 0 var(--line-2);color:var(--ink)}
+.op-skip{position:absolute;right:max(18px,env(safe-area-inset-right,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));border:0;background:var(--sheet);border-radius:12px;padding:9px 14px;font-weight:750;font-size:14px;color:var(--ink-2);box-shadow:var(--sh-rest);cursor:pointer}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<header class="site-head" id="top">
+  <div class="wrap head-in">
+    <button type="button" class="brand" id="brand" aria-label="바꿈 · 오프닝 다시 보기">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="26" fill="#22252F"/><rect x="20" y="25.5" width="44" height="13.5" rx="6.75" fill="#FF8473"/><rect x="20" y="43.25" width="60" height="13.5" rx="6.75" fill="#FFD447"/><rect x="20" y="61" width="36" height="13.5" rx="6.75" fill="#6CA8FF"/></svg>
+      <span>바꿈</span>
+    </button>
+    <nav class="nav" aria-label="이 페이지 안내">
+      <a href="#how">쓰는 법</a>
+      <a href="#ai">AI로</a>
+      <a href="#features">할 수 있는 일</a>
+      <a href="#shapes">메뉴 모양</a>
+      <a href="#guide">사용법 영상</a>
+      <a href="#install">설치</a>
+      <a href="#faq">묻고 답하기</a>
+    </nav>
+    <a class="btn btn-ink btn-sm head-cta" data-download href="#install">무료로 받기</a>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow"><i class="h-yellow" style="background:var(--yellow)"></i>선생님을 위한 윈도우 파일 변환 · AI 도구</p>
+      <h1><span class="ln">끌다가 <kbd class="kc"><span class="up">⇧</span>Shift</kbd>,</span><span class="ln">놓으면 <span class="strip">바꿈</span>.</span></h1>
+      <p class="lead">한글·PDF·사진·영상을 탐색기에서 바로 바꿔요. 쓰던 AI에 로그인해 두면 요약·번역·학습지까지 파일을 놓아서 만들어요. 원본은 그대로 둬요.</p>
+      <div class="cta-row">
+        <a class="btn btn-ink" data-download href="#install">
+          <svg class="ic24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg>
+          <span>무료로 받기<small>윈도우 10·11 · 약 530KB</small></span>
+        </a>
+        <a class="btn btn-line" href="#guide">
+          <svg class="ic24" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>
+          <span>사용법 영상 보기</span>
+        </a>
+      </div>
+      <div class="fact-row">
+        <span class="fact h-green">관리자 권한 없이 설치</span>
+        <span class="fact h-sky">쓰던 AI에 로그인해서 써요</span>
+        <span class="fact h-purple">공개 소스 · 무료</span>
+      </div>
+    </div>
+
+    <div class="stage" id="stage" role="group" aria-label="바꿔 보기: 누를 때마다 파일이 다음 칸에서 바뀌어요">
+      <div class="stage-top"><span class="dot"></span>바꿔 보기 · 누를 때마다 바뀌어요</div>
+      <div class="stage-body">
+        <div class="file-zone">
+          <div class="file-slot" id="fileSlot" aria-hidden="true"></div>
+          <div class="file-name" id="fileName">독서 자료.hwp</div>
+          <div class="file-note" id="fileNote"></div>
+        </div>
+        <div class="menu-demo">
+          <div class="badge-c" aria-hidden="true"><span id="badgeTop">파일 1개</span><small>닫기</small></div>
+          <div class="tabs-box">
+          <ul class="tabs" id="tabs"></ul>
+          <ul class="tabs opt-tabs" id="optTabs" aria-hidden="true"></ul>
+          </div>
+        </div>
+      </div>
+      <div class="stage-foot">
+        <p class="stage-cap" id="stageCap" aria-live="polite"><b>시작</b>한글 파일을 끌어 왔어요. 파일에 맞는 칸만 떠요. 아무 데나 누르면 다음 칸에 놓아요.</p>
+        <div class="stage-btns">
+          <button type="button" class="btn btn-line btn-sm" id="stageReset" hidden>처음부터</button>
+          <button type="button" class="btn btn-ink btn-sm" id="stageNext">다음 칸에 놓기</button>
+        </div>
+      </div>
+      <div class="cursor" id="cursor" aria-hidden="true"><svg viewBox="0 0 26 30"><path d="M3 2v22l5.6-5.2 3.8 8.4 3.7-1.7-3.8-8.3h7.6z" fill="#fff" stroke="#22252F" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+      <div class="ghost" id="ghost" aria-hidden="true"></div>
+      <div class="toast" id="toast" aria-hidden="true"><span class="chip" id="toastChip"></span><span class="tw"><b id="toastTitle">PDF로</b><span class="st" id="toastStatus">PDF로 바꾸는 중</span><span class="bar"><i id="toastBar"></i></span></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec band-sheet" id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><i style="background:var(--coral)"></i>쓰는 법</p>
+      <h2>세 동작이면 끝나요</h2>
+      <p>탐색기에서 하던 대로 파일을 끌기만 하면 돼요. 따로 창을 열거나 파일을 올릴 필요가 없어요.</p>
+    </div>
+    <ol class="steps">
+      <li class="step h-coral">
+        <div class="step-art" aria-hidden="true">
+          <svg viewBox="0 0 320 132"><g transform="translate(96 22)"><path d="M10 0h44l22 22v62a8 8 0 0 1-8 8H10a8 8 0 0 1-8-8V8a8 8 0 0 1 8-8z" fill="#fff" stroke="#DDD7CD" stroke-width="2"/><rect x="12" y="66" width="40" height="16" rx="6" fill="#FFEEDB"/><text x="32" y="78" text-anchor="middle" font-size="11" font-weight="800" fill="#A85A0B">HWP</text><rect x="12" y="22" width="42" height="6" rx="3" fill="#DDD7CD"/><rect x="12" y="34" width="52" height="6" rx="3" fill="#DDD7CD"/><rect x="12" y="46" width="34" height="6" rx="3" fill="#DDD7CD"/></g><path d="M196 40c18 6 30 18 34 34" fill="none" stroke="#B53A28" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/><path d="M226 66v26l6.5-6 4.4 9.7 4.3-2-4.4-9.6h8.8z" fill="#fff" stroke="#22252F" stroke-width="2" stroke-linejoin="round"/></svg>
+        </div>
+        <h3><span class="n">1</span>파일을 끌다가</h3>
+        <p>탐색기에서 파일을 잡고 끌어요. 여러 개를 한꺼번에 끌어도 돼요.</p>
+      </li>
+      <li class="step h-yellow">
+        <div class="step-art" aria-hidden="true">
+          <svg viewBox="0 0 320 132"><rect x="82" y="34" width="156" height="64" rx="16" fill="#DDD7CD"/><rect x="82" y="28" width="156" height="62" rx="16" fill="#fff"/><text x="160" y="69" text-anchor="middle" font-size="24" font-weight="800" fill="#22252F">⇧ Shift</text></svg>
+        </div>
+        <h3><span class="n">2</span>Shift를 누르면</h3>
+        <p>커서 옆에 메뉴가 떠요. 마우스로 칸을 고르거나 숫자 키 1~9를 눌러요.</p>
+      </li>
+      <li class="step h-green">
+        <div class="step-art" aria-hidden="true">
+          <svg viewBox="0 0 320 132"><rect x="58" y="30" width="204" height="72" rx="18" fill="#fff"/><rect x="72" y="44" width="44" height="44" rx="14" fill="#DDF7EC"/><path d="M83 66.5l7 7 13-14" fill="none" stroke="#13795A" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><text x="128" y="62" font-size="15" font-weight="800" fill="#22252F">다 됐어요 · PDF로</text><text x="128" y="82" font-size="12.5" fill="#696F7D">독서 자료.pdf</text></svg>
+        </div>
+        <h3><span class="n">3</span>칸에 놓으면 끝</h3>
+        <p>원본 옆에 새 파일이 생기고, 화면 오른쪽 아래에 알림이 떠요.</p>
+      </li>
+    </ol>
+    <p class="sendto"><b>끌기가 불편하면</b><span class="path"><span>파일 오른쪽 클릭</span>→<span>보내기</span>→<span>바꿈</span></span><span>윈도우 11은 '더 많은 옵션 표시'를 먼저 눌러요.</span></p>
+  </div>
+</section>
+
+<section class="sec band-sky" id="ai">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><i style="background:var(--sky)"></i>AI로</p>
+      <h2>쓰던 AI에 로그인하면, 학습지·회신문까지</h2>
+      <p>바꿈에 따로 가입하거나 결제하지 않아요. 내가 쓰는 AI에 로그인해 두고, 파일을 'AI로' 칸에 놓아 고르기만 해요. AI 창을 오가며 복사해 붙일 필요 없이, 결과는 원본 옆에 문서 파일로 생겨요.</p>
+    </div>
+    <div class="ai-groups">
+      <article class="ai-g">
+        <h3>수업을 준비할 때</h3>
+        <dl>
+          <div><dt>수업 자료</dt><dd>학습지 · 디자인 입힌 PPT · 수준별 자료(기초·보통·심화) · 지도안 · 채점 기준표</dd></div>
+          <div><dt>문제 만들기</dt><dd>객관식 · OX · 서술형 · 섞어서, 정답까지. 시험지를 놓으면 비슷한 새 문제로.</dd></div>
+          <div><dt>번역</dt><dd>영어 · 중국어 · 일본어 · 베트남어 · 러시아어 · 태국어 · 몽골어 · 우즈베크어로, 외국어 문서는 한국어로</dd></div>
+        </dl>
+      </article>
+      <article class="ai-g">
+        <h3>공문이 쌓였을 때</h3>
+        <dl>
+          <div><dt>요약</dt><dd>3줄로 · 한 쪽으로</dd></div>
+          <div><dt>요점 정리</dt><dd>마감·제출·할 일을 뽑고, 일정은 엑셀·달력 파일로. 여러 공문은 마감순 할 일표 한 장으로.</dd></div>
+          <div><dt>표를 엑셀로</dt><dd>문서·사진 속 표를 엑셀 파일로</dd></div>
+          <div><dt>이름 짓기</dt><dd>내용을 보고 파일 이름을</dd></div>
+        </dl>
+      </article>
+      <article class="ai-g">
+        <h3>문서를 써야 할 때</h3>
+        <dl>
+          <div><dt>문서 쓰기</dt><dd>공문을 놓으면 회신문 · 계획서 · 결과 보고서 · 가정 통신문 초안을. 모르는 내용은 [일시]처럼 빈칸으로 남겨요.</dd></div>
+          <div><dt>쉬운 말로 · 맞춤법</dt><dd>학부모·학생이 읽기 쉽게, 고친 곳은 표시해서</dd></div>
+          <div><dt>손글씨 읽기</dt><dd>사진·스캔의 손글씨를 글자로</dd></div>
+        </dl>
+      </article>
+    </div>
+    <div class="ai-grid">
+      <div>
+        <h3 class="ai-sub">내가 쓰는 AI에 로그인해서 써요</h3>
+        <p class="ai-subp">따로 만든 AI가 아니라 선생님 계정의 AI를 이어 써요. 네 가지 가운데 하나만 연결하면 돼요.</p>
+        <div class="conns">
+          <article class="conn h-orange"><div class="conn-top"><span class="o"></span><h3>Claude</h3><span class="tagp">구독</span></div><p>Claude Pro·Max 구독. 이 PC에 Claude Code를 한 번 설치하고 로그인해 두면 이어 써요.</p></article>
+          <article class="conn h-green"><div class="conn-top"><span class="o"></span><h3>ChatGPT</h3><span class="tagp">구독</span></div><p>ChatGPT Plus·Pro 요금제. 브라우저에서 OpenAI에 로그인해요.</p></article>
+          <article class="conn h-blue"><div class="conn-top"><span class="o"></span><h3>Gemini</h3><span class="tagp">키</span></div><p>Google AI Studio에서 만든 키를 넣어요. 무료 키로 보낸 내용은 Google 서비스 개선에 쓰일 수 있어요.</p></article>
+          <article class="conn h-purple"><div class="conn-top"><span class="o"></span><h3>OpenRouter</h3><span class="tagp">무료</span></div><p>OpenRouter에 로그인해 무료 AI 모델을 써요. 하루 50번까지 무료예요. 무료 모델은 보낸 내용을 기록하거나 학습에 쓸 수 있어요.</p></article>
+        </div>
+        <p class="ai-note">로그인은 각 회사 화면에서 하고, 바꿈은 비밀번호를 보지 않아요. Gemini 키와 ChatGPT·OpenRouter 로그인은 윈도우 사용자 암호화로 이 PC의 내 계정에만 저장해요. AI를 연결하지 않아도 다른 칸은 모두 써요.</p>
+      </div>
+      <div>
+        <div class="dlg h-orange" aria-label="보내기 전 확인 창 예시">
+          <div class="dlg-head"><span class="dlg-chip" data-g="ai"></span><div><h3>Claude로 보낼까요?</h3><p>보내기 전에 한 번 더 확인해 주세요.</p></div></div>
+          <dl class="facts">
+            <div><dt>보낼 곳</dt><dd>Anthropic의 Claude — 선생님의 Claude 구독 계정으로</dd></div>
+            <div><dt>보낼 것</dt><dd>문서의 글자 약 1,284자 (파일 이름은 보내지 않아요)</dd></div>
+            <div><dt>학습</dt><dd>Claude 계정 설정을 따라요. claude.ai → 설정 → 개인정보에서 '모델 개선에 도움'을 끄면 학습에 쓰이지 않아요.</dd></div>
+          </dl>
+          <div class="dlg-sw"><span class="sw" aria-hidden="true"></span><span><b>이름·전화번호를 가리고 보내기</b><small>가린 자리는 답을 받은 뒤 이 PC에서 되돌려요.</small></span></div>
+          <div class="dlg-count"><span>가린 곳: 이름 3 · 전화번호 1 · 그 밖 0</span><span class="fake l" aria-hidden="true">보낼 글 보기</span></div>
+          <p class="warn"><i>!</i><span>이름은 '이름: ○○○', '○○○ 학생'처럼 드러난 모양만 찾아요. 다 못 찾을 수 있으니, 학생 개인정보가 많은 문서는 보내지 마세요.</span></p>
+          <div class="dlg-btns" aria-hidden="true"><span class="fake l">취소</span><span class="fake p">보내기</span></div>
+        </div>
+        <p class="dlg-cap">AI로 보내기 전에 뜨는 창 (앱과 같은 내용이에요)</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><i style="background:var(--blue)"></i>할 수 있는 일</p>
+      <h2>끌어다 놓기로 이만큼 해요</h2>
+      <p>끈 파일에 맞는 칸만 메뉴에 떠요. 칸의 색은 메뉴·알림·설정 어디서나 같고, 고를 거리가 있으면 놓은 뒤에 한 번 더 골라요.</p>
+    </div>
+    <div class="feats">
+      <article class="feat h-coral">
+        <span class="ic" data-g="pdf"></span>
+        <h3>PDF로</h3>
+        <p class="io"><span>한글·워드·엑셀·PPT·그림</span><span class="arr">→</span><span>PDF</span></p>
+        <p>여러 파일은 PDF 하나로 묶거나, 파일마다 따로 만들어요.</p>
+        <div class="chips"><span>하나로</span><span>따로따로</span></div>
+      </article>
+      <article class="feat h-blue">
+        <span class="ic" data-g="image"></span>
+        <h3>그림으로</h3>
+        <p class="io"><span>PDF·한글·워드·엑셀·PPT</span><span class="arr">→</span><span>쪽마다 그림</span></p>
+        <p>여러 쪽 문서는 '이름_그림' 폴더에 쪽마다 한 장씩 모아 줘요.</p>
+        <div class="chips"><span>PNG · 선명하게</span><span>JPG · 가볍게</span><span>속 사진만</span></div>
+      </article>
+      <article class="feat h-purple">
+        <span class="ic" data-g="format"></span>
+        <h3>형식 바꾸기</h3>
+        <p class="io"><span>한글·PDF·그림·표·자막</span><span class="arr">→</span><span>다른 형식</span></p>
+        <p>PDF를 글자 고칠 수 있는 PPT로, 한글을 워드·엑셀로 바꿔요.</p>
+        <div class="chips"><span>HWP ↔ HWPX</span><span>워드로</span><span>엑셀로</span><span>PPT로</span><span>PNG·JPG·WEBP…</span><span>마크다운·EPUB</span></div>
+      </article>
+      <article class="feat h-green">
+        <span class="ic" data-g="shrink"></span>
+        <h3>용량 줄이기</h3>
+        <p class="io"><span>그림·PDF·문서</span><span class="arr">→</span><span>더 가벼운 파일</span></p>
+        <p>알림장·메일에 올리기 좋게 줄여요. 원하는 크기를 MB로 정할 수도 있어요.</p>
+        <div class="chips"><span>조금</span><span>보통</span><span>많이</span><span>용량 정하기</span></div>
+      </article>
+      <article class="feat h-yellow">
+        <span class="ic" data-g="text"></span>
+        <h3>글자 뽑기</h3>
+        <p class="io"><span>그림·PDF·문서</span><span class="arr">→</span><span>글자 파일</span></p>
+        <p>인터넷 없이 윈도우 글자 인식으로 읽어요. AI를 연결하면 표까지 살려 읽어요.</p>
+        <div class="chips"><span>이 PC에서</span><span>워드로</span><span>AI로 · 표까지</span></div>
+      </article>
+      <article class="feat h-lime">
+        <span class="ic" data-g="archive"></span>
+        <h3>압축</h3>
+        <p class="io"><span>파일·압축 파일</span><span class="arr">→</span><span>묶기·풀기</span></p>
+        <p>여러 파일을 하나로 묶거나, 받은 압축 파일을 새 폴더에 풀어요.</p>
+        <div class="chips"><span>풀기</span><span>ZIP</span><span>TAR</span><span>GZIP</span></div>
+      </article>
+      <article class="feat h-orange wide">
+        <span class="ic" data-g="photo"></span>
+        <h3>사진 손질</h3>
+        <p class="io"><span>사진</span><span class="arr">→</span><span>손질한 사진</span></p>
+        <p>드래그한 곳만, 또는 사진 전체를 흐리게·모자이크로 가려요. 얼굴도 찾아서 가리고, 고친 전후를 비교한 뒤 저장해요. 모두 이 PC 안에서 해요.</p>
+        <div class="chips"><span>가리기·자르기·보정</span><span>얼굴 가리기</span><span>문서 펴기</span><span>콜라주</span><span>정보 지우기</span></div>
+      </article>
+      <article class="feat h-pink wide">
+        <span class="ic" data-g="pdftool"></span>
+        <h3>PDF 편집</h3>
+        <p class="io"><span>PDF</span><span class="arr">→</span><span>고친 PDF</span></p>
+        <p>쪽 순서를 바꾸고 돌리고 지워요. 합치고 나누고, 암호와 워터마크, 쪽 번호까지 넣어요.</p>
+        <div class="chips"><span>쪽 편집</span><span>합치기</span><span>쪽마다 나누기</span><span>쪽 고르기</span><span>암호</span><span>워터마크</span><span>쪽 번호</span></div>
+      </article>
+      <article class="feat h-teal wide">
+        <span class="ic" data-g="media"></span>
+        <h3>영상·소리</h3>
+        <p class="io"><span>영상·소리</span><span class="arr">→</span><span>MP4·MP3…</span></p>
+        <p>영상을 줄이고 앞뒤를 자르고, GIF로 만들거나 소리만 뽑아요. 그 PC의 윈도우가 읽는 영상이면 돼요.</p>
+        <div class="chips"><span>MP4</span><span>용량 줄이기</span><span>자르기</span><span>GIF</span><span>소리만 MP3</span></div>
+      </article>
+      <article class="feat h-indigo wide">
+        <span class="ic" data-g="record"></span>
+        <h3>화면 녹화</h3>
+        <p class="io"><span>내 화면</span><span class="arr">→</span><span>MP4</span></p>
+        <p>알림 영역의 바꿈 아이콘에서 시작해요. 전체 화면이나 고른 영역을 소리와 함께 녹화해 비디오 폴더에 저장해요.</p>
+        <div class="chips"><span>전체 화면</span><span>영역 고르기</span><span>마이크</span><span>컴퓨터 소리</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="sec band-sheet" id="shapes">
+  <div class="wrap shapes">
+    <div>
+      <div class="sec-head" style="margin-bottom:0">
+        <p class="eyebrow"><i style="background:var(--purple)"></i>메뉴 모양</p>
+        <h2>메뉴 모양은 네 가지</h2>
+        <p>설정에서 마음에 드는 모양을 골라요. 그림을 누를 때마다 모양이 바뀌어요.</p>
+      </div>
+      <div class="seg" role="group" aria-label="메뉴 모양 고르기" id="shapeSeg">
+        <button type="button" data-shape="index" aria-pressed="true">색인<span class="tag">기본</span></button>
+        <button type="button" data-shape="fan" aria-pressed="false">부채</button>
+        <button type="button" data-shape="wave" aria-pressed="false">물결</button>
+        <button type="button" data-shape="honey" aria-pressed="false">벌집</button>
+      </div>
+      <p class="shape-say" id="shapeSay" aria-live="polite"><b>색인</b> 커서 옆에 색 띠가 차곡차곡 쌓여요. 마우스를 올리면 띠가 쏙 빠져나와요.</p>
+      <p class="shape-note">설정의 '메뉴 칸'에서 칸을 숨기거나 차례를 바꿔요. 많이 쓴 칸이 저절로 앞으로 오게 할 수 있고, 고를 거리는 오른쪽 단추로 즐겨찾기(3개까지)에 넣어요.</p>
+    </div>
+    <div class="shape-stage" id="shapeStage">
+      <svg id="shapeSvg" viewBox="0 0 640 440" role="img" aria-label="바꿈 메뉴 모양 미리 보기"></svg>
+      <span class="shape-hint">눌러서 모양 바꾸기</span>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="guide">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><i style="background:var(--green)"></i>사용법 영상</p>
+      <h2><span id="guideLen">3분이면</span> 다 봐요</h2>
+      <p>차례에서 항목을 누르면 그 부분부터 봐요. 배경 음악이 나와요.</p>
+    </div>
+    <div class="player">
+      <div class="screen">
+        <video id="guideVideo" controls playsinline preload="metadata" poster="video/poster.jpg">
+          <source src="video/bakkum-guide.mp4" type="video/mp4">
+        </video>
+      </div>
+      <nav class="chapters" id="chapters" aria-label="영상 차례"></nav>
+    </div>
+  </div>
+</section>
+
+<section class="sec band-sheet" id="trust">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><i style="background:var(--green)"></i>안심하고</p>
+      <h2>선생님 PC 안에서 바꿔요</h2>
+      <p>학교 문서를 다루는 도구라서, 파일이 어디로 가는지부터 분명하게 했어요.</p>
+    </div>
+    <div class="trust">
+      <article class="tr h-green"><span class="chip" data-g="check"></span><h3>원본은 그대로</h3><p>결과는 원본 옆에 새 파일로 만들어요. 이름이 겹치면 '(2)'를 붙여요.</p></article>
+      <article class="tr h-blue"><span class="chip" data-g="box"></span><h3>PC 안에서 바꿔요</h3><p>PDF·그림·영상·소리는 윈도우에 들어 있는 기능으로, 한글·오피스 파일은 PC에 깔린 한컴오피스·MS 오피스로 바꿔요.</p></article>
+      <article class="tr h-sky"><span class="chip" data-g="ai"></span><h3>AI는 고를 때만</h3><p>'AI로'를 고르고 [보내기]를 누를 때만 보내요. 어디로 무엇을 보내는지 먼저 보여 주고, 파일 이름은 보내지 않아요.</p></article>
+      <article class="tr h-orange"><span class="chip" data-g="shield"></span><h3>보내기 전에 가려요</h3><p>이름·전화번호를 가리고 보내고, 가린 자리는 답을 받은 뒤 이 PC에서 되돌려요. 다 못 찾을 수 있어서 학생 개인정보가 많은 문서는 보내지 말아 주세요.</p></article>
+      <article class="tr h-purple"><span class="chip" data-g="link"></span><h3>기록에 파일 이름이 없어요</h3><p>문제가 생겼을 때 보는 기록에도 파일 이름은 남기지 않아요.</p></article>
+      <article class="tr h-coral"><span class="chip" data-g="close"></span><h3>깔끔하게 지워져요</h3><p>관리자 권한 없이 내 계정에만 설치하고, 지우면 프로그램·바로 가기·설정이 모두 사라져요.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="install">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><i style="background:var(--orange)"></i>설치</p>
+      <h2>받은 뒤에는 이렇게 해요</h2>
+      <p>처음 한 번만 하면 돼요. 관리자 권한 없이 내 계정에만 설치해요.</p>
+    </div>
+
+    <aside class="calm h-blue" id="safe" aria-labelledby="calm-h">
+      <div class="calm-top">
+        <span class="chip" data-g="shield"></span>
+        <div>
+          <h3 id="calm-h">파란 창이 떠도 놀라지 마세요</h3>
+          <p>설치할 때 윈도우의 파란 <b>'PC 보호'</b> 창이 떠요. V3를 쓰는 PC라면 주황색 <b>'프로그램 실행 알림'</b>도 떠요. 둘 다 처음 보는 새 프로그램이라 한 번 확인하는 창이에요. 바이러스를 찾았다는 뜻이 아니에요.</p>
+        </div>
+      </div>
+      <div class="calm-facts">
+        <div><b>왜 뜨나요?</b><p>윈도우와 백신은 많은 사람이 받아 쓴 프로그램, 돈을 내고 '코드 서명'으로 만든 곳을 밝힌 프로그램을 먼저 믿어요. 무료로 나누는 새 프로그램은 처음에 이 창이 떠요. 어디에서 받아도 같아요.</p></div>
+        <div><b>처음 한 번이에요</b><p>설치한 뒤 바꿈을 열 때는 이 창들이 다시 뜨지 않게 만들었어요.</p></div>
+        <div><b>이렇게 만들었어요</b><p>관리자 권한 없이 내 계정에만 설치하고, 코드를 모두 공개해요. 윈도우 설정 → 앱에서 언제든 지울 수 있어요.</p></div>
+      </div>
+    </aside>
+
+    <ol class="guide">
+      <li class="g-step h-orange">
+        <div class="g-text">
+          <span class="n">1</span>
+          <h3>ZIP을 오른쪽 클릭 → [압축 풀기…]</h3>
+          <p>받은 '바꿈-0.3.2.zip'을 오른쪽 클릭해 <b>압축 풀기…</b>를 고르고, 창이 뜨면 <b>[압축 풀기]</b>를 한 번 더 눌러요.</p>
+          <p class="g-note">윈도우에 따라 '모두 압축 풀기…'로 보여요. 반디집·알집의 '여기에 풀기'도 돼요. ZIP 안에서 바로 열지 말고 꼭 먼저 풀어 주세요.</p>
+        </div>
+        <div class="g-shots pile">
+          <figure class="shot flat fade"><img src="img/install-1-menu.webp" width="907" height="403" loading="lazy" decoding="async" alt="탐색기에서 ZIP 파일을 오른쪽 클릭하면 뜨는 메뉴. '압축 풀기…' 항목에 표시가 있어요."><span class="hit" style="--x:43.33%;--y:79.4%;--w:54.91%;--h:11.91%"><b>1</b></span></figure>
+          <figure class="shot"><img src="img/install-2-extract.webp" width="787" height="593" loading="lazy" decoding="async" alt="'압축(Zip) 폴더 풀기' 창. 아래쪽 [압축 풀기] 단추에 표시가 있어요."><span class="hit" style="--x:70.01%;--y:92.07%;--w:17.53%;--h:6.91%"><b>2</b></span></figure>
+        </div>
+      </li>
+      <li class="g-step h-orange">
+        <div class="g-text">
+          <span class="n">2</span>
+          <h3>풀린 폴더에서 '바꿈 설치'를 두 번 클릭</h3>
+          <p>다 풀리면 폴더가 저절로 열려요. 세 파일 가운데 <b>바꿈 설치</b>를 열어요.</p>
+        </div>
+        <div class="g-shots">
+          <figure class="shot"><img src="img/install-3-folder.webp" width="675" height="150" loading="lazy" decoding="async" alt="압축을 푼 폴더에 든 NOTICE, 바꿈 설치, 설치 안내 세 파일. '바꿈 설치'에 표시가 있어요."><span class="hit" style="--x:1.93%;--y:48%;--w:98.07%;--h:26.67%"></span></figure>
+        </div>
+      </li>
+      <li class="g-step h-blue">
+        <div class="g-text">
+          <span class="n">3</span>
+          <h3>파란 창이 뜨면 [추가 정보] → [실행]</h3>
+          <p>'Windows의 PC 보호' 창이에요. 글 아래 <b>추가 정보</b>를 누르면 <b>[실행]</b> 단추가 나와요.</p>
+          <p class="g-note">'게시자: 알 수 없는 게시자'는 유료 코드 서명을 하지 않았다는 뜻이에요.</p>
+        </div>
+        <div class="g-shots pair">
+          <figure class="shot"><img src="img/install-4-pc1.webp" width="667" height="624" loading="lazy" decoding="async" alt="파란 'Windows의 PC 보호' 창. 글 아래 '추가 정보'에 표시가 있어요."><span class="hit y" style="--x:2.7%;--y:22.76%;--w:15.59%;--h:6.41%"><b>1</b></span></figure>
+          <svg class="arr ic24" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <figure class="shot"><img src="img/install-4-pc2.webp" width="667" height="624" loading="lazy" decoding="async" alt="'추가 정보'를 누른 뒤의 창. 앱 '바꿈 설치.exe'와 [실행] 단추가 보이고, [실행]에 표시가 있어요."><span class="hit y" style="--x:60.72%;--y:86.54%;--w:13.79%;--h:9.62%"><b>2</b></span></figure>
+        </div>
+      </li>
+      <li class="g-step h-orange">
+        <div class="g-text">
+          <span class="n">4</span>
+          <span class="g-tag">V3를 쓰는 PC라면</span>
+          <h3>'한 번만 실행'으로 바꾸고 [확인]</h3>
+          <p>주황색 '프로그램 실행 알림'이 뜨면 <b>파일 처리 방법</b> 목록이 처음에는 '한 번만 차단'으로 되어 있어요. 목록을 눌러 <b>한 번만 실행</b>을 고르고 <b>[확인]</b>을 눌러요.</p>
+          <p class="g-note">그대로 [확인]을 누르면 '한 번만 차단'이라 설치 창이 뜨지 않아요. 그럴 땐 '바꿈 설치'를 다시 두 번 클릭해 주세요. 다른 백신도 비슷한 창을 띄울 수 있어요.</p>
+        </div>
+        <div class="g-shots">
+          <figure class="shot solo narrow"><img src="img/install-5-v3.webp" width="500" height="364" loading="lazy" decoding="async" alt="V3의 '프로그램 실행 알림' 창. '파일 처리 방법' 목록에서 '한 번만 실행'을 고른 모습이고, 목록과 [확인] 단추에 표시가 있어요."><span class="hit" style="--x:2.6%;--y:66.21%;--w:73.6%;--h:11.26%"><b>1</b></span><span class="hit" style="--x:36.2%;--y:83.79%;--w:28%;--h:13.19%"><b>2</b></span></figure>
+        </div>
+      </li>
+      <li class="g-step h-green">
+        <div class="g-text">
+          <span class="n">5</span>
+          <h3>[설치]를 누르면 끝</h3>
+          <p>바탕 화면·시작 메뉴·'보내기'에 바꿈이 생기고, 윈도우를 켤 때 같이 켜져요. 설정에서 끌 수 있어요.</p>
+        </div>
+        <div class="g-shots">
+          <figure class="shot app solo"><img src="img/install-6-setup.webp" width="1066" height="953" loading="lazy" decoding="async" alt="바꿈 설치 창. 오른쪽 아래 [설치] 단추에 표시가 있어요."><span class="hit" style="--x:74.58%;--y:84.05%;--w:20.92%;--h:10.91%"></span></figure>
+        </div>
+      </li>
+    </ol>
+
+    <div class="after">
+      <div class="tips">
+        <div class="tip-box h-yellow"><span class="chip" data-g="check"></span><div><h3>한글 파일을 처음 바꿀 때</h3><p>한글이 '접근하려는 시도' 보안 창을 띄우면 [접근 허용]이나 [모두 허용]을 눌러요.</p></div></div>
+        <div class="tip-box h-slate"><span class="chip" data-g="shield"></span><div><h3>학교 PC에서 막히면</h3><p>[실행] 단추가 없거나 백신이 계속 막으면 학교 보안 설정 때문일 수 있어요. 정보 담당 선생님께 물어봐 주세요.</p></div></div>
+      </div>
+      <div>
+        <div class="need">
+          <h3>필요한 것</h3>
+          <dl>
+            <div><dt>윈도우</dt><dd>10 또는 11 (.NET Framework 4.8 · 윈도우에 들어 있어요)</dd></div>
+            <div><dt>한글 파일</dt><dd>한컴오피스 한글</dd></div>
+            <div><dt>워드 파일</dt><dd>MS 워드. 없으면 .docx는 글자·표·사진만 옮겨 PDF로 만들어요(쪽 모양은 원본과 다를 수 있어요).</dd></div>
+            <div><dt>엑셀·PPT</dt><dd>MS 오피스, 또는 한컴오피스 한셀·한쇼</dd></div>
+            <div><dt>PDF·그림·영상</dt><dd>따로 필요 없어요 (영상은 그 PC의 윈도우가 읽는 형식만)</dd></div>
+            <div><dt>AI로</dt><dd>쓸 때만: Claude·ChatGPT 구독, Gemini 키, OpenRouter 계정 중 하나</dd></div>
+          </dl>
+        </div>
+        <p class="need-foot">지울 때는 설정 → [프로그램 지우기], 또는 윈도우 설정 → 앱에서 지워요. 바꾼 결과 파일은 지우지 않아요.</p>
+        <p class="cta-row" style="margin-top:18px"><a class="btn btn-ink" data-download href="#install"><svg class="ic24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg><span>무료로 받기<small>바꿈 0.3.2 · ZIP 약 530KB</small></span></a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec band-sheet" id="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow"><i style="background:var(--pink)"></i>묻고 답하기</p>
+      <h2>자주 묻는 것</h2>
+    </div>
+    <div class="faq">
+      <details><summary>정말 무료인가요?</summary><p>네. 누구나 무료로 쓸 수 있고, 소스도 공개되어 있어요(Apache-2.0).</p></details>
+      <details><summary>AI를 쓰려면 따로 가입하거나 돈을 내야 하나요?</summary><p>바꿈에 따로 가입하거나 결제하지 않아요. Claude·ChatGPT는 쓰던 구독에 로그인해서 그 사용량으로 쓰고, Gemini는 내 API 키로, OpenRouter는 로그인해서 무료 모델로 쓸 수 있어요. AI를 연결하지 않아도 다른 칸은 모두 돼요.</p></details>
+      <details><summary>학생 사진이나 개인정보가 든 문서도 괜찮나요?</summary><p>사진 손질·얼굴 가리기, '이 PC에서' 글자 뽑기는 PC 밖으로 나가지 않아요. 'AI로'는 바깥 서비스로 보내는 일이라, 학생 사진이나 개인정보가 많은 문서는 보내지 말아 주세요. 이름·전화번호 가리기는 드러난 모양만 찾아서 다 못 찾을 수 있어요.</p></details>
+      <details><summary>새 버전이 나오면 다시 받아야 하나요?</summary><p>아니요. 압축을 풀고 설치하는 건 처음 한 번뿐이에요. 바꿈이 하루 한 번 새 버전을 확인하고, 있으면 알림의 [지금 바꾸기]만 누르면 돼요. 설정과 바로 가기는 그대로예요. 바꾸는 중에 V3 같은 보안 프로그램이 물어보면 허용해 주세요.</p></details>
+      <details><summary>설치할 때 파란 창이나 V3 창이 떠요. 괜찮은가요?</summary><p>네. 윈도우와 백신은 아직 많이 쓰이지 않은 새 프로그램을 처음 열 때 한 번 확인을 받아요. 파란 창은 [추가 정보] → [실행], V3 창은 '한 번만 실행' → [확인]을 누르면 돼요. <a href="#safe">그림으로 보기</a></p></details>
+      <details><summary>[실행] 단추가 없어요.</summary><p>학교 PC라면 보안 설정으로 막혀 있을 수 있어요. 정보 담당 선생님께 물어봐 주세요. 윈도우 11의 '스마트 앱 컨트롤'이 켜진 PC에서도 서명하지 않은 프로그램은 설치할 수 없어요.</p></details>
+      <details><summary>맥이나 크롬북에서도 되나요?</summary><p>아니요. 윈도우 10·11에서만 돼요.</p></details>
+      <details><summary>파일을 끌어도 메뉴가 안 떠요.</summary><p>바꿈이 켜져 있어야 해요. 바탕 화면이나 시작 메뉴에서 바꿈을 열거나, 설정에서 '윈도우를 켤 때 같이 켜기'를 켜 두세요. 파일 오른쪽 클릭 → 보내기 → 바꿈으로도 쓸 수 있어요.</p></details>
+      <details><summary>인터넷이 없어도 되나요?</summary><p>네. AI로 보낼 때와 새 버전을 확인할 때만 인터넷을 쓰고, 나머지는 모두 PC 안에서 해요.</p></details>
+      <details><summary>바꾼 파일은 어디에 생기나요?</summary><p>원본과 같은 폴더에 생겨요. 여러 쪽 문서를 그림으로 바꾸면 '이름_그림' 폴더에 모아요. 원본 폴더에 저장할 수 없으면 문서 폴더의 '변환 결과'에 두고 알려 줘요. 화면 녹화는 비디오 폴더에 저장돼요.</p></details>
+      <details><summary>워드 파일이 PDF로 잘 안 바뀌어요.</summary><p>워드 파일을 모양 그대로 바꾸려면 MS 워드가 있어야 해요. 한컴오피스만 있는 PC에서는 .docx의 글자·표·사진만 옮겨 PDF로 만들고, 예전 형식인 .doc는 바꿀 수 없어요.</p></details>
+      <details><summary>바꿈으로 못 하는 일도 있나요?</summary><p>RAR·7z 파일과 암호 걸린 압축 파일은 풀지 못하고, WebM·OGG로는 내보내지 못해요. HEIC·AVIF·WEBP 사진은 PC에 이미지 확장이 있어야 열려요. 영상·소리는 그 PC의 윈도우가 읽는 형식만 열 수 있어요.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="endband">
+      <div class="bars" aria-hidden="true"><i style="width:340px;background:var(--coral)"></i><i style="width:420px;background:var(--yellow)"></i><i style="width:280px;background:var(--blue)"></i><i style="width:380px;background:var(--green)"></i></div>
+      <div><h2>끌다가 Shift, 놓으면 바꿈.</h2><p>윈도우 10·11 · 무료 · 쓰던 AI로 요약·번역·학습지까지</p></div>
+      <a class="btn btn-yellow" data-download href="#install"><svg class="ic24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg><span>무료로 받기<small>ZIP 약 530KB</small></span></a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div>
+      <span>© 2026 hirame.ki · 바꿈 0.3.2 · Apache-2.0 공개 소스 · <a href="https://github.com/hirame-ki/bakkum" target="_blank" rel="noopener">소스 보기</a></span>
+      <small>바꿈은 한글과컴퓨터, Microsoft, 안랩, OpenAI, Anthropic, Google, OpenRouter와 관계가 없고, 이 회사들이 후원하거나 보증하지 않아요. 각 이름은 그 회사의 상표예요.</small>
+    </div>
+    <a href="https://www.instagram.com/hirame.ki/" target="_blank" rel="noopener">만든 사람 @hirame.ki</a>
+  </div>
+</footer>
+
+<script src="video/chapters.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* 드라이브에 올린 ZIP의 공유 링크를 여기에 넣으면, 모든 [무료로 받기] 단추가 그 링크로 가요. 비워 두면 이 폴더의 ZIP을 받아요. */
+const DOWNLOAD_URL = '';
+const ZIP_HERE = 'download/바꿈-0.3.2.zip';
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const wait = ms => new Promise(res => setTimeout(res, ms));
+const E = {
+  inOut: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+  out: t => 1 - Math.pow(1 - t, 3),
+  back: t => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); }
+};
+function tween(ms, fn, ease) {
+  ease = ease || E.inOut;
+  return new Promise(res => {
+    const t0 = performance.now();
+    const step = now => { const p = Math.min(1, (now - t0) / ms); fn(ease(p), p); if (p < 1) requestAnimationFrame(step); else res(); };
+    requestAnimationFrame(step);
+  });
+}
+
+/* 앱과 같은 그림(24칸 격자, 둥근 끝 선) */
+const G = {
+  pdf: 'M7,3 H14 L19,8 V20 A1,1 0 0 1 18,21 H7 A1,1 0 0 1 6,20 V4 A1,1 0 0 1 7,3 Z M14,3 V8 H19 M9,13 H16 M9,17 H14',
+  image: 'M5,4 H19 A2,2 0 0 1 21,6 V18 A2,2 0 0 1 19,20 H5 A2,2 0 0 1 3,18 V6 A2,2 0 0 1 5,4 Z M3,16.5 L8,11.5 L13,16.5 M11.5,15 L14.5,12 L21,18.5 M14.5,8.5 A1.6,1.6 0 1 0 17.7,8.5 A1.6,1.6 0 1 0 14.5,8.5 Z',
+  format: 'M4,8 H17 M14,5 L17,8 L14,11 M20,16 H7 M10,13 L7,16 L10,19',
+  shrink: 'M4,4 L10,10 M10,5 V10 H5 M20,20 L14,14 M14,19 V14 H19',
+  text: 'M4,8 V6 A2,2 0 0 1 6,4 H8 M16,4 H18 A2,2 0 0 1 20,6 V8 M20,16 V18 A2,2 0 0 1 18,20 H16 M8,20 H6 A2,2 0 0 1 4,18 V16 M8.5,9 H15.5 M12,9 V15.5',
+  settings: 'M4,7 H10 M14,7 H20 M10,7 A2,2 0 1 0 14,7 A2,2 0 1 0 10,7 Z M4,17 H6 M10,17 H20 M6,17 A2,2 0 1 0 10,17 A2,2 0 1 0 6,17 Z',
+  archive: 'M3.5,4 H20.5 V8 H3.5 Z M5,8 V20 H19 V8 M10,12 H14',
+  media: 'M5,5 H19 A2,2 0 0 1 21,7 V17 A2,2 0 0 1 19,19 H5 A2,2 0 0 1 3,17 V7 A2,2 0 0 1 5,5 Z M10,9 L15.5,12 L10,15 Z',
+  record: 'M5,4 H19 A2,2 0 0 1 21,6 V15 A2,2 0 0 1 19,17 H5 A2,2 0 0 1 3,15 V6 A2,2 0 0 1 5,4 Z M9,21 H15 M12,17 V21 M12,7.7 A2.8,2.8 0 1 0 12,13.3 A2.8,2.8 0 1 0 12,7.7 Z',
+  photo: 'M5,19.5 L14.5,10 M13,8.5 L16,11.5 M18,3.5 L18.9,6.1 L21.5,7 L18.9,7.9 L18,10.5 L17.1,7.9 L14.5,7 L17.1,6.1 Z M8,3.5 V7 M6.2,5.2 H9.8',
+  pdftool: 'M9,3 H15.5 L20,7.5 V17 A1,1 0 0 1 19,18 H9 A1,1 0 0 1 8,17 V4 A1,1 0 0 1 9,3 Z M15.5,3 V7.5 H20 M4,7 V20 A1,1 0 0 0 5,21 H15',
+  ai: 'M11,4 L12.6,9.4 L18,11 L12.6,12.6 L11,18 L9.4,12.6 L4,11 L9.4,9.4 Z M18.5,3.5 V7.5 M16.5,5.5 H20.5 M18.5,17 V20 M17,18.5 H20',
+  close: 'M7,7 L17,17 M17,7 L7,17',
+  spark: 'M11,4 L12.6,9.4 L18,11 L12.6,12.6 L11,18 L9.4,12.6 L4,11 L9.4,9.4 Z M18.5,3.5 V7.5 M16.5,5.5 H20.5',
+  check: 'M5,12.5 L10,17.5 L19,7.5',
+  link: 'M14,4 H20 V10 M20,4 L11,13 M18,14 V18 A2,2 0 0 1 16,20 H6 A2,2 0 0 1 4,18 V8 A2,2 0 0 1 6,6 H10',
+  box: 'M4,8 L12,4 L20,8 V16 L12,20 L4,16 Z M4,8 L12,12 L20,8 M12,12 V20',
+  shield: 'M12,3 L19,6 V11 C19,15.5 16,18.8 12,21 C8,18.8 5,15.5 5,11 V6 Z M9,12 L11,14 L15,10'
+};
+const glyph = (id, w) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w || 2}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${G[id]}"/></svg>`;
+$$('[data-g]').forEach(el => { el.innerHTML = glyph(el.dataset.g, el.closest('.feat') ? 2.1 : 2); });
+
+/* 받기 단추 */
+$$('[data-download]').forEach(a => {
+  if (DOWNLOAD_URL) { a.href = DOWNLOAD_URL; a.target = '_blank'; a.rel = 'noopener'; }
+  else { a.href = ZIP_HERE; a.setAttribute('download', '바꿈-0.3.2.zip'); }
+});
+
+/* 머리 그림자 */
+const head = $('.site-head');
+const onScroll = () => head.classList.toggle('scrolled', scrollY > 8);
+addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+/* 차례: 지금 보는 구역의 항목에 표시(좁은 화면에서는 그 칩이 보이게 옆으로 넘김) */
+(function navSpy() {
+  const nav = $('.nav');
+  const links = $$('.nav a');
+  const secs = links.map(a => $(a.getAttribute('href'))).filter(Boolean);
+  if (!nav || !secs.length || !('IntersectionObserver' in window)) return;
+  const seen = new Map();
+  const mark = () => {
+    let best = null;
+    secs.forEach(s => { const r = seen.get(s); if (r && (!best || r.top < best.top)) best = { s, top: r.top }; });
+    links.forEach(a => {
+      const on = !!best && a.getAttribute('href') === '#' + best.s.id;
+      a.classList.toggle('on', on);
+      if (on) { a.setAttribute('aria-current', 'location'); if (nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: a.offsetLeft - (nav.clientWidth - a.offsetWidth) / 2, behavior: reduce ? 'auto' : 'smooth' }); }
+      else a.removeAttribute('aria-current');
+    });
+  };
+  const io = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) seen.set(e.target, e.boundingClientRect); else seen.delete(e.target); });
+    mark();
+  }, { rootMargin: '-35% 0px -55% 0px' });
+  secs.forEach(s => io.observe(s));
+})();
+
+/* ================= 바꿔 보기 무대 ================= */
+const HUE = { pdf: 'coral', image: 'blue', format: 'purple', shrink: 'green', text: 'yellow', photo: 'orange', pdftool: 'pink', media: 'teal', record: 'indigo', archive: 'lime', ai: 'sky', settings: 'slate' };
+const LABEL = { pdf: 'PDF로', image: '그림으로', format: '형식 바꾸기', shrink: '용량 줄이기', text: '글자 뽑기', photo: '사진 손질', pdftool: 'PDF 편집', archive: '압축', ai: 'AI로', settings: '설정' };
+const HINT = { pdf: '문서·그림을 PDF로', image: '쪽마다 그림 파일', format: '워드·엑셀·PNG…', shrink: '그림·PDF·문서', text: '그림·PDF·문서', photo: '가리기·자르기·보정', pdftool: '쪽·암호·워터마크', archive: '묶기·풀기', ai: '요약·번역·문제', settings: '모양·키·AI' };
+const SLOT = { pdf: 1, image: 2, format: 3, shrink: 4, text: 5, photo: 6, pdftool: 7, archive: 10, ai: 11, settings: 12 };
+const KIND = {
+  hwp: { ext: 'HWP', hue: 'orange' }, hwpx: { ext: 'HWPX', hue: 'orange' },
+  pdf: { ext: 'PDF', hue: 'coral' }, png: { ext: 'PNG', hue: 'blue', pic: true },
+  jpg: { ext: 'JPG', hue: 'purple', pic: true }, txt: { ext: 'TXT', hue: 'yellow', txt: true },
+  docx: { ext: 'DOCX', hue: 'blue' }, pptx: { ext: 'PPTX', hue: 'orange' }, zip: { ext: 'ZIP', hue: 'lime' }
+};
+/* 파일 종류마다 메뉴에 뜨는 칸(앱에서 그려 본 메뉴와 같다) */
+const PIC_MENU = ['pdf', 'format', 'shrink', 'text', 'photo', 'archive', 'ai', 'settings'];
+const MENU = {
+  hwp: ['pdf', 'image', 'format', 'text', 'archive', 'ai', 'settings'],
+  hwpx: ['pdf', 'image', 'format', 'shrink', 'text', 'archive', 'ai', 'settings'],
+  docx: ['pdf', 'image', 'format', 'shrink', 'text', 'archive', 'ai', 'settings'],
+  pptx: ['pdf', 'image', 'shrink', 'text', 'archive', 'ai', 'settings'],
+  pdf: ['image', 'format', 'shrink', 'text', 'pdftool', 'archive', 'ai', 'settings'],
+  png: PIC_MENU, jpg: PIC_MENU,
+  txt: ['pdf', 'format', 'archive', 'ai', 'settings'],
+  zip: ['archive', 'settings']
+};
+const FMT_EXT = { HWPX: 'hwpx', HWP: 'hwp', '워드로': 'docx', 'PPT로': 'pptx', PNG: 'png', JPG: 'jpg' };
+const DOC_FMT = [['마크다운', '글자와 표'], ['HTML', '웹 문서'], ['EPUB', '전자책']];
+const SAY = {
+  pdf: '한글·워드·엑셀·PPT·그림을 PDF로 바꿔요. 고를 거리가 없으면 놓자마자 바꿔요.',
+  image: "쪽마다 그림 한 장씩. 여러 쪽이면 <span class=\"nb\">'이름_그림'</span> 폴더 하나에 모아 줘요.",
+  format: '한글을 HWPX·워드·엑셀로, PDF를 글자 고치는 PPT로, 그림은 PNG·JPG·WEBP로 바꿔요.',
+  shrink: "알림장·메일에 올리기 좋게 줄여요. 원본은 두고 <span class=\"nb\">'_압축'</span> 파일을 새로 만들어요.",
+  text: '인터넷 없이 이 PC에서 읽어요. AI를 연결하면 표까지 읽어요.',
+  photo: '찍은 장소·기기 정보를 지운 사본을 만들어요. 얼굴 가리기·자르기·보정도 여기서 해요.',
+  pdftool: '쪽마다 번호를 넣어요. 쪽 순서·합치기·나누기·암호·워터마크도 여기서 해요.',
+  archive: '파일을 ZIP 하나로 묶어요. 받은 압축 파일은 이 칸에서 새 폴더에 풀어요.',
+  ai: '쓰던 AI 계정으로 만들어요. 보내기 전에 먼저 물어요. <a href="#ai">더 보기</a>'
+};
+/* 처음 파일. 바꾼 결과가 다음 칸의 재료가 된다(이름 짓는 법은 앱과 같다). */
+const START = { kind: 'hwp', stem: '독서 자료', base: '독서 자료', count: 1, pages: 2, small: false, name: '독서 자료.hwp', note: '' };
+/* 아무 데나 누르면 놓을 다음 칸(지금 파일 종류에 따라) */
+function nextAct(f) {
+  if (f.kind === 'hwp' || f.kind === 'hwpx') return 'pdf';
+  if (f.kind === 'pdf') return 'image';
+  if (f.kind === 'png' || f.kind === 'jpg') return f.small ? 'text' : 'shrink';
+  if (f.kind === 'txt') return 'ai';
+  return null;
+}
+
+function paperSVG(kind) {
+  const k = KIND[kind];
+  let body;
+  if (k.pic) {
+    body = `<rect x="16" y="20" width="106" height="96" rx="12" style="fill:var(--${k.hue}-t)"/>
+      <g transform="translate(33 30) scale(3)" fill="none" style="stroke:var(--${k.hue}-d)" stroke-width=".8" stroke-linecap="round" stroke-linejoin="round"><path d="M3,16.5 L8,11.5 L13,16.5 M11.5,15 L14.5,12 L21,18.5 M14.5,8.5 A1.6,1.6 0 1 0 17.7,8.5 A1.6,1.6 0 1 0 14.5,8.5 Z"/></g>`;
+  } else if (k.txt) {
+    const L = ['독서 자료', '책을 읽고', '느낀 점을', '적어 봅시다.'];
+    body = L.map((s, i) => `<text x="16" y="${36 + i * 19}" font-size="${i ? 10 : 10.5}" font-weight="${i ? 550 : 850}" style="fill:var(--ink${i ? '-2' : ''})">${s}</text>`).join('');
+  } else {
+    const w = [104, 96, 104, 80, 56];
+    body = `<rect x="16" y="24" width="62" height="9" rx="4.5" style="fill:var(--ink-3)" opacity=".5"/>` +
+      [44, 58, 72, 86, 100].map((y, i) => `<rect x="16" y="${y}" width="${w[i]}" height="7" rx="3.5" style="fill:var(--line-2)"/>`).join('');
+  }
+  const bw = k.ext.length * 10 + 24;
+  return `<svg viewBox="0 0 140 176" aria-hidden="true">
+    <path d="M16 2H96L138 44V160A14 14 0 0 1 124 174H16A14 14 0 0 1 2 160V16A14 14 0 0 1 16 2Z" style="fill:#fff;stroke:var(--line-2)" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M96 2V30A14 14 0 0 0 110 44H138" style="fill:var(--sheet-2);stroke:var(--line-2)" stroke-width="2.2" stroke-linejoin="round"/>
+    ${body}
+    <rect x="16" y="132" width="${bw}" height="28" rx="10" style="fill:var(--${k.hue}-t)"/>
+    <text x="${16 + bw / 2}" y="151" text-anchor="middle" font-size="14" font-weight="850" style="fill:var(--${k.hue}-d)">${k.ext}</text>
+  </svg>`;
+}
+
+/* 칸에 놓았을 때 일어나는 일: 고를 거리(opts), 알림 문구, 새 파일. 앱의 Actions.cs·Conversions.cs와 같은 규칙. */
+function convert(f, act) {
+  const two = f.count > 1, img = f.kind === 'png' || f.kind === 'jpg', hwp = f.kind === 'hwp' || f.kind === 'hwpx';
+  const more = (name, unit) => two ? `${name} 외 ${f.count - 1}${unit}` : name;
+  const out = { stem: f.stem, base: f.base, count: f.count, pages: f.pages, small: false, note: '', noteHue: 'green' };
+  const r = { opts: null, pick: 0, sub: null, title: LABEL[act], prog: '', done: '', res: out };
+  const withOpt = (opts, pick) => { r.opts = opts; r.pick = pick; r.title = LABEL[act] + ' · ' + opts[pick][0]; };
+  if (act === 'pdf') {
+    if (two) {
+      withOpt([['하나로', '모두 한 PDF에'], ['따로따로', '파일마다 PDF']], 0);
+      const nm = `${f.base} 외 ${f.count - 1}${img ? '장' : '개'}`;
+      Object.assign(out, { kind: 'pdf', count: 1, pages: f.count, stem: nm, base: nm, name: `${nm}.pdf` });
+    } else Object.assign(out, { kind: 'pdf', name: `${f.base}.pdf` });
+    r.prog = 'PDF로 바꾸는 중';
+  } else if (act === 'image') {
+    withOpt([['PNG', '선명하게'], ['JPG', '가볍게'], ['속 사진만', '문서에 든 사진']], 1);
+    const ext = 'jpg';
+    if (f.pages > 1 && f.count === 1) {
+      Object.assign(out, { kind: ext, count: f.pages, pages: 1, base: `${f.stem}_01`, name: `${f.stem}_01.${ext} 외 ${f.pages - 1}장`, note: `'${f.stem}_그림' 폴더에 ${f.pages}쪽`, noteHue: 'blue' });
+      r.done = `${f.stem}_그림`;
+    } else Object.assign(out, { kind: ext, name: more(`${f.base}.${ext}`, '장') });
+    r.prog = '그림으로 바꾸는 중';
+  } else if (act === 'format') {
+    let list, pick = 0;
+    if (hwp) list = [f.kind === 'hwp' ? ['HWPX', '새 한글 형식'] : ['HWP', '예전 한글 형식'], ['워드로', '한글 프로그램 필요'], ['엑셀로', '문서 안의 표만'], ['PPT로', '글자 고칠 수 있게']].concat(DOC_FMT);
+    else if (f.kind === 'pdf') { list = [['워드로', '글자·표'], ['엑셀로', 'PDF 안의 표'], ['PPT로', '글자 고칠 수 있게'], ['그림 PPT', '모양 그대로']].concat(DOC_FMT); pick = 2; }
+    else if (img) list = ['PNG', 'JPG', 'WEBP', 'BMP', 'GIF', 'TIFF', 'ICO'].filter(x => x.toLowerCase() !== f.kind).map(x => [x, x === 'WEBP' ? '손실 없이' : '']).concat([['워드로', '사진을 문서에'], ['PPT로', '사진마다 슬라이드']]);
+    else if (f.kind === 'docx') list = [['PPT로', '글자 고칠 수 있게']].concat(DOC_FMT, [['글자 파일', '.txt']]);
+    else list = [['워드로', '']].concat(DOC_FMT);
+    withOpt(list, pick);
+    const to = list[pick][0], ext = FMT_EXT[to];
+    Object.assign(out, { kind: ext, name: more(`${f.base}.${ext}`, img ? '장' : '개') });
+    r.prog = (/로$/.test(to) ? to : to + '로') + ' 바꾸는 중';
+  } else if (act === 'shrink') {
+    withOpt([['조금', '긴 변 3000'], ['보통', '긴 변 2000'], ['많이', '긴 변 1400'], ['용량 정하기', '○MB 이하로']], 1);
+    Object.assign(out, { kind: f.kind, small: true, base: `${f.base}_압축`, name: more(`${f.base}_압축.${f.kind}`, '장'), note: f.kind === 'pdf' ? '2.6MB → 610KB' : (two ? '2장 · 5.8MB → 760KB' : '2.9MB → 380KB') });
+    r.prog = '줄이는 중';
+  } else if (act === 'text') {
+    if (img || f.kind === 'pdf') withOpt([['이 PC에서', '인터넷 안 씀'], ['워드로', '읽은 글을 문서로'], ['AI로', '표까지 읽기']], 0);
+    else r.title = LABEL[act] + ' · 글자로';
+    Object.assign(out, { kind: 'txt', name: more(`${f.base}.txt`, '개') });
+    r.prog = '글자 읽는 중';
+  } else if (act === 'photo') {
+    const list = [['손질하기', '가리기·자르기·보정'], ['얼굴 가리기', '찾아서 흐리게'], ['문서 펴기', '기울기·명암·흑백']];
+    if (two) list.push(['콜라주', '여러 장을 한 장에']);
+    list.push(['정보 지우기', '찍은 장소·기기'], ['정보 보기', '글자 파일로 저장']);
+    withOpt(list, list.length - 2);
+    Object.assign(out, { kind: f.kind, small: f.small, base: `${f.base}_정보지움`, name: more(`${f.base}_정보지움.${f.kind}`, '장'), note: '찍은 장소·기기 정보 지움', noteHue: 'orange' });
+    r.prog = '정보 지우는 중';
+  } else if (act === 'pdftool') {
+    const list = [['쪽 편집', '순서·돌리기·삭제']];
+    if (two) list.push(['합치기', '순서 정해서']);
+    list.push(['쪽마다 나누기', '한 쪽씩 파일로'], ['쪽 고르기', '1,3-5처럼'], ['암호 걸기', '열 때 암호'], ['암호 풀기', '암호를 알 때만'], ['워터마크', '글자를 흐리게'], ['쪽 번호', '쪽마다 번호'], ['정보 지우기', '만든 이·프로그램']);
+    withOpt(list, list.length - 2);
+    Object.assign(out, { kind: 'pdf', stem: `${f.stem}_쪽번호`, base: `${f.base}_쪽번호`, name: more(`${f.base}_쪽번호.pdf`, '개'), note: `쪽마다 번호를 넣었어요`, noteHue: 'pink' });
+    r.prog = '쪽 번호 넣는 중';
+  } else if (act === 'archive') {
+    if (f.kind === 'zip') {
+      withOpt([['풀기', '새 폴더에'], ['ZIP', '하나로 묶기'], ['TAR', '압축 없이 묶기']], 0);
+      Object.assign(out, f.from, { note: '새 폴더에 풀었어요', noteHue: 'lime' });
+      r.prog = '푸는 중'; r.done = `${f.stem} 폴더`;
+    } else {
+      const list = [['ZIP', '하나로 묶기'], ['TAR', '압축 없이 묶기']];
+      if (!two) list.push(['GZIP', '파일 하나 압축']);
+      withOpt(list, 0);
+      const nm = two ? `${f.base} 외 ${f.count - 1}개` : f.base;
+      Object.assign(out, { kind: 'zip', count: 1, pages: 1, stem: nm, base: nm, name: `${nm}.zip`, from: Object.assign({}, f) });
+      r.prog = 'ZIP으로 묶는 중';
+    }
+  } else if (act === 'ai') {
+    const list = [['요약', '3줄·한 쪽'], ['요점 정리', '마감·할 일·일정'], ['번역', '여러 언어'], ['문서 쓰기', '초안·쉬운 말·맞춤법'], ['표를 엑셀로', '문서·사진 속 표'], ['문제 만들기', '정답까지'], ['수업 자료', '학습지·PPT·지도안'], ['이름 짓기', '내용 보고 파일 이름']];
+    withOpt(list, 6);
+    r.sub = { opts: [['학습지', '워드·한글'], ['PPT 만들기', '디자인 입혀서'], ['수준별 자료', '기초·보통·심화'], ['지도안', '단계별 수업 계획'], ['채점 기준표', '상·중·하']], pick: 0, label: '수업 자료' };
+    r.title = 'AI로 · 학습지';
+    Object.assign(out, { kind: 'docx', count: 1, pages: 2, stem: `${f.stem}_학습지`, base: `${f.stem}_학습지`, name: `${f.stem}_학습지.docx`, note: '쓰던 AI 계정으로 만들었어요', noteHue: 'sky' });
+    r.prog = '쓰던 AI가 만드는 중';
+  } else return null;
+  if (!r.done) r.done = out.count > 1 ? `파일 ${out.count}개를 만들었어요.` : out.name;
+  return r;
+}
+
+const stageEl = $('#stage');
+if (stageEl) (function stage() {
+  const slot = $('#fileSlot'), nameEl = $('#fileName'), noteEl = $('#fileNote'), cap = $('#stageCap');
+  const cursor = $('#cursor'), ghost = $('#ghost'), badgeTop = $('#badgeTop');
+  const tabsEl = $('#tabs'), optTabs = $('#optTabs');
+  const toast = $('#toast'), toastChip = $('#toastChip'), toastTitle = $('#toastTitle'), toastStatus = $('#toastStatus'), toastBar = $('#toastBar');
+  const btnNext = $('#stageNext'), btnReset = $('#stageReset');
+  let tabs = [], tabsKey = '';
+  let cur = Object.assign({}, START), busy = false, queued = null, toastTimer = 0;
+
+  function drawFile(f) {
+    const many = f.count > 1;
+    slot.className = 'file-slot' + (many ? ' many' : '') + (f.small ? ' small' : '');
+    slot.innerHTML = many
+      ? `<div class="pg b">${paperSVG(f.kind)}</div><div class="pg f">${paperSVG(f.kind)}</div>`
+      : `<div class="pg f">${paperSVG(f.kind)}</div>`;
+    const m = / 외 (\d+\S*)$/.exec(f.name);
+    nameEl.innerHTML = '';
+    nameEl.append(m ? f.name.slice(0, m.index) + ' ' : f.name);
+    if (m) { const more = document.createElement('span'); more.className = 'more'; more.textContent = '외 ' + m[1]; nameEl.append(more); }
+    noteEl.textContent = f.note || '';
+    noteEl.className = 'file-note h-' + (f.noteHue || 'green');
+  }
+  /* 끈 파일에 맞는 칸만 그린다(앱과 같음) */
+  function refreshTabs(animate) {
+    const list = MENU[cur.kind] || MENU.hwp, key = list.join();
+    if (key !== tabsKey) {
+      tabsKey = key;
+      tabsEl.innerHTML = list.map(a => {
+        const say = a === 'settings' ? '설정: 메뉴 모양 보러 가기' : LABEL[a] + '에 놓기';
+        return `<li><button type="button" class="tab h-${HUE[a]}" data-act="${a}" aria-label="${say}"><span class="ic">${glyph(a)}</span><span class="tl"><b>${LABEL[a]}</b><small>${HINT[a]}</small></span><span class="cap">${SLOT[a]}</span></button></li>`;
+      }).join('');
+      tabs = $$('.tab', tabsEl);
+      if (animate && !reduce) tabs.forEach((t, i) => t.animate([{ opacity: 0, transform: 'scale(.7)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 240, delay: i * 22, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'backwards' }));
+    }
+    btnReset.hidden = cur.name === START.name || !nextAct(cur);
+    btnNext.textContent = nextAct(cur) ? '다음 칸에 놓기' : '처음부터 다시';
+  }
+  function rel(el) {
+    const s = stageEl.getBoundingClientRect(), r = el.getBoundingClientRect();
+    return { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height };
+  }
+  const place = (el, x, y, sc) => { el.style.transform = `translate(${x}px,${y}px)` + (sc ? ` scale(${sc})` : ''); };
+  function showToast(act, title, status, done) {
+    toast.className = 'toast h-' + HUE[act] + (done ? ' done' : '');
+    toastChip.innerHTML = glyph(done ? 'check' : act, 2.2);
+    toastTitle.textContent = done ? '다 됐어요 · ' + title : title;
+    toastStatus.textContent = status;
+    toast.style.transition = 'opacity .18s, transform .24s var(--back)';
+    toast.style.opacity = '1'; toast.style.transform = 'none';
+    if (done && !reduce) toastChip.animate([{ transform: 'scale(.6)' }, { transform: 'scale(1)' }], { duration: 320, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+  }
+  function hideToast() { toast.style.opacity = '0'; toast.style.transform = 'translateY(-8px)'; }
+  function setCap(act, res) {
+    if (!act) { cap.innerHTML = '<b>시작</b>한글 파일을 끌어 왔어요. 파일에 맞는 칸만 떠요. 아무 데나 누르면 다음 칸에 놓아요.'; return; }
+    let s = `<b>${LABEL[act]}</b>${SAY[act]}`;
+    if (!nextAct(res)) s += ' 한 바퀴 끝이에요. 다른 칸도 눌러 보세요.';
+    cap.innerHTML = s;
+  }
+  function settle(act, r) {
+    cur = r.res; drawFile(cur); refreshTabs(true); setCap(act, cur);
+  }
+
+  /* 메뉴가 그 자리에서 고를 칸으로 바뀌고, 커서가 하나를 눌러 고른다. 끝난 커서 자리를 돌려준다. */
+  async function choose(list, pick, act, title, from) {
+    badgeTop.textContent = title;
+    optTabs.innerHTML = list.map((o, i) => `<li><span class="tab h-${HUE[act]}"><span class="ic num">${i + 1}</span><span class="tl"><b>${o[0]}</b>${o[1] ? `<small>${o[1]}</small>` : ''}</span><span class="cap">${i + 1}</span></span></li>`).join('');
+    const items = $$('.tab', optTabs);
+    items.forEach((it, i) => it.animate([{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 220, delay: 70 + i * 18, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'backwards' }));
+    await wait(380);
+    const pr = rel(items[pick]);
+    const p1 = { x: pr.x + 44, y: pr.y + pr.h * .55 };
+    await tween(300, e => place(cursor, from.x + (p1.x - from.x) * e, from.y + (p1.y - from.y) * e));
+    items[pick].classList.add('hot');
+    await wait(170);
+    cursor.classList.add('down'); await wait(90); cursor.classList.remove('down');
+    await wait(110);
+    const fade = optTabs.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: 'forwards' });
+    await fade.finished;
+    optTabs.innerHTML = ''; fade.cancel();
+    return p1;
+  }
+
+  async function run(act) {
+    if (busy) { queued = act; return; }
+    const tab = tabs.find(t => t.dataset.act === act);   /* 기다리는 사이 메뉴가 바뀌어 그 칸이 없어졌을 수 있다 */
+    const r = tab && convert(cur, act);
+    if (!r) return;
+    busy = true;
+    clearTimeout(toastTimer);
+    if (reduce) {
+      settle(act, r); showToast(act, r.title, r.done, true);
+      toastTimer = setTimeout(hideToast, 1800);
+      busy = false; return;
+    }
+    hideToast();
+    // 1. 파일을 잡아 칸으로 끌고 간다
+    const fr = rel(slot), tr = rel(tab);
+    const from = { x: fr.x + fr.w * .52, y: fr.y + fr.h * .44 };
+    const to = { x: tr.x + 40, y: tr.y + tr.h * .55 };
+    ghost.innerHTML = paperSVG(cur.kind);
+    cursor.style.transition = 'opacity .15s'; cursor.style.opacity = '1';
+    place(cursor, from.x, from.y);
+    await wait(90);
+    cursor.classList.add('down');
+    ghost.style.transition = ''; ghost.style.opacity = '.92';
+    place(ghost, from.x + 8, from.y + 14, .9);
+    await wait(80);
+    const c1 = { x: (from.x + to.x) / 2, y: Math.min(from.y, to.y) - 60 };
+    await tween(470, e => {
+      const u = 1 - e;
+      const x = u * u * from.x + 2 * u * e * c1.x + e * e * to.x;
+      const y = u * u * from.y + 2 * u * e * c1.y + e * e * to.y;
+      place(cursor, x, y); place(ghost, x + 8, y + 14, .9 - e * .15);
+    });
+    tab.classList.add('hot');
+    await wait(200);
+    // 2. 놓는다. 고를 거리가 둘 이상이면 메뉴가 그 자리에서 고를 칸으로 바뀐다(앱과 같음)
+    ghost.style.transition = 'opacity .15s'; ghost.style.opacity = '0';
+    cursor.classList.remove('down');
+    if (r.opts) {
+      tab.classList.remove('hot');
+      tabsEl.classList.add('away');
+      let from = to;
+      from = await choose(r.opts, r.pick, act, LABEL[act], from);
+      if (r.sub) from = await choose(r.sub.opts, r.sub.pick, act, r.sub.label, from);
+      tabsEl.classList.remove('away');
+      badgeTop.textContent = '파일 ' + cur.count + '개';
+    } else {
+      await wait(120);
+      tab.classList.remove('hot');
+    }
+    // 3. 알림이 뜨고, 원본 옆에 새 파일이 생긴다
+    cursor.style.opacity = '0';
+    const old = slot.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(.86)' }], { duration: 180, fill: 'forwards', easing: 'ease-in' });
+    showToast(act, r.title, r.prog, false);
+    toastBar.style.transition = 'none'; toastBar.style.width = '0';
+    await wait(30);
+    toastBar.style.transition = 'width .5s cubic-bezier(.4,0,.2,1)'; toastBar.style.width = '100%';
+    await wait(470);
+    settle(act, r); old.cancel();
+    badgeTop.textContent = '파일 ' + cur.count + '개';
+    slot.animate([{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1.05)', offset: .7 }, { opacity: 1, transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(.34,1.4,.64,1)' });
+    showToast(act, r.title, r.done, true);
+    toastTimer = setTimeout(hideToast, 2200);
+    await wait(240);
+    busy = false;
+    if (queued) { const q = queued; queued = null; if (q === 'next') next(); else if (q === 'reset') reset(); else run(q); }
+  }
+  function reset() {
+    if (busy) { queued = 'reset'; return; }
+    clearTimeout(toastTimer); hideToast();
+    cur = Object.assign({}, START); drawFile(cur); refreshTabs(); setCap(null);
+    badgeTop.textContent = '파일 1개';
+    if (!reduce) slot.animate([{ opacity: 0, transform: 'scale(.7)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 360, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+  }
+  function next() {
+    if (busy) { queued = 'next'; return; }
+    const a = nextAct(cur); if (a) run(a); else reset();
+  }
+
+  tabsEl.addEventListener('click', e => {
+    const t = e.target.closest('.tab');
+    if (!t) return;
+    e.stopPropagation();
+    const a = t.dataset.act;
+    if (a === 'settings') { $('#shapes').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); return; }
+    run(a);
+  });
+  btnNext.addEventListener('click', e => { e.stopPropagation(); next(); });
+  btnReset.addEventListener('click', e => { e.stopPropagation(); reset(); });
+  stageEl.addEventListener('click', e => { if (!e.target.closest('a')) next(); });
+  drawFile(cur); refreshTabs();
+})();
+
+/* ================= 메뉴 모양 (점을 옮겨 모양이 바뀜) ================= */
+const svg = $('#shapeSvg');
+if (svg) (function shapes() {
+  const NS = 'http://www.w3.org/2000/svg';
+  const N = 128;
+  const CELLS = [
+    { id: 'pdf', label: 'PDF로', hint: '문서·그림을 PDF로', n: 1 },
+    { id: 'image', label: '그림으로', hint: '쪽마다 그림 파일', n: 2 },
+    { id: 'format', label: '형식 바꾸기', hint: '워드·엑셀·PNG…', n: 3 },
+    { id: 'photo', label: '사진 손질', hint: '가리기·자르기·보정', n: 6 },
+    { id: 'ai', label: 'AI로', hint: '요약·번역·문제', n: 11 },
+    { id: 'settings', label: '설정', hint: '모양·키·AI', n: 12 }
+  ];
+  const SAYS = {
+    index: '<b>색인</b> 커서 옆에 색 띠가 차곡차곡 쌓여요. 마우스를 올리면 띠가 쏙 빠져나와요.',
+    fan: '<b>부채</b> 커서 위로 반원이 펼쳐지고, 고른 칸이 바깥으로 툭 튀어 올라요.',
+    wave: '<b>물결</b> 둥근 칸이 무지개 물결을 따라 늘어서고, 고른 칸이 위로 톡 솟아요.',
+    honey: '<b>벌집</b> 둥근 육각형 칸이 가운데를 둘러싸요. 칸이 늘어나면 한 바퀴 더 둘러요.'
+  };
+  const ORDER = ['index', 'fan', 'wave', 'honey'];
+
+  function polyDist(px, py, poly) {
+    const n = poly.length;
+    if (n === 1) return Math.hypot(px - poly[0][0], py - poly[0][1]);
+    let d = Infinity, inside = false;
+    for (let i = 0, j = n - 1; i < n; j = i++) {
+      const xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1];
+      const dx = xi - xj, dy = yi - yj, L = dx * dx + dy * dy;
+      let t = L ? ((px - xj) * dx + (py - yj) * dy) / L : 0;
+      t = t < 0 ? 0 : t > 1 ? 1 : t;
+      const qx = xj + t * dx - px, qy = yj + t * dy - py, q = qx * qx + qy * qy;
+      if (q < d) d = q;
+      if (n > 2 && ((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) inside = !inside;
+    }
+    d = Math.sqrt(d);
+    return inside ? -d : d;
+  }
+  /* 둥근 도형 = 안쪽 다각형(core)을 r만큼 부풀린 것. 가운데서 사방으로 쏜 선이 테두리에 닿는 점을 찾고, 둘레를 고르게 N점으로 나눈다. */
+  function outline(sh) {
+    const M = 720, pts = [];
+    const cx = sh.c[0], cy = sh.c[1];
+    for (let k = 0; k < M; k++) {
+      const a = -Math.PI / 2 + k * 2 * Math.PI / M, ux = Math.cos(a), uy = Math.sin(a);
+      let lo = 0, hi = 16;
+      while (polyDist(cx + ux * hi, cy + uy * hi, sh.core) - sh.r < 0 && hi < 4000) hi *= 2;
+      for (let i = 0; i < 18; i++) { const m = (lo + hi) / 2; if (polyDist(cx + ux * m, cy + uy * m, sh.core) - sh.r < 0) lo = m; else hi = m; }
+      pts.push([cx + ux * lo, cy + uy * lo]);
+    }
+    const seg = [0];
+    for (let k = 1; k <= M; k++) { const p = pts[k % M], q = pts[k - 1]; seg.push(seg[k - 1] + Math.hypot(p[0] - q[0], p[1] - q[1])); }
+    const total = seg[M], out = [];
+    let j = 0;
+    for (let k = 0; k < N; k++) {
+      const s = total * k / N;
+      while (seg[j + 1] < s) j++;
+      const t = (s - seg[j]) / ((seg[j + 1] - seg[j]) || 1);
+      const p = pts[j], q = pts[(j + 1) % M];
+      out.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]);
+    }
+    return out;
+  }
+  const avg = core => { let x = 0, y = 0; core.forEach(p => { x += p[0]; y += p[1]; }); return [x / core.length, y / core.length]; };
+  function rrect(cx, cy, w, h, r) {
+    const hw = w / 2 - r, hh = h / 2 - r;
+    let core;
+    if (hw <= .01 && hh <= .01) core = [[cx, cy]];
+    else if (hw <= .01) core = [[cx, cy - hh], [cx, cy + hh]];
+    else if (hh <= .01) core = [[cx - hw, cy], [cx + hw, cy]];
+    else core = [[cx - hw, cy - hh], [cx + hw, cy - hh], [cx + hw, cy + hh], [cx - hw, cy + hh]];
+    return { core, r, c: [cx, cy], x: cx, y: cy };
+  }
+  const circ = (cx, cy, R) => ({ core: [[cx, cy]], r: R, c: [cx, cy], x: cx, y: cy });
+  function sector(ox, oy, a, b, t1, t2, gap, r) {
+    const d = gap / 2 + r, A = a + r, B = b - r;
+    const so = Math.asin(Math.min(.99, d / B)), si = Math.asin(Math.min(.99, d / A));
+    const core = [];
+    for (let k = 0; k <= 20; k++) { const t = t1 + so + (t2 - t1 - 2 * so) * k / 20; core.push([ox + B * Math.cos(t), oy + B * Math.sin(t)]); }
+    for (let k = 0; k <= 10; k++) { const t = t2 - si - (t2 - t1 - 2 * si) * k / 10; core.push([ox + A * Math.cos(t), oy + A * Math.sin(t)]); }
+    const tm = (t1 + t2) / 2, rm = (a + b) / 2;
+    return { core, r, c: avg(core), x: ox + rm * Math.cos(tm), y: oy + rm * Math.sin(tm), tm };
+  }
+  function hex(cx, cy, R, r) {
+    const ap = R * Math.cos(Math.PI / 6) - r, R2 = ap / Math.cos(Math.PI / 6), core = [];
+    for (let k = 0; k < 6; k++) { const t = -Math.PI / 2 + k * Math.PI / 3; core.push([cx + R2 * Math.cos(t), cy + R2 * Math.sin(t)]); }
+    return { core, r, c: [cx, cy], x: cx, y: cy };
+  }
+  const LAY = {
+    index() {
+      const O = [190, 220], W = 236, H = 54, g = 7, top = 220 - (6 * H + 5 * g) / 2, x0 = O[0] + 36 + 12, cells = [];
+      for (let i = 0; i < 6; i++) { const y = top + i * (H + g); const s = rrect(x0 + W / 2, y + H / 2, W, H, 16); s.lab = { k: 'row', x: x0, y: y + H / 2, w: W }; s.b = [20, 0]; s.s = 1.02; cells.push(s); }
+      const center = rrect(O[0], O[1], 72, 72, 22); center.lab = { k: 'ctr', x: O[0], y: O[1] };
+      return { O, cells, center };
+    },
+    fan() {
+      const O = [320, 324], cells = [];
+      for (let i = 0; i < 6; i++) { const t1 = Math.PI + i * Math.PI / 6, t2 = t1 + Math.PI / 6; const s = sector(O[0], O[1], 66, 192, t1, t2, 7, 12); s.lab = { k: 'fan', tm: s.tm, O }; s.b = [24 * Math.cos(s.tm), 24 * Math.sin(s.tm)]; s.s = 1.09; cells.push(s); }
+      const center = circ(O[0], O[1], 50); center.lab = { k: 'ctr', x: O[0], y: O[1] };
+      return { O, cells, center };
+    },
+    wave() {
+      const O = [320, 372], cells = [];
+      for (let i = 0; i < 6; i++) { const x = 320 + (i - 2.5) * 98, y = 232 - 22 * Math.sin(i * Math.PI / 2.5); const s = rrect(x, y, 86, 116, 32); s.lab = { k: 'tile', x, y }; s.b = [0, -10]; s.s = 1.14; cells.push(s); }
+      const center = circ(O[0], O[1], 38); center.lab = { k: 'ctr', x: O[0], y: O[1] };
+      return { O, cells, center };
+    },
+    honey() {
+      const O = [320, 222], R = 60, D = Math.sqrt(3) * R + 8, cells = [];
+      for (let i = 0; i < 6; i++) { const t = -2 * Math.PI / 3 + i * Math.PI / 3; const x = O[0] + D * Math.cos(t), y = O[1] + D * Math.sin(t); const s = hex(x, y, R, 13); s.lab = { k: 'tile', x, y }; s.b = [8 * Math.cos(t), 8 * Math.sin(t)]; s.s = 1.10; cells.push(s); }
+      const center = hex(O[0], O[1], R, 13); center.lab = { k: 'ctr', x: O[0], y: O[1] };
+      return { O, cells, center };
+    }
+  };
+  const cache = {};
+  function geo(name) {
+    if (cache[name]) return cache[name];
+    const L = LAY[name]();
+    L.cells.forEach(s => { s.pts = outline(s); });
+    L.center.pts = outline(L.center);
+    return (cache[name] = L);
+  }
+  const dOf = pts => 'M' + pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L') + 'Z';
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+
+  // 무지개 물결선(물결 모양에서만 보임)
+  const defs = el('defs', {}, svg);
+  const lg = el('linearGradient', { id: 'rainbow', x1: '0', x2: '1', y1: '0', y2: '0' }, defs);
+  ['#FF8473', '#FFAA4D', '#FFD447', '#52D3A0', '#6CA8FF', '#B596FF'].forEach((c, i) => el('stop', { offset: (i / 5).toFixed(2), 'stop-color': c }, lg));
+  const waveLine = el('path', { class: 'wave-line', fill: 'none', stroke: 'url(#rainbow)', 'stroke-width': '7', 'stroke-linecap': 'round', opacity: '0' }, svg);
+
+  const nodes = [];
+  function mkCell(i, center) {
+    const g = el('g', { class: 'cell' + (center ? ' ctr' : '') }, svg);
+    const hue = center ? 'slate' : HUE[CELLS[i].id];
+    if (!center) g.setAttribute('style', `--h:var(--${hue});--t:var(--${hue}-t);--d:var(--${hue}-d)`);
+    const sh = el('path', { class: 'sh' }, g), bg = el('path', { class: 'bg' }, g), lab = el('g', { class: 'lab' }, g);
+    const node = { g, sh, bg, lab, i, center, pts: null };
+    g.addEventListener('pointerenter', ev => { if (ev.pointerType === 'mouse' && !morphing) g.classList.add('on'); });
+    g.addEventListener('pointerleave', () => g.classList.remove('on'));
+    nodes.push(node);
+    return node;
+  }
+  const ctrNode = mkCell(-1, true);
+  for (let i = 0; i < 6; i++) mkCell(i, false);
+  const cellNodes = nodes.filter(n => !n.center);
+  const cur = el('g', { class: 'cur', 'pointer-events': 'none' }, svg);
+  el('path', { d: 'M0 0v22l5.6-5.2 3.8 8.4 3.7-1.7-3.8-8.3h7.6z', fill: '#fff', stroke: '#22252F', 'stroke-width': '1.8', 'stroke-linejoin': 'round' }, cur);
+
+  function chipGlyph(parent, id, cx, cy, r) {
+    el('circle', { class: 'chip', cx, cy, r }, parent);
+    const s = (r * 1.16) / 24;
+    const gg = el('g', { transform: `translate(${cx - 12 * s} ${cy - 12 * s}) scale(${s})` }, parent);
+    el('path', { class: 'gl', d: G[id], 'stroke-width': (2 / s).toFixed(2) }, gg);
+  }
+  function text(parent, x, y, str, size, cls, anchor, rot) {
+    const t = el('text', { x, y, class: cls, 'font-size': size, 'text-anchor': anchor || 'start', 'dominant-baseline': 'middle' }, parent);
+    if (rot) t.setAttribute('transform', `rotate(${rot} ${x} ${y})`);
+    t.textContent = str;
+    return t;
+  }
+  function drawLabels(L) {
+    nodes.forEach(n => { n.lab.innerHTML = ''; });
+    const c = L.center.lab;
+    text(ctrNode.lab, c.x, c.y - 8, '파일 1개', 13.5, 'lt', 'middle');
+    text(ctrNode.lab, c.x, c.y + 10, '닫기', 11.5, 'ls', 'middle');
+    L.cells.forEach((s, i) => {
+      const n = cellNodes[i], lab = n.lab, info = CELLS[i], q = s.lab;
+      n.g.style.setProperty('--bx', s.b[0].toFixed(1));
+      n.g.style.setProperty('--by', s.b[1].toFixed(1));
+      n.g.style.setProperty('--s', s.s);
+      if (q.k === 'row') {
+        chipGlyph(lab, info.id, q.x + 31, q.y, 17);
+        text(lab, q.x + 60, q.y - 8, info.label, 15, 'lt');
+        text(lab, q.x + 60, q.y + 11, info.hint, 11.5, 'ls');
+        el('rect', { class: 'kc2', x: q.x + q.w - 38, y: q.y - 12, width: 24, height: 24, rx: 8 }, lab);
+        text(lab, q.x + q.w - 26, q.y + 1, String(info.n), 12.5, 'kt', 'middle');
+      } else if (q.k === 'fan') {
+        const ox = q.O[0], oy = q.O[1];
+        chipGlyph(lab, info.id, ox + 164 * Math.cos(q.tm), oy + 164 * Math.sin(q.tm), 15);
+        const deg = q.tm * 180 / Math.PI;
+        const rot = deg > 270 ? deg : deg + 180;
+        text(lab, ox + 108 * Math.cos(q.tm), oy + 108 * Math.sin(q.tm), info.label, 13.5, 'lt', 'middle', rot.toFixed(1));
+      } else {
+        chipGlyph(lab, info.id, q.x, q.y - 17, 17);
+        text(lab, q.x, q.y + 20, info.label, 13.5, 'lt', 'middle');
+      }
+    });
+  }
+  function paint(n, pts) {
+    n.pts = pts;
+    const d = dOf(pts);
+    n.bg.setAttribute('d', d); n.sh.setAttribute('d', d);
+  }
+  function wavePath(L) {
+    const p = L.cells.map(s => [s.x, s.y]);
+    let d = `M${p[0][0] - 40},${p[0][1] + 14}`;
+    p.forEach((q, i) => { const pr = i ? p[i - 1] : [q[0] - 60, q[1] + 20]; const mx = (pr[0] + q[0]) / 2; d += ` Q${mx},${pr[1]} ${q[0]},${q[1]}`; });
+    return d;
+  }
+  function placeCursor(L, animate) {
+    cur.style.transition = animate ? 'transform .55s cubic-bezier(.5,0,.2,1)' : 'none';
+    cur.style.transform = `translate(${L.O[0] + 15}px,${L.O[1] + 13}px)`;
+  }
+  let name = 'index', morphing = false;
+  function show(nm, animate) {
+    const to = geo(nm);
+    const seg = $$('#shapeSeg button');
+    seg.forEach(b => b.setAttribute('aria-pressed', b.dataset.shape === nm ? 'true' : 'false'));
+    $('#shapeSay').innerHTML = SAYS[nm];
+    waveLine.setAttribute('d', nm === 'wave' ? wavePath(to) : waveLine.getAttribute('d') || '');
+    waveLine.style.opacity = nm === 'wave' ? '1' : '0';
+    nodes.forEach(n => n.g.classList.remove('on'));
+    if (!animate || reduce || !ctrNode.pts) {
+      paint(ctrNode, to.center.pts);
+      to.cells.forEach((s, i) => paint(cellNodes[i], s.pts));
+      drawLabels(to); placeCursor(to, false); name = nm; return;
+    }
+    morphing = true; svg.classList.add('morphing');
+    const from = nodes.map(n => n.pts);
+    const target = [to.center.pts].concat(to.cells.map(s => s.pts));
+    const t0 = performance.now(), dur = 560, stag = 45;
+    placeCursor(to, true);
+    setTimeout(() => drawLabels(to), 200);
+    const step = now => {
+      let doneAll = true;
+      nodes.forEach((n, k) => {
+        const p = Math.max(0, Math.min(1, (now - t0 - k * stag) / dur));
+        if (p < 1) doneAll = false;
+        const e = E.back(p), A = from[k], B = target[k];
+        const pts = new Array(N);
+        for (let j = 0; j < N; j++) pts[j] = [A[j][0] + (B[j][0] - A[j][0]) * e, A[j][1] + (B[j][1] - A[j][1]) * e];
+        paint(n, pts);
+      });
+      if (!doneAll) requestAnimationFrame(step);
+      else { morphing = false; svg.classList.remove('morphing'); name = nm; }
+    };
+    requestAnimationFrame(step);
+  }
+  show('index', false);
+  $('#shapeStage').addEventListener('click', () => { if (morphing) return; show(ORDER[(ORDER.indexOf(name) + 1) % ORDER.length], true); });
+  $$('#shapeSeg button').forEach(b => b.addEventListener('click', () => { if (!morphing && b.dataset.shape !== name) show(b.dataset.shape, true); }));
+  // 화면에 들어오면 다른 모양 계산을 미리 해 둔다(처음 누를 때 멈칫하지 않게)
+  const warm = () => ORDER.forEach(n => geo(n));
+  if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 2500 }); else setTimeout(warm, 800);
+})();
+
+/* ================= 영상 차례 ================= */
+(function chapters() {
+  const nav = $('#chapters'), v = $('#guideVideo');
+  const data = window.BAKKUM_GUIDE;
+  if (!nav || !v) return;
+  if (!data || !data.chapters) { nav.innerHTML = '<p class="ch-note">영상을 준비하고 있어요.</p>'; return; }
+  const fmt = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+  // 제목의 영상 길이도 장 목록을 따라 바뀐다(5초 단위로 반올림): "1분 35초면", "2분이면"
+  const len = $('#guideLen');
+  if (len && data.duration > 0) {
+    let m = Math.floor(data.duration / 60), s = Math.round((data.duration % 60) / 5) * 5;
+    if (s === 60) { m++; s = 0; }
+    len.textContent = [m ? m + '분' : '', s ? s + '초' : ''].filter(Boolean).join(' ') + (s ? '면' : '이면');
+  }
+  let html = '', g = null;
+  data.chapters.filter(c => c.group).forEach(c => {
+    if (c.group !== g) { if (g !== null) html += '</ol>'; g = c.group; html += `<p class="ch-group">${c.group}</p><ol class="ch-list">`; }
+    html += `<li><button type="button" class="ch h-${c.hue}" data-t="${c.start}" data-e="${c.end}"><span class="dot"></span><span class="tt">${c.title}</span><span class="tm">${fmt(c.start)}</span></button></li>`;
+  });
+  html += '</ol><p class="ch-note">항목을 누르면 그 부분부터 재생돼요.</p>';
+  nav.innerHTML = html;
+  const items = $$('.ch', nav);
+  nav.addEventListener('click', e => {
+    const b = e.target.closest('.ch'); if (!b) return;
+    try { v.currentTime = parseFloat(b.dataset.t) + 0.05; } catch (err) { /* 아직 못 불러옴 */ }
+    const p = v.play(); if (p && p.catch) p.catch(() => {});
+    // 좁은 화면에서는 차례가 영상 아래에 있다. 누른 뒤 영상이 화면에서 벗어나 있으면 영상이 보이게 올려 준다.
+    const hd = $('.site-head'), top = hd ? hd.getBoundingClientRect().bottom : 0, r = v.getBoundingClientRect();
+    if (r.top < top - 1 || r.bottom > innerHeight + 1) v.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+  });
+  const mark = () => {
+    const t = v.currentTime;
+    items.forEach(b => b.classList.toggle('now', t >= parseFloat(b.dataset.t) && t < parseFloat(b.dataset.e)));
+  };
+  v.addEventListener('timeupdate', mark); v.addEventListener('seeked', mark);
+})();
+
+/* ================= 오프닝 ================= */
+const OPH = ['coral', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'slate'];
+let opRunning = false;
+function opening(force) {
+  if (reduce || opRunning) return;
+  let seen = false;
+  try { seen = sessionStorage.getItem('bakkum-opening') === '1'; } catch (e) { /* 저장소를 못 쓰면 매번 보여 준다 */ }
+  if (seen && !force) return;
+  try { sessionStorage.setItem('bakkum-opening', '1'); } catch (e) { /* 무시 */ }
+  opRunning = true;
+  const vw = innerWidth, vh = innerHeight;
+  const L = Math.round(Math.max(84, Math.min(150, vw * .24, vh * .2)));
+  const fs = Math.round(L * .78);
+  const ov = document.createElement('div');
+  ov.className = 'op'; ov.setAttribute('aria-hidden', 'true');
+  ov.innerHTML = '<div class="op-bg"></div><div class="op-fly"><div class="op-ink"></div></div>' +
+    `<div class="op-word" style="font-size:${fs}px"><span>바</span><span>꿈</span></div>` +
+    '<p class="op-tag">끌다가 <span class="k">⇧ Shift</span>, 놓으면 바꿈</p><button type="button" class="op-skip">건너뛰기</button>';
+  document.body.appendChild(ov);
+  document.documentElement.classList.add('opening');
+  const fly = $('.op-fly', ov), ink = $('.op-ink', ov), word = $('.op-word', ov), tag = $('.op-tag', ov);
+  word.style.opacity = '0'; tag.style.opacity = '0'; ink.style.transform = 'scale(0)';
+  let lx, ly, lc, sh, strips;
+  const LOGO = { 0: [.20, .255, .44], 2: [.20, .4325, .60], 4: [.20, .61, .36] };
+  /* 글꼴이 늦게 오면 이름 너비가 바뀌어 가운데가 틀어지므로, 잠깐(최대 0.7초) 기다렸다 잰다 */
+  function layout() {
+    const wordW = word.getBoundingClientRect().width;
+    const gap = L * .2, groupW = L + gap + wordW;
+    lx = Math.round(vw / 2 - groupW / 2); ly = Math.round(vh / 2 - L / 2 - L * .18);
+    Object.assign(ink.style, { left: lx + 'px', top: ly + 'px', width: L + 'px', height: L + 'px', borderRadius: (L * .26) + 'px', zIndex: 1 });
+    word.style.left = (lx + L + gap) + 'px'; word.style.top = (ly + L / 2 - fs * .52) + 'px';
+    tag.style.top = (ly + L + L * .34) + 'px';
+    lc = { x: lx + L / 2, y: ly + L / 2 };
+    const sw = L * 1.3, sg = L * .06;
+    sh = L * .19;
+    const top0 = lc.y - (8 * sh + 7 * sg) / 2;
+    strips = OPH.map((h, i) => {
+      const s = document.createElement('div');
+      s.className = 'op-st';
+      Object.assign(s.style, { left: (lc.x - sw / 2) + 'px', top: (top0 + i * (sh + sg)) + 'px', width: sw + 'px', height: sh + 'px', borderRadius: (sh * .42) + 'px', background: `var(--${h})`, opacity: '0', zIndex: LOGO[i] ? 2 : 0 });
+      fly.appendChild(s);
+      return s;
+    });
+  }
+  const anims = [];
+  const A = (elx, k, o) => { const a = elx.animate(k, o); anims.push(a); return a; };
+  let finished = false;
+  function finish() {
+    if (finished) return; finished = true;
+    anims.forEach(a => { try { a.cancel(); } catch (e) { /* 무시 */ } });
+    ov.remove();
+    document.documentElement.classList.remove('opening');
+    opRunning = false;
+  }
+  ov.addEventListener('pointerdown', finish);
+  const onKey = () => { finish(); removeEventListener('keydown', onKey); };
+  addEventListener('keydown', onKey);
+  (async () => {
+    try { if (document.fonts && document.fonts.load) await Promise.race([document.fonts.load(`850 ${fs}px "Pretendard Variable"`, '바꿈'), wait(700)]); } catch (e) { /* 글꼴을 못 받아도 그대로 진행 */ }
+    if (finished) return;
+    layout();
+    // 1. 색종이 여덟 장이 사방에서 날아와 색인처럼 쌓인다
+    strips.forEach((s, i) => {
+      const ang = i / 8 * Math.PI * 2 + .5, dist = Math.max(vw, vh) * .7;
+      const dx = Math.cos(ang) * dist, dy = Math.sin(ang) * dist, rot = (i % 2 ? 1 : -1) * (35 + i * 9);
+      A(s, [{ transform: `translate(${dx}px,${dy}px) rotate(${rot}deg) scale(.7)`, opacity: 0 }, { transform: 'none', opacity: 1 }],
+        { duration: 640, delay: i * 65, easing: 'cubic-bezier(.2,1.2,.35,1)', fill: 'backwards' });
+      s.style.opacity = '';
+    });
+    await wait(640 + 7 * 65 + 60); if (finished) return;
+    // 2. 잉크 판이 생기고, 세 장은 로고 띠로, 나머지는 쏙 빠진다
+    A(ink, [{ transform: 'scale(0)' }, { transform: 'scale(1)' }], { duration: 440, easing: 'cubic-bezier(.34,1.45,.64,1)', fill: 'forwards' });
+    strips.forEach((s, i) => {
+      const r0 = s.getBoundingClientRect();
+      if (LOGO[i]) {
+        const q = LOGO[i], h = L * .135;
+        A(s, [{ left: r0.left + 'px', top: r0.top + 'px', width: r0.width + 'px', height: r0.height + 'px', borderRadius: (sh * .42) + 'px' },
+              { left: (lx + q[0] * L) + 'px', top: (ly + q[1] * L) + 'px', width: (q[2] * L) + 'px', height: h + 'px', borderRadius: (h / 2) + 'px' }],
+          { duration: 480, delay: 60, easing: 'cubic-bezier(.3,1.25,.5,1)', fill: 'forwards' });
+      } else {
+        A(s, [{ transform: 'none', opacity: 1 }, { transform: `translate(${(lc.x - (r0.left + r0.width / 2)) * .8}px,${(lc.y - (r0.top + r0.height / 2)) * .8}px) scale(.15)`, opacity: 0 }],
+          { duration: 300, delay: 20 * i, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' });
+      }
+    });
+    await wait(560); if (finished) return;
+    // 3. 노랑 띠가 쏙 빠져나왔다 들어가고, 이름이 톡톡 나온다
+    A(strips[2], [{ transform: 'none' }, { transform: `translateX(${L * .12}px)` }, { transform: 'none' }], { duration: 460, easing: 'ease-in-out' });
+    word.style.opacity = '';
+    $$('span', word).forEach((sp, i) => A(sp, [{ opacity: 0, transform: 'translateY(.22em) scale(.7)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 80 + i * 90, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'backwards' }));
+    tag.style.opacity = '';
+    A(tag, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 300, easing: 'ease-out', fill: 'backwards' });
+    await wait(1250); if (finished) return;
+    // 4. 로고가 머리의 로고 자리로 날아가고 화면이 열린다
+    const hb = $('#brand svg').getBoundingClientRect();
+    const k = hb.width / L, tx = hb.left + hb.width / 2 - lc.x, ty = hb.top + hb.height / 2 - lc.y;
+    fly.style.transformOrigin = `${lc.x}px ${lc.y}px`;
+    A(fly, [{ transform: 'none' }, { transform: `translate(${tx}px,${ty}px) scale(${k})` }], { duration: 620, easing: 'cubic-bezier(.6,0,.2,1)', fill: 'forwards' });
+    A(word, [{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: 'forwards' });
+    A(tag, [{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: 'forwards' });
+    A($('.op-skip', ov), [{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+    A($('.op-bg', ov), [{ opacity: 1 }, { opacity: 0 }], { duration: 480, delay: 160, easing: 'ease-out', fill: 'forwards' });
+    const heroBits = $$('.hero-copy > *, .stage');
+    heroBits.forEach((b, i) => b.animate([{ opacity: 0, transform: 'translateY(18px)' }, { opacity: 1, transform: 'none' }], { duration: 520, delay: 200 + i * 70, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }));
+    const strip = $('.hero h1 .strip');
+    if (strip) strip.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1.06)', offset: .75 }, { transform: 'scaleX(1)' }], { duration: 560, delay: 420, easing: 'ease-out', fill: 'backwards' });
+    await wait(660);
+    removeEventListener('keydown', onKey);
+    finish();
+  })();
+}
+opening(false);
+$('#brand').addEventListener('click', () => { scrollTo({ top: 0, behavior: 'auto' }); opening(true); });
+})();
+</script>
+</body>
+</html>
