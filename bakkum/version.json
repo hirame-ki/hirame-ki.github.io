@@ -1,6 +1,6 @@
 {
-  "version": "0.3.2",
-  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.3.2/Bakkum.exe",
-  "sha256": "00b07f7f1a1f26c064d47682edaa739f4ac22d03f44f824c08085975eb7dfee2",
-  "notes": "'AI로' 칸에 문서 쓰기와 수업 자료 기능이 늘었어요."
+  "version": "0.3.3",
+  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.3.3/Bakkum.exe",
+  "sha256": "5cc2223b7b4135b3241856cb4b40128082544bd5c5819274b19b1b3c3c2e4284",
+  "notes": "'AI로' 칸의 회신문 이름이 기안문으로 바뀌었어요."
 }

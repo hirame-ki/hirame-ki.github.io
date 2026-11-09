@@ -77,7 +77,7 @@ window.BAKKUM_GUIDE = {
   {
    "id": "ai-reply",
    "group": "AI로",
-   "title": "회신문·계획서",
+   "title": "기안문·계획서",
    "hue": "sky",
    "start": 64.41,
    "end": 77.24
