@@ -1,6 +1,6 @@
 {
-  "version": "0.3.5",
-  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.3.5/Bakkum.exe",
-  "sha256": "5949a92f3a567630909fdb83c4c54c895cf129941440ed75a20642142319f27f",
-  "notes": "라이선스를 GPL-3.0으로 바꿨어요. 기능은 그대로예요. 자세한 조건은 설정의 [라이선스·고지]에서 볼 수 있어요."
+  "version": "0.3.6",
+  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.3.6/Bakkum.exe",
+  "sha256": "088a6423e991f72f3670b96503cfea28c17666c07ced6deb33a619397d6136bc",
+  "notes": "설정 창을 왼쪽 메뉴로 나눠 보기 편하게 바꿨어요. 바꾼 설정은 [설정 완료]로 저장되고, 창의 X로 닫으면 저장하지 않아요."
 }
