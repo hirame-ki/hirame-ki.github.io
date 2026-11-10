@@ -1,6 +1,6 @@
 {
-  "version": "0.3.4",
-  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.3.4/Bakkum.exe",
-  "sha256": "29fc9acf28b4b1c531c1fed13c322fb598608988b64bdb806afcb1d1af432136",
-  "notes": "Gemini 키 넣기가 쉬워졌어요. [키 받으러 가기]를 누르고 구글 화면에서 키를 복사하면 바꿈이 알아서 넣어요."
+  "version": "0.3.5",
+  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.3.5/Bakkum.exe",
+  "sha256": "5949a92f3a567630909fdb83c4c54c895cf129941440ed75a20642142319f27f",
+  "notes": "라이선스를 GPL-3.0으로 바꿨어요. 기능은 그대로예요. 자세한 조건은 설정의 [라이선스·고지]에서 볼 수 있어요."
 }
