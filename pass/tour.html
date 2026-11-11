@@ -870,7 +870,7 @@
       a.type('.w2', 16.1, 16.9); a.k('.w2', [[0, { o: 0 }], [16, { o: 0 }], [16.1, { o: 1 }]]);
       a.cap(0, '시작 안내 ④에서 자주 하는 신청을 골라요. 여기서는 [조퇴]를 눌러 볼게요.');
       a.cap(4.6, '복무 신청 루틴 화면에 조퇴 버튼 카드가 생겼어요. 종류와 근무상황은 미리 골라져 있어요.');
-      a.cap(9.8, '시각은 학교 근무시간에 맞게 고치고, 사유를 적어요.');
+      a.cap(9.8, '시각은 학교 근무시간에 맞게 고치고, 사유를 적어요. 매일 바뀌면 비워 둬도 돼요.');
       a.cap(15.2, '\'나이스 개인결재선 이름\'에 아까 만든 결재선명을 똑같이 적고 [저장].');
     } });
 
@@ -883,7 +883,7 @@
       a.k('.pop', [[0, { o: 0, s: .92 }], [5.6, { o: 0, s: .92 }], [6, { o: 1, s: 1 }, 'o']]);
       a.k('.pcam', [[0, { y: 0 }], [6.4, { y: 0 }], [7.4, { y: -sy }]]);
       a.hl('.h1', 7.6, 12.4);
-      a.cap(0, '시간외근무·연가·조퇴·출장 버튼을 여러 개 만들어 둘 수 있어요.');
+      a.cap(0, '시간외근무·연가·조퇴·출장 버튼을 10개까지 만들어 둘 수 있어요.');
       a.cap(4.4, '연가는 연가 사유를, 출장은 출장지·목적·연락처까지 저장해요. 저장한 버튼은 팝업에 바로 나타나요.');
     } });
 
@@ -1013,20 +1013,46 @@
 
   // ── 8. 루틴 실행 ──
   chapter('루틴 실행', '버튼 하나로 복무 신청', true);
-  scene({ title: '날짜·시각 바꾸기', dur: 13, html:
+  scene({ title: '날짜·시각·사유 바꾸기', dur: 28, html:
     win({ tab: '업무포털', fav: 'neis', url: '○○.eduptl.kr', white: true, body: portalBg, over: '<span class="tag-ex">실제 화면 · 개인정보는 흐리게 가림</span>' }) +
-    popup('popup-unlocked', '<div class="hl h1" style="' + pbox(R('popup-when', '#runDate'), 4) + ';width:' + (326 * POP.k + 8) + 'px"></div><div class="hl h2" style="' + pbox(R('popup-when', '#runStart'), 4) + ';width:' + (326 * POP.k + 8) + 'px"></div>'),
+    popup('popup-unlocked', '<div class="hl h1" style="' + pbox(R('popup-when', '#runDate'), 4) + ';width:' + (326 * POP.k + 8) + 'px"></div><div class="hl h2" style="' + pbox(R('popup-when', '#runStart'), 4) + ';width:' + (326 * POP.k + 8) + 'px"></div>' +
+      '<div class="hl h3" style="' + pbox(R('popup-when', '#runReason'), 4) + '"></div>' +
+      '<div class="tw w1" data-full="학생 상담" style="' + pbox(R('popup-when', '#runReason'), -2) + ';font-size:12px;font-weight:500;padding:0 6px"></div>' +
+      '<div class="hl h4" style="' + pbox(R('popup-when-typed', '#whenGuideBtn'), 4) + '"></div>'),
     setup: function (a) {
       var sy = R('popup-unlocked', '#whenText')[1] * POP.k - 129;
-      var wt = ppt(R('popup-unlocked', '#whenText'), sy, .9);
+      var chg = ppt(R('popup-unlocked', 'chg'), sy), rs = ppt(R('popup-when', '#runReason'), sy, .3), chip = ppt(R('popup-when-typed', '#whenGuideBtn'), sy);
       a.k('.pop', [[0, { o: 0, s: .92 }], [.4, { o: 0, s: .92 }], [.8, { o: 1, s: 1 }, 'o']]);
       a.k('.pcam', [[0, { y: 0 }], [1.2, { y: 0 }], [2.2, { y: -sy }]]);
-      a.mouse(640, 560, .3).to(3.6, wt[0], wt[1], 1.2).click(4.2).to(6.6, 760, 420, 1.2);
-      a.src('.pimg', [[0, 'popup-unlocked'], [4.4, 'popup-when']]);
-      a.hl('.h1', 5, 8); a.hl('.h2', 8.2, 12.2);
-      a.cap(0, '버튼을 누르기 전에, 날짜나 시각이 평소와 다르면 \'바꾸기\'를 열어요.');
+      a.mouse(640, 560, .3).to(3.6, chg[0], chg[1], 1.2).click(4.2).to(6.6, 760, 420, 1.2)
+        .to(11, rs[0], rs[1], 1.2).click(11.4).to(14.8, 760, 420, 1.2)
+        .to(19.6, chip[0], chip[1], 1.2).click(21.2).to(23.6, 760, 420, 1.2);
+      a.src('.pimg', [[0, 'popup-unlocked'], [4.4, 'popup-when'], [13.6, 'popup-when-typed'], [21.4, 'popup-guide']]);
+      a.hl('.h1', 5, 7.6); a.hl('.h2', 7.8, 10.2); a.hl('.h3', 10.8, 14.4); a.hl('.h4', 19.2, 20.9);
+      a.type('.w1', 11.7, 13.1); a.k('.w1', [[0, { o: 0 }], [11.6, { o: 0 }], [11.7, { o: 1 }], [13.55, { o: 1 }], [13.6, { o: 0 }]]);
+      a.cap(0, '버튼을 누르기 전에, 날짜·시각·사유가 평소와 다르면 \'바꾸기\'를 열어요.');
       a.cap(5, '그날만 쓸 날짜·시각을 넣어요. 연가·출장은 끝나는 날도 고를 수 있어요.');
-      a.cap(9, '비워 두면 오늘 날짜, 버튼에 저장한 기본 시각으로 신청해요.');
+      a.cap(10.6, '사유가 그날만 다르면 여기에 적어요. 이번 신청에만 쓰고 저장하지 않아요.');
+      a.cap(14.8, '비워 둔 칸은 오늘 날짜, 버튼에 저장한 값으로 신청해요.');
+      a.cap(18.4, '주황색 [이번만 적용]을 누르면 어떻게 신청되는지 볼 수 있어요.');
+      a.cap(22.4, '고친 값으로 신청해도 루틴은 바뀌지 않아요. 다음에 누르면 저장된 내용으로 신청해요.');
+    } });
+
+  scene({ title: '사유가 매일 바뀌면', dur: 13, html:
+    win({ tab: '업무포털', fav: 'neis', url: '○○.eduptl.kr', white: true, body: portalBg, over: '<span class="tag-ex">실제 화면 · 개인정보는 흐리게 가림</span>' }) +
+    popup('popup-reason-top', '<div class="hl h1" style="' + pbox(R('popup-reason-top', '#reasonRow'), 6) + '"></div>' +
+      '<div class="tw w1" data-full="학부모 상담" style="' + pbox(R('popup-reason-top', '#runReason'), -2) + ';font-size:12px;font-weight:500;padding:0 6px"></div>'),
+    setup: function (a) {
+      var sy = R('popup-reason-top', '#reasonRow')[1] * POP.k - 129;
+      var rs = ppt(R('popup-reason-top', '#runReason'), sy, .3), r1 = ppt(R('popup-reason-top', 'route1'), sy);
+      a.k('.pop', [[0, { o: 0, s: .92 }], [.4, { o: 0, s: .92 }], [.8, { o: 1, s: 1 }, 'o']]);
+      a.k('.pcam', [[0, { y: 0 }], [1.2, { y: 0 }], [2.2, { y: -sy }]]);
+      a.hl('.h1', 3.4, 6.6);
+      a.mouse(640, 560, .3).to(4.8, rs[0], rs[1], 1.2).click(5.2).to(8.6, r1[0], r1[1], 1.2);
+      a.type('.w1', 5.5, 6.9); a.k('.w1', [[0, { o: 0 }], [5.4, { o: 0 }], [5.5, { o: 1 }]]);
+      a.cap(0, '사유가 매일 바뀌는 버튼은 설정에서 사유를 비워 두세요.');
+      a.cap(3.6, '그러면 버튼 바로 위에 사유 칸이 늘 보여요. 적고 버튼만 누르면 돼요.');
+      a.cap(8.8, '시간외근무·출장은 사유를 적어야 시작하고, 조퇴·외출 등은 비워도 진행해요.');
     } });
 
   // 신청 창은 쌤패스가 채운 뒤의 캡처 → 칸마다 흰 조각으로 덮어 두었다가 차례로 걷어 "채우는" 모습을 보인다
