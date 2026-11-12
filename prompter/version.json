@@ -1,11 +1,8 @@
 {
-  "version": "1.1.1",
-  "date": "2026-11-06",
+  "version": "1.1.2",
+  "date": "2026-11-12",
   "notes": [
-    "Ctrl을 누르고 창을 옮길 때 훨씬 부드러워졌어요",
-    "전체창 후 X·전체창 버튼이 안 눌리던 문제를 고쳤어요",
-    "X를 누르면 창이 바로 닫혀요",
-    "목소리 따라가기를 끄면 메모리를 덜 써요"
+    "윈도우 시간·시간대를 바꾸면 쉿대본이 멈추던 문제를 고쳤어요"
   ],
   "download": "https://drive.google.com/drive/folders/1UqZBjSyDmJK4oE29vLoalk6zgc4OxghB?usp=sharing"
 }
