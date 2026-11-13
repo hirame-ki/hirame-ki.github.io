@@ -1,6 +1,6 @@
 {
-  "version": "0.3.6",
-  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.3.6/Bakkum.exe",
-  "sha256": "088a6423e991f72f3670b96503cfea28c17666c07ced6deb33a619397d6136bc",
-  "notes": "설정 창을 왼쪽 메뉴로 나눠 보기 편하게 바꿨어요. 바꾼 설정은 [설정 완료]로 저장되고, 창의 X로 닫으면 저장하지 않아요."
+  "version": "0.3.8",
+  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.3.8/Bakkum.exe",
+  "sha256": "861b7b3a07caa5b19cf172e9d26a9ff93d85462bd81ddbcff8d5be9bece079a5",
+  "notes": "영상 편집이 생겼어요(자동 자막·자막 음성·배경 음악). AI 폴더 정리, 화면 녹화 비율, 화면 스타일·색감도 더했어요."
 }
