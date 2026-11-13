@@ -1,6 +1,6 @@
 /* 바꿈 사용법 영상의 장 목록. video/studio/render.mjs가 만든다(손으로 고치지 않기). */
 window.BAKKUM_GUIDE = {
- "duration": 178.23,
+ "duration": 307.3,
  "chapters": [
   {
    "id": "opening",
@@ -91,92 +91,172 @@ window.BAKKUM_GUIDE = {
    "end": 93.32
   },
   {
+   "id": "ai-organize",
+   "group": "AI로",
+   "title": "폴더 정리",
+   "hue": "sky",
+   "start": 93.32,
+   "end": 111.99
+  },
+  {
    "id": "pdf",
    "group": "할 수 있는 일",
    "title": "PDF로",
    "hue": "coral",
-   "start": 93.32,
-   "end": 102.12
+   "start": 111.99,
+   "end": 120.79
   },
   {
    "id": "image",
    "group": "할 수 있는 일",
    "title": "그림으로",
    "hue": "blue",
-   "start": 102.12,
-   "end": 110.08
+   "start": 120.79,
+   "end": 128.75
   },
   {
    "id": "format",
    "group": "할 수 있는 일",
    "title": "형식 바꾸기",
    "hue": "purple",
-   "start": 110.08,
-   "end": 117.99
+   "start": 128.75,
+   "end": 137.56
   },
   {
    "id": "shrink",
    "group": "할 수 있는 일",
    "title": "용량 줄이기",
    "hue": "green",
-   "start": 117.99,
-   "end": 125.55
+   "start": 137.56,
+   "end": 145.12
   },
   {
    "id": "text",
    "group": "할 수 있는 일",
    "title": "글자 뽑기",
    "hue": "yellow",
-   "start": 125.55,
-   "end": 134.51
+   "start": 145.12,
+   "end": 154.08
   },
   {
    "id": "photo",
    "group": "할 수 있는 일",
    "title": "사진 손질",
    "hue": "orange",
-   "start": 134.51,
-   "end": 142.92
+   "start": 154.08,
+   "end": 162.49
   },
   {
    "id": "pdf-edit",
    "group": "할 수 있는 일",
    "title": "PDF 편집",
    "hue": "pink",
-   "start": 142.92,
-   "end": 151.43
+   "start": 162.49,
+   "end": 171
   },
   {
    "id": "media",
    "group": "할 수 있는 일",
    "title": "영상·소리",
    "hue": "teal",
-   "start": 151.43,
-   "end": 159.84
+   "start": 171,
+   "end": 179.41
+  },
+  {
+   "id": "record",
+   "group": "할 수 있는 일",
+   "title": "화면 녹화",
+   "hue": "indigo",
+   "start": 179.41,
+   "end": 196.46
+  },
+  {
+   "id": "record-bar",
+   "group": "할 수 있는 일",
+   "title": "녹화 막대",
+   "hue": "indigo",
+   "start": 196.46,
+   "end": 208.51
   },
   {
    "id": "archive",
    "group": "할 수 있는 일",
    "title": "압축",
    "hue": "lime",
-   "start": 159.84,
-   "end": 167.35
+   "start": 208.51,
+   "end": 216.02
+  },
+  {
+   "id": "ve-open",
+   "group": "영상 편집",
+   "title": "편집 창 열기",
+   "hue": "teal",
+   "start": 216.02,
+   "end": 228.91
+  },
+  {
+   "id": "ve-autosub",
+   "group": "영상 편집",
+   "title": "자동 자막",
+   "hue": "teal",
+   "start": 228.91,
+   "end": 242.28
+  },
+  {
+   "id": "ve-voice",
+   "group": "영상 편집",
+   "title": "자막을 음성으로",
+   "hue": "teal",
+   "start": 242.28,
+   "end": 253.06
+  },
+  {
+   "id": "ve-music",
+   "group": "영상 편집",
+   "title": "배경 음악",
+   "hue": "teal",
+   "start": 253.06,
+   "end": 262.69
+  },
+  {
+   "id": "ve-teacher",
+   "group": "영상 편집",
+   "title": "선생님 도구",
+   "hue": "teal",
+   "start": 262.69,
+   "end": 272.83
+  },
+  {
+   "id": "ve-export",
+   "group": "영상 편집",
+   "title": "내보내기",
+   "hue": "teal",
+   "start": 272.83,
+   "end": 283.48
   },
   {
    "id": "shapes",
    "group": "설정",
    "title": "메뉴 모양",
    "hue": "purple",
-   "start": 167.35,
-   "end": 174.63
+   "start": 283.48,
+   "end": 290.76
+  },
+  {
+   "id": "style",
+   "group": "설정",
+   "title": "화면 스타일",
+   "hue": "purple",
+   "start": 290.76,
+   "end": 303.7
   },
   {
    "id": "outro",
    "group": null,
    "title": "맺는 장면",
    "hue": "yellow",
-   "start": 174.63,
-   "end": 178.23
+   "start": 303.7,
+   "end": 307.3
   }
  ]
 };
