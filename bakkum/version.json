@@ -1,6 +1,6 @@
 {
-  "version": "0.3.8",
-  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.3.8/Bakkum.exe",
-  "sha256": "861b7b3a07caa5b19cf172e9d26a9ff93d85462bd81ddbcff8d5be9bece079a5",
-  "notes": "영상 편집이 생겼어요(자동 자막·자막 음성·배경 음악). AI 폴더 정리, 화면 녹화 비율, 화면 스타일·색감도 더했어요."
+  "version": "0.3.9",
+  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.3.9/Bakkum.exe",
+  "sha256": "fc4707a92290c433dfa3fdc46c1e4a88eef3f954ce5786ec22478cebb062a15b",
+  "notes": "만든 사람 표시를 공동제작(hirame.ki × moonsune.zip)으로 맞췄어요."
 }
