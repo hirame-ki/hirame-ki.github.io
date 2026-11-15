@@ -1,6 +1,6 @@
 {
-  "version": "0.3.9",
-  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.3.9/Bakkum.exe",
-  "sha256": "fc4707a92290c433dfa3fdc46c1e4a88eef3f954ce5786ec22478cebb062a15b",
-  "notes": "만든 사람 표시를 공동제작(hirame.ki × moonsune.zip)으로 맞췄어요."
+  "version": "0.4.0",
+  "url": "https://github.com/hirame-ki/bakkum/releases/download/v0.4.0/Bakkum.exe",
+  "sha256": "7eaa15cb21c1a979378ca230a2605dd6dc39d162876ef12955fbc4a2c83a3ac2",
+  "notes": "워드·PDF·글자 파일을 한글(HWP·HWPX)로 바꿀 수 있어요. 한쇼로 바꾼 PPT가 빈 슬라이드로 나오던 것도 고쳤어요."
 }
