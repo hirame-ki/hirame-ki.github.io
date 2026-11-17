@@ -460,18 +460,18 @@ button.chip{cursor:pointer}
         <dt>인쇄</dt><dd>뽑기가 끝나면 결과 창에서 학생용(칠판이 위)·교사용(칠판이 아래) 자리표를 따로 인쇄할 수 있어요</dd>
         <dt>권장 환경</dt><dd>크롬·엣지 최신 버전, 전자칠판·TV 연결 시 전체화면</dd>
       </dl>
-      <div class="teacher-row"><span class="hint">지정석 · 따로 앉히기 · 교사 화면 잠금</span><button class="btn teacher" id="revealSecret">🔐 교사 추가 설정</button></div>
+      <div class="teacher-row"><span class="hint">고정석 · 앙숙 설정 · 교사 화면 잠금</span><button class="btn teacher" id="revealSecret">🔐 교사 추가 설정</button></div>
     </div>
     <div id="secretBody" hidden style="display:flex;flex-direction:column;gap:14px">
       <div class="detail-head"><strong>🔐 교사 추가 설정</strong><span class="hint">다른 탭으로 가면 자동으로 닫혀요</span><button class="btn small" id="hideSecret">닫기</button></div>
       <div class="two">
         <div class="card">
-          <h3>지정석</h3>
-          <p class="hint">학생을 고른 뒤 오른쪽 자리를 누르세요. 게임에서는 다른 학생처럼 무작위 순서로 뽑혀서 이 자리에 놓여요. 지정석은 앞자리 설정보다 우선해요.</p>
-          <select id="fixStudent" aria-label="지정석 학생"></select>
+          <h3>고정석</h3>
+          <p class="hint">학생을 고른 뒤 오른쪽 자리를 누르세요. 게임에서는 다른 학생처럼 무작위 순서로 뽑혀서 이 자리에 놓여요. 고정석은 앞자리 설정보다 우선해요.</p>
+          <select id="fixStudent" aria-label="고정석 학생"></select>
           <ul class="list" id="fixList"></ul>
           <div class="divider"></div>
-          <h3>따로 앉히기</h3>
+          <h3>앙숙 설정</h3>
           <p class="hint">사이가 안 좋거나 같이 있으면 떠드는 두 학생을 서로 떨어진 자리에 앉혀요.</p>
           <div class="row"><select id="apartA" aria-label="학생 1"></select><span>↔</span><select id="apartB" aria-label="학생 2"></select><button class="btn" id="addApart">추가</button></div>
           <div class="radio" id="apartModeBox">
@@ -490,7 +490,7 @@ button.chip{cursor:pointer}
           <input type="password" id="pinInput" inputmode="numeric" maxlength="6" placeholder="숫자 4~6자리" aria-label="교사 비밀번호" style="max-width:180px">
         </div>
         <div class="card">
-          <h3>지정석 고르기</h3>
+          <h3>고정석 고르기</h3>
           <div class="lot"><div class="lot-inner" id="secretGrid"></div></div>
         </div>
       </div>
@@ -654,7 +654,7 @@ function solve(ids,occ={},opt={}){
   }
   return{ok:false,why:'apart'};
 }
-function whyText(w){return w==='gender'?'남녀 짝 조건과 다른 조건(앞자리·지정석·따로 앉히기)이 함께 지켜지지 않아요. 앞자리 구역을 넓히거나 따로 앉히기를 줄여 보세요.':w==='seats'?'자리가 학생 수보다 적어요.':w==='front'?'앞자리 구역 칸이 앞자리 학생보다 적어요.':w==='fixed'?'지정석이 화분 칸이거나, 지정석끼리 따로 앉히기 조건과 부딪혀요.':'모든 조건을 지키는 배치를 찾지 못했어요. 따로 앉히기를 줄이거나 "짝(바로 옆)만 피하기"로 바꾸거나, 앞자리 구역을 넓혀 보세요.'}
+function whyText(w){return w==='gender'?'남녀 짝 조건과 다른 조건(앞자리·고정석·앙숙 설정)이 함께 지켜지지 않아요. 앞자리 구역을 넓히거나 앙숙 설정을 줄여 보세요.':w==='seats'?'자리가 학생 수보다 적어요.':w==='front'?'앞자리 구역 칸이 앞자리 학생보다 적어요.':w==='fixed'?'고정석이 화분 칸이거나, 고정석끼리 앙숙 설정과 부딪혀요.':'모든 조건을 지키는 배치를 찾지 못했어요. 앙숙 설정을 줄이거나 "짝(바로 옆)만 피하기"로 바꾸거나, 앞자리 구역을 넓혀 보세요.'}
 
 /* ---------- roster ---------- */
 function uniq(list){const seen={},out=[];for(const n of list){if(!seen[n]){seen[n]=1;out.push(n)}else{seen[n]++;out.push(`${n}(${seen[n]})`)}}return out}
@@ -780,7 +780,7 @@ function pruneLayout(){
   const on=new Set(seatsOf().filter(s=>s.on).map(s=>s.id));let dropped=0;
   for(const n in S.fixed)if(!on.has(S.fixed[n])){delete S.fixed[n];dropped++}
   S.front.zone=S.front.zone.filter(id=>on.has(id));
-  if(dropped)toast('자리 배치가 바뀌어 없어진 자리의 지정석을 풀었어요.');
+  if(dropped)toast('자리 배치가 바뀌어 없어진 자리의 고정석을 풀었어요.');
 }
 $('#modeSeg').onclick=e=>{const m=e.target.dataset.mode;if(!m||m===S.layout.mode)return;const L=S.layout;
   if(m==='single'){L.groups=Math.min(10,L.groups*2)}else{L.groups=Math.max(1,Math.ceil(L.groups/2))}
@@ -821,19 +821,19 @@ $('#clearBenefit').onclick=()=>{S.benefit=[];save();renderBenefit()};
 
 function fillSelect(sel,placeholder,mark){const v=sel.value;sel.innerHTML=`<option value="">${placeholder}</option>`+S.students.map(n=>`<option value="${esc(n)}">${esc(n)}${mark&&mark(n)?' ✓':''}</option>`).join('');if(S.students.includes(v))sel.value=v}
 function renderSecret(){
-  fillSelect($('#fixStudent'),'지정석을 줄 학생 고르기',n=>S.fixed[n]);
+  fillSelect($('#fixStudent'),'고정석을 줄 학생 고르기',n=>S.fixed[n]);
   fillSelect($('#apartA'),'학생 1');fillSelect($('#apartB'),'학생 2');
   const byId=Object.fromEntries(seatsOf().map(s=>[s.id,s]));
   const fl=$('#fixList');fl.innerHTML='';
   const fx=Object.entries(S.fixed);
-  if(!fx.length)fl.innerHTML='<li class="empty">지정석이 없어요.</li>';
+  if(!fx.length)fl.innerHTML='<li class="empty">고정석이 없어요.</li>';
   fx.forEach(([n,id])=>{const li=document.createElement('li');li.innerHTML=`<span><b>${esc(n)}</b> → ${esc(seatName(byId[id]))}</span>`;const x=document.createElement('button');x.className='btn small ghost';x.textContent='해제';x.onclick=()=>{delete S.fixed[n];save();renderSecret()};li.append(x);fl.append(li)});
   const al=$('#apartList');al.innerHTML='';
-  if(!S.apart.length)al.innerHTML='<li class="empty">따로 앉힐 학생이 없어요.</li>';
+  if(!S.apart.length)al.innerHTML='<li class="empty">앙숙으로 정한 학생이 없어요.</li>';
   S.apart.forEach(([a,b],i)=>{const li=document.createElement('li');li.innerHTML=`<span><b>${esc(a)}</b> ↔ <b>${esc(b)}</b></span>`;const x=document.createElement('button');x.className='btn small ghost';x.textContent='삭제';x.onclick=()=>{S.apart.splice(i,1);save();renderSecret()};li.append(x);al.append(li)});
   $$('input[name=apartMode]').forEach(r=>r.checked=r.value===S.apartMode);
   const over=S.benefit.filter(n=>S.fixed[n]);const on=$('#overlapNote');on.hidden=!over.length;
-  on.textContent=over.length?`${over.join(', ')}: 먼저 고르기와 지정석이 겹쳐요. 지정석이 우선해서 직접 고르지 않아요.`:'';
+  on.textContent=over.length?`${over.join(', ')}: 먼저 고르기와 고정석이 겹쳐요. 고정석이 우선해서 직접 고르지 않아요.`:'';
   if(document.activeElement!==$('#pinInput'))$('#pinInput').value=S.pin;
   const owner={};for(const n in S.fixed)owner[S.fixed[n]]=n;
   const sel=$('#fixStudent').value;
@@ -845,7 +845,7 @@ function renderSecret(){
 $('#fixStudent').onchange=renderSecret;
 $('#addApart').onclick=()=>{const a=$('#apartA').value,b=$('#apartB').value;
   if(!a||!b||a===b)return toast('서로 다른 두 학생을 골라 주세요.');
-  if(S.apart.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a)))return toast('이미 추가된 짝이에요.');
+  if(S.apart.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a)))return toast('이미 앙숙으로 정한 두 학생이에요.');
   S.apart.push([a,b]);$('#apartA').value='';$('#apartB').value='';save();renderSecret()};
 $('#apartModeBox').onchange=e=>{S.apartMode=e.target.value;save()};
 $('#checkPlan').onclick=()=>{let r=solve(S.students,{});if(!r.ok&&mixOn()&&solve(S.students,{},{noGender:true}).ok)r={ok:false,why:'gender'};const el=$('#checkResult');el.hidden=false;el.className='status '+(r.ok?'ok':'bad');el.textContent=r.ok?'배정 가능해요. 게임할 때마다 조건 안에서 다른 배치가 나와요.':whyText(r.why)};
