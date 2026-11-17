@@ -173,7 +173,7 @@ button.chip{cursor:pointer}
 .g-gear.r{color:#FF6B70}
 .stamp{left:50%;top:44%;transform:translate(-50%,-50%) rotate(-5deg);border:5px solid #FFC531;color:#FFC531;padding:10px 30px 12px;border-radius:12px;text-align:center;background:rgba(10,12,20,.62);animation:stampIn .5s cubic-bezier(.2,1.6,.4,1)}
 .s-top{font-family:var(--font-game);font-size:20px;letter-spacing:.35em}
-.s-main{font-family:var(--font-game);font-size:52px;line-height:1.05;color:#fff}
+.s-main{font-family:var(--font-game);font-size:44px;line-height:1.1;color:#fff;white-space:nowrap}
 .s-sub{font-size:15px;color:#F2F4F9;opacity:.9}
 .countdown{inset:0;display:grid;place-items:center;font-family:var(--font-game);font-size:min(28vh,190px);color:#fff;text-shadow:0 6px 36px rgba(0,0,0,.7)}
 @keyframes slideIn{from{transform:translateX(-30px);opacity:0}to{transform:none;opacity:1}}
@@ -200,7 +200,7 @@ button.chip{cursor:pointer}
 .dialog{position:fixed;inset:0;z-index:100;background:rgba(10,12,20,.55);display:grid;place-items:center;padding:16px}
 .dialog-card{background:var(--surface);color:var(--fg);border-radius:16px;padding:20px;width:min(380px,100%);box-sizing:border-box;display:flex;flex-direction:column;gap:12px}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1C2131;color:#fff;padding:10px 18px;border-radius:12px;font-weight:600;z-index:200;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
-@media (max-width:700px){.gauge{transform:scale(.7);transform-origin:left bottom}.banner{left:20px;top:14px}.b-name,.b-no{font-size:22px}.s-main{font-size:36px}}
+@media (max-width:700px){.gauge{transform:scale(.7);transform-origin:left bottom}.banner{left:20px;top:14px}.b-name,.b-no{font-size:22px}.s-main{font-size:26px}}
 @media (prefers-reduced-motion: reduce){.go{transition:none}.banner,.stamp{animation:none}}
 /* 칠판 표시 (자리 미리보기·결과) */
 .board-tag{align-self:stretch;margin:0 12%;text-align:center;font-family:var(--font-display);font-size:15px;letter-spacing:.5em;color:#F4F1E6;background:#2F5A47;border:3px solid #8B5A2B;border-radius:8px;padding:2px 0}
@@ -213,6 +213,12 @@ button.chip{cursor:pointer}
 .result-card .hint{color:#5A6379}
 .result-card .btn.ghost{background:transparent}
 .result-card .btn.print{background:#1C2131;color:#fff;border-color:#1C2131}
+
+/* 자유 시점 */
+#cv3{touch-action:none}
+.camhint{right:30px;bottom:20px;font-size:12.5px;line-height:1.3;padding:5px 11px;border-radius:999px;background:rgba(10,12,20,.55);color:#fff;max-width:calc(100% - 60px)}
+.camreset{position:absolute;right:30px;bottom:18px;z-index:2;font:600 14px var(--font-body);padding:8px 15px;border-radius:999px;border:0;background:#FFC531;color:#2A2100;box-shadow:0 3px 0 #C99200;cursor:pointer}
+.camreset:active{transform:translateY(2px);box-shadow:0 1px 0 #C99200}
 
 /* ---------- 오프닝 ---------- */
 .intro{position:fixed;inset:0;z-index:400;background:radial-gradient(ellipse at 50% 42%,#26324D,#0B0E16 72%);overflow:hidden;color:#fff;cursor:pointer;transition:opacity .7s ease,transform .7s ease;-webkit-user-select:none;user-select:none}
@@ -236,6 +242,33 @@ button.chip{cursor:pointer}
 @keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.intro.play .it-1,.intro.play .it-2,.intro.play .it-sub{animation:rise .4s ease-out both}.intro.play .it-1 span{animation:none}}
 
+/* 자리 이름 두 줄 (미리보기) */
+.seat.two{display:flex;flex-direction:column;justify-content:center;padding:0 3px}
+.seat.two .sw{display:block;width:100%;container-type:inline-size;line-height:1.15}
+.seat.two .l1,.seat.two .l2{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat.two .l2{font-size:11.5px;font-weight:500}
+.seat.two .s{display:none}
+@container (max-width:49px){.seat.two .f{display:none}.seat.two .s{display:inline}.seat.two .l1{font-size:11px}}
+@container (max-width:33px){.seat.two .l1{font-size:10px;letter-spacing:-.03em}}
+/* 교사 추가 설정 단추 */
+.teacher-row{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.btn.teacher{background:var(--secret);color:var(--surface);border-color:transparent;border-radius:999px;padding:9px 18px;font-size:15px;font-weight:700;box-shadow:0 3px 0 color-mix(in srgb,var(--secret) 55%,#000)}
+.btn.teacher:hover{filter:brightness(1.08);border-color:transparent}
+.btn.teacher:active{transform:translateY(2px);box-shadow:0 1px 0 color-mix(in srgb,var(--secret) 55%,#000)}
+/* 지난 기록 */
+.hist-list{max-height:560px;overflow:auto}
+.hist-list li{padding:0;background:transparent}
+.hist-item{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:8px 12px;cursor:pointer}
+.hist-item:hover{border-color:var(--muted)}
+.hist-item[aria-current="true"]{border-color:var(--signal);box-shadow:inset 4px 0 0 var(--signal)}
+.hist-item b{font-size:15px;font-weight:700}
+.hist-item span{font-size:13px;color:var(--muted)}
+.hist-grid .seat{color:var(--fg);font-size:14px;cursor:default}
+.hist-grid .seat.empty{color:var(--muted)}
+.hist-grid .seat.off{color:var(--grass-ink)}
+.hist-grid .seat:hover{border-color:var(--line)}
+.saved-tag{font-size:13px;font-weight:700;color:#0E7A60;background:#DDF5EC;border-radius:999px;padding:3px 10px;white-space:nowrap}
+
 /* ---------- 자리표 인쇄 (화면에서는 숨김) ---------- */
 #printArea{display:none}
 .pp{height:186mm;display:flex;flex-direction:column;gap:4mm;font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#111;background:#fff}
@@ -249,7 +282,6 @@ button.chip{cursor:pointer}
 .pp-seats{width:100%;border-collapse:separate;border-spacing:1.6mm;table-layout:fixed}
 .pp-seats td{height:var(--rowh);border:1.2pt solid #111;border-radius:2mm;text-align:center;vertical-align:middle;position:relative;padding:.5mm 1mm;overflow:hidden}
 .pp-seats td b{font-size:var(--fs);font-weight:800;white-space:nowrap}
-.pp-seats td .code{position:absolute;top:.5mm;left:1.2mm;font-size:6.5pt;color:#777}
 .pp-seats td.empty b{font-size:9pt;color:#9A9A9A;font-weight:400}
 .pp-seats td.off{border:1pt dashed #B5B5B5}
 .pp-seats td.gap{border:0;width:5mm;padding:0}
@@ -276,6 +308,7 @@ button.chip{cursor:pointer}
 <main id="setup" class="wrap">
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" data-tab="settings" aria-selected="true">설정</button>
+    <button class="tab" role="tab" data-tab="history" aria-selected="false">지난 기록</button>
     <button class="tab" role="tab" data-tab="info" aria-selected="false">프로그램 정보</button>
   </nav>
 
@@ -324,11 +357,12 @@ button.chip{cursor:pointer}
         </div>
         <div class="field" id="mixField"><span class="label">남녀 짝 배치</span>
           <div class="seg" id="mixSeg"><button data-mix="1">켜기</button><button data-mix="0">끄기</button></div>
-          <p class="hint">켜면 짝마다 <b>남학생은 왼쪽, 여학생은 오른쪽</b>(교탁에서 학생들을 바라볼 때)에 앉아요. 미리보기는 교실 뒤에서 칠판을 본 모습이라 남학생 칸(파란 줄)이 오른쪽에 보여요.</p>
+          <p class="hint">켜면 짝마다 <b>남학생은 오른쪽, 여학생은 왼쪽</b> 자리(학생 기준)에 앉아요. 교탁에서 보면 남학생이 왼쪽이에요.</p>
           <div class="status" id="mixStatus" hidden></div>
         </div>
         <div class="row"><button class="btn" id="fitBtn">학생 수에 맞추기</button></div>
         <div class="status" id="seatStatus"></div>
+        <p class="hint">자리 이름은 학생 기준이에요. 칠판을 볼 때 <b>왼쪽 창가 쪽이 1분단</b>이에요.</p>
         <p class="hint">오른쪽 자리를 누르면 <b>화단</b>(책상을 두지 않는 칸)으로 바뀌어요. 다시 누르면 주차칸으로 돌아와요.</p>
       </div>
       <div class="card">
@@ -371,21 +405,45 @@ button.chip{cursor:pointer}
     </div>
   </section>
 
+  <section id="tab-history" class="sub" hidden>
+    <div class="two">
+      <div class="card">
+        <div class="row" style="justify-content:space-between"><h2>지난 자리 기록</h2><span class="count" id="histCount">0개</span></div>
+        <p class="hint">자리 배치가 끝나면 자동으로 저장돼요. 이 컴퓨터의 브라우저에만 최근 50개까지 남아요.</p>
+        <ul class="list hist-list" id="histList"></ul>
+        <div class="row"><button class="btn ghost small" id="histClear">기록 모두 지우기</button></div>
+      </div>
+      <div class="card" id="histView" hidden>
+        <div class="result-head"><div><h3 id="histTitle"></h3><p class="hint" id="histSub"></p></div>
+          <div class="seg" id="histSeg"><button data-flip="0" aria-pressed="true">학생용 (칠판이 위)</button><button data-flip="1" aria-pressed="false">교사용 (칠판이 아래)</button></div></div>
+        <div class="lot hist-grid"><div class="lot-inner" id="histGrid"></div></div>
+        <div class="row">
+          <button class="btn" id="histPrintStu">🖨 학생용 인쇄</button>
+          <button class="btn" id="histPrintTea">🖨 교사용 인쇄</button>
+          <button class="btn" id="histCopy">📋 엑셀에 붙여넣기용 복사</button>
+          <button class="btn ghost" id="histDel">이 기록 지우기</button>
+        </div>
+        <textarea id="histCopyFallback" readonly hidden aria-label="복사할 표"></textarea>
+      </div>
+    </div>
+  </section>
+
   <section id="tab-info" class="sub" hidden>
     <div class="card info" id="secretCover">
       <h2>프로그램 정보</h2>
       <dl>
         <dt>프로그램</dt><dd>자리 주차 대작전 · 버전 3.0</dd>
         <dt>그래픽</dt><dd>실시간 3D 주차장 (낮·노을·밤, 차 따라가기·전체 보기·위에서 보기). 화면이 끊기면 주차 화면 위쪽에서 '가볍게'나 '2D로 보기'를 고르세요</dd>
-        <dt>저장</dt><dd>설정은 이 컴퓨터의 브라우저에 자동으로 저장돼요</dd>
+        <dt>저장</dt><dd>설정과 자리 결과는 이 컴퓨터의 브라우저에 자동으로 저장돼요. 결과는 '지난 기록' 탭에서 다시 보고 인쇄할 수 있어요</dd>
         <dt>단축키</dt><dd><span class="kbd">Space</span> 또는 <span class="kbd">Enter</span> 다음 차 출발</dd>
+        <dt>시점</dt><dd>3D 화면을 끌어 돌리고 휠로 확대해요. 이동은 오른쪽 끌기나 <span class="kbd">W A S D</span></dd>
         <dt>인쇄</dt><dd>주차가 끝나면 결과 창에서 학생용(칠판이 위)·교사용(칠판이 아래) 자리표를 따로 인쇄할 수 있어요</dd>
         <dt>권장 환경</dt><dd>크롬·엣지 최신 버전, 전자칠판·TV 연결 시 전체화면</dd>
       </dl>
-      <div class="row" style="justify-content:flex-end"><button class="btn ghost small" id="revealSecret">세부 정보</button></div>
+      <div class="teacher-row"><span class="hint">지정석 · 따로 앉히기 · 교사 화면 잠금</span><button class="btn teacher" id="revealSecret">🔐 교사 추가 설정</button></div>
     </div>
     <div id="secretBody" hidden style="display:flex;flex-direction:column;gap:14px">
-      <div class="detail-head"><strong>세부 정보</strong><span class="hint">다른 탭으로 가면 자동으로 닫혀요</span><button class="btn small" id="hideSecret">닫기</button></div>
+      <div class="detail-head"><strong>🔐 교사 추가 설정</strong><span class="hint">다른 탭으로 가면 자동으로 닫혀요</span><button class="btn small" id="hideSecret">닫기</button></div>
       <div class="two">
         <div class="card">
           <h3>지정석</h3>
@@ -436,6 +494,7 @@ button.chip{cursor:pointer}
   </div>
   <div class="stage" id="stage">
     <canvas id="cv" aria-label="주차장 게임 화면 (2D)"></canvas><canvas id="cv3" aria-label="주차장 게임 화면 (3D)" hidden></canvas>
+    <div class="ov camhint" id="camHint">🖱 끌어서 돌리기 · 휠 확대 · 오른쪽 끌기 이동</div><button class="camreset" id="camReset" hidden>↺ 원래 시점</button>
     <div class="ov banner" id="banner" hidden><div class="b-no" id="bNo">#01</div><div><div class="b-name" id="bName"></div><div class="b-sub" id="bSub"></div></div></div>
     <div class="ov gauge" id="gauge" hidden>
       <svg viewBox="0 0 120 120" aria-hidden="true"><path class="g-bg" d="M24.6 95.4 A50 50 0 1 1 95.4 95.4" pathLength="100"/><path class="g-fg" id="gArc" d="M24.6 95.4 A50 50 0 1 1 95.4 95.4" pathLength="100" stroke-dasharray="0 100"/></svg>
@@ -454,7 +513,7 @@ button.chip{cursor:pointer}
   <div class="result" id="result" hidden>
     <div class="result-card">
       <div class="result-head">
-        <h2>오늘의 주차 결과</h2>
+        <div class="row"><h2>오늘의 주차 결과</h2><span class="saved-tag" id="savedTag" hidden>✓ 지난 기록에 저장됨</span></div>
         <div class="seg" id="viewSeg"><button data-flip="0" aria-pressed="true">학생용 (칠판이 위)</button><button data-flip="1" aria-pressed="false">교사용 (칠판이 아래)</button></div>
       </div>
       <div class="lot"><div class="lot-inner" id="resultGrid"></div></div>
@@ -495,6 +554,8 @@ button.chip{cursor:pointer}
 <script>
 (() => {
 const KEY='parking-seat-v1';
+const HKEY='hirameki-seat-history-v1',HMAX=50,APP='parking',APPS={capsule:'두근두근 자리 뽑기',parking:'자리 주차 대작전'};
+let histSel=null,histFlip=false;
 const SAMPLE=['김민준','이서연','박도윤','최하은','정시우','강지유','조하준','윤서아','장예준','임지아','한주원','오채원','서이준','신다은','권건우','황수아','안우진','송하린','류지호','전소율','홍은우','고나은','문서진','양시은'];
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -511,8 +572,14 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTi
 /* ---------- seats & rules ---------- */
 function seatsOf(L=S.layout){const per=L.mode==='pair'?2:1,dis=new Set(L.disabled),out=[];
   for(let r=0;r<L.rows;r++)for(let g=0;g<L.groups;g++)for(let k=0;k<per;k++){const c=g*per+k;out.push({id:r+'-'+c,r,c,g,k,on:!dis.has(r+'-'+c)})}return out}
-function seatName(s){return S.layout.mode==='pair'?`${s.g+1}분단 ${s.r+1}째 줄 ${s.k?'오른쪽':'왼쪽'}`:`${s.c+1}열 ${s.r+1}째 줄`}
-function stallCode(s){return S.layout.mode==='pair'?String.fromCharCode(65+s.g)+'-'+String(s.r*2+s.k+1).padStart(2,'0'):String.fromCharCode(65+s.c)+'-'+String(s.r+1).padStart(2,'0')}
+/* 자리 이름은 학생 기준(교실 뒤에서 칠판을 볼 때): 왼쪽 창가 쪽이 1분단, 짝의 왼쪽·오른쪽도 학생 기준 */
+const ORD=['첫째','둘째','셋째','넷째','다섯째','여섯째','일곱째','여덟째','아홉째','열째'];
+const rowName=r=>(ORD[r]||(r+1)+'번째')+' 줄';
+const sideName=s=>s.k?'오른쪽':'왼쪽';
+function seatParts(s,L=S.layout){return[(s.g+1)+'분단',L.mode==='pair'?sideName(s):rowName(s.r)]}
+/* 미리보기 칸: 두 줄, 칸이 좁으면 짧게 (왼·오, 1줄) */
+function seatTwo(s,L=S.layout,gw=''){return[(s.g+1)+'분단',L.mode==='pair'?[sideName(s)+(gw?' · '+gw:''),(s.k?'오':'왼')+(gw?'·'+gw:'')]:[rowName(s.r),(s.r+1)+'줄']]}
+function seatName(s,L=S.layout){return(s.g+1)+'분단 '+rowName(s.r)+(L.mode==='pair'?' '+sideName(s):'')}
 function near(a,b){if(!a||!b)return false;if(S.apartMode==='pair')return a.r===b.r&&(S.layout.mode==='pair'?a.g===b.g:Math.abs(a.c-b.c)===1);return Math.abs(a.r-b.r)<=1&&Math.abs(a.c-b.c)<=1}
 const isFront=sid=>S.front.students.includes(sid)&&!S.fixed[sid];
 /* 남녀 짝: 교탁에서 학생들을 바라볼 때 왼쪽(=학생 기준 오른쪽, k=1)은 남학생, 오른쪽(k=0)은 여학생 */
@@ -631,18 +698,18 @@ $('#fileIn').addEventListener('change',async e=>{
 });
 
 /* ---------- seat grid (DOM preview) ---------- */
-function seatGrid(el,{label,cls,onClick,flip=false,disabledFn}){
-  const L=S.layout,per=L.mode==='pair'?2:1,cols=L.groups*(per+1)+1;
+function seatGrid(el,{L=S.layout,label,cls,onClick,flip=false,disabledFn}){
+  const per=L.mode==='pair'?2:1,cols=L.groups*(per+1)+1;
   const tmpl=[];for(let i=0;i<cols;i++)tmpl.push(i%(per+1)===0?'16px':'minmax(0,1fr)');
   el.innerHTML='';
   const board=document.createElement('div');board.className='board-tag';board.textContent='칠판';
   const desk=document.createElement('div');desk.className='desk-tag';desk.textContent='교탁';
   const grid=document.createElement('div');grid.className='seatgrid';grid.style.gridTemplateColumns=tmpl.join(' ');
-  for(const s of seatsOf()){
+  for(const s of seatsOf(L)){
     const b=document.createElement('button');b.type='button';
     const r=flip?L.rows-1-s.r:s.r,g=flip?L.groups-1-s.g:s.g,k=flip?per-1-s.k:s.k;
     b.style.gridRow=r+1;b.style.gridColumn=g*(per+1)+k+2;
-    b.className='seat '+(cls?cls(s):'');b.textContent=label(s);b.title=seatName(s);
+    const lb=label(s),two=Array.isArray(lb);b.className='seat '+(cls?cls(s):'')+(two?' two':'');if(two)b.innerHTML='<span class="sw">'+lb.map((t,i)=>`<span class="l${i+1}">${Array.isArray(t)?`<span class="f">${esc(t[0])}</span><span class="s">${esc(t[1])}</span>`:esc(t)}</span>`).join('')+'</span>';else b.textContent=lb;b.title=seatName(s,L);
     if(disabledFn&&disabledFn(s))b.disabled=true;
     if(onClick)b.onclick=()=>onClick(s);
     grid.append(b);
@@ -674,7 +741,7 @@ function renderLayout(){
   $$('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===L.mode));
   $$('#gateSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.gate===L.gate));
   $('#rowsVal').textContent=L.rows;$('#groupsVal').textContent=L.groups;
-  $('#groupsLabel').textContent=L.mode==='pair'?'분단 수 (짝 묶음)':'열 수';
+  $('#groupsLabel').textContent=L.mode==='pair'?'분단 수 (짝 묶음)':'분단 수';
   const[k,t]=seatStatusText();const st=$('#seatStatus');st.className='status '+k;st.textContent=t;
   $('#mixField').hidden=L.mode!=='pair';
   $$('#mixSeg button').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.mix==='1')===!!S.mixPair));
@@ -686,7 +753,7 @@ function renderLayout(){
       if(m>cm)msg.push(`남학생 ${m-cm}명은 여학생 쪽 칸에 앉아요`);if(f>cf)msg.push(`여학생 ${f-cf}명은 남학생 쪽 칸에 앉아요`);if(u)msg.push(`성별 미지정 ${u}명은 아무 칸에나 앉아요`);
       ms.className='status '+(m>cm||f>cf||u?'bad':'ok');ms.textContent=msg.join(' · ')}}
   const mx=mixOn();
-  seatGrid($('#layoutGrid'),{label:s=>s.on?stallCode(s)+(mx?' '+GW[sideOf(s)]:''):'화단',cls:s=>s.on?(mx?'s'+sideOf(s).toLowerCase():''):'off',onClick:s=>{
+  seatGrid($('#layoutGrid'),{label:s=>s.on?seatTwo(s,S.layout,mx?GW[sideOf(s)]:''):'화단',cls:s=>s.on?(mx?'s'+sideOf(s).toLowerCase():''):'off',onClick:s=>{
     const d=new Set(L.disabled);d.has(s.id)?d.delete(s.id):d.add(s.id);L.disabled=[...d];pruneLayout();save();renderAll();
   }});
 }
@@ -697,7 +764,7 @@ function pruneLayout(){
   const on=new Set(seatsOf().filter(s=>s.on).map(s=>s.id));let dropped=0;
   for(const n in S.fixed)if(!on.has(S.fixed[n])){delete S.fixed[n];dropped++}
   S.front.zone=S.front.zone.filter(id=>on.has(id));
-  if(dropped)toast('자리 배치가 바뀌어 일부 세부 정보가 새 배치에 맞게 정리됐어요.');
+  if(dropped)toast('자리 배치가 바뀌어 없어진 자리의 지정석을 풀었어요.');
 }
 $('#modeSeg').onclick=e=>{const m=e.target.dataset.mode;if(!m||m===S.layout.mode)return;const L=S.layout;
   if(m==='single'){L.groups=Math.min(10,L.groups*2)}else{L.groups=Math.max(1,Math.ceil(L.groups/2))}
@@ -721,7 +788,7 @@ function renderFront(){
   const need=frontNeed(),zc=zoneOnCount(),st=$('#frontStatus');
   st.className='status '+(need>zc?'bad':'ok');
   st.textContent=need>zc?`앞자리 구역 ${zc}칸 · 앞자리 학생 ${need}명 — ${need-zc}칸 부족해요`:`앞자리 구역 ${zc}칸 · 앞자리 학생 ${need}명`;
-  seatGrid($('#frontGrid'),{label:s=>!s.on?'화단':zone.has(s.id)?'앞자리':stallCode(s),cls:s=>!s.on?'off':zone.has(s.id)?'zone':'',disabledFn:s=>!s.on,onClick:s=>{
+  seatGrid($('#frontGrid'),{label:s=>!s.on?'화단':zone.has(s.id)?'앞자리':seatTwo(s),cls:s=>!s.on?'off':zone.has(s.id)?'zone':'',disabledFn:s=>!s.on,onClick:s=>{
     zone.has(s.id)?S.front.zone=S.front.zone.filter(x=>x!==s.id):S.front.zone.push(s.id);save();renderFront()}});
 }
 $$('[data-zone]').forEach(b=>b.onclick=()=>{zoneRows(+b.dataset.zone);save();renderFront()});
@@ -774,24 +841,24 @@ $('#hideSecret').onclick=hideSecret;
 
 $$('.tab').forEach(b=>b.onclick=()=>{
   $$('.tab').forEach(x=>x.setAttribute('aria-selected',x===b));
-  $('#tab-settings').hidden=b.dataset.tab!=='settings';$('#tab-info').hidden=b.dataset.tab!=='info';
-  hideSecret();
+  ['settings','history','info'].forEach(t=>$('#tab-'+t).hidden=b.dataset.tab!==t);
+  hideSecret();if(b.dataset.tab==='history')renderHistory();
 });
 $('#subSeg').onclick=e=>{const s=e.target.dataset.sub;if(!s)return;
   $$('#subSeg button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.sub===s));
   ['roster','layout','front','benefit'].forEach(t=>$('#sub-'+t).hidden=t!==s)};
-function renderAll(){renderRoster();renderLayout();renderFront();renderBenefit();if(!$('#secretBody').hidden)renderSecret()}
+function renderAll(){renderRoster();renderLayout();renderFront();renderBenefit();if(!$('#secretBody').hidden)renderSecret();if(!$('#tab-history').hidden)renderHistory()}
 
 /* ================= GAME ================= */
 const INK='#2B2F3D',GLASS='#BFE7FF';
 const CANDY=['#FF6B8B','#FF9F45','#FFD23F','#6BCB77','#4D96FF','#9B72F2','#2EC4B6','#FF85C0','#7FD8FF','#B8E05A','#F25F5C','#A0A4FF'];
 const PAINT=['#D7101F','#F4F4F0','#141519','#B8BEC8','#1F5BD6','#FFC20E','#13A85B','#FF6A00','#33C3D6','#7B2FD0','#00A6A0','#FF3D8B','#9AE01A','#C9A227'];
 const FIXEDCOL={taxi:'#E8731A',police:'#F2F3F5',bus:'#F3BD00',fire:'#B8121E'};
-const VT={sedan:'세단',hatch:'해치백',suv:'SUV',sports:'스포츠카',taxi:'택시',police:'경찰차',pickup:'픽업트럭',bus:'통학버스',fire:'소방차',van:'택배 탑차',jeep:'오프로더',moto:'오토바이',scooter:'스쿠터',bike:'자전거'};
-const TWO=new Set(['moto','scooter','bike']);
-const MAP2={sedan:'sedan',hatch:'mini',suv:'jeep',sports:'sport',taxi:'taxi',police:'sedan',pickup:'truck',bus:'bus',fire:'fire',van:'truck',jeep:'jeep',moto:'moto',scooter:'scooter',bike:'bike'};
-const POOL=['sedan','sedan','hatch','sports','sports','sports','suv','suv','jeep','moto','moto','scooter'];
-const DIM={sedan:[64,34],mini:[54,34],sport:[68,30],taxi:[64,34],bus:[80,36],truck:[72,34],icecream:[68,36],fire:[80,36],jeep:[64,36],bike:[44,22],moto:[54,26],scooter:[48,24]};
+const VT={sedan:'세단',hatch:'해치백',suv:'SUV',sports:'스포츠카',taxi:'택시',police:'경찰차',pickup:'픽업트럭',bus:'통학버스',fire:'소방차',van:'택배 탑차',jeep:'오프로더',moto:'오토바이',scooter:'스쿠터',bike:'자전거',convertible:'오픈카',cargo:'트럭',camper:'캠핑카',cruiser:'크루저 오토바이'};
+const TWO=new Set(['moto','scooter','bike','cruiser']);
+const MAP2={sedan:'sedan',hatch:'mini',suv:'jeep',sports:'sport',taxi:'taxi',police:'sedan',pickup:'truck',bus:'bus',fire:'fire',van:'truck',jeep:'jeep',moto:'moto',scooter:'scooter',bike:'bike',convertible:'cabrio',cargo:'cargo',camper:'camper',cruiser:'cruiser'};
+const POOL=['sedan','sedan','hatch','sports','sports','convertible','convertible','suv','suv','jeep','pickup','cargo','camper','taxi','police','moto','cruiser','cruiser','scooter'];
+const DIM={sedan:[64,34],mini:[54,34],sport:[68,30],taxi:[64,34],bus:[80,36],truck:[72,34],icecream:[68,36],fire:[80,36],jeep:[64,36],bike:[44,22],moto:[54,26],scooter:[48,24],cabrio:[66,32],cargo:[72,34],camper:[68,36],cruiser:[58,26]};
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cv=$('#cv'),ctx=cv.getContext('2d'),cv3=$('#cv3');
 let G=null,scale=1,raf=0,lastT=0,introOn=false,warm=false;
@@ -844,6 +911,25 @@ const V={
     rr(c,-22,-13,30,26,4);fs(c,dark(col,.15));dot(c,28,-11,3.4,'#FFF3A8');dot(c,28,11,3.4,'#FFF3A8')},
   bike(c,v){wh(c,15,0,18,5);wh(c,-15,0,18,5);line(c,-15,0,15,0,v.col,3.5);line(c,14,-11,14,11,INK,3);rider2(c,-2,v.col2,light(v.col,.3))},
   moto(c,v){wh(c,17,0,20,7);wh(c,-18,0,20,7);rr(c,-18,-8,36,16,7);fs(c,v.col);dot(c,20,0,3.6,'#FFF3A8');line(c,12,-13,12,13,INK,3.2);rider2(c,-4,v.col2,v.col,true)},
+  cabrio(c,v){const col=v.col;[[-20,-15],[20,-15],[-20,15],[20,15]].forEach(p=>wh(c,p[0],p[1],15,7));
+    rr(c,-33,-16,66,32,11);fs(c,col);rr(c,-22,-12,28,24,6);fs(c,'#3A2E2A',false);
+    rr(c,-6,-11,9,9,3);fs(c,'#D9B48A');rr(c,-6,2,9,9,3);fs(c,'#D9B48A');rr(c,-19,-11,9,22,3);fs(c,'#D9B48A');
+    rr(c,-31,-12,7,24,3);fs(c,'#26272B',false);rr(c,7,-13,4,26,2);fs(c,GLASS);dot(c,-2,-6.5,4.6,'#2B211C');
+    dot(c,29,-10,2.8,'#FFF3A8');dot(c,29,10,2.8,'#FFF3A8')},
+  cargo(c,v){const col=v.col;[[-22,-16],[24,-16],[-22,16],[24,16]].forEach(p=>wh(c,p[0],p[1],15,7));
+    rr(c,-36,-17,50,34,3);fs(c,'#CDD2D9');rr(c,-33,-14,44,28,2);fs(c,'#AEB4BC',false);
+    rr(c,-31,-13,13,12,2);fs(c,'#C9955B');rr(c,-31,1,12,12,2);fs(c,'#B9844E');
+    for(const[x,y]of[[-11,-8],[-3,-8],[5,-8],[-11,1],[-3,1],[5,1],[-7,9],[1,9]])dot(c,x,y,3.8,'#2F7D32',true);
+    rr(c,15,-17,21,34,6);fs(c,col);rr(c,29,-13,5,26,2);fs(c,GLASS);dot(c,34,-11,2.6,'#FFF3A8');dot(c,34,11,2.6,'#FFF3A8')},
+  camper(c,v){const col=v.col;[[-22,-18],[22,-18],[-22,18],[22,18]].forEach(p=>wh(c,p[0],p[1],15,7));
+    rr(c,-34,-18,68,36,8);fs(c,col);rr(c,-30,-15,50,30,6);fs(c,'#F4F4F0');
+    rr(c,-22,-11,26,22,4);fs(c,'#E3E6EA');rr(c,-14,-6,10,12,2);fs(c,'#9FB6C8');
+    line(c,-26,17,14,17,'#E8731A',4);rr(c,22,-14,6,28,3);fs(c,GLASS);dot(c,31,-12,2.8,'#FFF3A8');dot(c,31,12,2.8,'#FFF3A8')},
+  cruiser(c,v){wh(c,22,0,22,9);wh(c,-20,0,22,9);
+    rr(c,-27,-13,13,6,2);fs(c,'#5A3A26');rr(c,-27,7,13,6,2);fs(c,'#5A3A26');line(c,-2,8,-31,9,'#C9CED6',2.6);
+    rr(c,-18,-6,34,12,6);fs(c,'#2B2F3D');c.beginPath();c.ellipse(6,0,9,6,0,0,Math.PI*2);fs(c,v.col);
+    line(c,15,-17,12,-6,'#C9CED6',2.6);line(c,15,17,12,6,'#C9CED6',2.6);line(c,15,-17,15,17,INK,2.4);
+    dot(c,25,0,3.4,'#FFF3A8');rider2(c,-9,v.col2,v.col,true)},
   scooter(c,v){wh(c,15,0,15,5);wh(c,-17,0,15,5);rr(c,-22,-9,40,18,9);fs(c,v.col);line(c,13,-11,13,11,INK,3);rider2(c,-8,v.col2,light(v.col2,.4))}
 };
 function drawVehicle(c,v,x,y,ang,t,moving){const k2=MAP2[v.type],[L,W]=DIM[k2];c.save();c.translate(x,y);c.rotate(ang);
@@ -864,7 +950,7 @@ function makeGeom(){
   const W=2*M+(NG+1)*RW+NG*per*SW,H=TOP+R*SH+BOT+GATE;
   const aisleX=a=>M+a*(RW+per*SW)+RW/2,groupX=g=>M+RW+g*(RW+per*SW);
   const roadY=TOP+R*SH+BOT/2,gateLineY=TOP+R*SH+BOT,gateX=L.gate==='left'?aisleX(0):aisleX(NG);
-  const seats=seatsOf().map(s=>({...s,x0:groupX(s.g)+s.k*SW,y0:TOP+s.r*SH,x:groupX(s.g)+s.k*SW+SW/2,y:TOP+s.r*SH+SH/2,code:stallCode(s)}));
+  const seats=seatsOf().map(s=>({...s,x0:groupX(s.g)+s.k*SW,y0:TOP+s.r*SH,x:groupX(s.g)+s.k*SW+SW/2,y:TOP+s.r*SH+SH/2,code:seatName(s),parts:seatParts(s)}));
   const byId=Object.fromEntries(seats.map(s=>[s.id,s]));
   const trees=[];
   const bw=Math.min(W*.6,520),bx=(W-bw)/2;
@@ -927,7 +1013,7 @@ function paintGround(g){
   for(let a=0;a<=g.NG;a++)arrow(g.aisleX(a),g.gateLineY-g.BOT-18,0,.8);
   arrow(g.gateX,g.gateLineY+46,0,1);
   c.font="13px 'Black Han Sans', 'IBM Plex Sans KR', sans-serif";c.textAlign='center';c.textBaseline='middle';
-  for(const s of g.seats){if(!s.on){c.fillStyle='#A9ADB4';rr(c,s.x0+6,s.y0+7,g.SW-12,g.SH-14,6);c.fill();c.fillStyle=P;continue}c.fillText(s.code,s.x,s.y0+g.SH-10)}
+  for(const s of g.seats){if(!s.on){c.fillStyle='#A9ADB4';rr(c,s.x0+6,s.y0+7,g.SW-12,g.SH-14,6);c.fill();c.fillStyle=P;continue}c.fillText(s.parts.join(' '),s.x,s.y0+g.SH-10)}
   c.font="17px 'Black Han Sans', sans-serif";c.fillText('천천히',g.gateX,g.gateLineY-14);
   for(let i=0;i<3500;i++){c.fillStyle='rgba(60,62,68,.55)';const s=.5+R()*1.1;c.fillRect(g.x0+R()*(g.x1-g.x0),g.ty+R()*(g.H-g.ty),s,s)}
   layer(fine,.25);
@@ -975,7 +1061,7 @@ function routeTo(from,seat,type){const segs=[],occ=occMap();let cur=from;
   wp[wp.length-1]=p1;
   segs.push({path:smooth([cur,...wp]),rev:false},{path:smooth([p1,{x:ax,y:py},{x:seat.x,y:py}],26),rev:true});return segs}
 const TEASE=['여기일까…? 🤔','이 자리 어때? 👀','음… 아니야!','조금 더 둘러볼까?','여긴 좀… 🙄','두근두근…'];
-function tease(sid,d){game.tease={id:d.id,t:0};setStatus(`<b>${esc(sid)}</b> · ${d.code} ${TEASE[Math.random()*TEASE.length|0]}`);tone(880,.08,'sine',.05);tone(988,.08,'sine',.05,.1)}
+function tease(sid,d){game.tease={id:d.id,t:0};setStatus(`<b>${esc(sid)}</b> · ${d.parts.join(' ')} ${TEASE[Math.random()*TEASE.length|0]}`);tone(880,.08,'sine',.05);tone(988,.08,'sine',.05,.1)}
 function mkMover(sid,segs,done,passGate){const sp=230*game.speed;const s0=segs[0].path.pts[0];
   return{sid,segs:segs.map(s=>({...s,dur:s.path.total/sp+.45})),si:0,t:0,pause:0,prevS:0,done,passGate,x:s0.x,y:s0.y,ang:-Math.PI/2,vel:0,gear:'D',puffT:0,decel:false,beepT:0}}
 
@@ -998,7 +1084,12 @@ const EP={
   jeep:{idle:27,max:94,dist:28,cLo:330,cHi:1700,g:.15,sub:1.1,rasp:.45,wave:'sawtooth',burble:.42},
   sports:{idle:52,max:245,dist:48,cLo:900,cHi:6200,g:.14,sub:.55,rasp:.5,wave:'sawtooth',burble:.22,pops:true,dbl:true,turbo:true},
   moto:{idle:64,max:305,dist:62,cLo:1000,cHi:6800,g:.12,sub:.35,rasp:.58,wave:'square',burble:.1,pops:true,dbl:true},
-  scooter:{idle:88,max:275,dist:6,cLo:1400,cHi:4300,g:.085,sub:.2,rasp:.2,wave:'triangle',burble:0,trem:.45}};
+  scooter:{idle:88,max:275,dist:6,cLo:1400,cHi:4300,g:.085,sub:.2,rasp:.2,wave:'triangle',burble:0,trem:.45},
+  convertible:{idle:46,max:200,dist:30,cLo:760,cHi:5200,g:.13,sub:.6,rasp:.4,wave:'sawtooth',burble:.28,pops:true,dbl:true},
+  cargo:{idle:26,max:88,dist:34,cLo:300,cHi:1500,g:.15,sub:1.15,rasp:.55,wave:'sawtooth',burble:.35},
+  camper:{idle:30,max:100,dist:20,cLo:360,cHi:1800,g:.14,sub:1,rasp:.32,wave:'sawtooth',burble:.3},
+  cruiser:{idle:30,max:150,dist:70,cLo:500,cHi:3400,g:.15,sub:.9,rasp:.62,wave:'square',burble:.7,pops:true,dbl:true}};
+EP.pickup=EP.suv;
 let noiseBuf=null;
 function getNoise(){if(!noiseBuf){noiseBuf=actx.createBuffer(1,actx.sampleRate*2,actx.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}return noiseBuf}
 function distCurve(k){const n=1024,c=new Float32Array(n);for(let i=0;i<n;i++){const x=i*2/n-1;c[i]=(1+k)*x/(1+k*Math.abs(x))}return c}
@@ -1088,7 +1179,7 @@ function arrive(sid,seatId){const s=G.byId[seatId];game.placed[sid]=seatId;game.
   updateDock();
   if(game.idx>=game.order.length){game.phase='done';game.timer=setTimeout(finish,900);return}
   if(game.auto)game.timer=setTimeout(next,game.benefit.has(game.order[game.idx])?1100:900/game.speed)}
-function finish(){if(!game.on)return;game.phase='done';setStatus('모두 주차 완료! 🎉');updateDock();fanfare();
+function finish(){if(!game.on)return;recordGame();game.phase='done';setStatus('모두 주차 완료! 🎉');updateDock();fanfare();
   if(!reduced)for(let i=0;i<180;i++)game.confetti.push({x:Math.random()*G.W,y:-10-Math.random()*G.H*.4,z:Math.random()*G.H,vx:(Math.random()-.5)*80,vy:60+Math.random()*120,r:Math.random()*6,vr:(Math.random()-.5)*8,c:CANDY[i%CANDY.length],w:6+Math.random()*6,h:4+Math.random()*4});
   clearTimeout(game.resT);game.resT=setTimeout(showResult,2200)}
 function genderSeatOK(sid,s,occ){if(!mixOn())return true;const g=S.gender[sid];if(!g||sideOf(s)===g)return true;
@@ -1104,9 +1195,9 @@ function seatAtLogical(p){if(!p)return null;return G.seats.find(s=>s.on&&p.x>=s.
 function pickLogical(e){
   if(game.view==='3d')return pick3D(e);
   const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*G.W,y:(e.clientY-r.top)/r.height*G.H}}
-function onMove(e){if(game.phase!=='choose'||!game.waiting){game.hover=null;e.target.style.cursor='default';return}
+function onMove(e){if(FC.moved&&FC.ptr.size)return;if(game.phase!=='choose'||!game.waiting){game.hover=null;e.target.style.cursor='default';return}
   const s=seatAtLogical(pickLogical(e));game.hover=allowedSeat(game.waiting.sid,s,occMap())?s.id:null;e.target.style.cursor=game.hover?'pointer':'default'}
-function onClick(e){if(game.phase!=='choose'||!game.waiting)return;const s=seatAtLogical(pickLogical(e));if(!s)return;
+function onClick(e){if(FC.eat){FC.eat=false;return}if(game.phase!=='choose'||!game.waiting)return;const s=seatAtLogical(pickLogical(e));if(!s)return;
   const occ=occMap();if(occ[s.id])return toast('그 칸은 이미 찼어요. 빈 칸을 골라 주세요.');
   const sid=game.waiting.sid,r=chooseOK(sid,s);
   if(r==='front')return toast('앞자리 구역(빛나는 칸) 안에서 골라 주세요.');
@@ -1242,8 +1333,67 @@ const CFG={
   sports:{L:6.9,W:3.05,wr:.62,wb:2.3,belt:1.2,yN:.92,cowl:.75,cR:-1.95,cF:.75,rT:-1.05,fT:-.35,roofH:.72},
   pickup:{L:6.9,W:3.0,wr:.72,wb:2.3,belt:1.85,yN:1.7,cowl:1.6,cR:-.55,cF:1.6,rT:-.45,fT:.55,roofH:1.05},
   jeep:{L:6.2,W:3.0,wr:.82,wb:1.95,belt:2.0,yN:1.95,cowl:1.3,cR:-2.8,cF:1.3,rT:-2.75,fT:.95,roofH:1.1},
-  bus:{L:8.4,W:3.1,wr:.66,wb:2.9,belt:1.7,yN:1.62,cowl:3.55,cR:-4.0,cF:3.55,rT:-4.0,fT:3.05,roofH:1.5}
+  bus:{L:8.4,W:3.1,wr:.66,wb:2.9,belt:1.7,yN:1.62,cowl:3.55,cR:-4.0,cF:3.55,rT:-4.0,fT:3.05,roofH:1.5},
+  camper:{L:6.8,W:3.0,wr:.68,wb:2.2,belt:1.85,yN:1.55,cowl:2.05,cR:-3.3,cF:2.05,rT:-3.25,fT:1.55,roofH:1.25}
 };
+/* 오픈카: 지붕 없이 앞유리·좌석·운전자가 보임 */
+function cabrio3D(g,ud,P,v){const L=6.6,W=2.95,wr=.62,wb=2.15,belt=1.3,yN=1.0,cowl=.95,tw=.58,y0=wr*.62;
+  g.add(M(cg('body-cabrio',()=>prof([[-L/2+.35,y0],[L/2-.35,y0],['q',L/2,y0,L/2,y0+.38],[L/2,yN-.25],['q',L/2,yN,L/2-.5,yN],[cowl,belt-.06],[-L/2+.5,belt],['q',-L/2,belt,-L/2,belt-.42],[-L/2,y0+.35],['q',-L/2,y0,-L/2+.35,y0]],W-.2,.14)),P));
+  const dk=v.col==='#141519'||v.col==='#D7101F'||v.col==='#7B2FD0',LE=mat(dk?'#E9DCC6':'#3B302C',{roughness:.6});
+  g.add(M(BOX(3.1,.08,W-.62),mat('#2A2422',{roughness:.85}),-.55,belt+.02,0,false));
+  const ws=M(BOX(.04,.54,W-.6),mat('#CFE8FF',{roughness:.05,metalness:.2,transparent:true,opacity:.32}),cowl-.12,belt+.24,0,false);ws.rotation.z=.62;g.add(ws);
+  g.add(M(BOX(.07,.06,W-.5),TRIM(),cowl-.3,belt+.5,0,false));
+  [-1,1].forEach(s=>{const p=M(BOX(.06,.56,.06),TRIM(),cowl-.12,belt+.24,s*(W/2-.28),false);p.rotation.z=.62;g.add(p)});
+  [-1,1].forEach(s=>{g.add(M(BOX(.72,.22,.78),LE,-.05,belt+.12,s*.62));const bk=M(BOX(.2,.78,.78),LE,-.48,belt+.45,s*.62);bk.rotation.z=.16;g.add(bk);g.add(M(BOX(.16,.26,.46),LE,-.62,belt+.95,s*.62))});
+  g.add(M(BOX(.6,.22,W-.75),LE,-1.45,belt+.12,0));{const rb=M(BOX(.2,.6,W-.75),LE,-1.82,belt+.36,0);rb.rotation.z=.16;g.add(rb)}
+  g.add(M(BOX(.75,.32,W-.55),mat('#26272B',{roughness:.9}),-2.45,belt+.12,0));
+  {const sw=M(cg('steer',()=>new THREE.TorusGeometry(.2,.035,8,20)),TRIM(),.5,belt+.45,-.62,false);sw.rotation.y=Math.PI/2;g.add(sw)}
+  {const SH=mat(v.col2,{roughness:.8});g.add(M(BOX(.42,.62,.52),SH,-.22,belt+.5,-.62));g.add(M(SPH(.24),mat('#EBC3A0',{roughness:.7}),-.15,belt+1.02,-.62));
+    g.add(M(SPH(.255),mat('#2B211C',{roughness:.85}),-.21,belt+1.08,-.62));g.add(M(BOX(.06,.08,.36),mat('#111216',{roughness:.2,metalness:.5}),.08,belt+1.03,-.62,false))}
+  g.add(M(BOX(.32,.42,W-.28),TRIM(),L/2+.02,y0+.17,0));g.add(M(BOX(.32,.42,W-.28),TRIM(),-L/2-.02,y0+.17,0));
+  g.add(M(BOX(.06,.28,W*.42),mat('#0E0F12',{metalness:.5,roughness:.4}),L/2+.12,Math.max(y0+.5,yN-.5),0));
+  lightsFB(g,ud,L/2+.1,-L/2-.1,yN-.26,belt-.3,W/2-.55,W/2-.5);
+  [-1,1].forEach(s=>g.add(M(BOX(.34,.2,.26),P,cowl-.2,belt+.14,s*(W/2+.04))));
+  plates(g,ud,L/2+.2,-L/2-.2,y0+.4);
+  [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a,b])=>wheel(ud,g,a*wb,wr,b*(W/2-.05-tw/2),tw));
+  return belt+1.35}
+/* 트럭: 앞이 납작한 운전석 + 짐칸(상자·수박) */
+function cargo3D(g,ud,P){const L=6.9,W=2.95,wr=.62,y0=wr*.75,cab=2.0,cabH=2.25,cx0=L/2-cab;
+  g.add(M(BOX(L-.5,.32,W-.7),TRIM(),0,y0,0));
+  g.add(M(cg('cab-cargo',()=>prof([[cx0,y0-.12],[L/2-.18,y0-.12],['q',L/2,y0-.12,L/2,y0+.2],[L/2,y0+cabH*.6],[L/2-.12,y0+cabH-.12],['q',L/2-.18,y0+cabH,L/2-.42,y0+cabH],[cx0,y0+cabH]],W-.15,.12)),P));
+  {const ws=M(BOX(.05,cabH*.38,W*.84),mat('#3E5F7E',{roughness:.06,metalness:.85}),L/2+.12,y0+cabH*.7,0);ws.rotation.z=.12;g.add(ws)}
+  [-1,1].forEach(s=>g.add(M(BOX(cab*.5,cabH*.36,.03),GLS(),L/2-cab*.42,y0+cabH*.7,s*(W/2-.06))));
+  g.add(M(BOX(.06,.26,W*.5),mat('#0E0F12',{metalness:.5,roughness:.4}),L/2+.03,y0+.4,0));
+  const bl=L-cab-.1,bx=-L/2+bl/2,fy=y0+.42,AL=mat('#CDD2D9',{metalness:.7,roughness:.35}),RB=mat('#9EA4AC',{metalness:.6,roughness:.4});
+  g.add(M(BOX(bl,.12,W-.1),AL,bx,fy,0));
+  [-1,1].forEach(s=>g.add(M(BOX(bl,.5,.07),AL,bx,fy+.3,s*(W/2-.08))));
+  g.add(M(BOX(.07,.5,W-.1),AL,-L/2+.04,fy+.3,0));g.add(M(BOX(.1,.95,W-.1),AL,cx0-.08,fy+.52,0));
+  for(let x=bx-bl/2+.5;x<bx+bl/2-.2;x+=.6)[-1,1].forEach(s=>g.add(M(BOX(.04,.5,.02),RB,x,fy+.3,s*(W/2-.04))));
+  const CB=mat('#C9955B',{roughness:.9}),CB2=mat('#B9844E',{roughness:.9}),WM=mat('#2F7D32',{roughness:.45});
+  g.add(M(BOX(1.1,.8,1.1),CB,bx-.85,fy+.46,-.62));g.add(M(BOX(1.0,.7,1.0),CB2,bx-.8,fy+.41,.62));g.add(M(BOX(.9,.6,.9),CB,bx-.82,fy+1.16,-.55));
+  for(const[x,z,y]of[[.3,-.75,0],[.95,-.75,0],[.3,0,0],[.95,0,0],[.3,.75,0],[.95,.75,0],[.62,-.38,.5],[.62,.38,.5]])g.add(M(SPH(.34),WM,bx+x,fy+.4+y,z));
+  lightsFB(g,ud,L/2+.1,-L/2-.06,y0+.42,y0+.3,W/2-.5,W/2-.45);
+  plates(g,ud,L/2+.15,-L/2-.08,y0+.08);
+  [L/2-1.0,-L/2+1.5].forEach(x=>[-1,1].forEach(b=>wheel(ud,g,x,wr,b*(W/2-.05-.3),.6)));
+  return y0+cabH+.15}
+/* 크루저 오토바이: 길고 낮은 차체, 높은 핸들, V자 엔진, 크롬 배기관, 가죽 가방 */
+function cruiser3D(g,ud,P,v){wheel2(ud,g,1.85,.6,.24);wheel2(ud,g,-1.6,.62,.26);
+  const BL=mat('#18191D',{roughness:.5,metalness:.4}),LT=mat('#5A3A26',{roughness:.7}),CH=CHROME(),EN=mat('#3A3D44',{metalness:.6,roughness:.4});
+  tube(g,[-1.6,.62,0],[-.3,.72,0],.07,BL);tube(g,[-.3,.72,0],[.95,1.6,0],.08,BL);tube(g,[-1.1,1.25,0],[.95,1.62,0],.07,BL);
+  [-.2,.2].forEach(z=>tube(g,[1.85,.6,z],[1.25,2.02,z*.9],.06,CH));
+  [-1,1].forEach(s=>{tube(g,[1.25,2.02,s*.12],[1.15,2.5,s*.5],.04,CH);tube(g,[1.15,2.5,s*.5],[.95,2.42,s*.62],.045,BL)});
+  {const tk=M(SPH(.42),P,.45,1.74,0);tk.scale.set(1.45,.62,.85);g.add(tk)}
+  {const st=M(SPH(.4),LT,-.6,1.4,0);st.scale.set(1.3,.32,.85);g.add(st)}
+  g.add(M(BOX(.75,.5,.5),EN,.1,.9,0));
+  [-.5,.5].forEach(a=>{const dx=Math.sin(a),dy=Math.cos(a),c0=[.1,1.0];const cy=M(cg('vcyl',()=>new THREE.CylinderGeometry(.16,.18,.55,14)),CH,c0[0]+dx*.3,c0[1]+dy*.3,0);cy.rotation.z=-a;g.add(cy);
+    for(let k=0;k<3;k++){const fin=M(cg('vfin',()=>new THREE.CylinderGeometry(.23,.23,.035,14)),CH,c0[0]+dx*(.14+k*.14),c0[1]+dy*(.14+k*.14),0);fin.rotation.z=-a;g.add(fin)}});
+  [0,.15].forEach(dy=>tube(g,[.25,.86-dy,.3],[-1.95,.64-dy*.6,.44],.06,CH));
+  {const ff=M(cg('fendF',()=>new THREE.TorusGeometry(.64,.12,8,20,Math.PI*.8)),P,1.85,.6,0);ff.rotation.z=Math.PI*.1;ff.scale.z=1.7;g.add(ff)}
+  {const fr=M(cg('fendR',()=>new THREE.TorusGeometry(.68,.13,8,20,Math.PI*.75)),P,-1.6,.62,0);fr.rotation.z=Math.PI*.2;fr.scale.z=1.8;g.add(fr)}
+  g.add(M(cg('cHL',()=>new THREE.CylinderGeometry(.2,.16,.18,18).rotateZ(Math.PI/2)),CH,1.45,1.78,0));g.add(M(SPH(.17),HEADM(),1.53,1.78,0,false));
+  [-1,1].forEach(s=>g.add(M(BOX(.75,.48,.24),LT,-1.45,1.05,s*.45)));
+  g.add(M(BOX(.1,.12,.34),ud.tail,-2.05,1.18,0,false));
+  return rider(g,{hip:[-.62,1.52],hb:[.95,2.42],foot:[1.05,.85],shirt:v.col2,helm:v.col,lean:-.1})}
 function boxTruck(g,ud,o,P,BXM,key){
   const{L,W,wr,cab,cabH,boxH,axles}=o,y0=wr*.75,cx0=L/2-cab;
   g.add(M(BOX(L-.5,.35,W-.6),TRIM(),0,y0,0));
@@ -1297,6 +1447,16 @@ function car3D(v,sid){
       ud.h+=.4;break;
     case'van':ud.h=boxTruck(g,ud,{L:7.4,W:3.0,wr:.64,cab:2.3,cabH:2.4,boxH:2.9,axles:[2.5,-2.35]},P,mat('#EEF0F3',{roughness:.5}),'van');
       sideText(g,'van','빠른 택배','#EEF0F3','#1E4FA0',3.4,.7,-1.2,2.4,1.505);break;
+    case'convertible':ud.h=cabrio3D(g,ud,P,v);break;
+    case'cargo':ud.h=cargo3D(g,ud,P);break;
+    case'cruiser':ud.h=cruiser3D(g,ud,P,v);break;
+    case'camper':ud.h=carBase(g,ud,CFG.camper,P,'camper');{const WH=mat('#F4F4F0',{roughness:.4}),c=CFG.camper;
+      [-1,1].forEach(s=>g.add(M(BOX(c.L*.9,.22,.02),WH,-.1,c.belt-.38,s*(c.W/2-.085))));
+      g.add(M(BOX(3.6,.4,2.5),WH,-.9,ud.h+.12,0));
+      g.add(M(cg('awning',()=>new THREE.CylinderGeometry(.16,.16,4.2,14).rotateZ(Math.PI/2)),mat('#E8731A',{roughness:.6}),-.8,ud.h-.3,c.W/2+.06));
+      [.55,1.1].forEach(z=>g.add(M(BOX(.06,1.6,.06),CHROME(),-c.L/2-.1,c.belt+.55,z)));for(let y=c.belt-.15;y<ud.h;y+=.3)g.add(M(BOX(.05,.05,.6),CHROME(),-c.L/2-.1,y,.82));
+      g.add(M(cg('spare2',()=>new THREE.CylinderGeometry(.55,.55,.3,20).rotateZ(Math.PI/2)),WH,-c.L/2-.18,1.15,-.5));
+      ud.h+=.45}break;
     case'moto':ud.h=0;wheel2(ud,g,1.45,.62,.2);wheel2(ud,g,-1.45,.62,.2);
       g.add(M(cg('motoBody',()=>prof([[-1.35,1.3],[-.25,1.3],[.35,1.8],[1.0,1.85],[1.3,1.55],[.85,1.05],[-.8,.95]],.75,.12)),P));
       g.add(M(BOX(1.1,.18,.62),TRIM(),-.55,1.5,0));g.add(M(BOX(1.0,.65,.55),mat('#3A3D44',{metalness:.6,roughness:.4}),.05,.85,0));
@@ -1477,7 +1637,7 @@ function fit3D(aw,ah){if(!R3)return;R3.renderer.setSize(aw,ah,false);cv3.style.w
   cam.position.copy(R3.camPos);cam.lookAt(R3.camLook)}
 function pick3D(e){const r=cv3.getBoundingClientRect(),ndc=new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1));
   R3.ray.setFromCamera(ndc,R3.camera);const p=new V3();if(!R3.ray.ray.intersectPlane(R3.plane,p))return null;return{x:p.x/U+G.W/2,y:p.z/U+G.H/2}}
-function camUpdate(dt){const R=R3;let mode=game.cam;
+function camUpdate(dt){const R=R3;let mode=game.cam;fcKeys(dt);
   if(game.phase==='choose'||game.phase==='done'||(!game.mover&&!(game.camHold>0)))mode=mode==='top'?'top':'overview';
   let dp=R.ov.p,dl=R.ov.l,rate=1.8;
   if(mode==='top'){dp=R.tp.p;dl=R.tp.l}
@@ -1487,6 +1647,7 @@ function camUpdate(dt){const R=R3;let mode=game.cam;
       const P=new V3(X,0,Z);dp=P.clone().addScaledVector(R.camDir,-13.5);dp.y=6.8;dl=P.clone().addScaledVector(R.camDir,5);dl.y=.9;rate=3}
     else if(game.camHold>0&&game.showcase){const s=game.showcase,[X,Z]=to3(s.x,s.y),nose=new V3(Math.cos(s.ang),0,Math.sin(s.ang)),P=new V3(X,0,Z);
       dp=P.clone().addScaledVector(nose,9.5).add(new V3(-nose.z*4.5,5.2,nose.x*4.5));dl=P.clone();dl.y=1.3;rate=2.4}}
+  if(FC.on){const[a,b]=fcPose();dp=new V3(...a);dl=new V3(...b);rate=16}
   const k=1-Math.exp(-dt*rate);R.camPos.lerp(dp,k);R.camLook.lerp(dl,k);R.camera.position.copy(R.camPos);R.camera.lookAt(R.camLook)}
 function sync3D(t,dt){
   const R=R3,seen=new Set(),seenL=new Set(),T=TOD[game.tod];
@@ -1528,16 +1689,58 @@ function loop(now){const t=now/1000,dt=Math.min(.05,(now-lastT)/1000||0);lastT=n
 function applyView(){cv.hidden=game.view!=='2d';cv3.hidden=game.view!=='3d';
   $('#viewBtn').textContent=game.view==='3d'?'2D로 보기':'3D로 보기';$('#viewBtn').hidden=!has3D;
   ['#camSel','#todSel','#qSel'].forEach(s=>$(s).hidden=game.view!=='3d');
-  $('#camSel').value=game.cam;$('#todSel').value=game.tod;$('#qSel').value=game.quality;fit()}
+  $('#camSel').value=game.cam;$('#todSel').value=game.tod;$('#qSel').value=game.quality;fcUI();fit()}
 $('#viewBtn').onclick=()=>{game.view=game.view==='3d'?'2d':'3d';if(game.view==='3d'&&!(R3&&R3.scene))build3D();saveView();applyView()};
-$('#camSel').onchange=e=>{game.cam=e.target.value;saveView()};
+$('#camSel').onchange=e=>{game.cam=e.target.value;fcStop();saveView()};
 $('#todSel').onchange=e=>{game.tod=e.target.value;applyTOD();saveView()};
 $('#qSel').onchange=e=>{game.quality=e.target.value;saveView();if(R3&&R3.scene){build3D();fit()}};
+
+/* ---- 자유 시점: 끌어서 돌리기 · 휠·두 손가락 확대 · 오른쪽 끌기·두 손가락 이동 · 방향키(WASD)·Q/E 돌리기 ---- */
+const FC_CAM=()=>R3&&R3.camera,FC_POS=()=>R3.camPos,FC_TGT=()=>R3.camLook,FC_GROUND=true,FC_VIEW=()=>game.view==='3d';
+function FC_BOUNDS(){const hw=G.W*U/2,hh=G.H*U/2;return{x:[-hw-8,hw+8],y:[0,10],z:[-hh-8,hh+8],r:[4,Math.max(G.W,G.H)*U*2.4],ph:[.06,1.55],minY:.5}}
+const FC={on:false,t:null,r:10,th:0,ph:.6,ptr:new Map(),moved:false,eat:false,keys:new Set()};
+const clampN=(v,a,b)=>Math.max(a,Math.min(b,v));
+function fcStart(){if(FC.on||!FC_CAM())return;const t=FC_TGT().clone(),o=FC_POS().clone().sub(t),r=Math.max(.01,o.length());
+  Object.assign(FC,{on:true,t,r,th:Math.atan2(o.x,o.z),ph:Math.asin(clampN(o.y/r,-1,1))});fcClamp();fcUI()}
+function fcStop(){FC.on=false;FC.ptr.clear();FC.keys.clear();FC.moved=false;fcUI()}
+function fcUI(){const b=$('#camReset'),h=$('#camHint'),v=FC_VIEW();if(b)b.hidden=!FC.on||!v;if(h)h.hidden=FC.on||!v}
+function fcClamp(){const b=FC_BOUNDS();FC.ph=clampN(FC.ph,b.ph[0],b.ph[1]);FC.r=clampN(FC.r,b.r[0],b.r[1]);FC.t.set(clampN(FC.t.x,b.x[0],b.x[1]),clampN(FC.t.y,b.y[0],b.y[1]),clampN(FC.t.z,b.z[0],b.z[1]))}
+function fcPose(){const c=Math.cos(FC.ph),b=FC_BOUNDS();return[[FC.t.x+FC.r*c*Math.sin(FC.th),Math.max(b.minY,FC.t.y+FC.r*Math.sin(FC.ph)),FC.t.z+FC.r*c*Math.cos(FC.th)],[FC.t.x,FC.t.y,FC.t.z]]}
+function fcRotate(dx,dy){FC.th-=dx*.0065;FC.ph+=dy*.005;fcClamp()}
+function fcZoom(f){FC.r*=f;fcClamp()}
+function fcPan(dx,dy){const u=2*FC.r*Math.tan(FC_CAM().fov*Math.PI/360)/Math.max(120,cv3.clientHeight),ct=Math.cos(FC.th),st=Math.sin(FC.th);
+  FC.t.x-=ct*dx*u;FC.t.z+=st*dx*u;
+  if(FC_GROUND){const k=dy*u/Math.max(.35,Math.sin(FC.ph));FC.t.x-=st*k;FC.t.z-=ct*k}
+  else{const sp=Math.sin(FC.ph),cp=Math.cos(FC.ph);FC.t.x-=sp*st*dy*u;FC.t.y+=cp*dy*u;FC.t.z-=sp*ct*dy*u}
+  fcClamp()}
+const FKEY={KeyW:'f',ArrowUp:'f',KeyS:'b',ArrowDown:'b',KeyA:'l',ArrowLeft:'l',KeyD:'r',ArrowRight:'r',KeyQ:'ql',KeyE:'qr',Equal:'in',NumpadAdd:'in',Minus:'out',NumpadSubtract:'out'};
+function fcKeys(dt){if(!FC.keys.size)return;fcStart();if(!FC.on)return;const k=FC.keys,sp=FC.r*.8*dt,ct=Math.cos(FC.th),st=Math.sin(FC.th);let f=0,s=0;
+  if(k.has('f'))f++;if(k.has('b'))f--;if(k.has('r'))s++;if(k.has('l'))s--;
+  FC.t.x+=(-st*f+ct*s)*sp;FC.t.z+=(-ct*f-st*s)*sp;
+  if(k.has('ql'))FC.th+=dt*1.4;if(k.has('qr'))FC.th-=dt*1.4;
+  if(k.has('in'))FC.r*=Math.exp(-dt*1.3);if(k.has('out'))FC.r*=Math.exp(dt*1.3);
+  fcClamp()}
+document.addEventListener('keydown',e=>{const a=FKEY[e.code];if(!a||e.ctrlKey||e.metaKey||e.altKey||introOn||!game.on||$('#game').hidden||!$('#dlg').hidden||!FC_VIEW())return;if(e.target.matches&&e.target.matches('input,textarea,select'))return;e.preventDefault();FC.keys.add(a)});
+document.addEventListener('keyup',e=>{const a=FKEY[e.code];if(a)FC.keys.delete(a)});
+window.addEventListener('blur',()=>FC.keys.clear());
+cv3.addEventListener('pointerdown',e=>{if(!game.on||!FC_VIEW())return;FC.eat=false;if(!FC.ptr.size)FC.moved=false;FC.ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,b:e.button});try{cv3.setPointerCapture(e.pointerId)}catch(_){}});
+cv3.addEventListener('pointermove',e=>{const p=FC.ptr.get(e.pointerId);if(!p)return;
+  if(FC.ptr.size>=2){const ps=[...FC.ptr.values()],a=ps[0],b=ps[1],cx0=(a.x+b.x)/2,cy0=(a.y+b.y)/2,d0=Math.hypot(a.x-b.x,a.y-b.y);p.x=e.clientX;p.y=e.clientY;
+    const cx1=(a.x+b.x)/2,cy1=(a.y+b.y)/2,d1=Math.hypot(a.x-b.x,a.y-b.y);FC.moved=true;fcStart();if(d0>10&&d1>10)fcZoom(d0/d1);fcPan(cx1-cx0,cy1-cy0);return}
+  if(!FC.moved){if(Math.hypot(e.clientX-p.sx,e.clientY-p.sy)<7)return;FC.moved=true;fcStart()}
+  const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+  if(p.b===2||p.b===1||e.shiftKey||e.ctrlKey)fcPan(dx,dy);else fcRotate(dx,dy)});
+const fcUp=e=>{if(!FC.ptr.has(e.pointerId))return;FC.ptr.delete(e.pointerId);if(FC.moved)FC.eat=true;if(!FC.ptr.size)setTimeout(()=>{if(!FC.ptr.size)FC.moved=false},0)};
+cv3.addEventListener('pointerup',fcUp);cv3.addEventListener('pointercancel',fcUp);
+cv3.addEventListener('contextmenu',e=>e.preventDefault());
+cv3.addEventListener('wheel',e=>{if(!game.on||!FC_VIEW())return;e.preventDefault();fcStart();fcZoom(Math.exp(clampN(e.deltaMode?e.deltaY*16:e.deltaY,-120,120)*.0015))},{passive:false});
+$('#camReset').onclick=()=>fcStop();
+if(matchMedia('(pointer:coarse)').matches)$('#camHint').textContent='👆 끌어서 돌리기 · 두 손가락 확대·이동';
 
 /* ---- start / stop ---- */
 function plateNo(){const H='가나다라마거너더러머버서어저고노도로모보소오조구누두루무부수우주';return`${10+(Math.random()*290|0)}${H[Math.random()*H.length|0]} ${1000+(Math.random()*9000|0)}`}
 function assignVehicles(names){let pool=[];while(pool.length<names.length)pool=pool.concat(shuffle(POOL.slice()));pool=shuffle(pool);
-  const out={};names.forEach((n,i)=>{const t=pool[i];const col=FIXEDCOL[t]||PAINT[Math.random()*PAINT.length|0];let c2=CANDY[Math.random()*CANDY.length|0];out[n]={type:t,col,col2:c2,plate:plateNo(),pitch:.9+Math.random()*.2,stripe:(t==='sports'||t==='hatch'||t==='suv')&&Math.random()<.6}});return out}
+  const out={};names.forEach((n,i)=>{const t=pool[i];const col=FIXEDCOL[t]||PAINT[Math.random()*PAINT.length|0];let c2=CANDY[Math.random()*CANDY.length|0];out[n]={type:t,col,col2:c2,plate:plateNo(),pitch:.9+Math.random()*.2,stripe:(t==='sports'||t==='hatch'||t==='suv'||t==='convertible')&&Math.random()<.6}});return out}
 let wakeLock=null;
 async function fontsReady(){try{if(document.fonts)await Promise.race([Promise.all([document.fonts.load("64px 'Black Han Sans'"),document.fonts.load('64px Jua'),document.fonts.load("600 40px 'IBM Plex Sans KR'")]),new Promise(r=>setTimeout(r,1800))])}catch(e){}}
 let bootMsg='';
@@ -1548,15 +1751,15 @@ async function startGame(opt={}){
   if(names.length>on){say(`주차칸이 ${names.length-on}개 부족해요. 설정 > ② 자리 모양에서 줄이나 분단을 늘려 주세요.`);return false}
   const need=frontNeed(),zc=zoneOnCount();if(need>zc){say(`앞자리 구역이 ${need-zc}칸 부족해요. 설정 > ③ 앞자리 학생에서 구역을 넓혀 주세요.`);return false}
   let chk=solve(names,{});if(!chk.ok&&mixOn()){chk=solve(names,{},{noGender:true});if(chk.ok)say('남녀 짝 조건을 모두 지킬 수 없어 일부 짝은 조건 없이 배정돼요.')}
-  if(!chk.ok){say(`자리를 만들 수 없는 조건이 있어요 (코드 E${chk.why==='fixed'?1:chk.why==='front'?3:2}). 프로그램 정보에서 확인해 주세요.`);return false}
+  if(!chk.ok){say(`자리를 만들 수 없는 조건이 있어요 (코드 E${chk.why==='fixed'?1:chk.why==='front'?3:2}). 프로그램 정보 > 교사 추가 설정에서 확인해 주세요.`);return false}
   $('#startBtn').disabled=true;await fontsReady();$('#startBtn').disabled=false;
   const ben=S.benefit.filter(n=>names.includes(n)&&!S.fixed[n]);
   clearTimeout(game.timer);clearTimeout(game.resT);clearTimeout(game.stampT);engineOff();
-  Object.assign(game,{on:true,auto:false,order:[...shuffle(ben.slice()),...shuffle(names.filter(n=>!ben.includes(n)))],benefit:new Set(ben),idx:0,placed:{},parkAng:{},plan:null,counted:false,
+  Object.assign(game,{on:true,auto:false,order:[...shuffle(ben.slice()),...shuffle(names.filter(n=>!ben.includes(n)))],benefit:new Set(ben),idx:0,placed:{},parkAng:{},plan:null,counted:false,saved:false,
     phase:'idle',mover:null,waiting:null,veh:assignVehicles(names),puffs:[],rings:[],confetti:[],barrier:0,hover:null,flip:false,camHold:0,showcase:null,tease:null});
   syncAuto();hideSecret();G=makeGeom();
   $('#setup').hidden=true;$('#topbar').hidden=true;$('#game').hidden=false;$('#result').hidden=true;['#banner','#stamp','#countdown','#gauge'].forEach(s=>$(s).hidden=true);document.body.classList.add('playing');
-  if(R3)R3.camInit=false;
+  if(R3)R3.camInit=false;fcStop();
   if(has3D&&game.view==='3d'){try{build3D()}catch(e){console.error(e);game.view='2d'}}
   setStatus(ben.length?`🎁 찬스 학생 ${ben.length}명이 먼저 자리를 골라요`:S.isSample?'예시 명단 · <b>⚙ 설정</b>에서 바꿔요':'출발 버튼을 누르면 첫 차가 와요');
   updateDock();applyView();cancelAnimationFrame(raf);lastT=performance.now();raf=requestAnimationFrame(loop);
@@ -1577,40 +1780,73 @@ document.addEventListener('keydown',e=>{if(introOn||!game.on||$('#game').hidden|
   if(e.key===' '||e.key==='Enter'){if(document.activeElement&&document.activeElement.tagName==='BUTTON'&&document.activeElement!==$('#goBtn'))return;e.preventDefault();if(!$('#goBtn').disabled)$('#goBtn').click()}});
 
 /* ---- result ---- */
-function showResult(){$('#result').hidden=false;$('#copyFallback').hidden=true;renderResult()}
+function showResult(){$('#result').hidden=false;$('#copyFallback').hidden=true;$('#savedTag').hidden=!game.saved;renderResult()}
 function renderResult(){const owner=occMap();
   $$('#viewSeg button').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.flip==='1')===game.flip));
   seatGrid($('#resultGrid'),{flip:game.flip,label:s=>!s.on?'화단':(owner[s.id]?(game.benefit.has(owner[s.id])?'★ ':'')+owner[s.id]:'빈자리'),cls:s=>!s.on?'off':owner[s.id]?'':'empty'})}
 $('#viewSeg').onclick=e=>{const f=e.target.dataset.flip;if(f==null)return;game.flip=f==='1';renderResult()};
-function tableText(){const L=S.layout,per=L.mode==='pair'?2:1,owner=occMap(),lines=[];
+function curRec(){return{at:Date.now(),app:APP,L:S.layout,placed:game.placed,benefit:[...(game.benefit||[])]}}
+function ownerOf(rec){const o={};for(const n in rec.placed)o[rec.placed[n]]=n;return o}
+function tableText(rec,flip){const L=rec.L,per=L.mode==='pair'?2:1,owner=ownerOf(rec),byId=Object.fromEntries(seatsOf(L).map(s=>[s.id,s])),lines=[];
   const rows=[...Array(L.rows).keys()],groups=[...Array(L.groups).keys()],ks=[...Array(per).keys()];
-  if(game.flip){rows.reverse();groups.reverse();ks.reverse()}
-  for(const r of rows){const cells=[];groups.forEach((g,gi)=>{ks.forEach(k=>{const id=r+'-'+(g*per+k);const s=G.byId[id];cells.push(!s.on?'(화단)':owner[id]||'')});if(gi<groups.length-1)cells.push('')});lines.push(cells.join('\t'))}
-  return game.flip?[...lines,'\t[교탁]'].join('\n'):['\t[교탁]',...lines].join('\n')}
-$('#copyBtn').onclick=()=>{const txt=tableText();const fb=()=>{const ta=$('#copyFallback');ta.hidden=false;ta.value=txt;ta.focus();ta.select();toast('아래 칸이 선택됐어요. Ctrl+C로 복사하세요.')};
-  try{navigator.clipboard.writeText(txt).then(()=>toast('복사했어요. 엑셀에 붙여넣으세요.'),fb)}catch(e){fb()}};
-function printSeats(flip){
-  if(!G||!game.order.length)return toast('먼저 자리를 뽑아 주세요.');
-  const L=S.layout,per=L.mode==='pair'?2:1,owner=occMap(),d=new Date();
+  if(flip){rows.reverse();groups.reverse();ks.reverse()}
+  for(const r of rows){const cells=[];groups.forEach((g,gi)=>{ks.forEach(k=>{const id=r+'-'+(g*per+k),s=byId[id];cells.push(!s||!s.on?'(화단)':owner[id]||'')});if(gi<groups.length-1)cells.push('')});lines.push(cells.join('\t'))}
+  return flip?[...lines,'\t[교탁]'].join('\n'):['\t[교탁]',...lines].join('\n')}
+function copyText(txt,ta){const fb=()=>{ta.hidden=false;ta.value=txt;ta.focus();ta.select();toast('아래 칸이 선택됐어요. Ctrl+C로 복사하세요.')};
+  try{navigator.clipboard.writeText(txt).then(()=>toast('복사했어요. 엑셀에 붙여넣으세요.'),fb)}catch(e){fb()}}
+$('#copyBtn').onclick=()=>copyText(tableText(curRec(),game.flip),$('#copyFallback'));
+function printSeats(flip,rec){
+  if(!rec){if(!game.order||!game.order.length||!Object.keys(game.placed||{}).length)return toast('먼저 자리를 뽑아 주세요.');rec=curRec()}
+  const L=rec.L,per=L.mode==='pair'?2:1,owner=ownerOf(rec),byId=Object.fromEntries(seatsOf(L).map(s=>[s.id,s])),d=new Date(rec.at);
   const date=`${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}.`;
   const rows=[...Array(L.rows).keys()],groups=[...Array(L.groups).keys()],ks=[...Array(per).keys()];
   if(flip){rows.reverse();groups.reverse();ks.reverse()}
   const cols=L.groups*per,rowH=Math.max(10,Math.min(24,(122-1.6*(L.rows+1))/L.rows)),fsz=cols>10?11:cols>8?13:cols>6?15:17;
   let t='<table class="pp-seats">';
-  for(const r of rows){t+='<tr>';groups.forEach((g,gi)=>{ks.forEach(k=>{const id=r+'-'+(g*per+k),s=G.byId[id],n=owner[id];
-    t+=!s||!s.on?'<td class="off"></td>':`<td class="${n?'':'empty'}"><span class="code">${s.code}</span><b>${n?esc(n):'빈자리'}</b></td>`});
+  for(const r of rows){t+='<tr>';groups.forEach((g,gi)=>{ks.forEach(k=>{const id=r+'-'+(g*per+k),s=byId[id],n=owner[id];
+    t+=!s||!s.on?'<td class="off"></td>':`<td class="${n?'':'empty'}"><b>${n?esc(n):'빈자리'}</b></td>`});
     if(gi<groups.length-1)t+='<td class="gap"></td>'});t+='</tr>'}
   t+='</table>';
   const chalk='<div class="pp-chalk">칠판</div>',desk='<div class="pp-desk">교탁</div>';
   const kind=flip?'교사용':'학생용',how=flip?'교탁에서 학생들을 바라본 모습 · 칠판이 아래쪽':'교실 뒤에서 칠판을 바라본 모습 · 칠판이 위쪽';
-  $('#printArea').innerHTML=`<section class="pp" style="--rowh:${rowH.toFixed(1)}mm;--fs:${fsz}pt"><header class="pp-head"><h1>우리 반 자리 배치표</h1><div class="pp-meta"><span class="pp-tag">${kind}</span><span>${date}</span><span>${Object.keys(game.placed).length}명</span></div></header>
-    <div class="pp-body">${flip?t+desk+chalk:chalk+desk+t}</div><footer class="pp-foot"><span>${how}</span><span>자리 주차 대작전</span></footer></section>`;
+  $('#printArea').innerHTML=`<section class="pp" style="--rowh:${rowH.toFixed(1)}mm;--fs:${fsz}pt"><header class="pp-head"><h1>우리 반 자리 배치표</h1><div class="pp-meta"><span class="pp-tag">${kind}</span><span>${date}</span><span>${Object.keys(rec.placed).length}명</span></div></header>
+    <div class="pp-body">${flip?t+desk+chalk:chalk+desk+t}</div><footer class="pp-foot"><span>${how}</span><span>${esc(APPS[rec.app]||APPS[APP])}</span></footer></section>`;
   const old=document.title;document.title=`자리 배치표(${kind}) ${d.getMonth()+1}월 ${d.getDate()}일`;
   const done=()=>{document.title=old;window.removeEventListener('afterprint',done)};window.addEventListener('afterprint',done);
   try{window.print()}catch(e){done();toast('이 화면에서는 인쇄할 수 없어요. 크롬이나 엣지에서 열어 주세요.')}
 }
 $('#printStu').onclick=()=>printSeats(false);
 $('#printTea').onclick=()=>printSeats(true);
+
+/* ---- 지난 기록: 자리 배치가 끝나면 자동 저장 (두 앱이 같은 기록을 함께 씀) ---- */
+function loadHist(){try{const a=JSON.parse(localStorage.getItem(HKEY)||'[]');return Array.isArray(a)?a.filter(r=>r&&r.id&&r.L&&r.placed&&r.L.rows&&r.L.groups):[]}catch(e){return[]}}
+function storeHist(a){for(const n of[HMAX,20,5]){try{localStorage.setItem(HKEY,JSON.stringify(a.slice(0,n)));return true}catch(e){}}return false}
+function recordGame(){if(game.saved||!Object.keys(game.placed||{}).length)return;const L=S.layout;
+  const rec={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),at:Date.now(),app:APP,L:{mode:L.mode,rows:L.rows,groups:L.groups,disabled:L.disabled.slice()},placed:Object.assign({},game.placed),benefit:[...(game.benefit||[])]};
+  const a=loadHist();a.unshift(rec);game.saved=storeHist(a);if(game.saved)histSel=rec.id}
+const WD='일월화수목금토';
+function fmtAt(t){const d=new Date(t),h=d.getHours(),y=d.getFullYear()!==new Date().getFullYear()?d.getFullYear()+'년 ':'';
+  return`${y}${d.getMonth()+1}월 ${d.getDate()}일 (${WD[d.getDay()]}) ${h<12?'오전':'오후'} ${h%12||12}:${String(d.getMinutes()).padStart(2,'0')}`}
+function histSummary(r){const L=r.L;return`${Object.keys(r.placed).length}명 · ${L.mode==='pair'?'짝꿍':'혼자'} 자리 ${L.groups}분단 × ${L.rows}줄`}
+function renderHistory(){
+  const a=loadHist(),ul=$('#histList');ul.innerHTML='';$('#histCount').textContent=a.length+'개';$('#histClear').hidden=!a.length;
+  if(!a.length){ul.innerHTML='<li class="empty">아직 저장된 기록이 없어요. 자리 배치를 끝까지 하면 여기에 저장돼요.</li>';$('#histView').hidden=true;return}
+  if(!a.some(r=>r.id===histSel))histSel=a[0].id;
+  for(const r of a){const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.className='hist-item';b.setAttribute('aria-current',r.id===histSel);
+    b.innerHTML=`<b>${esc(fmtAt(r.at))}</b><span>${esc(histSummary(r))}${APPS[r.app]?' · '+esc(APPS[r.app]):''}</span>`;
+    b.onclick=()=>{histSel=r.id;renderHistory()};li.append(b);ul.append(li)}
+  const r=a.find(x=>x.id===histSel),owner=ownerOf(r),ben=new Set(r.benefit||[]);
+  $('#histView').hidden=false;$('#histTitle').textContent=fmtAt(r.at);$('#histSub').textContent=histSummary(r)+(ben.size?' · ★ 찬스 학생':'');
+  $$('#histSeg button').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.flip==='1')===histFlip));
+  $('#histCopyFallback').hidden=true;
+  seatGrid($('#histGrid'),{L:r.L,flip:histFlip,label:s=>!s.on?'화단':(owner[s.id]?(ben.has(owner[s.id])?'★ ':'')+owner[s.id]:'빈자리'),cls:s=>!s.on?'off':owner[s.id]?'':'empty'})}
+const histRec=()=>loadHist().find(r=>r.id===histSel);
+$('#histSeg').onclick=e=>{const f=e.target.dataset.flip;if(f==null)return;histFlip=f==='1';renderHistory()};
+$('#histPrintStu').onclick=()=>{const r=histRec();if(r)printSeats(false,r)};
+$('#histPrintTea').onclick=()=>{const r=histRec();if(r)printSeats(true,r)};
+$('#histCopy').onclick=()=>{const r=histRec();if(r)copyText(tableText(r,histFlip),$('#histCopyFallback'))};
+$('#histDel').onclick=()=>{const r=histRec();if(!r)return;openDlg({title:'이 기록 지우기',msg:fmtAt(r.at)+' 기록을 지울까요? 지운 기록은 되살릴 수 없어요.',ok:()=>{storeHist(loadHist().filter(x=>x.id!==r.id));histSel=null;renderHistory();toast('기록을 지웠어요.')}})};
+$('#histClear').onclick=()=>{const n=loadHist().length;openDlg({title:'기록 모두 지우기',msg:`저장된 기록 ${n}개를 모두 지울까요? 지운 기록은 되살릴 수 없어요.`,ok:()=>{try{localStorage.removeItem(HKEY)}catch(e){}histSel=null;renderHistory();toast('기록을 모두 지웠어요.')}})};
 $('#againBtn').onclick=startGame;
 $('#closeResult').onclick=()=>{$('#result').hidden=true};
 
