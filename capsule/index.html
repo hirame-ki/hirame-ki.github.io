@@ -229,6 +229,14 @@ button.chip{cursor:pointer}
 .s-main{color:#2A2140}
 .s-sub{color:#6B5A7A}
 
+/* 자리 그리는 중 */
+.loadpop{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(18,14,30,.42)}
+.loadpop[hidden]{display:none}
+.lp-card{display:flex;align-items:center;gap:16px;background:#fff;color:#1F1A2E;border-radius:18px;padding:20px 28px 20px 22px;box-shadow:0 18px 50px rgba(0,0,0,.3);font-weight:700;font-size:19px;max-width:calc(100% - 32px)}
+.lp-card small{display:block;font-weight:500;font-size:14px;color:#6B6478;margin-top:4px}
+.lp-spin{width:36px;height:36px;border-radius:50%;border:4px solid #FFD3E6;border-top-color:#FF4F9A;animation:lpSpin .8s linear infinite;flex:none}
+@keyframes lpSpin{to{transform:rotate(360deg)}}
+
 /* 자유 시점 */
 #cv3{touch-action:none}
 .camhint{right:30px;bottom:20px;font-size:12.5px;line-height:1.3;padding:5px 11px;border-radius:999px;background:rgba(10,12,20,.55);color:#fff;max-width:calc(100% - 60px)}
@@ -558,6 +566,7 @@ button.chip{cursor:pointer}
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
+<div class="loadpop" id="loadPop" hidden role="status" aria-live="polite"><div class="lp-card"><span class="lp-spin" aria-hidden="true"></span><div>자리를 그리고 있어요<small>잠시만 기다려 주세요</small></div></div></div>
 
 <script>
 (() => {
@@ -1000,8 +1009,6 @@ function build3D(){
     for(let i=0;i<4;i++)for(let j=0;j<4;j++){c.fillStyle=cl[(i+j)%4];c.fillText(sy[(i+2*j)%4],i*64+32,j*64+32)}});
   wallTex.wrapS=wallTex.wrapT=THREE.RepeatWrapping;wallTex.repeat.set(14,3.5);
   {const wm=std('#FFFFFF',{map:wallTex,roughness:.9});M(new THREE.PlaneGeometry(56,14),wm,0,6,wz,false);for(const sx of[-1,1]){const w=M(new THREE.PlaneGeometry(40,14),wm,sx*18,6,wz+20,false);w.rotation.y=-sx*Math.PI/2}}M(B(56,.32,.12),whiteM,0,-PED+.16,wz+.06,false);
-  {const neon=canvasTex(1024,200,(c,w,h)=>{c.font="128px 'Black Han Sans','Jua',sans-serif";c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';c.shadowColor='#FF4F9A';c.shadowBlur=28;c.lineWidth=12;c.strokeStyle='#FF6FB0';c.strokeText('★ 오늘의 행운 ★',w/2,h/2+6);c.shadowBlur=0;c.fillStyle='#FFFFFF';c.fillText('★ 오늘의 행운 ★',w/2,h/2+6)});
-    const nw=Math.min(10,IW+4),m=new THREE.Mesh(new THREE.PlaneGeometry(nw,nw*200/1024),new THREE.MeshBasicMaterial({map:neon,color:C('#E6E6E6'),transparent:true,toneMapped:false,depthWrite:false,fog:false}));m.position.set(0,H+2.6,wz+.03);sc.add(m)}
   const mini=(x,ry,col,acc,label)=>{const gp=new THREE.Group();gp.position.set(x,-PED,zF-1.1);gp.rotation.y=ry;sc.add(gp);
     const w=1.8,d=1.6,bm=std(col,{roughness:.28,metalness:.1}),am=std(acc,{roughness:.3});
     M(B(w,1.05,d),bm,0,.525,0,true,gp);M(B(w+.05,.05,d+.05),chromeM,0,1.06,0,false,gp);
@@ -1084,7 +1091,7 @@ function build3D(){
     const hole=M(new THREE.PlaneGeometry(cs-.04,cs-.04),std('#1C1030',{roughness:.8}),chx,.004,chz,false);hole.rotation.x=-Math.PI/2}
 
   /* back wall, blackboard, teacher desk */
-  M(B(IW,H+.1,.1),std('#F1E7D6',{roughness:.8}),0,(H+.1)/2,zB-.05,false);
+  R3.backWall=M(B(IW,H+.1,.1),std('#F1E7D6',{roughness:.8,transparent:true}),0,(H+.1)/2,zB-.05,false);
   const d=new Date();
   const bbTex=canvasTex(1024,320,(c,w,h)=>{c.fillStyle='#8B5A2B';c.fillRect(0,0,w,h);c.fillStyle='#24513F';c.fillRect(14,14,w-28,h-28);
     c.fillStyle='rgba(255,255,255,.06)';for(let i=0;i<40;i++)c.fillRect(Math.random()*w,Math.random()*h,80*Math.random(),2);
@@ -1119,17 +1126,17 @@ function build3D(){
   gl(CD,H+.15,-IW/2,0,Math.PI/2);gl(CD,H+.15,IW/2,0,-Math.PI/2);gl(IW,H+.15,0,zF,0);
 
   /* header: 간판 + 둥근 지붕 + 전구 */
-  const hz=zF+.02,hdr=new THREE.Group();sc.add(hdr);R3.hdr=hdr;
-  M(B(IW+.4,.8,.5),bodyM,0,H+.67,hz,true,hdr);
-  {const cr=M(new THREE.CylinderGeometry(.25,.25,IW+.4,40,1,false,0,Math.PI),whiteM,0,H+1.07,hz,true,hdr);cr.rotation.z=Math.PI/2}
-  M(B(IW+.46,.05,.56),chromeM,0,H+.27,hz,false,hdr);M(B(IW+.46,.05,.56),chromeM,0,H+1.07,hz,false,hdr);
-  {const sw=Math.min(IW+.1,3.96),sh=sw*150/1024;
+  const hz=zB,hdr=new THREE.Group();sc.add(hdr);R3.hdr=hdr;
+  M(B(IW+.4,1.0,.5),bodyM,0,H+.77,hz,true,hdr);
+  {const cr=M(new THREE.CylinderGeometry(.25,.25,IW+.4,40,1,false,0,Math.PI),whiteM,0,H+1.27,hz,true,hdr);cr.rotation.z=Math.PI/2}
+  M(B(IW+.46,.05,.56),chromeM,0,H+.27,hz,false,hdr);M(B(IW+.46,.05,.56),chromeM,0,H+1.27,hz,false,hdr);
+  {const sw=Math.min(IW-.3,5.4),sh=sw*150/1024;
     const sign=canvasTex(1024,150,(c,w,h)=>{const gr=c.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#FFFFFF');gr.addColorStop(1,'#FFE6F2');c.fillStyle=gr;rr(c,0,0,w,h,36);c.fill();
       c.font="104px 'Black Han Sans','Jua',sans-serif";c.textAlign='center';c.textBaseline='middle';c.lineJoin='round';c.lineWidth=14;c.strokeStyle='#7B2BD0';c.strokeText('두근두근 자리 뽑기',w/2,h/2+6);
       const tg=c.createLinearGradient(0,25,0,h-25);tg.addColorStop(0,'#FF4F9A');tg.addColorStop(1,'#FF9F45');c.fillStyle=tg;c.fillText('두근두근 자리 뽑기',w/2,h/2+6)});
-    M(new THREE.PlaneGeometry(sw,sh),new THREE.MeshStandardMaterial({map:sign,emissive:C('#FFFFFF'),emissiveMap:sign,emissiveIntensity:.18,roughness:.4}),0,H+.67,hz+.252,false,hdr)}
+    M(new THREE.PlaneGeometry(sw,sh),new THREE.MeshStandardMaterial({map:sign,emissive:C('#FFFFFF'),emissiveMap:sign,emissiveIntensity:.18,roughness:.4}),0,H+.77,hz+.252,false,hdr)}
   R3.bulbMats=[0,1,2].map(()=>std('#FFF1C2',{emissive:C('#FFC531'),emissiveIntensity:.3,roughness:.3}));
-  {const bg=new THREE.SphereGeometry(.045,12,8);let bi=0;for(let x=-IW/2-.12;x<=IW/2+.12;x+=.26){for(const y of[H+.33,H+1.0])M(bg,R3.bulbMats[bi%3],x,y,hz+.27,false,hdr);bi++}}
+  {const bg=new THREE.SphereGeometry(.045,12,8);let bi=0;for(let x=-IW/2-.12;x<=IW/2+.12;x+=.26){for(const y of[H+.32,H+1.215])M(bg,R3.bulbMats[bi%3],x,y,hz+.27,false,hdr);bi++}}
 
   /* gantry + claw */
   const chrome=chromeM,dark=std('#2A2F45',{metalness:.6,roughness:.35}),yel=std('#FFC531',{roughness:.3,metalness:.2});
@@ -1193,8 +1200,8 @@ function build3D(){
   /* 카메라가 꼭 담을 점들 */
   con.updateMatrixWorld(true);
   const cw2=CW/2,cp=[new V(-cw2,-.15,.3),new V(cw2,-.15,.3),new V(jx,.62,0),new V(bx,.25,0),new V(-cw2,.3,-.3),new V(cw2,.3,-.3)].map(p=>con.localToWorld(p)),mx=IW/2+.24;
-  R3.kp={console:cp,head:[new V(-IW/2-.2,H+1.32,hz),new V(IW/2+.2,H+1.32,hz)],
-    all:[new V(-mx,-PED,FZ+.62),new V(mx,-PED,FZ+.62),new V(-mx,H+1.32,zF),new V(mx,H+1.32,zF),new V(-mx,H+.3,zB),new V(mx,H+.3,zB),new V(-mx,-PED,zB),new V(mx,-PED,zB)],
+  R3.kp={console:cp,head:[new V(-IW/2-.2,H+1.52,hz),new V(IW/2+.2,H+1.52,hz)],
+    all:[new V(-mx,-PED,FZ+.62),new V(mx,-PED,FZ+.62),new V(-mx,H+.3,zF),new V(mx,H+.3,zF),new V(-mx,H+1.52,zB),new V(mx,H+1.52,zB),new V(-mx,-PED,zB),new V(mx,-PED,zB)],
     floor:[new V(-IW/2,0,zB),new V(IW/2,0,zB),new V(-IW/2,0,zF),new V(IW/2,0,zF),cp[0],cp[1]],
     desks:[new V(-IW/2,DESK,zB+.4),new V(IW/2,DESK,zB+.4),new V(-IW/2,0,g.zPit),new V(IW/2,0,g.zPit)]};
   Object.assign(claw,{x:g.home.x,z:g.home.z,y:g.home.y,open:0,shake:0});held=null;setLed(game.order.length-game.idx);
@@ -1424,7 +1431,9 @@ function update(dt,t){
   applyClaw(dt,t);stepFx(dt);
   const ph=game.phase;if(R3.bulbMats){const blink=ph==='choose'||ph==='done',step=Math.floor(t/.16);
     R3.bulbMats.forEach((m,i)=>m.emissiveIntensity=blink?(Math.floor(t/.3)%2?2.4:.2):(step%3===i?2.6:.25))}
-  if(R3.hdr)R3.hdr.visible=!(game.cam==='top'&&!FC.on);
+  const behind=R3.camPos.z<G.zBack-.15;
+  if(R3.hdr)R3.hdr.visible=!(game.cam==='top'&&!FC.on)&&!behind;
+  if(R3.backWall){const m=R3.backWall.material,to=behind?.12:1;m.opacity+=(to-m.opacity)*(1-Math.exp(-dt*10));m.depthWrite=m.opacity>.98}
   if(R3.leds)for(const l of R3.leds)l.m.emissive.setHSL((t*.12+l.ph)%1,.85,.56);
   if(R3.btnMat)R3.btnMat.emissiveIntensity=ph==='idle'&&!game.auto?.5+.45*Math.sin(t*5):.3;
   if(R3.caps){const kk=1-Math.exp(-dt*10);for(const n in R3.caps){const c=R3.caps[n];if(!c.tag)continue;const aim=c===R3.capAim,tg=aim?1.55+.12*Math.sin(t*9):1;
@@ -1498,16 +1507,18 @@ async function startGame(opt={}){
   let chk=solve(names,{});if(!chk.ok&&mixOn()){chk=solve(names,{},{noGender:true});if(chk.ok)say('남녀 짝 조건을 모두 지킬 수 없어 일부 짝은 조건 없이 배정돼요.')}
   if(!chk.ok){say(`자리를 만들 수 없는 조건이 있어요 (코드 E${chk.why==='fixed'?1:chk.why==='front'?3:2}). 프로그램 정보 > 교사 추가 설정에서 확인해 주세요.`);return false}
   $('#startBtn').disabled=true;await fontsReady();$('#startBtn').disabled=false;
+  const lp=opt.boot?null:$('#loadPop');if(lp){lp.hidden=false;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))}
   const ben=S.benefit.filter(n=>names.includes(n)&&!S.fixed[n]);
   game.gen++;clearTimeout(game.timer);clearTimeout(game.resT);clearTimeout(game.stampT);motorOff();musStop(.1);
   Object.assign(game,{on:true,auto:false,order:[...shuffle(ben.slice()),...shuffle(names.filter(n=>!ben.includes(n)))],benefit:new Set(ben),idx:0,placed:{},plan:null,counted:false,saved:false,phase:'idle',waiting:null,hover:null,flip:false});
   syncAuto();hideSecret();G=makeGeom();
   $('#setup').hidden=true;$('#topbar').hidden=true;$('#game').hidden=false;$('#result').hidden=true;['#banner','#stamp','#countdown'].forEach(s=>$(s).hidden=true);document.body.classList.add('playing');
-  if(!has3D){game.plan=null;makePlan();game.placed=Object.assign({},game.plan);game.idx=game.order.length;game.phase='done';updateDock();setStatus('이 컴퓨터에서는 3D 화면을 쓸 수 없어 결과만 보여 드려요.');recordGame();showResult();return true}
+  if(!has3D){if(lp)lp.hidden=true;game.plan=null;makePlan();game.placed=Object.assign({},game.plan);game.idx=game.order.length;game.phase='done';updateDock();setStatus('이 컴퓨터에서는 3D 화면을 쓸 수 없어 결과만 보여 드려요.');recordGame();showResult();return true}
   try{build3D()}catch(e){console.error(e);say('3D 화면을 만들지 못했어요. 화질을 \'가볍게\'로 바꿔 보세요.')}
   if(R3)R3.camInit=false;fcStop();
   setStatus(ben.length?`🎁 찬스 학생 ${ben.length}명이 먼저 자리를 골라요`:S.isSample?'지금은 예시 명단 · 우리 반 명단은 <b>⚙ 설정</b>에서':'아래 뽑기 버튼을 누르면 크레인이 움직여요');
   updateDock();fit();cancelAnimationFrame(raf);lastT=performance.now();raf=requestAnimationFrame(loop);
+  if(lp)requestAnimationFrame(()=>requestAnimationFrame(()=>{lp.hidden=true}));
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>wakeLock=w).catch(()=>{})}catch(e){}
   return true;
 }

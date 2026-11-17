@@ -214,6 +214,14 @@ button.chip{cursor:pointer}
 .result-card .btn.ghost{background:transparent}
 .result-card .btn.print{background:#1C2131;color:#fff;border-color:#1C2131}
 
+/* 자리 그리는 중 */
+.loadpop{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(18,14,30,.42)}
+.loadpop[hidden]{display:none}
+.lp-card{display:flex;align-items:center;gap:16px;background:#fff;color:#1F1A2E;border-radius:18px;padding:20px 28px 20px 22px;box-shadow:0 18px 50px rgba(0,0,0,.3);font-weight:700;font-size:19px;max-width:calc(100% - 32px)}
+.lp-card small{display:block;font-weight:500;font-size:14px;color:#6B6478;margin-top:4px}
+.lp-spin{width:36px;height:36px;border-radius:50%;border:4px solid #FFE9B0;border-top-color:#FFC531;animation:lpSpin .8s linear infinite;flex:none}
+@keyframes lpSpin{to{transform:rotate(360deg)}}
+
 /* 자유 시점 */
 #cv3{touch-action:none}
 .camhint{right:30px;bottom:20px;font-size:12.5px;line-height:1.3;padding:5px 11px;border-radius:999px;background:rgba(10,12,20,.55);color:#fff;max-width:calc(100% - 60px)}
@@ -550,6 +558,7 @@ button.chip{cursor:pointer}
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
+<div class="loadpop" id="loadPop" hidden role="status" aria-live="polite"><div class="lp-card"><span class="lp-spin" aria-hidden="true"></span><div>자리를 그리고 있어요<small>잠시만 기다려 주세요</small></div></div></div>
 
 <script>
 (() => {
@@ -994,13 +1003,13 @@ function paintGround(g){
   for(let gi=0;gi<g.NG;gi++){c.fillStyle='#43464D';c.fillRect(g.groupX(gi),g.TOP,g.per*g.SW,g.R*g.SH)}
   layer(blot,.22,'overlay');layer(fine,1);layer(fine,.6);
   for(let i=0;i<(g.x1-g.x0)*(g.gateLineY-g.ty)/9;i++){c.fillStyle=R()<.5?'rgba(170,172,178,.5)':'rgba(20,21,25,.5)';const s=.5+R()*.9;c.fillRect(g.x0+R()*(g.x1-g.x0),g.ty+R()*(g.H-g.ty),s,s)}
-  c.save();c.filter='blur(3px)';c.strokeStyle='rgba(15,16,20,.22)';c.lineWidth=7;
+  {const c0=c,sc=document.createElement('canvas');sc.width=cnv.width;sc.height=cnv.height;{const c=sc.getContext('2d',{willReadFrequently:true});c.scale(k,k);c.strokeStyle='rgba(15,16,20,.22)';c.lineWidth=7;
   for(let a=0;a<=g.NG;a++)for(const d of[-12,12]){c.beginPath();c.moveTo(g.aisleX(a)+d,g.ty);c.lineTo(g.aisleX(a)+d,g.gateLineY);c.stroke()}
   for(const d of[-12,12]){c.beginPath();c.moveTo(g.x0,g.roadY+d);c.lineTo(g.x1,g.roadY+d);c.stroke();c.beginPath();c.moveTo(g.x0,g.ty+17+d*.7);c.lineTo(g.x1,g.ty+17+d*.7);c.stroke()}
   for(const d of[-12,12]){c.beginPath();c.moveTo(g.gateX+d,g.roadY);c.lineTo(g.gateX+d,g.H);c.stroke()}
   for(const s of g.seats)if(s.on&&R()<.75){c.fillStyle=`rgba(8,8,12,${.14+R()*.16})`;c.beginPath();c.ellipse(s.x+(R()-.5)*14,s.y-6+(R()-.5)*8,9+R()*12,5+R()*6,R()*3,0,7);c.fill()}
-  for(let i=0;i<g.NG*5;i++){c.fillStyle=`rgba(10,10,14,${.05+R()*.07})`;c.beginPath();c.ellipse(g.x0+R()*(g.x1-g.x0),g.ty+R()*(g.gateLineY-g.ty),10+R()*24,7+R()*14,R()*3,0,7);c.fill()}
-  c.restore();
+  for(let i=0;i<g.NG*5;i++){c.fillStyle=`rgba(10,10,14,${.05+R()*.07})`;c.beginPath();c.ellipse(g.x0+R()*(g.x1-g.x0),g.ty+R()*(g.gateLineY-g.ty),10+R()*24,7+R()*14,R()*3,0,7);c.fill()}}
+  c0.save();c0.filter='blur(3px)';c0.drawImage(sc,0,0,g.W,g.H);c0.restore()}
   for(let i=0;i<g.NG*2;i++){c.fillStyle='rgba(28,29,34,.55)';const w=20+R()*40,h=14+R()*30;c.fillRect(g.x0+R()*(g.x1-g.x0-w),g.ty+R()*(g.gateLineY-g.ty-h),w,h)}
   c.strokeStyle='rgba(18,19,23,.75)';c.lineWidth=1;for(let i=0;i<g.NG*4;i++){let x=g.x0+R()*(g.x1-g.x0),y=g.ty+R()*(g.gateLineY-g.ty);c.beginPath();c.moveTo(x,y);for(let j=0;j<7;j++){x+=(R()-.5)*18;y+=(R()-.5)*18;c.lineTo(x,y)}c.stroke()}
   // paint
@@ -1753,6 +1762,7 @@ async function startGame(opt={}){
   let chk=solve(names,{});if(!chk.ok&&mixOn()){chk=solve(names,{},{noGender:true});if(chk.ok)say('남녀 짝 조건을 모두 지킬 수 없어 일부 짝은 조건 없이 배정돼요.')}
   if(!chk.ok){say(`자리를 만들 수 없는 조건이 있어요 (코드 E${chk.why==='fixed'?1:chk.why==='front'?3:2}). 프로그램 정보 > 교사 추가 설정에서 확인해 주세요.`);return false}
   $('#startBtn').disabled=true;await fontsReady();$('#startBtn').disabled=false;
+  const lp=opt.boot?null:$('#loadPop');if(lp){lp.hidden=false;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))}
   const ben=S.benefit.filter(n=>names.includes(n)&&!S.fixed[n]);
   clearTimeout(game.timer);clearTimeout(game.resT);clearTimeout(game.stampT);engineOff();
   Object.assign(game,{on:true,auto:false,order:[...shuffle(ben.slice()),...shuffle(names.filter(n=>!ben.includes(n)))],benefit:new Set(ben),idx:0,placed:{},parkAng:{},plan:null,counted:false,saved:false,
@@ -1763,6 +1773,7 @@ async function startGame(opt={}){
   if(has3D&&game.view==='3d'){try{build3D()}catch(e){console.error(e);game.view='2d'}}
   setStatus(ben.length?`🎁 찬스 학생 ${ben.length}명이 먼저 자리를 골라요`:S.isSample?'예시 명단 · <b>⚙ 설정</b>에서 바꿔요':'출발 버튼을 누르면 첫 차가 와요');
   updateDock();applyView();cancelAnimationFrame(raf);lastT=performance.now();raf=requestAnimationFrame(loop);
+  if(lp)requestAnimationFrame(()=>requestAnimationFrame(()=>{lp.hidden=true}));
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>wakeLock=w).catch(()=>{})}catch(e){}
   return true;
 }
