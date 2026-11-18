@@ -238,11 +238,13 @@ button.chip{cursor:pointer}
 .it-2{color:#fff;text-shadow:0 .045em 0 #2F6FDE,0 .09em 0 #12306F,0 0 .35em rgba(63,140,255,.8)}
 .it-sub{font-family:var(--font-display);font-size:clamp(17px,2.6vw,30px);margin-top:.9em;opacity:0;background:rgba(8,12,24,.6);border:2px solid rgba(255,197,49,.8);border-radius:999px;padding:.25em 1.1em;color:#FFF4D6}
 .intro.play .it-1{animation:slam .55s cubic-bezier(.2,.9,.3,1.25) 2.2s both}
-.intro.play .it-1 span{animation:beat .9s ease-in-out 2.95s 3}
+.intro.play .it-1 span{animation:beat .9s ease-in-out 2.95s 2}
 .intro.play .it-2{animation:slam .6s cubic-bezier(.2,.9,.3,1.25) 2.5s both}
 .intro.play .it-sub{animation:rise .5s ease-out 3.35s both}
+.intro.prime .it-1,.intro.prime .it-2{opacity:.004;transform:scale(2.7) rotate(-7deg)}.intro.prime .it-sub{opacity:.004;transform:translateY(24px)}
 .intro.out{opacity:0;transform:scale(1.08);pointer-events:none}
-.intro-wait{position:absolute;left:50%;top:calc(40px + env(safe-area-inset-top,0px));transform:translateX(-50%);font-family:var(--font-display);font-size:16px;color:#fff;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:6px 16px;opacity:0;pointer-events:none;white-space:nowrap}
+.intro-wait{position:absolute;left:50%;top:calc(40px + env(safe-area-inset-top,0px));transform:translateX(-50%);font-family:var(--font-display);font-size:16px;color:#fff;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:6px 16px;opacity:0;pointer-events:none;white-space:nowrap;transition:opacity .25s}
+.iw-spin{display:inline-block;width:12px;height:12px;margin-right:8px;vertical-align:-1px;border:2px solid rgba(255,255,255,.35);border-top-color:#FFC531;border-radius:50%;animation:lpSpin .8s linear infinite}
 .intro.wait .intro-wait{opacity:1}
 .intro-skip{position:absolute;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;cursor:pointer}
 @keyframes slam{0%{opacity:0;transform:scale(2.7) rotate(-7deg)}55%{opacity:1;transform:scale(.9) rotate(1.5deg)}78%{transform:scale(1.07) rotate(0)}100%{opacity:1;transform:none}}
@@ -544,7 +546,7 @@ button.chip{cursor:pointer}
     <div class="it-line it-2"><span>대작전</span></div>
     <div class="it-sub">오늘 내 자리는 어디에 주차될까?</div>
   </div>
-  <div class="intro-wait">주차장 준비 중…</div>
+  <div class="intro-wait"><span class="iw-spin" aria-hidden="true"></span>주차장 준비 중…</div>
   <button class="intro-skip" id="introSkip" type="button">건너뛰기 ▶▶</button>
 </div>
 <div id="printArea"></div>
@@ -1876,7 +1878,7 @@ $('#exitBtn').onclick=()=>{const mid=game.idx>0&&game.phase!=='done';
 let skipReq=false;
 function playIntro(prep){return new Promise(resolve=>{
   const box=$('#intro'),cv=$('#introCv'),c=cv.getContext('2d'),DUR=reduced?1.8:5.6,TAU=Math.PI*2,R=Math.random;
-  let W=0,H=0,k=1,raf2=0,ended=false,last=0,Y={};const t0=performance.now();
+  let W=0,H=0,k=1,raf2=0,ended=false,go=false,last=0,Y={};let t0=performance.now();
   const car=(type,col,col2,stripe)=>({type,col:col||FIXEDCOL[type]||PAINT[R()*PAINT.length|0],col2:col2||CANDY[R()*CANDY.length|0],plate:'',pitch:1,stripe:stripe==null?R()<.6:stripe});
   const wave1=['sports','police','taxi','sports'].map((t,i)=>({lane:i,v:car(t,i===0?'#D7101F':i===3?'#1F5BD6':null),delay:R()*.16}));
   const wave2=['bus','sports','moto','jeep','sports','hatch'].map((t,i)=>({lane:i%4,v:car(t),start:2.3+i*.13+R()*.08,dur:.5+R()*.2,dir:i%2?-1:1}));
@@ -1898,7 +1900,7 @@ function playIntro(prep){return new Promise(resolve=>{
   function tape(y,h,off,t){c.save();c.beginPath();c.rect(0,y,W,h);c.clip();c.translate(off,0);c.fillStyle='#FFC531';c.fillRect(-W,y,W*3,h);c.fillStyle='#1C2131';
     const st=28*k,sh2=(t*70*k)%(st*2);for(let x=-W-st*2+sh2;x<W*2;x+=st*2){c.beginPath();c.moveTo(x,y+h);c.lineTo(x+h,y);c.lineTo(x+h+st,y);c.lineTo(x+st,y+h);c.closePath();c.fill()}c.restore()}
   let popped=false,launched=false,parkedFx=false;
-  function frame(now){const t=(now-t0)/1000,dt=Math.min(.05,last?(now-last)/1000:0);last=now;const T=reduced?4.4:t;c.clearRect(0,0,W,H);
+  function frame(now){if(!go)now=t0;/* 출발 전에는 첫 장면을 그려 둠 */const t=(now-t0)/1000,dt=go&&last?Math.min(.05,(now-last)/1000):0;last=go?now:0;const T=reduced?4.4:t,calm=Math.max(0,Math.min(1,(4.6-t)/.6));c.clearRect(0,0,W,H);
     const {sc,sw,sh,n,top,road,lanes,s}=Y,cx=W/2,cy=H*.44,cL=68*s,cW=34*s;
     if(!reduced&&t>=1.8&&!launched){launched=true;wave1.forEach(r=>{const x=70*k+cL/2,y=lanes[r.lane];for(let i=0;i<10;i++)puff(x-cL*.4,y+(R()-.5)*cW,-(60+R()*160)*k,(R()-.5)*90*k,(10+R()*12)*k,'225,228,236',.9+R()*.5)})}
     if(!reduced&&t>=2.2&&!popped){popped=true;burst(cx,cy,150,1);
@@ -1906,7 +1908,7 @@ function playIntro(prep){return new Promise(resolve=>{
     const shake=reduced?0:(t>1.8&&t<2.05?(1-(t-1.8)/.25)*7*k:0)+(t>2.2&&t<2.6?(1-(t-2.2)/.4)*11*k:0);
     c.save();if(shake)c.translate((R()-.5)*2*shake,(R()-.5)*2*shake);
     /* 빛살 */
-    if(!reduced&&t>=2.2){const a=Math.min(1,(t-2.2)/.5)*.26,R0=Math.hypot(W,H);c.save();c.translate(cx,cy);c.rotate(t*.25);
+    if(!reduced&&t>=2.2&&calm>0){const a=Math.min(1,(t-2.2)/.5)*.26*calm,R0=Math.hypot(W,H);c.save();c.translate(cx,cy);c.rotate(t*.25);
       for(let i=0;i<18;i++){c.beginPath();c.moveTo(0,0);c.arc(0,0,R0,i*TAU/18,(i+.5)*TAU/18);c.closePath();c.fillStyle=i%2?`rgba(47,111,222,${a})`:`rgba(255,197,49,${a})`;c.fill()}c.restore()}
     /* 도로 */
     const g0=lanes[0]-cW*.95,g1=lanes[3]+cW*.95;c.fillStyle='rgba(0,0,0,.22)';c.fillRect(0,g0,W,g1-g0);
@@ -1934,7 +1936,7 @@ function playIntro(prep){return new Promise(resolve=>{
       streaks.forEach(q=>{const L=q.len*220*k,x=((t*q.sp*2400*k+q.o*W)%(W+L*2))-L,y=g0+q.y*(g1-g0);c.moveTo(x,y);c.lineTo(x+L,y)});c.stroke()}
     /* 연기 */
     for(let i=puffs.length-1;i>=0;i--){const p=puffs[i];p.t+=dt;if(p.t>p.life){puffs.splice(i,1);continue}p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=Math.pow(.3,dt);p.vy*=Math.pow(.3,dt);
-      const q=p.t/p.life;c.fillStyle=`rgba(${p.col},${.42*(1-q)})`;c.beginPath();c.arc(p.x,p.y,p.r*(1+q*2.2),0,TAU);c.fill()}
+      const q=p.t/p.life;c.fillStyle=`rgba(${p.col},${.42*(1-q)*calm})`;c.beginPath();c.arc(p.x,p.y,p.r*(1+q*2.2),0,TAU);c.fill()}
     /* 1차: 출발선의 차들 */
     if(!reduced)wave1.forEach(r=>{const tl=1.8+r.delay,x0=70*k+cL/2,y=lanes[r.lane];let x=x0,yy=y;
       if(t<tl){yy+=Math.sin(t*55+r.lane*2)*1.3*k;if(t>.25&&R()<dt*16)puff(x0-cL*.5,y+cW*.25,-(40+R()*60)*k,(R()-.5)*20*k,4*k,'200,205,215',.7)}
@@ -1965,14 +1967,14 @@ function playIntro(prep){return new Promise(resolve=>{
       const g=c.createRadialGradient(cx,cy,0,cx,cy,420*k);g.addColorStop(0,'rgba(255,255,255,.85)');g.addColorStop(1,'rgba(255,255,255,0)');c.fillStyle=g;c.fillRect(0,0,W,H);c.restore()}
     const drag=Math.pow(.25,dt);
     for(let i=sparks.length-1;i>=0;i--){const q=sparks[i];q.t+=dt;if(q.t>q.life){sparks.splice(i,1);continue}q.vx*=drag;q.vy=q.vy*drag+900*k*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;
-      const z=q.sz*(1-q.t/q.life*.6);c.globalAlpha=Math.min(1,(q.life-q.t)*2);c.fillStyle=q.col;c.beginPath();c.moveTo(q.x,q.y-z*1.6);c.lineTo(q.x+z*.5,q.y);c.lineTo(q.x,q.y+z*1.6);c.lineTo(q.x-z*.5,q.y);c.closePath();c.fill();c.beginPath();c.moveTo(q.x-z*1.6,q.y);c.lineTo(q.x,q.y+z*.5);c.lineTo(q.x+z*1.6,q.y);c.lineTo(q.x,q.y-z*.5);c.closePath();c.fill()}
+      const z=q.sz*(1-q.t/q.life*.6);c.globalAlpha=Math.min(1,(q.life-q.t)*2)*calm;c.fillStyle=q.col;c.beginPath();c.moveTo(q.x,q.y-z*1.6);c.lineTo(q.x+z*.5,q.y);c.lineTo(q.x,q.y+z*1.6);c.lineTo(q.x-z*.5,q.y);c.closePath();c.fill();c.beginPath();c.moveTo(q.x-z*1.6,q.y);c.lineTo(q.x,q.y+z*.5);c.lineTo(q.x+z*1.6,q.y);c.lineTo(q.x,q.y-z*.5);c.closePath();c.fill()}
     c.globalAlpha=1;
-    for(const f of conf){f.y+=f.vy*dt;f.x+=f.vx*dt+Math.sin(t*5+f.ph)*40*k*dt;f.rot+=f.vr*dt;if(f.y>H+20)continue;c.save();c.translate(f.x,f.y);c.rotate(f.rot);c.scale(1,Math.cos(t*6+f.ph));c.fillStyle=f.col;c.fillRect(-f.w/2,-f.h/2,f.w,f.h);c.restore()}
+    c.globalAlpha=calm;for(const f of calm>0?conf:[]){f.y+=f.vy*dt;f.x+=f.vx*dt+Math.sin(t*5+f.ph)*40*k*dt;f.rot+=f.vr*dt;if(f.y>H+20)continue;c.save();c.translate(f.x,f.y);c.rotate(f.rot);c.scale(1,Math.cos(t*6+f.ph));c.fillStyle=f.col;c.fillRect(-f.w/2,-f.h/2,f.w,f.h);c.restore()}
     c.restore();
     /* 테두리: 네온 + 공사 띠 + 유도등 */
     c.lineWidth=10*k;c.strokeStyle='rgba(63,140,255,.22)';rr(c,30*k,30*k,W-60*k,H-60*k,22*k);c.stroke();c.lineWidth=2.5*k;c.strokeStyle='#7FB0FF';c.stroke();
-    const tin=reduced?0:W*(1-ease(Math.min(1,t/.5)));tape(0,20*k,-tin,t);tape(H-20*k,20*k,tin,t);
-    const beat=Math.floor(t*(popped?8:12));for(let y=H-44*k,i=0;y>40*k;y-=30*k,i++){const on=popped?(beat+i)%2===0:(i-beat%4+40)%4===0;
+    const tin=reduced?0:W*(1-ease(Math.min(1,t/.5)));{const x=Math.min(t,4.6)-4,tt=x<0?t:4+x*(1-x/1.2);tape(0,20*k,-tin,tt);tape(H-20*k,20*k,tin,tt)}
+    const beat=Math.floor(t*(popped?8:12));for(let y=H-44*k,i=0;y>40*k;y-=30*k,i++){const on=t>=4.6||(popped?(beat+i)%2===0:(i-beat%4+40)%4===0);
       [14*k,W-14*k].forEach((x,j)=>{const col=j?'#FFC531':'#3F8CFF';if(on){c.fillStyle=col;c.globalAlpha=.28;c.beginPath();c.arc(x,y,10*k,0,TAU);c.fill();c.globalAlpha=1}c.fillStyle=on?col:'rgba(255,255,255,.16)';c.beginPath();c.arc(x,y,4.5*k,0,TAU);c.fill()})}
     if(!ended)raf2=requestAnimationFrame(frame)}
   let ready=!prep,prepping=false,want=null;
@@ -1984,16 +1986,26 @@ function playIntro(prep){return new Promise(resolve=>{
     setTimeout(()=>{cancelAnimationFrame(raf2);box.hidden=true;window.removeEventListener('resize',size);resolve()},fast?350:700)}
   const onKey=e=>{e.preventDefault();e.stopPropagation();finish(true)};
   box.onclick=()=>finish(true);$('#introSkip').onclick=e=>{e.stopPropagation();finish(true)};document.addEventListener('keydown',onKey,true);
-  box.classList.add('play');raf2=requestAnimationFrame(frame);
-  setTimeout(runPrep,(reduced?.9:4.0)*1000);
-  if(skipReq)finish(true);else setTimeout(()=>finish(false),(DUR-.7)*1000);
+  raf2=requestAnimationFrame(frame);
+  const start=()=>{if(ended||go)return;box.classList.add('play');box.classList.remove('prime');
+  /* 그림 시계를 제목 글자 애니메이션이 실제로 시작된 때에 맞춤(첫 화면 준비가 늦어도 앞부분이 끊기지 않게). 3D 준비는 움직임이 다 멈춘 뒤에 */
+  const ti=box.querySelector('.it'),anims=ti&&ti.getAnimations?ti.getAnimations({subtree:true}):[],at=s=>Math.max(0,t0+s*1000-performance.now());
+  const begin=()=>{if(go||ended)return;go=true;const st=anims.map(a=>a.startTime).filter(x=>x!=null);t0=st.length?Math.min(...st):performance.now();
+    setTimeout(runPrep,at(reduced?.9:4.75));setTimeout(()=>finish(false),at(DUR-.7))};
+  Promise.all(anims.map(a=>a.ready)).then(begin,begin);setTimeout(begin,1500)};
+  /* 페이지가 막 열린 직후의 무거운 일이 끝나 화면이 고르게 돌기 시작하면 출발(길어도 1.2초) */
+  if(!reduced)box.classList.add('prime');/* 큰 제목을 미리 그려 둠(거의 투명) */
+  {let n=0,p=0;const t1=performance.now(),f=now=>{n=p&&now-p<45?n+1:0;p=now;if(n>=4||now-t1>1200)start();else requestAnimationFrame(f)};requestAnimationFrame(f)}
+  if(skipReq)finish(true);
 })}
 async function boot(){
   introOn=true;$('#intro').onclick=()=>{skipReq=true};
   await fontsReady();
   await playIntro(async()=>{
     try{await startGame({boot:true})}catch(e){console.error(e)}
-    if(game.on){warm=true;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))}
+    if(game.on){warm=true;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      /* 가린 채로 게임 화면을 몇 장 더 그려 고르게 돌 때 걷기(길어도 1초) */
+      await new Promise(r=>{let n=0,p=0;const t1=performance.now(),f=now=>{warm=true;n=p&&now-p<45?n+1:0;p=now;if(n>=4||now-t1>1000)r();else requestAnimationFrame(f)};requestAnimationFrame(f)})}
   });
   introOn=false;lastT=performance.now();
   if(bootMsg){toast(bootMsg);bootMsg=''}
