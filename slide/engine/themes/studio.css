@@ -1,0 +1,74 @@
+/*! Slide Engine theme · studio (스튜디오) | 굵은 고딕, 가는 선, 포인트 색 하나 | MIT */
+:root{
+  --bg:#F4F2EC;--surface:#E8E5DC;--ink:#111111;--ink-2:#55524A;
+  --accent:#2440F0;--accent-ink:#1B31C4;--accent-2:#FF5B2E;--on-accent:#FFFFFF;--radius:0px;
+}
+[data-theme=studio]{--t-name:studio;--t-title:mask;--t-transition:wipe;--t-particles:none;--se-head-w:800}
+[data-theme=studio]:not([data-enter]){--se-enter:se-rise;--se-dist:36px}
+
+/* 본문 장: 위쪽 가는 선과 포인트 탭 */
+[data-theme=studio] .se-deco i:nth-child(1){left:var(--pad-x);right:var(--pad-x);top:52px;height:3px;background:var(--ink);transform-origin:0 50%}
+[data-theme=studio] .se-deco i:nth-child(2){left:var(--pad-x);top:52px;width:96px;height:14px;background:var(--accent);transform-origin:0 0}
+[data-theme=studio] .slide>h2{font-size:64px;letter-spacing:-.04em}
+[data-theme=studio] .se-stagebar{left:auto;right:var(--pad-x);top:32px}
+[data-theme=studio] .se-foot{font-weight:800;color:var(--ink);letter-spacing:.02em}
+[data-theme=studio] .se-foot::before{content:"";display:inline-block;vertical-align:middle;width:40px;height:3px;margin:0 14px .2em 0;background:var(--ink)}
+
+/* 표지 */
+[data-theme=studio] .layout-cover h1{font-size:136px;letter-spacing:-.05em;line-height:1.06;max-width:1320px}
+[data-theme=studio] .layout-cover .kicker{font-size:28px;font-weight:800;color:var(--ink);letter-spacing:.04em;margin-bottom:40px}
+[data-theme=studio] .layout-cover .kicker::before{width:22px;height:22px;border-radius:0;margin-right:18px}
+[data-theme=studio] .layout-cover .meta{align-self:flex-start;min-width:520px;margin-top:56px;padding-top:24px;border-top:3px solid var(--ink);color:var(--ink)}
+[data-theme=studio] .layout-cover .se-deco i:nth-child(1){left:auto;right:-170px;top:-210px;width:820px;height:820px;border-radius:50%;background:var(--accent);transform-origin:50% 50%}
+[data-theme=studio] .layout-cover .se-deco i:nth-child(2){left:auto;right:540px;top:430px;width:190px;height:190px;border-radius:50%;background:var(--accent-2)}
+[data-theme=studio] .layout-cover .se-deco i:nth-child(3){right:110px;top:470px;width:380px;height:380px;border:3px solid var(--ink);border-radius:50%}
+[data-theme=studio] .layout-cover .se-deco i:nth-child(4){left:var(--pad-x);top:var(--pad-y);width:180px;height:16px;background:var(--ink);transform-origin:0 50%}
+[data-theme=studio] .layout-cover:has(>.img-slot) .se-deco i:nth-child(-n+3){display:none}
+[data-theme=studio][data-ratio="4:3"] .layout-cover h1{font-size:112px}
+[data-theme=studio][data-ratio="4:3"] .layout-cover .se-deco i:nth-child(1){width:640px;height:640px}
+[data-theme=studio][data-ratio="4:3"] .layout-cover .se-deco i:nth-child(n+2):nth-child(-n+3){display:none}
+
+/* 섹션 구분: 포인트 색 전면 */
+[data-theme=studio] .layout-section{--bg:var(--accent);--ink:var(--on-accent);--ink-2:color-mix(in srgb,var(--on-accent) 84%,var(--accent));--accent-ink:var(--on-accent)}
+[data-theme=studio] .layout-section .se-deco i{display:none}
+[data-theme=studio] .layout-section .num{position:absolute;right:64px;bottom:-40px;margin:0;font-size:640px;letter-spacing:-.06em;color:transparent;-webkit-text-stroke:4px var(--on-accent);opacity:.9}
+[data-theme=studio] .layout-section h2{font-size:108px;letter-spacing:-.045em;max-width:1200px}
+[data-theme=studio] .layout-section h2::before{content:"";display:block;width:130px;height:16px;margin-bottom:44px;background:var(--on-accent)}
+
+/* 한 문장 · 질문 · 인용 */
+[data-theme=studio] .layout-statement{align-items:flex-start;text-align:left}
+[data-theme=studio] .layout-statement .big{font-size:104px;letter-spacing:-.045em;line-height:1.16}
+[data-theme=studio] .layout-statement .big::before{content:"";display:block;width:64px;height:64px;margin-bottom:52px;background:var(--accent)}
+[data-theme=studio] .layout-statement .by{padding-top:28px;border-top:3px solid var(--ink);min-width:420px}
+[data-theme=studio] .layout-question::after{color:transparent;-webkit-text-stroke:4px var(--accent)}
+[data-theme=studio] .layout-question .q{font-size:96px;letter-spacing:-.045em}
+[data-theme=studio] .layout-quote blockquote::before{color:var(--accent)}
+
+/* 구성 요소 */
+[data-theme=studio] .cards{counter-reset:c}
+[data-theme=studio] .card{counter-increment:c;background:none;border-top:6px solid var(--ink);padding:32px 0 0;min-height:0}
+[data-theme=studio] .card::before{content:counter(c,decimal-leading-zero);font:800 30px/1 var(--se-head);letter-spacing:.02em;color:var(--accent-ink);margin-bottom:12px}
+[data-theme=studio] .card h3{font-size:46px;letter-spacing:-.04em}
+[data-theme=studio] .goals{gap:0;border-bottom:3px solid var(--ink)}
+[data-theme=studio] .goals>li{background:none;border-top:3px solid var(--ink);padding:38px 8px 38px 176px;font-size:calc(var(--fs) + 10px)}
+[data-theme=studio] .goals>li::before{content:counter(g,decimal-leading-zero);left:0;width:auto;height:auto;border-radius:0;background:none;color:var(--accent-ink);font-size:84px;letter-spacing:-.04em}
+[data-theme=studio] .col{background:none;border:3px solid var(--ink)}
+[data-theme=studio] .col:last-child{border-color:var(--accent);background:var(--se-tint)}
+[data-theme=studio] .steps>li::before{border-radius:0;border-width:3px}
+[data-theme=studio] .timeline>li::before{border-radius:0}
+[data-theme=studio] .activity>*{background:none;border:3px solid var(--ink)}
+[data-theme=studio] .map>.center,[data-theme=studio] .map>.branch{border-radius:0}
+[data-theme=studio] .layout-next>p{border-left-width:16px}
+
+/* 모션: 선이 그어지고 원이 커진다 */
+@keyframes st-x{from{transform:scaleX(0)}}
+@keyframes st-zoom{from{transform:scale(0)}}
+@keyframes st-ring{from{transform:scale(.6) rotate(-40deg);opacity:0}}
+.se-m[data-theme=studio] .slide.is-active .se-deco i:nth-child(1){animation:st-x calc(.9s*var(--se-k)) var(--se-ease) both}
+.se-m[data-theme=studio] .slide.is-active .se-deco i:nth-child(2){animation:st-x calc(.5s*var(--se-k)) var(--se-ease) .35s both}
+.se-m[data-theme=studio] .layout-cover.is-active .se-deco i:nth-child(1){animation:st-zoom calc(1s*var(--se-k)) cubic-bezier(.2,.9,.2,1) both}
+.se-m[data-theme=studio] .layout-cover.is-active .se-deco i:nth-child(2){animation:st-zoom calc(.7s*var(--se-k)) cubic-bezier(.3,1.5,.4,1) .45s both}
+.se-m[data-theme=studio] .layout-cover.is-active .se-deco i:nth-child(3){animation:st-ring calc(1s*var(--se-k)) var(--se-ease) .3s both}
+.se-m[data-theme=studio] .layout-cover.is-active .se-deco i:nth-child(4){animation:st-x calc(.6s*var(--se-k)) var(--se-ease) .1s both}
+.se-m[data-theme=studio] .layout-section.is-active h2::before{animation:st-x calc(.6s*var(--se-k)) var(--se-ease) both;transform-origin:0 50%}
+.se-m[data-theme=studio] .layout-statement.is-active .big::before{animation:st-zoom calc(.5s*var(--se-k)) cubic-bezier(.3,1.5,.4,1) both}

@@ -1,0 +1,94 @@
+/*! Slide Engine theme · chalk (칠판) | 초록 칠판, 분필 손글씨, 손으로 그린 선 | MIT */
+@import url("https://fonts.googleapis.com/css2?display=swap&family=Gaegu:wght@400;700");
+:root{
+  --bg:#1E3A32;--surface:#28493F;--ink:#F6F3E7;--ink-2:#C9D3C6;
+  --accent:#FFD966;--accent-ink:#FFD966;--accent-2:#FF9E8A;--on-accent:#1E3A32;--radius:10px;
+}
+[data-theme=chalk]{--t-name:chalk;--t-title:write;--t-transition:wipe;--t-particles:dust;
+  --se-head:"Gaegu","Nanum Pen Script",var(--se-font);--se-head-w:700;
+  --se-mark:color-mix(in srgb,var(--accent) 34%,transparent);
+  --t-hand:255px 18px 225px 18px/18px 225px 18px 255px;--t-wood:#8A5C3A}
+[data-theme=chalk]:not([data-enter]){--se-enter:se-mask;--se-dur:calc(.6s*var(--se-k))}
+
+/* 칠판 면: 분필 자국과 나무 테두리 */
+[data-theme=chalk] .slide{background:radial-gradient(ellipse 60% 50% at 28% 22%,rgba(255,255,255,.07),transparent 70%),radial-gradient(ellipse 50% 40% at 82% 88%,rgba(255,255,255,.05),transparent 70%),var(--bg)}
+[data-theme=chalk] .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.22;mix-blend-mode:soft-light;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+[data-theme=chalk] .layout-fullbleed::before{display:none}
+[data-theme=chalk] .se-deco i:nth-child(6){inset:0;border:18px solid var(--t-wood);box-shadow:inset 0 0 0 3px rgba(0,0,0,.28),inset 0 0 60px rgba(0,0,0,.3)}
+[data-theme=chalk] .se-foot{font-family:var(--se-head);font-size:30px;line-height:1.2;bottom:44px}
+[data-theme=chalk] .se-stagebar{top:40px}
+[data-theme=chalk] .se-stagebar span{background:none;border-style:dashed}
+[data-theme=chalk] .se-stagebar span.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+/* 글자 */
+[data-theme=chalk] .slide{font-weight:500}
+[data-theme=chalk]:not([data-head-font]) .slide :is(h1,h2,h3,.big,.q,.num){letter-spacing:-.09em;word-spacing:-.06em}
+[data-theme=chalk] .slide>h2{font-size:76px}
+[data-theme=chalk] .slide>h2::after{content:"";display:block;width:360px;max-width:100%;height:16px;margin-top:6px;background:var(--accent);
+  -webkit-mask:var(--t-wave) no-repeat 0 0/100% 100%;mask:var(--t-wave) no-repeat 0 0/100% 100%}
+[data-theme=chalk][data-title="center"] .slide>h2::after{margin-inline:auto}
+[data-theme=chalk]{--t-wave:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 16' preserveAspectRatio='none'%3E%3Cpath d='M3 9c38-9 74 6 116 0s82-7 122 1 76-6 116-3' fill='none' stroke='%23000' stroke-width='4.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  --t-star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 7l12 28 30 3-23 20 7 30-26-16-27 16 8-30L8 38l30-3z' fill='none' stroke='%23000' stroke-width='4' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E");
+  --t-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120'%3E%3Cpath d='M8 20c50 70 110 88 178 60M150 52l38 28-44 20' fill='none' stroke='%23000' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+[data-theme=chalk] .slide h3{font-size:46px}
+[data-theme=chalk] .slide mark{border-radius:6px}
+
+/* 표지 */
+[data-theme=chalk] .layout-cover{padding-bottom:150px}
+[data-theme=chalk] .layout-cover h1{font-size:156px;line-height:1.08}
+[data-theme=chalk] .layout-cover .kicker{align-self:flex-start;padding:6px 30px;border:3px solid var(--accent);border-radius:var(--t-hand);font-family:var(--se-head);font-size:38px;letter-spacing:0;margin-bottom:28px}
+[data-theme=chalk] .layout-cover .kicker::before{display:none}
+[data-theme=chalk] .layout-cover .sub{font-size:42px}
+[data-theme=chalk] .layout-cover .meta{font-family:var(--se-head);font-size:34px;margin-top:40px}
+[data-theme=chalk] .layout-cover .se-deco i:nth-child(1){right:190px;top:130px;width:230px;height:230px;rotate:12deg;background:var(--accent);-webkit-mask:var(--t-star) center/contain no-repeat;mask:var(--t-star) center/contain no-repeat}
+[data-theme=chalk] .layout-cover .se-deco i:nth-child(2){right:470px;top:330px;width:96px;height:96px;rotate:-14deg;background:var(--accent-2);-webkit-mask:var(--t-star) center/contain no-repeat;mask:var(--t-star) center/contain no-repeat}
+[data-theme=chalk] .layout-cover .se-deco i:nth-child(3){right:250px;top:460px;width:300px;height:180px;background:var(--ink);opacity:.85;-webkit-mask:var(--t-arrow) center/contain no-repeat;mask:var(--t-arrow) center/contain no-repeat;scale:-1 1;rotate:24deg}
+[data-theme=chalk] .layout-cover .se-deco i:nth-child(4){left:0;right:0;bottom:18px;height:22px;background:var(--t-wood);filter:brightness(.82)}
+[data-theme=chalk] .layout-cover .se-deco i:nth-child(5){right:330px;bottom:40px;width:150px;height:20px;border-radius:5px;background:#F6F3E7;rotate:-2deg;box-shadow:190px 4px 0 -1px var(--accent),-150px 3px 0 -2px var(--accent-2)}
+[data-theme=chalk] .layout-cover:has(>.img-slot) .se-deco i:nth-child(-n+3){display:none}
+[data-theme=chalk][data-ratio="4:3"] .layout-cover h1{font-size:128px}
+[data-theme=chalk][data-ratio="4:3"] .layout-cover .se-deco i:nth-child(-n+3){display:none}
+
+/* 섹션 · 한 문장 · 질문 */
+[data-theme=chalk] .layout-section .num{align-self:flex-start;display:grid;place-items:center;width:250px;height:250px;margin-bottom:44px;border:5px solid var(--accent);border-radius:52% 48% 50% 50%/48% 52% 48% 52%;font-size:150px;letter-spacing:-.02em;rotate:-4deg}
+[data-theme=chalk] .layout-section h2{font-size:112px}
+[data-theme=chalk] .layout-section .se-deco i:nth-child(1){right:200px;top:250px;width:300px;height:300px;rotate:10deg;background:var(--accent);opacity:.9;-webkit-mask:var(--t-star) center/contain no-repeat;mask:var(--t-star) center/contain no-repeat}
+[data-theme=chalk] .layout-section .se-deco i:nth-child(2){right:520px;top:560px;width:120px;height:120px;rotate:-10deg;background:var(--accent-2);-webkit-mask:var(--t-star) center/contain no-repeat;mask:var(--t-star) center/contain no-repeat}
+[data-theme=chalk] .layout-statement .big{font-size:112px;line-height:1.22}
+[data-theme=chalk] .layout-question .q{font-size:108px}
+[data-theme=chalk] .layout-question::after{color:color-mix(in srgb,var(--accent) 34%,transparent);rotate:8deg}
+[data-theme=chalk] .layout-quote blockquote p{font-size:70px}
+
+/* 구성 요소: 손으로 그린 테두리 */
+[data-theme=chalk] :is(.card,.col,.goals>li,.activity>*,.quiz .opts>li,.quiz .why,.se-btn,.quiz.ox .se-ox button,.se-p-num){border:3px solid color-mix(in srgb,var(--ink) 78%,transparent);border-radius:var(--t-hand);background:none}
+[data-theme=chalk] .se-btn.pri{background:var(--ink);color:var(--bg)}
+[data-theme=chalk] .se-p-num{color:var(--accent);font-family:var(--se-head)}
+[data-theme=chalk] .col:last-child{border-color:var(--accent)}
+[data-theme=chalk] .col h3{border-bottom:3px dashed currentColor}
+[data-theme=chalk] .goals>li::before{background:none;border:3px solid var(--accent);color:var(--accent);border-radius:52% 48% 50% 50%/48% 52% 48% 52%;font-size:44px}
+[data-theme=chalk] .quiz .opts>li::before{background:none;border:2px solid var(--ink)}
+[data-theme=chalk] .quiz .opts>li.is-right{background:color-mix(in srgb,var(--accent) 18%,transparent);border-color:var(--accent)}
+[data-theme=chalk] .quiz .opts>li.is-right::before{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+[data-theme=chalk] .steps>li::before{background:var(--bg);border:4px solid var(--ink);border-radius:52% 48% 50% 50%/48% 52% 48% 52%}
+[data-theme=chalk] .steps>li:first-child::before{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+[data-theme=chalk] .steps>li:not(:last-child)::after{background:none;border-top:4px dashed color-mix(in srgb,var(--ink) 50%,transparent);height:0}
+[data-theme=chalk] .agenda,[data-theme=chalk] .points{border-top:3px dashed var(--ink)}
+[data-theme=chalk] .agenda>li,[data-theme=chalk] .points>li{border-bottom-style:dashed}
+[data-theme=chalk] .points>li::before{border-radius:50%}
+[data-theme=chalk] .map>.center{background:var(--accent);color:var(--on-accent)}
+[data-theme=chalk] .map>.branch{background:var(--bg)}
+[data-theme=chalk] .slide blockquote.source{background:var(--surface);box-shadow:none;border-style:dashed}
+[data-theme=chalk] .img-slot{border:6px solid color-mix(in srgb,var(--ink) 85%,transparent);--se-img-r:6px}
+[data-theme=chalk] .layout-fullbleed>.img-slot.bg{border:0}
+[data-theme=chalk] .stat>.count,[data-theme=chalk] .stat>span:first-child{font-size:200px}
+[data-theme=chalk] .stat .label{border-top:3px dashed var(--ink)}
+[data-theme=chalk] .se-progress{left:18px;bottom:18px;height:5px}
+
+/* 모션: 분필로 긋듯이 나타난다 */
+@keyframes ck-wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes ck-pop{from{opacity:0;transform:scale(.4) rotate(-40deg)}}
+.se-m[data-theme=chalk] .slide.is-active>h2::after{animation:ck-wipe calc(.7s*var(--se-k)) ease-out .45s both}
+.se-m[data-theme=chalk] :is(.layout-cover,.layout-section).is-active .se-deco i:nth-child(1){animation:ck-pop calc(.7s*var(--se-k)) cubic-bezier(.3,1.5,.4,1) .7s both}
+.se-m[data-theme=chalk] :is(.layout-cover,.layout-section).is-active .se-deco i:nth-child(2){animation:ck-pop calc(.6s*var(--se-k)) cubic-bezier(.3,1.5,.4,1) .95s both}
+.se-m[data-theme=chalk] .layout-cover.is-active .se-deco i:nth-child(3){animation:ck-wipe calc(.8s*var(--se-k)) ease-out 1.1s both}

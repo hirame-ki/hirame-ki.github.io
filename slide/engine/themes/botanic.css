@@ -1,0 +1,88 @@
+/*! Slide Engine theme · botanic (보태니컬) | 잎과 둥근 면, 부드러운 명조 | MIT */
+@import url("https://fonts.googleapis.com/css2?display=swap&family=Gowun+Batang:wght@400;700");
+:root{
+  --bg:#F7F4EA;--surface:#E6ECD8;--ink:#24301F;--ink-2:#58634F;
+  --accent:#6A9955;--accent-ink:#3E6A2E;--accent-2:#D58A5C;--on-accent:#182214;--radius:32px;
+}
+[data-theme=botanic]{--t-name:botanic;--t-title:blur;--t-transition:fade;--t-particles:petals;
+  --se-head:"Gowun Batang","Noto Serif KR",Batang,serif;--se-head-w:700;--se-tdur:calc(.75s*var(--se-k));
+  --t-leaf:color-mix(in srgb,var(--accent) 78%,var(--ink));
+  --t-blob:58% 42% 60% 40%/46% 56% 44% 54%}
+[data-theme=botanic]:not([data-enter]){--se-enter:se-rise;--se-dist:26px;--se-dur:calc(.75s*var(--se-k))}
+
+/* 본문 장: 귀퉁이 둥근 면과 잎 두 장 */
+[data-theme=botanic] .se-deco i:nth-child(1){right:-90px;top:-110px;width:330px;height:290px;border-radius:var(--t-blob);background:var(--surface)}
+[data-theme=botanic] .se-deco i:nth-child(n+3){border-radius:100% 0 100% 0;background:var(--accent);transform-origin:0 100%}
+[data-theme=botanic] .se-deco i:nth-child(3){right:96px;top:44px;width:74px;height:74px;rotate:8deg}
+[data-theme=botanic] .se-deco i:nth-child(4){right:116px;top:64px;width:54px;height:54px;rotate:-86deg;background:var(--t-leaf)}
+[data-theme=botanic] .slide>h2{font-size:64px;letter-spacing:-.035em}
+[data-theme=botanic] .se-foot{font-family:var(--se-head);font-size:26px}
+
+/* 표지: 큰 둥근 면, 해, 가지 */
+[data-theme=botanic] .layout-cover h1{font-size:124px;letter-spacing:-.045em;line-height:1.14;max-width:1080px}
+[data-theme=botanic] .layout-cover .kicker{letter-spacing:.08em}
+[data-theme=botanic] .layout-cover .kicker::before{width:26px;height:26px;border-radius:100% 0 100% 0;margin-right:16px;rotate:8deg}
+[data-theme=botanic] .layout-cover .se-deco i:nth-child(1){right:-80px;top:110px;width:760px;height:820px}
+[data-theme=botanic] .layout-cover .se-deco i:nth-child(2){right:140px;top:170px;width:210px;height:210px;border-radius:50%;background:var(--accent-2)}
+[data-theme=botanic] :is(.layout-cover,.layout-section) .se-deco::before{content:"";position:absolute;right:420px;bottom:-20px;width:7px;height:760px;border-radius:7px;background:var(--t-leaf);rotate:-6deg;transform-origin:50% 100%}
+[data-theme=botanic] .layout-cover .se-deco i:nth-child(3){right:265px;top:612px;width:190px;height:190px;rotate:8deg}
+[data-theme=botanic] .layout-cover .se-deco i:nth-child(4){right:298px;top:502px;width:170px;height:170px;rotate:-98deg}
+[data-theme=botanic] .layout-cover .se-deco i:nth-child(5){right:302px;top:363px;width:180px;height:180px;rotate:4deg;background:var(--t-leaf)}
+[data-theme=botanic] .layout-cover .se-deco i:nth-child(6){right:351px;top:214px;width:150px;height:150px;rotate:-51deg}
+[data-theme=botanic] .layout-cover:has(>.img-slot) .se-deco i,[data-theme=botanic] .layout-cover:has(>.img-slot) .se-deco::before{display:none}
+[data-theme=botanic] .layout-cover>.img-slot{--se-img-r:52% 48% 56% 44%/44% 52% 48% 56%}
+[data-theme=botanic][data-ratio="4:3"] .layout-cover h1{font-size:100px;max-width:800px}
+[data-theme=botanic][data-ratio="4:3"] .layout-cover .se-deco{scale:.68;transform-origin:100% 60%}
+
+/* 섹션 · 한 문장 · 질문 */
+[data-theme=botanic] .layout-section{--bg:var(--surface)}
+[data-theme=botanic] .layout-section .num{font-size:220px;letter-spacing:-.04em}
+[data-theme=botanic] .layout-section h2{font-size:96px;letter-spacing:-.04em;max-width:1100px}
+[data-theme=botanic] .layout-section .se-deco i:nth-child(1){right:120px;top:190px;width:600px;height:660px;background:var(--bg)}
+[data-theme=botanic] .layout-section .se-deco i:nth-child(2){right:230px;top:250px;width:150px;height:150px;border-radius:50%;background:var(--accent-2)}
+[data-theme=botanic] .layout-section .se-deco::before{bottom:60px;height:560px}
+[data-theme=botanic] .layout-section .se-deco i:nth-child(3){right:284px;top:661px;width:160px;height:160px;rotate:8deg}
+[data-theme=botanic] .layout-section .se-deco i:nth-child(4){right:317px;top:562px;width:140px;height:140px;rotate:-98deg}
+[data-theme=botanic] .layout-section .se-deco i:nth-child(5){right:319px;top:432px;width:150px;height:150px;rotate:4deg;background:var(--t-leaf)}
+[data-theme=botanic] .layout-section .se-deco i:nth-child(6){right:352px;top:333px;width:130px;height:130px;rotate:-51deg}
+[data-theme=botanic] .layout-statement .big{font-size:86px;line-height:1.3}
+[data-theme=botanic] .layout-statement .se-deco i:nth-child(1){right:auto;left:50%;top:50%;width:1320px;height:720px;translate:-50% -50%;opacity:.75}
+[data-theme=botanic] .layout-question::after{color:color-mix(in srgb,var(--accent) 26%,var(--bg))}
+
+/* 구성 요소 */
+[data-theme=botanic] .card{position:relative;overflow:hidden}
+[data-theme=botanic] .card::after{content:"";position:absolute;right:-34px;top:-34px;width:150px;height:150px;border-radius:0 100% 0 100%;background:color-mix(in srgb,var(--accent) 24%,transparent);rotate:180deg}
+[data-theme=botanic] .card:nth-child(even)::after{background:color-mix(in srgb,var(--accent-2) 30%,transparent)}
+[data-theme=botanic] .goals>li::before{background:var(--accent-ink);color:var(--bg);border-radius:50% 50% 50% 0}
+[data-theme=botanic] .col:last-child{background:color-mix(in srgb,var(--accent-2) 20%,var(--bg))}
+[data-theme=botanic] .col:last-child h3{color:var(--ink);border-color:var(--accent-2)}
+[data-theme=botanic] .col h3{border-bottom-width:3px}
+[data-theme=botanic] .steps>li::before{border-width:3px;border-color:var(--accent-ink);color:var(--accent-ink)}
+[data-theme=botanic] .steps>li:first-child::before{background:var(--accent-ink);color:var(--bg)}
+[data-theme=botanic] .agenda,[data-theme=botanic] .points{border-top-color:var(--accent-ink);border-top-width:2px}
+[data-theme=botanic] .points>li::before{width:26px;height:26px;border-radius:100% 0 100% 0;top:calc(30px + .7em - 13px)}
+[data-theme=botanic] .quiz .opts>li{border-width:2px;border-radius:999px;padding-left:104px}
+[data-theme=botanic] .quiz .opts>li::before{left:22px}
+[data-theme=botanic] .quiz .opts>li.is-right{border-color:var(--accent-ink)}
+[data-theme=botanic] .quiz .opts>li.is-right::before{background:var(--accent-ink)}
+[data-theme=botanic] .se-btn{border-width:2px}
+[data-theme=botanic] .map>.center{background:var(--accent-ink)}
+[data-theme=botanic] .map>.branch{border:2px solid var(--accent-ink)}
+[data-theme=botanic] .map>svg line{stroke:var(--accent-ink);stroke-width:3}
+[data-theme=botanic] .stat .label{border-top:2px solid var(--accent-ink)}
+[data-theme=botanic] .deck thead th,[data-theme=botanic] thead th{border-bottom:2px solid var(--accent-ink)}
+[data-theme=botanic] .layout-next>p{border-left-color:var(--accent);font-family:var(--se-head)}
+
+/* 모션: 면이 숨 쉬듯 바뀌고 잎이 흔들린다 */
+@keyframes bt-blob{to{border-radius:44% 56% 42% 58%/56% 44% 58% 42%}}
+@keyframes bt-grow{from{transform:scale(0) rotate(-30deg)}}
+@keyframes bt-sway{to{transform:rotate(7deg)}}
+@keyframes bt-stem{from{transform:scaleY(0)}}
+@keyframes bt-sun{from{transform:translateY(120px);opacity:0}}
+.se-m[data-theme=botanic] .slide.is-active .se-deco i:nth-child(1){animation:bt-blob 11s ease-in-out infinite alternate}
+.se-m[data-theme=botanic] .slide.is-active .se-deco i:nth-child(n+3){animation:bt-grow calc(.8s*var(--se-k)) cubic-bezier(.3,1.4,.4,1) .3s both,bt-sway 4.5s ease-in-out 1.4s infinite alternate}
+.se-m[data-theme=botanic] .slide.is-active .se-deco i:nth-child(4){animation-delay:.5s,1.6s;animation-duration:calc(.8s*var(--se-k)),5.5s}
+.se-m[data-theme=botanic] .slide.is-active .se-deco i:nth-child(5){animation-delay:.7s,1.8s;animation-duration:calc(.8s*var(--se-k)),5s}
+.se-m[data-theme=botanic] .slide.is-active .se-deco i:nth-child(6){animation-delay:.9s,2s;animation-duration:calc(.8s*var(--se-k)),6s}
+.se-m[data-theme=botanic] :is(.layout-cover,.layout-section).is-active .se-deco::before{animation:bt-stem calc(1s*var(--se-k)) ease-out both}
+.se-m[data-theme=botanic] :is(.layout-cover,.layout-section).is-active .se-deco i:nth-child(2){animation:bt-sun calc(1.2s*var(--se-k)) cubic-bezier(.2,.8,.2,1) .2s both}

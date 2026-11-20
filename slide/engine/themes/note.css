@@ -1,0 +1,101 @@
+/*! Slide Engine theme · note (노트) | 모눈 공책, 붙임쪽지, 형광펜 | MIT */
+@import url("https://fonts.googleapis.com/css2?display=swap&family=Gaegu:wght@400;700");
+:root{
+  --bg:#FBFAF5;--surface:#FFF2A8;--ink:#2B2A28;--ink-2:#5E5A52;
+  --accent:#F26B4E;--accent-ink:#BF3F26;--accent-2:#3C6FD1;--on-accent:#2B2A28;--radius:4px;
+}
+[data-theme=note]{--t-name:note;--t-title:write;--t-transition:cover;--t-particles:none;
+  --se-head:"Gaegu","Nanum Pen Script",var(--se-font);--se-head-w:700;
+  --t-hl:#FFE45C;--se-mark:var(--t-hl);
+  --t-grid:color-mix(in srgb,var(--accent-2) 13%,transparent);
+  --t-pink:#FFD6DE;--t-mint:#CFF0DF;--t-blue:#D6E6FF;
+  --t-tape:color-mix(in srgb,var(--accent-2) 26%,rgba(255,255,255,.7));
+  --t-drop:0 16px 18px -14px rgba(0,0,0,.3)}
+[data-theme=note]:not([data-enter]){--se-enter:nt-stick;--se-ease:cubic-bezier(.3,1.3,.4,1)}
+@keyframes nt-stick{from{opacity:0;transform:translateY(-36px) rotate(-5deg) scale(1.05)}}
+
+/* 공책 면: 모눈, 빨간 세로줄, 링 구멍 */
+[data-theme=note] .slide{background:linear-gradient(var(--t-grid) 2px,transparent 2px) 0 -2px/48px 48px,linear-gradient(90deg,var(--t-grid) 2px,transparent 2px) -2px 0/48px 48px,var(--bg)}
+[data-theme=note] .se-deco i:nth-child(1){left:84px;top:0;bottom:0;width:3px;background:color-mix(in srgb,var(--accent) 60%,transparent)}
+[data-theme=note] .se-deco i:nth-child(2){left:24px;top:0;bottom:0;width:34px;background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--ink) 16%,var(--bg)) 0 12px,color-mix(in srgb,var(--ink) 30%,var(--bg)) 12px 14px,transparent 15px) 0 30px/34px 120px repeat-y}
+[data-theme=note] .se-foot{font:700 34px/1.2 var(--se-head);color:var(--ink);bottom:36px}
+[data-theme=note] .se-stagebar{left:var(--pad-x);top:30px}
+
+/* 글자 */
+[data-theme=note] .slide>h2{align-self:flex-start;font-size:78px;line-height:1.15;padding:0 .18em;margin-left:-.18em;background:linear-gradient(transparent 56%,var(--t-hl) 56% 92%,transparent 92%) no-repeat 0 0/100% 100%}
+[data-theme=note][data-title="center"] .slide>h2{align-self:center;margin-left:0}
+[data-theme=note] .layout-exit>h2{flex:0 0 auto;margin-right:100%}
+[data-theme=note]:not([data-head-font]) .slide :is(h1,h2,.big,.q,.num){letter-spacing:-.09em;word-spacing:-.06em}
+[data-theme=note] .slide h3{font-family:var(--se-font);font-weight:800;letter-spacing:-.03em}
+[data-theme=note] .slide mark{border-radius:4px}
+
+/* 표지: 붙임쪽지와 테이프 */
+[data-theme=note] .layout-cover h1{font-size:160px;line-height:1.06;max-width:1240px}
+[data-theme=note] .layout-cover .kicker{align-self:flex-start;padding:8px 30px;font:700 40px/1.2 var(--se-head);letter-spacing:0;color:var(--ink);background:var(--t-tape);rotate:-2deg;margin-bottom:30px}
+[data-theme=note] .layout-cover .kicker::before{display:none}
+[data-theme=note] .layout-cover .sub{font-size:42px;color:var(--ink)}
+[data-theme=note] .layout-cover .sub::before{content:"";display:inline-block;vertical-align:middle;width:44px;height:6px;margin:0 18px .12em 0;border-radius:6px;background:var(--accent)}
+[data-theme=note] .layout-cover .meta{font:700 36px/1.3 var(--se-head);margin-top:44px}
+[data-theme=note] .layout-cover .se-deco i:nth-child(3){right:150px;top:150px;width:330px;height:330px;background:var(--surface);rotate:6deg;box-shadow:var(--t-drop)}
+[data-theme=note] .layout-cover .se-deco i:nth-child(4){right:400px;top:380px;width:270px;height:270px;background:var(--t-pink);rotate:-7deg;box-shadow:var(--t-drop)}
+[data-theme=note] .layout-cover .se-deco i:nth-child(5){right:130px;top:560px;width:250px;height:250px;background:var(--t-mint);rotate:3deg;box-shadow:var(--t-drop)}
+[data-theme=note] .layout-cover .se-deco i:nth-child(n+3):nth-child(-n+5)::before{content:"";position:absolute;left:50%;top:-20px;width:120px;height:40px;translate:-50% 0;rotate:-4deg;background:var(--t-tape)}
+[data-theme=note] .layout-cover .se-deco i:nth-child(3)::after{content:"";position:absolute;inset:26% 22%;background:var(--accent);-webkit-mask:var(--t-star) center/contain no-repeat;mask:var(--t-star) center/contain no-repeat}
+[data-theme=note] .layout-cover .se-deco i:nth-child(4)::after{content:"";position:absolute;inset:30% 24%;background:var(--accent-2);-webkit-mask:var(--t-heart) center/contain no-repeat;mask:var(--t-heart) center/contain no-repeat}
+[data-theme=note] .layout-cover .se-deco i:nth-child(5)::after{content:"";position:absolute;inset:34% 18%;background:var(--ink);opacity:.75;-webkit-mask:var(--t-check) center/contain no-repeat;mask:var(--t-check) center/contain no-repeat}
+[data-theme=note]{--t-star:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 8l12 27 30 3-23 20 7 30-26-16-27 16 8-30L8 38l30-3z' fill='none' stroke='%23000' stroke-width='5' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E");
+  --t-heart:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 86C22 64 10 50 10 34c0-12 9-20 20-20 9 0 16 5 20 13 4-8 11-13 20-13 11 0 20 8 20 20 0 16-12 30-40 52z' fill='none' stroke='%23000' stroke-width='5' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --t-check:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 80'%3E%3Cpath d='M8 16h44M8 40h44M8 64h44M78 14l10 10 18-20M78 38l10 10 18-20M120 20h32M120 44h32' fill='none' stroke='%23000' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+[data-theme=note] .layout-cover:has(>.img-slot) .se-deco i:nth-child(n+3){display:none}
+[data-theme=note] .layout-cover>.img-slot{rotate:2deg;border:14px solid #fff;border-bottom-width:60px;box-shadow:var(--t-drop);--se-img-r:2px}
+[data-theme=note][data-ratio="4:3"] .layout-cover h1{font-size:132px;max-width:860px}
+[data-theme=note][data-ratio="4:3"] .layout-cover .se-deco i:nth-child(n+3){scale:.7;translate:60px 0}
+
+/* 섹션 · 한 문장 · 질문 */
+[data-theme=note] .layout-section .num{align-self:flex-start;font-size:130px;line-height:1.2;padding:0 44px;margin-bottom:36px;color:var(--ink);background:var(--t-hl);rotate:-3deg}
+[data-theme=note] .layout-section h2{font-size:128px;line-height:1.1}
+[data-theme=note] .layout-section .se-deco i:nth-child(3){right:200px;top:240px;width:320px;height:320px;background:var(--t-blue);rotate:5deg;box-shadow:var(--t-drop)}
+[data-theme=note] .layout-section .se-deco i:nth-child(4){right:430px;top:500px;width:250px;height:250px;background:var(--surface);rotate:-6deg;box-shadow:var(--t-drop)}
+[data-theme=note] .layout-section .se-deco i:nth-child(n+3):nth-child(-n+4)::before{content:"";position:absolute;left:50%;top:-20px;width:120px;height:40px;translate:-50% 0;rotate:3deg;background:var(--t-tape)}
+[data-theme=note] .layout-statement .big{font-size:124px;line-height:1.2}
+[data-theme=note] .layout-question .q{font-size:116px;line-height:1.18}
+[data-theme=note] .layout-question::after{color:color-mix(in srgb,var(--accent) 34%,transparent);rotate:10deg}
+[data-theme=note] .layout-quote blockquote p{font-size:76px}
+
+/* 구성 요소: 붙임쪽지 */
+[data-theme=note] .card{position:relative;box-shadow:var(--t-drop);rotate:-1.2deg;padding-top:calc(var(--box) + 16px)}
+[data-theme=note] .card::before{content:"";position:absolute;left:50%;top:-18px;width:128px;height:38px;translate:-50% 0;rotate:-3deg;background:var(--t-tape)}
+[data-theme=note] .card:nth-child(4n+2){background:var(--t-pink);rotate:1deg}
+[data-theme=note] .card:nth-child(4n+3){background:var(--t-mint);rotate:-.5deg}
+[data-theme=note] .card:nth-child(4n){background:var(--t-blue);rotate:1.4deg}
+[data-theme=note] .card p{color:var(--ink)}
+[data-theme=note] .goals>li{background:#fff;border:2px solid color-mix(in srgb,var(--ink) 22%,transparent);border-radius:8px;box-shadow:var(--t-drop)}
+[data-theme=note] .goals>li::before{background:none;border:4px solid var(--accent);color:var(--accent-ink);font-size:50px;border-radius:50% 46% 52% 48%/48% 52% 46% 50%}
+[data-theme=note] .col{box-shadow:var(--t-drop)}
+[data-theme=note] .col:first-child{background:#fff;border:2px solid color-mix(in srgb,var(--ink) 22%,transparent)}
+[data-theme=note] .col h3{border-bottom:3px dashed currentColor}
+[data-theme=note] .activity>*{box-shadow:var(--t-drop)}
+[data-theme=note] .activity>*:nth-child(2){background:var(--t-pink)}
+[data-theme=note] .activity>*:nth-child(3){background:var(--t-mint)}
+[data-theme=note] .steps>li::before{background:var(--surface);border:4px solid var(--ink);font-size:50px}
+[data-theme=note] .steps>li:first-child::before{background:var(--accent);color:var(--ink)}
+[data-theme=note] .steps>li:not(:last-child)::after{height:0;background:none;border-top:4px dashed color-mix(in srgb,var(--ink) 45%,transparent)}
+[data-theme=note] .agenda,[data-theme=note] .points{border-top:3px solid var(--ink);background:color-mix(in srgb,#fff 70%,transparent)}
+[data-theme=note] .points>li::before{background:none;border:4px solid var(--accent);border-radius:6px;width:28px;height:28px;top:calc(30px + .7em - 14px)}
+[data-theme=note] .quiz .opts>li{background:#fff;border-radius:8px}
+[data-theme=note] .quiz .opts>li.is-right{background:var(--t-mint)}
+[data-theme=note] .deck table,[data-theme=note] table{background:color-mix(in srgb,#fff 72%,transparent)}
+[data-theme=note] .img-slot{border:14px solid #fff;box-shadow:var(--t-drop);--se-img-r:2px}
+[data-theme=note] .layout-fullbleed>.img-slot.bg{border:0;box-shadow:none}
+[data-theme=note] .layout-split>.media>.img-slot{rotate:-1.5deg}
+[data-theme=note] .layout-next>p{font-family:var(--se-head);font-size:84px;font-weight:700}
+[data-theme=note] .map>.branch{background:#fff}
+[data-theme=note] .vocab .term{font-size:96px}
+
+/* 모션: 형광펜이 그어지고 쪽지가 붙는다 */
+@keyframes nt-hl{from{background-size:0% 100%}}
+@keyframes nt-drop{from{opacity:0;transform:translateY(-80px) rotate(-14deg)}}
+.se-m[data-theme=note] .slide.is-active>h2{animation:nt-hl calc(.7s*var(--se-k)) ease-out .3s both}
+.se-m[data-theme=note] :is(.layout-cover,.layout-section).is-active .se-deco i:nth-child(3){animation:nt-drop calc(.6s*var(--se-k)) cubic-bezier(.3,1.4,.4,1) .5s both}
+.se-m[data-theme=note] :is(.layout-cover,.layout-section).is-active .se-deco i:nth-child(4){animation:nt-drop calc(.6s*var(--se-k)) cubic-bezier(.3,1.4,.4,1) .7s both}
+.se-m[data-theme=note] .layout-cover.is-active .se-deco i:nth-child(5){animation:nt-drop calc(.6s*var(--se-k)) cubic-bezier(.3,1.4,.4,1) .9s both}

@@ -1,0 +1,91 @@
+/*! Slide Engine theme · retro (레트로) | 무지개 줄무늬, 햇살, 포스터 글씨 | MIT */
+@import url("https://fonts.googleapis.com/css2?display=swap&family=Do+Hyeon");
+:root{
+  --bg:#F6EAD6;--surface:#EDDBBF;--ink:#2B1D14;--ink-2:#6A5444;
+  --accent:#E4572E;--accent-ink:#A83A17;--accent-2:#1E7A8C;--on-accent:#FFF6E6;--radius:28px;
+}
+[data-theme=retro]{--t-name:retro;--t-title:mask;--t-transition:curtain;--t-particles:none;
+  --t-y:#F2B33D;--t-c1:var(--accent);--t-c2:var(--t-y);--t-c3:var(--accent-2);
+  --se-head:"Do Hyeon",var(--se-font);--se-head-w:400;--se-mark:color-mix(in srgb,var(--t-y) 70%,var(--bg));
+  --t-rays:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--t-y) 46%,transparent) 0 7.5deg,transparent 7.5deg 15deg)}
+[data-theme=retro]:not([data-enter]){--se-enter:se-rise;--se-dist:40px}
+
+/* 종이 결 */
+[data-theme=retro] .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.3;mix-blend-mode:multiply;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .15 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+[data-theme=retro] .layout-fullbleed::before{display:none}
+
+/* 본문 장: 귀퉁이 무지개 */
+[data-theme=retro] .se-deco i:nth-child(-n+3){border-radius:50%;border-style:solid}
+[data-theme=retro] .se-deco i:nth-child(1){right:-190px;top:-190px;width:380px;height:380px;border-width:28px;border-color:var(--accent)}
+[data-theme=retro] .se-deco i:nth-child(2){right:-152px;top:-152px;width:304px;height:304px;border-width:28px;border-color:var(--t-y)}
+[data-theme=retro] .se-deco i:nth-child(3){right:-114px;top:-114px;width:228px;height:228px;border-width:28px;border-color:var(--accent-2)}
+[data-theme=retro] .slide>h2{font-size:76px;letter-spacing:-.01em;line-height:1.15;padding-right:190px}
+[data-theme=retro] .slide h3{font-size:46px}
+[data-theme=retro] .se-foot{font:400 30px/1 var(--se-head);color:var(--ink);padding:8px 18px;border:3px solid var(--ink);border-radius:99px;bottom:28px}
+
+/* 표지: 큰 무지개와 햇살 */
+[data-theme=retro] .layout-cover h1{font-size:160px;line-height:1.06;letter-spacing:-.01em;max-width:1240px;text-shadow:7px 7px 0 var(--t-y)}
+[data-theme=retro] .layout-cover .kicker{align-self:flex-start;padding:10px 32px 8px;font:400 34px/1.2 var(--se-head);letter-spacing:.04em;color:var(--bg);background:var(--ink);border-radius:99px;margin-bottom:34px}
+[data-theme=retro] .layout-cover .kicker::before{display:none}
+[data-theme=retro] .layout-cover .sub{color:var(--ink);font-weight:600}
+[data-theme=retro] .layout-cover .meta{font:400 32px/1.3 var(--se-head);letter-spacing:.02em}
+[data-theme=retro] .layout-cover .se-deco i:nth-child(1){right:-560px;top:auto;bottom:-560px;width:1120px;height:1120px;border-width:84px}
+[data-theme=retro] .layout-cover .se-deco i:nth-child(2){right:-454px;top:auto;bottom:-454px;width:908px;height:908px;border-width:84px}
+[data-theme=retro] .layout-cover .se-deco i:nth-child(3){right:-348px;top:auto;bottom:-348px;width:696px;height:696px;border-width:84px}
+[data-theme=retro] .layout-cover .se-deco i:nth-child(4){right:-242px;bottom:-242px;width:484px;height:484px;border-radius:50%;background:var(--ink)}
+[data-theme=retro] :is(.layout-cover,.layout-section,.layout-statement) .se-deco i:nth-child(5){left:-420px;top:-420px;width:1100px;height:1100px;border-radius:50%;background:var(--t-rays);-webkit-mask:radial-gradient(circle,#000 18%,transparent 68%);mask:radial-gradient(circle,#000 18%,transparent 68%)}
+[data-theme=retro] .layout-cover:has(>.img-slot) .se-deco i:nth-child(-n+4){display:none}
+[data-theme=retro] .layout-cover>.img-slot{--se-img-r:320px 320px 28px 28px;border:8px solid var(--ink)}
+[data-theme=retro][data-ratio="4:3"] .layout-cover h1{font-size:126px;max-width:900px;text-shadow:5px 5px 0 var(--t-y)}
+[data-theme=retro][data-ratio="4:3"] .layout-cover .se-deco i:nth-child(-n+4){scale:.7;transform-origin:100% 100%}
+
+/* 섹션: 주황 바탕과 배지 숫자 */
+[data-theme=retro] .layout-section{--bg:var(--accent);--ink:var(--on-accent);--ink-2:var(--on-accent);--t-rays:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--on-accent) 22%,transparent) 0 7.5deg,transparent 7.5deg 15deg)}
+[data-theme=retro] .layout-section .num{align-self:flex-start;display:grid;place-items:center;width:230px;height:230px;margin:0 0 56px 16px;font-size:128px;letter-spacing:0;border-radius:50%;background:var(--on-accent);color:var(--accent-ink);box-shadow:0 0 0 10px var(--accent),0 0 0 16px var(--on-accent)}
+[data-theme=retro] .layout-section h2{font-size:124px;line-height:1.1}
+[data-theme=retro] .layout-section .sub{font-weight:650}
+[data-theme=retro] .layout-section .se-deco i:nth-child(-n+3){display:none}
+[data-theme=retro] .layout-section .se-deco i:nth-child(5){left:auto;right:-300px;top:-10px;width:1100px;height:1100px}
+[data-theme=retro] .layout-section .se-foot{border-color:var(--on-accent);color:var(--on-accent)}
+[data-theme=retro] .layout-statement .big{font-size:112px;line-height:1.2}
+[data-theme=retro] .layout-statement .se-deco i:nth-child(5){left:50%;top:50%;translate:-50% -50%;opacity:.7}
+[data-theme=retro] .layout-question .q{font-size:108px;line-height:1.16}
+[data-theme=retro] .layout-question::after{color:var(--t-y);opacity:.8}
+[data-theme=retro] .layout-quote blockquote p{font-size:72px}
+
+/* 구성 요소 */
+[data-theme=retro] :is(.card,.col,.activity>*){position:relative;border:3px solid var(--ink)}
+[data-theme=retro] .card{padding-top:calc(var(--box) + 28px)}
+[data-theme=retro] .card::before{content:"";position:absolute;left:calc(var(--box) - 4px);top:30px;width:132px;height:16px;border-radius:99px;background:linear-gradient(90deg,var(--accent) 0 33.4%,var(--t-y) 33.4% 66.7%,var(--accent-2) 66.7%)}
+[data-theme=retro] .goals>li{border:3px solid var(--ink)}
+[data-theme=retro] .goals>li::before{background:var(--accent);color:var(--on-accent);box-shadow:0 0 0 5px var(--surface),0 0 0 8px var(--accent)}
+[data-theme=retro] .goals>li:nth-child(3n+2)::before{background:var(--accent-2);box-shadow:0 0 0 5px var(--surface),0 0 0 8px var(--accent-2)}
+[data-theme=retro] .goals>li:nth-child(3n)::before{background:var(--t-y);color:var(--ink);box-shadow:0 0 0 5px var(--surface),0 0 0 8px var(--t-y)}
+[data-theme=retro] .col:last-child{background:color-mix(in srgb,var(--t-y) 34%,var(--bg))}
+[data-theme=retro] .steps>li::before{background:var(--bg);border-width:4px}
+[data-theme=retro] .steps>li:nth-child(4n+1)::before{background:var(--accent);border-color:var(--ink);color:var(--on-accent)}
+[data-theme=retro] .steps>li:nth-child(4n+2)::before{background:var(--t-y)}
+[data-theme=retro] .steps>li:nth-child(4n+3)::before{background:var(--accent-2);color:var(--on-accent)}
+[data-theme=retro] .steps>li:not(:last-child)::after{background:var(--ink);height:4px}
+[data-theme=retro] .points>li::before{border-radius:50%;width:24px;height:24px}
+[data-theme=retro] .points>li:nth-child(3n+2)::before{background:var(--t-y)}
+[data-theme=retro] .points>li:nth-child(3n)::before{background:var(--accent-2)}
+[data-theme=retro] .quiz .opts>li{border-color:var(--ink);border-radius:99px;padding-left:108px}
+[data-theme=retro] .quiz .opts>li::before{left:22px;background:var(--t-y)}
+[data-theme=retro] .quiz .opts>li.is-right{background:color-mix(in srgb,var(--t-y) 50%,var(--bg))}
+[data-theme=retro] .img-slot{border:6px solid var(--ink)}
+[data-theme=retro] .layout-fullbleed>.img-slot.bg{border:0}
+[data-theme=retro] .stat>.count,[data-theme=retro] .stat>span:first-child{text-shadow:6px 6px 0 var(--t-y)}
+[data-theme=retro] .layout-next>p{font-family:var(--se-head);font-weight:400;font-size:76px;border-left-width:14px}
+
+/* 모션: 무지개가 돌며 펼쳐지고 햇살이 천천히 돈다 */
+@keyframes rt-arc{from{transform:rotate(-100deg) scale(.7);opacity:0}}
+@keyframes rt-spin{to{transform:rotate(360deg)}}
+@keyframes rt-in{from{transform:scale(0)}}
+.se-m[data-theme=retro] .slide.is-active .se-deco i:nth-child(1){animation:rt-arc calc(.9s*var(--se-k)) cubic-bezier(.2,.8,.2,1) both}
+.se-m[data-theme=retro] .slide.is-active .se-deco i:nth-child(2){animation:rt-arc calc(.9s*var(--se-k)) cubic-bezier(.2,.8,.2,1) .12s both}
+.se-m[data-theme=retro] .slide.is-active .se-deco i:nth-child(3){animation:rt-arc calc(.9s*var(--se-k)) cubic-bezier(.2,.8,.2,1) .24s both}
+.se-m[data-theme=retro] .layout-cover.is-active .se-deco i:nth-child(4){animation:rt-in calc(.7s*var(--se-k)) cubic-bezier(.3,1.4,.4,1) .4s both}
+.se-m[data-theme=retro] .slide.is-active .se-deco i:nth-child(5){animation:rt-spin 90s linear infinite}
+.se-m[data-theme=retro] .layout-section.is-active .num{animation:rt-in calc(.7s*var(--se-k)) cubic-bezier(.3,1.5,.4,1) both}
