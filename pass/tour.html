@@ -924,31 +924,35 @@
   // 큰 팝업(380폭 그대로, 무대 760,40)에 붙는 상자·점
   var BIG = { x: 760, y: 40 };
   function bbox(r, pad) { return 'left:' + (r[0] - pad) + 'px;top:' + (r[1] - pad) + 'px;width:' + (r[2] + pad * 2) + 'px;height:' + (r[3] + pad * 2) + 'px'; }
-  var hrB = R('popup-unlocked', '#homeroomBtn'), opB = R('popup-unlocked', '#opinionBtn');
-  scene({ title: '바로 열기 버튼들 · 간단히 보기', dur: 25, html:
+  var hrB = R('popup-unlocked', '#homeroomBtn'), opB = R('popup-unlocked', '#opinionBtn'), rmB = R('popup-unlocked', '#remarksBtn');
+  scene({ title: '바로 열기 버튼들 · 간단히 보기', dur: 28, html:
     '<div class="bgdots"></div>' +
     '<div class="abs" style="left:110px;top:150px;width:520px">' +
       '<div class="title-mid" style="position:relative;text-align:left;font-size:44px">버튼 하나로<br><span class="mk">그 화면까지</span></div>' +
       '<p class="abs p1" style="position:relative;margin:28px 0 0;font-size:22px;font-weight:700;color:var(--text-2);line-height:1.6">업무포털 로그인 → 메뉴 열기를<br>한 번에 이어서 해요.<br>이미 된 단계는 건너뛰어요.</p></div>' +
     '<div class="pop" style="left:' + BIG.x + 'px;top:' + BIG.y + 'px;width:380px;height:640px"><div class="pcam" style="width:380px"><img class="pimg" src="' + IMG + 'popup-unlocked.webp" alt="" style="width:380px">' +
       '<div class="hl e1" style="' + bbox(R('popup-unlocked', '#edufineBtn'), 4) + '"></div><div class="hl e2" style="' + bbox(R('popup-unlocked', '#neisBtn'), 4) + '"></div>' +
+      '<div class="hl e2b" style="' + bbox(R('popup-unlocked', '#bothBtn'), 4) + '"></div>' +
       '<div class="hl e3" style="' + bbox(R('popup-unlocked', '#remarksBtn'), 4) + '"></div><div class="hl e4" style="' + bbox([hrB[0], hrB[1], hrB[2], opB[1] + opB[3] - hrB[1]], 4) + '"></div>' +
       '<div class="hl e5" style="' + bbox(R('popup-simple', 'view-simple'), 4) + '"></div></div></div>',
     setup: function (a) {
       var vs = R('popup-unlocked', 'view-simple');
+      // 아래쪽 버튼은 자막(무대 아래 1/3)에 가리지 않게 잠시 올려 보여 준다. 기준은 0.16.7까지 가리지 않던 자리:
+      // 과세특 맨 위 318, 행특·창체 맨 위 243(카메라를 올린 뒤) — 버튼이 늘어도 같은 자리에 오게 (0.16.8, 11-20)
+      var rmUp = Math.max(0, rmB[1] - 318), lowUp = Math.max(0, hrB[1] - 243);
       a.k('.pop', [[0, { o: 0, x: 30 }], [.3, { o: 0, x: 30 }], [.9, { o: 1, x: 0 }, 'o']]);
-      a.hl('.e1', 1.6, 4.4); a.hl('.e2', 4.6, 7.4); a.hl('.e3', 7.6, 11); a.hl('.e4', 11.6, 15.2);
-      // 아래쪽 두 버튼은 자막에 가리지 않게 잠시 올려 보여 준다
-      a.k('.pcam', [[0, { y: 0 }], [11, { y: 0 }], [11.8, { y: -170 }, 'io'], [15, { y: -170 }], [15.8, { y: 0 }, 'io']]);
-      a.mouse(640, 600, 15.4).to(17, BIG.x + vs[0] + vs[2] / 2, BIG.y + vs[1] + vs[3] / 2, 1.4).click(17.4).to(19.4, 700, 560, 1.2);
-      a.src('.pimg', [[0, 'popup-unlocked'], [17.5, 'popup-simple']]);
-      a.hl('.e5', 17.6, 20);
+      a.hl('.e1', 1.6, 4.4); a.hl('.e2', 4.6, 7.4); a.hl('.e2b', 7.6, 10.4); a.hl('.e3', 10.6, 14); a.hl('.e4', 14.6, 18.2);
+      a.k('.pcam', [[0, { y: 0 }], [10.2, { y: 0 }], [10.8, { y: -rmUp }, 'io'], [14, { y: -rmUp }], [14.8, { y: -lowUp }, 'io'], [18, { y: -lowUp }], [18.8, { y: 0 }, 'io']]);
+      a.mouse(640, 600, 18.4).to(20, BIG.x + vs[0] + vs[2] / 2, BIG.y + vs[1] + vs[3] / 2, 1.4).click(20.4).to(22.4, 700, 560, 1.2);
+      a.src('.pimg', [[0, 'popup-unlocked'], [20.5, 'popup-simple']]);
+      a.hl('.e5', 20.6, 23);
       a.cap(0, '[K-에듀파인]은 업무포털 로그인부터 K-에듀파인 화면까지 한 번에 열어 줘요.');
       a.cap(4.6, '[나이스]도 마찬가지예요. 업무포털이 닫혀 있어도 처음부터 이어서 해요.');
-      a.cap(7.6, '[과세특 입력]은 나이스 과세특 메뉴의 OTP 창까지 열어요. 이미 열려 있는 단계는 건너뛰어요.');
-      a.cap(11.2, '[행특·창체 입력](중·고 담임)과 [학기말종합의견 입력](초등)도 쓰던 엑셀을 나이스 칸에 옮겨 적어요.');
-      a.cap(15.4, '버튼이 많아 길다면 제목 옆 [간단히]를 눌러요. 설명을 접고 이름만 두 줄로 보여 줘요.');
-      a.cap(20.4, '고른 보기는 기억해 둬요. 설명은 버튼에 마우스를 올리면 보이고, [자세히]로 언제든 되돌려요.');
+      a.cap(7.6, '[나이스 + K-에듀파인]은 로그인 한 번으로 두 화면을 함께 열고, 나이스 화면을 앞에 보여 줘요.');
+      a.cap(10.6, '[과세특 입력]은 나이스 과세특 메뉴의 OTP 창까지 열어요. 이미 열려 있는 단계는 건너뛰어요.');
+      a.cap(14.2, '[행특·창체 입력](중·고 담임)과 [학기말종합의견 입력](초등)도 쓰던 엑셀을 나이스 칸에 옮겨 적어요.');
+      a.cap(18.4, '버튼이 많아 길다면 제목 옆 [간단히]를 눌러요. 설명을 접고 이름만 두 줄로 보여 줘요.');
+      a.cap(23.4, '고른 보기는 기억해 둬요. 설명은 버튼에 마우스를 올리면 보이고, [자세히]로 언제든 되돌려요.');
     } });
 
   // 목록을 펼친 모습은 칸을 늘려 찍은 것 (실제 드롭다운은 캡처에 나오지 않는다). 자막 위로 목록 전체가 보이는 높이
