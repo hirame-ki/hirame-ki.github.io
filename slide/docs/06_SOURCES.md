@@ -49,7 +49,7 @@
 
 | 사실 | 등급 | 출처 |
 |---|---|---|
-| Wise 핵심 색: Bright Green #9FE870, Forest Green #163300 | 제3자 | https://dotyeti.com/blog/wise-rebrand-and-logo-explanation-behind-the-new-visuals |
+| (2026-11-21부터 웹앱에 쓰지 않음. 지금은 크림·남색·코랄 — 05_DESIGN §2) Wise 핵심 색: Bright Green #9FE870, Forest Green #163300 | 제3자 | https://dotyeti.com/blog/wise-rebrand-and-logo-explanation-behind-the-new-visuals |
 | Wise 글꼴: 제목 Wise Sans(전용), 본문 Inter | 제3자 | https://styles.refero.design/style/367c0c6e-73a7-441c-a8ff-91d139ac60dc |
 | Wise 디자인 시스템: 활성 상태를 포레스트 그린 3px 테두리로 강조 | 공식(Wise 디자인팀 글) | https://medium.com/@therealstephsmith/accessible-but-never-boring-part-2-e188db299bd0 |
 | 근흑색 #0e0f0c, 제목 굵기 900, 알약 버튼 등 세부값 | 제3자 | https://opendesigner.io/design-systems/wise · https://open-design.ai/systems/wise/ |
@@ -98,3 +98,44 @@
 
 - **캔바 편집 화면(한국어)**: 오른쪽 위 **공유** → 창 제목 「디자인 공유」, 「액세스 레벨: 나만 액세스 가능」, 버튼 **링크 복사** · 「링크 맞춤 설정」 · 「공개 보기 링크」. 사용자가 준 `canva.link/…` 주소는 이 디자인의 편집 주소(`canva.com/design/{id}/…/edit`)로 열린다. 11-20 Claude 테스트 2는 이 주소(액세스 '나만')로 같은 계정의 캔바 커넥터가 읽었다.
 - **미리캔버스** (11-21 01시대, 사용자가 로그인한 뒤 확인): 내 드라이브의 디자인을 열면 새 탭에 편집 화면이 뜨고 주소는 `https://www.miricanvas.com/v2/ko/design2/{designId}` 형식이다(언어 `ko`가 들어간다). 이 PC의 미리캔버스 연결 도구에 그 designId를 주니 제목·크기·13쪽의 쪽 정보를 읽어 왔다 → **편집 화면 주소의 마지막 부분으로 디자인을 읽을 수 있다**(같은 계정). 편집 화면 위쪽에 [공유]·[다운로드] 버튼이 있다. 재확인 필요: claude.ai의 미리캔버스 커넥터에서도 같은지, 템플릿에서 편집 화면으로 가는 버튼 이름, [공유]로 만드는 링크를 AI가 읽는지.
+
+## 모델 고르는 화면 (2026-11-21 02시대, 사용자의 크롬에서 직접 확인)
+
+- **Claude**(claude.ai, 유료 계정): 모델 메뉴에 Fable 5.2(가장 어려운 과제를 위해) · Opus 5.5(복잡한 작업과 일상 업무를 위해) · Sonnet 5.5(간단한 작업에 가장 효율적) · Haiku 5.5(가장 빠른 답변), 그리고 「노력」 설정(확인 때 '최대')과 '더 많은 모델'. 11-20의 실제 생성 테스트 두 번은 Opus 5.5 · 최대였다.
+- **ChatGPT**(무료 계정): 새 대화 화면에 모델을 고르는 칸이 없고, 입력 칸에 **Think** 버튼이 있다. 유료 계정의 모델 이름은 확인하지 못했다.
+- **Gemini**(교육용 계정): 모드 메뉴에 「일상생활 지원 4 Hydrogen」 · 「복잡한 문제 해결 4 Hydrogen Thinking」 · 「상세한 조사 3.1 Pro」.
+- (아래 11-21 낮 재확인으로 바뀜) 처음에는 ChatGPT = Think 켜기, Gemini = 3.1 Pro 또는 4 Hydrogen Thinking으로 적었다.
+
+### 2026-11-21 낮 재확인 (사용자: "Gemini 3.1 Pro는 모션 그래픽에 부족해 보인다", "ChatGPT도 캔바·미리캔버스가 되는 것 같다")
+
+| 사실 | 근거 | 출처 |
+|---|---|---|
+| Gemini 앱 모델 메뉴(유료): Auto / Everyday help: 4 Hydrogen / Deeper analysis: 4 Neon / Code & complex work: 4 Carbon. 4 Neon은 AI Pro·Ultra에서 쓸 수 있고 3.1 Pro는 없어지는 중 | 제3자(뉴스, 2026-11-18) | https://9to5google.com/2026/11/18/gemini-4-neon-announcement/ |
+| 4 Carbon은 AI Ultra만, 무료 계정은 Auto(고를 수 없음), AI Plus는 4 Hydrogen까지 | 제3자(2026-11-19 갱신, 글 안에서 날짜가 서로 어긋남) | https://felloai.com/ultimate-gemini-model-comparison/ |
+| **교육용 Gemini 계정의 모드 메뉴**: 「일상생활 지원 4 Hydrogen」·「복잡한 문제 해결 4 Hydrogen Thinking」·「상세한 조사 3.1 Pro」 셋뿐 (4 Neon·4 Carbon 없음) | 실제 화면 (2026-11-21, 교육청 교육용 계정) | — |
+| ChatGPT: "Plus, Pro, Business, and Enterprise use GPT-6 Sol; Free and Go use GPT-6 Luna" (2026-10-07 항목). 모델 메뉴에 생각 수준(Instant~Extra High)이 있다 | 공식 | https://help.openai.com/en/articles/6825453-chatgpt-release-notes |
+| ChatGPT 무료의 Think는 Luna를 더 오래 생각하게 할 뿐 Sol로 바뀌지 않는다. Plus는 Instant·Medium·High, 코딩은 High 권장 | 제3자(2026-11-18 갱신) | https://www.ai-toolbox.co/chatgpt-models/chatgpt-models-explained-complete-comparison-2026 |
+| **ChatGPT 무료 계정(한국어 화면)**: 왼쪽 메뉴에 「플러그인」. 그 안에 「플러그인」·「스킬」 탭, 「플러그인 검색」, 「추가」(플러그인 만들기 · 플러그인 압축 파일 업로드 · 사용자 지정 MCP 서버 추가) | 실제 화면 (2026-11-21) | https://chatgpt.com/plugins |
+| **ChatGPT 무료 계정의 「스킬」 탭**: 「이 계정에서는 스킬을 사용할 수 없습니다」 | 실제 화면 (2026-11-21) | https://chatgpt.com/skills |
+| **ChatGPT 플러그인 「Canva」** (Canva Pty Ltd., 17.0.3): Create, review, edit designs. 디자인 만들기·이미지 생성·배경 제거·파일 올리기·크기 바꾸기·디자인 고치기·피드백·브랜드 점검. @Canva로 부름. 캔바 계정 연결 필요 | 실제 화면의 플러그인 설명 (2026-11-21, 설치는 하지 않음) | — |
+| **ChatGPT 플러그인 「MiriCanvas」** (MIRI D.I.H, 1.0.2): 템플릿 추천, 템플릿으로 디자인 만들기, 템플릿 색 바꾸기, 표·차트, 내 사진(첨부·웹 링크·미리캔버스 드라이브) 쓰기, 미리캔버스에 저장. @MiriCanvas로 부름. 미리캔버스 계정 연결 필요 | 실제 화면의 플러그인 설명 (2026-11-21, 설치는 하지 않음) | — |
+| 미리캔버스 'AI 커넥터'는 2026-10-22 오픈AI 데브데이 익스체인지 서울에서 공개, 연내 정식 출시 계획 | 제3자(기사, 2026-10-29) | https://zdnet.co.kr/view/?no=20261029111606 · https://www.venturesquare.net/1124107 |
+
+### 2026-11-21 낮 — Claude의 미리캔버스 커넥터와 새 메뉴 이름 (사용자: "클로드도 지금 미리캔버스가 연결되어 있고 가능해")
+
+| 사실 | 근거 | 출처 |
+|---|---|---|
+| Claude 연결: 사용자 지정 → 커넥터 → + 추가 → 커스텀 커넥터 추가 → 이름 MiriCanvas, 주소 `https://mcp.miricanvas.com/mcp` → 계속 → 미리캔버스 로그인 → 워크스페이스 선택 → 허용. "클로드에서는 공식 등록이 끝나기 전까지 커스텀 커넥터로 직접 연결해요." 무료 플랜은 커스텀 커넥터 1개까지 | 공식(미리캔버스 블로그, 2026-10-28) | https://blog.miricanvas.com/chatgpt-claude-class-material-miricanvas |
+| ChatGPT 연결: 왼쪽 메뉴 플러그인 → MiriCanvas 검색 → + → 로그인 → 워크스페이스 선택 → 허용. 무료 사용자도 됨 | 공식(같은 글) | 같은 주소 |
+| 영문 안내도 같은 주소·순서 ("Claude Free users can also add one custom connector") | 공식(미리캔버스) | https://www.miricanvas.com/en/features/ai-presentation-mcp |
+| **사용자 Claude 계정(Max, 한국어)**: 「내 플러그인」의 활성 목록에 `MiriCanvas · 사용자 지정 커넥터 · mcp.miricanvas.com`. 사용자가 직접 써서 된다고 확인 | 실제 화면 + 사용자 확인 (2026-11-21) | https://claude.ai/plugins/yours |
+| **Claude 메뉴 이름이 바뀜**: 왼쪽 메뉴 「플러그인」(11-20에는 「사용자 지정」) → 「내 플러그인」(전체 · 커넥터 · Skills) → 「추가」 = 플러그인 업로드 · 커스텀 커넥터 추가 · 플러그인 만들기 · Claude로 만들기 · 마켓플레이스 추가 | 실제 화면 (2026-11-21, Max 계정) | — |
+| Claude: 왼쪽 메뉴의 Customize가 Plugins로 바뀌고, Skills·Connectors·Plugins 탭이 Plugins 페이지 하나로 합쳐진다. 10-29부터 Free·Pro·Max·Team에 순차 적용, Enterprise는 11-30. 설치해 둔 스킬·커넥터·플러그인은 그대로 (문서 안에서 날짜 표기가 조금 엇갈림) | 공식 | https://support.claude.com/en/articles/17740565-manage-plugins-skills-and-connectors-from-one-plugins-page |
+| 스킬 = 필요할 때 불러 쓰는 지침, 플러그인 = 스킬·커넥터·명령어·에이전트를 담는 꾸러미. 스킬은 혼자서도 올릴 수 있다 | 공식 | https://claude.com/docs/extend/overview · https://claude.com/docs/plugins/overview |
+| 「플러그인 업로드」 화면의 글: ".zip 또는 .plugin 아카이브에서 플러그인을, .skill, .zip 또는 .md 파일에서 Skill을 워크스페이스에 추가하세요", "Skill 파일은 SKILL.md 파일 또는 SKILL.md 파일이 포함된 .skill이나 .zip 파일입니다" | 실제 화면 (2026-11-21, 파일은 올리지 않음) | https://claude.ai/plugins/new/upload |
+
+- 미리캔버스 공식 안내 두 곳 모두 **붙여 넣은 디자인 주소를 읽는다는 말은 없다.** Claude에서는 이 PC의 미리캔버스 연결 도구로 편집 주소의 디자인을 읽은 것(11-21 새벽)과 사용자 확인이 근거다. ChatGPT 플러그인에서는 확인하지 못했다.
+- 재확인 필요: 새 「플러그인 업로드」 화면에 우리 ZIP(폴더 안에 SKILL.md)을 올렸을 때 그대로 받아들이는지, 다른 요금제 계정도 메뉴가 「플러그인」으로 바뀌었는지, 사용법 영상의 Claude 장면(「사용자 지정 → Skills → Skill 업로드」)을 새 이름으로 바꿀지.
+
+- 웹앱의 '권장 모델'을 이에 맞춰 바꿨다: ChatGPT = 유료 계정의 GPT-6 · 생각 수준 High, Gemini = 유료 계정의 4 Neon 이상. **둘 다 그 모델로 슬라이드를 만들어 보지 않은 권장이다**(Claude만 실제로 만들어 확인).
+- 재확인 필요: 유료 ChatGPT 화면의 생각 수준 한국어 이름, 유료 Gemini 화면의 모드 한국어 이름, 교육용 Gemini(4 Hydrogen Thinking·3.1 Pro)로 실제로 만든 슬라이드의 움직임, ChatGPT의 Canva·MiriCanvas 플러그인이 템플릿 주소를 읽는지(설치해 봐야 안다), 캔바 도움말 원문(https://www.canva.com/help/connect-chatgpt-to-canva/ 는 자동 읽기가 막혀 검색 요약으로만 봄: 무료·유료 개인 계정에서 쓸 수 있다고 함), 무료 Claude 계정의 모델 목록.
