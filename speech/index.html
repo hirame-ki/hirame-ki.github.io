@@ -119,7 +119,7 @@ main{flex:1;width:100%;max-width:1280px;margin:0 auto;padding:4px 16px 18px;min-
 .vt-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .vt-row .btn{background:var(--sun-s)}
 .vt-row .btn.primary{background:var(--main);color:#fff}
-/* 초기 설정 따라 하기 (setup-guide/ 를 화면 가득 띄움) */
+/* 수업 설정 따라 하기 (guide/ 를 화면 가득 띄움) */
 dialog.sg-modal{width:min(1320px,96vw);height:min(940px,94vh);max-width:none;max-height:none;padding:0;border:var(--bw) solid var(--ink);border-radius:20px;overflow:hidden;background:var(--paper)}
 dialog.sg-modal::backdrop{background:rgba(29,42,74,.55)}
 dialog.sg-modal iframe{display:block;width:100%;height:100%;border:0}
@@ -739,6 +739,7 @@ html.intro-on{overflow:hidden}
 .uv-hint b{color:var(--ink)}
 .uv-b{display:inline-flex;align-items:center;justify-content:center;gap:3px;font-size:8.5px;font-weight:700;border:1.5px solid var(--ink);border-radius:7px;padding:2px 7px;background:var(--card);color:var(--ink);box-shadow:0 2px 0 var(--ink);white-space:nowrap;line-height:1.4}
 .uv-b.pri{background:var(--main);color:#fff}
+.uv-b.uv-re{background:var(--sun);border-width:2px;border-radius:999px;padding:3px 11px;font-size:10.5px}
 .uv-b.sub{background:var(--sub);color:#fff}
 .uv-b.mint{background:var(--mint);color:#fff}
 .uv-b.xs{font-size:7.5px;padding:1px 6px;border-radius:6px;box-shadow:0 1.5px 0 var(--ink)}
@@ -1039,7 +1040,7 @@ html.intro-on{overflow:hidden}
   <div class="brand">
     <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="18" fill="#FFE07A" stroke="#1D2A4A" stroke-width="3"/><path d="M47 15c3 3 3 9 0 12M51.5 11c5.5 5 5.5 15 0 20" fill="none" stroke="#FF6FAE" stroke-width="3" stroke-linecap="round"/><path d="M14.5 29a15.5 15.5 0 0 0 31 0" fill="none" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/><path d="M30 44.5v7M22.5 53h15" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/><rect x="18" y="7" width="24" height="31" rx="12" fill="#3B8BFF" stroke="#1D2A4A" stroke-width="3"/><path d="M18.5 15.5h23" stroke="#1D2A4A" stroke-width="2" opacity=".25"/><ellipse cx="24" cy="13.5" rx="2.3" ry="3.6" fill="#fff" opacity=".75"/><circle cx="25.5" cy="24" r="2.3" fill="#1D2A4A"/><circle cx="34.5" cy="24" r="2.3" fill="#1D2A4A"/><circle cx="26.1" cy="23.3" r=".8" fill="#fff"/><circle cx="35.1" cy="23.3" r=".8" fill="#fff"/><circle cx="22" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/><circle cx="38" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/><path d="M27.5 29.2q2.5 2.6 5 0" fill="none" stroke="#1D2A4A" stroke-width="2" stroke-linecap="round"/></svg>
     <div><h1>발표 <em>레이스</em></h1><p><b>발표 수업 도구</b> · 순서 뽑기 → 발표 → 기록·평가</p></div>
-    <button type="button" class="uv-open" id="uvOpen" title="사용법 영상 보기 (AI 목소리 내레이션)">▶ 사용법</button>
+    <button type="button" class="uv-open" id="uvOpen" title="사용법 영상 보기 (AI 목소리 내레이션)">▶ 사용법 영상 보기</button>
   </div>
   <label class="clsPick"><span>우리 반</span><select id="clsSel" aria-label="반 고르기"></select></label>
   <nav class="steps" aria-label="단계">
@@ -3220,7 +3221,7 @@ async function exportClass(c){
 function renderAdmin(){
   const v1 = $('#v-setup'), v2 = $('#v-conf'), c = cls();
   v1.innerHTML = `
-  <div class="vhead"><div><div class="vt-row"><h2 class="vt">초기 <em>설정</em></h2><button type="button" class="btn sm primary" id="aGuide">🎬 초기 설정 따라 하기</button><a class="btn sm" href="https://www.notion.so/3fe7fde37cfc815498b6d3291105ee3d" target="_blank" rel="noopener">📖 사용 설명서 ↗</a></div><p class="vs">처음 한 번만 해 두면 돼요. <b>반 만들기 → 학생 명단 → 자료 제출 링크 · 발표 시간 → 자료 미리 등록</b> 순서로 준비하세요. 모든 내용은 이 컴퓨터의 브라우저에만 저장돼요.</p></div></div>
+  <div class="vhead"><div><div class="vt-row"><h2 class="vt">초기 <em>설정</em></h2></div><p class="vs">처음 한 번만 해 두면 돼요. <b>반 만들기 → 학생 명단 → 자료 제출 링크 · 발표 시간 → 자료 미리 등록</b> 순서로 준비하세요. 모든 내용은 이 컴퓨터의 브라우저에만 저장돼요.</p></div></div>
   <div class="admin-grid">
     <div class="admin-side">
     <aside class="card cls-list">
@@ -3334,7 +3335,6 @@ function renderAdmin(){
   $$('[data-cid]', v1).forEach(b => b.onclick = () => { if (running) return; switchClass(b.dataset.cid); });
   $$('[data-cren]', v1).forEach(b => b.onclick = () => renameClass(db.classes.find(x => x.id === b.dataset.cren)));
   $$('[data-cdel]', v1).forEach(b => b.onclick = () => deleteClass(db.classes.find(x => x.id === b.dataset.cdel)));
-  $('#aGuide').onclick = () => openSetupGuide('setup');
   $('#aAddCls').onclick = addClassFlow;
   // 학생 명단
   $('#aAddSt').onclick = addStudentsFlow;
@@ -3651,7 +3651,7 @@ requestAnimationFrame(frame);
           <div class="uv-tgs"><button type="button" id="uvVo" hidden></button><button type="button" id="uvSnd"></button></div>
         </div>
         <ol class="uv-list" id="uvList"></ol>
-        <p class="uv-more"><b>단계별로 따라 하려면</b><button type="button" class="btn sm" data-uvg="setup">🎬 초기 설정 따라 하기</button><button type="button" class="btn sm" data-uvg="conf">🎬 수업 설정 따라 하기</button></p>
+        <p class="uv-more"><b>수업 설정을 한 단계씩 보려면</b><button type="button" class="btn sm" data-uvg="conf">🎬 수업 설정 따라 하기</button></p>
         <p class="uv-note">영상 속 반·학생 이름과 발표 자료는 지어낸 예시예요. 내레이션은 AI로 만든 목소리예요.</p>
         <audio id="uvVoice" preload="none" src="guide/narration.m4a"></audio>
       </div>
@@ -3705,7 +3705,7 @@ const UV_SAY = /*SAY*/{
   "c10a": ["<b>[🛠 수업 설정]</b>은 모두 선택 — 평가 기준표·음성 인식·과세특 설정을 필요할 때만 정합니다.", "수업 설정은 모두 선택입니다. 평가 기준표와 음성 인식 방식, 과세특 설정을 필요할 때만 정하면 됩니다."],
   "c10b": ["기본 음성 인식은 말소리가 <b>브라우저 회사 서버</b>를 거칩니다. 원하지 않으면 <b>기기 안에서만 인식</b>이나 <b>끄기</b>를 고르세요.", "기본 음성 인식은 말소리가 브라우저 회사의 서버를 거칩니다. 원하지 않으면, 기기 안에서만 인식하거나 음성 인식을 끌 수 있습니다."],
   "c10c": ["기록은 이 컴퓨터에만 있으니, 가끔 <b>[⬇ 백업 파일 저장]</b>으로 받아 두세요.", "기록은 이 컴퓨터에만 있으니, 가끔 백업 파일로 저장해 두세요."],
-  "c10d": ["자세한 단계는 <b>[🎬 따라 하기]</b>에 있습니다. 이제 <b>우리 반</b>부터 만들어 보세요!", "자세한 단계는 따라 하기 안내에 있습니다. 이제 우리 반부터 만들어 보세요."]
+  "c10d": ["이 영상은 맨 위 <b>[▶ 사용법 영상 보기]</b>로 언제든 다시 볼 수 있습니다.<br>이제 <b>우리 반</b>부터 만들어 보세요!", "이 사용법 영상은 맨 위 단추로 언제든 다시 볼 수 있습니다. 이제 우리 반부터 만들어 보세요."]
 }/*SAY-END*/;
 const UV_VO = /*VO*/{
   "c1a": [0.1, 4.694],
@@ -3742,7 +3742,7 @@ const UV_VO = /*VO*/{
   "c10a": [155.231, 5.214],
   "c10b": [160.895, 6.673],
   "c10c": [168.018, 3.103],
-  "c10d": [171.571, 3.791]
+  "c10d": [171.571, 4.597]
 }/*VO-END*/;
 
 /* ══════ 사용법 영상 ══════
@@ -3928,8 +3928,6 @@ function uvSetup(made){
       <div class="uv-scs">${list.slice(0, 17).map((x, i) => `<span class="uv-sc"><i>${i + 1}</i>${x}</span>`).join('')}<span class="uv-sc more">… ${n - 17}명 더</span></div>`;
   return `<div class="uv-scr" data-a="scr">
     <div class="uv-vt" style="left:12px;top:5px">초기 <em>설정</em></div>
-    <span class="uv-b pri xs uv-ab" style="left:84px;top:8px">🎬 초기 설정 따라 하기</span>
-    <span class="uv-b xs uv-ab" style="left:180px;top:8px">📖 사용 설명서 ↗</span>
     <div class="uv-card" style="left:12px;top:30px;width:166px">
       <div class="uv-ch">🏫 반 목록<span class="uv-tag" data-a="clsN">${made ? 2 : 1}개</span></div>
       <div class="uv-ci${made ? '' : ' on'}" data-a="ci0"><b>예시 반</b><small>학생 20명 · 발표 0회</small></div>
@@ -4554,7 +4552,7 @@ const UV_CH = [
       <div class="uv-dim" data-a="dim"></div>
       <div class="uv-end" data-a="end">${UV_LOGO}<h4>발표 <em>레이스</em></h4>
         <div class="uv-flow">${UV_STEPS.slice(0, 4).map(([v, h, k]) => `<span class="uv-st${k} on" data-v="${v}">${h}</span>`).join('<i>›</i>')}</div>
-        <div class="uv-row" style="margin-top:12px"><span class="uv-b pri">🎬 초기 설정 따라 하기</span><span class="uv-b">🎬 수업 설정 따라 하기</span></div>
+        <div class="uv-row" style="margin-top:12px"><span class="uv-b uv-re">▶ 사용법 영상 보기</span></div>
         <p>이제 우리 반부터 만들어 보세요!</p></div>`,
     cur:T => { const K = T.k; return [[K.pT - .6, [330, 230]], [K.pT - .15, 'p_conf'], [K.pT + .1, 'p_conf'], [T.s[1] + .2, 'r0@l'], [K.b(.52), 'r1@l'], [K.b(.52) + .7, 'r1@l'], [K.b(.76), 'r2@l'], [K.b(.76) + .6, 'r2@l'],
       [K.bT - .5, 'bk'], [K.bT + .1, 'bk'], [K.bT + .8, [520, 286]]]; },
