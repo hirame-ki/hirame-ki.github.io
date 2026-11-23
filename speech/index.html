@@ -635,6 +635,375 @@ html.intro-on{overflow:hidden}
 @keyframes inRun3{from{left:20px}60%{left:40%}to{left:calc(100% - 74px)}}
 #intro .in-ball{left:calc(100% - 74px)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ══════ ▶ 사용법 영상 — 장면은 640×360 가짜 앱 화면을 무대 너비에 맞춰 통째로 줄이고 늘린다(폰에서도 같은 모양). 자막은 그 위에 얹는다 ══════
+   생기부돋보기·우리반 창체 비서 사용법 영상과 같은 틀. 장면 속 글자 크기는 px. ⚠️ blur 는 쓰지 않는다(태블릿 크롬이 죽는다). */
+.uv-open{flex:none;align-self:center;display:inline-flex;align-items:center;gap:5px;font:700 13px/1.3 var(--body);border:2px solid var(--ink);background:var(--sun);color:var(--ink);border-radius:999px;padding:5px 13px;cursor:pointer;box-shadow:0 3px 0 var(--ink);white-space:nowrap}
+.uv-open:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+#uvModal{max-width:880px}
+#uvModal::backdrop{backdrop-filter:none;background:rgba(29,42,74,.55)}
+#uvModal .m-body{padding-bottom:14px}
+.uv-stage{position:relative;isolation:isolate;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--paper);outline:none;box-shadow:0 0 0 2px var(--ink);--uv-fs:14px}
+.uv-stage:focus-visible{box-shadow:0 0 0 2px var(--ink),0 0 0 5px var(--sub)}
+.uv-cv{position:absolute;left:0;top:0;width:640px;height:360px;transform-origin:0 0;font:12px/1.5 var(--body);color:var(--ink)}
+.uv-big{position:absolute;inset:0;z-index:6;margin:auto;width:66px;height:66px;border-radius:50%;border:2.5px solid var(--ink);background:var(--sun);color:var(--ink);font-size:24px;cursor:pointer;display:none;align-items:center;justify-content:center;padding-left:5px;box-shadow:0 4px 0 var(--ink)}
+.uv-big.on{display:flex}
+.uv-sub{position:absolute;left:0;right:0;top:0;z-index:5;display:flex;justify-content:center;padding:0 5%;pointer-events:none}
+.uv-sub[hidden]{display:none}
+.uv-sub .in{pointer-events:auto;max-width:100%;background:rgba(22,30,52,.84);color:#fff;font-size:var(--uv-fs);font-weight:600;line-height:1.5;border-radius:.6em;padding:.38em .8em;text-align:center;word-break:keep-all;overflow-wrap:anywhere;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 6px 18px -8px rgba(0,0,0,.5)}
+.uv-sub b{color:var(--sun);font-weight:800}
+.uv-sub .ch{display:inline-block;font-size:.7em;font-weight:800;color:var(--ink);background:var(--sun);border-radius:.4em;padding:0 .45em;margin-right:.55em;vertical-align:.14em;line-height:1.6}
+.uv-stage.drag .uv-sub .in{cursor:grabbing;box-shadow:0 0 0 2px var(--sun)}
+.uv-ctl{display:flex;align-items:center;gap:10px;margin-top:12px}
+.uv-play{flex:0 0 38px;width:38px;height:38px;border-radius:50%;border:2px solid var(--ink);background:var(--main);color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 var(--ink)}
+.uv-seek{position:relative;flex:1;height:28px}
+.uv-segs{position:absolute;left:0;right:0;top:11px;height:6px;display:flex;gap:3px}
+.uv-segs i{display:block;height:100%;border-radius:3px;background:var(--line);overflow:hidden;position:relative}
+.uv-segs i b{position:absolute;left:0;top:0;bottom:0;background:var(--main);width:0}
+.uv-segs i.on{background:#C9DCF8}
+.uv-seek input{position:absolute;inset:0;width:100%;margin:0;padding:0;border:0;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;box-shadow:none}
+.uv-seek input:focus-visible{outline:none}
+.uv-seek input::-webkit-slider-runnable-track{height:28px;background:transparent}
+.uv-seek input::-moz-range-track{height:28px;background:transparent}
+.uv-seek input::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;margin-top:6px;border-radius:50%;background:#fff;border:3px solid var(--main);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.uv-seek input::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--main)}
+.uv-tip{position:absolute;bottom:100%;left:0;z-index:2;margin-bottom:3px;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12px;font-weight:700;border-radius:6px;padding:3px 8px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s}
+.uv-tip.on{opacity:1}
+.uv-time{flex:0 0 auto;font-variant-numeric:tabular-nums;font-size:13px;font-weight:700;color:var(--muted);min-width:84px;text-align:right}
+.uv-opts{display:flex;align-items:center;gap:8px 14px;margin-top:8px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.uv-grp{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.uv-grp>span:first-child{margin-right:3px;font-weight:700}
+.uv-opts button{font:inherit;font-size:12px;font-weight:700;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:3px 9px;cursor:pointer}
+.uv-opts button[aria-pressed="true"]{background:var(--main);border-color:var(--main);color:#fff}
+.uv-opts .uv-tgs{margin-left:auto;display:flex;gap:6px}
+.uv-opts .uv-tgs button[aria-pressed="true"]{background:var(--main-s);border-color:var(--main);color:#1F5FA8}
+.uv-oh{font-size:11.5px;margin-left:3px}
+.uv-list{list-style:none;padding:0;margin:14px 0 6px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.uv-list button{width:100%;display:flex;align-items:center;gap:9px;text-align:left;font:inherit;font-size:13.5px;color:var(--ink);background:var(--soft);border:1.5px solid var(--line);border-radius:10px;padding:7px 10px;cursor:pointer}
+.uv-list button:hover{border-color:var(--main)}
+.uv-list button .k{flex:0 0 22px;height:22px;border-radius:7px;background:var(--main-s);color:var(--main);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.uv-list button .d{margin-left:auto;font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--muted)}
+.uv-list button.on{border-color:var(--main);background:var(--main-s);font-weight:700}
+.uv-list button.on .k{background:var(--main);color:#fff}
+.uv-more{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:12px 0 0;padding-top:12px;border-top:2px dashed var(--line);font-size:13px;color:var(--muted)}
+.uv-more b{color:var(--ink)}
+.uv-note{margin:8px 0 0;font-size:12px;color:var(--muted)}
+@media (max-width:560px){ .uv-list{grid-template-columns:1fr} .uv-oh{display:none} .uv-opts .uv-tgs{margin-left:0} }
+
+/* 장면 속 가짜 앱 화면 (하늘 솜사탕 그대로, 크기만 줄임) */
+.uv-app{position:absolute;inset:0;overflow:hidden;background-color:var(--paper);background-image:radial-gradient(var(--dot) 1px,transparent 1.1px);background-size:16px 16px}
+.uv-top{position:absolute;left:0;right:0;top:0;height:32px;display:flex;align-items:center;gap:6px;padding:0 9px;white-space:nowrap}
+.uv-top .lgsvg{width:20px;height:20px;flex:none}
+.uv-top .wm{font:13px/1 var(--display)}
+.uv-top .wm em{font-style:normal;color:var(--main)}
+.uv-top .hp{font-size:7.5px;font-weight:700;border:1.2px solid var(--ink);background:var(--sun);border-radius:99px;padding:0 6px;line-height:1.6}
+.uv-top .cp{display:inline-flex;align-items:center;gap:4px;font-size:7.5px;font-weight:700;color:var(--muted);background:var(--card);border:1.5px solid var(--ink);border-radius:8px;padding:1px 2px 1px 6px;margin-left:auto}
+.uv-top .cp b{font:9.5px/1.3 var(--display);color:var(--ink);background:var(--sun);border-radius:6px;padding:1px 5px}
+.uv-top .sp{display:flex;align-items:center;gap:3px}
+.uv-top .sp i{font:9px var(--display);font-style:normal;color:var(--gray)}
+.uv-st{display:inline-flex;align-items:center;gap:3px;font:9px/1.25 var(--display);border:1.5px solid var(--ink);background:var(--card);border-radius:999px;padding:2px 7px 2px 3px;box-shadow:0 1.5px 0 var(--ink)}
+.uv-st b{display:grid;place-items:center;width:12px;height:12px;border-radius:50%;background:var(--soft);border:1px solid var(--ink);font-weight:400;font-size:7.5px}
+.uv-st.adm{padding-left:6px}
+.uv-st.cf{margin-left:3px}
+.uv-st.on[data-v=order]{background:var(--sub);color:#fff}
+.uv-st.on[data-v=talk]{background:var(--main);color:#fff}
+.uv-st.on[data-v=rec]{background:var(--mint);color:#fff}
+.uv-st.on[data-v=setup],.uv-st.on[data-v=conf]{background:var(--ink);color:#fff}
+.uv-st.on b{background:#fff;color:var(--ink)}
+.uv-st.dn{transform:translateY(1px);box-shadow:0 .5px 0 var(--ink)}
+.uv-main{position:absolute;left:0;right:0;top:32px;bottom:0;overflow:hidden}
+/* 손가락(커서) — 위치는 스크립트가 transform 으로 옮긴다. 그림자 필터 없이 흰 몸 + 남색 테두리 */
+.uv-cur{position:absolute;left:0;top:0;width:18px;height:22px;z-index:9;pointer-events:none;opacity:0}
+.uv-cur svg{display:block;width:18px;height:22px}
+.uv-cur .ring{position:absolute;left:-12px;top:-12px;width:24px;height:24px;border-radius:50%;border:2px solid var(--sub);opacity:0}
+.uv-rrow{display:flex;align-items:center;gap:5px;font-size:8px;padding:3px 0;border-top:1px solid var(--line)}
+.uv-rrow b{font:11px/1.2 var(--display);font-weight:400;flex:none}
+.uv-rrow>span:not(.uv-pill){font-weight:800;font-variant-numeric:tabular-nums}
+.uv-rrow small{flex:1;min-width:0;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uv-gq.hot{box-shadow:0 0 0 2px var(--sun)}
+.uv-gd .rw.hot{border-color:#673AB7;box-shadow:0 0 0 2px var(--sun)}
+.uv-sj.hot{box-shadow:0 0 0 2px var(--sun),0 1.5px 0 var(--ink)}
+.uv-rtag.hot{background:var(--sun);color:var(--ink)}
+.uv-scr{position:absolute;left:0;right:0;top:0;height:420px}
+.uv-ab{position:absolute}
+.uv-card{position:absolute;background:var(--card);border:1.5px solid var(--ink);border-radius:10px;box-shadow:0 2.5px 0 var(--ink);padding:6px 8px}
+.uv-card.hot{box-shadow:0 2.5px 0 var(--ink),0 0 0 3px var(--sun)}
+.uv-ch{display:flex;align-items:center;gap:4px;font:10.5px/1.35 var(--display);margin-bottom:4px;white-space:nowrap}
+.uv-ch .uv-b,.uv-ch .uv-tag{font-family:var(--body)}
+.uv-g{flex:1}
+.uv-tag{font:700 7.5px/1.55 var(--body);padding:0 5px;border-radius:999px;background:var(--soft);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
+.uv-tag.blue{background:var(--sub-s);color:#1F5FA8;border-color:#B7D9FA}
+.uv-tag.opt{background:var(--sun-s);color:#7A5200;border-color:#F0D684}
+.uv-tag.ok{background:var(--mint-s);color:#0E6B47;border-color:#9BE3C6}
+.uv-hint{font-size:7.5px;color:var(--muted);line-height:1.55;margin:0 0 4px}
+.uv-hint b{color:var(--ink)}
+.uv-b{display:inline-flex;align-items:center;justify-content:center;gap:3px;font-size:8.5px;font-weight:700;border:1.5px solid var(--ink);border-radius:7px;padding:2px 7px;background:var(--card);color:var(--ink);box-shadow:0 2px 0 var(--ink);white-space:nowrap;line-height:1.4}
+.uv-b.pri{background:var(--main);color:#fff}
+.uv-b.sub{background:var(--sub);color:#fff}
+.uv-b.mint{background:var(--mint);color:#fff}
+.uv-b.xs{font-size:7.5px;padding:1px 6px;border-radius:6px;box-shadow:0 1.5px 0 var(--ink)}
+.uv-b.wide{display:flex;width:100%;padding:3px}
+.uv-b.dis{opacity:.4}
+.uv-b.on{transform:translateY(1.5px);box-shadow:0 .5px 0 var(--ink)}
+.uv-b.hot{box-shadow:0 2px 0 var(--ink),0 0 0 3px var(--sun)}
+.uv-fl{font-size:7.5px;font-weight:700;color:var(--muted);margin:3px 0 2px;white-space:nowrap}
+.uv-in{background:var(--card);border:1.5px solid var(--line);border-radius:6px;padding:1px 6px;font-size:8.5px;min-height:17px;position:relative;white-space:nowrap;overflow:hidden;line-height:1.6}
+.uv-in .ph{position:absolute;left:6px;top:1px;color:var(--gray)}
+.uv-in.on{border-color:var(--main);box-shadow:0 0 0 2px var(--main-s)}
+.uv-in small{color:var(--muted);font-size:7.5px;margin-left:3px}
+.uv-ta{white-space:pre;height:66px;font-size:8px;line-height:1.45;padding-top:3px}
+.uv-ta .ph{white-space:pre;top:3px}
+.uv-row{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+.uv-two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.uv-pre{display:flex;flex-wrap:wrap;gap:3px;margin:5px 0}
+.uv-pre span{font-size:7.5px;font-weight:700;border:1.2px solid var(--ink);border-radius:999px;padding:0 5px;background:var(--soft);white-space:nowrap;line-height:1.6}
+.uv-pre span.on{background:var(--main);color:#fff}
+.uv-vt{position:absolute;font:16px/1.2 var(--display);white-space:nowrap}
+.uv-vt em{font-style:normal;background:linear-gradient(transparent 60%,var(--sun) 60%);padding:0 2px}
+.uv-vt .opt{display:inline-block;vertical-align:middle;margin-left:5px;padding:0 6px;border-radius:999px;border:1.2px solid var(--ink);background:var(--sun-s);font:700 8px/1.5 var(--body)}
+.uv-ci{display:flex;flex-direction:column;border:1.5px solid var(--line);border-radius:7px;padding:2px 6px;margin-bottom:3px;background:var(--soft);line-height:1.35}
+.uv-ci b{font-size:8.5px}
+.uv-ci small{font-size:7px;color:var(--muted)}
+.uv-ci.on{border-color:var(--ink);background:var(--sun-s)}
+.uv-scs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}
+.uv-sc{display:flex;align-items:center;gap:3px;font-size:8px;font-weight:700;border:1px solid var(--line);border-radius:6px;padding:1px 4px;background:var(--soft);white-space:nowrap;overflow:hidden}
+.uv-sc i{font-style:normal;color:var(--muted);font-size:7px;min-width:9px;text-align:right}
+.uv-sc.more{color:var(--muted);justify-content:center}
+.uv-ft{margin:4px 0 0;padding-left:12px;font-size:7.5px;color:var(--muted);line-height:1.6}
+.uv-ft b{color:var(--ink)}
+.uv-toast{position:absolute;left:0;right:0;margin:0 auto;width:max-content;max-width:92%;background:var(--ink);color:#fff;border-radius:99px;padding:4px 12px;font-size:9px;font-weight:700;white-space:nowrap;opacity:0}
+.uv-dim{position:absolute;inset:0;background:rgba(29,42,74,.4);opacity:0}
+.uv-mod{position:absolute;background:var(--card);border:1.5px solid var(--ink);border-radius:12px;box-shadow:0 4px 0 var(--ink);opacity:0;overflow:hidden}
+.uv-mh{display:flex;align-items:center;gap:6px;padding:6px 9px 5px;border-bottom:1.5px dashed var(--line);font:11.5px/1.25 var(--display);white-space:nowrap}
+.uv-mh .ic{width:19px;height:19px;flex:none;display:grid;place-items:center;font-size:10px;background:var(--sun);border:1.5px solid var(--ink);border-radius:6px}
+.uv-mh .x{margin-left:auto;width:15px;height:15px;flex:none;border:1.2px solid var(--ink);border-radius:5px;display:grid;place-items:center;font:8px var(--body)}
+.uv-mb{padding:6px 10px}
+.uv-mf{display:flex;justify-content:flex-end;gap:5px;padding:3px 10px 9px}
+.uv-note-box{font-size:7.5px;line-height:1.5;background:var(--sun-s);border:1px solid #F0D684;border-radius:7px;padding:3px 7px;margin:0 0 5px}
+.uv-flow{display:flex;align-items:center;gap:5px;justify-content:center}
+.uv-flow i{font-style:normal;color:var(--gray);font:12px var(--display)}
+/* 파일 · 폴더 · 내려받기 */
+.uv-file{position:absolute;display:flex;align-items:center;gap:5px;background:var(--card);border:1.5px solid var(--ink);border-radius:8px;padding:3px 8px 3px 4px;font-size:8px;font-weight:700;white-space:nowrap;box-shadow:0 2px 0 var(--ink)}
+.uv-file .fi{width:16px;height:19px;border-radius:3px;display:grid;place-items:center;color:#fff;font:800 6.5px/1 var(--body);flex:none}
+.fi.pdf{background:#E5484D}.fi.ppt{background:#E8750A}.fi.xl{background:#1E8E4E}.fi.zip{background:#8B6CFF}.fi.js{background:#5F6E8E}.fi.fd{background:#F5B83D;border-radius:2px 5px 3px 3px}
+.uv-dl{position:absolute;right:12px;bottom:72px;display:flex;align-items:center;gap:6px;background:var(--card);border:1.5px solid var(--ink);border-radius:9px;padding:4px 9px 4px 5px;font-size:8px;font-weight:700;box-shadow:0 3px 0 var(--ink);opacity:0;white-space:nowrap}
+.uv-dl small{display:block;font-weight:600;color:var(--muted);font-size:7px}
+/* 바깥 창(구글 설문지 · 드라이브 · AI 챗봇) — 브라우저 창 모양만 흉내 */
+.uv-win{position:absolute;background:#fff;border:1.5px solid #9AA6BF;border-radius:9px;box-shadow:0 8px 22px -10px rgba(29,42,74,.55);overflow:hidden;opacity:0}
+.uv-win .bar{height:20px;display:flex;align-items:center;gap:4px;padding:0 7px;background:#EEF1F6;border-bottom:1px solid #D9DFEA;font-size:7.5px;color:#5F6E8E;white-space:nowrap}
+.uv-win .bar i{width:6px;height:6px;border-radius:50%;background:#C9D1E0;flex:none}
+.uv-win .bar .ad{margin-left:6px;flex:1;background:#fff;border:1px solid #D9DFEA;border-radius:99px;padding:0 8px;line-height:12px;overflow:hidden;text-overflow:ellipsis}
+.uv-gbtn{display:inline-flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;color:#fff;background:#1A73E8;border-radius:5px;padding:3px 11px;white-space:nowrap}
+.uv-gbtn.pp{background:#673AB7}
+.uv-gbtn.ln{background:#fff;color:#1A73E8;border:1px solid #C9D1E0}
+.uv-gbtn.on{filter:brightness(.85)}
+.uv-gf{position:absolute;left:0;right:0;top:20px;bottom:0;background:#F0EBF8}
+.uv-gf .tb{height:22px;display:flex;align-items:center;gap:6px;padding:0 10px;background:#fff;border-bottom:1px solid #E3DDF0;font-size:9px;font-weight:700;color:#3C3C46}
+.uv-gf .tb .lg{width:11px;height:14px;border-radius:2px;background:#673AB7;flex:none}
+.uv-gf .tb .gg{flex:1}
+.uv-gq{background:#fff;border-radius:7px;border:1px solid #E3DDF0;margin:5px auto 0;width:310px;padding:5px 10px;font-size:8.5px;color:#202124;position:relative}
+.uv-gq.ti{border-top:5px solid #673AB7;padding-top:6px}
+.uv-gq.ti b{font-size:12px;font-weight:600;display:block}
+.uv-gq.ti small{font-size:7.5px;color:#5F6368}
+.uv-gq .ln{height:1px;background:#E3DDF0;margin:6px 0 2px;width:55%}
+.uv-gq .ty{position:absolute;right:8px;top:5px;display:inline-flex;align-items:center;gap:3px;border:1px solid #DADCE0;border-radius:4px;padding:0 6px;font-size:7.5px;background:#fff;line-height:1.7}
+.uv-gq.act{box-shadow:inset 3px 0 0 #4285F4}
+.uv-gq .up{display:inline-flex;align-items:center;gap:4px;margin-top:5px;font-size:7.5px;color:#5F6368;border:1px dashed #C9C2DC;border-radius:5px;padding:1px 7px}
+.uv-menu{position:absolute;background:#fff;border-radius:6px;box-shadow:0 4px 14px -4px rgba(0,0,0,.35);padding:3px 0;font-size:8px;color:#202124;opacity:0;width:104px}
+.uv-menu div{padding:2px 10px;white-space:nowrap}
+.uv-menu div.on{background:#E8F0FE}
+.uv-gd{position:absolute;background:#fff;border-radius:9px;box-shadow:0 8px 24px -6px rgba(0,0,0,.4);padding:9px 12px;font-size:8.5px;color:#202124;opacity:0}
+.uv-gd h5{margin:0 0 6px;font-size:10.5px;font-weight:600}
+.uv-gd .rw{display:flex;align-items:center;gap:6px;border:1px solid #DADCE0;border-radius:6px;padding:3px 7px;margin-bottom:5px;font-size:8px;white-space:nowrap}
+.uv-gd .rw small{color:#5F6368;margin-left:auto}
+.uv-gd .ck{width:9px;height:9px;border:1.3px solid #5F6368;border-radius:2px;display:inline-grid;place-items:center;font-size:7px;color:#fff;flex:none}
+.uv-gd .ck.on{background:#673AB7;border-color:#673AB7}
+.uv-gd .lk{font-size:8px;color:#1A73E8;border-bottom:1.5px solid #673AB7;padding:2px 0;margin:4px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uv-gd .ft{display:flex;justify-content:flex-end;gap:6px;margin-top:4px}
+.uv-dr{position:absolute;left:0;right:0;top:20px;bottom:0;background:#fff;font-size:8.5px;color:#202124}
+.uv-dr .hd{padding:6px 12px 4px;font-size:10.5px;color:#3C4043;border-bottom:1px solid #E8EAED;white-space:nowrap}
+.uv-dr .rw{display:flex;align-items:center;gap:7px;padding:4px 12px;border-bottom:1px solid #F1F3F4;white-space:nowrap}
+.uv-dr .rw.on{background:#E8F0FE}
+.uv-dr .rw small{margin-left:auto;color:#5F6368;font-size:7.5px}
+/* 엑셀 명렬표 조각 */
+.uv-xl{position:absolute;background:#fff;border:1.5px solid #1E8E4E;border-radius:6px;overflow:hidden;font-size:8px;box-shadow:0 6px 16px -8px rgba(0,0,0,.4);opacity:0}
+.uv-xl .hd{background:#1E8E4E;color:#fff;font-weight:700;padding:2px 7px;font-size:7.5px;white-space:nowrap}
+.uv-xl .r{display:grid;grid-template-columns:20px 26px 1fr;border-top:1px solid #E2E8E4;line-height:1.55}
+.uv-xl .r span{padding:0 4px;border-right:1px solid #E2E8E4;white-space:nowrap}
+.uv-xl .r span:first-child{background:#F3F6F4;color:#7A8A80;text-align:center}
+.uv-xl .r.h span{background:#F3F6F4;font-weight:700}
+.uv-xl .r4{display:grid;grid-template-columns:18px 32px 24px 22px 20px 1fr;border-top:1px solid #E2E8E4;line-height:1.6}
+.uv-xl .r4 span{padding:0 3px;border-right:1px solid #E2E8E4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uv-xl .r4.h span{background:#F3F6F4;font-weight:700}
+.uv-xl .r.c span:last-child{background:#DCF3E4;box-shadow:inset 1.5px 0 0 #1E8E4E,inset -1.5px 0 0 #1E8E4E}
+/* QR · 휴대폰 · TV */
+.uv-qr{display:block;background:#fff}
+.uv-qr rect{fill:var(--ink)}
+.uv-tv{position:absolute;opacity:0}
+.uv-tv .sc{background:#0F1730;border:5px solid #1D2A4A;border-radius:9px;overflow:hidden;position:relative;box-shadow:0 6px 0 #0B1124}
+.uv-tv .st2{width:44px;height:9px;margin:5px auto 0;background:#1D2A4A;border-radius:0 0 6px 6px}
+.uv-tv .tg{position:absolute;left:5px;top:4px;font-size:7px;font-weight:800;color:#fff;background:rgba(255,255,255,.18);border-radius:4px;padding:0 5px}
+.uv-tvq{display:flex;align-items:center;gap:12px;background:var(--paper);border-radius:6px;padding:12px 14px;margin:10px;font-family:var(--display);color:var(--ink)}
+.uv-tvq .t1{font-size:15px;color:var(--main);line-height:1.2}
+.uv-tvq .t2{font-size:10px;line-height:1.5}
+.uv-tvq .t2 b{color:var(--sub);font-weight:400}
+.uv-phone{position:absolute;width:118px;height:224px;border:3px solid var(--ink);border-radius:20px;background:#0F1730;padding:7px 5px;box-shadow:0 5px 0 var(--ink);opacity:0}
+.uv-phone .scr{position:relative;width:100%;height:100%;border-radius:13px;overflow:hidden;background:#fff}
+.uv-phone .cam{position:absolute;inset:0;background:#25324F;display:flex;align-items:center;justify-content:center}
+.uv-phone .cam .fr{width:62px;height:62px;border:2px solid #FFE07A;border-radius:8px;padding:5px;background:#fff}
+.uv-phone .cam .pop{position:absolute;left:8px;right:8px;bottom:14px;background:#fff;border-radius:8px;font-size:7px;font-weight:700;padding:4px 6px;text-align:center;opacity:0}
+.uv-phone .fm{position:absolute;inset:0;background:#F0EBF8;opacity:0;padding:6px 5px;font-size:7px}
+.uv-phone .fm .q{background:#fff;border-radius:5px;padding:4px 5px;margin-bottom:4px;line-height:1.45}
+.uv-phone .fm .q.ti{border-top:3px solid #673AB7;font-size:8.5px;font-weight:700}
+.uv-phone .fm .up{display:flex;align-items:center;gap:3px;border:1px solid #DADCE0;border-radius:4px;padding:2px 4px;margin-top:3px;font-size:6.5px;font-weight:700;white-space:nowrap;overflow:hidden}
+.uv-fname{position:absolute;display:flex;align-items:flex-start;font:12px/1.3 var(--display);opacity:0}
+.uv-fname span{display:flex;flex-direction:column;align-items:center;padding:3px 3px 0;border-radius:6px}
+.uv-fname small{font:700 7.5px/1.4 var(--body);margin-top:2px;border-radius:99px;padding:0 6px;color:#fff}
+.uv-fname .n1{background:var(--sun-s)} .uv-fname .n1 small{background:#C99700}
+.uv-fname .n2{background:var(--main-s)} .uv-fname .n2 small{background:var(--main)}
+.uv-fname .n3{background:var(--sub-s)} .uv-fname .n3 small{background:var(--sub)}
+.uv-arr{position:absolute;color:var(--ink);opacity:0}
+/* 자료 한꺼번에 등록 */
+.uv-dz{border:1.5px dashed var(--ink);border-radius:10px;padding:9px 6px;text-align:center;background:var(--soft);font-size:8.5px;font-weight:700;line-height:1.6}
+.uv-dz.on{background:var(--sub-s);border-color:var(--sub)}
+.uv-dz .bp{display:inline-block;border:1.2px solid var(--ink);border-radius:6px;padding:0 6px;margin:3px 2px 0;font-size:7.5px;background:var(--card)}
+.uv-frule{display:flex;align-items:center;gap:6px;font-size:8px;background:var(--sun-s);border:1.2px solid #F0D684;border-radius:7px;padding:3px 8px;margin-bottom:5px;white-space:nowrap}
+.uv-frule code{font:700 8.5px/1.4 var(--body);background:#fff;border:1px solid #F0D684;border-radius:5px;padding:0 5px}
+.uv-res{font-size:8px;line-height:1.65;margin-top:5px}
+.uv-res div{opacity:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uv-res .ok{color:var(--mint);font-weight:900}
+.uv-res .tp{color:var(--muted)}
+.uv-bst{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px;opacity:0}
+.uv-bst .lg{width:100%;font-size:7.5px;color:var(--muted);display:flex;gap:10px;margin-bottom:1px}
+.uv-bst .lg b{color:var(--ink)}
+.uv-sj{display:inline-flex;align-items:center;gap:3px;font-size:8px;font-weight:700;border:1.2px solid var(--ink);border-radius:99px;padding:0 6px;box-shadow:0 1.5px 0 var(--ink);background:var(--card);color:var(--muted);line-height:1.6}
+.uv-sj i{font-style:normal;font-size:6.5px;opacity:.6}
+.uv-sj.y{background:var(--mint-s);color:var(--ink)}
+.uv-sj .fc{background:#16A34A;color:#fff;border-radius:99px;padding:0 4px;font-size:6.5px;line-height:1.5}
+/* 순서 정하기 */
+.uv-race{position:absolute;left:12px;top:30px;width:392px;height:234px;background:#CFEFC4;border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;box-shadow:0 2.5px 0 var(--ink)}
+.uv-race .ln{position:absolute;left:0;right:0;height:34px;border-bottom:1.5px dashed rgba(255,255,255,.85)}
+.uv-race .ln:nth-child(odd){background:#BFE6B2}
+.uv-race .fin{position:absolute;top:0;bottom:0;left:340px;width:10px;background:repeating-conic-gradient(#1D2A4A 0 25%,#fff 0 50%) 0 0/10px 10px}
+.uv-race .more{position:absolute;left:10px;bottom:4px;font-size:7.5px;font-weight:700;color:#2E5E2A}
+.uv-rn{position:absolute;left:0;top:0;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.uv-rn .bd{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;font-size:9px;position:relative}
+.uv-rn .bd::after{content:"";position:absolute;width:5px;height:5px;border-radius:50%;background:var(--cheek);right:2px;bottom:4px;opacity:.7}
+.uv-rn b{font:9px/1 var(--display);background:rgba(255,255,255,.88);border-radius:5px;padding:2px 4px}
+.uv-rn .rk{font:8px/1 var(--display);background:var(--sun);border:1.2px solid var(--ink);border-radius:99px;padding:2px 4px;opacity:0}
+.uv-cd{position:absolute;left:12px;top:30px;width:392px;height:234px;display:grid;place-items:center;font:56px/1 var(--display);color:#fff;-webkit-text-stroke:2px var(--ink);text-shadow:3px 3px 0 var(--ink);opacity:0;pointer-events:none}
+.uv-pcs{display:flex;flex-wrap:wrap;gap:3px}
+.uv-pc{display:inline-flex;align-items:center;gap:3px;font:9px/1.3 var(--display);border:1.2px solid var(--ink);border-radius:999px;padding:1px 6px 1px 2px;background:var(--main-s)}
+.uv-pc i{font:700 6.5px/1 var(--body);font-style:normal;min-width:11px;height:11px;display:grid;place-items:center;border-radius:99px;background:#fff;border:1px solid var(--ink)}
+.uv-pc.off{background:var(--card);color:var(--gray);border-style:dashed;text-decoration:line-through}
+.uv-go{display:block;text-align:center;font:15px/1.2 var(--display);border:1.5px solid var(--ink);border-radius:10px;background:var(--main);color:#fff;padding:5px;box-shadow:0 3px 0 var(--ink);margin-top:6px}
+.uv-go.pink{background:var(--sub);font-size:12px}
+.uv-go.on{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.uv-rl{list-style:none;margin:0;padding:0;position:relative}
+.uv-rl li{position:absolute;left:0;right:0;display:grid;grid-template-columns:18px minmax(0,1fr) auto auto;align-items:center;gap:5px;padding:2px 5px 2px 3px;border-radius:8px;background:var(--soft);border:1px solid var(--line);height:20px}
+.uv-rl li .k{font:9px/1 var(--display);width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:var(--sun);border:1px solid var(--ink)}
+.uv-rl li b{font:10px/1 var(--display);font-weight:400;white-space:nowrap;overflow:hidden}
+.uv-rl li .ud{display:flex;gap:2px}
+.uv-rl li .ud span{font-size:6.5px;border:1px solid var(--ink);border-radius:4px;padding:0 3px;background:var(--card);line-height:1.5}
+.uv-rl li .ud span.on{background:var(--main);color:#fff}
+.uv-rl li .mt{font-size:8px;opacity:0}
+.uv-pool{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:8px;font-weight:800;opacity:0}
+.uv-pool .bx{width:58px;height:44px;border:1.5px solid var(--ink);border-radius:8px;background:var(--sun);display:grid;place-items:center;font-size:20px;box-shadow:0 2.5px 0 var(--ink)}
+.uv-fly{position:absolute;left:0;top:0;font-size:11px;opacity:0}
+/* 발표하기 */
+.uv-stg{position:absolute;left:8px;top:4px;width:624px;height:290px;background:var(--card);border:1.5px solid var(--ink);border-radius:12px;box-shadow:0 2.5px 0 var(--ink)}
+.uv-pv{position:absolute;left:8px;top:8px;width:420px;height:272px;border:1.5px solid var(--ink);border-radius:8px;overflow:hidden;background:#fff}
+.uv-sl{position:absolute;inset:0;padding:16px 20px;opacity:0}
+.uv-sl h4{margin:0;font:21px/1.2 var(--display)}
+.uv-sl p{margin:3px 0 0;font-size:9px;color:var(--muted);font-weight:700}
+.uv-sl .ch{position:absolute;left:24px;right:24px;bottom:34px;height:120px;display:flex;align-items:flex-end;gap:16px;border-bottom:1.5px solid var(--ink);padding:0 10px}
+.uv-sl .ch i{flex:1;border-radius:4px 4px 0 0;border:1.5px solid var(--ink);border-bottom:0}
+.uv-sl .pg{position:absolute;right:10px;bottom:7px;font:9px var(--display);color:var(--muted)}
+.uv-tr{position:absolute;left:436px;top:8px;width:180px;height:272px;display:flex;flex-direction:column;align-items:center}
+.uv-ord{font:8.5px/1.4 var(--display);background:var(--sun);border:1.5px solid var(--ink);border-radius:99px;padding:1px 9px;white-space:nowrap}
+.uv-who{position:relative;margin-top:4px;font:24px/1.15 var(--display);color:var(--main);-webkit-text-stroke:.8px var(--ink);text-shadow:2px 2px 0 var(--sun);white-space:nowrap}
+.uv-tpc{font-size:8px;font-weight:700;color:var(--muted);margin-top:2px;white-space:nowrap}
+.uv-clk{font:46px/1 var(--display);font-variant-numeric:tabular-nums;color:var(--muted);margin-top:8px}
+.uv-clk.ok{color:var(--mint)}.uv-clk.warn{color:#E8750A}.uv-clk.over{color:var(--red)}
+.uv-bar{position:relative;width:170px;height:10px;border-radius:6px;background:var(--line);border:1.5px solid var(--ink);overflow:hidden;margin-top:7px}
+.uv-bar .zn{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,#C2F2DA 0 5px,#8FE3BC 5px 10px)}
+.uv-bar .fl{position:absolute;top:0;bottom:0;left:0;background:var(--sub);opacity:.85}
+.uv-tst{font-size:8px;font-weight:700;color:var(--muted);height:13px;margin-top:4px;white-space:nowrap}
+.uv-brow{display:flex;gap:6px;width:170px;margin-top:3px}
+.uv-big2{flex:1;text-align:center;font:13px/1.2 var(--display);border:1.5px solid var(--ink);border-radius:10px;color:#fff;padding:6px 0;box-shadow:0 3px 0 var(--ink)}
+.uv-big2.g1{background:var(--mint)}.uv-big2.g2{background:var(--red)}
+.uv-big2.dis{opacity:.35}
+.uv-big2.on{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.uv-navs{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;margin-top:9px;width:176px}
+.uv-navs span{font-size:7px;font-weight:700;border:1.2px solid var(--ink);border-radius:6px;padding:0 5px;background:var(--card);white-space:nowrap;line-height:1.6}
+.uv-mic{position:absolute;right:12px;bottom:10px;font:10px/1.3 var(--display);border:1.5px solid var(--ink);border-radius:99px;padding:2px 10px;background:var(--card);color:var(--muted)}
+.uv-mic.on{background:var(--red);color:#fff}
+.uv-ff{position:absolute;left:14px;top:244px;font:11px/1.3 var(--display);background:var(--ink);color:#fff;border-radius:99px;padding:2px 10px;opacity:0}
+.uv-leg{display:flex;gap:4px;margin-top:6px;opacity:0}
+.uv-leg span{font:8px/1.4 var(--display);border:1.2px solid var(--line);border-radius:6px;padding:0 5px;color:var(--muted)}
+.uv-leg span.on{border-color:currentColor}
+.uv-leg .l2{color:var(--mint)}.uv-leg .l3{color:#E8750A}.uv-leg .l4{color:var(--red)}
+/* 기록 보기 */
+.uv-rec{position:absolute;left:8px;top:4px;width:624px;height:290px;background:var(--card);border:1.5px solid var(--ink);border-radius:12px;box-shadow:0 2.5px 0 var(--ink);padding:8px 10px}
+.uv-rec h4{margin:0;font:15px/1.2 var(--display)}
+.uv-rec h4 em{font-style:normal;background:linear-gradient(transparent 60%,var(--sun) 60%);padding:0 2px}
+.uv-rec .vs{font-size:7.5px;color:var(--muted);margin:1px 0 5px}
+.uv-tools{display:flex;flex-wrap:wrap;gap:4px}
+.uv-sts{display:flex;gap:5px;margin:7px 0 6px}
+.uv-sts div{flex:1;border:1.2px solid var(--ink);border-radius:8px;padding:2px 6px;font:9px/1.4 var(--display);display:flex;justify-content:space-between}
+.uv-sts .s1{background:var(--mint-s)}.uv-sts .s2{background:var(--sun-s)}.uv-sts .s3{background:var(--red-s)}.uv-sts .s4{background:var(--soft)}.uv-sts .s5{background:var(--main-s)}
+.uv-tb{width:100%;border-collapse:collapse;font-size:8px;table-layout:fixed}
+.uv-tb th{background:var(--soft);font-size:7.5px;font-weight:700;color:var(--muted);text-align:left;padding:2px 4px;border-bottom:1.5px solid var(--ink);white-space:nowrap}
+.uv-tb td{padding:3px 4px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uv-tb td b{font:9.5px var(--display);font-weight:400}
+.uv-tb tr.hl td{background:var(--sun-s)}
+.uv-pill{display:inline-block;font-size:7px;font-weight:800;border-radius:99px;padding:0 5px;line-height:1.6;border:1px solid var(--ink)}
+.uv-pill.ok{background:var(--mint-s)}.uv-pill.short{background:var(--sun-s)}.uv-pill.over{background:var(--red-s)}
+.uv-col{box-shadow:inset 0 0 0 1.5px var(--sub)}
+/* 평가 · 과세특 */
+.uv-scg{display:grid;grid-template-columns:200px 1fr;gap:9px}
+.uv-sct{border:1.2px solid var(--line);border-radius:7px;background:var(--soft);padding:4px 6px;font-size:7.5px;line-height:1.6;height:118px;overflow:hidden}
+.uv-rbr{display:flex;align-items:center;gap:3px;margin-bottom:4px}
+.uv-rbr .n{font-size:8px;font-weight:700;width:68px;white-space:nowrap}
+.uv-rbr span.v{width:15px;height:15px;border:1.2px solid var(--ink);border-radius:5px;display:grid;place-items:center;font-size:7.5px;font-weight:700;background:var(--card)}
+.uv-rbr span.v.on{background:var(--main);color:#fff}
+.uv-rbt{font:10px var(--display);margin:2px 0 0}
+.uv-memo{border:1.5px solid var(--line);border-radius:6px;padding:3px 6px;font-size:7.5px;line-height:1.55;height:34px;overflow:hidden;white-space:normal;background:#fff}
+.uv-memo.on{border-color:var(--main);box-shadow:0 0 0 2px var(--main-s)}
+.uv-rtag{display:inline-block;font-size:6.5px;font-weight:800;color:#0E6B47;background:var(--mint-s);border-radius:99px;padding:0 5px;margin-left:3px}
+.uv-opts2{display:flex;align-items:center;gap:8px;font-size:8px;margin-bottom:5px;white-space:nowrap}
+.uv-opts2 .uv-in{display:inline-block;min-width:34px;font-size:8px}
+.uv-ck{display:inline-flex;align-items:center;gap:3px;font-weight:700;border-radius:6px;padding:1px 3px}
+.uv-ck i{width:10px;height:10px;border-radius:3px;background:var(--main);color:#fff;font:800 7px/10px var(--body);font-style:normal;text-align:center}
+.uv-ck.hot{box-shadow:0 0 0 2px var(--sun);background:var(--sun-s)}
+.uv-pbox{position:relative;border:1.2px solid var(--line);border-radius:7px;background:var(--soft);padding:5px 7px;font-size:7.5px;line-height:1.6;height:84px;overflow:hidden;color:var(--muted)}
+.uv-pbox .cp{position:absolute;right:6px;top:5px}
+.uv-chat{position:absolute;background:#fff;border:1.5px solid #9AA6BF;border-radius:10px;box-shadow:0 8px 22px -10px rgba(29,42,74,.55);overflow:hidden;opacity:0}
+.uv-chat .hd{font-size:8.5px;font-weight:800;padding:5px 10px;border-bottom:1px solid #E3E7EF;background:#F7F8FB}
+.uv-chat .me{margin:7px 8px 0 40px;background:var(--main-s);border-radius:9px 9px 2px 9px;padding:4px 7px;font-size:7px;line-height:1.5;color:var(--muted);max-height:34px;overflow:hidden}
+.uv-chat .ai{margin:7px 10px 0 8px;font-size:7.5px;line-height:1.65;color:var(--ink)}
+.uv-chat mark{background:transparent;border-radius:3px;padding:0 1px}
+.uv-chat mark.on.nm{background:var(--red-s);box-shadow:0 0 0 1.5px var(--red)}
+.uv-chat mark.on.fx{background:var(--sun-s);box-shadow:0 0 0 1.5px #E0B400}
+.uv-flag{position:absolute;left:0;top:0;font-size:7.5px;font-weight:800;color:#fff;border-radius:99px;padding:1px 7px;white-space:nowrap;opacity:0}
+.uv-flag.r{background:var(--red)}.uv-flag.y{background:#C99700}
+/* 수업 설정 */
+.uv-rad{display:flex;gap:5px;align-items:flex-start;border:1.2px solid var(--line);border-radius:7px;padding:2px 6px;margin-bottom:3px;font-size:7.5px;line-height:1.35}
+.uv-rad i{flex:none;width:10px;height:10px;margin-top:1px;border-radius:50%;border:1.5px solid var(--ink);background:#fff;box-shadow:inset 0 0 0 2px #fff}
+.uv-rad i.on{background:var(--main)}
+.uv-rad b{display:block;font-size:8px}
+.uv-rad small{color:var(--muted);font-size:6.5px}
+.uv-rad.hot{border-color:var(--ink);background:var(--sun-s)}
+.uv-rbe{display:flex;align-items:center;gap:4px;font-size:8px;margin-bottom:3px}
+.uv-rbe .n{width:13px;height:13px;border-radius:50%;background:var(--soft);border:1px solid var(--ink);display:grid;place-items:center;font-size:7px;font-weight:700}
+.uv-rbe .nm{flex:1;border:1.2px solid var(--line);border-radius:5px;padding:0 5px;line-height:1.6}
+.uv-rbe .mx{border:1.2px solid var(--line);border-radius:5px;padding:0 5px;line-height:1.6;color:var(--muted)}
+.uv-end{position:absolute;left:110px;top:26px;width:420px;background:var(--card);border:2px solid var(--ink);border-radius:16px;box-shadow:0 5px 0 var(--ink);padding:16px 18px 14px;text-align:center;opacity:0}
+.uv-end .lgsvg{width:42px;height:42px}
+.uv-end h4{margin:4px 0 8px;font:22px/1.1 var(--display)}
+.uv-end h4 em{font-style:normal;color:var(--main)}
+.uv-end p{margin:9px 0 0;font:13px/1.4 var(--display)}
+.uv-end .uv-row{justify-content:center}
 </style>
 </head>
 <body>
@@ -670,6 +1039,7 @@ html.intro-on{overflow:hidden}
   <div class="brand">
     <svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="18" fill="#FFE07A" stroke="#1D2A4A" stroke-width="3"/><path d="M47 15c3 3 3 9 0 12M51.5 11c5.5 5 5.5 15 0 20" fill="none" stroke="#FF6FAE" stroke-width="3" stroke-linecap="round"/><path d="M14.5 29a15.5 15.5 0 0 0 31 0" fill="none" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/><path d="M30 44.5v7M22.5 53h15" stroke="#1D2A4A" stroke-width="3.5" stroke-linecap="round"/><rect x="18" y="7" width="24" height="31" rx="12" fill="#3B8BFF" stroke="#1D2A4A" stroke-width="3"/><path d="M18.5 15.5h23" stroke="#1D2A4A" stroke-width="2" opacity=".25"/><ellipse cx="24" cy="13.5" rx="2.3" ry="3.6" fill="#fff" opacity=".75"/><circle cx="25.5" cy="24" r="2.3" fill="#1D2A4A"/><circle cx="34.5" cy="24" r="2.3" fill="#1D2A4A"/><circle cx="26.1" cy="23.3" r=".8" fill="#fff"/><circle cx="35.1" cy="23.3" r=".8" fill="#fff"/><circle cx="22" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/><circle cx="38" cy="29" r="2.4" fill="#FF8FC0" opacity=".9"/><path d="M27.5 29.2q2.5 2.6 5 0" fill="none" stroke="#1D2A4A" stroke-width="2" stroke-linecap="round"/></svg>
     <div><h1>발표 <em>레이스</em></h1><p><b>발표 수업 도구</b> · 순서 뽑기 → 발표 → 기록·평가</p></div>
+    <button type="button" class="uv-open" id="uvOpen" title="사용법 영상 보기 (AI 목소리 내레이션)">▶ 사용법</button>
   </div>
   <label class="clsPick"><span>우리 반</span><select id="clsSel" aria-label="반 고르기"></select></label>
   <nav class="steps" aria-label="단계">
@@ -3083,7 +3453,7 @@ function onRosterEdited(){
 // 따라 하기 안내(초기 설정 · 수업 설정): guide/ 페이지를 팝업 안에 띄움 (✕ 버튼·Esc·안쪽 [닫기]로 닫힘)
 function openSetupGuide(g = 'setup'){
   const d = document.createElement('dialog'); d.className = 'sg-modal';
-  d.innerHTML = `<iframe src="guide/?g=${g}" title="${g === 'conf' ? '수업 설정' : '초기 설정'} 따라 하기" allow="fullscreen"></iframe>`;
+  d.innerHTML = `<iframe src="guide/index.html?g=${g}" title="${g === 'conf' ? '수업 설정' : '초기 설정'} 따라 하기" allow="fullscreen"></iframe>`;
   const onMsg = e => { if (e.source === d.querySelector('iframe').contentWindow && e.data === 'sg-close') d.close(); };
   window.addEventListener('message', onMsg);
   d.addEventListener('close', () => { window.removeEventListener('message', onMsg); d.remove(); });
@@ -3257,6 +3627,1296 @@ renderCls(); buildPeople(); setup(); renderResults(); renderRoster();
 show(db.settings.view === 'admin' ? 'setup' : ['setup','order','talk','rec','conf'].includes(db.settings.view) ? db.settings.view : 'order');
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { marbles.forEach(m => { m.fs = fitFont(m.p.short, m.r); }); });
 requestAnimationFrame(frame);
+})();
+</script>
+<!-- ▶ 사용법 영상 — 장면은 아래 스크립트(UV_CH)가 그린다. 자막은 화면 안에 얹고, 내레이션은 guide/narration.m4a 한 파일 -->
+<dialog class="modal wide" id="uvModal" aria-labelledby="uvTitle">
+  <div class="m-box">
+    <div class="m-head"><span class="m-ico" aria-hidden="true">▶</span><h3 id="uvTitle">발표 레이스 사용법</h3><button type="button" class="m-x" id="uvX" aria-label="닫기">✕</button></div>
+    <div class="m-body">
+      <div class="uv" id="uv">
+        <div class="uv-stage" id="uvStage" tabindex="0" aria-label="사용법 영상 — 스페이스로 재생·멈춤, 좌우 화살표로 5초 이동, 위아래 화살표로 자막 위치 이동">
+          <div class="uv-cv" id="uvCv"></div>
+          <div class="uv-sub" id="uvSub"><div class="in" id="uvCap" aria-live="polite" title="끌어서 자막 위치를 옮깁니다 · 누르면 재생·멈춤"></div></div>
+          <button class="uv-big" id="uvBig" type="button" aria-label="재생">▶</button>
+        </div>
+        <div class="uv-ctl">
+          <button class="uv-play" id="uvPlay" type="button" aria-label="재생">▶</button>
+          <div class="uv-seek"><div class="uv-segs" id="uvSegs"></div><input type="range" id="uvSeek" min="0" max="100" step="0.1" value="0" aria-label="재생 위치"><span class="uv-tip" id="uvTip" aria-hidden="true"></span></div>
+          <span class="uv-time" id="uvTime">0:00 / 0:00</span>
+        </div>
+        <div class="uv-opts" id="uvOpts">
+          <div class="uv-grp" id="uvSpeed" role="group" aria-label="재생 속도"><span>속도</span></div>
+          <div class="uv-grp" role="group" aria-label="자막 위치"><span>자막</span><button type="button" data-cap="top">위</button><button type="button" data-cap="bot">아래</button><button type="button" data-cap="off">끔</button><span class="uv-oh">자막을 끌어서도 옮깁니다</span></div>
+          <div class="uv-tgs"><button type="button" id="uvVo" hidden></button><button type="button" id="uvSnd"></button></div>
+        </div>
+        <ol class="uv-list" id="uvList"></ol>
+        <p class="uv-more"><b>단계별로 따라 하려면</b><button type="button" class="btn sm" data-uvg="setup">🎬 초기 설정 따라 하기</button><button type="button" class="btn sm" data-uvg="conf">🎬 수업 설정 따라 하기</button></p>
+        <p class="uv-note">영상 속 반·학생 이름과 발표 자료는 지어낸 예시예요. 내레이션은 AI로 만든 목소리예요.</p>
+        <audio id="uvVoice" preload="none" src="guide/narration.m4a"></audio>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+/* =====================================================================
+   ▶ 사용법 영상 — 생기부돋보기 사용법 영상과 같은 틀(장면은 시각 하나로 정해지는 가짜 앱 화면)
+   ===================================================================== */
+(() => {
+'use strict';
+
+/* ══════ 대본 · 내레이션 자리 ══════
+   UV_SAY: 줄 이름 → [화면 자막(HTML), 소리 내어 읽을 말]. 읽을 말은 귀로 듣는 말로, 한글로 적는다(QR → 큐알, TV → 티비, PDF → 피디에프).
+   UV_VO : 줄 이름 → [guide/narration.m4a 안의 자리(초), 길이(초)] — 목소리 만들기 스크립트가 고쳐 쓴다(손으로 고치지 않기).
+   대본을 고치면 비공개 폴더의 narration\make-voice.mjs 로 목소리(VoiceStudio 「멋남 · 릴스 TTS 1」)와 UV_VO 를 다시 만든다. */
+const UV_SAY = /*SAY*/{
+  "c1a": ["발표 수업을 <b>한 화면</b>에서 — 순서 정하기, 발표, 기록과 평가까지 이어 줍니다.", "발표 레이스는 순서 정하기부터 발표, 기록과 평가까지, 발표 수업을 한 화면에서 이어 줍니다."],
+  "c1b": ["학생은 <b>[시작]·[마침]</b>만 누르면, 발표 시간과 내용이 <b>저절로</b> 쌓입니다.", "학생은 시작과 마침만 누르면 됩니다. 발표 시간과 발표 내용은 저절로 쌓입니다."],
+  "c1c": ["회원 가입 없이 쓰고, 명단과 기록은 <b>이 컴퓨터 브라우저에만</b> 저장됩니다.", "회원 가입 없이 쓰고, 명단과 기록은 이 컴퓨터의 브라우저에만 저장됩니다."],
+  "c2a": ["맨 위 <b>[⚙ 초기 설정]</b>을 열고 <b>[＋ 새 반 만들기]</b>를 누릅니다.", "먼저 맨 위에서 초기 설정을 열고, 새 반 만들기 단추를 누릅니다."],
+  "c2b": ["<b>반 이름</b>을 적고, 엑셀 명렬표의 <b>이름 칸</b>을 복사해 붙여 넣으면 명단까지 한 번에 들어갑니다.", "반 이름을 적고, 엑셀 명렬표에서 이름 칸을 복사해 붙여 넣으면, 학생 명단까지 한 번에 들어갑니다."],
+  "c2c": ["<b>발표 시간</b>은 반마다 정합니다. 빠른 선택 단추를 누르고 <b>[시간 저장]</b>", "발표 시간은 반마다 정합니다. 빠른 선택 단추로 최소 시간과 최대 시간을 채우고, 시간 저장을 누릅니다."],
+  "c3a": ["발표 자료는 <b>구글 설문지</b>로 걷습니다. <b>[📄 설문지 사본 만들기]</b>를 누르면 샘플 설문지가 열립니다.", "발표 자료는 구글 설문지로 걷으면 편합니다. 설문지 사본 만들기를 누르면, 미리 만들어 둔 샘플 설문지가 열립니다."],
+  "c3b": ["<b>[사본 만들기]</b>를 누르면 내 드라이브로 복사됩니다. 이름·주제 질문은 이미 들어 있습니다.", "구글 화면에서 사본 만들기를 누르면 선생님 드라이브에 복사됩니다. 이름과 발표 주제를 묻는 질문은 이미 들어 있습니다."],
+  "c3c": ["<b>📎 발표 자료 파일</b> 질문을 <b>[파일 업로드]</b>로 바꾸고, 오른쪽 위 <b>[게시]</b>를 누릅니다.", "발표 자료 파일 질문의 유형을 파일 업로드로 바꾸고, 오른쪽 위의 게시를 누릅니다."],
+  "c3d": ["응답자는 <b>'링크가 있는 모든 사용자'</b>로 — 링크는 <b>[URL 단축]</b>을 체크해 복사합니다.", "게시할 때 응답자는 링크가 있는 모든 사용자로 바꾸고, 링크는 짧은 주소로 줄여서 복사합니다."],
+  "c4a": ["복사한 링크를 <b>'제출 링크'</b> 칸에 붙여 넣고 <b>[저장]</b> → <b>[📮 QR 안내 화면 열기]</b>", "복사한 링크를 제출 링크 칸에 붙여 넣고 저장한 뒤, 큐알 안내 화면을 엽니다."],
+  "c4b": ["<b>[📺 TV에 띄우기]</b>로 교실 TV에 QR을 크게 — <b>[🔗 링크 복사]</b>로 클래스룸에 보내도 됩니다.", "티비에 띄우기를 누르면 교실 티비에 큐알이 크게 뜹니다. 링크를 복사해서 클래스룸으로 보내도 됩니다."],
+  "c4c": ["학생은 QR을 찍고, 파일 이름을 <b>번호_이름_발표주제</b>로 바꿔 올립니다.", "학생은 휴대폰으로 큐알을 찍고, 파일 이름을 번호, 이름, 발표 주제 순서로 바꿔서 올립니다."],
+  "c4d": ["PPT는 <b>PDF로 저장해서</b> 내게 하세요. 그래야 발표 화면에 바로 크게 보입니다.", "피피티는 피디에프로 저장해서 내게 하세요. 그래야 발표 화면에 바로 크게 보입니다."],
+  "c5a": ["받은 파일은 <b>구글 드라이브</b>의 응답 폴더에 모입니다. 폴더를 <b>내려받아 압축을 풉니다</b>.", "설문지로 받은 파일은 구글 드라이브의 응답 폴더에 모입니다. 이 폴더를 내려받아 압축을 풉니다."],
+  "c5b": ["<b>[📎 자료 한꺼번에 등록]</b>을 누르고, 푼 폴더를 <b>통째로 끌어다 놓습니다</b>.", "초기 설정 맨 아래의 자료 한꺼번에 등록을 누르고, 압축을 푼 폴더를 통째로 끌어다 놓습니다."],
+  "c5c": ["파일 이름 속 <b>학생 이름</b>을 찾아 저절로 넣고, <b>발표 주제</b>도 함께 채웁니다.", "그러면 파일 이름에서 학생 이름을 찾아 자료를 저절로 넣고, 발표 주제도 함께 채웁니다."],
+  "c5d": ["<b>초록 이름</b>은 자료를 낸 학생 — 늦게 낸 자료는 이름을 눌러 하나씩 넣습니다.", "초록으로 바뀐 이름이 자료를 낸 학생입니다. 늦게 낸 자료는 이름을 눌러 하나씩 넣으면 됩니다."],
+  "c6a": ["<b>[① 순서 정하기]</b> — 결석한 학생은 <b>이름을 눌러</b> 빼고 <b>[출발!]</b>을 누릅니다.", "이제 순서 정하기로 갑니다. 결석한 학생은 이름을 눌러 빼 두고, 출발을 누릅니다."],
+  "c6b": ["결승선에 먼저 들어온 순서대로 발표합니다. 순서는 <b>▲▼</b>로 바꿀 수도 있습니다.", "결승선에 먼저 들어온 순서대로 발표합니다. 정해진 순서는 위아래 화살표로 바꿀 수도 있습니다."],
+  "c6c": ["<b>[이 순서로 발표 시작 →]</b> — 미리 등록한 자료가 <b>이번 발표로 따라옵니다</b>.", "이 순서로 발표 시작을 누르면, 미리 등록한 자료도 이번 발표로 함께 옮겨 갑니다."],
+  "c7a": ["차례가 되면 노트북엔 <b>자료와 타이머</b>, 교실 TV엔 <b>자료가 크게</b> 나옵니다.", "차례가 되면 노트북에는 자료와 타이머가 나오고, 교실 티비에는 자료가 크게 나옵니다."],
+  "c7b": ["학생이 <b>[▶ 시작]</b>을 누르면 시계가 돌고, 마이크가 발표를 <b>글자로 받아 적습니다</b>.", "학생이 시작을 누르면 시계가 돌아가고, 마이크가 발표 내용을 글자로 받아 적습니다."],
+  "c7c": ["시계는 <b>초록 → 주황 → 빨강</b>으로 바뀌어, 남은 시간을 <b>소리 없이</b> 알려 줍니다.", "시계 색은 적정 시간에 초록, 끝나기 직전에 주황, 넘으면 빨강으로 바뀌어, 소리 없이 시간을 알려 줍니다."],
+  "c7d": ["<b>[■ 마침]</b>을 누르면 시간과 내용이 저장되고, <b>다음 학생 자료</b>가 저절로 열립니다.", "마침을 누르면 발표 시간과 내용이 저장되고, 다음 학생의 자료가 저절로 열립니다."],
+  "c8a": ["<b>[③ 기록 보기]</b>에서 학생마다 <b>발표 시간·판정·받아 적은 내용</b>을 한눈에 봅니다.", "기록 보기에서는 학생마다 발표 시간과 판정, 받아 적은 발표 내용을 한눈에 볼 수 있습니다."],
+  "c8b": ["<b>[📝 평가하기]</b> — 발표 내용을 읽으며 <b>평가 기준표</b>로 채점합니다.", "평가하기를 누르면, 발표 내용을 읽으면서 평가 기준표로 채점할 수 있습니다."],
+  "c8c": ["<b>선생님 관찰 기록</b>도 남겨 두세요. 과세특 초안의 <b>가장 중요한 근거</b>가 됩니다.", "선생님의 관찰 기록도 여기에 남겨 두세요. 과세특 초안을 만들 때 가장 중요한 근거가 됩니다."],
+  "c9a": ["<b>[📊 엑셀·한셀 파일로 저장]</b> — 반 전체 기록표를 한 파일로 받습니다.", "엑셀 파일로 저장하면, 반 전체의 발표 기록표를 한 파일로 받습니다."],
+  "c9b": ["<b>[🤖 전체 과세특 프롬프트]</b>를 <b>[복사]</b>해 AI 챗봇에 붙여 넣으면 초안이 나옵니다.", "전체 과세특 프롬프트를 복사해서 에이아이 챗봇에 붙여 넣으면, 과세특 초안을 받을 수 있습니다."],
+  "c9c": ["<b>학생 이름 빼기</b>가 기본으로 켜져 있지만, 다른 친구 이름과 <b>사실 여부</b>는 꼭 확인하세요.", "학생 이름 빼기가 기본으로 켜져 있지만, 내용 속 다른 친구 이름이나, 사실과 다른 부분이 없는지 꼭 확인하세요."],
+  "c10a": ["<b>[🛠 수업 설정]</b>은 모두 선택 — 평가 기준표·음성 인식·과세특 설정을 필요할 때만 정합니다.", "수업 설정은 모두 선택입니다. 평가 기준표와 음성 인식 방식, 과세특 설정을 필요할 때만 정하면 됩니다."],
+  "c10b": ["기본 음성 인식은 말소리가 <b>브라우저 회사 서버</b>를 거칩니다. 원하지 않으면 <b>기기 안에서만 인식</b>이나 <b>끄기</b>를 고르세요.", "기본 음성 인식은 말소리가 브라우저 회사의 서버를 거칩니다. 원하지 않으면, 기기 안에서만 인식하거나 음성 인식을 끌 수 있습니다."],
+  "c10c": ["기록은 이 컴퓨터에만 있으니, 가끔 <b>[⬇ 백업 파일 저장]</b>으로 받아 두세요.", "기록은 이 컴퓨터에만 있으니, 가끔 백업 파일로 저장해 두세요."],
+  "c10d": ["자세한 단계는 <b>[🎬 따라 하기]</b>에 있습니다. 이제 <b>우리 반</b>부터 만들어 보세요!", "자세한 단계는 따라 하기 안내에 있습니다. 이제 우리 반부터 만들어 보세요."]
+}/*SAY-END*/;
+const UV_VO = /*VO*/{
+  "c1a": [0.1, 4.694],
+  "c1b": [5.244, 4.095],
+  "c1c": [9.79, 3.751],
+  "c2a": [13.991, 3.207],
+  "c2b": [17.648, 4.851],
+  "c2c": [22.949, 5.174],
+  "c3a": [28.573, 5.772],
+  "c3b": [34.795, 6.149],
+  "c3c": [41.394, 4.183],
+  "c3d": [46.028, 4.738],
+  "c4a": [51.216, 3.767],
+  "c4b": [55.433, 5.25],
+  "c4c": [61.133, 4.601],
+  "c4d": [66.184, 4.206],
+  "c5a": [70.84, 4.903],
+  "c5b": [76.192, 4.645],
+  "c5c": [81.287, 4.324],
+  "c5d": [86.062, 4.779],
+  "c6a": [91.291, 4.095],
+  "c6b": [95.836, 4.881],
+  "c6c": [101.167, 4.078],
+  "c7a": [105.695, 4.378],
+  "c7b": [110.523, 4.309],
+  "c7c": [115.282, 5.202],
+  "c7d": [120.934, 4.195],
+  "c8a": [125.578, 4.486],
+  "c8b": [130.515, 3.855],
+  "c8c": [134.82, 4.693],
+  "c9a": [139.963, 3.435],
+  "c9b": [143.848, 4.919],
+  "c9c": [149.217, 5.563],
+  "c10a": [155.231, 5.214],
+  "c10b": [160.895, 6.673],
+  "c10c": [168.018, 3.103],
+  "c10d": [171.571, 3.791]
+}/*VO-END*/;
+
+/* ══════ 사용법 영상 ══════
+   「시간 → 화면」 함수로 그린다(우리반 창체 비서·생기부돋보기와 같은 엔진). 어느 순간의 모습이 시각(t) 하나로 정해지므로
+   슬라이드 바로 아무 데나 옮겨도, 속도를 바꿔도, 되감아도 화면이 어긋나지 않는다(CSS 애니메이션을 쓰지 않는 까닭).
+   장(UV_CH)마다 가짜 앱 화면(640×360)을 그리고 run(t, q, qa, xy, T) 가 그 장 안의 시각 t 로 화면을 맞춘다.
+   장의 길이와 자막 시각은 내레이션 길이(UV_VO)에서 나온다 — say 의 줄을 차례로 읽고, T.s[k]·T.e[k] = k번째 줄이 시작·끝나는 시각.
+   장면도 이 시각에 맞춰 움직이므로 대본을 고쳐 목소리를 다시 만들어도 저절로 맞는다([줄, 앞에 더 쉴 초]로 틈을 줄 수 있다).
+   k(T) 는 그 장에서 무언가를 누르는 시각들을 한 번에 정해 T.k 에 담는다 — cur(커서)·clk(누르는 순간)·run 이 같은 시각을 쓴다.
+   커서 목적지 이름은 장을 그린 직후 그 요소 자리에서 잰다('이름~dx,dy' 로 그 자리에서 옮길 수 있다 — 화면을 굴린 뒤의 자리 등).
+   자막은 화면 안(기본은 아래쪽)에 얹히므로 장면에서 꼭 보여야 할 것은 y 295 위쪽에 둔다.
+   ⚠️ blur 는 쓰지 않는다(태블릿 크롬이 죽는다). 투명도·이동·크기만 쓴다.
+   ⚠️ 장면 속 버튼·문구는 실제 화면과 같게 둔다 — 앱의 버튼 이름을 바꾸면 여기도 고칠 것. 장면 속 반·학생·자료는 지어낸 것이다. */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+const mClamp = v => v < 0 ? 0 : v > 1 ? 1 : v;
+const mEase = v => v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2;
+const mP = (t, a, b) => mEase(mClamp((t - a) / (b - a)));          // a→b 사이 진행도 0~1
+const mIn = (t, a, b) => t >= a && t < b;
+const mLerp = (a, b, p) => a + (b - a) * p;
+function mKf(t, ks){
+  if (t <= ks[0][0]) return ks[0][1];
+  for (let i = 1; i < ks.length; i++){
+    if (t > ks[i][0]) continue;
+    const [t0, v0] = ks[i - 1], [t1, v1] = ks[i], p = mP(t, t0, t1);
+    return Array.isArray(v0) ? v0.map((v, j) => mLerp(v, v1[j], p)) : mLerp(v0, v1, p);
+  }
+  return ks[ks.length - 1][1];
+}
+function mSet(el, { o, x = 0, y = 0, s = 1, r = 0 } = {}){
+  if (!el) return;
+  if (o != null) el.style.opacity = o;
+  el.style.transform = `${x || y ? `translate(${x}px,${y}px) ` : ''}${s !== 1 ? `scale(${s}) ` : ''}${r ? `rotate(${r}deg)` : ''}` || 'none';
+}
+const mOp = (el, v) => { if (el) el.style.opacity = v; };
+const mCls = (el, c, on) => { if (el) el.classList.toggle(c, !!on); };
+const mTxt = (el, s) => { if (el && el.textContent !== s) el.textContent = s; };
+const mHtml = (el, s) => { if (el && el._h !== s){ el.innerHTML = s; el._h = s; } };
+
+/* ── 배경 음악 ── 음원 파일 없이 Web Audio 로 그 자리에서 연주한다(생기부돋보기·우리반 창체 비서와 같은 곡 · 저작권 걱정 없음 · 파일 크기 0).
+   내레이션이 켜져 있으면 작게 깐다. 켜고 끄기는 [♪] 버튼 — 이 브라우저에 기억한다. */
+const BGM_KEY = 'speech_uvbgm_v1';
+const BGM = (() => {
+  let ctx = null, out = null, timer = 0, next = 0, step = 0, on = false, noise = null, vol = .5;
+  const SPB = 60 / 120 / 2;
+  const CHORD = [[60, 64, 67, 72], [55, 59, 62, 67], [57, 60, 64, 69], [53, 57, 60, 65]];   // C G Am F
+  const BASS = [36, 43, 45, 41];
+  const ARP = [0, 1, 2, 3, 2, 1, 2, 3];
+  const MEL = [[79, 0, 76, 0, 79, 81, 0, 0, 79, 0, 74, 0, 79, 0, 0, 0, 76, 0, 72, 0, 76, 79, 0, 0, 77, 0, 76, 0, 72, 0, 0, 0],
+               [84, 0, 81, 79, 0, 76, 0, 0, 83, 0, 79, 0, 74, 0, 0, 0, 81, 0, 79, 76, 0, 72, 0, 0, 77, 79, 81, 0, 79, 0, 0, 0]];
+  const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+  let muted = (() => { try { return localStorage.getItem(BGM_KEY) === 'off'; } catch(_){ return false; } })();
+  function ensure(){
+    if (ctx) return ctx;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    ctx = new AC();
+    out = ctx.createGain(); out.gain.value = 0;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 6000;
+    out.connect(lp); lp.connect(ctx.destination);
+    noise = ctx.createBuffer(1, ctx.sampleRate * .2, ctx.sampleRate);
+    const d = noise.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return ctx;
+  }
+  function tone(t, m, dur, type, v, atk = .006){
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = hz(m);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(v, t + atk);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g); g.connect(out);
+    o.start(t); o.stop(t + dur + .05);
+  }
+  function hat(t, v){
+    const n = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    n.buffer = noise; f.type = 'highpass'; f.frequency.value = 7500;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + .04);
+    n.connect(f); f.connect(g); g.connect(out); n.start(t); n.stop(t + .05);
+  }
+  function kick(t, v){
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(48, t + .14);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + .2);
+    o.connect(g); g.connect(out); o.start(t); o.stop(t + .22);
+  }
+  function clap(t, v){
+    const n = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    n.buffer = noise; f.type = 'bandpass'; f.frequency.value = 1600; f.Q.value = .8;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + .15);
+    n.connect(f); f.connect(g); g.connect(out); n.start(t); n.stop(t + .16);
+  }
+  function schedule(){
+    while (next < ctx.currentTime + .2){
+      const bar = Math.floor(step / 8) % 4, s = step % 8, ch = CHORD[bar];
+      tone(next, ch[ARP[s]] + 12, .32, 'triangle', .05);
+      if (s === 0 || s === 4) tone(next, BASS[bar], .55, 'sine', .16, .012);
+      if (s === 0) ch.slice(0, 3).forEach(m => tone(next, m, SPB * 8, 'sine', .022, .3));
+      const mel = MEL[Math.floor(step / 32) % 2][step % 32];
+      if (mel){ tone(next, mel, .7, 'sine', .045); tone(next, mel + 12, .25, 'sine', .012); }
+      if (s === 0 || s === 4) kick(next, .14);
+      if (s === 2 || s === 6) clap(next, .06);
+      if (s % 2 === 1) hat(next, .025);
+      next += SPB; step++;
+    }
+  }
+  function play(){
+    if (muted || !ensure()) return;
+    ctx.resume().then(() => {
+      if (ctx.state !== 'running' || on || muted) return;
+      on = true; step = 0; next = ctx.currentTime + .06;
+      out.gain.cancelScheduledValues(ctx.currentTime);
+      out.gain.setTargetAtTime(vol, ctx.currentTime, .15);
+      schedule();
+      clearInterval(timer); timer = setInterval(schedule, 50);
+    }).catch(() => {});
+  }
+  function stop(fade = .5){
+    if (!ctx || !on) return;
+    on = false; clearInterval(timer);
+    out.gain.cancelScheduledValues(ctx.currentTime);
+    out.gain.setTargetAtTime(0, ctx.currentTime, fade / 4);
+  }
+  function level(v){
+    vol = v;
+    if (ctx && on){ out.gain.cancelScheduledValues(ctx.currentTime); out.gain.setTargetAtTime(vol, ctx.currentTime, .2); }
+  }
+  function setMuted(v){
+    muted = !!v;
+    try { localStorage.setItem(BGM_KEY, muted ? 'off' : 'on'); } catch(_){}
+    if (muted) stop(.3);
+  }
+  return { play, stop, level, setMuted, get muted(){ return muted; } };
+})();
+
+/* ── 장면 재료 ── */
+const UV_W = 640;
+const UV_LOGO = (() => { const l = document.querySelector('.top .logo'); return l ? l.outerHTML.replace('class="logo"', 'class="lgsvg"') : ''; })();
+const UV_CUR = '<div class="uv-cur"><svg viewBox="0 0 18 22"><path d="M1 1L1 17L5.5 13L8.5 20.5L11.5 19.2L8.6 12L14.5 12Z" fill="#fff" stroke="#1D2A4A" stroke-width="1.4" stroke-linejoin="round"/></svg><i class="ring"></i></div>';
+const uvD = new Date();
+const UV_DAY = `${uvD.getFullYear()}. ${uvD.getMonth() + 1}. ${uvD.getDate()}.`;
+const UV_YMD = `${uvD.getFullYear()}${String(uvD.getMonth() + 1).padStart(2, '0')}${String(uvD.getDate()).padStart(2, '0')}`;
+// 장면 속 2학년 3반(지어낸 반) · 예시 반은 앱의 예시 명단 그대로
+const UV_NM = ['강민재', '김가온', '김서윤', '나하늘', '도윤서', '류시우', '문채원', '박서진', '백지우', '서하람', '손예린', '송지호', '안다인', '오지민',
+  '우태윤', '유하린', '윤서아', '이도현', '이수아', '임재현', '장하준', '정다은', '조은우', '최유나', '한지안', '허승민', '홍예준', '황보라'];
+const UV_SAMPLE = ['김민준', '이서연', '박도윤', '최하윤', '정시우', '강지우', '조서준', '윤하은', '장예준', '임수아', '한지호', '오지아', '서은우', '신채원', '권현우', '황다은', '안건우', '송유나', '전시윤', '홍예린'];
+const UV_MISS = new Set([5, 8, 10, 14, 19, 26]);       // 자료를 아직 안 낸 학생(0부터) — 5 류시우가 늦게 낸다
+const uvFi = k => `<span class="fi ${k}">${{ pdf:'PDF', ppt:'PPT', xl:'XLS', zip:'ZIP', js:'{ }', fd:'' }[k]}</span>`;
+const uvClock = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+// 발표 시계 색 — 최소 전 회색 · 적정 초록 · 최대 15초 전부터 주황 · 넘으면 빨강(앱과 같은 기준)
+const uvClkCls = (s, mi, ma) => s <= 0 ? '' : s > ma ? ' over' : s >= ma - 15 ? ' warn' : s >= mi ? ' ok' : '';
+const uvType = (s, p) => s.slice(0, Math.round(s.length * mClamp(p)));
+// QR 무늬 — 모양만 흉내 낸 것(찍어도 아무 데도 열리지 않는다)
+const UV_QR = (() => {
+  const N = 25;
+  let seed = 20261121, r = '';
+  const fin = (x, y) => (x < 7 && y < 7) || (x >= N - 7 && y < 7) || (x < 7 && y >= N - 7);
+  const sep = (x, y) => (x <= 7 && y <= 7) || (x >= N - 8 && y <= 7) || (x <= 7 && y >= N - 8);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
+    let v;
+    if (fin(x, y)){
+      const fx = x >= N - 7 ? x - (N - 7) : x, fy = y >= N - 7 ? y - (N - 7) : y;
+      v = fx === 0 || fx === 6 || fy === 0 || fy === 6 || (fx >= 2 && fx <= 4 && fy >= 2 && fy <= 4);
+    } else if (sep(x, y)) v = false;
+    else { seed = (seed * 1103515245 + 12345) & 0x7fffffff; v = (seed >> 16) % 100 < 46; }
+    if (v) r += `<rect x="${x}" y="${y}" width="1.02" height="1.02"/>`;
+  }
+  return `<svg class="uv-qr" viewBox="-2 -2 ${N + 4} ${N + 4}" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
+})();
+const UV_STEPS = [['setup', '⚙ 초기 설정', ' adm', 1], ['order', '<b>1</b>순서 정하기', '', 1], ['talk', '<b>2</b>발표하기', '', 1], ['rec', '<b>3</b>기록 보기', '', 0], ['conf', '🛠 수업 설정', ' adm cf', 0]];
+const uvFrame = c => `<div class="uv-app">
+  <div class="uv-top">${UV_LOGO}<span class="wm">발표 <em>레이스</em></span>
+    <span class="cp">우리 반 <b data-a="cls">${c.cls || '2학년 3반'}</b></span>
+    <span class="sp">${UV_STEPS.map(([v, h, k, ar]) => `<span class="uv-st${k}${c.on === v ? ' on' : ''}" data-v="${v}" data-a="p_${v}">${h}</span>${ar ? '<i>›</i>' : ''}`).join('')}</span></div>
+  <div class="uv-main">${c.pane || ''}</div>
+  ${c.over || ''}${UV_CUR}</div>`;
+
+// ⚙ 초기 설정 화면 — 2~5장이 함께 쓴다. made = 2학년 3반을 만든 뒤인지
+function uvSetup(made){
+  const cls = made ? '2학년 3반' : '예시 반';
+  const ros = (nm, list, n) => `<div class="uv-ch">👥 ${nm} 학생 명단<span class="uv-tag">${n}명</span><span class="uv-g"></span><span class="uv-b xs">가나다순 정렬</span><span class="uv-b xs pri">＋ 학생 추가</span></div>
+      <div class="uv-scs">${list.slice(0, 17).map((x, i) => `<span class="uv-sc"><i>${i + 1}</i>${x}</span>`).join('')}<span class="uv-sc more">… ${n - 17}명 더</span></div>`;
+  return `<div class="uv-scr" data-a="scr">
+    <div class="uv-vt" style="left:12px;top:5px">초기 <em>설정</em></div>
+    <span class="uv-b pri xs uv-ab" style="left:84px;top:8px">🎬 초기 설정 따라 하기</span>
+    <span class="uv-b xs uv-ab" style="left:180px;top:8px">📖 사용 설명서 ↗</span>
+    <div class="uv-card" style="left:12px;top:30px;width:166px">
+      <div class="uv-ch">🏫 반 목록<span class="uv-tag" data-a="clsN">${made ? 2 : 1}개</span></div>
+      <div class="uv-ci${made ? '' : ' on'}" data-a="ci0"><b>예시 반</b><small>학생 20명 · 발표 0회</small></div>
+      <div class="uv-ci${made ? ' on' : ''}" data-a="ci1"${made ? '' : ' style="opacity:0"'}><b>2학년 3반</b><small>학생 28명 · 발표 0회</small></div>
+      <span class="uv-b pri wide" data-a="add">＋ 새 반 만들기</span></div>
+    <div class="uv-card" data-a="formCard" style="left:12px;top:144px;width:166px">
+      <div class="uv-ch">📋 학생 자료, 설문지로 편하게</div>
+      <div class="uv-hint">발표 자료를 받을 <b>구글 설문지 샘플</b>을 내 드라이브로 복사해 쓰세요.</div>
+      <span class="uv-b pri wide" data-a="copy">📄 설문지 사본 만들기</span>
+      <ol class="uv-ft"><li>[사본 만들기] → 내 드라이브</li><li><b>파일 업로드</b>로 바꾸고 [게시]</li><li>링크를 복사해 <b>제출 링크</b>에</li></ol></div>
+    <div class="uv-card" style="left:188px;top:30px;width:440px;height:88px">
+      <div data-a="ros0"${made ? ' style="opacity:0"' : ''}>${ros('예시 반', UV_SAMPLE, 20)}</div>
+      <div data-a="ros1" style="position:absolute;left:8px;right:8px;top:6px${made ? '' : ';opacity:0'}">${ros('2학년 3반', UV_NM, 28)}</div></div>
+    <div class="uv-card" data-a="subCard" style="left:188px;top:126px;width:216px;height:118px">
+      <div class="uv-ch">📮 발표 자료 제출 받기<span class="uv-g"></span><span class="uv-b xs">만드는 방법</span></div>
+      <div class="uv-hint">구글 설문지(파일 업로드 질문) 링크를 넣으면 학생들이 휴대폰으로 찍을 <b>QR 코드</b>가 만들어져요.</div>
+      <div class="uv-fl">제출 링크 (구글 설문지 권장)</div>
+      <div class="uv-in" data-a="url"><span class="ph" data-a="urlph">https://forms.gle/…</span><span data-a="urlv"></span></div>
+      <div class="uv-row"><span class="uv-b pri" data-a="sv">저장</span><span class="uv-b dis" data-a="qr">📮 QR 안내 화면 열기</span></div></div>
+    <div class="uv-card" data-a="tCard" style="left:412px;top:126px;width:216px;height:118px">
+      <div class="uv-ch">⏱ <span data-a="tNm">${cls}</span> 발표 시간</div>
+      <div class="uv-two"><div><div class="uv-fl" style="margin-top:0">최소 시간</div><div class="uv-in"><span data-a="tMinV">${made ? 120 : 60}</span><small>초</small><small data-a="tMinH">= ${made ? '2분' : '1분'}</small></div></div>
+        <div><div class="uv-fl" style="margin-top:0">최대 시간</div><div class="uv-in"><span data-a="tMaxV">${made ? 180 : 90}</span><small>초</small><small data-a="tMaxH">= ${made ? '3분' : '1분 30초'}</small></div></div></div>
+      <div class="uv-pre"><span>0:30 ~ 1:00</span><span>1:00 ~ 1:30</span><span data-a="tp2">2:00 ~ 3:00</span><span>3:00 ~ 5:00</span></div>
+      <span class="uv-b pri" data-a="tsv">시간 저장</span></div>
+    <div class="uv-card" data-a="poolCard" style="left:188px;top:252px;width:440px">
+      <div class="uv-ch">📦 <span data-a="pNm">${cls}</span> 발표 자료 미리 등록<span class="uv-tag" data-a="poolN">아직 없음</span><span class="uv-g"></span><span class="uv-b pri" data-a="pool">📎 자료 한꺼번에 등록</span></div>
+      <div class="uv-hint" style="margin:0">구글 설문지로 받은 자료를 발표 전에 미리 넣어 두세요. <b>다음에 [발표 시작]을 누르면 그 회차로 자동으로 옮겨 가서</b>, 레이스로 순서를 새로 정해도 자료와 주제가 그대로 따라가요.</div></div>
+  </div>`;
+}
+// ① 순서 정하기 화면의 뼈대(2장 처음에 잠깐 보인다)
+const UV_SKEL = `<div data-a="skel"><div class="uv-vt" style="left:12px;top:5px">오늘의 <em>발표 순서</em> 레이스</div>
+  <div class="uv-race" style="opacity:.5">${[0, 1, 2, 3, 4, 5].map(k => `<div class="ln" style="top:${k * 34}px"></div>`).join('')}<div class="fin"></div></div>
+  <div class="uv-card" style="left:414px;top:30px;width:214px;height:160px;opacity:.5"></div></div>`;
+
+// 6장 달리기 — 줄(위→아래)마다 [이름, 몸 색, 등수, 흔들림]
+const UV_RACE = [['강민재', '#9CC8FF', 2, .8], ['김가온', '#FFD27A', 6, -.6], ['도윤서', '#FF9EC8', 1, .5], ['나하늘', '#9BE3C6', 4, -.9], ['김서윤', '#C9B8FF', 3, .7], ['문채원', '#FFB38A', 5, -.4]];
+const UV_ORDER = ['도윤서', '강민재', '김서윤', '나하늘', '문채원', '김가온'];     // 도착한 순서 — ▼로 4·5번을 바꾼다
+// 8~10장 기록 — [이름, 주제, 시간, 판정, 발표 내용 미리보기]
+const UV_J = { ok:'적정', short:'미달', over:'초과' };
+const UV_RECS = [['도윤서', '기후위기와 식량', '3:08', 'over', '여러분, 혹시 기후 위기가 우리 밥상에도 영향을 준다는 걸…'], ['강민재', '플라스틱 없는 하루', '2:24', 'ok', '제가 일주일 동안 플라스틱 없이 지내 보니…'],
+  ['김서윤', 'AI와 일자리의 미래', '1:48', 'short', '인공지능이 바꿀 직업 세계에 대해 말씀드리…'], ['문채원', '반려동물 입양 문화', '2:51', 'ok', '유기 동물 보호소 통계를 보면 해마다…'], ['나하늘', '청소년 수면 시간', '2:10', 'ok', '우리 반 친구 스무 명에게 물어보니…']];
+const UV_SPEECH = '여러분, 혹시 기후 위기가 우리 밥상에도 영향을 준다는 걸 알고 계셨나요? 제가 조사해 보니 최근 몇 년 사이 이상 기온 때문에 배추와 사과 가격이 크게 올랐습니다. 이 그래프를 보시면 여름 기온이 높았던 해마다 가격이 함께 뛰는 것을 볼 수 있습니다. 그래서 저는 우리가 할 수 있는 일로 제철 음식 먹기와 음식물 쓰레기 줄이기를 …';
+const UV_RB = [['내용 구성', 4], ['근거·자료 활용', 5], ['전달력', 4], ['시간 준수', 2]];
+const UV_MEMO = '그래프를 직접 그려 와 농산물 가격 변화를 설명함. 친구의 질문에 자료를 들어 차분히 답함.';
+function uvRecPane(scored){
+  const td = (k, r) => `<tr data-a="tr${k}"><td>${k + 1}</td><td><b>${r[0]}</b></td><td>${r[1]}</td><td data-a="cT">${r[2]}</td><td data-a="cJ"><span class="uv-pill ${r[3]}">${UV_J[r[3]]}</span></td>
+    <td${k ? '' : ' data-a="sc0"'}>${k || !scored ? '—' : '15 / 20'}</td><td>📎 1</td><td data-a="cX">${r[4]}</td></tr>`;
+  return `<div class="uv-rec" data-a="rv">
+      <h4>발표 기록 <em>정리</em></h4><div class="vs">2학년 3반 · 1차 발표 · ${UV_DAY} · 기준 2:00 ~ 3:00</div>
+      <div class="uv-tools"><span class="uv-b xs">▶ 이어서 발표</span><span class="uv-b xs pri" data-a="sc">📝 평가하기</span><span class="uv-b xs">🏷 주제</span><span class="uv-b xs">📎 자료</span><span class="uv-b xs">🖨 순서표</span><span class="uv-b xs sub" data-a="ai">🤖 전체 과세특 프롬프트</span><span class="uv-b xs mint" data-a="xl">📊 엑셀·한셀 파일로 저장</span></div>
+      <div class="uv-sts"><div class="s1">적정<span>3명</span></div><div class="s2">미달<span>1명</span></div><div class="s3">초과<span>1명</span></div><div class="s4">미발표<span>22명</span></div><div class="s5">자료 제출<span>23명</span></div></div>
+      <table class="uv-tb"><colgroup><col style="width:28px"><col style="width:50px"><col style="width:104px"><col style="width:48px"><col style="width:40px"><col style="width:44px"><col style="width:34px"><col></colgroup>
+        <thead><tr><th>순서</th><th>이름</th><th>발표 주제</th><th data-a="cT">발표 시간</th><th data-a="cJ">판정</th><th>평가</th><th>자료</th><th data-a="cX">발표 내용 (미리보기)</th></tr></thead>
+        <tbody>${UV_RECS.map((r, k) => td(k, r)).join('')}</tbody></table>
+      <div class="uv-hint" style="margin-top:6px">줄을 누르면 발표 내용 전체를 보고, 잘못 인식된 글자 고치기 · 평가 기준표 채점 · 선생님 관찰 기록 · 과세특 프롬프트 만들기를 할 수 있어요.</div>
+    </div>`;
+}
+const uvSlide = (k, big) => k ? `<h4 style="color:#0E6B47">플라스틱 없는 하루</h4><p>1번 강민재</p>
+    <div class="uv-ab" style="left:${big ? 40 : 30}px;top:${big ? 86 : 92}px;font:${big ? 15 : 12}px/1.9 var(--display)">🥤 일회용 컵 대신 텀블러<br>🛍 비닐봉지 대신 장바구니<br>📦 택배 상자 다시 쓰기</div><span class="pg">1 / 5</span>`
+  : `<h4 style="color:#C2410C">기후 위기와 식량</h4><p>5번 도윤서 · 이상 기온과 농산물 가격</p>
+    <div class="ch">${[30, 42, 38, 64, 86].map((h, i) => `<i style="height:${h}%;background:${i > 2 ? '#FF9F6E' : '#FFD27A'}"></i>`).join('')}</div><span class="pg">1 / 6</span>`;
+
+const UV_CH = [
+  /* 1. 이 앱이 하는 일 */
+  { title:'발표 레이스가 하는 일', on:null, say:['c1a', ['c1b', .5], ['c1c', .5]], tail:1.4,
+    k: T => { const gT = T.s[1] + .6; return { gT, eT: gT + 2.3 }; },
+    pane:`<div data-a="g1">
+        <div class="uv-ab" data-a="h1" style="left:0;right:0;top:10px;text-align:center;font:12px var(--display);color:var(--muted)">발표 수업을 한 화면에서</div>
+        ${[['🏁', '순서 정하기', '레이스로 공정하게', 'var(--sub)', 'var(--sub-s)'], ['🎤', '발표', '타이머 · 자료 · TV', 'var(--main)', 'var(--main-s)'], ['📝', '기록과 평가', '엑셀 · 과세특 초안', '#0E8A5F', 'var(--mint-s)']].map(([ic, t, s, c, b], k) =>
+          `<div class="uv-card" data-a="s${k}" style="left:${58 + k * 182}px;top:34px;width:160px;height:118px;text-align:center;background:${b};opacity:0">
+            <div style="font-size:30px;line-height:1.3;margin-top:6px">${ic}</div><div style="font:17px/1.3 var(--display);color:${c}">${t}</div><div class="uv-hint" style="font-size:8.5px;margin-top:3px">${s}</div></div>`).join('')}
+        ${[0, 1].map(k => `<div class="uv-ab" data-a="a${k}" style="left:${222 + k * 182}px;top:76px;font:22px var(--display);color:var(--gray);opacity:0">›</div>`).join('')}
+      </div>
+      <div data-a="g2" style="opacity:0">
+        <div class="uv-card" style="left:92px;top:166px;width:176px;height:92px;text-align:center">
+          <div class="uv-clk" data-a="ck" style="font-size:30px;margin-top:2px">0:00</div>
+          <div class="uv-brow" style="width:152px;margin:6px auto 0"><span class="uv-big2 g1" data-a="go">▶ 시작</span><span class="uv-big2 g2 dis" data-a="st">■ 마침</span></div></div>
+        <div class="uv-card" style="left:282px;top:166px;width:266px;height:92px">
+          <div class="uv-ch">3 기록 보기<span class="uv-tag ok">저절로 쌓여요</span></div>
+          <div class="uv-rrow" data-a="r0" style="opacity:0"><b>도윤서</b><span>2:41</span><span class="uv-pill ok">적정</span><small>여러분, 혹시 기후 위기가 우리 밥상에도…</small></div>
+          <div class="uv-rrow" data-a="r1" style="opacity:0"><b>강민재</b><span>2:24</span><span class="uv-pill ok">적정</span><small>제가 일주일 동안 플라스틱 없이…</small></div></div>
+      </div>
+      <div class="uv-ab" data-a="lk" style="left:150px;top:96px;width:340px;opacity:0">
+        <div class="uv-card" style="position:relative;padding:12px 14px;text-align:center;background:var(--mint-s)">
+          <div style="font:16px/1.3 var(--display)">🔒 회원 가입 없이 바로</div>
+          <div class="uv-hint" style="font-size:9.5px;margin:4px 0 0">명단·기록·자료는 <b>이 컴퓨터 브라우저에만</b> 저장돼요</div></div></div>`,
+    cur:T => [[T.k.gT - 1, [470, 300]], [T.k.gT - .35, 'go'], [T.k.gT + .1, 'go'], [T.k.eT - .5, 'st'], [T.k.eT + .1, 'st'], [T.k.eT + .8, [470, 300]]],
+    clk:T => [T.k.gT, T.k.eT], curOff:T => T.s[2] - .4,
+    run(t, q, qa, xy, T){
+      const [s0, s1, s2] = T.s, e0 = T.e[0], K = T.k, st = Math.max(.5, (e0 - s0 - .8) / 3);
+      mOp(q('h1'), mP(t, .1, .5));
+      [0, 1, 2].forEach(k => { const a = s0 + .2 + k * st; mSet(q('s' + k), { o: mP(t, a, a + .35), y: mLerp(12, 0, mP(t, a, a + .45)) }); });
+      [0, 1].forEach(k => mOp(q('a' + k), mP(t, s0 + .5 + k * st, s0 + .8 + k * st)));
+      mOp(q('g1'), 1 - .5 * mP(t, s1 - .3, s1) - .35 * mP(t, s2 - .3, s2));
+      mOp(q('g2'), mP(t, s1 - .3, s1) * (1 - .75 * mP(t, s2 - .3, s2)));
+      const sec = t < K.gT ? 0 : 161 * mClamp((t - K.gT) / (K.eT - K.gT - .2));
+      mTxt(q('ck'), uvClock(sec)); q('ck').className = 'uv-clk' + uvClkCls(sec, 120, 180);
+      const on = mIn(t, K.gT + .2, K.eT + .3);
+      mCls(q('go'), 'on', mIn(t, K.gT, K.gT + .25)); mCls(q('go'), 'dis', on);
+      mCls(q('st'), 'dis', !on); mCls(q('st'), 'on', mIn(t, K.eT, K.eT + .25));
+      mSet(q('r0'), { o: mP(t, K.eT + .25, K.eT + .55), x: mLerp(-8, 0, mP(t, K.eT + .25, K.eT + .6)) });
+      mSet(q('r1'), { o: mP(t, K.eT + 1.1, K.eT + 1.4), x: mLerp(-8, 0, mP(t, K.eT + 1.1, K.eT + 1.5)) });
+      mSet(q('lk'), { o: mP(t, s2 - .1, s2 + .4), s: mLerp(.92, 1, mP(t, s2 - .1, s2 + .5)) });
+    } },
+
+  /* 2. 반 만들기 · 발표 시간 */
+  { title:'반 만들기 · 발표 시간', on:'order', cls:'예시 반', say:['c2a', ['c2b', .3], ['c2c', .4]], tail:1.4,
+    k: T => {
+      const [s0, s1, s2] = T.s, [e0, e1, e2] = T.e;
+      const pT = s0 + .7, aT = Math.max(pT + 1.3, e0 - .4);              // [⚙ 초기 설정] · [＋ 새 반 만들기]
+      const nA = s1 + .2, nB = s1 + 1.1;                                 // 반 이름 치기
+      const xT = s1 + 1.3, cpT = xT + .5, vT = Math.max(cpT + 1.1, s1 + (e1 - s1) * .62);   // 엑셀 조각 · 이름 칸 복사 · 붙여 넣기
+      const kT = Math.max(vT + 1.0, e1 - .3);                            // [만들기]
+      const tpT = s2 + Math.max(1.2, (e2 - s2) * .35), svT = Math.max(tpT + 1.0, e2 - .4);   // 빠른 선택 · [시간 저장]
+      return { pT, aT, nA, nB, xT, cpT, vT, kT, tpT, svT };
+    },
+    pane: UV_SKEL + `<div data-a="sv" style="opacity:0">${uvSetup(false)}</div>`,
+    over:`<div class="uv-dim" data-a="dim"></div>
+      <div class="uv-mod" data-a="mod" style="left:150px;top:56px;width:300px">
+        <div class="uv-mh"><span class="ic">🏫</span>새 반 만들기<span class="x">✕</span></div>
+        <div class="uv-mb">
+          <div class="uv-fl" style="margin-top:0">반 이름</div><div class="uv-in" data-a="nm"><span class="ph" data-a="nph">예: 1학년 3반, 2-5 국어</span><span data-a="nmv"></span></div>
+          <div class="uv-fl" style="margin-top:6px">학생 명단 (선택 · 나중에 넣어도 돼요)</div>
+          <div class="uv-in uv-ta" data-a="ta"><span class="ph" data-a="tph">한 줄에 한 명씩 적어 주세요.
+엑셀에서 이름 칸을 복사해 붙여 넣어도 돼요.</span><span data-a="tv"></span></div>
+          <div class="uv-hint" data-a="hc" style="margin:4px 0 0;height:12px;color:var(--ink);font-weight:700"></div></div>
+        <div class="uv-mf"><span class="uv-b">취소</span><span class="uv-b pri" data-a="mk">만들기</span></div></div>
+      <div class="uv-xl" data-a="xl" style="left:470px;top:84px;width:122px">
+        <div class="hd">명렬표.xlsx</div>
+        <div class="r h"><span></span><span>번호</span><span>이름</span></div>
+        ${UV_NM.slice(0, 6).map((n, k) => `<div class="r" data-a="xr"><span>${k + 2}</span><span>${k + 1}</span><span>${n}</span></div>`).join('')}
+        <div class="r" data-a="xr"><span>⋮</span><span>⋮</span><span>⋮</span></div>
+        <div class="r" data-a="xr"><span>29</span><span>28</span><span>${UV_NM[27]}</span></div></div>
+      <div class="uv-toast" data-a="toast" style="top:262px">발표 시간을 2:00 ~ 3:00로 정했어요.</div>`,
+    cur:T => { const K = T.k; return [[T.s[0] - .2, [380, 230]], [K.pT - .4, 'p_setup'], [K.pT + .1, 'p_setup'], [K.aT - .5, 'add'], [K.aT + .1, 'add'], [K.nA - .15, 'nm'], [K.nB + .1, 'nm'],
+      [K.xT + .4, [530, 168]], [K.vT - .9, [530, 168]], [K.vT - .15, 'ta'], [K.vT + .3, 'ta'], [K.kT - .4, 'mk'], [K.kT + .1, 'mk'], [K.tpT - .5, 'tp2'], [K.tpT + .1, 'tp2'], [K.svT - .45, 'tsv'], [K.svT + .1, 'tsv'], [K.svT + .8, [560, 236]]]; },
+    clk:T => { const K = T.k; return [K.pT, K.aT, K.nA - .1, K.vT - .05, K.kT, K.tpT, K.svT]; },
+    run(t, q, qa, xy, T){
+      const K = T.k, [, , s2] = T.s;
+      mCls(q('p_order'), 'on', t < K.pT); mCls(q('p_setup'), 'on', t >= K.pT); mCls(q('p_setup'), 'dn', mIn(t, K.pT, K.pT + .25));
+      mOp(q('skel'), 1 - mP(t, K.pT, K.pT + .3)); mOp(q('sv'), mP(t, K.pT + .05, K.pT + .35));
+      mCls(q('add'), 'on', mIn(t, K.aT, K.aT + .25));
+      const mo = mP(t, K.aT + .15, K.aT + .4) * (1 - mP(t, K.kT + .15, K.kT + .4));
+      mOp(q('dim'), mo); mSet(q('mod'), { o: mo, y: mLerp(10, 0, mP(t, K.aT + .15, K.aT + .45)) });
+      const nm = uvType('2학년 3반', mP(t, K.nA, K.nB));
+      mTxt(q('nmv'), nm); mOp(q('nph'), nm ? 0 : 1); mCls(q('nm'), 'on', mIn(t, K.nA - .2, K.nB + .3));
+      // 엑셀 명렬표: 나타나 → 이름 칸을 복사(초록 테두리) → 명단 칸으로 날아가 붙는다
+      const fly = mP(t, K.vT - .7, K.vT);
+      mSet(q('xl'), { o: mP(t, K.xT, K.xT + .3) * (1 - mP(t, K.vT - .15, K.vT + .05)), x: mLerp(0, -236, fly), y: mLerp(0, 44, fly), s: mLerp(1, .45, fly) });
+      qa('xr').forEach((e, k) => mCls(e, 'c', t >= K.cpT + k * .07));
+      const pasted = t >= K.vT;
+      mTxt(q('tv'), pasted ? UV_NM.slice(0, 4).join('\n') + '\n⋮\n' + UV_NM[27] : '');
+      mOp(q('tph'), pasted ? 0 : 1); mCls(q('ta'), 'on', mIn(t, K.vT - .3, K.kT));
+      mTxt(q('hc'), t >= K.vT + .15 ? '👥 28명 인식됨' : '');
+      mCls(q('mk'), 'on', mIn(t, K.kT, K.kT + .25));
+      // 만든 뒤: 위의 「우리 반」 · 반 목록 · 명단 · 시간 칸이 2학년 3반으로
+      const made = t >= K.kT + .3;
+      mTxt(q('cls'), made ? '2학년 3반' : '예시 반');
+      mOp(q('ci1'), mP(t, K.kT + .3, K.kT + .6)); mCls(q('ci1'), 'on', made); mCls(q('ci0'), 'on', !made);
+      mTxt(q('clsN'), made ? '2개' : '1개');
+      mOp(q('ros0'), 1 - mP(t, K.kT + .3, K.kT + .5)); mOp(q('ros1'), mP(t, K.kT + .35, K.kT + .6));
+      mTxt(q('tNm'), made ? '2학년 3반' : '예시 반'); mTxt(q('pNm'), made ? '2학년 3반' : '예시 반');
+      // 발표 시간: 빠른 선택 [2:00 ~ 3:00] → [시간 저장]
+      mCls(q('tCard'), 'hot', mIn(t, s2 - .1, K.svT + 1));
+      const pre = t >= K.tpT;
+      mTxt(q('tMinV'), pre ? '120' : '60'); mTxt(q('tMaxV'), pre ? '180' : '90');
+      mTxt(q('tMinH'), pre ? '= 2분' : '= 1분'); mTxt(q('tMaxH'), pre ? '= 3분' : '= 1분 30초');
+      mCls(q('tp2'), 'on', mIn(t, K.tpT, K.tpT + .35));
+      mCls(q('tsv'), 'on', mIn(t, K.svT, K.svT + .25));
+      mOp(q('toast'), mP(t, K.svT + .2, K.svT + .4) * (1 - mP(t, K.svT + 2.2, K.svT + 2.5)));
+    } },
+
+  /* 3. 설문지로 자료 걷기 */
+  { title:'설문지로 자료 걷기', on:'setup', say:['c3a', ['c3b', .3], ['c3c', .3], ['c3d', .3]], tail:1.2,
+    k: T => {
+      const [s0, s1, s2, s3] = T.s, [e0, e1, e2, e3] = T.e;
+      const bT = s0 + Math.max(1.2, (e0 - s0) * .5);                     // [📄 설문지 사본 만들기]
+      const cT = s1 + Math.max(1.1, (e1 - s1) * .4);                     // 구글 [사본 만들기]
+      const tyT = s2 + Math.max(.8, (e2 - s2) * .2), fuT = tyT + .9, pbT = Math.max(fuT + 1.1, e2 - .3);   // 유형 ▾ · 파일 업로드 · [게시]
+      const whT = s3 + .5, p2T = whT + 1.0, shT = Math.max(p2T + .9, s3 + (e3 - s3) * .62), cyT = Math.max(shT + .8, e3 - .2);
+      return { bT, cT, tyT, fuT, pbT, whT, p2T, shT, cyT };
+    },
+    pane:`<div data-a="sv">${uvSetup(true)}</div>`,
+    over:`<div class="uv-win" data-a="gw" style="left:36px;top:40px;width:568px;height:252px">
+        <div class="bar"><i></i><i></i><i></i><span class="ad" data-a="ad">docs.google.com/forms/d/…/copy</span></div>
+        <div class="uv-ab" data-a="g1" style="left:0;right:0;top:20px;bottom:0;display:flex;align-items:center;justify-content:center;background:#F8F9FA">
+          <div style="background:#fff;border:1px solid #DADCE0;border-radius:8px;padding:14px 18px;width:300px;font-size:9px;color:#202124">
+            <div style="font-size:12px;margin-bottom:6px">문서 복사</div>
+            <div>'발표 자료 제출 (샘플)'의 사본을 만드시겠습니까?</div>
+            <div style="text-align:right;margin-top:14px"><span class="uv-gbtn" data-a="cp">사본 만들기</span></div></div></div>
+        <div class="uv-gf" data-a="g2" style="opacity:0">
+          <div class="tb"><span class="lg"></span>발표 자료 제출<span class="gg"></span><span class="uv-gbtn pp" data-a="pub">게시</span></div>
+          <div class="uv-gq ti"><b>발표 자료 제출</b><small>파일 이름: 번호_이름_발표주제 (예: 05_도윤서_기후위기와 식량.pdf)</small></div>
+          <div class="uv-gq" data-a="gq">번호와 이름 *<div class="ln"></div></div>
+          <div class="uv-gq" data-a="gq">발표 주제 *<div class="ln"></div></div>
+          <div class="uv-gq act">📎 발표 자료 파일 *
+            <span class="ty" data-a="ty"><span data-a="tyv">단답형</span> ▾</span>
+            <div data-a="q3a"><div class="ln"></div></div>
+            <div data-a="q3b" style="display:none"><span class="up">⬆ 파일 추가 · 파일 1개 · 최대 10MB</span></div></div>
+          <div class="uv-menu" data-a="menu" style="left:378px;top:138px"><div>단답형</div><div>장문형</div><div>객관식 질문</div><div>체크박스</div><div data-a="fu">☁ 파일 업로드</div></div>
+        </div>
+        <div class="uv-gd" data-a="pd" style="left:168px;top:58px;width:232px">
+          <h5>설문지 게시</h5>
+          <div style="font-size:7.5px;color:#5F6368;margin-bottom:3px">응답자 · 관리</div>
+          <div class="rw" data-a="who">👥 <span data-a="whov">○○고등학교 사용자로 제한</span><small>▾</small></div>
+          <div class="ft"><span class="uv-gbtn ln">취소</span><span class="uv-gbtn pp" data-a="pub2">게시</span></div></div>
+        <div class="uv-gd" data-a="lkd" style="left:168px;top:58px;width:232px">
+          <h5>응답자 링크 복사</h5>
+          <div class="lk" data-a="lnk">https://docs.google.com/forms/d/e/1FAIpQLSf…/viewform</div>
+          <div class="rw" style="border:0;padding:0"><span class="ck" data-a="sh">✓</span>URL 단축</div>
+          <div class="ft"><span class="uv-gbtn ln">취소</span><span class="uv-gbtn" data-a="cpy">복사</span></div></div>
+        <div class="uv-toast" data-a="gt" style="top:222px;background:#323232;border-radius:4px">클립보드에 복사됨</div>
+      </div>`,
+    cur:T => { const K = T.k; return [[K.bT - 1.2, [300, 262]], [K.bT - .4, 'copy'], [K.bT + .1, 'copy'], [K.cT - .5, 'cp'], [K.cT + .1, 'cp'], [K.tyT - .45, 'ty'], [K.tyT + .1, 'ty'], [K.fuT - .35, 'fu'], [K.fuT + .1, 'fu'],
+      [K.pbT - .45, 'pub'], [K.pbT + .1, 'pub'], [K.whT - .35, 'who'], [K.whT + .1, 'who'], [K.p2T - .35, 'pub2'], [K.p2T + .1, 'pub2'], [K.shT - .45, 'sh'], [K.shT + .1, 'sh'], [K.cyT - .4, 'cpy'], [K.cyT + .1, 'cpy'], [K.cyT + .8, [480, 272]]]; },
+    clk:T => { const K = T.k; return [K.bT, K.cT, K.tyT, K.fuT, K.pbT, K.whT, K.p2T, K.shT, K.cyT]; },
+    run(t, q, qa, xy, T){
+      const K = T.k, [, s1] = T.s, e1 = T.e[1];
+      mCls(q('formCard'), 'hot', mIn(t, T.s[0] + .2, K.bT + .4));
+      mCls(q('copy'), 'on', mIn(t, K.bT, K.bT + .25));
+      const w = mP(t, K.bT + .25, K.bT + .6);
+      mSet(q('gw'), { o: w, y: mLerp(14, 0, w) });
+      mTxt(q('ad'), t < K.cT + .3 ? 'docs.google.com/forms/d/…/copy' : 'docs.google.com/forms/d/…/edit');
+      mCls(q('cp'), 'on', mIn(t, K.cT, K.cT + .25));
+      mOp(q('g1'), 1 - mP(t, K.cT + .2, K.cT + .45)); mOp(q('g2'), mP(t, K.cT + .3, K.cT + .6));
+      qa('gq').forEach(e => mCls(e, 'hot', mIn(t, Math.max(K.cT + .8, s1 + (e1 - s1) * .62), e1 + .3)));   // 이름 · 주제 질문은 이미 들어 있다
+      mOp(q('menu'), mIn(t, K.tyT + .1, K.fuT + .15) ? 1 : 0);
+      mCls(q('fu'), 'on', mIn(t, K.fuT - .35, K.fuT + .15));
+      const fu = t >= K.fuT + .1;
+      mTxt(q('tyv'), fu ? '☁ 파일 업로드' : '단답형');
+      q('q3a').style.display = fu ? 'none' : ''; q('q3b').style.display = fu ? '' : 'none';
+      mCls(q('pub'), 'on', mIn(t, K.pbT, K.pbT + .25));
+      mOp(q('pd'), mP(t, K.pbT + .15, K.pbT + .4) * (1 - mP(t, K.p2T + .1, K.p2T + .3)));
+      mTxt(q('whov'), t >= K.whT + .1 ? '링크가 있는 모든 사용자' : '○○고등학교 사용자로 제한');
+      mCls(q('who'), 'hot', mIn(t, K.whT - .1, K.p2T + .2));
+      mCls(q('pub2'), 'on', mIn(t, K.p2T, K.p2T + .25));
+      mOp(q('lkd'), mP(t, K.p2T + .25, K.p2T + .5));
+      const sh = t >= K.shT + .05;
+      mCls(q('sh'), 'on', sh); mTxt(q('lnk'), sh ? 'https://forms.gle/Ab3Xy9KqL2' : 'https://docs.google.com/forms/d/e/1FAIpQLSf…/viewform');
+      mCls(q('cpy'), 'on', mIn(t, K.cyT, K.cyT + .25));
+      mOp(q('gt'), mP(t, K.cyT + .2, K.cyT + .4));
+    } },
+
+  /* 4. 제출 링크 · QR 안내 */
+  { title:'제출 링크 · QR 안내', on:'setup', say:['c4a', ['c4b', .3], ['c4c', .4], ['c4d', .4]], tail:1.4,
+    k: T => {
+      const [s0, s1, s2, s3] = T.s, [e0, e1, e2] = T.e;
+      const uT = s0 + .6, svT = s0 + Math.max(1.6, (e0 - s0) * .5), qT = Math.max(svT + .8, e0 - .4);   // 붙여 넣기 · [저장] · [📮 QR 안내 화면 열기]
+      const tvT = s1 + Math.max(.7, (e1 - s1) * .12), lcT = Math.max(tvT + 1.5, s1 + (e1 - s1) * .66);   // [📺 TV에 띄우기] · [🔗 링크 복사]
+      const scT = s2 + .9, fmT = scT + .8, fnT = s2 + Math.max(2.2, (e2 - s2) * .45);                      // QR 찍기 · 설문지 · 파일 이름 규칙
+      return { uT, svT, qT, tvT, lcT, scT, fmT, fnT, ppT: s3 };
+    },
+    pane:`<div data-a="sv">${uvSetup(true)}</div>`,
+    over:`<div class="uv-dim" data-a="dim"></div>
+      <div class="uv-mod" data-a="qm" style="left:66px;top:46px;width:440px">
+        <div class="uv-mh"><span class="ic">📮</span>2학년 3반 · 발표 자료 제출<span class="x">✕</span></div>
+        <div class="uv-mb" style="display:flex;gap:12px;align-items:center">
+          <div style="width:118px;flex:none">${UV_QR}</div>
+          <div style="flex:1;min-width:0;font-size:8px;line-height:1.55">
+            <div style="font:12px var(--display);color:var(--main)">구글 설문지로 제출해요</div>
+            <ol style="margin:3px 0 5px;padding-left:13px"><li>휴대폰 카메라로 QR 코드를 찍어요.</li><li>학교 구글 계정으로 로그인해요.</li><li>아래 규칙대로 파일 이름을 바꿔 올려요.</li></ol>
+            <div class="uv-frule"><b>📛 파일 이름 규칙</b><code>번호_이름_발표주제.확장자</code></div>
+            <div style="font-weight:700;color:var(--muted)">forms.gle/Ab3Xy9KqL2</div></div></div>
+        <div class="uv-mf"><span class="uv-b" data-a="lc">🔗 링크 복사</span><span class="uv-b" data-a="tvb">📺 TV에 띄우기</span><span class="uv-b pri">닫기</span></div></div>
+      <div class="uv-toast" data-a="t1" style="top:250px">링크를 복사했어요.</div>
+      <div class="uv-tv" data-a="tv" style="left:408px;top:40px;width:222px">
+        <div class="sc"><span class="tg">교실 TV</span><div class="uv-tvq"><div style="width:88px;flex:none">${UV_QR}</div><div><div class="t1">발표 자료 제출</div><div class="t2">2학년 3반<br>파일 이름:<br><b>번호_이름_발표주제</b></div></div></div></div><div class="st2"></div></div>
+      <div class="uv-phone" data-a="ph" style="left:70px;top:44px">
+        <div class="scr"><div class="cam"><div class="fr">${UV_QR}</div><div class="pop" data-a="pop">🔗 forms.gle 열기</div></div>
+          <div class="fm" data-a="fm"><div class="q ti">발표 자료 제출</div><div class="q">번호와 이름<br><b>5 도윤서</b></div><div class="q">발표 주제<br><b>기후위기와 식량</b></div>
+            <div class="q">📎 발표 자료 파일<div class="up">${uvFi('pdf')}05_도윤서_기후위기와 식량.pdf</div></div>
+            <span class="uv-gbtn pp" style="font-size:7px;padding:2px 9px">제출</span></div></div></div>
+      <div class="uv-fname" data-a="fn" style="left:222px;top:94px"><span class="n1" data-a="fnp">05<small>번호</small></span>_<span class="n2" data-a="fnp">도윤서<small>이름</small></span>_<span class="n3" data-a="fnp">기후위기와 식량<small>발표 주제</small></span>.pdf</div>
+      <div class="uv-card" data-a="pp" style="left:150px;top:78px;width:340px;padding:12px 16px 14px;opacity:0">
+        <div style="font:13px/1.3 var(--display);margin-bottom:8px">💡 PPT로 만들었다면</div>
+        <div class="uv-file" data-a="pf1" style="position:relative;display:inline-flex">${uvFi('ppt')}05_도윤서_기후위기와 식량.pptx</div>
+        <div data-a="pa" style="font:11px/1.5 var(--display);color:var(--muted);margin:6px 0 6px 14px;opacity:0">⬇ 다른 이름으로 저장 → PDF</div>
+        <div class="uv-file" data-a="pf2" style="position:relative;display:inline-flex;opacity:0">${uvFi('pdf')}05_도윤서_기후위기와 식량.pdf<span class="uv-tag ok" style="margin-left:4px">발표 화면에 바로 크게</span></div></div>`,
+    cur:T => { const K = T.k; return [[K.uT - .8, [330, 270]], [K.uT - .15, 'url'], [K.uT + .3, 'url'], [K.svT - .4, 'sv'], [K.svT + .1, 'sv'], [K.qT - .4, 'qr'], [K.qT + .1, 'qr'],
+      [K.tvT - .45, 'tvb'], [K.tvT + .1, 'tvb'], [K.lcT - .45, 'lc~-56,0'], [K.lcT + .1, 'lc~-56,0'], [K.lcT + .8, [530, 280]]]; },
+    clk:T => { const K = T.k; return [K.uT + .1, K.svT, K.qT, K.tvT, K.lcT]; }, curOff:T => T.s[2] - .4,
+    run(t, q, qa, xy, T){
+      const K = T.k, [, , s2, s3] = T.s;
+      mCls(q('subCard'), 'hot', mIn(t, T.s[0], K.qT + .2));
+      mCls(q('url'), 'on', mIn(t, K.uT - .1, K.svT));
+      const pasted = t >= K.uT + .3;
+      mTxt(q('urlv'), pasted ? 'https://forms.gle/Ab3Xy9KqL2' : ''); mOp(q('urlph'), pasted ? 0 : 1);
+      mCls(q('sv'), 'on', mIn(t, K.svT, K.svT + .25));
+      mCls(q('qr'), 'dis', t < K.svT + .2); mCls(q('qr'), 'on', mIn(t, K.qT, K.qT + .25));
+      const mo = mP(t, K.qT + .15, K.qT + .4);
+      mOp(q('dim'), mo);
+      const tvp = mP(t, K.tvT + .15, K.tvT + .55);                // TV 가 들어오면 안내 창은 왼쪽으로 비켜 준다
+      mSet(q('qm'), { o: mo * (1 - mP(t, s2 - .35, s2 - .05)), y: mLerp(10, 0, mo), x: -56 * tvp });
+      mCls(q('tvb'), 'on', mIn(t, K.tvT, K.tvT + .25));
+      mSet(q('tv'), { o: tvp * (1 - mP(t, s2 - .35, s2 - .05)), x: mLerp(30, 0, tvp) });
+      mCls(q('lc'), 'on', mIn(t, K.lcT, K.lcT + .25));
+      mOp(q('t1'), mP(t, K.lcT + .2, K.lcT + .35) * (1 - mP(t, K.lcT + 1.6, K.lcT + 1.9)));
+      // 학생 휴대폰: QR 찍기 → 설문지 → 규칙대로 이름 바꾼 파일 올리기
+      const away = 1 - mP(t, s3 - .35, s3 - .05);                 // PPT 이야기로 넘어가면 휴대폰·파일 이름은 물러난다
+      mSet(q('ph'), { o: mP(t, s2 - .15, s2 + .25) * away, y: mLerp(16, 0, mP(t, s2 - .15, s2 + .35)) });
+      mOp(q('pop'), mP(t, K.scT, K.scT + .2));
+      mOp(q('fm'), mP(t, K.fmT, K.fmT + .3));
+      mOp(q('fn'), mP(t, K.fnT - .3, K.fnT) * away);
+      qa('fnp').forEach((e, k) => mSet(e, { o: .3 + .7 * mP(t, K.fnT + k * .5, K.fnT + k * .5 + .25), y: mLerp(4, 0, mP(t, K.fnT + k * .5, K.fnT + k * .5 + .3)) }));
+      // PPT 는 PDF 로 저장해서
+      mOp(q('pp'), mP(t, s3 - .1, s3 + .3));
+      mOp(q('pa'), mP(t, s3 + .8, s3 + 1.1));
+      mSet(q('pf2'), { o: mP(t, s3 + 1.4, s3 + 1.7), y: mLerp(-6, 0, mP(t, s3 + 1.4, s3 + 1.8)) });
+      mOp(q('pf1'), 1 - .45 * mP(t, s3 + 1.4, s3 + 1.7));
+    } },
+
+  /* 5. 받은 자료 한꺼번에 등록 */
+  { title:'받은 자료 한꺼번에 등록', on:'setup', say:['c5a', ['c5b', .3], ['c5c', .3], ['c5d', .3]], tail:1.4, pts:['fold', 'dz'],
+    k: T => {
+      const [s0, s1, s2, s3] = T.s, [e0, e1, , e3] = T.e;
+      const rcT = s0 + .9, dlT = rcT + .8, zpT = dlT + .3, unT = Math.max(zpT + 1.0, e0 - .6);   // 폴더 메뉴 · 다운로드 · zip · 압축 풀기
+      const scA = s1 - .1, plT = s1 + Math.max(1.4, (e1 - s1) * .38), gT = plT + .9, dT = Math.max(gT + 1.2, e1 - .2);   // 화면 굴리기 · [📎 자료 한꺼번에 등록] · 잡기 · 놓기
+      const jT = s3 + Math.max(1.6, (e3 - s3) * .45), cT = jT + 1.9;                                // 늦게 낸 학생 이름 · [닫기]
+      return { rcT, dlT, zpT, unT, scA, plT, gT, dT, jT, cT, rsA: Math.max(dT + .3, s2 - .2) };
+    },
+    pane:`<div data-a="sv">${uvSetup(true)}</div>`,
+    over:`<div class="uv-win" data-a="dw" style="left:40px;top:42px;width:560px;height:236px">
+        <div class="bar"><i></i><i></i><i></i><span class="ad">drive.google.com/drive/my-drive</span></div>
+        <div class="uv-dr"><div class="hd">내 드라이브 › 발표 자료 제출 (File responses)</div>
+          <div class="rw" data-a="drf">${uvFi('fd')}📎 발표 자료 파일 (File responses)<small>파일 22개</small></div>
+          <div class="rw">${uvFi('fd')}발표 자료 제출 (응답)<small>스프레드시트</small></div>
+          <div class="uv-menu" data-a="dm" style="left:250px;top:44px"><div>열기</div><div>공유</div><div data-a="dl">⬇ 다운로드</div><div>이름 바꾸기</div></div></div></div>
+      <div class="uv-dl" data-a="zip">${uvFi('zip')}<div>발표 자료 파일-${UV_YMD}.zip<small>압축 풀기 → 폴더</small></div></div>
+      <div class="uv-file" data-a="fold" style="left:12px;top:270px;z-index:8;opacity:0">${uvFi('fd')}발표 자료 파일<small style="color:var(--muted);font-weight:600;margin-left:3px">22개</small></div>
+      <div class="uv-dim" data-a="dim"></div>
+      <div class="uv-mod" data-a="bm" style="left:116px;top:40px;width:408px">
+        <div class="uv-mh"><span class="ic">📎</span>2학년 3반 · 자료 미리 등록<span class="x">✕</span></div>
+        <div class="uv-mb">
+          <div class="uv-frule"><b>📛 파일 이름 규칙</b><code>번호_이름_발표주제.확장자</code><span style="color:var(--muted)">이름만 들어 있어도 찾아요</span></div>
+          <div class="uv-dz" data-a="dz">📂 학생 자료 파일이나 폴더를 여기에 통째로 끌어다 놓으세요<br><span class="bp">📄 파일 선택</span><span class="bp">📁 폴더 선택</span><span class="bp">🏷 주제 확인·고치기</span></div>
+          <div style="display:grid">
+            <div class="uv-res" style="grid-area:1/1">${[['05_도윤서_기후위기와 식량.pdf', '도윤서', '기후위기와 식량'], ['01_강민재_플라스틱 없는 하루.pdf', '강민재', '플라스틱 없는 하루'], ['03_김서윤_AI와 일자리의 미래.pdf', '김서윤', 'AI와 일자리의 미래'], ['04_나하늘_청소년 수면 시간.pdf', '나하늘', '청소년 수면 시간']].map(([f, n, p]) =>
+              `<div data-a="rs"><span class="ok">✓</span> ${f} → <b>${n}</b> <span class="tp">🏷 ${p}</span></div>`).join('')}<div data-a="rs" style="color:var(--muted)">… 22명에게 자료가 들어가고, 주제도 함께 채워졌어요</div></div>
+            <div class="uv-bst" data-a="bst" style="grid-area:1/1"><div class="lg"><span>자료 현황 <b data-a="bn">22 / 28명</b> · 주제 <b data-a="bt">22명</b></span><span>👆 이름을 누르면 그 학생 자료를 하나씩 넣거나 지울 수 있어요</span></div>
+              ${UV_NM.map((n, k) => { const miss = UV_MISS.has(k); return `<span class="uv-sj${miss ? '' : ' y'}"${k === 5 ? ' data-a="sj5"' : ''}><i>${k + 1}</i>${n}${miss ? (k === 5 ? '<span class="fc" data-a="sj5f" style="display:none">1</span>' : '') : '<span class="fc">1</span>'}</span>`; }).join('')}</div>
+          </div></div></div>
+      <div class="uv-mod" data-a="sm" style="left:196px;top:92px;width:252px">
+        <div class="uv-mh"><span class="ic">📎</span>류시우 · 미리 등록한 자료<span class="x">✕</span></div>
+        <div class="uv-mb"><div class="uv-file" data-a="smf" style="position:relative;display:inline-flex;opacity:0">${uvFi('pdf')}06_류시우_우주 쓰레기 문제.pdf</div>
+          <div class="uv-fl" style="margin-top:7px">발표 주제</div><div class="uv-in"><span data-a="smtv"></span></div></div>
+        <div class="uv-mf"><span class="uv-b pri" data-a="smx">닫기</span></div></div>`,
+    cur:T => { const K = T.k; return [[K.rcT - .8, [320, 262]], [K.rcT - .15, 'drf'], [K.rcT + .1, 'drf'], [K.dlT - .35, 'dl'], [K.dlT + .1, 'dl'], [K.unT - .5, 'zip'], [K.unT + .1, 'zip'],
+      [K.plT - .55, 'pool~0,-120'], [K.plT + .1, 'pool~0,-120'], [K.gT - .45, 'fold'], [K.gT, 'fold'], [K.dT, 'dz'], [K.dT + .6, [500, 280]], [K.jT - .55, 'sj5'], [K.jT + .1, 'sj5'], [K.cT - .45, 'smx'], [K.cT + .1, 'smx'], [K.cT + .8, [540, 282]]]; },
+    clk:T => { const K = T.k; return [K.rcT, K.dlT, K.unT, K.plT, K.gT, K.jT, K.cT]; },
+    run(t, q, qa, xy, T){
+      const K = T.k, [s0, s1, , s3] = T.s;
+      mSet(q('dw'), { o: mP(t, s0 - .1, s0 + .3) * (1 - mP(t, s1 - .3, s1)), y: mLerp(12, 0, mP(t, s0 - .1, s0 + .4)) });
+      mCls(q('drf'), 'on', mIn(t, K.rcT, K.dlT + .3));
+      mOp(q('dm'), mIn(t, K.rcT + .1, K.dlT + .15) ? 1 : 0); mCls(q('dl'), 'on', mIn(t, K.dlT - .35, K.dlT + .15));
+      mSet(q('zip'), { o: mP(t, K.zpT, K.zpT + .3) * (1 - mP(t, K.unT + .2, K.unT + .5)), y: mLerp(10, 0, mP(t, K.zpT, K.zpT + .4)) });
+      // 압축을 푼 폴더 → 끌어서 → 놓기
+      const f = q('fold'), fp = f._p, dz = q('dz')._p;
+      let fo = mP(t, K.unT + .3, K.unT + .6), fx = 0, fy = 0, fs = 1;
+      if (fp && t >= K.gT){ const to = t <= K.dT ? xy : (dz || xy); fx = to[0] - fp[0]; fy = to[1] - fp[1]; }
+      if (t > K.dT){ fo *= 1 - mP(t, K.dT + .05, K.dT + .35); fs = mLerp(1, .6, mP(t, K.dT, K.dT + .35)); }
+      mSet(f, { o: fo, x: fx, y: fy, s: fs });
+      mSet(q('scr'), { y: -120 * mP(t, K.scA, K.scA + .6) });
+      mCls(q('poolCard'), 'hot', mIn(t, K.scA + .4, K.plT + .3));
+      mCls(q('pool'), 'on', mIn(t, K.plT, K.plT + .25));
+      const in1 = t >= K.dT + .2;
+      mTxt(q('poolN'), t >= K.cT + .15 ? '자료 23 / 28명 · 주제 23명' : in1 ? '자료 22 / 28명 · 주제 22명' : '아직 없음');
+      mCls(q('poolN'), 'blue', in1);
+      const mo = mP(t, K.plT + .15, K.plT + .4);
+      mOp(q('dim'), mo); mSet(q('bm'), { o: mo, y: mLerp(10, 0, mo) });
+      mCls(q('dz'), 'on', mIn(t, K.dT - .55, K.dT + .3));
+      qa('rs').forEach((e, k) => { const a = K.rsA + k * .5; mSet(e, { o: mP(t, a, a + .25) * (1 - mP(t, s3 - .3, s3)), x: mLerp(-6, 0, mP(t, a, a + .35)) }); });
+      mOp(q('bst'), mP(t, s3 - .15, s3 + .2));
+      // 늦게 낸 학생: 이름을 눌러 하나씩
+      const late = t >= K.cT + .15;
+      mCls(q('sj5'), 'y', late); q('sj5f').style.display = late ? '' : 'none';
+      mCls(q('sj5'), 'hot', mIn(t, K.jT - .6, K.jT + .3));
+      mTxt(q('bn'), late ? '23 / 28명' : '22 / 28명'); mTxt(q('bt'), late ? '23명' : '22명');
+      mSet(q('sm'), { o: mP(t, K.jT + .15, K.jT + .4) * (1 - mP(t, K.cT + .05, K.cT + .25)), y: mLerp(8, 0, mP(t, K.jT + .15, K.jT + .45)) });
+      mSet(q('smf'), { o: mP(t, K.jT + .7, K.jT + 1.0), y: mLerp(-10, 0, mP(t, K.jT + .7, K.jT + 1.05)) });
+      mTxt(q('smtv'), t >= K.jT + .9 ? '우주 쓰레기 문제' : '');
+      mCls(q('smx'), 'on', mIn(t, K.cT, K.cT + .25));
+    } },
+
+  /* 6. 순서 정하기 레이스 */
+  { title:'순서 정하기 레이스', on:'setup', say:['c6a', ['c6b', .8], ['c6c', .4]], tail:1.3, pts:['box', 'mt0', 'mt1', 'mt2', 'mt3', 'mt4', 'mt5'],
+    k: T => {
+      const [s0, s1, s2] = T.s, [e0, e1, e2] = T.e;
+      const pT = s0 + .6, abT = s0 + Math.max(1.7, (e0 - s0) * .5), gT = Math.max(abT + 1.1, e0 - .3);   // [1 순서 정하기] · 결석 학생 · [출발!]
+      const rT = gT + 2.0, f1 = rT + 2.3;                                 // 3·2·1 뒤 출발 · 1등 도착
+      const swT = Math.max(f1 + 1.0 + .6, e1 - .7);                       // ▼ (4번과 5번 바꾸기)
+      const stT = s2 + Math.max(.8, (e2 - s2) * .25);                     // [이 순서로 발표 시작 →]
+      return { pT, abT, gT, rT, f1, swT, stT };
+    },
+    pane:`<div data-a="sv">${uvSetup(true)}</div>
+      <div data-a="ov" style="opacity:0">
+        <div class="uv-vt" style="left:12px;top:5px">오늘의 <em>발표 순서</em> 레이스</div>
+        <div class="uv-race" data-a="race">${[0, 1, 2, 3, 4, 5].map(k => `<div class="ln" style="top:${k * 34}px"></div>`).join('')}<div class="fin"></div>
+          ${UV_RACE.map(([n, c, rk], k) => `<div class="uv-rn" data-a="rn${k}" style="top:${k * 34 + 6}px"><span class="bd" style="background:${c}">${n[0]}</span><b>${n}</b><span class="rk" data-a="rk${k}">${rk}등</span></div>`).join('')}
+          <div class="more">… 외 21명도 함께 달려요</div></div>
+        <div class="uv-cd" data-a="cd"></div>
+        <div class="uv-card" data-a="pc" style="left:414px;top:30px;width:214px">
+          <div class="uv-ch">참여 학생<span class="uv-tag" data-a="pcn">28명</span></div>
+          <div class="uv-hint">이름을 누르면 오늘 빠지는 학생(결석·조퇴 등)으로 표시돼요.</div>
+          <div class="uv-pcs">${UV_NM.slice(0, 15).map((n, k) => `<span class="uv-pc" data-a="pc${k}"><i>${k + 1}</i>${n}</span>`).join('')}<span class="uv-pc" style="background:var(--card)">…</span></div>
+          <span class="uv-go" data-a="go">출발!</span></div>
+        <div class="uv-card" data-a="rc" style="left:414px;top:30px;width:214px;opacity:0">
+          <div class="uv-ch">발표 순서<span class="uv-g"></span><span class="uv-b xs">🖨 인쇄</span><span class="uv-b xs">결과 복사</span></div>
+          <ol class="uv-rl" style="height:134px">${UV_ORDER.map((n, k) => `<li data-a="li${k}" style="top:${k * 22}px"><span class="k" data-a="lk${k}">${k + 1}</span><b>${n}</b><span class="mt" data-a="mt${k}">📎</span><span class="ud"><span>▲</span><span data-a="dn${k}">▼</span></span></li>`).join('')}</ol>
+          <div class="uv-hint" style="margin:2px 0 0">▲▼ 버튼으로 순서를 바꿀 수 있어요.</div>
+          <span class="uv-go pink" data-a="st">이 순서로 발표 시작 →</span></div>
+        <div class="uv-pool" data-a="box" style="left:150px;top:96px"><div class="bx">📦</div>미리 등록한 자료 · 23명</div>
+        ${[0, 1, 2, 3, 4, 5].map(k => `<span class="uv-fly" data-a="fy${k}">📎</span>`).join('')}
+      </div>`,
+    cur:T => { const K = T.k; return [[K.pT - .6, [330, 220]], [K.pT - .15, 'p_order'], [K.pT + .1, 'p_order'], [K.abT - .45, 'pc8'], [K.abT + .1, 'pc8'], [K.gT - .45, 'go'], [K.gT + .1, 'go'], [K.gT + .7, [560, 286]],
+      [K.swT - .7, 'dn3'], [K.swT + .1, 'dn3'], [K.stT - .55, 'st'], [K.stT + .1, 'st'], [K.stT + .7, [580, 286]]]; },
+    clk:T => { const K = T.k; return [K.pT, K.abT, K.gT, K.swT, K.stT]; },
+    run(t, q, qa, xy, T){
+      const K = T.k;
+      mCls(q('p_setup'), 'on', t < K.pT); mCls(q('p_order'), 'on', t >= K.pT); mCls(q('p_order'), 'dn', mIn(t, K.pT, K.pT + .25));
+      mOp(q('sv'), 1 - mP(t, K.pT, K.pT + .3)); mOp(q('ov'), mP(t, K.pT + .05, K.pT + .35));
+      const ab = t >= K.abT; mCls(q('pc8'), 'off', ab); mTxt(q('pcn'), ab ? '27명' : '28명');
+      mCls(q('go'), 'on', mIn(t, K.gT, K.gT + .25));
+      const ci = t < K.gT + .1 ? -1 : t < K.gT + .6 ? 0 : t < K.gT + 1.1 ? 1 : t < K.gT + 1.6 ? 2 : t < K.rT + .4 ? 3 : -1;
+      mTxt(q('cd'), ci < 0 ? '' : ['3', '2', '1', '출발!'][ci]); mOp(q('cd'), ci < 0 ? 0 : 1);
+      UV_RACE.forEach(([, , rk, a], k) => {
+        const fin = K.f1 + (rk - 1) * .2, p = mClamp((t - K.rT) / (fin - K.rT));
+        mSet(q('rn' + k), { x: 4 + 296 * (p + a * Math.sin(p * Math.PI * 2) * .07) });
+        mOp(q('rk' + k), t >= fin ? 1 : 0);
+      });
+      mOp(q('pc'), 1 - mP(t, K.f1 - .25, K.f1)); mOp(q('rc'), mP(t, K.f1 - .1, K.f1 + .2));
+      const sw = mP(t, K.swT + .05, K.swT + .4);
+      UV_ORDER.forEach((n, k) => { const a = K.f1 + k * .2; mSet(q('li' + k), { o: mP(t, a, a + .25), x: mLerp(10, 0, mP(t, a, a + .3)), y: k === 3 ? 22 * sw : k === 4 ? -22 * sw : 0 }); });
+      mTxt(q('lk3'), sw > .5 ? '5' : '4'); mTxt(q('lk4'), sw > .5 ? '4' : '5');
+      mCls(q('dn3'), 'on', mIn(t, K.swT, K.swT + .3));
+      mCls(q('st'), 'on', mIn(t, K.stT, K.stT + .25));
+      // 미리 등록한 자료가 이번 발표로 함께 옮겨 간다
+      mSet(q('box'), { o: mP(t, K.stT + .2, K.stT + .45) * (1 - mP(t, K.stT + 2.7, K.stT + 3)), s: mLerp(.8, 1, mP(t, K.stT + .2, K.stT + .5)) });
+      mOp(q('race'), 1 - .6 * mP(t, K.stT + .1, K.stT + .4));
+      const b = q('box')._p;
+      UV_ORDER.forEach((n, k) => {
+        const m = q('mt' + k), mp = m && m._p;
+        if (!b || !mp) return;
+        const a = K.stT + .6 + k * .22, p = mP(t, a, a + .55), ty = mp[1] + (k === 3 ? 22 : k === 4 ? -22 : 0);
+        mSet(q('fy' + k), { o: mIn(t, a, a + .6) ? 1 : 0, x: mLerp(b[0], mp[0], p) - 6, y: mLerp(b[1], ty, p) - 8 - Math.sin(p * Math.PI) * 30 });
+        mOp(m, t >= a + .55 ? 1 : 0);
+      });
+    } },
+
+  /* 7. 발표하기 */
+  { title:'발표하기', on:'talk', say:['c7a', ['c7b', .3], ['c7c', .3], ['c7d', .4]], tail:1.5,
+    k: T => {
+      const [s0, s1, s2, s3] = T.s, [e0, e1, e2] = T.e;
+      const tvA = s0 + Math.max(1.2, (e0 - s0) * .45);                   // [📺 TV 화면]
+      const gT = s1 + Math.max(.9, (e1 - s1) * .25);                     // [▶ 시작]
+      const fA = s2 + .1, fB = Math.max(fA + 2.6, e2 - .1);              // 빨리 감기: 시계가 3:06 까지
+      return { tvA, gT, fA, fB, eT: s3 + .9 };                          // [■ 마침]
+    },
+    pane:`<div class="uv-stg">
+        <div class="uv-pv"><div class="uv-sl" data-a="sl0" style="opacity:1">${uvSlide(0)}</div><div class="uv-sl" data-a="sl1">${uvSlide(1)}</div></div>
+        <div class="uv-tr">
+          <span class="uv-ord" data-a="ord">2학년 3반 · 1차 발표 · 1 / 27</span>
+          <div class="uv-who" data-a="who">도윤서</div>
+          <div class="uv-tpc" data-a="tpc">🏷 기후위기와 식량</div>
+          <div class="uv-clk" data-a="clk">0:00</div>
+          <div class="uv-bar"><div class="zn" style="left:${(120 / 225 * 100).toFixed(1)}%;width:${(60 / 225 * 100).toFixed(1)}%"></div><div class="fl" data-a="fl"></div></div>
+          <div class="uv-tst" data-a="tst"></div>
+          <div class="uv-brow"><span class="uv-big2 g1" data-a="go">▶ 시작</span><span class="uv-big2 g2 dis" data-a="st">■ 마침</span></div>
+          <div class="uv-navs"><span>◀ 이전</span><span>건너뛰기 ▶</span><span>📋 순서표</span><span>🎙 마이크</span><span data-a="tvb">📺 TV 화면</span><span>🪟 작은 창</span></div>
+          <div class="uv-leg" data-a="leg"><span data-a="lg0">최소 전</span><span class="l2" data-a="lg1">적정</span><span class="l3" data-a="lg2">곧 끝나요</span><span class="l4" data-a="lg3">초과</span></div>
+        </div>
+        <div class="uv-mic" data-a="mic" style="opacity:0">듣고 있어요!</div>
+        <div class="uv-ff" data-a="ff">⏩ 빨리 감기</div>
+      </div>`,
+    over:`<div class="uv-ab" data-a="lap" style="left:22px;top:280px;font:10px/1.4 var(--display);background:var(--ink);color:#fff;border-radius:99px;padding:1px 9px;opacity:0">💻 노트북 화면</div>
+      <div class="uv-tv" data-a="tv" style="left:300px;top:42px;width:324px"><div class="sc" style="height:196px"><span class="tg">교실 TV</span><div class="uv-sl" style="opacity:1;background:#fff">${uvSlide(0, 1)}</div></div><div class="st2"></div></div>`,
+    cur:T => { const K = T.k; return [[K.tvA - .9, [560, 300]], [K.tvA - .35, 'tvb'], [K.tvA + .1, 'tvb'], [K.tvA + .6, [560, 300]], [K.gT - .6, [560, 300]], [K.gT - .2, 'go'], [K.gT + .1, 'go'], [K.gT + .7, [590, 300]],
+      [K.eT - .7, [590, 300]], [K.eT - .2, 'st'], [K.eT + .1, 'st'], [K.eT + .8, [590, 300]]]; },
+    clk:T => [T.k.tvA, T.k.gT, T.k.eT],
+    run(t, q, qa, xy, T){
+      const K = T.k, [, s1, s2, s3] = T.s;
+      mOp(q('lap'), mP(t, .2, .6) * (1 - mP(t, s1 - .3, s1)));
+      mSet(q('tv'), { o: mP(t, K.tvA + .15, K.tvA + .45) * (1 - mP(t, s1 - .35, s1 - .05)), x: mLerp(24, 0, mP(t, K.tvA + .15, K.tvA + .55)) });
+      const on = mIn(t, K.gT + .2, K.eT + .1), next = t >= K.eT + 1.0;
+      mCls(q('go'), 'on', mIn(t, K.gT, K.gT + .25)); mCls(q('go'), 'dis', on || mIn(t, K.eT, K.eT + 1.0));
+      mCls(q('st'), 'dis', !on); mCls(q('st'), 'on', mIn(t, K.eT, K.eT + .25));
+      let sec = 0;
+      if (t >= K.gT && !next) sec = t < K.fA ? t - K.gT : t < K.fB ? mLerp(K.fA - K.gT, 186, mClamp((t - K.fA) / (K.fB - K.fA))) : 186 + Math.min(t, K.eT) - K.fB;
+      const cc = uvClkCls(sec, 120, 180);
+      mTxt(q('clk'), uvClock(sec)); q('clk').className = 'uv-clk' + cc;
+      q('fl').style.width = Math.min(100, sec / 225 * 100).toFixed(1) + '%';
+      mOp(q('ff'), mIn(t, K.fA, K.fB) ? 1 : 0);
+      mOp(q('leg'), mP(t, s2 - .1, s2 + .3) * (1 - mP(t, s3 + .2, s3 + .5)));
+      ['', ' ok', ' warn', ' over'].forEach((c, j) => mCls(q('lg' + j), 'on', sec > 0 && cc === c));
+      mCls(q('mic'), 'on', on); mOp(q('mic'), on ? 1 : 0);
+      mTxt(q('tst'), mIn(t, K.eT + .1, K.eT + 1.0) ? '저장 중…' : '');
+      mTxt(q('who'), next ? '강민재' : '도윤서');
+      mTxt(q('ord'), `2학년 3반 · 1차 발표 · ${next ? 2 : 1} / 27`);
+      mTxt(q('tpc'), next ? '🏷 플라스틱 없는 하루' : '🏷 기후위기와 식량');
+      mOp(q('sl0'), 1 - mP(t, K.eT + .9, K.eT + 1.2)); mOp(q('sl1'), mP(t, K.eT + .95, K.eT + 1.25));
+    } },
+
+  /* 8. 기록 보기 · 평가 */
+  { title:'기록 보기 · 평가', on:'talk', say:['c8a', ['c8b', .3], ['c8c', .3]], tail:1.4,
+    k: T => {
+      const [s0, s1, s2] = T.s, [e0, e1, e2] = T.e;
+      const pT = s0 + .5, scT = s1 + Math.max(.9, (e1 - s1) * .3);       // [3 기록 보기] · [📝 평가하기]
+      const v0 = scT + .9, mA = s2 + .3, mB = Math.max(mA + 2.4, e2 - .8);   // 첫 점수 · 관찰 기록 쓰기
+      return { pT, scT, v0, mA, mB, a: f => s0 + (e0 - s0) * f };
+    },
+    pane: uvRecPane(false),
+    over:`<div class="uv-dim" data-a="dim"></div>
+      <div class="uv-mod" data-a="sm" style="left:40px;top:40px;width:560px">
+        <div class="uv-mh"><span class="ic">📝</span>1차 발표 · 발표 평가<span class="x">✕</span></div>
+        <div class="uv-mb">
+          <div class="uv-row" style="margin:0 0 6px;align-items:center"><span class="uv-b xs">◀ 이전</span><span class="uv-in" style="min-height:0;font-size:8px;font-weight:700">1. 도윤서 ▾</span><span class="uv-b xs">다음 ▶</span><span class="uv-hint" style="margin:0">3:08 · 초과 · 기후위기와 식량</span></div>
+          <div class="uv-scg">
+            <div><div class="uv-fl" style="color:var(--ink);margin-top:0">🎙 발표 내용 (음성 인식) <span style="color:var(--muted);font-weight:600">${UV_SPEECH.length}자</span></div><div class="uv-sct">${UV_SPEECH}</div></div>
+            <div>${UV_RB.map(([n], i) => `<div class="uv-rbr"><span class="n">${n}</span>${[1, 2, 3, 4, 5].map(v => `<span class="v" data-a="v${i}_${v}">${v}</span>`).join('')}</div>`).join('')}
+              <div class="uv-rbt">합계 <b data-a="tot">0</b> / 20점</div>
+              <div class="uv-fl" style="margin-top:6px;color:var(--ink)">🗒 선생님 관찰 기록<span class="uv-rtag" data-a="rtag">과세특 프롬프트에 들어가요 · 작성 권장</span></div>
+              <div class="uv-memo" data-a="memo"><span data-a="memov"></span></div></div></div></div>
+        <div class="uv-mf"><span class="uv-b pri">닫기</span></div></div>`,
+    cur:T => { const K = T.k; return [[K.pT - .6, [420, 240]], [K.pT - .15, 'p_rec'], [K.pT + .1, 'p_rec'], [K.pT + .8, [420, 240]], [K.scT - .5, 'sc'], [K.scT + .1, 'sc'],
+      ...UV_RB.flatMap(([, v], i) => [[K.v0 + i * .5 - .3, `v${i}_${v}`], [K.v0 + i * .5 + .05, `v${i}_${v}`]]), [K.mA - .3, 'memo'], [K.mA + .1, 'memo'], [K.mA + .8, [580, 290]]]; },
+    clk:T => { const K = T.k; return [K.pT, K.scT, ...UV_RB.map((x, i) => K.v0 + i * .5), K.mA]; },
+    run(t, q, qa, xy, T){
+      const K = T.k;
+      mCls(q('p_talk'), 'on', t < K.pT); mCls(q('p_rec'), 'on', t >= K.pT); mCls(q('p_rec'), 'dn', mIn(t, K.pT, K.pT + .25));
+      mSet(q('rv'), { o: mP(t, K.pT + .05, K.pT + .35), y: mLerp(8, 0, mP(t, K.pT + .05, K.pT + .4)) });
+      qa('tr0').forEach(e => mCls(e, 'hl', mIn(t, K.a(.35), K.scT)));
+      qa('cT').concat(qa('cJ')).forEach(e => mCls(e, 'uv-col', mIn(t, K.a(.42), K.a(.72))));
+      qa('cX').forEach(e => mCls(e, 'uv-col', mIn(t, K.a(.7), K.scT - .2)));
+      mCls(q('sc'), 'on', mIn(t, K.scT, K.scT + .25));
+      const mo = mP(t, K.scT + .15, K.scT + .4);
+      mOp(q('dim'), mo); mSet(q('sm'), { o: mo, y: mLerp(10, 0, mo) });
+      let tot = 0;
+      UV_RB.forEach(([, v], i) => { const on = t >= K.v0 + i * .5; if (on) tot += v; [1, 2, 3, 4, 5].forEach(x => mCls(q(`v${i}_${x}`), 'on', on && x === v)); });
+      mTxt(q('tot'), String(tot));
+      mCls(q('memo'), 'on', mIn(t, K.mA - .1, K.mB + .5));
+      mTxt(q('memov'), uvType(UV_MEMO, mP(t, K.mA, K.mB)));
+      mCls(q('rtag'), 'hot', mIn(t, K.mB - .6, T.d));
+    } },
+
+  /* 9. 엑셀 저장 · 과세특 초안 */
+  { title:'엑셀 저장 · 과세특 초안', on:'rec', say:['c9a', ['c9b', .3], ['c9c', .3]], tail:1.5, pts:['m1@l', 'm2@l'],
+    k: T => {
+      const [s0, s1, s2] = T.s, [e0, e1, e2] = T.e;
+      const xT = s0 + Math.max(.9, (e0 - s0) * .28);                     // [📊 엑셀·한셀 파일로 저장]
+      const aT = s1 + Math.max(.9, (e1 - s1) * .25), cT = aT + 1.3, pA = cT + .5;   // [🤖 전체 과세특 프롬프트] · [📋 복사] · 챗봇에 붙여 넣기
+      return { xT, aT, cT, pA, nT: s2 + (e2 - s2) * .42, fT: s2 + (e2 - s2) * .66 };
+    },
+    pane: uvRecPane(true),
+    over:`<div class="uv-xl" data-a="sh" style="left:398px;top:112px;width:230px">
+        <div class="hd">발표기록_2학년 3반_1차 발표_${UV_YMD}.xlsx</div>
+        <div class="r4 h"><span>순서</span><span>이름</span><span>시간</span><span>판정</span><span>평가</span><span>발표 내용</span></div>
+        ${UV_RECS.map((r, k) => `<div class="r4"><span>${k + 1}</span><span>${r[0]}</span><span>${r[2]}</span><span>${UV_J[r[3]]}</span><span>${k ? '' : '15'}</span><span>${r[4]}</span></div>`).join('')}</div>
+      <div class="uv-dl" data-a="dl">${uvFi('xl')}<div>발표기록_2학년 3반_1차 발표_${UV_YMD}.xlsx<small>반 전체 기록표 · 엑셀·한셀에서 열려요</small></div></div>
+      <div class="uv-dim" data-a="dim"></div>
+      <div class="uv-mod" data-a="pm" style="left:30px;top:40px;width:340px">
+        <div class="uv-mh"><span class="ic">🤖</span>전체 학생 과세특 프롬프트 · 5명<span class="x">✕</span></div>
+        <div class="uv-mb">
+          <div class="uv-note-box">🔒 프롬프트를 AI에 붙여 넣으면 그 내용이 AI 회사 서버로 전송돼요. <b>이름 빼기</b>를 켜 두면 학생 이름 대신 '학생 03'처럼 순서 번호로 나가요.</div>
+          <div class="uv-opts2"><span>과목</span><span class="uv-in">국어</span><span>분량(자)</span><span class="uv-in">500</span><span class="uv-ck" data-a="anon"><i>✓</i>학생 이름 빼기 (권장)</span></div>
+          <div class="uv-pbox">너는 고등학교 국어 교사야. 아래 학생들의 발표 기록과 선생님의 관찰 기록을 근거로 과목 세부능력 및 특기사항 초안을 써 줘. 관찰 기록을 가장 중요한 근거로 삼아 줘.<br>[학생 01] 주제: 기후위기와 식량 · 발표 3:08 · 평가 15/20 …<span class="uv-b xs pri cp" data-a="cp">📋 복사</span></div></div></div>
+      <div class="uv-chat" data-a="chat" style="left:384px;top:40px;width:246px;height:248px">
+        <div class="hd">💬 AI 챗봇</div>
+        <div class="me" data-a="me">너는 고등학교 국어 교사야. 아래 학생들의 발표 기록과 선생님의 관찰 기록을 근거로 과목 세부능력 및 특기사항 초안을 써 줘. [학생 01] …</div>
+        <div class="ai"><span data-a="an"><b>학생 01</b> 「기후위기와 식량」을 주제로 이상 기온이 농산물 가격에 미치는 영향을 조사해 발표함. </span><span data-a="an">직접 그린 그래프로 <mark class="fx" data-a="m2">최근 10년 사이 배추값이 3배</mark> 오른 흐름을 제시하고, 친구의 질문에 자료를 근거로 차분히 답함.</span><br>
+          <span data-a="an"><b>학생 02</b> 일주일 동안 플라스틱 없이 생활한 경험을 바탕으로, 모둠 친구 <mark class="nm" data-a="m1">김가온</mark>과 함께 </span><span data-a="an">학급 실천 약속을 제안함. …</span></div></div>
+      <div class="uv-flag r" data-a="fl1">다른 친구 이름 — 지우기 ▸</div>
+      <div class="uv-flag y" data-a="fl2">사실인지 확인 ▸</div>`,
+    cur:T => { const K = T.k; return [[K.xT - .7, [520, 250]], [K.xT - .2, 'xl'], [K.xT + .1, 'xl'], [K.xT + .8, [560, 250]], [K.aT - .5, 'ai'], [K.aT + .1, 'ai'], [K.cT - .45, 'cp'], [K.cT + .1, 'cp'], [K.cT + .8, [330, 286]]]; },
+    clk:T => [T.k.xT, T.k.aT, T.k.cT], curOff:T => T.k.cT + 1.3,
+    run(t, q, qa, xy, T){
+      const K = T.k, [, s1, s2] = T.s;
+      mCls(q('xl'), 'on', mIn(t, K.xT, K.xT + .25));
+      mSet(q('dl'), { o: mP(t, K.xT + .25, K.xT + .5) * (1 - mP(t, s1 - .3, s1)), y: mLerp(10, 0, mP(t, K.xT + .25, K.xT + .55)) });
+      mSet(q('sh'), { o: mP(t, K.xT + .6, K.xT + .9) * (1 - mP(t, s1 - .3, s1)), y: mLerp(10, 0, mP(t, K.xT + .6, K.xT + 1)) });
+      mCls(q('ai'), 'on', mIn(t, K.aT, K.aT + .25));
+      const mo = mP(t, K.aT + .15, K.aT + .4) * (1 - mP(t, K.nT - .35, K.nT - .05));   // 확인할 곳을 짚을 때는 프롬프트 창을 닫는다
+      mOp(q('dim'), mP(t, K.aT + .15, K.aT + .4)); mSet(q('pm'), { o: mo, y: mLerp(10, 0, mo) });
+      mCls(q('cp'), 'on', mIn(t, K.cT, K.cT + .25)); mTxt(q('cp'), t >= K.cT + .05 && t < K.cT + 1.6 ? '✅ 복사됨' : '📋 복사');
+      mSet(q('chat'), { o: mP(t, K.pA, K.pA + .3), x: mLerp(20, 0, mP(t, K.pA, K.pA + .4)) });
+      mOp(q('me'), mP(t, K.pA + .25, K.pA + .5));
+      qa('an').forEach((e, k) => mOp(e, mP(t, K.pA + .8 + k * .5, K.pA + 1.1 + k * .5)));
+      mCls(q('anon'), 'hot', mIn(t, s2 - .1, K.nT - .2));
+      mCls(q('m1'), 'on', t >= K.nT); mCls(q('m2'), 'on', t >= K.fT);
+      // 확인할 곳 — 챗봇 창 왼쪽 바깥에 그 줄 높이로 붙인다(글자를 가리지 않게)
+      [['fl1', 'm1', K.nT], ['fl2', 'm2', K.fT]].forEach(([f, m, a]) => { const p = q(m)._p, el = q(f); if (p) mSet(el, { o: mP(t, a, a + .3), x: 378 - el.offsetWidth - mLerp(10, 0, mP(t, a, a + .35)), y: p[1] - el.offsetHeight / 2 }); });
+    } },
+
+  /* 10. 수업 설정 · 백업 */
+  { title:'수업 설정 · 백업', on:'rec', say:['c10a', ['c10b', .3], ['c10c', .3], ['c10d', .5]], tail:2.4,
+    k: T => {
+      const [s0, s1, s2, s3] = T.s, [e0, e1, e2] = T.e;
+      return { pT: s0 + .5, bT: s2 + Math.max(.9, (e2 - s2) * .45), nA: s3 - .15,
+        a: f => s0 + (e0 - s0) * f, b: f => s1 + (e1 - s1) * f };
+    },
+    pane: uvRecPane(true) + `<div data-a="cv" style="opacity:0">
+        <div class="uv-vt" style="left:12px;top:4px">수업 <em>설정</em><span class="opt">선택</span></div>
+        <span class="uv-b pri xs uv-ab" style="left:150px;top:7px">🎬 수업 설정 따라 하기</span>
+        <div class="uv-ab uv-hint" style="left:12px;top:23px;font-size:8px"><b>꼭 하지 않아도 발표 수업은 그대로 진행돼요.</b> 필요한 것만 골라서 정하세요. 모든 반에 함께 쓰여요.</div>
+        <div class="uv-card" data-a="k0" style="left:12px;top:38px;width:302px;height:102px">
+          <div class="uv-ch">📝 평가 기준표<span class="uv-tag opt">선택</span><span class="uv-tag">합계 20점</span><span class="uv-g"></span><span class="uv-b xs pri">＋ 항목 추가</span></div>
+          ${UV_RB.map(([n], i) => `<div class="uv-rbe"><span class="n">${i + 1}</span><span class="nm">${n}</span><span class="mx">5 점 만점</span></div>`).join('')}</div>
+        <div class="uv-card" data-a="k1" style="left:326px;top:38px;width:302px;height:102px">
+          <div class="uv-ch">🤖 과세특 프롬프트 설정<span class="uv-tag opt">선택</span></div>
+          <div class="uv-two"><div><div class="uv-fl" style="margin-top:0">과목</div><div class="uv-in">국어</div></div><div><div class="uv-fl" style="margin-top:0">학교급·학년</div><div class="uv-in">고등학교 2학년</div></div></div>
+          <div class="uv-two" style="margin-top:4px"><div><div class="uv-fl" style="margin-top:0">분량 (공백 포함 글자 수)</div><div class="uv-in">500</div></div><div style="align-self:end"><span class="uv-ck"><i>✓</i>학생 이름 빼기 (권장)</span></div></div></div>
+        <div class="uv-card" data-a="k2" style="left:12px;top:146px;width:302px;height:118px">
+          <div class="uv-ch">🔒 음성 인식 · 개인정보<span class="uv-tag opt">선택</span></div>
+          <div class="uv-rad" data-a="r0"><i class="on"></i><span><b>브라우저 음성 인식 (기본)</b><small>가장 정확하지만, 말소리가 브라우저 회사(구글·마이크로소프트) 서버를 거쳐요.</small></span></div>
+          <div class="uv-rad" data-a="r1"><i></i><span><b>기기 안에서만 인식</b><small>소리가 이 컴퓨터 밖으로 나가지 않아요. 최신 Chrome에서만 돼요.</small></span></div>
+          <div class="uv-rad" data-a="r2"><i></i><span><b>음성 인식 끄기</b><small>발표 시간만 기록해요. 마이크를 쓰지 않아요.</small></span></div></div>
+        <div class="uv-card" data-a="k3" style="left:326px;top:146px;width:302px;height:118px">
+          <div class="uv-ch">💾 백업 · 복원<span class="uv-tag opt">선택</span></div>
+          <div class="uv-hint">기록은 이 브라우저에만 있어요. 컴퓨터를 바꾸거나 브라우저 기록(쿠키·사이트 데이터)을 지우기 전에 백업 파일을 저장해 두세요.</div>
+          <div class="uv-row"><span class="uv-b pri" data-a="bk">⬇ 백업 파일 저장</span><span class="uv-b">⬆ 백업 불러오기</span></div></div>
+      </div>`,
+    over:`<div class="uv-dl" data-a="dl">${uvFi('js')}<div>발표레이스_백업_${UV_YMD}.json<small>명단 · 기록 · 설정을 한 파일로</small></div></div>
+      <div class="uv-dim" data-a="dim"></div>
+      <div class="uv-end" data-a="end">${UV_LOGO}<h4>발표 <em>레이스</em></h4>
+        <div class="uv-flow">${UV_STEPS.slice(0, 4).map(([v, h, k]) => `<span class="uv-st${k} on" data-v="${v}">${h}</span>`).join('<i>›</i>')}</div>
+        <div class="uv-row" style="margin-top:12px"><span class="uv-b pri">🎬 초기 설정 따라 하기</span><span class="uv-b">🎬 수업 설정 따라 하기</span></div>
+        <p>이제 우리 반부터 만들어 보세요!</p></div>`,
+    cur:T => { const K = T.k; return [[K.pT - .6, [330, 230]], [K.pT - .15, 'p_conf'], [K.pT + .1, 'p_conf'], [T.s[1] + .2, 'r0@l'], [K.b(.52), 'r1@l'], [K.b(.52) + .7, 'r1@l'], [K.b(.76), 'r2@l'], [K.b(.76) + .6, 'r2@l'],
+      [K.bT - .5, 'bk'], [K.bT + .1, 'bk'], [K.bT + .8, [520, 286]]]; },
+    clk:T => [T.k.pT, T.k.bT], curOff:T => T.k.nA - .2,
+    run(t, q, qa, xy, T){
+      const K = T.k, [, s1, s2] = T.s, e1 = T.e[1];
+      mCls(q('p_rec'), 'on', t < K.pT); mCls(q('p_conf'), 'on', t >= K.pT); mCls(q('p_conf'), 'dn', mIn(t, K.pT, K.pT + .25));
+      mOp(q('rv'), 1 - mP(t, K.pT, K.pT + .3)); mOp(q('cv'), mP(t, K.pT + .05, K.pT + .35));
+      mCls(q('k0'), 'hot', mIn(t, K.a(.42), K.a(.42) + 1)); mCls(q('k2'), 'hot', mIn(t, K.a(.6), K.a(.6) + 1) || mIn(t, s1 - .1, e1 + .2)); mCls(q('k1'), 'hot', mIn(t, K.a(.78), K.a(.78) + 1));
+      mCls(q('r0'), 'hot', mIn(t, s1, K.b(.5))); mCls(q('r1'), 'hot', mIn(t, K.b(.5), K.b(.75))); mCls(q('r2'), 'hot', mIn(t, K.b(.75), e1 + .2));
+      mCls(q('k3'), 'hot', mIn(t, s2 - .1, K.bT + 1.2)); mCls(q('bk'), 'on', mIn(t, K.bT, K.bT + .25));
+      mSet(q('dl'), { o: mP(t, K.bT + .2, K.bT + .45) * (1 - mP(t, K.nA, K.nA + .3)), y: mLerp(10, 0, mP(t, K.bT + .2, K.bT + .5)) });
+      mOp(q('dim'), mP(t, K.nA, K.nA + .4));
+      mSet(q('end'), { o: mP(t, K.nA + .1, K.nA + .5), s: mLerp(.94, 1, mP(t, K.nA + .1, K.nA + .6)) });
+    } },
+];
+
+/* ── 시각 — 내레이션 길이에서 장 길이와 줄마다 시작·끝 시각을 낸다. 목소리를 아직 만들지 않은 줄은 글자 수로 어림한다 ── */
+const UV_LEAD = .6, UV_GAP = .5, UV_TAIL = 1.3;
+const uvLen = id => {
+  const v = UV_VO[id];
+  if (v) return v[1];
+  const s = (UV_SAY[id] || ['', ''])[1];
+  return (s.match(/[가-힣]/g) || []).length / 6.4 + (s.match(/[,.]/g) || []).length * .25 + .3;
+};
+UV_CH.forEach(c => {
+  const s = [], e = [], ids = [];
+  let t = c.lead != null ? c.lead : UV_LEAD;
+  c.say.forEach((x, k) => {
+    const [id, pad = 0] = Array.isArray(x) ? x : [x];
+    t += (k ? UV_GAP : 0) + pad;
+    s.push(t); ids.push(id); t += uvLen(id); e.push(t);
+  });
+  c.T = { s, e, ids };
+  c.d = c.T.d = +(t + (c.tail != null ? c.tail : UV_TAIL)).toFixed(2);
+  c.T.k = c.k ? c.k(c.T) : {};                                                         // 누르는 시각들 — cur·clk·run 이 함께 쓴다
+  c.clkT = typeof c.clk === 'function' ? c.clk(c.T) : (c.clk || []);
+});
+
+const uv = { t:0, rate:1, playing:false, ci:-1, raf:0, last:0, pts:null, q:null, qa:null, held:0 };
+const uvStarts = [];
+const uvTotal = UV_CH.reduce((s, c) => (uvStarts.push(s), s + c.d), 0);
+const uvFmt = s => { s = Math.max(0, Math.floor(s)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+const uvAt = t => { let i = 0; while (i < UV_CH.length - 1 && t >= uvStarts[i + 1]) i++; return i; };
+function uvBuild(i){
+  const cv = $('#uvCv');
+  cv.innerHTML = uvFrame(UV_CH[i]);
+  uv.ci = i; uv.pts = null;
+  uv.q = n => cv.querySelector(`[data-a="${n}"]`);
+  uv.qa = n => [...cv.querySelectorAll(`[data-a="${n}"]`)];
+}
+// 커서 목적지 → 장면 좌표. 장을 그린 직후(움직이기 전) 요소의 제자리에서 잰다.
+// '이름@l'·'이름@r' = 그 요소의 왼쪽·오른쪽 끝, '이름~dx,dy' = 잰 자리에서 그만큼 옮긴 곳(화면을 굴린 뒤의 자리 등)
+function uvPt(v){
+  if (Array.isArray(v)) return v;
+  const [nm, off] = v.split('~');
+  const [n, side] = nm.split('@');
+  const el = uv.q(n), cv = $('#uvCv');
+  if (!el) return [320, 180];
+  const b = cv.getBoundingClientRect(), k = b.width / UV_W || 1;
+  const rs = el.getClientRects();
+  const r = side === 'l' ? rs[0] : side === 'r' ? rs[rs.length - 1] : el.getBoundingClientRect();
+  if (!r) return [320, 180];
+  const x = side === 'l' ? r.left + 3 : side === 'r' ? r.right - 3 : r.left + r.width / 2;
+  const [dx = 0, dy = 0] = off ? off.split(',').map(Number) : [];
+  return [(x - b.left) / k + dx, (r.top + r.height / 2 - b.top) / k + dy];
+}
+
+/* ── 화면 안 자막 ── 무대 위에 얹고, 끌거나 [위]·[아래]로 옮기고 [끔]으로 숨긴다. 자리는 이 브라우저에 기억한다 */
+const UVCAP_KEY = 'speech_uvcap_v1';
+const uvCap = (() => {
+  try { const o = JSON.parse(localStorage.getItem(UVCAP_KEY)); if (o && typeof o.y === 'number') return { y: mClamp(o.y), off: !!o.off }; } catch(_){}
+  return { y: 1, off: false };
+})();
+const uvCapSave = () => { try { localStorage.setItem(UVCAP_KEY, JSON.stringify(uvCap)); } catch(_){} };
+function uvCapRoom(){
+  const stage = $('#uvStage'), sub = $('#uvSub'), m = Math.max(6, stage.clientHeight * .035);
+  return [m, stage.clientHeight - sub.offsetHeight - m * 2];
+}
+function uvCapPos(){
+  const stage = $('#uvStage'), sub = $('#uvSub');
+  if (!stage || !sub) return;
+  sub.hidden = uvCap.off;
+  stage.classList.toggle('cap-top', !uvCap.off && uvCap.y < .5);
+  if (!uvCap.off){ const [m, room] = uvCapRoom(); sub.style.top = m + Math.max(0, room) * uvCap.y + 'px'; }
+  document.querySelectorAll('#uvOpts [data-cap]').forEach(b => {
+    const k = b.dataset.cap;
+    b.setAttribute('aria-pressed', String(k === 'off' ? uvCap.off : !uvCap.off && (k === 'top' ? uvCap.y < .15 : uvCap.y > .85)));
+  });
+}
+// 지금 시각의 자막 — 줄이 시작하기 조금 앞서 바꾼다
+function uvCapAt(c, lt){
+  let k = 0;
+  for (let j = 0; j < c.T.s.length; j++) if (lt >= c.T.s[j] - .15) k = j;
+  return (UV_SAY[c.T.ids[k]] || [''])[0];
+}
+
+/* ── 내레이션 ── guide/narration.m4a 한 파일 안에 줄이 차례로 들어 있다(UV_VO = [자리, 길이]).
+   영상 시각에 맞춰 그 줄의 자리로 옮겨 재생하고, 줄 사이에서는 멈춘다. 속도를 바꾸면 소리도 같은 빠르기(높이는 그대로).
+   파일을 못 받으면 자막만으로 이어 간다. 켜고 끄기는 [AI 목소리] 버튼 — 이 브라우저에 기억한다. */
+const UVVO_KEY = 'speech_uvvoice_v1';
+const uvVo = {
+  has: Object.keys(UV_VO).length > 0,
+  on: (() => { try { return localStorage.getItem(UVVO_KEY) !== 'off'; } catch(_){ return true; } })(),
+  blocked: false,
+};
+const uvAudio = () => document.getElementById('uvVoice');
+function uvLineAt(t){
+  const i = uvAt(t), c = UV_CH[i], lt = t - uvStarts[i];
+  for (let k = 0; k < c.T.s.length; k++) if (lt >= c.T.s[k] && lt < c.T.e[k] + .2) return [c.T.ids[k], lt - c.T.s[k]];
+  return null;
+}
+// 소리를 영상에 맞춘다. 소리가 아직 준비되지 않았으면 true — 영상이 잠깐(최대 2초) 기다린다
+function uvVoiceTick(){
+  const a = uvAudio();
+  if (!a || !uvVo.has) return false;
+  const ln = uv.playing && uvVo.on && !uvVo.blocked ? uvLineAt(uv.t) : null;
+  const vo = ln && UV_VO[ln[0]];
+  if (!vo || a.error){ if (!a.paused) a.pause(); return false; }
+  if (a.readyState < 1){ if (a.preload !== 'auto'){ a.preload = 'auto'; a.load(); } return true; }
+  const want = vo[0] + ln[1];
+  if (a.playbackRate !== uv.rate) a.playbackRate = uv.rate;
+  // 줄을 새로 시작할 때(멈춰 있을 때)는 바짝 맞추고, 읽는 중에는 0.3초 넘게 어긋날 때만 다시 맞춘다(끊김 줄이기)
+  if (!a.seeking && Math.abs(a.currentTime - want) > (a.paused ? .05 : .3)) a.currentTime = want;
+  if (a.paused){
+    const p = a.play();
+    if (p && p.catch) p.catch(err => { if (err && err.name === 'NotAllowedError') uvVo.blocked = true; });
+  }
+  return a.seeking || a.readyState < 3;
+}
+function uvVoiceStop(){ const a = uvAudio(); if (a && !a.paused) a.pause(); }
+
+function uvRender(){
+  const t = uv.t, i = uvAt(t), c = UV_CH[i], lt = t - uvStarts[i];
+  if (i !== uv.ci) uvBuild(i);
+  const cv = $('#uvCv'), cur = cv.querySelector('.uv-cur');
+  if (!uv.pts && cv.getBoundingClientRect().width){
+    cv.querySelectorAll('[data-a]').forEach(e => { e.style.transform = ''; });
+    const ks = typeof c.cur === 'function' ? c.cur(c.T) : (c.cur || []);
+    uv.pts = ks.map(([a, v]) => [a, uvPt(v)]).sort((x, y) => x[0] - y[0]);
+    (c.pts || []).forEach(n => { const el = uv.q(n.split(/[@~]/)[0]); if (el) el._p = uvPt(n); });      // 무언가 날아가거나 따라붙을 자리
+  }
+  const xy = uv.pts && uv.pts.length ? mKf(lt, uv.pts) : [320, 180];
+  c.run && c.run(lt, uv.q, uv.qa, xy, c.T);
+  if (uv.pts && uv.pts.length){
+    const off = c.curOff ? c.curOff(c.T) : c.d - .3;                                   // 끝 장면에서는 손가락을 감춘다
+    cur.style.opacity = mP(lt, uv.pts[0][0], uv.pts[0][0] + .3) * (1 - mP(lt, off, off + .3));
+    cur.style.transform = `translate(${xy[0]}px,${xy[1]}px)`;
+    const ck = c.clkT.find(a => mIn(lt, a, a + .45));
+    const ring = cur.querySelector('.ring');
+    ring.style.opacity = ck != null ? 1 - (lt - ck) / .45 : 0;
+    ring.style.transform = `scale(${ck != null ? .5 + (lt - ck) / .45 * 1.3 : .5})`;
+  } else cur.style.opacity = 0;
+  const capEl = $('#uvCap'), h = `<span class="ch">${i + 1}/${UV_CH.length}</span>${uvCapAt(c, lt)}`;
+  if (capEl._h !== h){ capEl.innerHTML = h; capEl._h = h; uvCapPos(); }
+  $('#uvSeek').value = t;
+  mTxt($('#uvTime'), `${uvFmt(t)} / ${uvFmt(uvTotal)}`);
+  $('#uvSegs').querySelectorAll('i').forEach((s, j) => {
+    s.firstChild.style.width = (j < i ? 100 : j > i ? 0 : lt / c.d * 100) + '%';
+    s.classList.toggle('on', j === i);
+  });
+  $('#uvList').querySelectorAll('button').forEach((b, j) => b.classList.toggle('on', j === i));
+}
+function uvSync(){
+  const end = uv.t >= uvTotal - .05;
+  $('#uvPlay').textContent = uv.playing ? '❚❚' : end ? '↻' : '▶';
+  $('#uvPlay').setAttribute('aria-label', uv.playing ? '멈춤' : end ? '처음부터' : '재생');
+  $('#uvBig').textContent = end ? '↻' : '▶';
+  $('#uvBig').classList.toggle('on', !uv.playing && (end || uv.t < .05));
+}
+function uvLoop(now){
+  if (!uv.playing) return;
+  const dt = Math.min(.25, (now - uv.last) / 1000);
+  uv.last = now;
+  const hold = uvVoiceTick();
+  if (hold && uv.held < 2) uv.held += dt;
+  else { if (!hold) uv.held = 0; uv.t = Math.min(uvTotal, uv.t + dt * uv.rate); }
+  uvRender();
+  if (uv.t >= uvTotal){ uvPause(); return; }
+  uv.raf = requestAnimationFrame(uvLoop);
+}
+function uvPlay(){
+  if (uv.playing) return;
+  if (uv.t >= uvTotal - .05) uv.t = 0;
+  uv.playing = true; uv.last = performance.now(); uv.held = 0; uvVo.blocked = false;
+  BGM.play();
+  uvSync();
+  uvVoiceTick();
+  uv.raf = requestAnimationFrame(uvLoop);
+}
+function uvPause(){ uv.playing = false; cancelAnimationFrame(uv.raf); BGM.stop(); uvVoiceStop(); uvSync(); }
+function uvSeekTo(t){ uv.t = Math.max(0, Math.min(uvTotal, t)); uvRender(); uvSync(); if (uv.playing) uvVoiceTick(); }
+
+// 앱 본체의 toast·openSetupGuide 는 다른 스크립트 안에 있어 여기서 부를 수 없다 — 같은 동작을 여기에 둔다
+let uvToastT = 0;
+function uvToast(msg){
+  const t = document.getElementById('toast');
+  if (!t) return;
+  const d = [...document.querySelectorAll('dialog[open]')].pop();
+  if (d && t.parentNode !== d){ d.append(t); d.addEventListener('close', () => document.body.append(t), { once: true }); }
+  else if (!d && t.parentNode !== document.body) document.body.append(t);
+  t.textContent = msg; t.classList.add('on'); clearTimeout(uvToastT); uvToastT = setTimeout(() => t.classList.remove('on'), 2400);
+}
+function uvGuide(g){
+  const d = document.createElement('dialog'); d.className = 'sg-modal';
+  d.innerHTML = `<iframe src="guide/index.html?g=${g === 'conf' ? 'conf' : 'setup'}" title="${g === 'conf' ? '수업 설정' : '초기 설정'} 따라 하기" allow="fullscreen"></iframe>`;
+  const onMsg = e => { if (e.source === d.querySelector('iframe').contentWindow && e.data === 'sg-close') d.close(); };
+  window.addEventListener('message', onMsg);
+  d.addEventListener('close', () => { window.removeEventListener('message', onMsg); d.remove(); });
+  document.body.append(d); d.showModal();
+  d.querySelector('iframe').focus();
+}
+
+(function uvInit(){
+  const stage = $('#uvStage'), modal = $('#uvModal');
+  if (!stage || !modal) return;
+  $('#uvSegs').innerHTML = UV_CH.map(c => `<i style="flex:${c.d}" title="${esc(c.title)}"><b></b></i>`).join('');
+  $('#uvSeek').max = uvTotal;
+  $('#uvList').innerHTML = UV_CH.map((c, i) => `<li><button type="button" data-ch="${i}"><span class="k">${i + 1}</span>${esc(c.title)}<span class="d">${uvFmt(uvStarts[i])}</span></button></li>`).join('');
+  $('#uvSpeed').insertAdjacentHTML('beforeend', [.5, .75, 1, 1.25, 1.5, 1.75, 2].map(r => `<button type="button" data-rate="${r}" aria-pressed="${r === 1}">${r}×</button>`).join(''));
+  const sndSync = () => {
+    const b = $('#uvSnd');
+    b.textContent = BGM.muted ? '♪ 음악 꺼짐' : '♪ 음악 켜짐';
+    b.setAttribute('aria-pressed', !BGM.muted);
+    b.title = BGM.muted ? '배경 음악 켜기' : '배경 음악 끄기';
+  };
+  const voSync = () => {
+    const b = $('#uvVo');
+    b.hidden = !uvVo.has;
+    b.textContent = uvVo.on ? '🔊 AI 목소리 켜짐' : '🔈 AI 목소리 꺼짐';
+    b.setAttribute('aria-pressed', uvVo.on);
+    b.title = uvVo.on ? '내레이션 끄기(자막만 봅니다)' : '내레이션 켜기 — AI로 만든 목소리입니다';
+    BGM.level(uvVo.has && uvVo.on ? .22 : .5);
+  };
+  sndSync(); voSync();
+  // 소리 파일을 못 받으면(없음·끊김) [AI 목소리] 버튼을 숨기고 자막만으로 이어 간다 — 생기부돋보기와 같게
+  const au = uvAudio();
+  if (au) au.addEventListener('error', () => { if (!uvVo.has) return; uvVo.has = false; voSync(); });
+  $('#uvSnd').addEventListener('click', e => {
+    e.stopPropagation();
+    BGM.setMuted(!BGM.muted);
+    if (!BGM.muted && uv.playing) BGM.play();
+    sndSync();
+  });
+  $('#uvVo').addEventListener('click', e => {
+    e.stopPropagation();
+    uvVo.on = !uvVo.on; uvVo.blocked = false;
+    try { localStorage.setItem(UVVO_KEY, uvVo.on ? 'on' : 'off'); } catch(_){}
+    voSync(); uvVoiceTick();
+  });
+  const toggle = () => uv.playing ? uvPause() : uvPlay();
+  $('#uvPlay').addEventListener('click', toggle);
+  $('#uvBig').addEventListener('click', e => { e.stopPropagation(); uvPlay(); });
+  stage.addEventListener('click', toggle);
+  const capMove = d => { uvCap.y = mClamp(uvCap.y + d); uvCap.off = false; uvCapSave(); uvCapPos(); };
+  stage.addEventListener('keydown', e => {
+    if (e.key === ' '){ e.preventDefault(); toggle(); }
+    else if (e.key === 'ArrowRight'){ e.preventDefault(); uvSeekTo(uv.t + 5); }
+    else if (e.key === 'ArrowLeft'){ e.preventDefault(); uvSeekTo(uv.t - 5); }
+    else if (e.key === 'ArrowUp'){ e.preventDefault(); capMove(-.1); }
+    else if (e.key === 'ArrowDown'){ e.preventDefault(); capMove(.1); }
+  });
+  // 자막 끌기 — 4px 넘게 움직여야 끌기로 본다(그보다 적으면 그냥 누른 것 = 재생·멈춤)
+  const capIn = $('#uvCap');
+  let drag = null, dragged = false;
+  capIn.addEventListener('pointerdown', e => {
+    if (e.button) return;
+    drag = { y0: e.clientY, top0: $('#uvSub').offsetTop, moved: false };
+    try { capIn.setPointerCapture(e.pointerId); } catch(_){}
+  });
+  capIn.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const dy = e.clientY - drag.y0;
+    if (!drag.moved && Math.abs(dy) < 4) return;
+    drag.moved = true; stage.classList.add('drag');
+    const [m, room] = uvCapRoom();
+    uvCap.y = room > 0 ? mClamp((drag.top0 + dy - m) / room) : 1;
+    uvCap.off = false;
+    uvCapPos();
+  });
+  const dragEnd = () => {
+    if (!drag) return;
+    dragged = drag.moved;
+    if (drag.moved) uvCapSave();
+    drag = null; stage.classList.remove('drag');
+  };
+  capIn.addEventListener('pointerup', dragEnd);
+  capIn.addEventListener('pointercancel', dragEnd);
+  capIn.addEventListener('click', e => { e.stopPropagation(); if (!dragged) toggle(); dragged = false; });
+  $('#uvOpts').addEventListener('click', e => {
+    const b = e.target.closest('[data-cap]');
+    if (!b) return;
+    const k = b.dataset.cap;
+    if (k === 'off') uvCap.off = !uvCap.off;
+    else { uvCap.off = false; uvCap.y = k === 'top' ? 0 : 1; }
+    uvCapSave(); uvCapPos();
+  });
+  // 슬라이드 바 — 끌거나 올려 두면 그 자리의 장 이름과 시각을 띄운다
+  const seek = $('#uvSeek'), seekBox = seek.parentNode, tip = $('#uvTip');
+  let tipT = 0;
+  const tipAt = f => {
+    const w = seekBox.clientWidth;
+    if (!w) return;
+    f = mClamp(f);
+    const t = f * uvTotal, i = uvAt(t);
+    tip.textContent = `${i + 1}. ${UV_CH[i].title} · ${uvFmt(t)}`;
+    const half = tip.offsetWidth / 2;
+    tip.style.left = Math.min(w - half, Math.max(half, f * w)) + 'px';
+    tip.classList.add('on');
+    clearTimeout(tipT);
+  };
+  const tipOff = (ms = 0) => { clearTimeout(tipT); tipT = setTimeout(() => tip.classList.remove('on'), ms); };
+  seekBox.addEventListener('pointermove', e => { if (e.pointerType === 'mouse'){ const r = seekBox.getBoundingClientRect(); tipAt((e.clientX - r.left) / r.width); } });
+  seekBox.addEventListener('pointerleave', () => tipOff());
+  seek.addEventListener('input', e => { uvSeekTo(+e.target.value); tipAt(uv.t / uvTotal); });
+  seek.addEventListener('change', () => tipOff(900));
+  // 항목을 누르면 그 장 처음부터 곧바로 재생
+  $('#uvList').addEventListener('click', e => {
+    const b = e.target.closest('[data-ch]');
+    if (!b) return;
+    uvSeekTo(uvStarts[+b.dataset.ch] + .001);
+    uvPlay();
+  });
+  $('#uvSpeed').addEventListener('click', e => {
+    const b = e.target.closest('[data-rate]');
+    if (!b) return;
+    uv.rate = +b.dataset.rate;                 // 내레이션도 같은 빠르기로(음악 빠르기는 그대로)
+    $('#uvSpeed').querySelectorAll('[data-rate]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  });
+  const cv = $('#uvCv');
+  const fit = () => {
+    const w = stage.clientWidth;
+    if (!w) return;
+    cv.style.transform = `scale(${w / UV_W})`;
+    stage.style.setProperty('--uv-fs', Math.max(11, Math.min(16, w / 46)).toFixed(1) + 'px');
+    uv.pts = null; uvRender(); uvCapPos();
+  };
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(stage); else addEventListener('resize', fit);
+  // [▶ 사용법] — 열면 이어서 재생, 닫으면(✕ · Esc) 멈춤. 발표 중에는 열지 않는다(내레이션을 마이크가 받아 적으므로)
+  $('#uvOpen').addEventListener('click', () => {
+    const end = document.getElementById('endBtn');
+    if (end && !end.disabled){ uvToast('발표 중이에요. [■ 마침]을 누른 뒤 열어 주세요.'); return; }
+    if (modal.open) return;
+    modal.showModal();
+    const a = uvAudio();
+    if (a && uvVo.has && uvVo.on && a.preload !== 'auto'){ a.preload = 'auto'; a.load(); }
+    fit();
+    try { stage.focus({ preventScroll: true }); } catch(_){ stage.focus(); }
+    uvPlay();
+  });
+  $('#uvX').addEventListener('click', () => { uvPause(); modal.close(); });
+  modal.addEventListener('close', uvPause);                    // Esc 로 닫아도 멈춤
+  // [🎬 따라 하기] — 사용법 창을 닫고 단계별 안내를 띄운다
+  modal.addEventListener('click', e => {
+    const b = e.target.closest('[data-uvg]');
+    if (!b) return;
+    uvPause(); modal.close();
+    uvGuide(b.dataset.uvg);
+  });
+  uvRender(); uvSync(); uvCapPos();
+})();
+
 })();
 </script>
 </body>
