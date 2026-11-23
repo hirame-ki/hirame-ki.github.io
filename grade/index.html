@@ -482,6 +482,49 @@ body.batch-print #batch-print-area{display:block}
 
 <div class="main">
 <!-- ════ LEFT PANEL ════ -->
+
+<style id="hk-talk-css">
+/* hirame.ki 코딩 오픈톡방 링크 (2026-11-23) */
+.hk-talk{text-decoration:none!important;-webkit-tap-highlight-color:transparent;cursor:pointer}
+.hk-talk .hk-talk-ico{display:block;flex:0 0 auto}
+.hk-talk .hk-talk-txt{white-space:nowrap}
+.hk-float{position:fixed;z-index:60;display:flex;align-items:center;gap:8px;box-sizing:border-box;height:var(--hk-size,44px);max-width:var(--hk-size,44px);padding:0 8px;border-radius:999px;background:#fff;color:#3C1E1E!important;border:1px solid rgba(0,0,0,.08);box-shadow:0 4px 14px rgba(15,23,42,.14);overflow:hidden;font:700 13px/1 Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;letter-spacing:-.2px;opacity:0;visibility:hidden;transition:max-width .28s cubic-bezier(.2,.8,.2,1),box-shadow .2s,opacity .2s}
+.hk-float.hk-on{opacity:1;visibility:visible}
+.hk-float.hk-r{flex-direction:row-reverse}
+.hk-float .hk-talk-txt{opacity:0;transition:opacity .15s}
+.hk-float:hover,.hk-float:focus-visible{max-width:320px;box-shadow:0 6px 18px rgba(15,23,42,.2)}
+.hk-float:hover .hk-talk-txt,.hk-float:focus-visible .hk-talk-txt{opacity:1}
+.hk-float:focus-visible{outline:2px solid #3C1E1E;outline-offset:2px}
+.hk-talk-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:16px 0 6px}
+.hk-talk-wrap.hk-inl{display:inline-flex;margin:0 0 0 10px;vertical-align:middle}
+.hk-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 8px;border-radius:999px;background:#FFF8C2;border:1px solid #E8CC00;color:#3C1E1E!important;font:700 13px/1.2 Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;letter-spacing:-.2px;transition:background .15s,transform .15s}
+.hk-pill:hover{background:#FEE500;transform:translateY(-1px)}
+.hk-pill .hk-talk-ico{width:26px;height:24px}
+.hk-talk-cap{margin:0;max-width:30em;font:500 12px/1.45 Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;opacity:.72}
+.hk-text{display:inline-flex;align-items:center;gap:4px;vertical-align:middle;color:inherit!important;font-weight:600}
+.hk-text .hk-talk-ico{width:20px;height:18px}
+.hk-text:hover .hk-talk-txt{text-decoration:underline}
+@media print{.hk-talk,.hk-talk-wrap{display:none!important}}
+</style>
+<!-- hirame.ki 코딩 오픈톡방 (설정·안내 창 안) -->
+<script>
+(function(){
+  var targets=[{"sel": "#lp .lp-inner", "mode": "append"}, {"sel": "#lp", "mode": "append"}];
+  var html="<a class=\"hk-talk hk-pill\" href=\"https://open.kakao.com/o/pfvtbDKi\" target=\"_blank\" rel=\"noopener\" title=\"hirame.ki의 코딩 오픈톡방 (카카오톡 오픈채팅)\" aria-label=\"hirame.ki의 코딩 오픈톡방 — 카카오톡 오픈채팅 열기 (새 창)\"><svg class=\"hk-talk-ico\" viewBox=\"0 0 44 40\" width=\"26\" height=\"24\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M22 3C11.5 3 3 9.6 3 17.8c0 5.3 3.6 10 9 12.6l-1.7 6.3c-.2.7.6 1.2 1.2.8l7.6-5.1c1.3.2 2.6.3 3.9.3 10.5 0 19-6.6 19-14.8S32.5 3 22 3z\" fill=\"#FEE500\" stroke=\"#D4BC00\" stroke-width=\"1.2\"/><text x=\"22\" y=\"22.4\" text-anchor=\"middle\" font-family=\"Pretendard,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif\" font-size=\"12.5\" font-weight=\"800\" fill=\"#3C1E1E\" letter-spacing=\"-.4\">카톡</text></svg><span class=\"hk-talk-txt\">hirame.ki의 코딩 오픈톡방</span></a><p class=\"hk-talk-cap\">초·중·고 선생님들과 AI 웹앱을 나누고, 만들다 막히면 같이 묻는 카카오톡 오픈채팅이에요.</p>";
+  function put(){
+    for(var i=0;i<targets.length;i++){
+      var t=document.querySelector(targets[i].sel); if(!t) continue;
+      if(t.querySelector('.hk-talk-wrap')) return;
+      var w=document.createElement('div'); w.className='hk-talk-wrap'; w.innerHTML=html;
+      if(targets[i].mode==='prepend') t.insertBefore(w,t.firstChild); else t.appendChild(w);
+      return;
+    }
+  }
+  var pend=false; function soon(){ if(pend) return; pend=true; requestAnimationFrame(function(){ pend=false; put(); }); }
+  function start(){ put(); new MutationObserver(soon).observe(document.body,{childList:true,subtree:true}); }
+  if(document.readyState!=='loading') start(); else document.addEventListener('DOMContentLoaded',start);
+})();
+</script>
 <div class="lp" id="lp">
 
 <!-- S0: 파일 업로드 -->
