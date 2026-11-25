@@ -16,8 +16,8 @@
 <meta property="og:url" content="https://hirame-ki.github.io/parking/">
 <meta property="og:title" content="오늘 내 자리는 어디에 주차될까? — 자리 주차 대작전">
 <meta property="og:description" content="학생마다 자동차 한 대! 3D 주차장에 차가 한 대씩 들어와 우리 반 자리에 주차해요. 남녀 짝·앞자리 조건, 학생용·교사용 자리표 인쇄까지 무료.">
-<meta property="og:image" content="https://hirame-ki.github.io/parking/og.png?v=20261119">
-<meta property="og:image:secure_url" content="https://hirame-ki.github.io/parking/og.png?v=20261119">
+<meta property="og:image" content="https://hirame-ki.github.io/parking/og.png?v=20261125">
+<meta property="og:image:secure_url" content="https://hirame-ki.github.io/parking/og.png?v=20261125">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -25,7 +25,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="오늘 내 자리는 어디에 주차될까? — 자리 주차 대작전">
 <meta name="twitter:description" content="학생마다 자동차 한 대! 3D 주차장에 차가 한 대씩 들어와 우리 반 자리에 주차해요. 남녀 짝·앞자리 조건, 학생용·교사용 자리표 인쇄까지 무료.">
-<meta name="twitter:image" content="https://hirame-ki.github.io/parking/og.png?v=20261119">
+<meta name="twitter:image" content="https://hirame-ki.github.io/parking/og.png?v=20261125">
 <meta name="twitter:image:alt" content="3D 주차장에 이름표 단 자동차들이 주차칸에 서 있고 한 대가 자리를 찾아 들어오는 화면과 인쇄용 자리 배치표">
 <meta name="twitter:creator" content="@hirame.ki">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23163300'/%3E%3Cpath d='M15.5 29.5v-19h6.2a5.6 5.6 0 0 1 0 11.2h-6.2' fill='none' stroke='%239FE870' stroke-width='4.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -1087,12 +1087,13 @@ function renderAll(){renderRoster();renderLayout();renderFront();renderBenefit()
 const INK='#2B2F3D',GLASS='#BFE7FF';
 const CANDY=['#FF8FC1','#FFC53D','#6CB8F5','#43CDB5','#B39BF7','#FF9F6B','#8FDD62','#FFB3D9','#5FCBDB','#FF8C82','#BDE85F','#FFE15A'];
 const PAINT=['#D7101F','#F4F4F0','#141519','#B8BEC8','#1F5BD6','#FFC20E','#13A85B','#FF6A00','#33C3D6','#7B2FD0','#00A6A0','#FF3D8B','#9AE01A','#C9A227'];
-const FIXEDCOL={taxi:'#E8731A',police:'#F2F3F5',bus:'#F3BD00',fire:'#B8121E'};
-const VT={sedan:'세단',hatch:'해치백',suv:'SUV',sports:'스포츠카',taxi:'택시',police:'경찰차',pickup:'픽업트럭',bus:'통학버스',fire:'소방차',van:'택배 탑차',jeep:'오프로더',moto:'오토바이',scooter:'스쿠터',bike:'자전거',convertible:'오픈카',cargo:'트럭',camper:'캠핑카',cruiser:'크루저 오토바이'};
-const TWO=new Set(['moto','scooter','bike','cruiser']);
-const MAP2={sedan:'sedan',hatch:'mini',suv:'jeep',sports:'sport',taxi:'taxi',police:'sedan',pickup:'truck',bus:'bus',fire:'fire',van:'truck',jeep:'jeep',moto:'moto',scooter:'scooter',bike:'bike',convertible:'cabrio',cargo:'cargo',camper:'camper',cruiser:'cruiser'};
-const POOL=['sedan','sedan','hatch','sports','sports','convertible','convertible','suv','suv','jeep','pickup','cargo','camper','taxi','police','moto','cruiser','cruiser','scooter'];
-const DIM={sedan:[64,34],mini:[54,34],sport:[68,30],taxi:[64,34],bus:[80,36],truck:[72,34],icecream:[68,36],fire:[80,36],jeep:[64,36],bike:[44,22],moto:[54,26],scooter:[48,24],cabrio:[66,32],cargo:[72,34],camper:[68,36],cruiser:[58,26]};
+/* 차종: 직업을 떠올리게 하는 차(택시·경찰차·버스·소방차·택배차·과일 트럭·배달 스쿠터)는 놀림거리가 될 수 있어 넣지 않는다 */
+const FIXEDCOL={cyber:'#B9BEC5'};
+const VT={sedan:'세단',hatch:'해치백',suv:'SUV',sports:'스포츠카',jeep:'오프로더',moto:'스포츠 바이크',bike:'자전거',convertible:'오픈카',camper:'캠핑카',cruiser:'크루저 바이크',cyber:'전기 픽업트럭',classic:'클래식 스포츠카',super:'슈퍼카'};
+const TWO=new Set(['moto','bike','cruiser']),NOSMOKE=new Set(['cyber','bike']);
+const MAP2={sedan:'sedan',hatch:'mini',suv:'jeep',sports:'sport',jeep:'jeep',moto:'moto',bike:'bike',convertible:'cabrio',camper:'camper',cruiser:'cruiser',cyber:'cyber',classic:'classic',super:'super'};
+const POOL=['sedan','hatch','sports','sports','convertible','convertible','suv','suv','jeep','camper','cyber','cyber','classic','classic','super','super','moto','cruiser','cruiser'];
+const DIM={sedan:[64,34],mini:[54,34],sport:[68,30],jeep:[64,36],bike:[44,22],moto:[54,26],cabrio:[66,32],camper:[68,36],cruiser:[58,26],cyber:[72,34],classic:[62,32],super:[70,34]};
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cv=$('#cv'),ctx=cv.getContext('2d'),cv3=$('#cv3');
 let G=null,scale=1,raf=0,lastT=0,introOn=false,warm=false;
@@ -1120,9 +1121,7 @@ const V={
     rr(c,7,-21,6,5,2);fs(c,col);rr(c,7,16,6,5,2);fs(c,col);
     rr(c,-32,-17,64,34,12);fs(c,col);rr(c,5,-13,11,26,4);fs(c,GLASS);
     rr(c,-16,-13,20,26,6);fs(c,light(col,.25));rr(c,-25,-12,8,24,3);fs(c,GLASS);
-    dot(c,28,-10,3,'#FFF3A8');dot(c,28,10,3,'#FFF3A8');c.fillStyle='#FF5A5F';c.fillRect(-33,-13,3,6);c.fillRect(-33,7,3,6);
-    if(v.type==='police'){c.fillStyle='#1F3C88';c.fillRect(-6,-9,5,8);c.fillStyle='#E8433F';c.fillRect(-6,1,5,8)}},
-  taxi(c,v){V.sedan(c,{col:'#E8731A'});rr(c,-12,-7,10,14,2);fs(c,'#fff');c.fillStyle=INK;c.fillRect(-11,-6,3,3);c.fillRect(-8,-3,3,3);c.fillRect(-11,0,3,3);c.fillRect(-8,3,3,3)},
+    dot(c,28,-10,3,'#FFF3A8');dot(c,28,10,3,'#FFF3A8');c.fillStyle='#FF5A5F';c.fillRect(-33,-13,3,6);c.fillRect(-33,7,3,6)},
   mini(c,v){const col=v.col;[[-15,-16],[15,-16],[-15,16],[15,16]].forEach(p=>wh(c,p[0],p[1],12,7));
     rr(c,-27,-17,54,34,15);fs(c,col);rr(c,3,-12,10,24,5);fs(c,GLASS);
     rr(c,-16,-13,18,26,9);fs(c,light(col,.3));dot(c,21,-9,4.2,'#fff',true);dot(c,21,9,4.2,'#fff',true)},
@@ -1130,16 +1129,28 @@ const V={
     rr(c,-34,-15,68,30,10);fs(c,col);c.fillStyle='rgba(255,255,255,.85)';c.fillRect(-33,-5,66,3);c.fillRect(-33,2,66,3);
     rr(c,0,-11,13,22,4);fs(c,GLASS);rr(c,-17,-11,17,22,5);fs(c,dark(col,.2));
     rr(c,-39,-14,6,28,2);fs(c,INK,false);dot(c,31,-9,2.6,'#FFF3A8');dot(c,31,9,2.6,'#FFF3A8')},
-  bus(c,v){const col='#F3BD00';[[-27,-18],[27,-18],[-27,18],[27,18]].forEach(p=>wh(c,p[0],p[1],15,7));
-    rr(c,-40,-18,80,36,8);fs(c,col);rr(c,-36,-14,64,28,5);fs(c,light(col,.35));
-    rr(c,31,-15,6,30,2);fs(c,GLASS);dot(c,38,-12,2.5,'#FFF3A8');dot(c,38,12,2.5,'#FFF3A8')},
-  truck(c,v){const col=v.col;[[-24,-16],[24,-16],[-24,16],[24,16]].forEach(p=>wh(c,p[0],p[1],15,7));
-    rr(c,-36,-17,46,34,5);fs(c,v.type==='van'?'#F1F2F4':dark(col,.22));
-    rr(c,10,-17,26,34,8);fs(c,col);rr(c,23,-13,8,26,3);fs(c,GLASS);dot(c,33,-11,2.6,'#FFF3A8');dot(c,33,11,2.6,'#FFF3A8')},
-  fire(c,v,t,moving){const col='#B8121E';[[-27,-18],[27,-18],[-27,18],[27,18]].forEach(p=>wh(c,p[0],p[1],15,7));
-    rr(c,-40,-18,80,36,8);fs(c,col);rr(c,22,-15,14,30,4);fs(c,dark(col,.15));rr(c,30,-14,6,28,2);fs(c,GLASS);
-    line(c,-36,-6,18,-6,'#E8ECF4',2.5);line(c,-36,6,18,6,'#E8ECF4',2.5);for(let x=-32;x<=16;x+=8)line(c,x,-6,x,6,'#E8ECF4',2);
-    const f=moving&&((t*6|0)%2);rr(c,22,-12,5,12,2);fs(c,f?'#4DA3FF':'#FF6B6B');rr(c,22,0,5,12,2);fs(c,f?'#FF6B6B':'#4DA3FF')},
+  /* 전기 픽업트럭: 각진 차체, 삼각 지붕 꼭대기 줄, 덮개 덮은 짐칸, 앞뒤 한 줄 등 */
+  cyber(c,v){const col=v.col;[[-22,-17],[22,-17],[-22,17],[22,17]].forEach(p=>wh(c,p[0],p[1],16,8));
+    c.beginPath();c.moveTo(-36,-16);c.lineTo(33,-16);c.lineTo(36,-13);c.lineTo(36,13);c.lineTo(33,16);c.lineTo(-36,16);c.closePath();fs(c,col);
+    c.beginPath();c.moveTo(3,-14);c.lineTo(21,-12);c.lineTo(21,12);c.lineTo(3,14);c.closePath();fs(c,GLASS);
+    rr(c,-34,-13,35,26,2);fs(c,dark(col,.1));for(let x=-29;x<0;x+=6)line(c,x,-12,x,12,dark(col,.28),1.2);
+    line(c,3,-15,3,15,INK,1.6);line(c,35,-12,35,12,'#FFF3A8',2.6);line(c,-36.5,-13,-36.5,13,'#FF5A5F',2.6);
+    rr(c,15,-20,6,4,1.5);fs(c,col);rr(c,15,16,6,4,1.5);fs(c,col)},
+  /* 클래식 스포츠카: 볼록한 앞 펜더 위 동그란 등, 둥근 지붕, 엔진 덮개 틈, 가로 한 줄 뒷등 */
+  classic(c,v){const col=v.col;[[-18,-15],[19,-15],[-18,15],[19,15]].forEach(p=>wh(c,p[0],p[1],14,7));
+    rr(c,-31,-16,62,32,13);fs(c,col);
+    c.beginPath();c.ellipse(20,-10,9,5.5,0,0,Math.PI*2);fs(c,light(col,.2));c.beginPath();c.ellipse(20,10,9,5.5,0,0,Math.PI*2);fs(c,light(col,.2));
+    dot(c,27,-10,3.6,'#FFF3A8',true);dot(c,27,10,3.6,'#FFF3A8',true);
+    rr(c,3,-11,9,22,4);fs(c,GLASS);rr(c,-13,-11,16,22,6);fs(c,light(col,.22));rr(c,-19,-9,6,18,3);fs(c,GLASS);
+    for(const x of[-23,-26])line(c,x,-6,x,6,dark(col,.35),1.4);
+    line(c,-31,-11,-31,11,'#FF5A5F',2.6)},
+  /* 슈퍼카: 넓고 각진 쐐기, 누운 유리 지붕, 엔진 덮개 틈, 옆 공기 구멍, 뒤 날개 */
+  super(c,v){const col=v.col;[[-22,-17],[22,-17],[-22,17],[22,17]].forEach(p=>wh(c,p[0],p[1],16,8));
+    c.beginPath();c.moveTo(35,-11);c.lineTo(35,11);c.lineTo(22,17);c.lineTo(-32,17);c.lineTo(-35,13);c.lineTo(-35,-13);c.lineTo(-32,-17);c.lineTo(22,-17);c.closePath();fs(c,col);
+    c.beginPath();c.moveTo(15,-9);c.lineTo(15,9);c.lineTo(-6,12);c.lineTo(-6,-12);c.closePath();fs(c,GLASS);
+    for(const x of[-11,-15,-19,-23])line(c,x,-8,x,8,dark(col,.35),1.6);
+    c.fillStyle=INK;c.beginPath();c.moveTo(-1,-17);c.lineTo(-12,-17);c.lineTo(-9,-13);c.closePath();c.fill();c.beginPath();c.moveTo(-1,17);c.lineTo(-12,17);c.lineTo(-9,13);c.closePath();c.fill();
+    rr(c,-38,-16,6,32,2);fs(c,INK,false);line(c,31,-12,25,-15,'#FFF3A8',2.4);line(c,31,12,25,15,'#FFF3A8',2.4)},
   jeep(c,v){const col=v.col;[[-20,-17],[20,-17],[-20,17],[20,17]].forEach(p=>wh(c,p[0],p[1],17,9));
     dot(c,-34,0,8,INK);rr(c,-31,-18,62,36,7);fs(c,col);rr(c,11,-14,8,28,2);fs(c,GLASS);
     rr(c,-22,-13,30,26,4);fs(c,dark(col,.15));dot(c,28,-11,3.4,'#FFF3A8');dot(c,28,11,3.4,'#FFF3A8')},
@@ -1150,11 +1161,6 @@ const V={
     rr(c,-6,-11,9,9,3);fs(c,'#D9B48A');rr(c,-6,2,9,9,3);fs(c,'#D9B48A');rr(c,-19,-11,9,22,3);fs(c,'#D9B48A');
     rr(c,-31,-12,7,24,3);fs(c,'#26272B',false);rr(c,7,-13,4,26,2);fs(c,GLASS);dot(c,-2,-6.5,4.6,'#2B211C');
     dot(c,29,-10,2.8,'#FFF3A8');dot(c,29,10,2.8,'#FFF3A8')},
-  cargo(c,v){const col=v.col;[[-22,-16],[24,-16],[-22,16],[24,16]].forEach(p=>wh(c,p[0],p[1],15,7));
-    rr(c,-36,-17,50,34,3);fs(c,'#CDD2D9');rr(c,-33,-14,44,28,2);fs(c,'#AEB4BC',false);
-    rr(c,-31,-13,13,12,2);fs(c,'#C9955B');rr(c,-31,1,12,12,2);fs(c,'#B9844E');
-    for(const[x,y]of[[-11,-8],[-3,-8],[5,-8],[-11,1],[-3,1],[5,1],[-7,9],[1,9]])dot(c,x,y,3.8,'#2F7D32',true);
-    rr(c,15,-17,21,34,6);fs(c,col);rr(c,29,-13,5,26,2);fs(c,GLASS);dot(c,34,-11,2.6,'#FFF3A8');dot(c,34,11,2.6,'#FFF3A8')},
   camper(c,v){const col=v.col;[[-22,-18],[22,-18],[-22,18],[22,18]].forEach(p=>wh(c,p[0],p[1],15,7));
     rr(c,-34,-18,68,36,8);fs(c,col);rr(c,-30,-15,50,30,6);fs(c,'#F4F4F0');
     rr(c,-22,-11,26,22,4);fs(c,'#E3E6EA');rr(c,-14,-6,10,12,2);fs(c,'#9FB6C8');
@@ -1163,8 +1169,7 @@ const V={
     rr(c,-27,-13,13,6,2);fs(c,'#5A3A26');rr(c,-27,7,13,6,2);fs(c,'#5A3A26');line(c,-2,8,-31,9,'#C9CED6',2.6);
     rr(c,-18,-6,34,12,6);fs(c,'#2B2F3D');c.beginPath();c.ellipse(6,0,9,6,0,0,Math.PI*2);fs(c,v.col);
     line(c,15,-17,12,-6,'#C9CED6',2.6);line(c,15,17,12,6,'#C9CED6',2.6);line(c,15,-17,15,17,INK,2.4);
-    dot(c,25,0,3.4,'#FFF3A8');rider2(c,-9,v.col2,v.col,true)},
-  scooter(c,v){wh(c,15,0,15,5);wh(c,-17,0,15,5);rr(c,-22,-9,40,18,9);fs(c,v.col);line(c,13,-11,13,11,INK,3);rider2(c,-8,v.col2,light(v.col2,.4))}
+    dot(c,25,0,3.4,'#FFF3A8');rider2(c,-9,v.col2,v.col,true)}
 };
 function drawVehicle(c,v,x,y,ang,t,moving){const k2=MAP2[v.type],[L,W]=DIM[k2];c.save();c.translate(x,y);c.rotate(ang);
   if(moving&&!reduced)c.translate(0,Math.sin(t*28)*.5);
@@ -1316,12 +1321,13 @@ const EP={
   jeep:{idle:27,max:94,dist:28,cLo:330,cHi:1700,g:.15,sub:1.1,rasp:.45,wave:'sawtooth',burble:.42},
   sports:{idle:52,max:245,dist:48,cLo:900,cHi:6200,g:.14,sub:.55,rasp:.5,wave:'sawtooth',burble:.22,pops:true,dbl:true,turbo:true},
   moto:{idle:64,max:305,dist:62,cLo:1000,cHi:6800,g:.12,sub:.35,rasp:.58,wave:'square',burble:.1,pops:true,dbl:true},
-  scooter:{idle:88,max:275,dist:6,cLo:1400,cHi:4300,g:.085,sub:.2,rasp:.2,wave:'triangle',burble:0,trem:.45},
   convertible:{idle:46,max:200,dist:30,cLo:760,cHi:5200,g:.13,sub:.6,rasp:.4,wave:'sawtooth',burble:.28,pops:true,dbl:true},
-  cargo:{idle:26,max:88,dist:34,cLo:300,cHi:1500,g:.15,sub:1.15,rasp:.55,wave:'sawtooth',burble:.35},
   camper:{idle:30,max:100,dist:20,cLo:360,cHi:1800,g:.14,sub:1,rasp:.32,wave:'sawtooth',burble:.3},
-  cruiser:{idle:30,max:150,dist:70,cLo:500,cHi:3400,g:.15,sub:.9,rasp:.62,wave:'square',burble:.7,pops:true,dbl:true}};
-EP.pickup=EP.suv;
+  cruiser:{idle:30,max:150,dist:70,cLo:500,cHi:3400,g:.15,sub:.9,rasp:.62,wave:'square',burble:.7,pops:true,dbl:true},
+  /* 전기차: 엔진 소리 없이 속도 따라 올라가는 모터 소리 */
+  cyber:{idle:150,max:950,dist:0,cLo:1400,cHi:4200,g:.07,sub:.3,rasp:.06,wave:'sine',burble:0,trem:.02,ev:true},
+  classic:{idle:56,max:262,dist:40,cLo:950,cHi:6000,g:.13,sub:.5,rasp:.5,wave:'sawtooth',burble:.35,pops:true,dbl:true},
+  super:{idle:62,max:340,dist:55,cLo:1100,cHi:7400,g:.14,sub:.5,rasp:.55,wave:'sawtooth',burble:.15,pops:true,dbl:true,turbo:true}};
 let noiseBuf=null;
 function getNoise(){if(!noiseBuf){noiseBuf=actx.createBuffer(1,actx.sampleRate*2,actx.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}return noiseBuf}
 function distCurve(k){const n=1024,c=new Float32Array(n);for(let i=0;i<n;i++){const x=i*2/n-1;c[i]=(1+k)*x/(1+k*Math.abs(x))}return c}
@@ -1331,26 +1337,28 @@ function engineOn(type,pitch=1){if(!game.sound||type==='bike'||eng)return;try{
   const B=EP[type]||EP.sedan,P=Object.assign({},B,{idle:B.idle*pitch,max:B.max*pitch}),t=actx.currentTime,G_=v=>{const g=actx.createGain();g.gain.value=v;return g};
   const o1=actx.createOscillator(),o2=actx.createOscillator(),o3=actx.createOscillator(),o4=actx.createOscillator(),lfo=actx.createOscillator(),lfo2=actx.createOscillator();
   o1.type=P.wave;o2.type='square';o3.type='sawtooth';o4.type='sine';lfo.type='sine';lfo2.type='triangle';
-  const g1=G_(1),g2=G_(P.sub*.6),g3=G_(.18),g4=G_(P.sub*.9),nz=actx.createBufferSource();nz.buffer=getNoise();nz.loop=true;
+  const g1=G_(1),g2=G_(P.ev?0:P.sub*.6),g3=G_(P.ev?0:.18),g4=G_(P.sub*.9),nz=actx.createBufferSource();nz.buffer=getNoise();nz.loop=true;
   const bp=actx.createBiquadFilter();bp.type='bandpass';bp.Q.value=1.2;const gn=G_(0);
   const ws=actx.createWaveShaper();ws.curve=distCurve(P.dist);ws.oversample='4x';
   const lp=actx.createBiquadFilter();lp.type='lowpass';lp.Q.value=3;lp.frequency.value=P.cLo;
-  const low=actx.createBiquadFilter();low.type='lowshelf';low.frequency.value=160;low.gain.value=9;
+  const low=actx.createBiquadFilter();low.type='lowshelf';low.frequency.value=160;low.gain.value=P.ev?0:9;
   const am=G_(.7),lfoG=G_(P.trem||.28),lfo2G=G_(P.burble||0),out=G_(0);
   o1.connect(g1);o2.connect(g2);o3.connect(g3);[g1,g2,g3].forEach(g=>g.connect(ws));nz.connect(bp);bp.connect(gn);gn.connect(lp);ws.connect(lp);lp.connect(low);low.connect(am);o4.connect(g4);g4.connect(am);
   lfo.connect(lfoG);lfoG.connect(am.gain);lfo2.connect(lfo2G);lfo2G.connect(am.gain);am.connect(out);out.connect(getBus().input);
   const nodes=[o1,o2,o3,o4,lfo,lfo2,nz];let tb=null,tbG=null;
   if(P.turbo){tb=actx.createOscillator();tb.type='sine';tbG=G_(0);tb.connect(tbG);tbG.connect(getBus().input);nodes.push(tb)}
   const st=t+.4;nodes.forEach(n=>n.start(st));
-  for(let i=0;i<5;i++){tone(48+i*5,.08,'square',.05,i*.08);burst(260,2,.07,.06,i*.08)}
+  if(P.ev){tone(660,.12,'sine',.04,.12);tone(990,.2,'sine',.04,.24)}
+  else for(let i=0;i<5;i++){tone(48+i*5,.08,'square',.05,i*.08);burst(260,2,.07,.06,i*.08)}
   out.gain.setValueAtTime(0,st);out.gain.linearRampToValueAtTime(P.g*1.4,st+.08);
-  eng={o1,o2,o3,o4,lfo,lfo2,nz,bp,gn,lp,out,tb,tbG,P,rpm:.15,lastV:0,lastThr:.5,blip:P.dbl?1.5:1.0,popT:0,gear:0,nodes};
-  burst(700,.8,.12,.35,.4)}catch(e){}}
+  eng={o1,o2,o3,o4,lfo,lfo2,nz,bp,gn,lp,out,tb,tbG,P,rpm:.15,lastV:0,lastThr:.5,blip:P.ev?0:P.dbl?1.5:1.0,popT:0,gear:0,nodes};
+  if(!P.ev)burst(700,.8,.12,.35,.4)}catch(e){}}
 function engineSet(v,dt){if(!eng||!actx)return;const e=eng,P=e.P;dt=Math.max(dt||.016,1e-3);const acc=(v-e.lastV)/dt;e.lastV=v;let tgt,thr;
   if(e.blip>0){e.blip-=dt;const on=P.dbl?(e.blip%.75>.38):(e.blip>.5);tgt=on?.95:.28;thr=on?1:.15}
   else if(!game.mover||game.mover.pause>0){tgt=.13+Math.sin(performance.now()/170)*.02;thr=.3}
   else{const s=Math.min(1.3,Math.abs(v)/360);
     if(game.mover.gear==='R'){tgt=.2+s*1.5}
+    else if(P.ev){tgt=.15+s*.75}
     else{const span=.3,gi=Math.min(3,Math.floor(s/span)),w=(s-gi*span)/span;tgt=.2+w*(.74-gi*.08)+gi*.07;if(gi>e.gear&&P.pops)burst(1400,4,.1,.05);e.gear=gi}
     thr=acc>12?1:acc<-12?.12:.5}
   if(P.turbo&&e.lastThr>.8&&thr<.3&&e.rpm>.4)burst(3200,.6,.14,.4);e.lastThr=thr;
@@ -1436,7 +1444,7 @@ function onClick(e){if(FC.eat){FC.eat=false;return}if(game.phase!=='choose'||!ga
   if(r==='front')return toast('앞자리 구역(빛나는 칸) 안에서 골라 주세요.');
   if(r==='gender')return toast(`${S.gender[sid]==='M'?'남':'여'}학생 칸(빛나는 칸)에서 골라 주세요.`);
   if(r!=='ok')return toast('앗, 그 칸은 지금 고를 수 없어요. 다른 칸을 골라 주세요!');
-  const from={x:game.waiting.x,y:game.waiting.y};game.waiting=null;game.hover=null;e.target.style.cursor='default';if(eng)eng.blip=eng.P.dbl?1.5:1.0;else engineOn(game.veh[sid].type,game.veh[sid].pitch);driveTo(sid,from,s.id);updateDock()}
+  const from={x:game.waiting.x,y:game.waiting.y};game.waiting=null;game.hover=null;e.target.style.cursor='default';if(eng)eng.blip=eng.P.ev?0:eng.P.dbl?1.5:1.0;else engineOn(game.veh[sid].type,game.veh[sid].pitch);driveTo(sid,from,s.id);updateDock()}
 [cv,cv3].forEach(el=>{el.addEventListener('pointermove',onMove);el.addEventListener('click',onClick)});
 
 /* ---- update ---- */
@@ -1446,7 +1454,7 @@ function update(dt){
     if(m.pause>0){m.pause-=dt;m.vel=0;m.decel=true}
     else{const sg=m.segs[m.si];m.t+=dt;const p=Math.min(1,m.t/sg.dur),e=-(Math.cos(Math.PI*p)-1)/2,s=e*sg.path.total,pos=at(sg.path,s);
       if(m.t<dt*1.5&&game.tease){game.tease=null;setStatus(`<b>${esc(m.sid)}</b> 다시 출발!`)}const nv=(s-m.prevS)/Math.max(dt,1e-4);m.decel=p>.55;m.vel=nv;m.prevS=s;m.x=pos.x;m.y=pos.y;m.ang=sg.rev?pos.ang+Math.PI:pos.ang;m.gear=sg.rev?'R':'D';
-      m.puffT+=dt;if(m.puffT>.08&&p<.95&&m.vel>20){m.puffT=0;const L=DIM[MAP2[game.veh[m.sid].type]][0];game.puffs.push({x:m.x-Math.cos(m.ang)*(L/2+4),y:m.y-Math.sin(m.ang)*(L/2+4),t:0,r:2+Math.random()*2})}
+      m.puffT+=dt;if(m.puffT>.08&&p<.95&&m.vel>20&&!NOSMOKE.has(game.veh[m.sid].type)){m.puffT=0;const L=DIM[MAP2[game.veh[m.sid].type]][0];game.puffs.push({x:m.x-Math.cos(m.ang)*(L/2+4),y:m.y-Math.sin(m.ang)*(L/2+4),t:0,r:2+Math.random()*2})}
       if(p>=1){if(m.si<m.segs.length-1){const dn=sg;m.si++;m.t=0;m.prevS=0;const nx=m.segs[m.si];m.pause=Math.max(.05,(dn.hold||0)+(nx.rev?.55:0))/Math.sqrt(game.speed);m.gear=nx.rev?'R':'D';m.vel=0;if(dn.decoy)tease(m.sid,dn.decoy);else game.tease=null}
         else{game.parkAng[m.sid]=m.ang;game.mover=null;game.tease=null;m.gear='P';m.done()}}}
     if(m.gear==='R'&&game.mover){m.beepT-=dt;if(m.beepT<=0){tone(1050,.16,'sine',.045);m.beepT=.55}}
@@ -1555,8 +1563,8 @@ function wheel2(ud,g,x,r,tube_){const wg=new THREE.Group();wg.position.set(x,r,0
   g.add(wg);ud.wheels.push(sp)}
 function lightsFB(g,ud,xF,xR,yF,yR,zF,zR){
   [-1,1].forEach(s=>{g.add(M(BOX(.12,.2,.62),HEADM(),xF,yF,s*zF,false));g.add(M(BOX(.12,.22,.7),ud.tail,xR,yR,s*zR,false));g.add(M(BOX(.12,.12,.3),ud.rev,xR,yR-.24,s*(zR-.15),false))})}
-function plates(g,ud,xF,xR,y){const pm=new THREE.MeshStandardMaterial({map:plateTex(ud.plate),roughness:.5});
-  const f=M(BOX(.04,.32,1.2),pm,xF,y,0,false);g.add(f);const r=M(BOX(.04,.32,1.2),pm,xR,y,0,false);g.add(r)}
+function plates(g,ud,xF,xR,y,yR=y){const pm=new THREE.MeshStandardMaterial({map:plateTex(ud.plate),roughness:.5});
+  const f=M(BOX(.04,.32,1.2),pm,xF,y,0,false);g.add(f);const r=M(BOX(.04,.32,1.2),pm,xR,yR,0,false);g.add(r)}
 function carBase(g,ud,o,P,key){
   const{L,W,wr,wb,belt,yN,cowl,cR,cF,rT,fT,roofH}=o,tw=.58,y0=wr*.62,top=belt+roofH;
   g.add(M(cg('body-'+key,()=>prof([[-L/2+.35,y0],[L/2-.35,y0],['q',L/2,y0,L/2,y0+.4],[L/2,yN-.3],['q',L/2,yN,L/2-.5,yN],[cowl,belt],[-L/2+.45,belt],['q',-L/2,belt,-L/2,belt-.45],[-L/2,y0+.35],['q',-L/2,y0,-L/2+.35,y0]],W-.2,.14)),P));
@@ -1577,9 +1585,7 @@ const CFG={
   hatch:{L:5.4,W:2.75,wr:.56,wb:1.75,belt:1.5,yN:1.3,cowl:1.2,cR:-2.45,cF:1.2,rT:-2.4,fT:.15,roofH:1.08},
   suv:{L:6.7,W:3.0,wr:.74,wb:2.2,belt:1.95,yN:1.78,cowl:1.4,cR:-3.0,cF:1.4,rT:-2.9,fT:.3,roofH:1.08},
   sports:{L:6.9,W:3.05,wr:.62,wb:2.3,belt:1.2,yN:.92,cowl:.75,cR:-1.95,cF:.75,rT:-1.05,fT:-.35,roofH:.72},
-  pickup:{L:6.9,W:3.0,wr:.72,wb:2.3,belt:1.85,yN:1.7,cowl:1.6,cR:-.55,cF:1.6,rT:-.45,fT:.55,roofH:1.05},
   jeep:{L:6.2,W:3.0,wr:.82,wb:1.95,belt:2.0,yN:1.95,cowl:1.3,cR:-2.8,cF:1.3,rT:-2.75,fT:.95,roofH:1.1},
-  bus:{L:8.4,W:3.1,wr:.66,wb:2.9,belt:1.7,yN:1.62,cowl:3.55,cR:-4.0,cF:3.55,rT:-4.0,fT:3.05,roofH:1.5},
   camper:{L:6.8,W:3.0,wr:.68,wb:2.2,belt:1.85,yN:1.55,cowl:2.05,cR:-3.3,cF:2.05,rT:-3.25,fT:1.55,roofH:1.25}
 };
 /* 오픈카: 지붕 없이 앞유리·좌석·운전자가 보임 */
@@ -1603,25 +1609,68 @@ function cabrio3D(g,ud,P,v){const L=6.6,W=2.95,wr=.62,wb=2.15,belt=1.3,yN=1.0,co
   plates(g,ud,L/2+.2,-L/2-.2,y0+.4);
   [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a,b])=>wheel(ud,g,a*wb,wr,b*(W/2-.05-tw/2),tw));
   return belt+1.35}
-/* 트럭: 앞이 납작한 운전석 + 짐칸(상자·수박) */
-function cargo3D(g,ud,P){const L=6.9,W=2.95,wr=.62,y0=wr*.75,cab=2.0,cabH=2.25,cx0=L/2-cab;
-  g.add(M(BOX(L-.5,.32,W-.7),TRIM(),0,y0,0));
-  g.add(M(cg('cab-cargo',()=>prof([[cx0,y0-.12],[L/2-.18,y0-.12],['q',L/2,y0-.12,L/2,y0+.2],[L/2,y0+cabH*.6],[L/2-.12,y0+cabH-.12],['q',L/2-.18,y0+cabH,L/2-.42,y0+cabH],[cx0,y0+cabH]],W-.15,.12)),P));
-  {const ws=M(BOX(.05,cabH*.38,W*.84),mat('#3E5F7E',{roughness:.06,metalness:.85}),L/2+.12,y0+cabH*.7,0);ws.rotation.z=.12;g.add(ws)}
-  [-1,1].forEach(s=>g.add(M(BOX(cab*.5,cabH*.36,.03),GLS(),L/2-cab*.42,y0+cabH*.7,s*(W/2-.06))));
-  g.add(M(BOX(.06,.26,W*.5),mat('#0E0F12',{metalness:.5,roughness:.4}),L/2+.03,y0+.4,0));
-  const bl=L-cab-.1,bx=-L/2+bl/2,fy=y0+.42,AL=mat('#CDD2D9',{metalness:.7,roughness:.35}),RB=mat('#9EA4AC',{metalness:.6,roughness:.4});
-  g.add(M(BOX(bl,.12,W-.1),AL,bx,fy,0));
-  [-1,1].forEach(s=>g.add(M(BOX(bl,.5,.07),AL,bx,fy+.3,s*(W/2-.08))));
-  g.add(M(BOX(.07,.5,W-.1),AL,-L/2+.04,fy+.3,0));g.add(M(BOX(.1,.95,W-.1),AL,cx0-.08,fy+.52,0));
-  for(let x=bx-bl/2+.5;x<bx+bl/2-.2;x+=.6)[-1,1].forEach(s=>g.add(M(BOX(.04,.5,.02),RB,x,fy+.3,s*(W/2-.04))));
-  const CB=mat('#C9955B',{roughness:.9}),CB2=mat('#B9844E',{roughness:.9}),WM=mat('#2F7D32',{roughness:.45});
-  g.add(M(BOX(1.1,.8,1.1),CB,bx-.85,fy+.46,-.62));g.add(M(BOX(1.0,.7,1.0),CB2,bx-.8,fy+.41,.62));g.add(M(BOX(.9,.6,.9),CB,bx-.82,fy+1.16,-.55));
-  for(const[x,z,y]of[[.3,-.75,0],[.95,-.75,0],[.3,0,0],[.95,0,0],[.3,.75,0],[.95,.75,0],[.62,-.38,.5],[.62,.38,.5]])g.add(M(SPH(.34),WM,bx+x,fy+.4+y,z));
-  lightsFB(g,ud,L/2+.1,-L/2-.06,y0+.42,y0+.3,W/2-.5,W/2-.45);
-  plates(g,ud,L/2+.15,-L/2-.08,y0+.08);
-  [L/2-1.0,-L/2+1.5].forEach(x=>[-1,1].forEach(b=>wheel(ud,g,x,wr,b*(W/2-.05-.3),.6)));
-  return y0+cabH+.15}
+/* 새 차 세 대가 같이 쓰는 도움 함수: 옆면에 붙이는 얇은 판(창·공기 구멍), 비스듬한 기둥, 경사면에 눕힌 판 */
+function sidePl(g,key,pts,m,z){const ge=cg(key,()=>prof(pts,.03,.01,1));[-1,1].forEach(s=>g.add(M(ge,m,0,0,s*(z+.021),false)))}
+function pil2(g,m,x1,y1,x2,y2,z,th=.17){const len=Math.hypot(x2-x1,y2-y1),a=Math.atan2(y2-y1,x2-x1);[-1,1].forEach(s=>{const p=M(BOX(+len.toFixed(3),th,.06),m,(x1+x2)/2,(y1+y2)/2,s*z);p.rotation.z=a;g.add(p)})}
+function slopePl(g,m,x1,y1,x2,y2,lift,w,th,from=0,to=1){/* (x1,y1)→(x2,y2) 경사면 위 lift 만큼 띄운 판, from~to 구간만 */
+  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),nx=-dy/len,ny=dx/len,s=ny<0?-1:1,cx=x1+dx*(from+to)/2+nx*s*lift,cy=y1+dy*(from+to)/2+ny*s*lift;
+  const p=M(BOX(+(len*(to-from)).toFixed(3),th,w),m,cx,cy,0);p.rotation.z=Math.atan2(dy,dx);g.add(p);return p}
+/* 전기 픽업트럭: 스테인리스 쐐기 차체(코끝→지붕 꼭대기→꼬리가 곧은 두 줄), 사다리꼴 바퀴 구멍과 검은 테, 앞뒤 한 줄 등, 육각 바퀴 덮개 */
+function cyber3D(g,ud){const L=7.0,W=3.05,wr=.66,wb=2.3,tw=.62,y0=wr*.6,xF=L/2,xR=-L/2,nY=1.5,apx=.3,apy=2.5,tY=1.85,bw=W-.2,aT=1.48,aB=.92,aU=.66,
+    ST=mat('#BAC0C7',{metalness:.85,roughness:.34}),DK=mat('#2A2C31',{roughness:.75}),arch=x=>[[x-aB,y0],[x-aU,aT],[x+aU,aT],[x+aB,y0]];
+  g.add(M(cg('body-cyber',()=>prof([[xR+.12,y0],...arch(-wb),...arch(wb),[xF-.12,y0],[xF,y0+.2],[xF,nY-.12],[xF-.1,nY],[apx,apy],[xR,tY],[xR,y0+.2]],bw,.05,1)),ST));
+  {const fl=cg('flare-cyber',()=>prof([[-aB-.14,y0],[-aU-.1,aT+.1],[aU+.1,aT+.1],[aB+.14,y0],[aB-.06,y0],[aU-.05,aT-.06],[-aU+.05,aT-.06],[-aB+.06,y0]],W-.1,.02,1));[-wb,wb].forEach(x=>g.add(M(fl,DK,x,0,0)))}
+  slopePl(g,GLS(),xF-.1,nY,apx,apy,.065,W-.5,.03,.47,.95);/* 앞유리 */
+  slopePl(g,GLS(),apx,apy,xR,tY,.065,W-.5,.03,.04,.3);/* 뒷유리 */
+  for(const f of[.34,.48,.62,.76,.9])slopePl(g,DK,apx,apy,xR,tY,.06,bw-.3,.016,f-.004,f+.004);/* 짐칸 덮개 줄 */
+  sidePl(g,'win-cyber',[[-1.25,1.9],[1.73,1.9],[.3,2.36],[-1.25,2.095]],GLS(),bw/2);
+  g.add(M(BOX(.04,.07,bw-.1),HEADM(),xF+.065,nY-.17,0,false));
+  g.add(M(BOX(.04,.09,bw-.1),ud.tail,xR-.065,tY-.13,0,false));[-1,1].forEach(s=>g.add(M(BOX(.04,.07,.4),ud.rev,xR-.065,tY-.29,s*.9,false)));
+  g.add(M(BOX(.08,.34,bw-.2),DK,xF+.06,y0+.32,0));g.add(M(BOX(.08,.34,bw-.2),DK,xR-.06,y0+.32,0));
+  plates(g,ud,xF+.12,xR-.12,y0+.62);
+  [-1,1].forEach(s=>g.add(M(BOX(.26,.16,.2),ST,1.75,1.88,s*(bw/2+.1))));
+  const HX=mat('#3A3D44',{metalness:.4,roughness:.45});
+  [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a,b])=>{wheel(ud,g,a*wb,wr,b*(W/2-.05-tw/2),tw);ud.wheels[ud.wheels.length-1].add(M(cg('hexcap'+wr,()=>new THREE.CylinderGeometry(wr*.6,wr*.6,.05,6).rotateX(Math.PI/2)),HX,0,0,b*tw*.45))});
+  return apy+.12}
+/* 클래식 스포츠카: 둥근 앞 펜더 위 동그란 등, 낮은 보닛, 뒤로 흘러내리는 지붕, 넓은 뒤 펜더, 엔진 덮개 틈, 오리꼬리 날개 */
+function classic3D(g,ud,P){const W=3.0,wr=.6,tw=.6,y0=wr*.62,xF=3.2,xR=-3.2,xs=-1.0,belt=1.18,cF=1.0,fT=-.1,rT=-.95,cR=-2.3,top=1.84,gw=W*.78,DK=mat('#1B1C20',{roughness:.6});
+  /* 앞·가운데 몸통은 좁게, 뒤 몸통은 넓게(엉덩이가 넓은 모양) */
+  g.add(M(cg('body-classic',()=>prof([[xs,y0],[xF-.45,y0],['q',xF,y0,xF,y0+.35],[xF,.8],['q',xF,.98,xF-.45,1.0],[cF,belt],[xs,belt]],W-.2,.14)),P));
+  g.add(M(cg('rear-classic',()=>prof([[xs-.1,y0],[xR+.45,y0],['q',xR,y0,xR,y0+.3],[xR,.8],['q',xR,1.0,-2.95,1.04],[cR,belt+.02],[xs-.1,belt+.02]],W,.16)),P));
+  g.add(M(cg('glass-classic',()=>prof([[cR,belt-.04],[cF,belt-.04],[fT,top],[rT,top]],gw,.07,2)),GLS()));
+  g.add(M(cg('roof-classic',()=>prof([[rT-.06,top-.04],[fT+.06,top-.04],[fT-.06,top+.1],[rT+.06,top+.1]],gw+.04,.05,2)),P));
+  pil2(g,P,cF,belt,fT,top,gw/2);
+  sidePl(g,'sail-classic',[[cR,belt-.04],[rT,top],[rT+.32,top],[cR+.6,belt-.04]],P,gw/2);
+  /* 보닛 양옆으로 솟은 앞 펜더와 그 끝의 동그란 등 */
+  {const fen=cg('fender-classic',()=>prof([[.9,1.0],[3.0,.84],['q',3.2,.86,3.15,1.0],['q',3.05,1.3,2.3,1.33],['q',1.45,1.36,.9,1.28]],.58,.12));
+    [-1,1].forEach(s=>{g.add(M(fen,P,0,0,s*1.09));const h=M(SPH(.17),HEADM(),3.16,1.13,s*1.09,false);h.scale.set(.42,1,1);h.rotation.z=.3;g.add(h)})}
+  for(const f of[.25,.45,.65])slopePl(g,DK,cR,belt+.02,-2.95,1.04,.175,W*.5,.03,f-.06,f+.06);/* 엔진 덮개 틈 */
+  {const d=M(BOX(.5,.07,W*.8),P,-3.05,1.26,0);d.rotation.z=-.2;g.add(d)}/* 오리꼬리 */
+  g.add(M(BOX(.05,.1,W-.4),ud.tail,xR-.185,.88,0,false));[-1,1].forEach(s=>g.add(M(BOX(.05,.07,.3),ud.rev,xR-.185,.73,s*.9,false)));
+  [-1,1].forEach(s=>g.add(M(BOX(.05,.12,.5),DK,xF+.15,.55,s*.95)));
+  plates(g,ud,xF+.17,xR-.17,.62,.6);
+  [-1,1].forEach(s=>g.add(M(BOX(.26,.15,.22),P,.78,1.42,s*1.3)));
+  [[2.0,1],[2.0,-1]].forEach(([x,b])=>wheel(ud,g,x,wr,b*(W/2-.05-tw/2),tw));
+  [[-1.85,1],[-1.85,-1]].forEach(([x,b])=>wheel(ud,g,x,wr,b*(W/2+.05-tw/2),tw));
+  return top+.12}
+/* 슈퍼카: 낮고 넓은 쐐기, 앞으로 쏠린 유리 지붕, 엔진 덮개 루버, 옆 공기 구멍, 육각 배기구, 뒤 날개 */
+function super3D(g,ud,P){const W=3.2,wr=.56,tw=.64,y0=wr*.55,xF=3.45,xR=-3.45,xA=2.05,xB=-2.2,bw=W-.2,cF=1.2,fT=-.2,rT=-1.0,cR=-2.4,top=1.72,gw=W*.7,DK=mat('#1B1C20',{roughness:.6});
+  g.add(M(cg('body-super',()=>prof([[xR+.2,y0],[xF-.4,y0],[xF,y0+.16],[xF+.02,.58],[xF-.25,.72],[xA,1.1],[-1.0,1.1],[-1.55,1.2],[xR+.3,1.24],[xR,1.12],[xR,y0+.16]],bw,.06,2)),P));
+  g.add(M(cg('glass-super',()=>prof([[cR,1.06],[cF,1.06],[fT,top],[rT,top]],gw,.06,2)),GLS()));
+  g.add(M(cg('roof-super',()=>prof([[rT-.06,top-.04],[fT+.06,top-.04],[fT-.06,top+.08],[rT+.06,top+.08]],gw+.04,.04,2)),P));
+  pil2(g,P,cF,1.06,fT,top,gw/2,.15);
+  for(const f of[.2,.35,.5])slopePl(g,P,rT,top,cR,1.06,.08,gw-.3,.04,f-.03,f+.03);/* 엔진 덮개 루버 */
+  sidePl(g,'intake-super',[[-.3,.5],[-1.5,.5],[-1.15,1.04],[-.45,1.04]],DK,bw/2);
+  [-1,1].forEach(s=>{const h=M(BOX(.42,.05,.55),HEADM(),3.0,.877,s*1.0,false);h.rotation.z=-.319;g.add(h)});
+  g.add(M(BOX(.3,.04,bw-.2),DK,xF-.3,.29,0));
+  g.add(M(BOX(.3,.18,bw-.4),DK,xR+.05,.4,0));
+  [-1,1].forEach(s=>{g.add(M(BOX(.05,.08,.9),ud.tail,xR-.08,1.0,s*.95,false));g.add(M(BOX(.05,.06,.3),ud.rev,xR-.08,.86,s*.95,false))});
+  g.add(M(cg('hexEx',()=>new THREE.CylinderGeometry(.16,.16,.14,6).rotateZ(Math.PI/2)),CHROME(),xR-.1,.78,0));g.add(M(cg('hexEx2',()=>new THREE.CylinderGeometry(.11,.11,.15,6).rotateZ(Math.PI/2)),DK,xR-.11,.78,0));
+  g.add(M(BOX(.5,.05,bw-.3),DK,-3.05,1.6,0));[-1,1].forEach(s=>g.add(M(BOX(.1,.32,.06),DK,-3.0,1.42,s*.8)));
+  plates(g,ud,xF+.06,xR-.12,.56,.46);
+  [-1,1].forEach(s=>g.add(M(BOX(.28,.14,.24),P,.85,1.24,s*1.3)));
+  [[xA,1],[xA,-1],[xB,1],[xB,-1]].forEach(([x,b])=>wheel(ud,g,x,wr,b*(W/2-.05-tw/2),tw));
+  return top+.12}
 /* 크루저 오토바이: 길고 낮은 차체, 높은 핸들, V자 엔진, 크롬 배기관, 가죽 가방 */
 function cruiser3D(g,ud,P,v){wheel2(ud,g,1.85,.6,.24);wheel2(ud,g,-1.6,.62,.26);
   const BL=mat('#18191D',{roughness:.5,metalness:.4}),LT=mat('#5A3A26',{roughness:.7}),CH=CHROME(),EN=mat('#3A3D44',{metalness:.6,roughness:.4});
@@ -1640,21 +1689,6 @@ function cruiser3D(g,ud,P,v){wheel2(ud,g,1.85,.6,.24);wheel2(ud,g,-1.6,.62,.26);
   [-1,1].forEach(s=>g.add(M(BOX(.75,.48,.24),LT,-1.45,1.05,s*.45)));
   g.add(M(BOX(.1,.12,.34),ud.tail,-2.05,1.18,0,false));
   return rider(g,{hip:[-.62,1.52],hb:[.95,2.42],foot:[1.05,.85],shirt:v.col2,helm:v.col,lean:-.1})}
-function boxTruck(g,ud,o,P,BXM,key){
-  const{L,W,wr,cab,cabH,boxH,axles}=o,y0=wr*.75,cx0=L/2-cab;
-  g.add(M(BOX(L-.5,.35,W-.6),TRIM(),0,y0,0));
-  g.add(M(cg('cab-'+key,()=>prof([[cx0,y0-.1],[L/2-.3,y0-.1],['q',L/2,y0-.1,L/2,y0+.25],[L/2,y0+cabH*.5],[L/2-.4,y0+cabH-.15],['q',L/2-.5,y0+cabH,L/2-.75,y0+cabH],[cx0,y0+cabH]],W-.2,.12)),P));
-  const ws=M(BOX(.06,cabH*.42,W*.8),GLS(),L/2-.2+.1,y0+cabH*.72,0);ws.rotation.z=Math.atan2(.4,cabH*.45);g.add(ws);
-  [-1,1].forEach(s=>g.add(M(BOX(cab*.55,cabH*.34,.03),GLS(),L/2-cab*.45,y0+cabH*.72,s*(W/2-.085))));
-  const bl=L-cab-.12;g.add(M(BOX(bl,boxH,W),BXM,-L/2+bl/2,y0+.2+boxH/2,0));
-  g.add(M(BOX(.3,.42,W-.2),TRIM(),L/2+.05,y0+.05,0));
-  lightsFB(g,ud,L/2+.12,-L/2-.06,y0+.42,y0+.55,W/2-.5,W/2-.45);
-  plates(g,ud,L/2+.22,-L/2-.08,y0+.12);
-  axles.forEach(x=>[-1,1].forEach(b=>wheel(ud,g,x,wr,b*(W/2-.05-.3),.62)));
-  return y0+.2+boxH}
-function sideText(g,key,text,bg,fg,w,h,x,y,zHalf){const t=sharedTex(key,512,96,(c,W2,H2)=>{c.fillStyle=bg;c.fillRect(0,0,W2,H2);c.fillStyle=fg;c.font="64px 'Black Han Sans', sans-serif";c.textAlign='center';c.textBaseline='middle';c.fillText(text,W2/2,H2/2+4)});
-  const m=new THREE.MeshStandardMaterial({map:t,roughness:.5});m.userData.cached=true;
-  [-1,1].forEach(s=>{const p=new THREE.Mesh(cg(`pl${w}_${h}`,()=>new THREE.PlaneGeometry(w,h)),m);p.position.set(x,y,s*zHalf);p.rotation.y=s>0?0:Math.PI;g.add(p)})}
 function rider(g,o){const SH=mat(o.shirt,{roughness:.8}),PN=mat('#2B3550',{roughness:.9}),SK=mat('#EBC3A0',{roughness:.7}),HM=mat(o.helm,{roughness:.25,metalness:.25}),VS=GLS();
   const hip=new V3(o.hip[0],o.hip[1],0),sh=new V3(o.hip[0]+o.lean,o.hip[1]+1.0,0),head=sh.clone().add(new V3(.2,.5,0));
   tube(g,hip,sh,.3,SH);g.add(M(SPH(.31),SH,sh.x,sh.y,0));g.add(M(SPH(.3),PN,hip.x,hip.y,0));
@@ -1675,26 +1709,10 @@ function car3D(v,sid){
       if(T==='jeep'){const st=M(cg('spare',()=>new THREE.TorusGeometry(.58,.24,10,24)),TIRE(),-3.4,1.9,0);st.rotation.y=Math.PI/2;g.add(st);
         g.add(M(BOX(.2,.7,2.6),TRIM(),3.3,1.05,0))}
       break;
-    case'taxi':ud.h=carBase(g,ud,CFG.sedan,P,'sedan');{const tt=sharedTex('taxiSign',256,96,(c,w,h)=>{c.fillStyle='#FFF4D2';c.fillRect(0,0,w,h);c.fillStyle='#1E2026';c.font="70px 'Black Han Sans', sans-serif";c.textAlign='center';c.textBaseline='middle';c.fillText('TAXI',w/2,h/2+4)});
-      const m=new THREE.MeshStandardMaterial({map:tt,emissive:lin('#FFE7A8'),emissiveMap:tt,emissiveIntensity:.6});m.userData.cached=true;g.add(M(BOX(.9,.42,1.5),m,-.7,ud.h+.2,0));ud.h+=.42}break;
-    case'police':ud.h=carBase(g,ud,CFG.sedan,P,'sedan');{[-1,1].forEach(s=>g.add(M(BOX(5.6,.26,.02),mat('#1F3C88',{roughness:.4}),0,1.1,s*1.36)));
-      const m1=own('#2050FF',{emissive:'#2F6BFF',emissiveIntensity:.3}),m2=own('#FF2030',{emissive:'#FF2A3A',emissiveIntensity:.3});
-      g.add(M(BOX(.5,.24,.8),m1,-.7,ud.h+.12,-.45));g.add(M(BOX(.5,.24,.8),m2,-.7,ud.h+.12,.45));ud.flash.push(m1,m2);ud.h+=.3;sideText(g,'police','경찰','#FFFFFF','#1F3C88',1.4,.42,-1.3,1.55,1.37)}break;
-    case'pickup':ud.h=carBase(g,ud,CFG.pickup,P,'pickup');
-      [-1,1].forEach(s=>g.add(M(BOX(3.25,.4,.14),P,-1.85,2.13,s*1.3)));g.add(M(BOX(.14,.4,2.6),P,-3.38,2.13,0));g.add(M(BOX(3.2,.05,2.5),TRIM(),-1.85,1.97,0));
-      g.add(M(BOX(1.0,.8,1.0),mat('#B9874F',{roughness:.9}),-2.3,2.4,-.5));g.add(M(BOX(.9,.7,.9),mat('#D2A06A',{roughness:.9}),-1.2,2.35,.5));break;
-    case'bus':ud.h=carBase(g,ud,CFG.bus,P,'bus');for(let x=-3.2;x<=2.6;x+=1.45)[-1,1].forEach(s=>g.add(M(BOX(.16,1.5,.06),P,x,2.45,s*1.335)));
-      sideText(g,'bus','통학버스','#1E2026','#F3BD00',3.2,.5,-.6,1.2,1.37);break;
-    case'fire':ud.h=boxTruck(g,ud,{L:8.4,W:3.1,wr:.68,cab:2.6,cabH:2.6,boxH:2.5,axles:[2.85,-1.95,-3.05]},P,P,'fire');
-      g.add(M(BOX(5.72,.24,3.12),mat('#F2F2EE'),-1.42,1.55,0));
-      for(let x=-4;x<=1;x+=1.25)[-1,1].forEach(s=>g.add(M(BOX(.05,1.6,.02),mat('#7A0A10'),x,2.6,s*1.555)));
-      [-1,1].forEach(s=>g.add(M(BOX(5.6,.1,.1),CHROME(),-1.4,ud.h+.3,s*.6)));for(let x=-4.1;x<=1.3;x+=.6)g.add(M(BOX(.08,.08,1.2),CHROME(),x,ud.h+.3,0));
-      {const m1=own('#2050FF',{emissive:'#2F6BFF',emissiveIntensity:.3}),m2=own('#FF2030',{emissive:'#FF2A3A',emissiveIntensity:.3});g.add(M(BOX(.4,.25,.9),m1,3.0,3.4,-.5));g.add(M(BOX(.4,.25,.9),m2,3.0,3.4,.5));ud.flash.push(m1,m2)}
-      ud.h+=.4;break;
-    case'van':ud.h=boxTruck(g,ud,{L:7.4,W:3.0,wr:.64,cab:2.3,cabH:2.4,boxH:2.9,axles:[2.5,-2.35]},P,mat('#EEF0F3',{roughness:.5}),'van');
-      sideText(g,'van','빠른 택배','#EEF0F3','#1E4FA0',3.4,.7,-1.2,2.4,1.505);break;
     case'convertible':ud.h=cabrio3D(g,ud,P,v);break;
-    case'cargo':ud.h=cargo3D(g,ud,P);break;
+    case'cyber':ud.h=cyber3D(g,ud);break;
+    case'classic':ud.h=classic3D(g,ud,P);break;
+    case'super':ud.h=super3D(g,ud,P);break;
     case'cruiser':ud.h=cruiser3D(g,ud,P,v);break;
     case'camper':ud.h=carBase(g,ud,CFG.camper,P,'camper');{const WH=mat('#F4F4F0',{roughness:.4}),c=CFG.camper;
       [-1,1].forEach(s=>g.add(M(BOX(c.L*.9,.22,.02),WH,-.1,c.belt-.38,s*(c.W/2-.085))));
@@ -1710,12 +1728,6 @@ function car3D(v,sid){
       g.add(M(BOX(.1,.1,1.5),TRIM(),1.12,2.12,0));g.add(M(SPH(.2),HEADM(),1.42,1.72,0,false));g.add(M(BOX(.1,.14,.32),ud.tail,-1.45,1.33,0,false));
       tube(g,[-.2,.6,.38],[-1.5,.9,.38],.1,CHROME());
       ud.h=rider(g,{hip:[-.45,1.65],hb:[1.12,2.12],foot:[.2,.85],shirt:v.col2,helm:v.col,lean:.55});break;
-    case'scooter':wheel2(ud,g,1.3,.46,.17);wheel2(ud,g,-1.25,.46,.17);
-      g.add(M(cg('scBody',()=>prof([[-1.65,.75],[-.15,.62],[-.05,1.2],[-.6,1.45],[-1.45,1.45],['q',-1.8,1.4,-1.65,.75]],.85,.14)),P));
-      g.add(M(BOX(1.05,.12,.7),TRIM(),.45,.62,0));g.add(M(cg('scShield',()=>prof([[.95,.55],[1.3,.6],[1.45,1.95],[1.15,2.0]],.85,.1)),P));
-      g.add(M(BOX(1.1,.16,.62),TRIM(),-.85,1.6,0));tube(g,[1.3,.46,0],[1.35,1.95,0],.06,CHROME());g.add(M(BOX(.12,.12,1.2),TRIM(),1.3,2.12,0));
-      g.add(M(SPH(.17),HEADM(),1.5,1.6,0,false));g.add(M(BOX(.1,.12,.3),ud.tail,-1.75,1.2,0,false));
-      ud.h=rider(g,{hip:[-.75,1.82],hb:[1.3,2.12],foot:[.45,.75],shirt:v.col2,helm:light(v.col2,.3).replace(/rgb\((\d+),(\d+),(\d+)\)/,(m,a,b,c)=>'#'+[a,b,c].map(n=>(+n).toString(16).padStart(2,'0')).join('')),lean:.15});break;
     case'bike':wheel2(ud,g,1.2,.7,.06);wheel2(ud,g,-1.2,.7,.06);{const F=P;
       const rh=[-1.2,.7,0],cr=[0,.55,0],st=[-.35,1.75,0],ht=[.85,1.85,0],hb=[.92,1.4,0];
       [-.08,.08].forEach(z=>{tube(g,[-1.2,.7,z],[0,.55,0],.045,F);tube(g,[-1.2,.7,z],st,.045,F);tube(g,ht,[1.2,.7,z],.045,CHROME())});
@@ -2129,10 +2141,10 @@ function playIntro(prep){return new Promise(resolve=>{
   const box=$('#intro'),cv=$('#introCv'),c=cv.getContext('2d'),DUR=reduced?1.8:5.6,TAU=Math.PI*2,R=Math.random;
   let W=0,H=0,k=1,raf2=0,ended=false,go=false,last=0,Y={};let t0=performance.now();
   const car=(type,col,col2,stripe)=>({type,col:col||FIXEDCOL[type]||PAINT[R()*PAINT.length|0],col2:col2||CANDY[R()*CANDY.length|0],plate:'',pitch:1,stripe:stripe==null?R()<.6:stripe});
-  const wave1=['sports','police','taxi','sports'].map((t,i)=>({lane:i,v:car(t,i===0?'#D7101F':i===3?'#1F5BD6':null),delay:R()*.16}));
-  const wave2=['bus','sports','moto','jeep','sports','hatch'].map((t,i)=>({lane:i%4,v:car(t),start:2.3+i*.13+R()*.08,dur:.5+R()*.2,dir:i%2?-1:1}));
+  const wave1=['sports','cyber','classic','super'].map((t,i)=>({lane:i,v:car(t,i===0?'#D7101F':i===3?'#1F5BD6':null),delay:R()*.16}));
+  const wave2=['camper','super','moto','jeep','classic','hatch'].map((t,i)=>({lane:i%4,v:car(t),start:2.3+i*.13+R()*.08,dur:.5+R()*.2,dir:i%2?-1:1}));
   const hero=car('sports','#FFC531','#2F6FDE',true);
-  const PARK=['sedan','hatch','suv','jeep','taxi','police','sedan','hatch'];
+  const PARK=['sedan','hatch','suv','jeep','classic','cyber','super','convertible'];
   const streaks=[...Array(26)].map(()=>({y:R(),len:.5+R(),sp:.6+R()*.8,o:R()}));
   const puffs=[],sparks=[],conf=[],trail=[];
   const size=()=>{const d=Math.min(2,window.devicePixelRatio||1);W=box.clientWidth||innerWidth;H=box.clientHeight||innerHeight;cv.width=Math.round(W*d);cv.height=Math.round(H*d);c.setTransform(d,0,0,d,0,0);
@@ -2188,7 +2200,7 @@ function playIntro(prep){return new Promise(resolve=>{
       const q=p.t/p.life;c.fillStyle=`rgba(${p.col},${.42*(1-q)*calm})`;c.beginPath();c.arc(p.x,p.y,p.r*(1+q*2.2),0,TAU);c.fill()}
     /* 1차: 출발선의 차들 */
     if(!reduced)wave1.forEach(r=>{const tl=1.8+r.delay,x0=70*k+cL/2,y=lanes[r.lane];let x=x0,yy=y;
-      if(t<tl){yy+=Math.sin(t*55+r.lane*2)*1.3*k;if(t>.25&&R()<dt*16)puff(x0-cL*.5,y+cW*.25,-(40+R()*60)*k,(R()-.5)*20*k,4*k,'200,205,215',.7)}
+      if(t<tl){yy+=Math.sin(t*55+r.lane*2)*1.3*k;if(t>.25&&!NOSMOKE.has(r.v.type)&&R()<dt*16)puff(x0-cL*.5,y+cW*.25,-(40+R()*60)*k,(R()-.5)*20*k,4*k,'200,205,215',.7)}
       else{const d=t-tl;x=x0+.5*(2*(W+260*k)/.5625)*d*d}
       if(x<W+cL)veh(r.v,x,yy,0,s,t,t>=tl)});
     /* 2차: 제목 뒤로 지나가는 차들 */
