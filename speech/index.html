@@ -1258,13 +1258,14 @@ function modal(o){
     document.body.append(d); d.showModal();
     if (o.onOpen) o.onOpen(m);
     const f = body.querySelector('input:not([type=file]):not([type=radio]):not([type=checkbox]):not([disabled]),textarea:not([disabled])');
-    (f || foot.querySelector('.primary,.danger,.blue,.mint') || foot.lastChild)?.focus();
+    (o.safe ? foot.firstChild : f || foot.querySelector('.primary,.danger,.blue,.mint') || foot.lastChild)?.focus();
     if (f && f.select && f.value) f.select();
   });
 }
 const uiAlert = (msg, title = '알려 드려요', icon = '💡') => modal({ title, icon, body:`<p class="m-msg">${msg}</p>`, actions:[{ label:'확인', kind:'primary' }] });
-const uiConfirm = (msg, { title = '확인해 주세요', icon = '❓', ok = '확인', danger = false } = {}) =>
-  modal({ title, icon, tone: danger ? 'danger' : '', body:`<p class="m-msg">${msg}</p>`,
+// safe: 처음 초점을 [취소]에 둔다(엔터·스페이스를 잘못 눌러도 취소되게)
+const uiConfirm = (msg, { title = '확인해 주세요', icon = '❓', ok = '확인', danger = false, safe = false } = {}) =>
+  modal({ title, icon, tone: danger ? 'danger' : '', safe, body:`<p class="m-msg">${msg}</p>`,
     actions:[{ label:'취소', value:false }, { label:ok, kind: danger ? 'danger' : 'primary', value:true }] }).then(v => v === true);
 function uiPrompt({ title, icon = '✏️', label, value = '', placeholder = '', max = 40, ok = '저장', validate }){
   return modal({ title, icon,
@@ -2072,7 +2073,7 @@ function renderStage(){
       <div class="nav"><button type="button" class="ibtn" id="tOrder">📋 순서표</button><button type="button" class="ibtn" id="tMic">🎙 마이크</button><button type="button" class="ibtn" id="tvBtn">📺 TV 화면</button><button type="button" class="ibtn" id="pipBtn" title="발표 자료 위에 항상 떠 있는 작은 타이머">🪟 작은 창</button></div>
     </div></div>
   <div class="mic" id="micDot"><div class="ico"><svg viewBox="0 0 200 170" aria-hidden="true"><g class="wv"><path d="M156 30c9 9 9 27 0 36M169 18c16 15 16 45 0 60M44 30c-9 9-9 27 0 36M31 18c-16 15-16 45 0 60" fill="none" style="stroke:var(--sub)" stroke-width="7" stroke-linecap="round"/></g><path d="M77 104h46l-7 70H84z" style="fill:var(--main);stroke:var(--ink)" stroke-width="7" stroke-linejoin="round"/><path d="M92 120v40" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".45"/><rect x="66" y="88" width="68" height="20" rx="8" style="fill:var(--sun);stroke:var(--ink)" stroke-width="7"/><circle cx="100" cy="50" r="44" style="fill:var(--main);stroke:var(--ink)" stroke-width="7"/><path d="M58 38h84M57 62h86" style="stroke:var(--ink)" stroke-width="4" opacity=".15"/><ellipse cx="78" cy="28" rx="7" ry="10" fill="#fff" opacity=".7" transform="rotate(-25 78 28)"/><circle cx="86" cy="50" r="6.5" style="fill:var(--ink)"/><circle cx="114" cy="50" r="6.5" style="fill:var(--ink)"/><circle cx="88" cy="47.5" r="2.2" fill="#fff"/><circle cx="116" cy="47.5" r="2.2" fill="#fff"/><circle cx="74" cy="64" r="7" style="fill:var(--cheek)" opacity=".9"/><circle cx="126" cy="64" r="7" style="fill:var(--cheek)" opacity=".9"/><path class="m-smile" d="M91 66q9 9 18 0" fill="none" style="stroke:var(--ink)" stroke-width="5" stroke-linecap="round"/><g class="m-o"><ellipse cx="100" cy="70" rx="7.5" ry="8.5" style="fill:var(--ink)"/><ellipse cx="100" cy="74" rx="4.2" ry="3.2" style="fill:var(--red)"/></g></svg></div><span id="micTxt"></span></div>`;
-  $('#startBtn').onclick = startTalk; $('#endBtn').onclick = endTalk;
+  $('#startBtn').onclick = () => askStart(false); $('#endBtn').onclick = endTalk;
   $('#pipBtn').onclick = openPip; $('#tvBtn').onclick = toggleTV;
   $('#tOrder').onclick = openOrder; $('#tMic').onclick = micTest;
   if ($('#backBtn')) $('#backBtn').onclick = () => { s.cur = jumpBack; jumpBack = null; save(); renderStage(); arrive(); };
@@ -2117,6 +2118,23 @@ async function ensureRec(){
   };
   rec = r;
   try { r.start(); } catch (e) { lastErr = 'start-failed'; rec = null; }
+}
+// [▶ 시작] — 이미 발표한 학생이면 이전 기록(발표 시간·발표 내용)이 지워진다고 먼저 묻는다(실수로 눌러 기록이 덮어써지지 않게).
+//   작은 타이머 창에서 눌렀으면 그 창 안에서 묻는다(큰 창은 발표 자료 뒤에 가려 있을 수 있음).
+let asking = false;
+async function askStart(fromPip){
+  const s = ses(); if (!s || running || asking) return;
+  const p = s.order[s.cur]; if (!p) return;
+  if (p.j) {
+    asking = true; let ok = false;
+    try {
+      ok = fromPip && pip ? await pipConfirm(p)
+        : await uiConfirm(`<b>${esc(p.name)}</b> 학생은 이미 발표한 기록이 있어요 (${fmt(p.sec || 0)} · ${JUDGE[p.j] || ''}).<br>다시 시작하면 <b>이전 발표 시간과 발표 내용은 지워져요.</b><br><span class="hint">선생님 관찰 기록과 평가 점수는 그대로 남아요.</span>`,
+            { title:'정말 다시 시작할까요?', icon:'⚠️', ok:'다시 시작', danger:true, safe:true });
+    } finally { asking = false; }
+    if (!ok || running || ses() !== s || s.order[s.cur] !== p) return;
+  }
+  startTalk();
 }
 function startTalk(){
   const s = ses(); if (!s || running) return;
@@ -2178,16 +2196,35 @@ async function openPip(){
   #n{font-size:22px;color:#FFE07A}#c{font-size:min(30vw,42vh);line-height:1;font-variant-numeric:tabular-nums;color:#CFCAD9}
   #c.ok{color:#1DB87F}#c.warn{color:#FF8A1F}#c.over{color:#EF4E57}#s{font-size:15px;min-height:1.2em}
   .b{display:flex;gap:8px}button{font:inherit;font-size:18px;border:2px solid #fff;border-radius:12px;padding:6px 18px;cursor:pointer;color:#fff}
-  #go{background:#1DB87F}#st{background:#EF4E57}button:disabled{opacity:.3}</style>`;
-  d.body.innerHTML = '<div id="n"></div><div id="c">0:00</div><div id="s"></div><div class="b"><button id="go">▶ 시작</button><button id="st">■ 마침</button></div>';
-  d.getElementById('go').onclick = () => { const b = $('#startBtn'); if (b && !b.disabled) startTalk(); };
+  #go{background:#1DB87F}#st{background:#EF4E57}button:disabled{opacity:.3}
+  #ask{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:0 14px;background:#1D2A4A}#ask[hidden]{display:none}
+  #askT{margin:0;font-size:19px;line-height:1.35;color:#FFE07A}#askT small{display:block;margin-top:6px;font-size:15px;color:#FFB0B5}#no{background:transparent}#yes{background:#EF4E57}</style>`;
+  d.body.innerHTML = '<div id="n"></div><div id="c">0:00</div><div id="s"></div><div class="b"><button id="go">▶ 시작</button><button id="st">■ 마침</button></div>'
+    + '<div id="ask" hidden><p id="askT"></p><div class="b"><button id="no">취소</button><button id="yes">다시 시작</button></div></div>';
+  d.getElementById('go').onclick = () => { const b = $('#startBtn'); if (b && !b.disabled) askStart(true); };
   d.getElementById('st').onclick = () => { const b = $('#endBtn'); if (b && !b.disabled) endTalk(); };
-  pip.addEventListener('pagehide', () => { pip = null; });
+  d.addEventListener('keydown', e => { if (e.key === 'Escape' && pipAsk) pipAsk.done(false); });
+  pip.addEventListener('pagehide', () => { pip = null; if (pipAsk) pipAsk.done(false); });
   syncPip();
+}
+// 작은 창 안에서 묻는 '다시 시작할까요?' — 큰 창에서 다른 학생으로 넘어가면 저절로 닫힌다(syncPip)
+let pipAsk = null;
+function pipConfirm(p){
+  return new Promise(res => {
+    const d = pip.document, a = d.getElementById('ask');
+    if (!a) { res(false); return; }
+    d.getElementById('askT').innerHTML = `${esc(p.name)} 학생은<br>이미 발표했어요 (${fmt(p.sec || 0)})<small>다시 시작하면 이전 기록이 지워져요</small>`;
+    const it = { p, done: v => { if (pipAsk !== it) return; pipAsk = null; a.hidden = true; res(v); } };
+    pipAsk = it;
+    d.getElementById('no').onclick = () => it.done(false);
+    d.getElementById('yes').onclick = () => it.done(true);
+    a.hidden = false; d.getElementById('no').focus();
+  });
 }
 function syncPip(){
   if (!pip) return; const d = pip.document, g = id => d.getElementById(id); if (!g('c')) return;
   const s = ses(), p = s && s.order[s.cur], c = $('#clock');
+  if (pipAsk && (running || pipAsk.p !== p)) pipAsk.done(false);
   g('n').textContent = p ? `${s.cur + 1}. ${p.name}` : '발표 끝 🎉';
   g('c').textContent = c ? c.textContent : '-'; g('c').className = c ? c.className : '';
   g('s').textContent = $('#tstatus') ? $('#tstatus').textContent : '';
