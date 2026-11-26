@@ -1268,21 +1268,23 @@ new ResizeObserver(()=>{if(game.on)fit()}).observe($('#stage'));
 /* ---- path ---- */
 function smooth(pts,R=30){
   const p=[pts[0]];for(const q of pts.slice(1)){const l=p[p.length-1];if(Math.hypot(q.x-l.x,q.y-l.y)>.5)p.push(q)}
-  const out=[p[0]];
+  const out=[p[0]],oh=[null]; // oh: 굽은 길 점의 접선 방향(곧은 점은 null)
   for(let i=1;i<p.length-1;i++){const a=p[i-1],b=p[i],c=p[i+1];
     const l0=Math.hypot(b.x-a.x,b.y-a.y),l1=Math.hypot(c.x-b.x,c.y-b.y),d0={x:(b.x-a.x)/l0,y:(b.y-a.y)/l0},d1={x:(c.x-b.x)/l1,y:(c.y-b.y)/l1};
-    if(Math.abs(d0.x*d1.y-d0.y*d1.x)<1e-3){out.push(b);continue}
+    if(Math.abs(d0.x*d1.y-d0.y*d1.x)<1e-3){out.push(b);oh.push(null);continue}
     const r=Math.min(R,l0/2,l1/2),s={x:b.x-d0.x*r,y:b.y-d0.y*r},e={x:b.x+d1.x*r,y:b.y+d1.y*r};
-    for(let t=0;t<=1.0001;t+=.1){const u=1-t;out.push({x:u*u*s.x+2*u*t*b.x+t*t*e.x,y:u*u*s.y+2*u*t*b.y+t*t*e.y})}}
-  out.push(p[p.length-1]);
-  const pts2=[out[0]],cum=[0];
+    for(let t=0;t<=1.0001;t+=.1){const u=1-t;out.push({x:u*u*s.x+2*u*t*b.x+t*t*e.x,y:u*u*s.y+2*u*t*b.y+t*t*e.y});oh.push(Math.atan2(u*d0.y+t*d1.y,u*d0.x+t*d1.x))}}
+  out.push(p[p.length-1]);oh.push(null);
+  // 차 방향 ha+dh·ff: 접선을 조각 안에서 고르게 이어 돌림(예전엔 굽은 길 조각마다 9°씩 끊겨 돎). 어긋나면 그 조각만 예전처럼
+  const pts2=[out[0]],cum=[0],ha=[0],dh=[0],wa=v=>Math.atan2(Math.sin(v),Math.cos(v));
   for(let i=1;i<out.length;i++){const a=out[i-1],b=out[i],l=Math.hypot(b.x-a.x,b.y-a.y);if(l<.01)continue;const n=Math.ceil(l/3);
-    for(let j=1;j<=n;j++){pts2.push({x:a.x+(b.x-a.x)*j/n,y:a.y+(b.y-a.y)*j/n});cum.push(cum[cum.length-1]+l/n)}}
-  return{pts:pts2,cum,total:cum[cum.length-1]};
+    const th=Math.atan2(b.y-a.y,b.x-a.x);let h0=oh[i-1]??th,d=wa((oh[i]??th)-h0);if(Math.abs(wa(h0-th))>1||Math.abs(d)>1){h0=th;d=0}
+    for(let j=1;j<=n;j++){pts2.push({x:a.x+(b.x-a.x)*j/n,y:a.y+(b.y-a.y)*j/n});cum.push(cum[cum.length-1]+l/n);ha.push(h0+d*(j-1)/n);dh.push(d/n)}}
+  return{pts:pts2,cum,total:cum[cum.length-1],ha,dh};
 }
 function at(path,s){const{pts,cum}=path;let lo=0,hi=cum.length-1;while(lo<hi){const m=(lo+hi)>>1;cum[m]<s?lo=m+1:hi=m}
   const i=Math.max(1,lo),a=pts[i-1],b=pts[i],f=cum[i]-cum[i-1]>0?(s-cum[i-1])/(cum[i]-cum[i-1]):0,ff=Math.min(1,Math.max(0,f));
-  return{x:a.x+(b.x-a.x)*ff,y:a.y+(b.y-a.y)*ff,ang:Math.atan2(b.y-a.y,b.x-a.x)}}
+  return{x:a.x+(b.x-a.x)*ff,y:a.y+(b.y-a.y)*ff,ang:path.ha?path.ha[i]+path.dh[i]*ff:Math.atan2(b.y-a.y,b.x-a.x)}}
 function aisleFor(seat){return G.per===2?(seat.k===0?seat.g:seat.g+1):(Math.random()<.5?seat.g:seat.g+1)}
 function waypoints(from,ax2,y2){if(Math.abs(from.x-ax2)<1)return[{x:ax2,y:y2}];const topY=G.ty+17,botY=G.roadY;
   const ry=Math.abs(from.y-topY)+Math.abs(y2-topY)<Math.abs(from.y-botY)+Math.abs(y2-botY)?topY:botY;return[{x:from.x,y:ry},{x:ax2,y:ry},{x:ax2,y:y2}]}
@@ -1290,8 +1292,9 @@ function routeTo(from,seat,type){const segs=[],occ=occMap();let cur=from;
   if(from.y>G.roadY+1){segs.length=0}
   const nDec=game.speed>2?0:(Math.random()<.4?2:1);
   const pool=shuffle(G.seats.filter(s=>s.on&&s.id!==seat.id&&!occ[s.id]&&Math.abs(s.y-seat.y)+Math.abs(s.x-seat.x)>60));
-  for(let i=0;i<nDec&&i<pool.length;i++){const d=pool[i],ax=G.aisleX(aisleFor(d)),y=d.y-7;
-    segs.push({path:smooth([cur,...waypoints(cur,ax,y)]),rev:false,hold:.7+Math.random()*.6,decoy:d});cur={x:ax,y}}
+  // 헛걸음 자리가 지금 선 곳과 같은 점이면(같은 통로를 쓰는 옆자리) 길이 0인 길이 되어 화면이 멈춤 → 그런 자리는 건너뜀
+  for(let i=0,k=0;i<nDec&&k<pool.length;k++){const d=pool[k],ax=G.aisleX(aisleFor(d)),y=d.y-7;if(Math.hypot(ax-cur.x,y-cur.y)<2)continue;
+    segs.push({path:smooth([cur,...waypoints(cur,ax,y)]),rev:false,hold:.7+Math.random()*.6,decoy:d});cur={x:ax,y};i++}
   const ax=G.aisleX(aisleFor(seat)),py=seat.y-7;
   if(TWO.has(type)){segs.push({path:smooth([cur,...waypoints(cur,ax,py),{x:seat.x,y:py}]),rev:false});return segs}
   const wp=waypoints(cur,ax,py),prev=wp.length>1?wp[wp.length-2]:cur,above=prev.y<py,p1={x:ax,y:py+(above?46:-46)};
