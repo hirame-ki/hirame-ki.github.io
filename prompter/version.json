@@ -1,10 +1,10 @@
 {
-  "version": "1.1.4",
-  "date": "2026-11-24",
+  "version": "1.1.5",
+  "date": "2026-11-28",
   "notes": [
+    "보조 모니터를 뺀 뒤 켜도 창이 화면 밖에 뜨지 않게 고쳤어요",
     "위쪽 막대와 ◢ 손잡이는 Ctrl 없이 바로 누르고 끌 수 있어요",
-    "대본 부분 조작은 왼쪽 Ctrl로 해 주세요 (오른쪽 Ctrl은 한자 키로 잡혀요)",
-    "창이 좁아도 막대 오른쪽 표시가 잘리지 않게 고쳤어요"
+    "대본 부분 조작은 왼쪽 Ctrl로 해 주세요 (오른쪽 Ctrl은 한자 키로 잡혀요)"
   ],
   "download": "https://drive.google.com/drive/folders/1UqZBjSyDmJK4oE29vLoalk6zgc4OxghB?usp=sharing"
 }
